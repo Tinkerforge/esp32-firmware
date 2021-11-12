@@ -364,7 +364,7 @@ def main(stage3):
                 fw = f.read()
 
             opener = urllib.request.build_opener(ContentTypeRemover())
-            for i in range(2):
+            for i in range(5):
                 try:
                     req = urllib.request.Request("http://{}/flash_firmware".format(ssid), fw)
                     print(opener.open(req).read().decode())
@@ -376,13 +376,13 @@ def main(stage3):
                     else:
                         fatal_error(e.read().decode("utf-8"))
                 except urllib.error.URLError as e:
-                    if isinstance(e.reason, ConnectionResetError):
-                        fatal_error("Wallbox blocked firmware update. Is the EVSE working correctly?")
                     print("URL error", e)
-                    if i == 0:
+                    if i != 4:
                         print("Failed to flash firmware. Retrying...")
                         time.sleep(3)
                     else:
+                        if isinstance(e.reason, ConnectionResetError):
+                            fatal_error("Wallbox blocked firmware update. Is the EVSE working correctly?")
                         fatal_error("Can't flash firmware!")
 
             time.sleep(3)
