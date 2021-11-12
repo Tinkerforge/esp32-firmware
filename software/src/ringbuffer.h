@@ -109,8 +109,9 @@ public:
         }
     }
     bool pop(T* val) {
-        //Silence Wmaybe-uninitialized in the _read_[type] functions.
+        // Silence Wmaybe-uninitialized in the _read_[type] functions.
         *val = 0;
+
         if(used() == 0) {
             return false;
         }
@@ -125,6 +126,9 @@ public:
     }
 
     bool peek(T* val) {
+        // Silence Wmaybe-uninitialized in the _read_[type] functions.
+        *val = 0;
+
         if(used() == 0) {
             return false;
         }
@@ -134,6 +138,9 @@ public:
     }
 
     bool peek_offset(T* val, size_t offset) {
+        // Silence Wmaybe-uninitialized in the _read_[type] functions.
+        *val = 0;
+
         if(used() <= offset) {
             return false;
         }

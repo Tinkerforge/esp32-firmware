@@ -74,8 +74,6 @@ void tf_packetbuffer_remove(TF_Packetbuffer *pb, const uint8_t num) {
 }
 
 bool tf_packetbuffer_pop(TF_Packetbuffer *pb, uint8_t *data) {
-    //Silence Wmaybe-uninitialized in the _read_[type] functions.
-    *data = 0;
     if (!tf_packetbuffer_peek(pb, data))
         return false;
 
@@ -84,6 +82,9 @@ bool tf_packetbuffer_pop(TF_Packetbuffer *pb, uint8_t *data) {
 }
 
 bool tf_packetbuffer_peek(TF_Packetbuffer *pb, uint8_t *data) {
+    // Silence Wmaybe-uninitialized in the _read_[type] functions.
+    *data = 0;
+
     if(tf_packetbuffer_is_empty(pb)) {
         return false;
     }
@@ -93,6 +94,9 @@ bool tf_packetbuffer_peek(TF_Packetbuffer *pb, uint8_t *data) {
 }
 
 bool tf_packetbuffer_peek_offset(TF_Packetbuffer *pb, uint8_t *data, uint8_t offset) {
+    // Silence Wmaybe-uninitialized in the _read_[type] functions.
+    *data = 0;
+
     if(tf_packetbuffer_get_used(pb) <= offset) {
         return false;
     }

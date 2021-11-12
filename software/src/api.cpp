@@ -56,7 +56,7 @@ void API::setup()
 
 void API::addCommand(String path, Config *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(void)> callback, bool is_action)
 {
-    commands.push_back({path, config, callback, keys_to_censor_in_debug_report, is_action});
+    commands.push_back({path, config, callback, keys_to_censor_in_debug_report, is_action, ""});
 
     for (auto* backend: this->backends) {
         backend->addCommand(commands[commands.size() - 1]);

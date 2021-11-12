@@ -75,7 +75,7 @@ void EventLog::printfln(const char *fmt, ...)
 
 void EventLog::drop(size_t count)
 {
-    char c;
+    char c = '\n';
     for(int i = 0; i < count; ++i)
         event_buf.pop(&c);
 
