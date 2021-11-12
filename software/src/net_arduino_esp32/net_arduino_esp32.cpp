@@ -307,13 +307,13 @@ static int accept_connections(TF_NetContext *net) {
     return 0;
 }
 
-static void remove_dead_clients(TF_NetContext *net) {
+/*static void remove_dead_clients(TF_NetContext *net) {
     for(size_t i = 0; i < net->clients_used; ++i) {
         if(deadline_elapsed(tf_net_current_time_ms(net), net->clients[i].last_recv_ms + net->recv_timeout_ms)) {
             remove_client(net, i);
         }
     }
-}
+}*/
 
 static bool is_valid_header(TF_TfpHeader *header) {
     if (header->length < TF_TFP_MIN_MESSAGE_LENGTH) {
@@ -442,8 +442,6 @@ static void handle_authenticate_request(TF_NetContext *net, uint8_t client_id, T
 }
 
 static void handle_brickd_packet(TF_NetContext *net, uint8_t packet_id, TF_TfpHeader *header, uint8_t *buf) {
-    TF_NetClient *client = &net->clients[packet_id];
-
     if (header->fid == TF_FUNCTION_GET_AUTHENTICATION_NONCE) {
         if (header->length != TF_GET_AUTHENTICATION_NONCE_REQUEST_LEN) {
             tf_hal_log_info("Received authentication-nonce request with wrong length. Disconnecting client.\n");
@@ -536,7 +534,6 @@ int tf_net_destroy(TF_NetContext *net) {
         close(net->server_fd);
 
     for(int i = 0; i < net->clients_used; ++i) {
-        TF_NetClient *client = &net->clients[i];
         remove_client(net, i);
     }
     return 0;

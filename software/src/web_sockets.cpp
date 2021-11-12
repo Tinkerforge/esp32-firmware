@@ -14,8 +14,6 @@ extern TaskScheduler task_scheduler;
 extern WebServer server;
 extern EventLog logger;
 
-static const char *TAG = "WebSockets";
-
 static const size_t max_clients = 7;
 
 struct ws_work_item {

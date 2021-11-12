@@ -51,7 +51,6 @@ static bool getMD5(uint8_t * data, uint16_t len, char * output){//33 bytes or mo
 static String genRandomString(){
   uint8_t data[16] = {0};
   uint32_t t = micros();
-  uint8_t i = 0;
   memcpy(data, &t, sizeof(t));
 #ifdef _BUILD_TIME_
   t = _BUILD_TIME_;
