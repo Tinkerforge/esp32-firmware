@@ -315,7 +315,7 @@ struct from_update {
 
         uint32_t new_val = 0;
         if(update->get<uint32_t>() == nullptr) {
-            if(update->get<int32_t>() == nullptr || update->get<int32_t>() < 0)
+            if(update->get<int32_t>() == nullptr || *(update->get<int32_t>()) < 0)
                 return "ConfUpdate node was not an unsigned integer.";
 
             new_val = (uint32_t) *(update->get<int32_t>());
