@@ -25,10 +25,10 @@ from provision_common.provision_common import *
 
 def main():
     if len(sys.argv) != 3:
-        fatal_error("Usage: {} test_firmware port")
+        fatal_error("Usage: {} firmware port")
 
     if not os.path.exists(sys.argv[1]):
-        fatal_error("Test firmware {} not found.".format(sys.argv[1]))
+        fatal_error("Firmware {} not found.".format(sys.argv[1]))
 
     PORT = sys.argv[2]
 
@@ -71,9 +71,9 @@ def main():
     print("Erasing flash")
     erase_flash()
 
-    print("Flashing test firmware")
+    print("Flashing firmware")
     flash_firmware(sys.argv[1])
-    result["test_firmware"] = sys.argv[1]
+    result["firmware"] = sys.argv[1]
 
     ssid = "warp2-" + uid
 

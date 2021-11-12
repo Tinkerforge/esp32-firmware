@@ -372,11 +372,11 @@ def main():
     global PORT
 
     if len(sys.argv) != 3:
-        print("Usage: {} test_firmware port")
+        print("Usage: {} firmware port")
         sys.exit(0)
 
     if not os.path.exists(sys.argv[1]):
-        print("Test firmware {} not found.".format(sys.argv[1]))
+        print("firmware {} not found.".format(sys.argv[1]))
 
     PORT = sys.argv[2]
 
@@ -422,9 +422,9 @@ def main():
     print("Erasing flash")
     erase_flash()
 
-    print("Flashing test firmware")
+    print("Flashing firmware")
     flash_firmware(sys.argv[1])
-    result["test_firmware"] = sys.argv[1]
+    result["firmware"] = sys.argv[1]
 
     ssid = "warp-" + uid
 
