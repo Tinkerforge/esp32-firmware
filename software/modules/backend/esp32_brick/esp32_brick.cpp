@@ -21,7 +21,7 @@
 #include "Arduino.h"
 
 #include "tools.h"
-#include "hal_arduino_esp32/hal_arduino_esp32.h"
+#include "hal_arduino_esp32_brick/hal_arduino_esp32_brick.h"
 #include "task_scheduler.h"
 
 extern TaskScheduler task_scheduler;
