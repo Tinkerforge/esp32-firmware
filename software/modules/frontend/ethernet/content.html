@@ -1,0 +1,125 @@
+<div class="tab-pane fade" role="tabpanel" aria-labelledby="sidebar-ethernet" id="ethernet">
+    <div
+        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2" data-i18n="ethernet.content.settings"></h1>
+    </div>
+    <form id="ethernet_form" class="needs-validation" novalidate>
+        <!--
+            Use custom validation instead of the browser default, that is broken on Chrome
+            See: https://getbootstrap.com/docs/4.5/components/forms/#validation
+        -->
+
+        <div class="form-group row">
+            <div id="blah" class="col-lg-3 col-xl-2">
+                <label for="ethernet_enable" class="col-form-label form-label" data-i18n="ethernet.content.enable"></label>
+            </div>
+            <div class="col-lg-9 col-xl-6">
+                <div class="borderless-form-control custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" id="ethernet_enable">
+                    <label class="custom-control-label" for="ethernet_enable" data-i18n="ethernet.content.enable_desc"></label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="ethernet_hostname"
+                class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="ethernet.content.hostname"></label>
+            <div class="col-lg-9 col-xl-6">
+                <input id="ethernet_hostname" class="form-control" type="text"  pattern="[a-zA-Z0-9\-]*" maxlength="63" required>
+                <div class="invalid-feedback"  data-i18n="ethernet.content.hostname_invalid"></div>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="ethernet_show_static" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="ethernet.content.ip_configuration"></label>
+
+            <div class="col-lg-9 col-xl-6">
+                <select id="ethernet_show_static" class="custom-select">
+                    <option value="hide" selected data-i18n="ethernet.content.dhcp"></option>
+                    <option value="show" data-i18n="ethernet.content.static"></option>
+                </select>
+            </div>
+        </div>
+        <div class="collapse" id="ethernet_static_ip_cfg">
+            <div class="form-group row">
+                <label for="ethernet_ip"
+                    class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="ethernet.content.static_ip"></label>
+                <div class="col-lg-9 col-xl-6">
+                    <input id="ethernet_ip" class="form-control" type="text"
+                        minlength="7" maxlength="15" size="15"
+                        pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$">
+                    <div class="invalid-feedback"  data-i18n="ethernet.content.static_ip_invalid"></div>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="ethernet_subnet"
+                    class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="ethernet.content.subnet"></label>
+                <div class="col-lg-9 col-xl-6">
+                    <input id="ethernet_subnet" class="form-control" type="text"
+                        minlength="7" maxlength="15" size="15"
+                        pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$">
+                    <div class="invalid-feedback" data-i18n="ethernet.content.subnet_invalid"></div>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="ethernet_gateway"
+                    class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="ethernet.content.gateway"></label>
+                <div class="col-lg-9 col-xl-6">
+                    <input id="ethernet_gateway" class="form-control" type="text"
+                        minlength="7" maxlength="15" size="15"
+                        pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$">
+                    <div class="invalid-feedback" data-i18n="ethernet.content.gateway_invalid"></div>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="ethernet_dns" class="col-lg-3 col-xl-2 col-form-label" data-i18n="ethernet.content.dns"></label>
+                <div class="col-lg-9 col-xl-6">
+                    <input id="ethernet_dns" class="form-control" type="text"
+                        minlength="7" maxlength="15" size="15"
+                        pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$">
+                    <div class="invalid-feedback" data-i18n="ethernet.content.dns_invalid"></div>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="ethernet_dns2" class="col-lg-3 col-xl-2 col-form-label" data-i18n="ethernet.content.dns2"></label>
+                <div class="col-lg-9 col-xl-6">
+                    <input id="ethernet_dns2" class="form-control" type="text"
+                        minlength="7" maxlength="15" size="15"
+                        pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$">
+                    <div class="invalid-feedback" data-i18n="ethernet.content.dns2_invalid"></div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-lg-12 col-xl-8 text-right">
+                <button id="ethernet_save_button" type="submit" form="ethernet_form" class="btn btn-primary" data-i18n="ethernet.content.save"></button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="modal fade" id="ethernet_reboot" tabindex="-1" role="dialog" aria-hidden="true">
+    <div id="ethernet_reboot_content"
+        class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <form-label class="modal-title" data-i18n="ethernet.content.reboot_title"></form-label>
+                <button type="button" class="close" data-dismiss="modal"
+                    aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" data-i18n="ethernet.content.reboot_content"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+                    data-dismiss="modal" data-i18n="ethernet.content.abort"></button>
+                <button id="ethernet_reboot_button" type="button"
+                    class="btn btn-danger" data-i18n="ethernet.content.reboot"></button>
+            </div>
+        </div>
+    </div>
+</div>

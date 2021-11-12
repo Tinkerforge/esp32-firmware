@@ -200,8 +200,6 @@ def main():
     backend_modules = [FlavoredName(x).get() for x in env.GetProjectOption("backend_modules").splitlines()]
     for backend_module in backend_modules:
         mod_path = os.path.join("modules", "backend", backend_module.under)
-        if not os.path.exists(mod_path) or not os.path.isdir(mod_path):
-            mod_path = os.path.join("esp32-brick", "software", mod_path)
 
         if not os.path.exists(mod_path) or not os.path.isdir(mod_path):
             print("Backend module {} not found.".format(backend_module.space, mod_path))
@@ -239,9 +237,6 @@ def main():
     recreate_dir(os.path.join("web", "src", "ts", "modules"))
     for frontend_module in frontend_modules:
         mod_path = os.path.join("modules", "frontend", frontend_module.under)
-
-        if not os.path.exists(mod_path) or not os.path.isdir(mod_path):
-            mod_path = os.path.join("esp32-brick", "software", mod_path)
 
         if not os.path.exists(mod_path) or not os.path.isdir(mod_path):
             print("Frontend module {} not found.".format(frontend_module.space, mod_path))

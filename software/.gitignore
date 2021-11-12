@@ -14,4 +14,3 @@ src/modules
 web/src/main.ts
 web/src/index.html
 web/src/ts/modules
-esp32-brick
