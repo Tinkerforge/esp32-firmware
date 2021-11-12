@@ -1,4 +1,4 @@
-/* esp32-lib
+/* esp32-firmware
  * Copyright (C) 2021 Erik Fleckstein <erik@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or

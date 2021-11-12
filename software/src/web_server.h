@@ -1,4 +1,4 @@
-/* esp32-brick
+/* esp32-firmware
  * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
