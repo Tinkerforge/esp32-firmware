@@ -1,3 +1,7 @@
+*.swp
+*.pyc
 __pycache__
 provisioning/staging_password.txt
 provisioning/esptool
+software/modules/backend/**/*_firmware.h
+software/modules/backend/**/*_firmware.cpp
