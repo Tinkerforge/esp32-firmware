@@ -61,12 +61,10 @@ struct UserCtx {
 bool authenticate(WebServerRequest req, const char * username, const char * password) {
     String auth = req.header("Authorization");
     if(auth == "") {
-        logger.printfln("auth header not found");
         return false;
     }
 
     if (!auth.startsWith("Digest ")) {
-        logger.printfln("auth header wrong start");
         return false;
     }
 

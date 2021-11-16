@@ -178,7 +178,6 @@ bool checkDigestAuthentication(const char * header, const char * method, const c
   String response = ha1 + ":" + myNonce + ":" + myNc + ":" + myCnonce + ":" + myQop + ":" + stringMD5(ha2);
 
   if(myResponse.equals(stringMD5(response))){
-    logger.printfln("AUTH SUCCESS");
     return true;
   }
 
