@@ -3,5 +3,6 @@
 __pycache__
 provisioning/staging_password.txt
 provisioning/esptool
+provisioning/cp210x-cfg
 software/modules/backend/**/*_firmware.h
 software/modules/backend/**/*_firmware.cpp
