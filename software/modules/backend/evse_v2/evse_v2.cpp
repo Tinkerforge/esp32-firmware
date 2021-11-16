@@ -253,9 +253,14 @@ String EVSEV2::get_evse_debug_line() {
         return String("evse_get_low_level_state failed: rc: ") + String(rc);
     }
 
+    // millis returns an unsigned long, confusing the compiler, as unsigned long == unsigned int on the ESP32.
+    // Storing in an uint32_t allows us to use %u.
+    uint32_t now = millis();
+
     char line[230] = {0};
-    snprintf(line, sizeof(line)/sizeof(line[0]), "%lu,%u,%u,%u,%u,%u,%u,%u,%u,%lu,%lu,%u,%u,%u,%u,%u,%u,%u,%u,%u,%d,%d,%d,%d,%d,%d,%d,%u,%u,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%u\n",
-        millis(),
+    snprintf(line, sizeof(line)/sizeof(line[0]), "%u,,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,,%u,%u,,%u,%u,%u,%u,%u,%u,%u,,%d,%d,%d,%d,%d,%d,%d,,%u,%u,,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,,%u\n",
+        now,
+
         iec61851_state,
         vehicle_state,
         contactor_state,
@@ -266,17 +271,23 @@ String EVSEV2::get_evse_debug_line() {
         lock_state,
         time_since_state_change,
         uptime,
+
         led_state,
         cp_pwm_duty_cycle,
+
         adc_values[0],adc_values[1],adc_values[2],adc_values[3],adc_values[4],adc_values[5],adc_values[6],
+
         voltages[0],voltages[1],voltages[2],voltages[3],voltages[4],voltages[5],voltages[6],
+
         resistances[0],resistances[1],
+
         gpio[0] ? '1' : '0',gpio[1] ? '1' : '0',gpio[2] ? '1' : '0',gpio[3] ? '1' : '0',
         gpio[4] ? '1' : '0',gpio[5] ? '1' : '0',gpio[6] ? '1' : '0',gpio[7] ? '1' : '0',
         gpio[8] ? '1' : '0',gpio[9] ? '1' : '0',gpio[10] ? '1' : '0',gpio[11] ? '1' : '0',
         gpio[12] ? '1' : '0',gpio[13] ? '1' : '0',gpio[14] ? '1' : '0',gpio[15] ? '1' : '0',
         gpio[16] ? '1' : '0',gpio[17] ? '1' : '0',gpio[18] ? '1' : '0',gpio[19] ? '1' : '0',
         gpio[20] ? '1' : '0',gpio[21] ? '1' : '0',gpio[22] ? '1' : '0',gpio[23] ? '1' : '0',
+
         charging_time
         );
 
@@ -301,9 +312,13 @@ String EVSEV2::get_evse_monitor_line() {
     if(!initialized)
         return "EVSE is not initialized!";
 
+    // millis returns an unsigned long, confusing the compiler, as unsigned long == unsigned int on the ESP32.
+    // Storing in an uint32_t allows us to use %u.
+    uint32_t now = millis();
+
     char line[300] = {0};
-    snprintf(line, sizeof(line)/sizeof(line[0]), "%lu,,%u,%u,%u,%u,%u,%u,%u,%u,%lu,%lu,,%u,%u,%u,%u,%u,%u,%u,%u,%u,%d,%d,%d,%d,%d,%d,%d,%u,%u,%u,,%u,%c,,%u,%u,%u,%u,,%c,,%lu,%lu,%lu,,%u,,%u,%u,%u,,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,\n",
-        millis(),
+    snprintf(line, sizeof(line)/sizeof(line[0]), "%u,,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,,%u,%u,%u,%u,%u,%u,%u,%u,%u,%d,%d,%d,%d,%d,%d,%d,%u,%u,%u,,%u,%c,,%u,%u,%u,%u,,%c,,%u,%u,%u,,%u,,%u,%u,%u,,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,\n",
+        now,
 
         evse_state.get("iec61851_state")->asUint(),
         evse_state.get("vehicle_state")->asUint(),
