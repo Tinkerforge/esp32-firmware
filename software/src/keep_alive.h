@@ -8,6 +8,11 @@
 */
 #pragma once
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #define KEEP_ALIVE_CONFIG_DEFAULT() \
     { \
     .max_clients = 10,                      \
@@ -94,3 +99,7 @@ void wss_keep_alive_set_user_ctx(wss_keep_alive_t h, void *ctx);
  * @return ctx user context
  */
 void* wss_keep_alive_get_user_ctx(wss_keep_alive_t h);
+
+#ifdef __cplusplus
+}
+#endif

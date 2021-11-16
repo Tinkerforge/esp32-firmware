@@ -74,6 +74,22 @@ bool authenticate(WebServerRequest req, const char * username, const char * pass
     return checkDigestAuthentication(auth.c_str(), req.methodString(), username, password, "esp32-lib", false, nullptr, nullptr, nullptr);
 }
 
+static esp_err_t low_level_handler(httpd_req_t *req) {
+    auto ctx = (UserCtx *) req->user_ctx;
+    auto request = WebServerRequest{req};
+    if (ctx->server->username != "" && ctx->server->password != "" && !authenticate(request, ctx->server->username.c_str(), ctx->server->password.c_str())) {
+        if (ctx->server->on_not_authorized) {
+            ctx->server->on_not_authorized(request);
+            return ESP_OK;
+        }
+        request.requestAuthentication();
+        return ESP_OK;
+    }
+
+    ctx->handler->callback(request);
+    return ESP_OK;
+}
+
 WebServerHandler* WebServer::on(const char *uri, httpd_method_t method, wshCallback callback)
 {
     if (handler_count >= MAX_URI_HANDLERS) {
@@ -89,32 +105,59 @@ WebServerHandler* WebServer::on(const char *uri, httpd_method_t method, wshCallb
     user_ctx->server = this;
     user_ctx->handler = result;
 
-    const httpd_uri_t ll_handler = {
-        .uri       = uri,
-        .method    = method,
-        .handler   = [](httpd_req_t *req) {
-            auto ctx = (UserCtx *) req->user_ctx;
-            auto request = WebServerRequest{req};
-            if (ctx->server->username != "" && ctx->server->password != "" && !authenticate(request, ctx->server->username.c_str(), ctx->server->password.c_str())) {
-                if (ctx->server->on_not_authorized) {
-                    ctx->server->on_not_authorized(request);
-                    return ESP_OK;
-                }
-                request.requestAuthentication();
-                return ESP_OK;
-            }
+    httpd_uri_t ll_handler = {};
+    ll_handler.uri       = uri;
+    ll_handler.method    = method;
+    ll_handler.handler   = low_level_handler;
+    ll_handler.user_ctx  = (void*)user_ctx;
 
-            ctx->handler->callback(request);
-            return ESP_OK;
-        },
-        .user_ctx  = (void*)user_ctx
-    };
     httpd_register_uri_handler(httpd, &ll_handler);
     return result;
 }
 
 static const size_t SCRATCH_BUFSIZE = 4096;
 static uint8_t scratch_buf[SCRATCH_BUFSIZE] = {0};
+
+static esp_err_t low_level_upload_handler(httpd_req_t *req) {
+    auto ctx = (UserCtx *) req->user_ctx;
+    auto request = WebServerRequest{req};
+    if (ctx->server->username != "" && ctx->server->password != "" && !authenticate(request, ctx->server->username.c_str(), ctx->server->password.c_str())) {
+        if (ctx->server->on_not_authorized) {
+            ctx->server->on_not_authorized(request);
+            return ESP_OK;
+        }
+        request.requestAuthentication();
+        return ESP_OK;
+    }
+
+    size_t received = 0;
+    size_t remaining = req->content_len;
+    size_t index = 0;
+
+    while (remaining > 0) {
+        received = httpd_req_recv(req, (char*)scratch_buf, MIN(remaining, SCRATCH_BUFSIZE));
+        // Retry if timeout occurred
+        if (received == HTTPD_SOCK_ERR_TIMEOUT) {
+            continue;
+        }
+
+        if (received <= 0) {
+            printf("File reception failed!\n");
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to receive file");
+            return ESP_FAIL;
+        }
+
+        remaining -= received;
+        if(!ctx->handler->uploadCallback(request, "not implemented", index, scratch_buf, received, remaining == 0)) {
+            return ESP_FAIL;
+        }
+
+        index += received;
+    }
+
+    ctx->handler->callback(request);
+    return ESP_OK;
+}
 
 WebServerHandler* WebServer::on(const char *uri, httpd_method_t method, wshCallback callback, wshUploadCallback uploadCallback)
 {
@@ -131,51 +174,12 @@ WebServerHandler* WebServer::on(const char *uri, httpd_method_t method, wshCallb
     user_ctx->server = this;
     user_ctx->handler = result;
 
-    const httpd_uri_t ll_handler = {
-        .uri       = uri,
-        .method    = method,
-        .handler   = [](httpd_req_t *req) {
-            auto ctx = (UserCtx *) req->user_ctx;
-            auto request = WebServerRequest{req};
-            if (ctx->server->username != "" && ctx->server->password != "" && !authenticate(request, ctx->server->username.c_str(), ctx->server->password.c_str())) {
-                if (ctx->server->on_not_authorized) {
-                    ctx->server->on_not_authorized(request);
-                    return ESP_OK;
-                }
-                request.requestAuthentication();
-                return ESP_OK;
-            }
+    httpd_uri_t ll_handler = {};
+    ll_handler.uri       = uri;
+    ll_handler.method    = method;
+    ll_handler.handler   = low_level_upload_handler;
+    ll_handler.user_ctx  = (void*)user_ctx;
 
-            size_t received = 0;
-            size_t remaining = req->content_len;
-            size_t index = 0;
-
-            while (remaining > 0) {
-                received = httpd_req_recv(req, (char*)scratch_buf, MIN(remaining, SCRATCH_BUFSIZE));
-                // Retry if timeout occurred
-                if (received == HTTPD_SOCK_ERR_TIMEOUT) {
-                    continue;
-                }
-
-                if (received <= 0) {
-                    printf("File reception failed!\n");
-                    httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to receive file");
-                    return ESP_FAIL;
-                }
-
-                remaining -= received;
-                if(!ctx->handler->uploadCallback(request, "not implemented", index, scratch_buf, received, remaining == 0)) {
-                    return ESP_FAIL;
-                }
-
-                index += received;
-            }
-
-            ctx->handler->callback(request);
-            return ESP_OK;
-        },
-        .user_ctx  = (void*)user_ctx
-    };
     httpd_register_uri_handler(httpd, &ll_handler);
     return result;
 }

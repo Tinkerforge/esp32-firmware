@@ -414,8 +414,13 @@ void WebSockets::sendToAll(const char *payload, size_t payload_len) {
 
 void WebSockets::start(const char *uri)
 {
-    // Prepare keep-alive engine
-    wss_keep_alive_config_t keep_alive_config = KEEP_ALIVE_CONFIG_DEFAULT();
+    wss_keep_alive_config_t keep_alive_config = {};
+    //As defined in KEEP_ALIVE_CONFIG_DEFAULT()
+    keep_alive_config.task_stack_size = 2048;
+    keep_alive_config.task_prio = tskIDLE_PRIORITY+1;
+    keep_alive_config.keep_alive_period_ms = 5000;
+    keep_alive_config.not_alive_after_ms = 10000;
+
     keep_alive_config.max_clients = max_clients;
     keep_alive_config.client_not_alive_cb = client_not_alive_cb;
     keep_alive_config.check_client_alive_cb = check_client_alive_cb;
@@ -424,14 +429,14 @@ void WebSockets::start(const char *uri)
 
     httpd_handle_t httpd = server.httpd;
 
-    static const httpd_uri_t ws = {
-            .uri        = uri,
-            .method     = HTTP_GET,
-            .handler    = ws_handler,
-            .user_ctx   = this,
-            .is_websocket = false,
-            .handle_ws_control_frames = true
-    };
+    httpd_uri_t ws = {};
+    ws.uri = uri;
+    ws.method = HTTP_GET;
+    ws.handler = ws_handler;
+    ws.user_ctx = this;
+    ws.is_websocket = false;
+    ws.handle_ws_control_frames = true;
+
 
     httpd_register_uri_handler(httpd, &ws);
     wss_keep_alive_set_user_ctx(keep_alive, httpd);

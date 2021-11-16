@@ -259,15 +259,14 @@ void Mqtt::setup()
 
     mqtt_config_in_use = mqtt_config;
 
-    esp_mqtt_client_config_t mqtt_cfg = {
-        .host = mqtt_config_in_use.get("broker_host")->asCStr(),
-        .port = mqtt_config_in_use.get("broker_port")->asUint(),
-        .client_id = mqtt_config_in_use.get("client_name")->asCStr(),
-        .username = mqtt_config_in_use.get("broker_username")->asCStr(),
-        .password = mqtt_config_in_use.get("broker_password")->asCStr(),
-        .buffer_size = MQTT_RECV_BUFFER_SIZE,
-        .network_timeout_ms = 100
-    };
+    esp_mqtt_client_config_t mqtt_cfg;
+    mqtt_cfg.host = mqtt_config_in_use.get("broker_host")->asCStr();
+    mqtt_cfg.port = mqtt_config_in_use.get("broker_port")->asUint();
+    mqtt_cfg.client_id = mqtt_config_in_use.get("client_name")->asCStr();
+    mqtt_cfg.username = mqtt_config_in_use.get("broker_username")->asCStr();
+    mqtt_cfg.password = mqtt_config_in_use.get("broker_password")->asCStr();
+    mqtt_cfg.buffer_size = MQTT_RECV_BUFFER_SIZE,
+    mqtt_cfg.network_timeout_ms = 100;
 
     client = esp_mqtt_client_init(&mqtt_cfg);
     esp_mqtt_client_register_event(client, (esp_mqtt_event_id_t)ESP_EVENT_ANY_ID, mqtt_event_handler, this);
