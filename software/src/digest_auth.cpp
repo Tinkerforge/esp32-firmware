@@ -70,16 +70,6 @@ static String genRandomString(){
   return String(buf);
 }
 
-static String genRandomMD5(){
-  uint32_t r = rand();
-  char * out = (char*)malloc(33);
-  if(out == NULL || !getMD5((uint8_t*)(&r), 4, out))
-    return "";
-  String res = String(out);
-  free(out);
-  return res;
-}
-
 static String stringMD5(const String& in){
   char * out = (char*)malloc(33);
   if(out == NULL || !getMD5((uint8_t*)(in.c_str()), in.length(), out))
