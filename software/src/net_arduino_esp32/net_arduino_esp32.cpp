@@ -1,20 +1,17 @@
+
 #include "net_arduino_esp32.h"
 
-#include "Arduino.h"
-
-#include "lwip/err.h"
-#include "lwip/sockets.h"
-#include "lwip/sys.h"
+#include <Arduino.h>
+#include <lwip/err.h>
+#include <lwip/sockets.h>
+#include <lwip/sys.h>
 #include <lwip/netdb.h>
-
-#include "string.h"
-
-#include "../bindings/macros.h"
-#include "../bindings/hal_common.h"
-
+#include <string.h>
 #include <esp_wifi.h>
 #include <esp_random.h>
 
+#include "../bindings/macros.h"
+#include "../bindings/hal_common.h"
 #include "hmac.h"
 
 static void remove_open_request(TF_NetContext *net, size_t idx) {

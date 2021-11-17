@@ -19,7 +19,7 @@
 
 #include "mqtt.h"
 
-#include "Arduino.h"
+#include <Arduino.h>
 
 #include "task_scheduler.h"
 #include "tools.h"

@@ -7,7 +7,7 @@
  */
 
 #include "hal_arduino_esp32_brick.h"
-#include "SPI.h"
+
 #include <Arduino.h>
 
 #include "bindings/config.h"

@@ -18,7 +18,8 @@
  */
 
 #include "esp32_ethernet_brick.h"
-#include "Arduino.h"
+
+#include <Arduino.h>
 
 #include "tools.h"
 #include "hal_arduino_esp32_ethernet_brick/hal_arduino_esp32_ethernet_brick.h"

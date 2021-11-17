@@ -16,7 +16,6 @@
 #include "tfp.h"
 #include "pearson_hash.h"
 #include "errors.h"
-
 #include "hal_common.h"
 
 #define STATE_IDLE 0

@@ -18,7 +18,8 @@
  */
 
 #include "firmware_update.h"
-#include "Arduino.h"
+
+#include <Arduino.h>
 
 #include <Update.h>
 #include <SPIFFS.h>

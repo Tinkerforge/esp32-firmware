@@ -19,7 +19,7 @@
 
 #include "authentication.h"
 
-#include "Arduino.h"
+#include <Arduino.h>
 
 #include "api.h"
 #include "event_log.h"
