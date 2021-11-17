@@ -96,10 +96,10 @@ static esp_err_t ws_handler(httpd_req_t *req)
             return ESP_OK;
         }
 
-        struct httpd_req_aux   *aux = (struct httpd_req_aux *) req->aux;
+        struct httpd_req_aux *aux = (struct httpd_req_aux *)req->aux;
         if (aux->ws_handshake_detect) {
             //logger.printfln("Responding WS handshake to sock %d", aux->sd->fd);
-            struct httpd_data *hd = (struct httpd_data *) server.httpd;
+            struct httpd_data *hd = (struct httpd_data *)server.httpd;
             esp_err_t ret = httpd_ws_respond_server_handshake(&hd->hd_req, nullptr);
             if (ret != ESP_OK) {
                 return ret;
@@ -113,7 +113,7 @@ static esp_err_t ws_handler(httpd_req_t *req)
             //logger.printfln("Handshake done, the new connection was opened");
 
             int sock = httpd_req_to_sockfd(req);
-            WebSockets *ws = (WebSockets*)req->user_ctx;
+            WebSockets *ws = (WebSockets *)req->user_ctx;
             wss_open_fd(ws->keep_alive, sock);
 
             if (ws->on_client_connect_fn) {
@@ -155,7 +155,7 @@ static esp_err_t ws_handler(httpd_req_t *req)
         // If it was a PONG, update the keep-alive
         //logger.printfln("Received PONG message");
         free(buf);
-        WebSockets *ws = (WebSockets*)req->user_ctx;
+        WebSockets *ws = (WebSockets *)req->user_ctx;
         return wss_keep_alive_client_is_active(ws->keep_alive, httpd_req_to_sockfd(req));
     } else if (ws_pkt.type == HTTPD_WS_TYPE_TEXT) {
         // If it was a TEXT message, print it
@@ -171,7 +171,7 @@ static esp_err_t ws_handler(httpd_req_t *req)
     } else if (ws_pkt.type == HTTPD_WS_TYPE_CLOSE) {
         // If it was a CLOSE, remove it from the keep-alive list
         free(buf);
-        WebSockets *ws = (WebSockets*)req->user_ctx;
+        WebSockets *ws = (WebSockets *)req->user_ctx;
         wss_close_fd(ws->keep_alive, httpd_req_to_sockfd(req));
         return ESP_OK;
     }
@@ -188,13 +188,13 @@ bool client_not_alive_cb(wss_keep_alive_t h, int fd)
 }
 
 static void work(void *arg) {
-    while(!work_queue.empty()) {
+    while (!work_queue.empty()) {
         ws_work_item wi = work_queue.front();
         {
             std::lock_guard<std::mutex> lock{work_queue_mutex};
             work_queue.pop_front();
         }
-        if(httpd_ws_get_fd_info(wi.hd, wi.fd) != HTTPD_WS_CLIENT_WEBSOCKET) {
+        if (httpd_ws_get_fd_info(wi.hd, wi.fd) != HTTPD_WS_CLIENT_WEBSOCKET) {
             wi.clear();
             continue;
         }
@@ -202,12 +202,12 @@ static void work(void *arg) {
         httpd_ws_frame_t ws_pkt;
         memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
 
-        ws_pkt.payload = (uint8_t*)wi.payload;
+        ws_pkt.payload = (uint8_t *)wi.payload;
         ws_pkt.len = wi.payload_len;
         ws_pkt.type = wi.payload_len == 0 ? HTTPD_WS_TYPE_PING : HTTPD_WS_TYPE_TEXT;
 
         auto result = httpd_ws_send_frame_async(wi.hd, wi.fd, &ws_pkt);
-        if(result != ESP_OK) {
+        if (result != ESP_OK) {
             printf("failed to send frame: %d\n", result);
         }
 
@@ -233,10 +233,10 @@ void WebSocketsClient::send(const char* payload, size_t payload_len)
 
 void WebSockets::sendToClient(const char *payload, size_t payload_len, int sock) {
     httpd_handle_t httpd = server.httpd;
-    int *payload_ref_counter = (int*)malloc(sizeof(int));
+    int *payload_ref_counter = (int *)malloc(sizeof(int));
     if (payload_ref_counter == nullptr)
         return;
-    char *payload_copy = (char*)malloc(payload_len * sizeof(char));
+    char *payload_copy = (char *)malloc(payload_len * sizeof(char));
     if (payload_copy == nullptr) {
         free(payload_ref_counter);
         return;
@@ -259,11 +259,10 @@ void WebSockets::sendToClient(const char *payload, size_t payload_len, int sock)
     }
 }
 
-
 bool WebSockets::haveActiveClient() {
     httpd_handle_t httpd = server.httpd;
     size_t clients = 7;
-    int    client_fds[7];
+    int client_fds[7];
 
     auto result = httpd_get_client_list(httpd, &clients, client_fds);
     if (result != ESP_OK) {
@@ -277,7 +276,7 @@ bool WebSockets::haveActiveClient() {
     int unknown_clients = 0;
     //printf("payload (len: %d) after copy: %s\n", payload_len, payload_copy);
 
-    for (size_t i=0; i < clients; ++i)
+    for (size_t i = 0; i < clients; ++i)
         if (httpd_ws_get_fd_info(httpd, client_fds[i]) == HTTPD_WS_CLIENT_WEBSOCKET)
             ++active_clients;
         else if (httpd_ws_get_fd_info(httpd, client_fds[i]) == HTTPD_WS_CLIENT_HTTP)
@@ -293,7 +292,7 @@ bool WebSockets::haveActiveClient() {
 void WebSockets::sendToAllOwned(char *payload, size_t payload_len) {
     httpd_handle_t httpd = server.httpd;
     size_t clients = 7;
-    int    client_fds[7];
+    int client_fds[7];
 
     auto result = httpd_get_client_list(httpd, &clients, client_fds);
     if (result != ESP_OK) {
@@ -307,7 +306,7 @@ void WebSockets::sendToAllOwned(char *payload, size_t payload_len) {
     int unknown_clients = 0;
     //printf("payload (len: %d) after copy: %s\n", payload_len, payload_copy);
 
-    for (size_t i=0; i < clients; ++i)
+    for (size_t i = 0; i < clients; ++i)
         if (httpd_ws_get_fd_info(httpd, client_fds[i]) == HTTPD_WS_CLIENT_WEBSOCKET)
             ++active_clients;
         else if (httpd_ws_get_fd_info(httpd, client_fds[i]) == HTTPD_WS_CLIENT_HTTP)
@@ -326,14 +325,14 @@ void WebSockets::sendToAllOwned(char *payload, size_t payload_len) {
     if (active_clients == 0)
         return;
 
-    int *payload_ref_counter = (int*)malloc(sizeof(int));
+    int *payload_ref_counter = (int *)malloc(sizeof(int));
     if (payload_ref_counter == nullptr)
         return;
 
     *payload_ref_counter = active_clients;
 
     std::lock_guard<std::mutex> lock{work_queue_mutex};
-    for (size_t i=0; i < clients; ++i) {
+    for (size_t i = 0; i < clients; ++i) {
         int sock = client_fds[i];
         if (httpd_ws_get_fd_info(httpd, sock) != HTTPD_WS_CLIENT_WEBSOCKET) {
             continue;
@@ -350,7 +349,7 @@ void WebSockets::sendToAllOwned(char *payload, size_t payload_len) {
 void WebSockets::sendToAll(const char *payload, size_t payload_len) {
     httpd_handle_t httpd = server.httpd;
     size_t clients = 7;
-    int    client_fds[7];
+    int client_fds[7];
 
     auto result = httpd_get_client_list(httpd, &clients, client_fds);
     if (result != ESP_OK) {
@@ -364,7 +363,7 @@ void WebSockets::sendToAll(const char *payload, size_t payload_len) {
     int unknown_clients = 0;
     //printf("payload (len: %d) after copy: %s\n", payload_len, payload_copy);
 
-    for (size_t i=0; i < clients; ++i)
+    for (size_t i = 0; i < clients; ++i)
         if (httpd_ws_get_fd_info(httpd, client_fds[i]) == HTTPD_WS_CLIENT_WEBSOCKET)
             ++active_clients;
         else if (httpd_ws_get_fd_info(httpd, client_fds[i]) == HTTPD_WS_CLIENT_HTTP)
@@ -383,13 +382,13 @@ void WebSockets::sendToAll(const char *payload, size_t payload_len) {
     if (active_clients == 0)
         return;
 
-    int *payload_ref_counter = (int*)malloc(sizeof(int));
+    int *payload_ref_counter = (int *)malloc(sizeof(int));
     if (payload_ref_counter == nullptr)
         return;
 
     *payload_ref_counter = active_clients;
 
-    char *payload_copy = (char*)malloc(payload_len * sizeof(char));
+    char *payload_copy = (char *)malloc(payload_len * sizeof(char));
     if (payload_copy == nullptr) {
         free(payload_ref_counter);
         return;
@@ -398,7 +397,7 @@ void WebSockets::sendToAll(const char *payload, size_t payload_len) {
     memcpy(payload_copy, payload, payload_len);
 
     std::lock_guard<std::mutex> lock{work_queue_mutex};
-    for (size_t i=0; i < clients; ++i) {
+    for (size_t i = 0; i < clients; ++i) {
         int sock = client_fds[i];
         if (httpd_ws_get_fd_info(httpd, sock) != HTTPD_WS_CLIENT_WEBSOCKET) {
             continue;
@@ -417,7 +416,7 @@ void WebSockets::start(const char *uri)
     wss_keep_alive_config_t keep_alive_config = {};
     //As defined in KEEP_ALIVE_CONFIG_DEFAULT()
     keep_alive_config.task_stack_size = 2048;
-    keep_alive_config.task_prio = tskIDLE_PRIORITY+1;
+    keep_alive_config.task_prio = tskIDLE_PRIORITY + 1;
     keep_alive_config.keep_alive_period_ms = 5000;
     keep_alive_config.not_alive_after_ms = 10000;
 
@@ -436,7 +435,6 @@ void WebSockets::start(const char *uri)
     ws.user_ctx = this;
     ws.is_websocket = false;
     ws.handle_ws_control_frames = true;
-
 
     httpd_register_uri_handler(httpd, &ws);
     wss_keep_alive_set_user_ctx(keep_alive, httpd);

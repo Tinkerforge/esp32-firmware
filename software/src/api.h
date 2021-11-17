@@ -45,7 +45,6 @@ struct CommandRegistration {
     String blockedReason;
 };
 
-
 class IAPIBackend {
 public:
     virtual void addCommand(const CommandRegistration &reg) = 0;

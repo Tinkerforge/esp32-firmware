@@ -36,12 +36,12 @@ typedef struct wss_keep_alive_storage {
     wss_check_client_alive_cb_t client_not_alive_cb;
     size_t keep_alive_period_ms;
     size_t not_alive_after_ms;
-    void * user_ctx;
+    void *user_ctx;
     QueueHandle_t q;
     client_fd_action_t clients[];
 } wss_keep_alive_storage_t;
 
-typedef struct wss_keep_alive_storage* wss_keep_alive_t;
+typedef struct wss_keep_alive_storage *wss_keep_alive_t;
 
 static const char *TAG = "wss_keep_alive";
 
@@ -54,7 +54,7 @@ static uint64_t _tick_get_ms(void)
 static uint64_t get_max_delay(wss_keep_alive_t h)
 {
     int64_t check_after_ms = 30000; // max delay, no need to check anyone
-    for (int i=0; i<h->max_clients; ++i) {
+    for (int i = 0; i < h->max_clients; ++i) {
         if (h->clients[i].type == CLIENT_ACTIVE) {
             uint64_t check_this_client_at = h->clients[i].last_seen + h->keep_alive_period_ms;
             if (check_this_client_at < check_after_ms + _tick_get_ms()) {
@@ -71,7 +71,7 @@ static uint64_t get_max_delay(wss_keep_alive_t h)
 
 static bool update_client(wss_keep_alive_t h, int sockfd, uint64_t timestamp)
 {
-    for (int i=0; i<h->max_clients; ++i) {
+    for (int i = 0; i < h->max_clients; ++i) {
         if (h->clients[i].type == CLIENT_ACTIVE && h->clients[i].fd == sockfd) {
             h->clients[i].last_seen = timestamp;
             return true;
@@ -82,7 +82,7 @@ static bool update_client(wss_keep_alive_t h, int sockfd, uint64_t timestamp)
 
 static bool remove_client(wss_keep_alive_t h, int sockfd)
 {
-    for (int i=0; i<h->max_clients; ++i) {
+    for (int i = 0; i < h->max_clients; ++i) {
         if (h->clients[i].type == CLIENT_ACTIVE && h->clients[i].fd == sockfd) {
             h->clients[i].type = NO_CLIENT;
             h->clients[i].fd = -1;

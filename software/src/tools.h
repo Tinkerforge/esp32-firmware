@@ -34,7 +34,7 @@ String update_config(Config &cfg, String config_name, JsonVariant &json);
 
 void read_efuses(uint32_t *ret_uid_numeric, char *ret_uid_string, char *ret_passphrase_string);
 
-int check(int rc,const char *msg);
+int check(int rc, const char *msg);
 
 bool mount_or_format_spiffs();
 

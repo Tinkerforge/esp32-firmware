@@ -23,7 +23,6 @@
 
 #include <functional>
 
-
 #include "keep_alive.h"
 
 class WebSockets;
@@ -32,7 +31,7 @@ struct WebSocketsClient {
     int fd;
     WebSockets *ws;
 
-    void send(const char* payload, size_t payload_len);
+    void send(const char *payload, size_t payload_len);
 };
 
 class WebSockets {

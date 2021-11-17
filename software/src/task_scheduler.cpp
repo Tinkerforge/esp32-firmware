@@ -87,7 +87,7 @@ void TaskScheduler::loop() {
 
     current_scheduler_state = "done running task";
 
-    if(task.once) {
+    if (task.once) {
         current_scheduler_state = "task ran once";
         return;
     }
@@ -102,8 +102,7 @@ void TaskScheduler::loop() {
     current_scheduler_state = "end loop";
 }
 
-
-void TaskScheduler::scheduleOnce(const char *taskName, std::function<void(void)> &&fn, uint32_t delay){
+void TaskScheduler::scheduleOnce(const char *taskName, std::function<void(void)> &&fn, uint32_t delay) {
     std::lock_guard<std::mutex> l{this->task_mutex};
     tasks.emplace(taskName, fn, delay, 0, true);
 }

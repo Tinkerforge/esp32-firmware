@@ -58,7 +58,7 @@ void API::addCommand(String path, Config *config, std::initializer_list<String> 
 {
     commands.push_back({path, config, callback, keys_to_censor_in_debug_report, is_action, ""});
 
-    for (auto* backend: this->backends) {
+    for (auto *backend : this->backends) {
         backend->addCommand(commands[commands.size() - 1]);
     }
 }
@@ -66,7 +66,7 @@ void API::addCommand(String path, Config *config, std::initializer_list<String> 
 void API::addState(String path, Config *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms)
 {
     states.push_back({path, config, keys_to_censor, interval_ms, millis()});
-    for (auto* backend: this->backends) {
+    for (auto *backend : this->backends) {
         backend->addState(states[states.size() - 1]);
     }
 }
@@ -108,7 +108,7 @@ bool API::addPersistentConfig(String path, Config *config, std::initializer_list
 
 void API::blockCommand(String path, String reason)
 {
-    for(auto &reg: commands) {
+    for (auto &reg : commands) {
         if (reg.path != path)
             continue;
         reg.blockedReason = reason;
@@ -122,7 +122,7 @@ void API::unblockCommand(String path)
 
 String API::getCommandBlockedReason(String path)
 {
-    for(auto &reg: commands) {
+    for (auto &reg : commands) {
         if (reg.path != path)
             continue;
         return reg.blockedReason;
@@ -143,15 +143,15 @@ bool API::restorePersistentConfig(String path, Config *config)
     path.replace('/', '_');
     String filename = String("/") + path;
 
-    if(!SPIFFS.exists(filename)) {
+    if (!SPIFFS.exists(filename)) {
         // We have to migrate from the old naming schema here
         // /xyz.json.tmp is now /.xyz
         // /xyz.json is now /xyz
 
-        if(SPIFFS.exists(filename + ".json.tmp"))
+        if (SPIFFS.exists(filename + ".json.tmp"))
             SPIFFS.remove(filename + ".json.tmp");
 
-        if(!SPIFFS.exists(filename + ".json"))
+        if (!SPIFFS.exists(filename + ".json"))
             return false;
 
         logger.printfln("Migrating config file %s to %s.", (filename + ".json").c_str(), filename.c_str());
@@ -161,7 +161,7 @@ bool API::restorePersistentConfig(String path, Config *config)
     File file = SPIFFS.open(filename);
     String error = config->update_from_file(file);
     file.close();
-    if(error != "")
+    if (error != "")
         logger.printfln("Failed to restore persistent config %s: %s", path.c_str(), error.c_str());
     return error == "";
 }
@@ -171,9 +171,9 @@ void API::registerDebugUrl(WebServer *server) {
 
         String result = "{\"uptime\": ";
         result += String(millis());
-        result += ",\n \"free_heap_bytes\":" ;
+        result += ",\n \"free_heap_bytes\":";
         result += ESP.getFreeHeap();
-        result += ",\n \"largest_free_heap_block\":" ;
+        result += ",\n \"largest_free_heap_block\":";
         result += ESP.getMaxAllocHeap();
 
         result += ",\n \"devices\": [";
@@ -181,16 +181,16 @@ void API::registerDebugUrl(WebServer *server) {
         char uid[7] = {0};
         char pos = 0;
         uint16_t did = 0;
-        while(tf_hal_get_device_info(&hal, i, uid, &pos, &did) == TF_E_OK) {
+        while (tf_hal_get_device_info(&hal, i, uid, &pos, &did) == TF_E_OK) {
             char buf[100] = {0};
-            snprintf(buf, sizeof(buf), "%c{\"UID\":\"%s\", \"DID\":%u, \"port\":\"%c\"}", i == 0 ? ' ': ',', uid, did, pos);
+            snprintf(buf, sizeof(buf), "%c{\"UID\":\"%s\", \"DID\":%u, \"port\":\"%c\"}", i == 0 ? ' ' : ',', uid, did, pos);
             result += buf;
             ++i;
         }
         result += "]";
 
         result += ",\n \"error_counters\": [";
-        for(char c = 'A'; c <= 'F'; ++c) {
+        for (char c = 'A'; c <= 'F'; ++c) {
             uint32_t spitfp_checksum, spitfp_frame, tfp_frame, tfp_unexpected;
 
             tf_hal_get_error_counters(&hal, c, &spitfp_checksum, &spitfp_frame, &tfp_frame, &tfp_unexpected);
@@ -204,14 +204,14 @@ void API::registerDebugUrl(WebServer *server) {
         }
         result += "]";
 
-        for(auto &reg : states) {
+        for (auto &reg : states) {
             result += ",\n \"";
             result += reg.path;
             result += "\": ";
             result += reg.config->to_string_except(reg.keys_to_censor);
         }
 
-        for(auto &reg: commands) {
+        for (auto &reg : commands) {
             result += ",\n \"";
             result += reg.path;
             result += "\": ";
@@ -240,7 +240,7 @@ String API::callCommand(String path, Config::ConfUpdate payload)
 
         String error = reg.config->update(&payload);
         if (error == "")
-            task_scheduler.scheduleOnce((String("notify command update for ") + reg.path).c_str(), [reg](){reg.callback();}, 0);
+            task_scheduler.scheduleOnce((String("notify command update for ") + reg.path).c_str(), [reg]() { reg.callback(); }, 0);
         return error;
     }
     return String("Unknown command ") + path;
@@ -248,17 +248,17 @@ String API::callCommand(String path, Config::ConfUpdate payload)
 
 Config* API::getState(String path, bool log_if_not_found)
 {
-    for (auto &reg: states) {
-        if(reg.path != path)
+    for (auto &reg : states) {
+        if (reg.path != path)
             continue;
 
         return reg.config;
     }
 
-    if(log_if_not_found) {
+    if (log_if_not_found) {
         logger.printfln("Key %s not found. Contents are:", path.c_str());
-        for (auto &reg: states) {
-            logger.printfln("%s,",reg.path.c_str());
+        for (auto &reg : states) {
+            logger.printfln("%s,", reg.path.c_str());
         }
     }
     return nullptr;

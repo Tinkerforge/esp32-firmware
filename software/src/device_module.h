@@ -73,13 +73,13 @@ public:
         this->device_found = true;
 
         int result = ensure_matching_firmware(&hal, uid, device_name, module_name, firmware, firmware_len, &logger);
-        if(result != 0) {
+        if (result != 0) {
             logger.printfln("Flashing failed (%d)", result);
             return false;
         }
 
         result = init_function(&device, uid, &hal);
-        if(result != TF_E_OK) {
+        if (result != TF_E_OK) {
             logger.printfln("Failed to initialize %s bricklet (%d). Disabling %s support.", device_name, result, module_name);
             return false;
         }
@@ -101,25 +101,25 @@ public:
     }
 
     void loop() {
-        if(device_found && !initialized && deadline_elapsed(last_check + 10000)) {
+        if (device_found && !initialized && deadline_elapsed(last_check + 10000)) {
             last_check = millis();
-            if(!is_in_bootloader(TF_E_TIMEOUT))
-                //setup_device();
+            if (!is_in_bootloader(TF_E_TIMEOUT))
+                // setup_device();
                 setup_function();
         }
     }
 
     bool is_in_bootloader(int rc) {
-        if(rc != TF_E_TIMEOUT && rc != TF_E_NOT_SUPPORTED)
+        if (rc != TF_E_TIMEOUT && rc != TF_E_NOT_SUPPORTED)
             return false;
 
         uint8_t mode;
         int bootloader_rc = get_bootloader_mode_function(&device, &mode);
-        if(bootloader_rc != TF_E_OK) {
+        if (bootloader_rc != TF_E_OK) {
             return false;
         }
 
-        if(mode != BOOTLOADER_MODE_FIRMWARE) {
+        if (mode != BOOTLOADER_MODE_FIRMWARE) {
             initialized = false;
         }
 

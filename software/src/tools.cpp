@@ -85,12 +85,10 @@ String update_config(Config &cfg, String config_name, JsonVariant &json) {
     return error;
 }
 
-
 void read_efuses(uint32_t *ret_uid_numeric, char *ret_uid_string, char *ret_passphrase_string) {
     uint32_t blocks[8] = {0};
 
-    for(int32_t block3Address=EFUSE_BLK3_RDATA0_REG, i = 0; block3Address<=EFUSE_BLK3_RDATA7_REG; block3Address+=4, ++i)
-    {
+    for (int32_t block3Address = EFUSE_BLK3_RDATA0_REG, i = 0; block3Address <= EFUSE_BLK3_RDATA7_REG; block3Address += 4, ++i) {
         blocks[i] = REG_GET_FIELD(block3Address, EFUSE_BLK3_DOUT0);
     }
 
@@ -134,12 +132,12 @@ void read_efuses(uint32_t *ret_uid_numeric, char *ret_uid_string, char *ret_pass
     uid = blocks[7];
 
     char buf[7] = {0};
-    for(int i = 0; i < 4; ++i) {
-        if(i != 0)
+    for (int i = 0; i < 4; ++i) {
+        if (i != 0)
             ret_passphrase_string[i * 5 - 1] = '-';
 
         tf_base58_encode(passphrase[i], buf);
-        if(strnlen(buf, sizeof(buf)/sizeof(buf[0])) != 4) {
+        if (strnlen(buf, sizeof(buf) / sizeof(buf[0])) != 4) {
             logger.printfln("efuse error: malformed passphrase!");
         } else {
             memcpy(ret_passphrase_string + i * 5, buf, 4);
@@ -148,7 +146,7 @@ void read_efuses(uint32_t *ret_uid_numeric, char *ret_uid_string, char *ret_pass
     tf_base58_encode(uid, ret_uid_string);
 }
 
-int check(int rc,const char *msg) {
+int check(int rc, const char *msg) {
     if (rc >= 0)
         return rc;
     logger.printfln("%lu Failed to %s rc: %s", millis(), msg, tf_hal_strerror(rc));
@@ -165,7 +163,7 @@ bool mount_or_format_spiffs() {
     };
 
     esp_err_t err = esp_vfs_spiffs_register(&conf);
-    if(err == ESP_FAIL) {
+    if (err == ESP_FAIL) {
         logger.printfln("SPIFFS is not formatted. Formatting now. This will take about 30 seconds.");
         SPIFFS.format();
     } else {
@@ -186,7 +184,7 @@ String read_or_write_config_version(String &firmware_version) {
         deserializeJson(doc, file);
         file.close();
 
-        spiffs_version = doc["spiffs"].as<const char*>();
+        spiffs_version = doc["spiffs"].as<const char *>();
     } else {
         File file = SPIFFS.open("/spiffs.json", "w");
         file.printf("{\"spiffs\": \"%s\"}", firmware_version.c_str());
@@ -196,10 +194,9 @@ String read_or_write_config_version(String &firmware_version) {
     return spiffs_version;
 }
 
-
 static bool wait_for_bootloader_mode(TF_Unknown *bricklet, int target_mode) {
     uint8_t mode = 255;
-    for(int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 10; ++i) {
         if (tf_unknown_get_bootloader_mode(bricklet, &mode) != TF_E_OK) {
             continue;
         }
@@ -216,7 +213,7 @@ static bool flash_plugin(TF_Unknown *bricklet, const uint8_t *firmware, size_t f
     logger->printfln("    Setting bootloader mode to bootloader.");
     tf_unknown_set_bootloader_mode(bricklet, 0, nullptr);
     logger->printfln("    Waiting for bootloader...");
-    if(!wait_for_bootloader_mode(bricklet, 0)) {
+    if (!wait_for_bootloader_mode(bricklet, 0)) {
         logger->printfln("    Timed out, flashing failed");
         return false;
     }
@@ -233,17 +230,17 @@ static bool flash_plugin(TF_Unknown *bricklet, const uint8_t *firmware, size_t f
         write_footer = true;
     }
 
-    for(int position = 0; position < last_packet; ++position) {
+    for (int position = 0; position < last_packet; ++position) {
         int start = position * 64;
-        if(tf_unknown_set_write_firmware_pointer(bricklet, start) != TF_E_OK) {
-            if(tf_unknown_set_write_firmware_pointer(bricklet, start) != TF_E_OK) {
+        if (tf_unknown_set_write_firmware_pointer(bricklet, start) != TF_E_OK) {
+            if (tf_unknown_set_write_firmware_pointer(bricklet, start) != TF_E_OK) {
                 logger->printfln("    Failed to set firmware pointer to %d", start);
                 return false;
             }
         }
 
-        if(tf_unknown_write_firmware(bricklet, const_cast<uint8_t *>(firmware + start), nullptr) != TF_E_OK) {
-            if(tf_unknown_write_firmware(bricklet, const_cast<uint8_t *>(firmware + start), nullptr) != TF_E_OK) {
+        if (tf_unknown_write_firmware(bricklet, const_cast<uint8_t *>(firmware + start), nullptr) != TF_E_OK) {
+            if (tf_unknown_write_firmware(bricklet, const_cast<uint8_t *>(firmware + start), nullptr) != TF_E_OK) {
                 logger->printfln("    Failed to write firmware at %d", start);
                 return false;
             }
@@ -251,17 +248,17 @@ static bool flash_plugin(TF_Unknown *bricklet, const uint8_t *firmware, size_t f
     }
 
     if (write_footer) {
-        for(int position = num_packets - 4; position < num_packets; ++position) {
+        for (int position = num_packets - 4; position < num_packets; ++position) {
             int start = position * 64;
-            if(tf_unknown_set_write_firmware_pointer(bricklet, start) != TF_E_OK) {
-                if(tf_unknown_set_write_firmware_pointer(bricklet, start) != TF_E_OK) {
+            if (tf_unknown_set_write_firmware_pointer(bricklet, start) != TF_E_OK) {
+                if (tf_unknown_set_write_firmware_pointer(bricklet, start) != TF_E_OK) {
                     logger->printfln("    (Footer) Failed to set firmware pointer to %d", start);
                     return false;
                 }
             }
 
-            if(tf_unknown_write_firmware(bricklet, const_cast<uint8_t *>(firmware + start), nullptr) != TF_E_OK) {
-                if(tf_unknown_write_firmware(bricklet, const_cast<uint8_t *>(firmware + start), nullptr) != TF_E_OK) {
+            if (tf_unknown_write_firmware(bricklet, const_cast<uint8_t *>(firmware + start), nullptr) != TF_E_OK) {
+                if (tf_unknown_write_firmware(bricklet, const_cast<uint8_t *>(firmware + start), nullptr) != TF_E_OK) {
                     logger->printfln("    (Footer) Failed to write firmware at %d", start);
                     return false;
                 }
@@ -289,7 +286,7 @@ static bool flash_firmware(TF_Unknown *bricklet, const uint8_t *firmware, size_t
         return false;
     }
 
-    if(!flash_plugin(bricklet, firmware, firmware_len, regular_plugin_upto, logger)) {
+    if (!flash_plugin(bricklet, firmware, firmware_len, regular_plugin_upto, logger)) {
         return false;
     }
 
@@ -302,7 +299,7 @@ static bool flash_firmware(TF_Unknown *bricklet, const uint8_t *firmware, size_t
             return false;
         }
         logger->printfln("    Status is 5, retrying.");
-        if(!flash_plugin(bricklet, firmware, firmware_len, regular_plugin_upto, logger)) {
+        if (!flash_plugin(bricklet, firmware, firmware_len, regular_plugin_upto, logger)) {
             return false;
         }
 
@@ -315,7 +312,7 @@ static bool flash_firmware(TF_Unknown *bricklet, const uint8_t *firmware, size_t
         }
     }
     logger->printfln("    Waiting for firmware...");
-    if(!wait_for_bootloader_mode(bricklet, 1)) {
+    if (!wait_for_bootloader_mode(bricklet, 1)) {
         logger->printfln("    Timed out, flashing failed");
         return false;
     }
@@ -344,7 +341,7 @@ int ensure_matching_firmware(TF_HAL *hal, const char *uid, const char* name, con
     }
 
     auto result = tf_unknown_create(&bricklet, uid, hal, port_id, inventory_index);
-    if(result != TF_E_OK) {
+    if (result != TF_E_OK) {
         logger->printfln("%s init failed (rc %d). Disabling %s support.", name, result, purpose);
         return -1;
     }
@@ -352,7 +349,7 @@ int ensure_matching_firmware(TF_HAL *hal, const char *uid, const char* name, con
     uint8_t firmware_version[3] = {0};
 
     result = tf_unknown_get_identity(&bricklet, nullptr, nullptr, nullptr, nullptr, firmware_version, nullptr);
-    if(result != TF_E_OK) {
+    if (result != TF_E_OK) {
         logger->printfln("%s get identity failed (rc %d). Disabling %s support.", name, result, purpose);
         return -1;
     }
@@ -364,7 +361,7 @@ int ensure_matching_firmware(TF_HAL *hal, const char *uid, const char* name, con
     };
 
     bool flash_required = force;
-    for(int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 3; ++i) {
         // Intentionally use != here: we also want to downgrade the bricklet firmware if the ESP firmware embeds an older one.
         // This makes sure, that the interfaces fit.
         flash_required |= firmware_version[i] != embedded_firmware_version[i];
@@ -375,7 +372,7 @@ int ensure_matching_firmware(TF_HAL *hal, const char *uid, const char* name, con
                       name,
                       firmware_version[0], firmware_version[1], firmware_version[2],
                       embedded_firmware_version[0], embedded_firmware_version[1], embedded_firmware_version[2]);
-        if(!flash_firmware(&bricklet, firmware, firmware_len, logger)) {
+        if (!flash_firmware(&bricklet, firmware, firmware_len, logger)) {
             logger->printfln("%s flashing failed. Disabling %s support.", name, purpose);
             return -1;
         }

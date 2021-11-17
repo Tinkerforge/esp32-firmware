@@ -58,9 +58,9 @@ struct UserCtx {
     WebServerHandler *handler;
 };
 
-bool authenticate(WebServerRequest req, const char * username, const char * password) {
+bool authenticate(WebServerRequest req, const char *username, const char *password) {
     String auth = req.header("Authorization");
-    if(auth == "") {
+    if (auth == "") {
         return false;
     }
 
@@ -73,7 +73,7 @@ bool authenticate(WebServerRequest req, const char * username, const char * pass
 }
 
 static esp_err_t low_level_handler(httpd_req_t *req) {
-    auto ctx = (UserCtx *) req->user_ctx;
+    auto ctx = (UserCtx *)req->user_ctx;
     auto request = WebServerRequest{req};
     if (ctx->server->username != "" && ctx->server->password != "" && !authenticate(request, ctx->server->username.c_str(), ctx->server->password.c_str())) {
         if (ctx->server->on_not_authorized) {
@@ -117,7 +117,7 @@ static const size_t SCRATCH_BUFSIZE = 4096;
 static uint8_t scratch_buf[SCRATCH_BUFSIZE] = {0};
 
 static esp_err_t low_level_upload_handler(httpd_req_t *req) {
-    auto ctx = (UserCtx *) req->user_ctx;
+    auto ctx = (UserCtx *)req->user_ctx;
     auto request = WebServerRequest{req};
     if (ctx->server->username != "" && ctx->server->password != "" && !authenticate(request, ctx->server->username.c_str(), ctx->server->password.c_str())) {
         if (ctx->server->on_not_authorized) {
@@ -133,7 +133,7 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req) {
     size_t index = 0;
 
     while (remaining > 0) {
-        received = httpd_req_recv(req, (char*)scratch_buf, MIN(remaining, SCRATCH_BUFSIZE));
+        received = httpd_req_recv(req, (char *)scratch_buf, MIN(remaining, SCRATCH_BUFSIZE));
         // Retry if timeout occurred
         if (received == HTTPD_SOCK_ERR_TIMEOUT) {
             continue;
@@ -146,7 +146,7 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req) {
         }
 
         remaining -= received;
-        if(!ctx->handler->uploadCallback(request, "not implemented", index, scratch_buf, received, remaining == 0)) {
+        if (!ctx->handler->uploadCallback(request, "not implemented", index, scratch_buf, received, remaining == 0)) {
             return ESP_FAIL;
         }
 
@@ -315,7 +315,7 @@ void WebServerRequest::send(uint16_t code, const char *content_type, const char 
             nodelay = 0;
             if (setsockopt(ra->sd->fd, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay)) < 0) {
                 /* If failed to turn off TCP_NODELAY, throw error and
-                * return failure to signal for socket closure */
+                 * return failure to signal for socket closure */
                 logger.printfln("error calling setsockopt : %d", errno);
                 result = ESP_ERR_INVALID_STATE;
             }
@@ -420,6 +420,6 @@ int WebServerRequest::receive(char *buf, size_t buf_len)
 }
 
 WebServerRequest::WebServerRequest(httpd_req_t *req, bool keep_alive) : req(req) {
-    if(!keep_alive)
+    if (!keep_alive)
         this->addResponseHeader("Connection", "close");
 }

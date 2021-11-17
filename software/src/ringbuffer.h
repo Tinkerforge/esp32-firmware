@@ -38,7 +38,7 @@ public:
             // Allocate up to one AlignedT more, as we need to store at least one T in it.
             buf_size += sizeof(AlignedT) - (buf_size % sizeof(AlignedT));
         }
-        buffer = (AlignedT*) malloc_fn(buf_size);
+        buffer = (AlignedT *)malloc_fn(buf_size);
     }
 
     void clear() {
@@ -51,7 +51,7 @@ public:
     }
 
     size_t used() {
-        if(end < start) {
+        if (end < start) {
             return SIZE + end - start;
         }
 
@@ -76,7 +76,7 @@ public:
         AlignedT write_mask = bits << (buffer_offset * 8 * sizeof(T));
         AlignedT keep_mask = ~write_mask;
 
-        buffer[buffer_idx] = (buffer[buffer_idx] & keep_mask) | (((AlignedT) val) << (buffer_offset * 8 * sizeof(T)));
+        buffer[buffer_idx] = (buffer[buffer_idx] & keep_mask) | (((AlignedT)val) << (buffer_offset * 8 * sizeof(T)));
     }
 
     T read_aligned(size_t idx) {
@@ -96,40 +96,40 @@ public:
     void push(T val) {
         write_aligned(end, val);
         end++;
-        if(end >= SIZE) {
+        if (end >= SIZE) {
             end = 0;
         }
 
         // This is true if we've just overwritten the oldest item
-        if(end == start) {
+        if (end == start) {
             ++start;
-            if(start >= SIZE) {
+            if (start >= SIZE) {
                 start = 0;
             }
         }
     }
-    bool pop(T* val) {
+    bool pop(T *val) {
         // Silence Wmaybe-uninitialized in the _read_[type] functions.
         *val = 0;
 
-        if(used() == 0) {
+        if (used() == 0) {
             return false;
         }
 
         *val = read_aligned(start);
         start++;
-        if(start >= SIZE) {
+        if (start >= SIZE) {
             start = 0;
         }
 
         return true;
     }
 
-    bool peek(T* val) {
+    bool peek(T *val) {
         // Silence Wmaybe-uninitialized in the _read_[type] functions.
         *val = 0;
 
-        if(used() == 0) {
+        if (used() == 0) {
             return false;
         }
 
@@ -137,11 +137,11 @@ public:
         return true;
     }
 
-    bool peek_offset(T* val, size_t offset) {
+    bool peek_offset(T *val, size_t offset) {
         // Silence Wmaybe-uninitialized in the _read_[type] functions.
         *val = 0;
 
-        if(used() <= offset) {
+        if (used() <= offset) {
             return false;
         }
 
@@ -151,9 +151,9 @@ public:
         return true;
     }
 
-    //index of first valid elemnt
-	size_t start;
-    //index of first invalid element
-	size_t end;
-	AlignedT *buffer;
+    // index of first valid elemnt
+    size_t start;
+    // index of first invalid element
+    size_t end;
+    AlignedT *buffer;
 };

@@ -48,11 +48,11 @@ struct recursive_validator {
         // This ensures, that the array's validator may assume, that its
         // entries itself are valid. Then only dependencies between (valid) entries
         // have to be validated.
-        for(Config &elem : x.value)
-            if(!strict_variant::apply_visitor(recursive_validator{}, elem.value))
+        for (Config &elem : x.value)
+            if (!strict_variant::apply_visitor(recursive_validator{}, elem.value))
                 return false;
 
-        if(!x.validator(x))
+        if (!x.validator(x))
             return false;
 
         return true;
@@ -62,11 +62,11 @@ struct recursive_validator {
         // This ensures, that the object's validator may assume, that its
         // entries itself are valid. Then only dependencies between (valid) entries
         // have to be validated.
-        for(std::pair<String, Config> &elem : x.value)
-            if(!strict_variant::apply_visitor(recursive_validator{}, elem.second.value))
+        for (std::pair<String, Config> &elem : x.value)
+            if (!strict_variant::apply_visitor(recursive_validator{}, elem.second.value))
                 return false;
 
-        if(!x.validator(x))
+        if (!x.validator(x))
             return false;
 
         return true;
@@ -94,12 +94,12 @@ struct to_json {
     }
     void operator()(Config::ConfArray &x) {
         JsonArray arr = insertHere.as<JsonArray>();
-        for(size_t i = 0; i < x.value.size(); ++i) {
+        for (size_t i = 0; i < x.value.size(); ++i) {
             Config &child = x.value[i];
 
-            if(child.is<Config::ConfObject>()) {
+            if (child.is<Config::ConfObject>()) {
                 arr.createNestedObject();
-            } else if(child.is<Config::ConfArray>()) {
+            } else if (child.is<Config::ConfArray>()) {
                 arr.createNestedArray();
             } else {
                 arr.add(0);
@@ -110,13 +110,13 @@ struct to_json {
     }
     void operator()(Config::ConfObject &x) {
         JsonObject obj = insertHere.as<JsonObject>();
-        for(size_t i = 0; i < x.value.size(); ++i) {
+        for (size_t i = 0; i < x.value.size(); ++i) {
             String &key = x.value[i].first;
             Config &child = x.value[i].second;
 
-            if(child.is<Config::ConfObject>()) {
+            if (child.is<Config::ConfObject>()) {
                 obj.createNestedObject(key);
-            } else if(child.is<Config::ConfArray>()) {
+            } else if (child.is<Config::ConfArray>()) {
                 obj.createNestedArray(key);
             } else {
                 obj.getOrAddMember(key);
@@ -125,7 +125,7 @@ struct to_json {
             strict_variant::apply_visitor(to_json{obj[key], keys_to_censor}, child.value);
         }
 
-        for(const String &key : keys_to_censor)
+        for (const String &key : keys_to_censor)
             if (obj.containsKey(key))
                 obj[key] = nullptr;
     }
@@ -151,14 +151,14 @@ struct json_length_visitor {
         return 0;
     }
     size_t operator()(std::nullptr_t x) {
-        return 10; //TODO: is this still necessary?
+        return 10; // TODO: is this still necessary?
     }
     size_t operator()(Config::ConfArray &x) {
         return strict_variant::apply_visitor(json_length_visitor{}, x.prototype[0].value) * x.maxElements + JSON_ARRAY_SIZE(x.maxElements);
     }
     size_t operator()(Config::ConfObject &x) {
         size_t sum = 0;
-        for(size_t i = 0; i < x.value.size(); ++i) {
+        for (size_t i = 0; i < x.value.size(); ++i) {
             sum += x.value[i].first.length() + 1;
             size_t item_size = strict_variant::apply_visitor(json_length_visitor{}, x.value[i].second.value);
             // If the item size is 0 it is not an array or object.
@@ -172,53 +172,53 @@ struct json_length_visitor {
 
 struct from_json {
     String operator()(Config::ConfString &x) {
-        if(json_node.isNull())
+        if (json_node.isNull())
             return x.validator(x);
 
-        if(!json_node.is<String>())
+        if (!json_node.is<String>())
             return "JSON node was not a string.";
         x.value = json_node.as<String>();
         return x.validator(x);
     }
     String operator()(Config::ConfFloat &x) {
-        if(json_node.isNull())
+        if (json_node.isNull())
             return x.validator(x);
 
-        if(!json_node.is<float>())
+        if (!json_node.is<float>())
             return "JSON node was not a float.";
 
         // We don't allow setting float config values from an integer
         // to make sure, no additional rounding occurres.
         // To set a float config value to an integer value, for example 123.0 has to be used.
-        if(json_node.is<uint32_t>() || json_node.is<int32_t>())
+        if (json_node.is<uint32_t>() || json_node.is<int32_t>())
             return "JSON node was an integer. Please use f.e. 123.0 to set a float node to an integer value.";
 
         x.value = json_node.as<float>();
         return x.validator(x);
     }
     String operator()(Config::ConfInt &x) {
-        if(json_node.isNull())
+        if (json_node.isNull())
             return x.validator(x);
 
-        if(!json_node.is<int32_t>())
+        if (!json_node.is<int32_t>())
             return "JSON node was not a signed integer.";
         x.value = json_node.as<int32_t>();
         return x.validator(x);
     }
     String operator()(Config::ConfUint &x) {
-        if(json_node.isNull())
+        if (json_node.isNull())
             return x.validator(x);
 
-        if(!json_node.is<uint32_t>())
+        if (!json_node.is<uint32_t>())
             return "JSON node was not an unsigned integer.";
         x.value = json_node.as<uint32_t>();
         return x.validator(x);
     }
     String operator()(Config::ConfBool &x) {
-        if(json_node.isNull())
+        if (json_node.isNull())
             return x.validator(x);
 
-        if(!json_node.is<bool>())
+        if (!json_node.is<bool>())
             return "JSON node was not a boolean.";
         x.value = json_node.as<bool>();
         return x.validator(x);
@@ -227,42 +227,42 @@ struct from_json {
         return json_node.isNull() ? "" : "JSON null node was not null";
     }
     String operator()(Config::ConfArray &x) {
-        if(json_node.isNull())
+        if (json_node.isNull())
             return x.validator(x);
 
-        if(!json_node.is<JsonArray>())
+        if (!json_node.is<JsonArray>())
             return "JSON node was not an array.";
 
         JsonArray arr = json_node.as<JsonArray>();
 
         x.value.clear();
-        for(size_t i = 0; i < arr.size(); ++i) {
+        for (size_t i = 0; i < arr.size(); ++i) {
             x.value.push_back(x.prototype[0]);
             String inner_error = strict_variant::apply_visitor(from_json{arr[i], force_same_keys}, x.value[i].value);
-            if(inner_error != "")
+            if (inner_error != "")
                 return String("[") + i + "]" + inner_error;
         }
 
         return x.validator(x);
     }
     String operator()(Config::ConfObject &x) {
-        if(json_node.isNull())
+        if (json_node.isNull())
             return x.validator(x);
 
-        if(!json_node.is<JsonObject>())
+        if (!json_node.is<JsonObject>())
             return "JSON node was not an object.";
 
         JsonObject obj = json_node.as<JsonObject>();
 
-        if(force_same_keys && obj.size() != x.value.size())
+        if (force_same_keys && obj.size() != x.value.size())
             return String("JSON object had ") + obj.size() + " entries instead of the expected " + x.value.size();
 
-        for(size_t i = 0; i < x.value.size(); ++i) {
+        for (size_t i = 0; i < x.value.size(); ++i) {
             if (!force_same_keys && !obj.containsKey(x.value[i].first))
                 continue;
 
             String inner_error = strict_variant::apply_visitor(from_json{obj[x.value[i].first], force_same_keys}, x.value[i].second.value);
-            if(inner_error != "")
+            if (inner_error != "")
                 return String("[\"") + x.value[i].first + "\"]" + inner_error;
         }
 
@@ -273,49 +273,48 @@ struct from_json {
     bool force_same_keys;
 };
 
-
 struct from_update {
     String operator()(Config::ConfString &x) {
-        if(Config::containsNull(update))
+        if (Config::containsNull(update))
             return x.validator(x);
 
-        if(update->get<String>() == nullptr)
+        if (update->get<String>() == nullptr)
             return "ConfUpdate node was not a string.";
         x.value = *(update->get<String>());
         return x.validator(x);
     }
     String operator()(Config::ConfFloat &x) {
-        if(Config::containsNull(update))
+        if (Config::containsNull(update))
             return x.validator(x);
 
-        if(update->get<float>() == nullptr)
+        if (update->get<float>() == nullptr)
             return "ConfUpdate node was not a float.";
 
         // We don't allow setting float config values from an integer
         // to make sure, no additional rounding occurres.
         // To set a float config value to an integer value, for example 123.0 has to be used.
-        if(update->get<uint32_t>() != nullptr || update->get<int32_t>() != nullptr)
+        if (update->get<uint32_t>() != nullptr || update->get<int32_t>() != nullptr)
             return "ConfUpdate node was an integer. Please use f.e. 123.0 to set a float node to an integer value.";
 
         x.value = *(update->get<float>());
         return x.validator(x);
     }
     String operator()(Config::ConfInt &x) {
-        if(Config::containsNull(update))
+        if (Config::containsNull(update))
             return x.validator(x);
 
-        if(update->get<int32_t>() == nullptr)
+        if (update->get<int32_t>() == nullptr)
             return "ConfUpdate node was not a signed integer.";
         x.value = *(update->get<int32_t>());
         return x.validator(x);
     }
     String operator()(Config::ConfUint &x) {
-        if(Config::containsNull(update))
+        if (Config::containsNull(update))
             return x.validator(x);
 
         uint32_t new_val = 0;
-        if(update->get<uint32_t>() == nullptr) {
-            if(update->get<int32_t>() == nullptr || *(update->get<int32_t>()) < 0)
+        if (update->get<uint32_t>() == nullptr) {
+            if (update->get<int32_t>() == nullptr || *(update->get<int32_t>()) < 0)
                 return "ConfUpdate node was not an unsigned integer.";
 
             new_val = (uint32_t) *(update->get<int32_t>());
@@ -326,10 +325,10 @@ struct from_update {
         return x.validator(x);
     }
     String operator()(Config::ConfBool &x) {
-        if(Config::containsNull(update))
+        if (Config::containsNull(update))
             return x.validator(x);
 
-        if(update->get<bool>() == nullptr)
+        if (update->get<bool>() == nullptr)
             return "ConfUpdate node was not a boolean.";
         x.value = *(update->get<bool>());
         return x.validator(x);
@@ -338,51 +337,51 @@ struct from_update {
         return Config::containsNull(update) ? "" : "JSON null node was not null";
     }
     String operator()(Config::ConfArray &x) {
-        if(Config::containsNull(update))
+        if (Config::containsNull(update))
             return x.validator(x);
 
-        if(update->get<Config::ConfUpdateArray>() == nullptr)
+        if (update->get<Config::ConfUpdateArray>() == nullptr)
             return "ConfUpdate node was not an array.";
 
         Config::ConfUpdateArray *arr = update->get<Config::ConfUpdateArray>();
 
         x.value.clear();
-        for(size_t i = 0; i < arr->elements.size(); ++i) {
+        for (size_t i = 0; i < arr->elements.size(); ++i) {
             x.value.push_back(x.prototype[0]);
             String inner_error = strict_variant::apply_visitor(from_update{&arr->elements[i]}, x.value[i].value);
-            if(inner_error != "")
+            if (inner_error != "")
                 return String("[") + i + "]" + inner_error;
         }
 
         return x.validator(x);
     }
     String operator()(Config::ConfObject &x) {
-        if(Config::containsNull(update))
+        if (Config::containsNull(update))
             return x.validator(x);
 
-        if(update->get<Config::ConfUpdateObject>() == nullptr) {
+        if (update->get<Config::ConfUpdateObject>() == nullptr) {
             Serial.println(update->which());
             return "ConfUpdate node was not an object.";
         }
 
         Config::ConfUpdateObject *obj = update->get<Config::ConfUpdateObject>();
 
-        if(obj->elements.size() != x.value.size())
+        if (obj->elements.size() != x.value.size())
             return String("ConfUpdate object had ") + obj->elements.size() + " entries instead of the expected " + x.value.size();
 
-        for(size_t i = 0; i < x.value.size(); ++i) {
+        for (size_t i = 0; i < x.value.size(); ++i) {
             size_t obj_idx = 0xFFFFFFFF;
-            for(size_t j = 0; j < x.value.size(); ++j) {
-                if(obj->elements[j].first != x.value[i].first)
+            for (size_t j = 0; j < x.value.size(); ++j) {
+                if (obj->elements[j].first != x.value[i].first)
                     continue;
                 obj_idx = j;
                 break;
             }
-            if(obj_idx == 0xFFFFFFFF)
+            if (obj_idx == 0xFFFFFFFF)
                 return String("Key ") + x.value[i].first + String("not found in ConfUpdate object");
 
             String inner_error = strict_variant::apply_visitor(from_update{&obj->elements[obj_idx].second}, x.value[i].second.value);
-            if(inner_error != "")
+            if (inner_error != "")
                 return String("[\"") + x.value[i].first + "\"]" + inner_error;
         }
 
@@ -412,15 +411,15 @@ struct is_updated {
         return false;
     }
     bool operator()(const Config::ConfArray &x) const {
-        for(const Config &c : x.value) {
-            if(c.updated || strict_variant::apply_visitor(is_updated{}, c.value))
+        for (const Config &c : x.value) {
+            if (c.updated || strict_variant::apply_visitor(is_updated{}, c.value))
                 return true;
         }
         return false;
     }
     bool operator()(const Config::ConfObject &x) const {
-        for(const std::pair<String, Config> &c : x.value) {
-            if(c.second.updated || strict_variant::apply_visitor(is_updated{}, c.second.value))
+        for (const std::pair<String, Config> &c : x.value) {
+            if (c.second.updated || strict_variant::apply_visitor(is_updated{}, c.second.value))
                 return true;
         }
         return false;
@@ -435,13 +434,13 @@ struct set_updated_false {
     void operator()(Config::ConfBool &x) {}
     void operator()(std::nullptr_t x) {}
     void operator()(Config::ConfArray &x) {
-        for(Config &c : x.value) {
+        for (Config &c : x.value) {
             c.updated = false;
             strict_variant::apply_visitor(set_updated_false{}, c.value);
         }
     }
     void operator()(Config::ConfObject &x) {
-        for(std::pair<String, Config> &c : x.value) {
+        for (std::pair<String, Config> &c : x.value) {
             c.second.updated = false;
             strict_variant::apply_visitor(set_updated_false{}, c.second.value);
         }
@@ -531,7 +530,7 @@ Config *Config::get(String s) {
 }
 
 Config *Config::get(size_t i) {
-    if (!this->is<Config::ConfArray>()){
+    if (!this->is<Config::ConfArray>()) {
         logger.printfln("Config index %u not in this node: is not an array!", i);
         delay(100);
         return nullptr;
@@ -551,7 +550,7 @@ const Config *Config::get(String s) const {
 }
 
 const Config *Config::get(size_t i) const {
-    if (!this->is<Config::ConfArray>()){
+    if (!this->is<Config::ConfArray>()) {
         logger.printfln("Config index %u not in this node: is not an array!", i);
         delay(100);
         return nullptr;
@@ -646,8 +645,6 @@ String Config::update_from_file(File file) {
         this->updated = true;
     }
 
-
-
     return err;
 }
 
@@ -717,9 +714,9 @@ void Config::save_to_file(File file)
     DynamicJsonDocument doc(json_size());
 
     JsonVariant var;
-    if(is<Config::ConfObject>()) {
+    if (is<Config::ConfObject>()) {
         var = doc.to<JsonObject>();
-    } else if(is<Config::ConfArray>()) {
+    } else if (is<Config::ConfArray>()) {
         var = doc.to<JsonArray>();
     } else {
         var = doc.as<JsonVariant>();
@@ -734,9 +731,9 @@ void Config::write_to_stream(Print &output)
     DynamicJsonDocument doc(json_size());
 
     JsonVariant var;
-    if(is<Config::ConfObject>()) {
+    if (is<Config::ConfObject>()) {
         var = doc.to<JsonObject>();
-    } else if(is<Config::ConfArray>()) {
+    } else if (is<Config::ConfArray>()) {
         var = doc.to<JsonArray>();
     } else {
         var = doc.as<JsonVariant>();
@@ -753,9 +750,9 @@ String Config::to_string_except(std::initializer_list<String> keys_to_censor) {
     DynamicJsonDocument doc(json_size());
 
     JsonVariant var;
-    if(is<Config::ConfObject>()) {
+    if (is<Config::ConfObject>()) {
         var = doc.to<JsonObject>();
-    } else if(is<Config::ConfArray>()) {
+    } else if (is<Config::ConfArray>()) {
         var = doc.to<JsonArray>();
     } else {
         var = doc.as<JsonVariant>();
@@ -771,9 +768,9 @@ String Config::to_string_except(const std::vector<String> &keys_to_censor) {
     DynamicJsonDocument doc(json_size());
 
     JsonVariant var;
-    if(is<Config::ConfObject>()) {
+    if (is<Config::ConfObject>()) {
         var = doc.to<JsonObject>();
-    } else if(is<Config::ConfArray>()) {
+    } else if (is<Config::ConfArray>()) {
         var = doc.to<JsonArray>();
     } else {
         var = doc.as<JsonVariant>();
@@ -790,9 +787,9 @@ void Config::write_to_stream_except(Print &output, std::initializer_list<String>
     DynamicJsonDocument doc(json_size());
 
     JsonVariant var;
-    if(is<Config::ConfObject>()) {
+    if (is<Config::ConfObject>()) {
         var = doc.to<JsonObject>();
-    } else if(is<Config::ConfArray>()) {
+    } else if (is<Config::ConfArray>()) {
         var = doc.to<JsonArray>();
     } else {
         var = doc.as<JsonVariant>();
@@ -807,9 +804,9 @@ void Config::write_to_stream_except(Print &output, const std::vector<String> &ke
     DynamicJsonDocument doc(json_size());
 
     JsonVariant var;
-    if(is<Config::ConfObject>()) {
+    if (is<Config::ConfObject>()) {
         var = doc.to<JsonObject>();
-    } else if(is<Config::ConfArray>()) {
+    } else if (is<Config::ConfArray>()) {
         var = doc.to<JsonArray>();
     } else {
         var = doc.as<JsonVariant>();
@@ -832,9 +829,9 @@ void Config::set_update_handled() {
     strict_variant::apply_visitor(set_updated_false{}, value);
 }
 
-Config* Config::ConfObject::get(String s) {
-    for(size_t i = 0; i < this->value.size(); ++i) {
-        if(this->value[i].first == s)
+Config *Config::ConfObject::get(String s) {
+    for (size_t i = 0; i < this->value.size(); ++i) {
+        if (this->value[i].first == s)
             return &this->value[i].second;
     }
 
@@ -845,7 +842,7 @@ Config* Config::ConfObject::get(String s) {
 
 Config* Config::ConfArray::get(size_t i)
 {
-    if(i >= this->value.size()) {
+    if (i >= this->value.size()) {
         logger.printfln("Config index %u out of range!", i);
         delay(100);
         return nullptr;
@@ -853,10 +850,9 @@ Config* Config::ConfArray::get(size_t i)
     return &this->value[i];
 }
 
-
-const Config* Config::ConfObject::get(String s) const {
-    for(size_t i = 0; i < this->value.size(); ++i) {
-        if(this->value[i].first == s)
+const Config *Config::ConfObject::get(String s) const {
+    for (size_t i = 0; i < this->value.size(); ++i) {
+        if (this->value[i].first == s)
             return &this->value[i].second;
     }
 
@@ -865,8 +861,8 @@ const Config* Config::ConfObject::get(String s) const {
     return nullptr;
 }
 
-const Config* Config::ConfArray::get(size_t i) const {
-    if(i >= this->value.size()) {
+const Config *Config::ConfArray::get(size_t i) const {
+    if (i >= this->value.size()) {
         logger.printfln("Config index %u out of range!", i);
         delay(100);
         return nullptr;
