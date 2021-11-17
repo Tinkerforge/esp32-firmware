@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-08.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -8,8 +8,8 @@
  * to the generators git repository on tinkerforge.com       *
  *************************************************************/
 
-#ifndef TF_BRICKLET_EVSE_H
-#define TF_BRICKLET_EVSE_H
+#ifndef TF_EVSE_H
+#define TF_EVSE_H
 
 #include "config.h"
 #include "tfp.h"
@@ -21,488 +21,488 @@ extern "C" {
 #endif
 
 /**
- * \defgroup BrickletEVSE EVSE Bricklet
+ * \defgroup TF_EVSE EVSE Bricklet
  */
 
 struct TF_EVSE;
-#ifdef TF_IMPLEMENT_CALLBACKS
+#if TF_IMPLEMENT_CALLBACKS != 0
 
 
 #endif
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * TBD
  */
 typedef struct TF_EVSE {
-    TF_TfpContext *tfp;
-#ifdef TF_IMPLEMENT_CALLBACKS
+    TF_TFP *tfp;
+#if TF_IMPLEMENT_CALLBACKS != 0
 
 #endif
     uint8_t response_expected[2];
 } TF_EVSE;
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_GET_STATE 1
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_GET_HARDWARE_CONFIGURATION 2
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_GET_LOW_LEVEL_STATE 3
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_SET_MAX_CHARGING_CURRENT 4
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_GET_MAX_CHARGING_CURRENT 5
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_CALIBRATE 6
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_START_CHARGING 7
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_STOP_CHARGING 8
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_SET_CHARGING_AUTOSTART 9
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_GET_CHARGING_AUTOSTART 10
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_GET_MANAGED 11
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_SET_MANAGED 12
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_SET_MANAGED_CURRENT 13
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_GET_USER_CALIBRATION 14
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_SET_USER_CALIBRATION 15
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_GET_DATA_STORAGE 16
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_SET_DATA_STORAGE 17
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_GET_INDICATOR_LED 18
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_SET_INDICATOR_LED 19
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_GET_BUTTON_STATE 20
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_GET_ALL_DATA_1 21
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_GET_ALL_DATA_2 22
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_SET_BOOTLOADER_MODE 235
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_GET_BOOTLOADER_MODE 236
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_SET_WRITE_FIRMWARE_POINTER 237
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_WRITE_FIRMWARE 238
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_SET_STATUS_LED_CONFIG 239
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_GET_STATUS_LED_CONFIG 240
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_GET_CHIP_TEMPERATURE 242
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_RESET 243
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_WRITE_UID 248
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_READ_UID 249
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_GET_IDENTITY 255
 
-#ifdef TF_IMPLEMENT_CALLBACKS
+#if TF_IMPLEMENT_CALLBACKS != 0
 
 #endif
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_IEC61851_STATE_A 0
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_IEC61851_STATE_B 1
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_IEC61851_STATE_C 2
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_IEC61851_STATE_D 3
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_IEC61851_STATE_EF 4
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_LED_STATE_OFF 0
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_LED_STATE_ON 1
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_LED_STATE_BLINKING 2
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_LED_STATE_FLICKER 3
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_LED_STATE_BREATHING 4
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_VEHICLE_STATE_NOT_CONNECTED 0
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_VEHICLE_STATE_CONNECTED 1
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_VEHICLE_STATE_CHARGING 2
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_VEHICLE_STATE_ERROR 3
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_CONTACTOR_STATE_AC1_NLIVE_AC2_NLIVE 0
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_CONTACTOR_STATE_AC1_LIVE_AC2_NLIVE 1
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_CONTACTOR_STATE_AC1_NLIVE_AC2_LIVE 2
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_CONTACTOR_STATE_AC1_LIVE_AC2_LIVE 3
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_LOCK_STATE_INIT 0
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_LOCK_STATE_OPEN 1
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_LOCK_STATE_CLOSING 2
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_LOCK_STATE_CLOSE 3
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_LOCK_STATE_OPENING 4
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_LOCK_STATE_ERROR 5
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_ERROR_STATE_OK 0
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_ERROR_STATE_SWITCH 2
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_ERROR_STATE_CALIBRATION 3
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_ERROR_STATE_CONTACTOR 4
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_ERROR_STATE_COMMUNICATION 5
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_JUMPER_CONFIGURATION_6A 0
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_JUMPER_CONFIGURATION_10A 1
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_JUMPER_CONFIGURATION_13A 2
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_JUMPER_CONFIGURATION_16A 3
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_JUMPER_CONFIGURATION_20A 4
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_JUMPER_CONFIGURATION_25A 5
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_JUMPER_CONFIGURATION_32A 6
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_JUMPER_CONFIGURATION_SOFTWARE 7
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_JUMPER_CONFIGURATION_UNCONFIGURED 8
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_CHARGE_RELEASE_AUTOMATIC 0
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_CHARGE_RELEASE_MANUAL 1
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_CHARGE_RELEASE_DEACTIVATED 2
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_CHARGE_RELEASE_MANAGED 3
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_BOOTLOADER_MODE_FIRMWARE 1
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT 2
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_REBOOT 3
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_ERASE_AND_REBOOT 4
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_BOOTLOADER_STATUS_OK 0
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_BOOTLOADER_STATUS_INVALID_MODE 1
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_BOOTLOADER_STATUS_NO_CHANGE 2
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_BOOTLOADER_STATUS_ENTRY_FUNCTION_NOT_PRESENT 3
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_BOOTLOADER_STATUS_DEVICE_IDENTIFIER_INCORRECT 4
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_BOOTLOADER_STATUS_CRC_MISMATCH 5
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_STATUS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_STATUS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_STATUS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  */
 #define TF_EVSE_STATUS_LED_CONFIG_SHOW_STATUS 3
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * This constant is used to identify a EVSE Bricklet.
  *
@@ -513,30 +513,30 @@ typedef struct TF_EVSE {
 #define TF_EVSE_DEVICE_IDENTIFIER 2159
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * This constant represents the display name of a EVSE Bricklet.
  */
 #define TF_EVSE_DEVICE_DISPLAY_NAME "EVSE Bricklet"
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * Creates the device object \c evse with the unique device ID \c uid and adds
- * it to the IPConnection \c ipcon.
+ * it to the HAL \c hal.
  */
-int tf_evse_create(TF_EVSE *evse, const char *uid, TF_HalContext *hal);
+int tf_evse_create(TF_EVSE *evse, const char *uid, TF_HAL *hal);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
- * Removes the device object \c evse from its IPConnection and destroys it.
+ * Removes the device object \c evse from its HAL and destroys it.
  * The device object cannot be used anymore afterwards.
  */
 int tf_evse_destroy(TF_EVSE *evse);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * Returns the response expected flag for the function specified by the
  * \c function_id parameter. It is *true* if the function is expected to
@@ -545,8 +545,8 @@ int tf_evse_destroy(TF_EVSE *evse);
  * For getter functions this is enabled by default and cannot be disabled,
  * because those functions will always send a response. For callback
  * configuration functions it is enabled by default too, but can be disabled
- * via the evse_set_response_expected function. For setter functions it is
- * disabled by default and can be enabled.
+ * via the tf_evse_set_response_expected function. For setter
+ * functions it is disabled by default and can be enabled.
  *
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
@@ -557,7 +557,7 @@ int tf_evse_destroy(TF_EVSE *evse);
 int tf_evse_get_response_expected(TF_EVSE *evse, uint8_t function_id, bool *ret_response_expected);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * Changes the response expected flag of the function specified by the
  * \c function_id parameter. This flag can only be changed for setter
@@ -573,7 +573,7 @@ int tf_evse_get_response_expected(TF_EVSE *evse, uint8_t function_id, bool *ret_
 int tf_evse_set_response_expected(TF_EVSE *evse, uint8_t function_id, bool response_expected);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
@@ -581,9 +581,9 @@ int tf_evse_set_response_expected(TF_EVSE *evse, uint8_t function_id, bool respo
 void tf_evse_set_response_expected_all(TF_EVSE *evse, bool response_expected);
 
 
-#ifdef TF_IMPLEMENT_CALLBACKS
+#if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * Polls for callbacks. Will block for the given timeout in microseconds.
  *
@@ -593,7 +593,7 @@ int tf_evse_callback_tick(TF_EVSE *evse, uint32_t timeout_us);
 #endif
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * TODO
  * 
@@ -602,28 +602,28 @@ int tf_evse_callback_tick(TF_EVSE *evse, uint32_t timeout_us);
 int tf_evse_get_state(TF_EVSE *evse, uint8_t *ret_iec61851_state, uint8_t *ret_vehicle_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint8_t *ret_charge_release, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state, uint32_t *ret_time_since_state_change, uint32_t *ret_uptime);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * TODO
  */
 int tf_evse_get_hardware_configuration(TF_EVSE *evse, uint8_t *ret_jumper_configuration, bool *ret_has_lock_switch);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * TODO
  */
 int tf_evse_get_low_level_state(TF_EVSE *evse, bool *ret_low_level_mode_enabled, uint8_t *ret_led_state, uint16_t *ret_cp_pwm_duty_cycle, uint16_t ret_adc_values[2], int16_t ret_voltages[3], uint32_t ret_resistances[2], bool ret_gpio[5], uint8_t *ret_hardware_version, uint32_t *ret_charging_time);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * TODO
  */
 int tf_evse_set_max_charging_current(TF_EVSE *evse, uint16_t max_current);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * * Max Current Configured -> set with {@link tf_evse_set_max_charging_current}
  * * Max Current Incoming Cable -> set with jumper on EVSE
@@ -636,42 +636,42 @@ int tf_evse_set_max_charging_current(TF_EVSE *evse, uint16_t max_current);
 int tf_evse_get_max_charging_current(TF_EVSE *evse, uint16_t *ret_max_current_configured, uint16_t *ret_max_current_incoming_cable, uint16_t *ret_max_current_outgoing_cable, uint16_t *ret_max_current_managed);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * TODO
  */
 int tf_evse_calibrate(TF_EVSE *evse, uint8_t state, uint32_t password, int32_t value, bool *ret_success);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * TODO
  */
 int tf_evse_start_charging(TF_EVSE *evse);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * TODO
  */
 int tf_evse_stop_charging(TF_EVSE *evse);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * TODO
  */
 int tf_evse_set_charging_autostart(TF_EVSE *evse, bool autostart);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * TODO
  */
 int tf_evse_get_charging_autostart(TF_EVSE *evse, bool *ret_autostart);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * TODO
  * 
@@ -680,7 +680,7 @@ int tf_evse_get_charging_autostart(TF_EVSE *evse, bool *ret_autostart);
 int tf_evse_get_managed(TF_EVSE *evse, bool *ret_managed);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * TODO
  * 
@@ -689,7 +689,7 @@ int tf_evse_get_managed(TF_EVSE *evse, bool *ret_managed);
 int tf_evse_set_managed(TF_EVSE *evse, bool managed, uint32_t password);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * TODO
  * 
@@ -698,70 +698,70 @@ int tf_evse_set_managed(TF_EVSE *evse, bool managed, uint32_t password);
 int tf_evse_set_managed_current(TF_EVSE *evse, uint16_t current);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * TODO
  */
 int tf_evse_get_user_calibration(TF_EVSE *evse, bool *ret_user_calibration_active, int16_t *ret_voltage_diff, int16_t *ret_voltage_mul, int16_t *ret_voltage_div, int16_t *ret_resistance_2700, int16_t ret_resistance_880[14]);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * TODO
  */
 int tf_evse_set_user_calibration(TF_EVSE *evse, uint32_t password, bool user_calibration_active, int16_t voltage_diff, int16_t voltage_mul, int16_t voltage_div, int16_t resistance_2700, const int16_t resistance_880[14]);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * TODO
  */
 int tf_evse_get_data_storage(TF_EVSE *evse, uint8_t page, uint8_t ret_data[63]);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * TODO
  */
 int tf_evse_set_data_storage(TF_EVSE *evse, uint8_t page, const uint8_t data[63]);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * TODO
  */
 int tf_evse_get_indicator_led(TF_EVSE *evse, int16_t *ret_indication, uint16_t *ret_duration);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * TODO
  */
 int tf_evse_set_indicator_led(TF_EVSE *evse, int16_t indication, uint16_t duration, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * TODO
  */
 int tf_evse_get_button_state(TF_EVSE *evse, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * TODO
  */
 int tf_evse_get_all_data_1(TF_EVSE *evse, uint8_t *ret_iec61851_state, uint8_t *ret_vehicle_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint8_t *ret_charge_release, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state, uint32_t *ret_time_since_state_change, uint32_t *ret_uptime, uint8_t *ret_jumper_configuration, bool *ret_has_lock_switch, bool *ret_low_level_mode_enabled, uint8_t *ret_led_state, uint16_t *ret_cp_pwm_duty_cycle, uint16_t ret_adc_values[2], int16_t ret_voltages[3], uint32_t ret_resistances[2], bool ret_gpio[5], uint8_t *ret_hardware_version, uint32_t *ret_charging_time, uint16_t *ret_max_current_configured, uint16_t *ret_max_current_incoming_cable, uint16_t *ret_max_current_outgoing_cable, uint16_t *ret_max_current_managed, bool *ret_autostart, bool *ret_managed);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * TODO
  */
 int tf_evse_get_all_data_2(TF_EVSE *evse, bool *ret_user_calibration_active, int16_t *ret_voltage_diff, int16_t *ret_voltage_mul, int16_t *ret_voltage_div, int16_t *ret_resistance_2700, int16_t ret_resistance_880[14], int16_t *ret_indication, uint16_t *ret_duration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * Returns the error count for the communication between Brick and Bricklet.
  * 
@@ -778,7 +778,7 @@ int tf_evse_get_all_data_2(TF_EVSE *evse, bool *ret_user_calibration_active, int
 int tf_evse_get_spitfp_error_count(TF_EVSE *evse, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
@@ -793,14 +793,14 @@ int tf_evse_get_spitfp_error_count(TF_EVSE *evse, uint32_t *ret_error_count_ack_
 int tf_evse_set_bootloader_mode(TF_EVSE *evse, uint8_t mode, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * Returns the current bootloader mode, see {@link tf_evse_set_bootloader_mode}.
  */
 int tf_evse_get_bootloader_mode(TF_EVSE *evse, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * Sets the firmware pointer for {@link tf_evse_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
@@ -812,7 +812,7 @@ int tf_evse_get_bootloader_mode(TF_EVSE *evse, uint8_t *ret_mode);
 int tf_evse_set_write_firmware_pointer(TF_EVSE *evse, uint32_t pointer);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_evse_set_write_firmware_pointer} before. The firmware is written
@@ -826,7 +826,7 @@ int tf_evse_set_write_firmware_pointer(TF_EVSE *evse, uint32_t pointer);
 int tf_evse_write_firmware(TF_EVSE *evse, const uint8_t data[64], uint8_t *ret_status);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
@@ -839,14 +839,14 @@ int tf_evse_write_firmware(TF_EVSE *evse, const uint8_t data[64], uint8_t *ret_s
 int tf_evse_set_status_led_config(TF_EVSE *evse, uint8_t config);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * Returns the configuration as set by {@link tf_evse_set_status_led_config}
  */
 int tf_evse_get_status_led_config(TF_EVSE *evse, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
@@ -858,7 +858,7 @@ int tf_evse_get_status_led_config(TF_EVSE *evse, uint8_t *ret_config);
 int tf_evse_get_chip_temperature(TF_EVSE *evse, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
@@ -870,7 +870,7 @@ int tf_evse_get_chip_temperature(TF_EVSE *evse, int16_t *ret_temperature);
 int tf_evse_reset(TF_EVSE *evse);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
@@ -881,7 +881,7 @@ int tf_evse_reset(TF_EVSE *evse);
 int tf_evse_write_uid(TF_EVSE *evse, uint32_t uid);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * Returns the current UID as an integer. Encode as
  * Base58 to get the usual string version.
@@ -889,7 +889,7 @@ int tf_evse_write_uid(TF_EVSE *evse, uint32_t uid);
 int tf_evse_read_uid(TF_EVSE *evse, uint32_t *ret_uid);
 
 /**
- * \ingroup BrickletEVSE
+ * \ingroup TF_EVSE
  *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the

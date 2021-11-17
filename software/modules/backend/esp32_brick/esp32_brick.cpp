@@ -31,7 +31,7 @@ extern TaskScheduler task_scheduler;
 #define BLUE_LED 32
 #define BUTTON 0
 
-TF_HalContext hal;
+TF_HAL hal;
 extern uint32_t uid_numeric;
 extern char uid[7];
 extern char passphrase[20];

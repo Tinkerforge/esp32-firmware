@@ -19,19 +19,14 @@ extern "C" {
 #define TF_E_NOT_SUPPORTED -3
 #define TF_E_UNKNOWN_ERROR_CODE -4
 #define TF_E_STREAM_OUT_OF_SYNC -5
-
 #define TF_E_INVALID_CHAR_IN_UID -6
 #define TF_E_UID_TOO_LONG -7
 #define TF_E_UID_OVERFLOW -8
-
 #define TF_E_TOO_MANY_DEVICES -9
 #define TF_E_DEVICE_NOT_FOUND -10
 #define TF_E_WRONG_DEVICE_TYPE -11
-
 #define TF_E_LOCKED -12
-
 #define TF_E_PORT_NOT_FOUND -13
-
 #define TF_E_NULL -14
 
 #ifdef __cplusplus

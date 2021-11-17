@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-12.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -8,8 +8,8 @@
  * to the generators git repository on tinkerforge.com       *
  *************************************************************/
 
-#ifndef TF_BRICKLET_JOYSTICK_V2_H
-#define TF_BRICKLET_JOYSTICK_V2_H
+#ifndef TF_JOYSTICK_V2_H
+#define TF_JOYSTICK_V2_H
 
 #include "config.h"
 #include "tfp.h"
@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 /**
- * \defgroup BrickletJoystickV2 Joystick Bricklet 2.0
+ * \defgroup TF_JoystickV2 Joystick Bricklet 2.0
  */
 
 struct TF_JoystickV2;
@@ -32,12 +32,12 @@ typedef void (*TF_JoystickV2PressedHandler)(struct TF_JoystickV2 *device, bool p
 
 #endif
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * 2-axis joystick with push-button
  */
 typedef struct TF_JoystickV2 {
-    TF_TfpContext *tfp;
+    TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
     TF_JoystickV2PositionHandler position_handler;
     void *position_user_data;
@@ -50,191 +50,191 @@ typedef struct TF_JoystickV2 {
 } TF_JoystickV2;
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_FUNCTION_GET_POSITION 1
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_FUNCTION_IS_PRESSED 2
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_FUNCTION_CALIBRATE 3
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_FUNCTION_SET_POSITION_CALLBACK_CONFIGURATION 4
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_FUNCTION_GET_POSITION_CALLBACK_CONFIGURATION 5
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_FUNCTION_SET_PRESSED_CALLBACK_CONFIGURATION 7
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_FUNCTION_GET_PRESSED_CALLBACK_CONFIGURATION 8
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_FUNCTION_SET_BOOTLOADER_MODE 235
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_FUNCTION_GET_BOOTLOADER_MODE 236
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER 237
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_FUNCTION_WRITE_FIRMWARE 238
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_FUNCTION_SET_STATUS_LED_CONFIG 239
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_FUNCTION_GET_STATUS_LED_CONFIG 240
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_FUNCTION_GET_CHIP_TEMPERATURE 242
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_FUNCTION_RESET 243
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_FUNCTION_WRITE_UID 248
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_FUNCTION_READ_UID 249
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_FUNCTION_GET_IDENTITY 255
 
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_CALLBACK_POSITION 6
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_CALLBACK_PRESSED 9
 
 #endif
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_BOOTLOADER_MODE_FIRMWARE 1
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT 2
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_REBOOT 3
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_ERASE_AND_REBOOT 4
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_BOOTLOADER_STATUS_OK 0
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_BOOTLOADER_STATUS_INVALID_MODE 1
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_BOOTLOADER_STATUS_NO_CHANGE 2
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_BOOTLOADER_STATUS_ENTRY_FUNCTION_NOT_PRESENT 3
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_BOOTLOADER_STATUS_DEVICE_IDENTIFIER_INCORRECT 4
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_BOOTLOADER_STATUS_CRC_MISMATCH 5
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_STATUS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_STATUS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_STATUS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  */
 #define TF_JOYSTICK_V2_STATUS_LED_CONFIG_SHOW_STATUS 3
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * This constant is used to identify a Joystick Bricklet 2.0.
  *
@@ -245,30 +245,30 @@ typedef struct TF_JoystickV2 {
 #define TF_JOYSTICK_V2_DEVICE_IDENTIFIER 2138
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * This constant represents the display name of a Joystick Bricklet 2.0.
  */
 #define TF_JOYSTICK_V2_DEVICE_DISPLAY_NAME "Joystick Bricklet 2.0"
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * Creates the device object \c joystick_v2 with the unique device ID \c uid and adds
- * it to the IPConnection \c ipcon.
+ * it to the HAL \c hal.
  */
-int tf_joystick_v2_create(TF_JoystickV2 *joystick_v2, const char *uid, TF_HalContext *hal);
+int tf_joystick_v2_create(TF_JoystickV2 *joystick_v2, const char *uid, TF_HAL *hal);
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
- * Removes the device object \c joystick_v2 from its IPConnection and destroys it.
+ * Removes the device object \c joystick_v2 from its HAL and destroys it.
  * The device object cannot be used anymore afterwards.
  */
 int tf_joystick_v2_destroy(TF_JoystickV2 *joystick_v2);
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * Returns the response expected flag for the function specified by the
  * \c function_id parameter. It is *true* if the function is expected to
@@ -277,8 +277,8 @@ int tf_joystick_v2_destroy(TF_JoystickV2 *joystick_v2);
  * For getter functions this is enabled by default and cannot be disabled,
  * because those functions will always send a response. For callback
  * configuration functions it is enabled by default too, but can be disabled
- * via the joystick_v2_set_response_expected function. For setter functions it is
- * disabled by default and can be enabled.
+ * via the tf_joystick_v2_set_response_expected function. For setter
+ * functions it is disabled by default and can be enabled.
  *
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
@@ -289,7 +289,7 @@ int tf_joystick_v2_destroy(TF_JoystickV2 *joystick_v2);
 int tf_joystick_v2_get_response_expected(TF_JoystickV2 *joystick_v2, uint8_t function_id, bool *ret_response_expected);
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * Changes the response expected flag of the function specified by the
  * \c function_id parameter. This flag can only be changed for setter
@@ -305,7 +305,7 @@ int tf_joystick_v2_get_response_expected(TF_JoystickV2 *joystick_v2, uint8_t fun
 int tf_joystick_v2_set_response_expected(TF_JoystickV2 *joystick_v2, uint8_t function_id, bool response_expected);
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
@@ -313,7 +313,7 @@ int tf_joystick_v2_set_response_expected(TF_JoystickV2 *joystick_v2, uint8_t fun
 void tf_joystick_v2_set_response_expected_all(TF_JoystickV2 *joystick_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * Registers the given \c handler to the Position callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -329,7 +329,7 @@ int tf_joystick_v2_register_position_callback(TF_JoystickV2 *joystick_v2, TF_Joy
 
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * Registers the given \c handler to the Pressed callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -345,7 +345,7 @@ int tf_joystick_v2_register_pressed_callback(TF_JoystickV2 *joystick_v2, TF_Joys
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * Polls for callbacks. Will block for the given timeout in microseconds.
  *
@@ -355,7 +355,7 @@ int tf_joystick_v2_callback_tick(TF_JoystickV2 *joystick_v2, uint32_t timeout_us
 #endif
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * Returns the position of the joystick. The middle position of the joystick is x=0, y=0.
  * The returned values are averaged and calibrated (see {@link tf_joystick_v2_calibrate}).
@@ -367,7 +367,7 @@ int tf_joystick_v2_callback_tick(TF_JoystickV2 *joystick_v2, uint32_t timeout_us
 int tf_joystick_v2_get_position(TF_JoystickV2 *joystick_v2, int16_t *ret_x, int16_t *ret_y);
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * Returns *true* if the button is pressed and *false* otherwise.
  * 
@@ -378,7 +378,7 @@ int tf_joystick_v2_get_position(TF_JoystickV2 *joystick_v2, int16_t *ret_x, int1
 int tf_joystick_v2_is_pressed(TF_JoystickV2 *joystick_v2, bool *ret_pressed);
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * Calibrates the middle position of the joystick. If your Joystick Bricklet 2.0
  * does not return x=0 and y=0 in the middle position, call this function
@@ -390,7 +390,7 @@ int tf_joystick_v2_is_pressed(TF_JoystickV2 *joystick_v2, bool *ret_pressed);
 int tf_joystick_v2_calibrate(TF_JoystickV2 *joystick_v2);
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * The period is the period with which the {@link tf_joystick_v2_register_position_callback}
  * callback is triggered periodically. A value of 0 turns the callback off.
@@ -405,7 +405,7 @@ int tf_joystick_v2_calibrate(TF_JoystickV2 *joystick_v2);
 int tf_joystick_v2_set_position_callback_configuration(TF_JoystickV2 *joystick_v2, uint32_t period, bool value_has_to_change);
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * Returns the callback configuration as set by
  * {@link tf_joystick_v2_set_position_callback_configuration}.
@@ -413,7 +413,7 @@ int tf_joystick_v2_set_position_callback_configuration(TF_JoystickV2 *joystick_v
 int tf_joystick_v2_get_position_callback_configuration(TF_JoystickV2 *joystick_v2, uint32_t *ret_period, bool *ret_value_has_to_change);
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * The period is the period with which the {@link tf_joystick_v2_register_pressed_callback}
  * callback is triggered periodically. A value of 0 turns the callback off.
@@ -428,7 +428,7 @@ int tf_joystick_v2_get_position_callback_configuration(TF_JoystickV2 *joystick_v
 int tf_joystick_v2_set_pressed_callback_configuration(TF_JoystickV2 *joystick_v2, uint32_t period, bool value_has_to_change);
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * Returns the callback configuration as set by
  * {@link tf_joystick_v2_set_pressed_callback_configuration}.
@@ -436,7 +436,7 @@ int tf_joystick_v2_set_pressed_callback_configuration(TF_JoystickV2 *joystick_v2
 int tf_joystick_v2_get_pressed_callback_configuration(TF_JoystickV2 *joystick_v2, uint32_t *ret_period, bool *ret_value_has_to_change);
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * Returns the error count for the communication between Brick and Bricklet.
  * 
@@ -453,7 +453,7 @@ int tf_joystick_v2_get_pressed_callback_configuration(TF_JoystickV2 *joystick_v2
 int tf_joystick_v2_get_spitfp_error_count(TF_JoystickV2 *joystick_v2, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
@@ -468,14 +468,14 @@ int tf_joystick_v2_get_spitfp_error_count(TF_JoystickV2 *joystick_v2, uint32_t *
 int tf_joystick_v2_set_bootloader_mode(TF_JoystickV2 *joystick_v2, uint8_t mode, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * Returns the current bootloader mode, see {@link tf_joystick_v2_set_bootloader_mode}.
  */
 int tf_joystick_v2_get_bootloader_mode(TF_JoystickV2 *joystick_v2, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * Sets the firmware pointer for {@link tf_joystick_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
@@ -487,7 +487,7 @@ int tf_joystick_v2_get_bootloader_mode(TF_JoystickV2 *joystick_v2, uint8_t *ret_
 int tf_joystick_v2_set_write_firmware_pointer(TF_JoystickV2 *joystick_v2, uint32_t pointer);
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_joystick_v2_set_write_firmware_pointer} before. The firmware is written
@@ -501,7 +501,7 @@ int tf_joystick_v2_set_write_firmware_pointer(TF_JoystickV2 *joystick_v2, uint32
 int tf_joystick_v2_write_firmware(TF_JoystickV2 *joystick_v2, const uint8_t data[64], uint8_t *ret_status);
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
@@ -514,14 +514,14 @@ int tf_joystick_v2_write_firmware(TF_JoystickV2 *joystick_v2, const uint8_t data
 int tf_joystick_v2_set_status_led_config(TF_JoystickV2 *joystick_v2, uint8_t config);
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * Returns the configuration as set by {@link tf_joystick_v2_set_status_led_config}
  */
 int tf_joystick_v2_get_status_led_config(TF_JoystickV2 *joystick_v2, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
@@ -533,7 +533,7 @@ int tf_joystick_v2_get_status_led_config(TF_JoystickV2 *joystick_v2, uint8_t *re
 int tf_joystick_v2_get_chip_temperature(TF_JoystickV2 *joystick_v2, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
@@ -545,7 +545,7 @@ int tf_joystick_v2_get_chip_temperature(TF_JoystickV2 *joystick_v2, int16_t *ret
 int tf_joystick_v2_reset(TF_JoystickV2 *joystick_v2);
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
@@ -556,7 +556,7 @@ int tf_joystick_v2_reset(TF_JoystickV2 *joystick_v2);
 int tf_joystick_v2_write_uid(TF_JoystickV2 *joystick_v2, uint32_t uid);
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * Returns the current UID as an integer. Encode as
  * Base58 to get the usual string version.
@@ -564,7 +564,7 @@ int tf_joystick_v2_write_uid(TF_JoystickV2 *joystick_v2, uint32_t uid);
 int tf_joystick_v2_read_uid(TF_JoystickV2 *joystick_v2, uint32_t *ret_uid);
 
 /**
- * \ingroup BrickletJoystickV2
+ * \ingroup TF_JoystickV2
  *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the

@@ -32,7 +32,7 @@
 
 extern EventLog logger;
 
-extern TF_HalContext hal;
+extern TF_HAL hal;
 extern WebServer server;
 
 extern API api;
@@ -43,7 +43,7 @@ extern API api;
 template <typename DeviceT,
           const uint8_t *firmware,
           const size_t firmware_len,
-          int (*init_function)(DeviceT *, const char*, TF_HalContext *),
+          int (*init_function)(DeviceT *, const char*, TF_HAL *),
           int (*get_bootloader_mode_function)(DeviceT *, uint8_t *),
           int (*reset_function)(DeviceT *)>
 class DeviceModule {
@@ -87,7 +87,7 @@ public:
         return true;
     }
 
-    void register_urls(){
+    void register_urls() {
         api.addCommand(url_prefix + "/reflash", &device_reflash, {}, [this](){
             char uid[7] = {0};
             find_uid_by_did(&hal, get_did(), uid);

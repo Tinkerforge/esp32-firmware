@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-12.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -8,8 +8,8 @@
  * to the generators git repository on tinkerforge.com       *
  *************************************************************/
 
-#ifndef TF_BRICKLET_DMX_H
-#define TF_BRICKLET_DMX_H
+#ifndef TF_DMX_H
+#define TF_DMX_H
 
 #include "config.h"
 #include "tfp.h"
@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 /**
- * \defgroup BrickletDMX DMX Bricklet
+ * \defgroup TF_DMX DMX Bricklet
  */
 
 struct TF_DMX;
@@ -34,12 +34,12 @@ typedef void (*TF_DMXFrameErrorCountHandler)(struct TF_DMX *device, uint32_t ove
 
 #endif
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * DMX master and slave
  */
 typedef struct TF_DMX {
-    TF_TfpContext *tfp;
+    TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
     TF_DMXFrameStartedHandler frame_started_handler;
     void *frame_started_user_data;
@@ -58,281 +58,281 @@ typedef struct TF_DMX {
 } TF_DMX;
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_FUNCTION_SET_DMX_MODE 1
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_FUNCTION_GET_DMX_MODE 2
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_FUNCTION_WRITE_FRAME_LOW_LEVEL 3
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_FUNCTION_READ_FRAME_LOW_LEVEL 4
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_FUNCTION_SET_FRAME_DURATION 5
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_FUNCTION_GET_FRAME_DURATION 6
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_FUNCTION_GET_FRAME_ERROR_COUNT 7
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_FUNCTION_SET_COMMUNICATION_LED_CONFIG 8
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_FUNCTION_GET_COMMUNICATION_LED_CONFIG 9
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_FUNCTION_SET_ERROR_LED_CONFIG 10
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_FUNCTION_GET_ERROR_LED_CONFIG 11
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_FUNCTION_SET_FRAME_CALLBACK_CONFIG 12
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_FUNCTION_GET_FRAME_CALLBACK_CONFIG 13
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_FUNCTION_SET_BOOTLOADER_MODE 235
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_FUNCTION_GET_BOOTLOADER_MODE 236
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_FUNCTION_SET_WRITE_FIRMWARE_POINTER 237
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_FUNCTION_WRITE_FIRMWARE 238
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_FUNCTION_SET_STATUS_LED_CONFIG 239
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_FUNCTION_GET_STATUS_LED_CONFIG 240
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_FUNCTION_GET_CHIP_TEMPERATURE 242
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_FUNCTION_RESET 243
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_FUNCTION_WRITE_UID 248
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_FUNCTION_READ_UID 249
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_FUNCTION_GET_IDENTITY 255
 
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_CALLBACK_FRAME_STARTED 14
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_CALLBACK_FRAME_AVAILABLE 15
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_CALLBACK_FRAME_LOW_LEVEL 16
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_CALLBACK_FRAME_ERROR_COUNT 17
 
 #endif
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_DMX_MODE_MASTER 0
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_DMX_MODE_SLAVE 1
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_COMMUNICATION_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_COMMUNICATION_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_COMMUNICATION_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_COMMUNICATION_LED_CONFIG_SHOW_COMMUNICATION 3
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_ERROR_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_ERROR_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_ERROR_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_ERROR_LED_CONFIG_SHOW_ERROR 3
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_BOOTLOADER_MODE_FIRMWARE 1
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT 2
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_REBOOT 3
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_ERASE_AND_REBOOT 4
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_BOOTLOADER_STATUS_OK 0
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_BOOTLOADER_STATUS_INVALID_MODE 1
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_BOOTLOADER_STATUS_NO_CHANGE 2
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_BOOTLOADER_STATUS_ENTRY_FUNCTION_NOT_PRESENT 3
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_BOOTLOADER_STATUS_DEVICE_IDENTIFIER_INCORRECT 4
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_BOOTLOADER_STATUS_CRC_MISMATCH 5
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_STATUS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_STATUS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_STATUS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  */
 #define TF_DMX_STATUS_LED_CONFIG_SHOW_STATUS 3
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * This constant is used to identify a DMX Bricklet.
  *
@@ -343,30 +343,30 @@ typedef struct TF_DMX {
 #define TF_DMX_DEVICE_IDENTIFIER 285
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * This constant represents the display name of a DMX Bricklet.
  */
 #define TF_DMX_DEVICE_DISPLAY_NAME "DMX Bricklet"
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Creates the device object \c dmx with the unique device ID \c uid and adds
- * it to the IPConnection \c ipcon.
+ * it to the HAL \c hal.
  */
-int tf_dmx_create(TF_DMX *dmx, const char *uid, TF_HalContext *hal);
+int tf_dmx_create(TF_DMX *dmx, const char *uid, TF_HAL *hal);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
- * Removes the device object \c dmx from its IPConnection and destroys it.
+ * Removes the device object \c dmx from its HAL and destroys it.
  * The device object cannot be used anymore afterwards.
  */
 int tf_dmx_destroy(TF_DMX *dmx);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Returns the response expected flag for the function specified by the
  * \c function_id parameter. It is *true* if the function is expected to
@@ -375,8 +375,8 @@ int tf_dmx_destroy(TF_DMX *dmx);
  * For getter functions this is enabled by default and cannot be disabled,
  * because those functions will always send a response. For callback
  * configuration functions it is enabled by default too, but can be disabled
- * via the dmx_set_response_expected function. For setter functions it is
- * disabled by default and can be enabled.
+ * via the tf_dmx_set_response_expected function. For setter
+ * functions it is disabled by default and can be enabled.
  *
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
@@ -387,7 +387,7 @@ int tf_dmx_destroy(TF_DMX *dmx);
 int tf_dmx_get_response_expected(TF_DMX *dmx, uint8_t function_id, bool *ret_response_expected);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Changes the response expected flag of the function specified by the
  * \c function_id parameter. This flag can only be changed for setter
@@ -403,7 +403,7 @@ int tf_dmx_get_response_expected(TF_DMX *dmx, uint8_t function_id, bool *ret_res
 int tf_dmx_set_response_expected(TF_DMX *dmx, uint8_t function_id, bool response_expected);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
@@ -411,7 +411,7 @@ int tf_dmx_set_response_expected(TF_DMX *dmx, uint8_t function_id, bool response
 void tf_dmx_set_response_expected_all(TF_DMX *dmx, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Registers the given \c handler to the Frame Started callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -432,7 +432,7 @@ int tf_dmx_register_frame_started_callback(TF_DMX *dmx, TF_DMXFrameStartedHandle
 
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Registers the given \c handler to the Frame Available callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -453,7 +453,7 @@ int tf_dmx_register_frame_available_callback(TF_DMX *dmx, TF_DMXFrameAvailableHa
 
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Registers the given \c handler to the Frame Low Level callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -474,7 +474,7 @@ int tf_dmx_register_frame_low_level_callback(TF_DMX *dmx, TF_DMXFrameLowLevelHan
 
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Registers the given \c handler to the Frame Error Count callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -488,7 +488,7 @@ int tf_dmx_register_frame_error_count_callback(TF_DMX *dmx, TF_DMXFrameErrorCoun
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Polls for callbacks. Will block for the given timeout in microseconds.
  *
@@ -498,7 +498,7 @@ int tf_dmx_callback_tick(TF_DMX *dmx, uint32_t timeout_us);
 #endif
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Sets the DMX mode to either master or slave.
  * 
@@ -507,14 +507,14 @@ int tf_dmx_callback_tick(TF_DMX *dmx, uint32_t timeout_us);
 int tf_dmx_set_dmx_mode(TF_DMX *dmx, uint8_t dmx_mode);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Returns the DMX mode, as set by {@link tf_dmx_set_dmx_mode}.
  */
 int tf_dmx_get_dmx_mode(TF_DMX *dmx, uint8_t *ret_dmx_mode);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Writes a DMX frame. The maximum frame size is 512 byte. Each byte represents one channel.
  * 
@@ -540,7 +540,7 @@ int tf_dmx_get_dmx_mode(TF_DMX *dmx, uint8_t *ret_dmx_mode);
 int tf_dmx_write_frame_low_level(TF_DMX *dmx, uint16_t frame_length, uint16_t frame_chunk_offset, const uint8_t frame_chunk_data[60]);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Returns the last frame that was written by the DMX master. The size of the array
  * is equivalent to the number of channels in the frame. Each byte represents one channel.
@@ -565,7 +565,7 @@ int tf_dmx_write_frame_low_level(TF_DMX *dmx, uint16_t frame_length, uint16_t fr
 int tf_dmx_read_frame_low_level(TF_DMX *dmx, uint16_t *ret_frame_length, uint16_t *ret_frame_chunk_offset, uint8_t ret_frame_chunk_data[56], uint32_t *ret_frame_number);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Sets the duration of a frame.
  * 
@@ -580,21 +580,21 @@ int tf_dmx_read_frame_low_level(TF_DMX *dmx, uint16_t *ret_frame_length, uint16_
 int tf_dmx_set_frame_duration(TF_DMX *dmx, uint16_t frame_duration);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Returns the frame duration as set by {@link tf_dmx_set_frame_duration}.
  */
 int tf_dmx_get_frame_duration(TF_DMX *dmx, uint16_t *ret_frame_duration);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Returns the current number of overrun and framing errors.
  */
 int tf_dmx_get_frame_error_count(TF_DMX *dmx, uint32_t *ret_overrun_error_count, uint32_t *ret_framing_error_count);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Sets the communication LED configuration. By default the LED shows
  * communication traffic, it flickers once for every 10 received data packets.
@@ -606,14 +606,14 @@ int tf_dmx_get_frame_error_count(TF_DMX *dmx, uint32_t *ret_overrun_error_count,
 int tf_dmx_set_communication_led_config(TF_DMX *dmx, uint8_t config);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Returns the configuration as set by {@link tf_dmx_set_communication_led_config}
  */
 int tf_dmx_get_communication_led_config(TF_DMX *dmx, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Sets the error LED configuration.
  * 
@@ -628,14 +628,14 @@ int tf_dmx_get_communication_led_config(TF_DMX *dmx, uint8_t *ret_config);
 int tf_dmx_set_error_led_config(TF_DMX *dmx, uint8_t config);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Returns the configuration as set by {@link tf_dmx_set_error_led_config}.
  */
 int tf_dmx_get_error_led_config(TF_DMX *dmx, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Enables/Disables the different callbacks. By default the
  * {@link tf_dmx_register_frame_started_callback} callback and {@link tf_dmx_register_frame_available_callback} callback are enabled while
@@ -648,14 +648,14 @@ int tf_dmx_get_error_led_config(TF_DMX *dmx, uint8_t *ret_config);
 int tf_dmx_set_frame_callback_config(TF_DMX *dmx, bool frame_started_callback_enabled, bool frame_available_callback_enabled, bool frame_callback_enabled, bool frame_error_count_callback_enabled);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Returns the frame callback config as set by {@link tf_dmx_set_frame_callback_config}.
  */
 int tf_dmx_get_frame_callback_config(TF_DMX *dmx, bool *ret_frame_started_callback_enabled, bool *ret_frame_available_callback_enabled, bool *ret_frame_callback_enabled, bool *ret_frame_error_count_callback_enabled);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Returns the error count for the communication between Brick and Bricklet.
  * 
@@ -672,7 +672,7 @@ int tf_dmx_get_frame_callback_config(TF_DMX *dmx, bool *ret_frame_started_callba
 int tf_dmx_get_spitfp_error_count(TF_DMX *dmx, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
@@ -687,14 +687,14 @@ int tf_dmx_get_spitfp_error_count(TF_DMX *dmx, uint32_t *ret_error_count_ack_che
 int tf_dmx_set_bootloader_mode(TF_DMX *dmx, uint8_t mode, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Returns the current bootloader mode, see {@link tf_dmx_set_bootloader_mode}.
  */
 int tf_dmx_get_bootloader_mode(TF_DMX *dmx, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Sets the firmware pointer for {@link tf_dmx_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
@@ -706,7 +706,7 @@ int tf_dmx_get_bootloader_mode(TF_DMX *dmx, uint8_t *ret_mode);
 int tf_dmx_set_write_firmware_pointer(TF_DMX *dmx, uint32_t pointer);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_dmx_set_write_firmware_pointer} before. The firmware is written
@@ -720,7 +720,7 @@ int tf_dmx_set_write_firmware_pointer(TF_DMX *dmx, uint32_t pointer);
 int tf_dmx_write_firmware(TF_DMX *dmx, const uint8_t data[64], uint8_t *ret_status);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
@@ -733,14 +733,14 @@ int tf_dmx_write_firmware(TF_DMX *dmx, const uint8_t data[64], uint8_t *ret_stat
 int tf_dmx_set_status_led_config(TF_DMX *dmx, uint8_t config);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Returns the configuration as set by {@link tf_dmx_set_status_led_config}
  */
 int tf_dmx_get_status_led_config(TF_DMX *dmx, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
@@ -752,7 +752,7 @@ int tf_dmx_get_status_led_config(TF_DMX *dmx, uint8_t *ret_config);
 int tf_dmx_get_chip_temperature(TF_DMX *dmx, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
@@ -764,7 +764,7 @@ int tf_dmx_get_chip_temperature(TF_DMX *dmx, int16_t *ret_temperature);
 int tf_dmx_reset(TF_DMX *dmx);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
@@ -775,7 +775,7 @@ int tf_dmx_reset(TF_DMX *dmx);
 int tf_dmx_write_uid(TF_DMX *dmx, uint32_t uid);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Returns the current UID as an integer. Encode as
  * Base58 to get the usual string version.
@@ -783,7 +783,7 @@ int tf_dmx_write_uid(TF_DMX *dmx, uint32_t uid);
 int tf_dmx_read_uid(TF_DMX *dmx, uint32_t *ret_uid);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
@@ -799,7 +799,7 @@ int tf_dmx_read_uid(TF_DMX *dmx, uint32_t *ret_uid);
 int tf_dmx_get_identity(TF_DMX *dmx, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Writes a DMX frame. The maximum frame size is 512 byte. Each byte represents one channel.
  * 
@@ -825,7 +825,7 @@ int tf_dmx_get_identity(TF_DMX *dmx, char ret_uid[8], char ret_connected_uid[8],
 int tf_dmx_write_frame(TF_DMX *dmx, const uint8_t *frame, uint16_t frame_length);
 
 /**
- * \ingroup BrickletDMX
+ * \ingroup TF_DMX
  *
  * Returns the last frame that was written by the DMX master. The size of the array
  * is equivalent to the number of channels in the frame. Each byte represents one channel.

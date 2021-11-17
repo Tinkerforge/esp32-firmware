@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-12.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -8,8 +8,8 @@
  * to the generators git repository on tinkerforge.com       *
  *************************************************************/
 
-#ifndef TF_BRICKLET_TEMPERATURE_IR_V2_H
-#define TF_BRICKLET_TEMPERATURE_IR_V2_H
+#ifndef TF_TEMPERATURE_IR_V2_H
+#define TF_TEMPERATURE_IR_V2_H
 
 #include "config.h"
 #include "tfp.h"
@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 /**
- * \defgroup BrickletTemperatureIRV2 Temperature IR Bricklet 2.0
+ * \defgroup TF_TemperatureIRV2 Temperature IR Bricklet 2.0
  */
 
 struct TF_TemperatureIRV2;
@@ -32,12 +32,12 @@ typedef void (*TF_TemperatureIRV2ObjectTemperatureHandler)(struct TF_Temperature
 
 #endif
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Measures contactless object temperature between -70°C and +380°C
  */
 typedef struct TF_TemperatureIRV2 {
-    TF_TfpContext *tfp;
+    TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
     TF_TemperatureIRV2AmbientTemperatureHandler ambient_temperature_handler;
     void *ambient_temperature_user_data;
@@ -50,221 +50,221 @@ typedef struct TF_TemperatureIRV2 {
 } TF_TemperatureIRV2;
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_FUNCTION_GET_AMBIENT_TEMPERATURE 1
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_FUNCTION_SET_AMBIENT_TEMPERATURE_CALLBACK_CONFIGURATION 2
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_FUNCTION_GET_AMBIENT_TEMPERATURE_CALLBACK_CONFIGURATION 3
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_FUNCTION_GET_OBJECT_TEMPERATURE 5
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_FUNCTION_SET_OBJECT_TEMPERATURE_CALLBACK_CONFIGURATION 6
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_FUNCTION_GET_OBJECT_TEMPERATURE_CALLBACK_CONFIGURATION 7
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_FUNCTION_SET_EMISSIVITY 9
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_FUNCTION_GET_EMISSIVITY 10
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_FUNCTION_SET_BOOTLOADER_MODE 235
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_FUNCTION_GET_BOOTLOADER_MODE 236
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER 237
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_FUNCTION_WRITE_FIRMWARE 238
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_FUNCTION_SET_STATUS_LED_CONFIG 239
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_FUNCTION_GET_STATUS_LED_CONFIG 240
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_FUNCTION_GET_CHIP_TEMPERATURE 242
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_FUNCTION_RESET 243
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_FUNCTION_WRITE_UID 248
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_FUNCTION_READ_UID 249
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_FUNCTION_GET_IDENTITY 255
 
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_CALLBACK_AMBIENT_TEMPERATURE 4
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_CALLBACK_OBJECT_TEMPERATURE 8
 
 #endif
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_THRESHOLD_OPTION_OFF 'x'
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_THRESHOLD_OPTION_OUTSIDE 'o'
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_THRESHOLD_OPTION_INSIDE 'i'
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_THRESHOLD_OPTION_SMALLER '<'
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_THRESHOLD_OPTION_GREATER '>'
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_BOOTLOADER_MODE_FIRMWARE 1
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT 2
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_REBOOT 3
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_ERASE_AND_REBOOT 4
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_BOOTLOADER_STATUS_OK 0
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_BOOTLOADER_STATUS_INVALID_MODE 1
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_BOOTLOADER_STATUS_NO_CHANGE 2
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_BOOTLOADER_STATUS_ENTRY_FUNCTION_NOT_PRESENT 3
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_BOOTLOADER_STATUS_DEVICE_IDENTIFIER_INCORRECT 4
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_BOOTLOADER_STATUS_CRC_MISMATCH 5
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_STATUS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_STATUS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_STATUS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  */
 #define TF_TEMPERATURE_IR_V2_STATUS_LED_CONFIG_SHOW_STATUS 3
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * This constant is used to identify a Temperature IR Bricklet 2.0.
  *
@@ -275,30 +275,30 @@ typedef struct TF_TemperatureIRV2 {
 #define TF_TEMPERATURE_IR_V2_DEVICE_IDENTIFIER 291
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * This constant represents the display name of a Temperature IR Bricklet 2.0.
  */
 #define TF_TEMPERATURE_IR_V2_DEVICE_DISPLAY_NAME "Temperature IR Bricklet 2.0"
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Creates the device object \c temperature_ir_v2 with the unique device ID \c uid and adds
- * it to the IPConnection \c ipcon.
+ * it to the HAL \c hal.
  */
-int tf_temperature_ir_v2_create(TF_TemperatureIRV2 *temperature_ir_v2, const char *uid, TF_HalContext *hal);
+int tf_temperature_ir_v2_create(TF_TemperatureIRV2 *temperature_ir_v2, const char *uid, TF_HAL *hal);
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
- * Removes the device object \c temperature_ir_v2 from its IPConnection and destroys it.
+ * Removes the device object \c temperature_ir_v2 from its HAL and destroys it.
  * The device object cannot be used anymore afterwards.
  */
 int tf_temperature_ir_v2_destroy(TF_TemperatureIRV2 *temperature_ir_v2);
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Returns the response expected flag for the function specified by the
  * \c function_id parameter. It is *true* if the function is expected to
@@ -307,8 +307,8 @@ int tf_temperature_ir_v2_destroy(TF_TemperatureIRV2 *temperature_ir_v2);
  * For getter functions this is enabled by default and cannot be disabled,
  * because those functions will always send a response. For callback
  * configuration functions it is enabled by default too, but can be disabled
- * via the temperature_ir_v2_set_response_expected function. For setter functions it is
- * disabled by default and can be enabled.
+ * via the tf_temperature_ir_v2_set_response_expected function. For setter
+ * functions it is disabled by default and can be enabled.
  *
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
@@ -319,7 +319,7 @@ int tf_temperature_ir_v2_destroy(TF_TemperatureIRV2 *temperature_ir_v2);
 int tf_temperature_ir_v2_get_response_expected(TF_TemperatureIRV2 *temperature_ir_v2, uint8_t function_id, bool *ret_response_expected);
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Changes the response expected flag of the function specified by the
  * \c function_id parameter. This flag can only be changed for setter
@@ -335,7 +335,7 @@ int tf_temperature_ir_v2_get_response_expected(TF_TemperatureIRV2 *temperature_i
 int tf_temperature_ir_v2_set_response_expected(TF_TemperatureIRV2 *temperature_ir_v2, uint8_t function_id, bool response_expected);
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
@@ -343,7 +343,7 @@ int tf_temperature_ir_v2_set_response_expected(TF_TemperatureIRV2 *temperature_i
 void tf_temperature_ir_v2_set_response_expected_all(TF_TemperatureIRV2 *temperature_ir_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Registers the given \c handler to the Ambient Temperature callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -359,7 +359,7 @@ int tf_temperature_ir_v2_register_ambient_temperature_callback(TF_TemperatureIRV
 
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Registers the given \c handler to the Object Temperature callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -375,7 +375,7 @@ int tf_temperature_ir_v2_register_object_temperature_callback(TF_TemperatureIRV2
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Polls for callbacks. Will block for the given timeout in microseconds.
  *
@@ -385,7 +385,7 @@ int tf_temperature_ir_v2_callback_tick(TF_TemperatureIRV2 *temperature_ir_v2, ui
 #endif
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Returns the ambient temperature of the sensor.
  * 
@@ -397,7 +397,7 @@ int tf_temperature_ir_v2_callback_tick(TF_TemperatureIRV2 *temperature_ir_v2, ui
 int tf_temperature_ir_v2_get_ambient_temperature(TF_TemperatureIRV2 *temperature_ir_v2, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * The period is the period with which the {@link tf_temperature_ir_v2_register_ambient_temperature_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
@@ -430,14 +430,14 @@ int tf_temperature_ir_v2_get_ambient_temperature(TF_TemperatureIRV2 *temperature
 int tf_temperature_ir_v2_set_ambient_temperature_callback_configuration(TF_TemperatureIRV2 *temperature_ir_v2, uint32_t period, bool value_has_to_change, char option, int16_t min, int16_t max);
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Returns the callback configuration as set by {@link tf_temperature_ir_v2_set_ambient_temperature_callback_configuration}.
  */
 int tf_temperature_ir_v2_get_ambient_temperature_callback_configuration(TF_TemperatureIRV2 *temperature_ir_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int16_t *ret_min, int16_t *ret_max);
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Returns the object temperature of the sensor, i.e. the temperature
  * of the surface of the object the sensor is aimed at.
@@ -454,7 +454,7 @@ int tf_temperature_ir_v2_get_ambient_temperature_callback_configuration(TF_Tempe
 int tf_temperature_ir_v2_get_object_temperature(TF_TemperatureIRV2 *temperature_ir_v2, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * The period is the period with which the {@link tf_temperature_ir_v2_register_object_temperature_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
@@ -487,14 +487,14 @@ int tf_temperature_ir_v2_get_object_temperature(TF_TemperatureIRV2 *temperature_
 int tf_temperature_ir_v2_set_object_temperature_callback_configuration(TF_TemperatureIRV2 *temperature_ir_v2, uint32_t period, bool value_has_to_change, char option, int16_t min, int16_t max);
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Returns the callback configuration as set by {@link tf_temperature_ir_v2_set_object_temperature_callback_configuration}.
  */
 int tf_temperature_ir_v2_get_object_temperature_callback_configuration(TF_TemperatureIRV2 *temperature_ir_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int16_t *ret_min, int16_t *ret_max);
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Sets the `emissivity <https://en.wikipedia.org/wiki/Emissivity>`__ that is
  * used to calculate the surface temperature as returned by
@@ -518,14 +518,14 @@ int tf_temperature_ir_v2_get_object_temperature_callback_configuration(TF_Temper
 int tf_temperature_ir_v2_set_emissivity(TF_TemperatureIRV2 *temperature_ir_v2, uint16_t emissivity);
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Returns the emissivity as set by {@link tf_temperature_ir_v2_set_emissivity}.
  */
 int tf_temperature_ir_v2_get_emissivity(TF_TemperatureIRV2 *temperature_ir_v2, uint16_t *ret_emissivity);
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Returns the error count for the communication between Brick and Bricklet.
  * 
@@ -542,7 +542,7 @@ int tf_temperature_ir_v2_get_emissivity(TF_TemperatureIRV2 *temperature_ir_v2, u
 int tf_temperature_ir_v2_get_spitfp_error_count(TF_TemperatureIRV2 *temperature_ir_v2, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
@@ -557,14 +557,14 @@ int tf_temperature_ir_v2_get_spitfp_error_count(TF_TemperatureIRV2 *temperature_
 int tf_temperature_ir_v2_set_bootloader_mode(TF_TemperatureIRV2 *temperature_ir_v2, uint8_t mode, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Returns the current bootloader mode, see {@link tf_temperature_ir_v2_set_bootloader_mode}.
  */
 int tf_temperature_ir_v2_get_bootloader_mode(TF_TemperatureIRV2 *temperature_ir_v2, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Sets the firmware pointer for {@link tf_temperature_ir_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
@@ -576,7 +576,7 @@ int tf_temperature_ir_v2_get_bootloader_mode(TF_TemperatureIRV2 *temperature_ir_
 int tf_temperature_ir_v2_set_write_firmware_pointer(TF_TemperatureIRV2 *temperature_ir_v2, uint32_t pointer);
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_temperature_ir_v2_set_write_firmware_pointer} before. The firmware is written
@@ -590,7 +590,7 @@ int tf_temperature_ir_v2_set_write_firmware_pointer(TF_TemperatureIRV2 *temperat
 int tf_temperature_ir_v2_write_firmware(TF_TemperatureIRV2 *temperature_ir_v2, const uint8_t data[64], uint8_t *ret_status);
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
@@ -603,14 +603,14 @@ int tf_temperature_ir_v2_write_firmware(TF_TemperatureIRV2 *temperature_ir_v2, c
 int tf_temperature_ir_v2_set_status_led_config(TF_TemperatureIRV2 *temperature_ir_v2, uint8_t config);
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Returns the configuration as set by {@link tf_temperature_ir_v2_set_status_led_config}
  */
 int tf_temperature_ir_v2_get_status_led_config(TF_TemperatureIRV2 *temperature_ir_v2, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
@@ -622,7 +622,7 @@ int tf_temperature_ir_v2_get_status_led_config(TF_TemperatureIRV2 *temperature_i
 int tf_temperature_ir_v2_get_chip_temperature(TF_TemperatureIRV2 *temperature_ir_v2, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
@@ -634,7 +634,7 @@ int tf_temperature_ir_v2_get_chip_temperature(TF_TemperatureIRV2 *temperature_ir
 int tf_temperature_ir_v2_reset(TF_TemperatureIRV2 *temperature_ir_v2);
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
@@ -645,7 +645,7 @@ int tf_temperature_ir_v2_reset(TF_TemperatureIRV2 *temperature_ir_v2);
 int tf_temperature_ir_v2_write_uid(TF_TemperatureIRV2 *temperature_ir_v2, uint32_t uid);
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Returns the current UID as an integer. Encode as
  * Base58 to get the usual string version.
@@ -653,7 +653,7 @@ int tf_temperature_ir_v2_write_uid(TF_TemperatureIRV2 *temperature_ir_v2, uint32
 int tf_temperature_ir_v2_read_uid(TF_TemperatureIRV2 *temperature_ir_v2, uint32_t *ret_uid);
 
 /**
- * \ingroup BrickletTemperatureIRV2
+ * \ingroup TF_TemperatureIRV2
  *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the

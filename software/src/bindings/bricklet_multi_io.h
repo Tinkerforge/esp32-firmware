@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-08.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -8,8 +8,8 @@
  * to the generators git repository on tinkerforge.com       *
  *************************************************************/
 
-#ifndef TF_BRICKLET_MULTI_IO_H
-#define TF_BRICKLET_MULTI_IO_H
+#ifndef TF_MULTI_IO_H
+#define TF_MULTI_IO_H
 
 #include "config.h"
 #include "tfp.h"
@@ -21,203 +21,203 @@ extern "C" {
 #endif
 
 /**
- * \defgroup BrickletMultiIO Multi IO Bricklet
+ * \defgroup TF_MultiIO Multi IO Bricklet
  */
 
 struct TF_MultiIO;
-#ifdef TF_IMPLEMENT_CALLBACKS
+#if TF_IMPLEMENT_CALLBACKS != 0
 
 
 #endif
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  *
  * TBD
  */
 typedef struct TF_MultiIO {
-    TF_TfpContext *tfp;
-#ifdef TF_IMPLEMENT_CALLBACKS
+    TF_TFP *tfp;
+#if TF_IMPLEMENT_CALLBACKS != 0
 
 #endif
     uint8_t response_expected[1];
 } TF_MultiIO;
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_FUNCTION_GET_INPUTS 1
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_FUNCTION_SET_OUTPUTS 2
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_FUNCTION_GET_OUTPUTS 3
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_FUNCTION_SET_BOOTLOADER_MODE 235
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_FUNCTION_GET_BOOTLOADER_MODE 236
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_FUNCTION_SET_WRITE_FIRMWARE_POINTER 237
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_FUNCTION_WRITE_FIRMWARE 238
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_FUNCTION_SET_STATUS_LED_CONFIG 239
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_FUNCTION_GET_STATUS_LED_CONFIG 240
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_FUNCTION_GET_CHIP_TEMPERATURE 242
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_FUNCTION_RESET 243
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_FUNCTION_WRITE_UID 248
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_FUNCTION_READ_UID 249
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_FUNCTION_GET_IDENTITY 255
 
-#ifdef TF_IMPLEMENT_CALLBACKS
+#if TF_IMPLEMENT_CALLBACKS != 0
 
 #endif
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_INPUT_LOW 0
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_INPUT_HIGH 1
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_INPUT_FLOATING 2
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_INPUT_ERROR 3
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_BOOTLOADER_MODE_FIRMWARE 1
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT 2
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_REBOOT 3
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_ERASE_AND_REBOOT 4
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_BOOTLOADER_STATUS_OK 0
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_BOOTLOADER_STATUS_INVALID_MODE 1
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_BOOTLOADER_STATUS_NO_CHANGE 2
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_BOOTLOADER_STATUS_ENTRY_FUNCTION_NOT_PRESENT 3
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_BOOTLOADER_STATUS_DEVICE_IDENTIFIER_INCORRECT 4
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_BOOTLOADER_STATUS_CRC_MISMATCH 5
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_STATUS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_STATUS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_STATUS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  */
 #define TF_MULTI_IO_STATUS_LED_CONFIG_SHOW_STATUS 3
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  *
  * This constant is used to identify a Multi IO Bricklet.
  *
@@ -228,30 +228,30 @@ typedef struct TF_MultiIO {
 #define TF_MULTI_IO_DEVICE_IDENTIFIER 2170
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  *
  * This constant represents the display name of a Multi IO Bricklet.
  */
 #define TF_MULTI_IO_DEVICE_DISPLAY_NAME "Multi IO Bricklet"
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  *
  * Creates the device object \c multi_io with the unique device ID \c uid and adds
- * it to the IPConnection \c ipcon.
+ * it to the HAL \c hal.
  */
-int tf_multi_io_create(TF_MultiIO *multi_io, const char *uid, TF_HalContext *hal);
+int tf_multi_io_create(TF_MultiIO *multi_io, const char *uid, TF_HAL *hal);
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  *
- * Removes the device object \c multi_io from its IPConnection and destroys it.
+ * Removes the device object \c multi_io from its HAL and destroys it.
  * The device object cannot be used anymore afterwards.
  */
 int tf_multi_io_destroy(TF_MultiIO *multi_io);
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  *
  * Returns the response expected flag for the function specified by the
  * \c function_id parameter. It is *true* if the function is expected to
@@ -260,8 +260,8 @@ int tf_multi_io_destroy(TF_MultiIO *multi_io);
  * For getter functions this is enabled by default and cannot be disabled,
  * because those functions will always send a response. For callback
  * configuration functions it is enabled by default too, but can be disabled
- * via the multi_io_set_response_expected function. For setter functions it is
- * disabled by default and can be enabled.
+ * via the tf_multi_io_set_response_expected function. For setter
+ * functions it is disabled by default and can be enabled.
  *
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
@@ -272,7 +272,7 @@ int tf_multi_io_destroy(TF_MultiIO *multi_io);
 int tf_multi_io_get_response_expected(TF_MultiIO *multi_io, uint8_t function_id, bool *ret_response_expected);
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  *
  * Changes the response expected flag of the function specified by the
  * \c function_id parameter. This flag can only be changed for setter
@@ -288,7 +288,7 @@ int tf_multi_io_get_response_expected(TF_MultiIO *multi_io, uint8_t function_id,
 int tf_multi_io_set_response_expected(TF_MultiIO *multi_io, uint8_t function_id, bool response_expected);
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
@@ -296,9 +296,9 @@ int tf_multi_io_set_response_expected(TF_MultiIO *multi_io, uint8_t function_id,
 void tf_multi_io_set_response_expected_all(TF_MultiIO *multi_io, bool response_expected);
 
 
-#ifdef TF_IMPLEMENT_CALLBACKS
+#if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  *
  * Polls for callbacks. Will block for the given timeout in microseconds.
  *
@@ -308,28 +308,28 @@ int tf_multi_io_callback_tick(TF_MultiIO *multi_io, uint32_t timeout_us);
 #endif
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  *
  * 
  */
 int tf_multi_io_get_inputs(TF_MultiIO *multi_io, uint8_t ret_value[16]);
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  *
  * 
  */
 int tf_multi_io_set_outputs(TF_MultiIO *multi_io, const bool value[2]);
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  *
  * 
  */
 int tf_multi_io_get_outputs(TF_MultiIO *multi_io, bool ret_value[2]);
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  *
  * Returns the error count for the communication between Brick and Bricklet.
  * 
@@ -346,7 +346,7 @@ int tf_multi_io_get_outputs(TF_MultiIO *multi_io, bool ret_value[2]);
 int tf_multi_io_get_spitfp_error_count(TF_MultiIO *multi_io, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
@@ -361,14 +361,14 @@ int tf_multi_io_get_spitfp_error_count(TF_MultiIO *multi_io, uint32_t *ret_error
 int tf_multi_io_set_bootloader_mode(TF_MultiIO *multi_io, uint8_t mode, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  *
  * Returns the current bootloader mode, see {@link tf_multi_io_set_bootloader_mode}.
  */
 int tf_multi_io_get_bootloader_mode(TF_MultiIO *multi_io, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  *
  * Sets the firmware pointer for {@link tf_multi_io_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
@@ -380,7 +380,7 @@ int tf_multi_io_get_bootloader_mode(TF_MultiIO *multi_io, uint8_t *ret_mode);
 int tf_multi_io_set_write_firmware_pointer(TF_MultiIO *multi_io, uint32_t pointer);
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  *
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_multi_io_set_write_firmware_pointer} before. The firmware is written
@@ -394,7 +394,7 @@ int tf_multi_io_set_write_firmware_pointer(TF_MultiIO *multi_io, uint32_t pointe
 int tf_multi_io_write_firmware(TF_MultiIO *multi_io, const uint8_t data[64], uint8_t *ret_status);
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
@@ -407,14 +407,14 @@ int tf_multi_io_write_firmware(TF_MultiIO *multi_io, const uint8_t data[64], uin
 int tf_multi_io_set_status_led_config(TF_MultiIO *multi_io, uint8_t config);
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  *
  * Returns the configuration as set by {@link tf_multi_io_set_status_led_config}
  */
 int tf_multi_io_get_status_led_config(TF_MultiIO *multi_io, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
@@ -426,7 +426,7 @@ int tf_multi_io_get_status_led_config(TF_MultiIO *multi_io, uint8_t *ret_config)
 int tf_multi_io_get_chip_temperature(TF_MultiIO *multi_io, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
@@ -438,7 +438,7 @@ int tf_multi_io_get_chip_temperature(TF_MultiIO *multi_io, int16_t *ret_temperat
 int tf_multi_io_reset(TF_MultiIO *multi_io);
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  *
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
@@ -449,7 +449,7 @@ int tf_multi_io_reset(TF_MultiIO *multi_io);
 int tf_multi_io_write_uid(TF_MultiIO *multi_io, uint32_t uid);
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  *
  * Returns the current UID as an integer. Encode as
  * Base58 to get the usual string version.
@@ -457,7 +457,7 @@ int tf_multi_io_write_uid(TF_MultiIO *multi_io, uint32_t uid);
 int tf_multi_io_read_uid(TF_MultiIO *multi_io, uint32_t *ret_uid);
 
 /**
- * \ingroup BrickletMultiIO
+ * \ingroup TF_MultiIO
  *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the

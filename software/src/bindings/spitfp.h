@@ -12,14 +12,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "packetbuffer.h"
+#include "packet_buffer.h"
 #include "macros.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct TF_SpiTfpStateMachine {
+typedef struct TF_SPITFPStateMachine {
     uint32_t deadline_us;
 
     union {
@@ -44,12 +44,12 @@ typedef struct TF_SpiTfpStateMachine {
     } info;
 
     uint8_t state;
-} TF_SpiTfpStateMachine;
+} TF_SPITFPStateMachine;
 
-struct TF_HalContext;
+struct TF_HAL;
 
-typedef struct TF_SpiTfpContext {
-    struct TF_HalContext *hal;
+typedef struct TF_SPITFP {
+    struct TF_HAL *hal;
 
     uint8_t last_sequence_number_seen;
     uint8_t last_sequence_number_acked;
@@ -62,25 +62,26 @@ typedef struct TF_SpiTfpContext {
     uint8_t port_id;
 
     uint8_t send_buf[TF_SPITFP_MAX_MESSAGE_LENGTH];
-    TF_Packetbuffer recv_buf;
+    TF_PacketBuffer recv_buf;
 
-    struct TF_SpiTfpStateMachine state;
-} TF_SpiTfpContext;
+    struct TF_SPITFPStateMachine state;
+} TF_SPITFP;
 
-int tf_spitfp_create(TF_SpiTfpContext *spitfp, struct TF_HalContext *hal, uint8_t port_id) TF_ATTRIBUTE_NONNULL_ALL;
-int tf_spitfp_destroy(TF_SpiTfpContext *spitfp) TF_ATTRIBUTE_NONNULL_ALL TF_ATTRIBUTE_WARN_UNUSED_RESULT;
+int tf_spitfp_create(TF_SPITFP *spitfp, struct TF_HAL *hal, uint8_t port_id) TF_ATTRIBUTE_NONNULL_ALL;
+int tf_spitfp_destroy(TF_SPITFP *spitfp) TF_ATTRIBUTE_NONNULL_ALL TF_ATTRIBUTE_WARN_UNUSED_RESULT;
 
-uint8_t *tf_spitfp_get_payload_buffer(TF_SpiTfpContext *spitfp) TF_ATTRIBUTE_NONNULL_ALL;
-uint8_t tf_spitfp_build_packet(TF_SpiTfpContext *spitfp, bool retransmission) TF_ATTRIBUTE_NONNULL_ALL;
-void tf_spitfp_packet_processed(TF_SpiTfpContext *spitfp) TF_ATTRIBUTE_NONNULL_ALL;
+uint8_t *tf_spitfp_get_payload_buffer(TF_SPITFP *spitfp) TF_ATTRIBUTE_NONNULL_ALL;
+uint8_t tf_spitfp_build_packet(TF_SPITFP *spitfp, bool retransmission) TF_ATTRIBUTE_NONNULL_ALL;
+void tf_spitfp_packet_processed(TF_SPITFP *spitfp) TF_ATTRIBUTE_NONNULL_ALL;
 
+// FIXME: rename from TF_TICK_* to TF_SPITFP_TICK_*?
 #define TF_TICK_PACKET_RECEIVED 1
 #define TF_TICK_PACKET_SENT 2
 #define TF_TICK_AGAIN 4
 #define TF_TICK_TIMEOUT 8
 #define TF_TICK_SLEEP 16
 
-int tf_spitfp_tick(TF_SpiTfpContext *spitfp, uint32_t deadline_us) TF_ATTRIBUTE_NONNULL_ALL TF_ATTRIBUTE_WARN_UNUSED_RESULT;
+int tf_spitfp_tick(TF_SPITFP *spitfp, uint32_t deadline_us) TF_ATTRIBUTE_NONNULL_ALL TF_ATTRIBUTE_WARN_UNUSED_RESULT;
 
 #ifdef __cplusplus
 }

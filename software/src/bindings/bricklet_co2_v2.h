@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-12.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -8,8 +8,8 @@
  * to the generators git repository on tinkerforge.com       *
  *************************************************************/
 
-#ifndef TF_BRICKLET_CO2_V2_H
-#define TF_BRICKLET_CO2_V2_H
+#ifndef TF_CO2_V2_H
+#define TF_CO2_V2_H
 
 #include "config.h"
 #include "tfp.h"
@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 /**
- * \defgroup BrickletCO2V2 CO2 Bricklet 2.0
+ * \defgroup TF_CO2V2 CO2 Bricklet 2.0
  */
 
 struct TF_CO2V2;
@@ -34,12 +34,12 @@ typedef void (*TF_CO2V2HumidityHandler)(struct TF_CO2V2 *device, uint16_t humidi
 
 #endif
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Measures CO2 concentration, temperature and humidity
  */
 typedef struct TF_CO2V2 {
-    TF_TfpContext *tfp;
+    TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
     TF_CO2V2AllValuesHandler all_values_handler;
     void *all_values_user_data;
@@ -58,271 +58,271 @@ typedef struct TF_CO2V2 {
 } TF_CO2V2;
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_GET_ALL_VALUES 1
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_SET_AIR_PRESSURE 2
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_GET_AIR_PRESSURE 3
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_SET_TEMPERATURE_OFFSET 4
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_GET_TEMPERATURE_OFFSET 5
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_SET_ALL_VALUES_CALLBACK_CONFIGURATION 6
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_GET_ALL_VALUES_CALLBACK_CONFIGURATION 7
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_GET_CO2_CONCENTRATION 9
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_SET_CO2_CONCENTRATION_CALLBACK_CONFIGURATION 10
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_GET_CO2_CONCENTRATION_CALLBACK_CONFIGURATION 11
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_GET_TEMPERATURE 13
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_SET_TEMPERATURE_CALLBACK_CONFIGURATION 14
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_GET_TEMPERATURE_CALLBACK_CONFIGURATION 15
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_GET_HUMIDITY 17
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_SET_HUMIDITY_CALLBACK_CONFIGURATION 18
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_GET_HUMIDITY_CALLBACK_CONFIGURATION 19
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_SET_BOOTLOADER_MODE 235
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_GET_BOOTLOADER_MODE 236
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER 237
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_WRITE_FIRMWARE 238
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_SET_STATUS_LED_CONFIG 239
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_GET_STATUS_LED_CONFIG 240
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_GET_CHIP_TEMPERATURE 242
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_RESET 243
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_WRITE_UID 248
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_READ_UID 249
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_FUNCTION_GET_IDENTITY 255
 
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_CALLBACK_ALL_VALUES 8
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_CALLBACK_CO2_CONCENTRATION 12
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_CALLBACK_TEMPERATURE 16
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_CALLBACK_HUMIDITY 20
 
 #endif
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_THRESHOLD_OPTION_OFF 'x'
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_THRESHOLD_OPTION_OUTSIDE 'o'
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_THRESHOLD_OPTION_INSIDE 'i'
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_THRESHOLD_OPTION_SMALLER '<'
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_THRESHOLD_OPTION_GREATER '>'
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_BOOTLOADER_MODE_FIRMWARE 1
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT 2
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_REBOOT 3
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_ERASE_AND_REBOOT 4
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_BOOTLOADER_STATUS_OK 0
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_BOOTLOADER_STATUS_INVALID_MODE 1
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_BOOTLOADER_STATUS_NO_CHANGE 2
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_BOOTLOADER_STATUS_ENTRY_FUNCTION_NOT_PRESENT 3
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_BOOTLOADER_STATUS_DEVICE_IDENTIFIER_INCORRECT 4
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_BOOTLOADER_STATUS_CRC_MISMATCH 5
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_STATUS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_STATUS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_STATUS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  */
 #define TF_CO2_V2_STATUS_LED_CONFIG_SHOW_STATUS 3
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * This constant is used to identify a CO2 Bricklet 2.0.
  *
@@ -333,30 +333,30 @@ typedef struct TF_CO2V2 {
 #define TF_CO2_V2_DEVICE_IDENTIFIER 2147
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * This constant represents the display name of a CO2 Bricklet 2.0.
  */
 #define TF_CO2_V2_DEVICE_DISPLAY_NAME "CO2 Bricklet 2.0"
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Creates the device object \c co2_v2 with the unique device ID \c uid and adds
- * it to the IPConnection \c ipcon.
+ * it to the HAL \c hal.
  */
-int tf_co2_v2_create(TF_CO2V2 *co2_v2, const char *uid, TF_HalContext *hal);
+int tf_co2_v2_create(TF_CO2V2 *co2_v2, const char *uid, TF_HAL *hal);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
- * Removes the device object \c co2_v2 from its IPConnection and destroys it.
+ * Removes the device object \c co2_v2 from its HAL and destroys it.
  * The device object cannot be used anymore afterwards.
  */
 int tf_co2_v2_destroy(TF_CO2V2 *co2_v2);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Returns the response expected flag for the function specified by the
  * \c function_id parameter. It is *true* if the function is expected to
@@ -365,8 +365,8 @@ int tf_co2_v2_destroy(TF_CO2V2 *co2_v2);
  * For getter functions this is enabled by default and cannot be disabled,
  * because those functions will always send a response. For callback
  * configuration functions it is enabled by default too, but can be disabled
- * via the co2_v2_set_response_expected function. For setter functions it is
- * disabled by default and can be enabled.
+ * via the tf_co2_v2_set_response_expected function. For setter
+ * functions it is disabled by default and can be enabled.
  *
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
@@ -377,7 +377,7 @@ int tf_co2_v2_destroy(TF_CO2V2 *co2_v2);
 int tf_co2_v2_get_response_expected(TF_CO2V2 *co2_v2, uint8_t function_id, bool *ret_response_expected);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Changes the response expected flag of the function specified by the
  * \c function_id parameter. This flag can only be changed for setter
@@ -393,7 +393,7 @@ int tf_co2_v2_get_response_expected(TF_CO2V2 *co2_v2, uint8_t function_id, bool 
 int tf_co2_v2_set_response_expected(TF_CO2V2 *co2_v2, uint8_t function_id, bool response_expected);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
@@ -401,7 +401,7 @@ int tf_co2_v2_set_response_expected(TF_CO2V2 *co2_v2, uint8_t function_id, bool 
 void tf_co2_v2_set_response_expected_all(TF_CO2V2 *co2_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Registers the given \c handler to the All Values callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -421,7 +421,7 @@ int tf_co2_v2_register_all_values_callback(TF_CO2V2 *co2_v2, TF_CO2V2AllValuesHa
 
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Registers the given \c handler to the CO2 Concentration callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -437,7 +437,7 @@ int tf_co2_v2_register_co2_concentration_callback(TF_CO2V2 *co2_v2, TF_CO2V2CO2C
 
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Registers the given \c handler to the Temperature callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -453,7 +453,7 @@ int tf_co2_v2_register_temperature_callback(TF_CO2V2 *co2_v2, TF_CO2V2Temperatur
 
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Registers the given \c handler to the Humidity callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -469,7 +469,7 @@ int tf_co2_v2_register_humidity_callback(TF_CO2V2 *co2_v2, TF_CO2V2HumidityHandl
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Polls for callbacks. Will block for the given timeout in microseconds.
  *
@@ -479,7 +479,7 @@ int tf_co2_v2_callback_tick(TF_CO2V2 *co2_v2, uint32_t timeout_us);
 #endif
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Returns all values measured by the CO2 Bricklet 2.0.
  * 
@@ -494,7 +494,7 @@ int tf_co2_v2_callback_tick(TF_CO2V2 *co2_v2, uint32_t timeout_us);
 int tf_co2_v2_get_all_values(TF_CO2V2 *co2_v2, uint16_t *ret_co2_concentration, int16_t *ret_temperature, uint16_t *ret_humidity);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * The CO2 concentration depends (among other things) on the ambient air pressure.
  * 
@@ -511,14 +511,14 @@ int tf_co2_v2_get_all_values(TF_CO2V2 *co2_v2, uint16_t *ret_co2_concentration, 
 int tf_co2_v2_set_air_pressure(TF_CO2V2 *co2_v2, uint16_t air_pressure);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Returns the ambient air pressure as set by {@link tf_co2_v2_set_air_pressure}.
  */
 int tf_co2_v2_get_air_pressure(TF_CO2V2 *co2_v2, uint16_t *ret_air_pressure);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Sets a temperature offset. A offset of 10 will decrease
  * the measured temperature by 0.1 °C.
@@ -542,7 +542,7 @@ int tf_co2_v2_get_air_pressure(TF_CO2V2 *co2_v2, uint16_t *ret_air_pressure);
 int tf_co2_v2_set_temperature_offset(TF_CO2V2 *co2_v2, uint16_t offset);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Returns the temperature offset as set by
  * {@link tf_co2_v2_set_temperature_offset}.
@@ -550,7 +550,7 @@ int tf_co2_v2_set_temperature_offset(TF_CO2V2 *co2_v2, uint16_t offset);
 int tf_co2_v2_get_temperature_offset(TF_CO2V2 *co2_v2, uint16_t *ret_offset);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * The period is the period with which the {@link tf_co2_v2_register_all_values_callback}
  * callback is triggered periodically. A value of 0 turns the callback off.
@@ -565,7 +565,7 @@ int tf_co2_v2_get_temperature_offset(TF_CO2V2 *co2_v2, uint16_t *ret_offset);
 int tf_co2_v2_set_all_values_callback_configuration(TF_CO2V2 *co2_v2, uint32_t period, bool value_has_to_change);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Returns the callback configuration as set by
  * {@link tf_co2_v2_set_all_values_callback_configuration}.
@@ -573,7 +573,7 @@ int tf_co2_v2_set_all_values_callback_configuration(TF_CO2V2 *co2_v2, uint32_t p
 int tf_co2_v2_get_all_values_callback_configuration(TF_CO2V2 *co2_v2, uint32_t *ret_period, bool *ret_value_has_to_change);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Returns CO2 concentration.
  * 
@@ -585,7 +585,7 @@ int tf_co2_v2_get_all_values_callback_configuration(TF_CO2V2 *co2_v2, uint32_t *
 int tf_co2_v2_get_co2_concentration(TF_CO2V2 *co2_v2, uint16_t *ret_co2_concentration);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * The period is the period with which the {@link tf_co2_v2_register_co2_concentration_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
@@ -618,14 +618,14 @@ int tf_co2_v2_get_co2_concentration(TF_CO2V2 *co2_v2, uint16_t *ret_co2_concentr
 int tf_co2_v2_set_co2_concentration_callback_configuration(TF_CO2V2 *co2_v2, uint32_t period, bool value_has_to_change, char option, uint16_t min, uint16_t max);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Returns the callback configuration as set by {@link tf_co2_v2_set_co2_concentration_callback_configuration}.
  */
 int tf_co2_v2_get_co2_concentration_callback_configuration(TF_CO2V2 *co2_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, uint16_t *ret_min, uint16_t *ret_max);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Returns temperature.
  * 
@@ -641,7 +641,7 @@ int tf_co2_v2_get_co2_concentration_callback_configuration(TF_CO2V2 *co2_v2, uin
 int tf_co2_v2_get_temperature(TF_CO2V2 *co2_v2, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * The period is the period with which the {@link tf_co2_v2_register_temperature_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
@@ -674,14 +674,14 @@ int tf_co2_v2_get_temperature(TF_CO2V2 *co2_v2, int16_t *ret_temperature);
 int tf_co2_v2_set_temperature_callback_configuration(TF_CO2V2 *co2_v2, uint32_t period, bool value_has_to_change, char option, int16_t min, int16_t max);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Returns the callback configuration as set by {@link tf_co2_v2_set_temperature_callback_configuration}.
  */
 int tf_co2_v2_get_temperature_callback_configuration(TF_CO2V2 *co2_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int16_t *ret_min, int16_t *ret_max);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Returns relative humidity.
  * 
@@ -693,7 +693,7 @@ int tf_co2_v2_get_temperature_callback_configuration(TF_CO2V2 *co2_v2, uint32_t 
 int tf_co2_v2_get_humidity(TF_CO2V2 *co2_v2, uint16_t *ret_humidity);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * The period is the period with which the {@link tf_co2_v2_register_humidity_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
@@ -726,14 +726,14 @@ int tf_co2_v2_get_humidity(TF_CO2V2 *co2_v2, uint16_t *ret_humidity);
 int tf_co2_v2_set_humidity_callback_configuration(TF_CO2V2 *co2_v2, uint32_t period, bool value_has_to_change, char option, uint16_t min, uint16_t max);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Returns the callback configuration as set by {@link tf_co2_v2_set_humidity_callback_configuration}.
  */
 int tf_co2_v2_get_humidity_callback_configuration(TF_CO2V2 *co2_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, uint16_t *ret_min, uint16_t *ret_max);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Returns the error count for the communication between Brick and Bricklet.
  * 
@@ -750,7 +750,7 @@ int tf_co2_v2_get_humidity_callback_configuration(TF_CO2V2 *co2_v2, uint32_t *re
 int tf_co2_v2_get_spitfp_error_count(TF_CO2V2 *co2_v2, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
@@ -765,14 +765,14 @@ int tf_co2_v2_get_spitfp_error_count(TF_CO2V2 *co2_v2, uint32_t *ret_error_count
 int tf_co2_v2_set_bootloader_mode(TF_CO2V2 *co2_v2, uint8_t mode, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Returns the current bootloader mode, see {@link tf_co2_v2_set_bootloader_mode}.
  */
 int tf_co2_v2_get_bootloader_mode(TF_CO2V2 *co2_v2, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Sets the firmware pointer for {@link tf_co2_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
@@ -784,7 +784,7 @@ int tf_co2_v2_get_bootloader_mode(TF_CO2V2 *co2_v2, uint8_t *ret_mode);
 int tf_co2_v2_set_write_firmware_pointer(TF_CO2V2 *co2_v2, uint32_t pointer);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_co2_v2_set_write_firmware_pointer} before. The firmware is written
@@ -798,7 +798,7 @@ int tf_co2_v2_set_write_firmware_pointer(TF_CO2V2 *co2_v2, uint32_t pointer);
 int tf_co2_v2_write_firmware(TF_CO2V2 *co2_v2, const uint8_t data[64], uint8_t *ret_status);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
@@ -811,14 +811,14 @@ int tf_co2_v2_write_firmware(TF_CO2V2 *co2_v2, const uint8_t data[64], uint8_t *
 int tf_co2_v2_set_status_led_config(TF_CO2V2 *co2_v2, uint8_t config);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Returns the configuration as set by {@link tf_co2_v2_set_status_led_config}
  */
 int tf_co2_v2_get_status_led_config(TF_CO2V2 *co2_v2, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
@@ -830,7 +830,7 @@ int tf_co2_v2_get_status_led_config(TF_CO2V2 *co2_v2, uint8_t *ret_config);
 int tf_co2_v2_get_chip_temperature(TF_CO2V2 *co2_v2, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
@@ -842,7 +842,7 @@ int tf_co2_v2_get_chip_temperature(TF_CO2V2 *co2_v2, int16_t *ret_temperature);
 int tf_co2_v2_reset(TF_CO2V2 *co2_v2);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
@@ -853,7 +853,7 @@ int tf_co2_v2_reset(TF_CO2V2 *co2_v2);
 int tf_co2_v2_write_uid(TF_CO2V2 *co2_v2, uint32_t uid);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Returns the current UID as an integer. Encode as
  * Base58 to get the usual string version.
@@ -861,7 +861,7 @@ int tf_co2_v2_write_uid(TF_CO2V2 *co2_v2, uint32_t uid);
 int tf_co2_v2_read_uid(TF_CO2V2 *co2_v2, uint32_t *ret_uid);
 
 /**
- * \ingroup BrickletCO2V2
+ * \ingroup TF_CO2V2
  *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the

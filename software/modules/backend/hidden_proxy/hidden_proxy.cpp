@@ -22,7 +22,7 @@
 #include "bindings/hal_common.h"
 #include "web_server.h"
 
-extern TF_HalContext hal;
+extern TF_HAL hal;
 extern WebServer server;
 
 extern int8_t green_led_pin;

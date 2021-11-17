@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-12.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -8,8 +8,8 @@
  * to the generators git repository on tinkerforge.com       *
  *************************************************************/
 
-#ifndef TF_BRICKLET_INDUSTRIAL_DUAL_0_20MA_V2_H
-#define TF_BRICKLET_INDUSTRIAL_DUAL_0_20MA_V2_H
+#ifndef TF_INDUSTRIAL_DUAL_0_20MA_V2_H
+#define TF_INDUSTRIAL_DUAL_0_20MA_V2_H
 
 #include "config.h"
 #include "tfp.h"
@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 /**
- * \defgroup BrickletIndustrialDual020mAV2 Industrial Dual 0-20mA Bricklet 2.0
+ * \defgroup TF_IndustrialDual020mAV2 Industrial Dual 0-20mA Bricklet 2.0
  */
 
 struct TF_IndustrialDual020mAV2;
@@ -31,12 +31,12 @@ typedef void (*TF_IndustrialDual020mAV2CurrentHandler)(struct TF_IndustrialDual0
 
 #endif
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Measures two DC currents between 0mA and 20mA (IEC 60381-1)
  */
 typedef struct TF_IndustrialDual020mAV2 {
-    TF_TfpContext *tfp;
+    TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
     TF_IndustrialDual020mAV2CurrentHandler current_handler;
     void *current_user_data;
@@ -46,301 +46,301 @@ typedef struct TF_IndustrialDual020mAV2 {
 } TF_IndustrialDual020mAV2;
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_FUNCTION_GET_CURRENT 1
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_FUNCTION_SET_CURRENT_CALLBACK_CONFIGURATION 2
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_FUNCTION_GET_CURRENT_CALLBACK_CONFIGURATION 3
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_FUNCTION_SET_SAMPLE_RATE 5
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_FUNCTION_GET_SAMPLE_RATE 6
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_FUNCTION_SET_GAIN 7
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_FUNCTION_GET_GAIN 8
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_FUNCTION_SET_CHANNEL_LED_CONFIG 9
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_FUNCTION_GET_CHANNEL_LED_CONFIG 10
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_FUNCTION_SET_CHANNEL_LED_STATUS_CONFIG 11
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_FUNCTION_GET_CHANNEL_LED_STATUS_CONFIG 12
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_FUNCTION_SET_BOOTLOADER_MODE 235
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_FUNCTION_GET_BOOTLOADER_MODE 236
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER 237
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_FUNCTION_WRITE_FIRMWARE 238
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_FUNCTION_SET_STATUS_LED_CONFIG 239
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_FUNCTION_GET_STATUS_LED_CONFIG 240
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_FUNCTION_GET_CHIP_TEMPERATURE 242
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_FUNCTION_RESET 243
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_FUNCTION_WRITE_UID 248
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_FUNCTION_READ_UID 249
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_FUNCTION_GET_IDENTITY 255
 
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_CALLBACK_CURRENT 4
 
 #endif
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_THRESHOLD_OPTION_OFF 'x'
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_THRESHOLD_OPTION_OUTSIDE 'o'
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_THRESHOLD_OPTION_INSIDE 'i'
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_THRESHOLD_OPTION_SMALLER '<'
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_THRESHOLD_OPTION_GREATER '>'
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_SAMPLE_RATE_240_SPS 0
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_SAMPLE_RATE_60_SPS 1
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_SAMPLE_RATE_15_SPS 2
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_SAMPLE_RATE_4_SPS 3
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_GAIN_1X 0
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_GAIN_2X 1
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_GAIN_4X 2
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_GAIN_8X 3
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_CHANNEL_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_CHANNEL_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_CHANNEL_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_CHANNEL_LED_CONFIG_SHOW_CHANNEL_STATUS 3
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_CHANNEL_LED_STATUS_CONFIG_THRESHOLD 0
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_CHANNEL_LED_STATUS_CONFIG_INTENSITY 1
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_BOOTLOADER_MODE_FIRMWARE 1
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT 2
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_REBOOT 3
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_ERASE_AND_REBOOT 4
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_BOOTLOADER_STATUS_OK 0
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_BOOTLOADER_STATUS_INVALID_MODE 1
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_BOOTLOADER_STATUS_NO_CHANGE 2
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_BOOTLOADER_STATUS_ENTRY_FUNCTION_NOT_PRESENT 3
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_BOOTLOADER_STATUS_DEVICE_IDENTIFIER_INCORRECT 4
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_BOOTLOADER_STATUS_CRC_MISMATCH 5
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_STATUS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_STATUS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_STATUS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_STATUS_LED_CONFIG_SHOW_STATUS 3
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * This constant is used to identify a Industrial Dual 0-20mA Bricklet 2.0.
  *
@@ -351,30 +351,30 @@ typedef struct TF_IndustrialDual020mAV2 {
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_DEVICE_IDENTIFIER 2120
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * This constant represents the display name of a Industrial Dual 0-20mA Bricklet 2.0.
  */
 #define TF_INDUSTRIAL_DUAL_0_20MA_V2_DEVICE_DISPLAY_NAME "Industrial Dual 0-20mA Bricklet 2.0"
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Creates the device object \c industrial_dual_0_20ma_v2 with the unique device ID \c uid and adds
- * it to the IPConnection \c ipcon.
+ * it to the HAL \c hal.
  */
-int tf_industrial_dual_0_20ma_v2_create(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, const char *uid, TF_HalContext *hal);
+int tf_industrial_dual_0_20ma_v2_create(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, const char *uid, TF_HAL *hal);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
- * Removes the device object \c industrial_dual_0_20ma_v2 from its IPConnection and destroys it.
+ * Removes the device object \c industrial_dual_0_20ma_v2 from its HAL and destroys it.
  * The device object cannot be used anymore afterwards.
  */
 int tf_industrial_dual_0_20ma_v2_destroy(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Returns the response expected flag for the function specified by the
  * \c function_id parameter. It is *true* if the function is expected to
@@ -383,8 +383,8 @@ int tf_industrial_dual_0_20ma_v2_destroy(TF_IndustrialDual020mAV2 *industrial_du
  * For getter functions this is enabled by default and cannot be disabled,
  * because those functions will always send a response. For callback
  * configuration functions it is enabled by default too, but can be disabled
- * via the industrial_dual_0_20ma_v2_set_response_expected function. For setter functions it is
- * disabled by default and can be enabled.
+ * via the tf_industrial_dual_0_20ma_v2_set_response_expected function. For setter
+ * functions it is disabled by default and can be enabled.
  *
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
@@ -395,7 +395,7 @@ int tf_industrial_dual_0_20ma_v2_destroy(TF_IndustrialDual020mAV2 *industrial_du
 int tf_industrial_dual_0_20ma_v2_get_response_expected(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint8_t function_id, bool *ret_response_expected);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Changes the response expected flag of the function specified by the
  * \c function_id parameter. This flag can only be changed for setter
@@ -411,7 +411,7 @@ int tf_industrial_dual_0_20ma_v2_get_response_expected(TF_IndustrialDual020mAV2 
 int tf_industrial_dual_0_20ma_v2_set_response_expected(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint8_t function_id, bool response_expected);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
@@ -419,7 +419,7 @@ int tf_industrial_dual_0_20ma_v2_set_response_expected(TF_IndustrialDual020mAV2 
 void tf_industrial_dual_0_20ma_v2_set_response_expected_all(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Registers the given \c handler to the Current callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -435,7 +435,7 @@ int tf_industrial_dual_0_20ma_v2_register_current_callback(TF_IndustrialDual020m
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Polls for callbacks. Will block for the given timeout in microseconds.
  *
@@ -445,7 +445,7 @@ int tf_industrial_dual_0_20ma_v2_callback_tick(TF_IndustrialDual020mAV2 *industr
 #endif
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Returns the current of the specified channel.
  * 
@@ -464,7 +464,7 @@ int tf_industrial_dual_0_20ma_v2_callback_tick(TF_IndustrialDual020mAV2 *industr
 int tf_industrial_dual_0_20ma_v2_get_current(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint8_t channel, int32_t *ret_current);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * The period is the period with which the {@link tf_industrial_dual_0_20ma_v2_register_current_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
@@ -497,14 +497,14 @@ int tf_industrial_dual_0_20ma_v2_get_current(TF_IndustrialDual020mAV2 *industria
 int tf_industrial_dual_0_20ma_v2_set_current_callback_configuration(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint8_t channel, uint32_t period, bool value_has_to_change, char option, int32_t min, int32_t max);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Returns the callback configuration as set by {@link tf_industrial_dual_0_20ma_v2_set_current_callback_configuration}.
  */
 int tf_industrial_dual_0_20ma_v2_get_current_callback_configuration(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint8_t channel, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int32_t *ret_min, int32_t *ret_max);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Sets the sample rate to either 240, 60, 15 or 4 samples per second.
  * The resolution for the rates is 12, 14, 16 and 18 bit respectively.
@@ -521,14 +521,14 @@ int tf_industrial_dual_0_20ma_v2_get_current_callback_configuration(TF_Industria
 int tf_industrial_dual_0_20ma_v2_set_sample_rate(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint8_t rate);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Returns the sample rate as set by {@link tf_industrial_dual_0_20ma_v2_set_sample_rate}.
  */
 int tf_industrial_dual_0_20ma_v2_get_sample_rate(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint8_t *ret_rate);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Sets a gain between 1x and 8x. If you want to measure a very small current,
  * you can increase the gain to get some more resolution.
@@ -539,14 +539,14 @@ int tf_industrial_dual_0_20ma_v2_get_sample_rate(TF_IndustrialDual020mAV2 *indus
 int tf_industrial_dual_0_20ma_v2_set_gain(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint8_t gain);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Returns the gain as set by {@link tf_industrial_dual_0_20ma_v2_set_gain}.
  */
 int tf_industrial_dual_0_20ma_v2_get_gain(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint8_t *ret_gain);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Each channel has a corresponding LED. You can turn the LED off, on or show a
  * heartbeat. You can also set the LED to "Channel Status". In this mode the
@@ -558,14 +558,14 @@ int tf_industrial_dual_0_20ma_v2_get_gain(TF_IndustrialDual020mAV2 *industrial_d
 int tf_industrial_dual_0_20ma_v2_set_channel_led_config(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint8_t channel, uint8_t config);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Returns the channel LED configuration as set by {@link tf_industrial_dual_0_20ma_v2_set_channel_led_config}
  */
 int tf_industrial_dual_0_20ma_v2_get_channel_led_config(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint8_t channel, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Sets the channel LED status config. This config is used if the channel LED is
  * configured as "Channel Status", see {@link tf_industrial_dual_0_20ma_v2_set_channel_led_config}.
@@ -591,7 +591,7 @@ int tf_industrial_dual_0_20ma_v2_get_channel_led_config(TF_IndustrialDual020mAV2
 int tf_industrial_dual_0_20ma_v2_set_channel_led_status_config(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint8_t channel, int32_t min, int32_t max, uint8_t config);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Returns the channel LED status configuration as set by
  * {@link tf_industrial_dual_0_20ma_v2_set_channel_led_status_config}.
@@ -599,7 +599,7 @@ int tf_industrial_dual_0_20ma_v2_set_channel_led_status_config(TF_IndustrialDual
 int tf_industrial_dual_0_20ma_v2_get_channel_led_status_config(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint8_t channel, int32_t *ret_min, int32_t *ret_max, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Returns the error count for the communication between Brick and Bricklet.
  * 
@@ -616,7 +616,7 @@ int tf_industrial_dual_0_20ma_v2_get_channel_led_status_config(TF_IndustrialDual
 int tf_industrial_dual_0_20ma_v2_get_spitfp_error_count(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
@@ -631,14 +631,14 @@ int tf_industrial_dual_0_20ma_v2_get_spitfp_error_count(TF_IndustrialDual020mAV2
 int tf_industrial_dual_0_20ma_v2_set_bootloader_mode(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint8_t mode, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Returns the current bootloader mode, see {@link tf_industrial_dual_0_20ma_v2_set_bootloader_mode}.
  */
 int tf_industrial_dual_0_20ma_v2_get_bootloader_mode(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Sets the firmware pointer for {@link tf_industrial_dual_0_20ma_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
@@ -650,7 +650,7 @@ int tf_industrial_dual_0_20ma_v2_get_bootloader_mode(TF_IndustrialDual020mAV2 *i
 int tf_industrial_dual_0_20ma_v2_set_write_firmware_pointer(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint32_t pointer);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_industrial_dual_0_20ma_v2_set_write_firmware_pointer} before. The firmware is written
@@ -664,7 +664,7 @@ int tf_industrial_dual_0_20ma_v2_set_write_firmware_pointer(TF_IndustrialDual020
 int tf_industrial_dual_0_20ma_v2_write_firmware(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, const uint8_t data[64], uint8_t *ret_status);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
@@ -677,14 +677,14 @@ int tf_industrial_dual_0_20ma_v2_write_firmware(TF_IndustrialDual020mAV2 *indust
 int tf_industrial_dual_0_20ma_v2_set_status_led_config(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint8_t config);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Returns the configuration as set by {@link tf_industrial_dual_0_20ma_v2_set_status_led_config}
  */
 int tf_industrial_dual_0_20ma_v2_get_status_led_config(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
@@ -696,7 +696,7 @@ int tf_industrial_dual_0_20ma_v2_get_status_led_config(TF_IndustrialDual020mAV2 
 int tf_industrial_dual_0_20ma_v2_get_chip_temperature(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
@@ -708,7 +708,7 @@ int tf_industrial_dual_0_20ma_v2_get_chip_temperature(TF_IndustrialDual020mAV2 *
 int tf_industrial_dual_0_20ma_v2_reset(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
@@ -719,7 +719,7 @@ int tf_industrial_dual_0_20ma_v2_reset(TF_IndustrialDual020mAV2 *industrial_dual
 int tf_industrial_dual_0_20ma_v2_write_uid(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint32_t uid);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Returns the current UID as an integer. Encode as
  * Base58 to get the usual string version.
@@ -727,7 +727,7 @@ int tf_industrial_dual_0_20ma_v2_write_uid(TF_IndustrialDual020mAV2 *industrial_
 int tf_industrial_dual_0_20ma_v2_read_uid(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint32_t *ret_uid);
 
 /**
- * \ingroup BrickletIndustrialDual020mAV2
+ * \ingroup TF_IndustrialDual020mAV2
  *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the

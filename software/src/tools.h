@@ -27,8 +27,8 @@
 #include "bindings/hal_common.h"
 
 bool deadline_elapsed(uint32_t deadline_ms);
-bool find_uid_by_did(TF_HalContext *hal, uint16_t device_id, char uid[7]);
-bool find_uid_by_did_at_port(TF_HalContext *hal, uint16_t device_id, char port, char uid[7]);
+bool find_uid_by_did(TF_HAL *hal, uint16_t device_id, char uid[7]);
+bool find_uid_by_did_at_port(TF_HAL *hal, uint16_t device_id, char port, char uid[7]);
 
 String update_config(Config &cfg, String config_name, JsonVariant &json);
 
@@ -40,4 +40,4 @@ bool mount_or_format_spiffs();
 
 String read_or_write_config_version(String &firmware_version);
 
-int ensure_matching_firmware(TF_HalContext *hal, const char *uid, const char* name, const char *purpose, const uint8_t *firmware, size_t firmware_len, EventLog *logger, bool force = false);
+int ensure_matching_firmware(TF_HAL *hal, const char *uid, const char* name, const char *purpose, const uint8_t *firmware, size_t firmware_len, EventLog *logger, bool force = false);

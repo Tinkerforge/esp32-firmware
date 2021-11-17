@@ -28,7 +28,7 @@
 #define BLUE_LED 15
 #define BUTTON 0
 
-TF_HalContext hal;
+TF_HAL hal;
 extern uint32_t uid_numeric;
 extern char uid[7];
 extern char passphrase[20];

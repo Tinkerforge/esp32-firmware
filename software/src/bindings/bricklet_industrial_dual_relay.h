@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-12.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -8,8 +8,8 @@
  * to the generators git repository on tinkerforge.com       *
  *************************************************************/
 
-#ifndef TF_BRICKLET_INDUSTRIAL_DUAL_RELAY_H
-#define TF_BRICKLET_INDUSTRIAL_DUAL_RELAY_H
+#ifndef TF_INDUSTRIAL_DUAL_RELAY_H
+#define TF_INDUSTRIAL_DUAL_RELAY_H
 
 #include "config.h"
 #include "tfp.h"
@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 /**
- * \defgroup BrickletIndustrialDualRelay Industrial Dual Relay Bricklet
+ * \defgroup TF_IndustrialDualRelay Industrial Dual Relay Bricklet
  */
 
 struct TF_IndustrialDualRelay;
@@ -31,12 +31,12 @@ typedef void (*TF_IndustrialDualRelayMonoflopDoneHandler)(struct TF_IndustrialDu
 
 #endif
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * Two relays to switch AC/DC devices
  */
 typedef struct TF_IndustrialDualRelay {
-    TF_TfpContext *tfp;
+    TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
     TF_IndustrialDualRelayMonoflopDoneHandler monoflop_done_handler;
     void *monoflop_done_user_data;
@@ -46,176 +46,176 @@ typedef struct TF_IndustrialDualRelay {
 } TF_IndustrialDualRelay;
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_FUNCTION_SET_VALUE 1
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_FUNCTION_GET_VALUE 2
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_FUNCTION_SET_MONOFLOP 3
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_FUNCTION_GET_MONOFLOP 4
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_FUNCTION_SET_SELECTED_VALUE 6
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_FUNCTION_SET_BOOTLOADER_MODE 235
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_FUNCTION_GET_BOOTLOADER_MODE 236
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_FUNCTION_SET_WRITE_FIRMWARE_POINTER 237
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_FUNCTION_WRITE_FIRMWARE 238
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_FUNCTION_SET_STATUS_LED_CONFIG 239
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_FUNCTION_GET_STATUS_LED_CONFIG 240
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_FUNCTION_GET_CHIP_TEMPERATURE 242
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_FUNCTION_RESET 243
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_FUNCTION_WRITE_UID 248
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_FUNCTION_READ_UID 249
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_FUNCTION_GET_IDENTITY 255
 
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_CALLBACK_MONOFLOP_DONE 5
 
 #endif
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_BOOTLOADER_MODE_FIRMWARE 1
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT 2
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_REBOOT 3
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_ERASE_AND_REBOOT 4
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_BOOTLOADER_STATUS_OK 0
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_BOOTLOADER_STATUS_INVALID_MODE 1
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_BOOTLOADER_STATUS_NO_CHANGE 2
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_BOOTLOADER_STATUS_ENTRY_FUNCTION_NOT_PRESENT 3
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_BOOTLOADER_STATUS_DEVICE_IDENTIFIER_INCORRECT 4
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_BOOTLOADER_STATUS_CRC_MISMATCH 5
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_STATUS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_STATUS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_STATUS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_STATUS_LED_CONFIG_SHOW_STATUS 3
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * This constant is used to identify a Industrial Dual Relay Bricklet.
  *
@@ -226,30 +226,30 @@ typedef struct TF_IndustrialDualRelay {
 #define TF_INDUSTRIAL_DUAL_RELAY_DEVICE_IDENTIFIER 284
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * This constant represents the display name of a Industrial Dual Relay Bricklet.
  */
 #define TF_INDUSTRIAL_DUAL_RELAY_DEVICE_DISPLAY_NAME "Industrial Dual Relay Bricklet"
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * Creates the device object \c industrial_dual_relay with the unique device ID \c uid and adds
- * it to the IPConnection \c ipcon.
+ * it to the HAL \c hal.
  */
-int tf_industrial_dual_relay_create(TF_IndustrialDualRelay *industrial_dual_relay, const char *uid, TF_HalContext *hal);
+int tf_industrial_dual_relay_create(TF_IndustrialDualRelay *industrial_dual_relay, const char *uid, TF_HAL *hal);
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
- * Removes the device object \c industrial_dual_relay from its IPConnection and destroys it.
+ * Removes the device object \c industrial_dual_relay from its HAL and destroys it.
  * The device object cannot be used anymore afterwards.
  */
 int tf_industrial_dual_relay_destroy(TF_IndustrialDualRelay *industrial_dual_relay);
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * Returns the response expected flag for the function specified by the
  * \c function_id parameter. It is *true* if the function is expected to
@@ -258,8 +258,8 @@ int tf_industrial_dual_relay_destroy(TF_IndustrialDualRelay *industrial_dual_rel
  * For getter functions this is enabled by default and cannot be disabled,
  * because those functions will always send a response. For callback
  * configuration functions it is enabled by default too, but can be disabled
- * via the industrial_dual_relay_set_response_expected function. For setter functions it is
- * disabled by default and can be enabled.
+ * via the tf_industrial_dual_relay_set_response_expected function. For setter
+ * functions it is disabled by default and can be enabled.
  *
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
@@ -270,7 +270,7 @@ int tf_industrial_dual_relay_destroy(TF_IndustrialDualRelay *industrial_dual_rel
 int tf_industrial_dual_relay_get_response_expected(TF_IndustrialDualRelay *industrial_dual_relay, uint8_t function_id, bool *ret_response_expected);
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * Changes the response expected flag of the function specified by the
  * \c function_id parameter. This flag can only be changed for setter
@@ -286,7 +286,7 @@ int tf_industrial_dual_relay_get_response_expected(TF_IndustrialDualRelay *indus
 int tf_industrial_dual_relay_set_response_expected(TF_IndustrialDualRelay *industrial_dual_relay, uint8_t function_id, bool response_expected);
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
@@ -294,7 +294,7 @@ int tf_industrial_dual_relay_set_response_expected(TF_IndustrialDualRelay *indus
 void tf_industrial_dual_relay_set_response_expected_all(TF_IndustrialDualRelay *industrial_dual_relay, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * Registers the given \c handler to the Monoflop Done callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -309,7 +309,7 @@ int tf_industrial_dual_relay_register_monoflop_done_callback(TF_IndustrialDualRe
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * Polls for callbacks. Will block for the given timeout in microseconds.
  *
@@ -319,7 +319,7 @@ int tf_industrial_dual_relay_callback_tick(TF_IndustrialDualRelay *industrial_du
 #endif
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * Sets the state of the relays, *true* means on and *false* means off.
  * For example: (true, false) turns relay 0 on and relay 1 off.
@@ -333,14 +333,14 @@ int tf_industrial_dual_relay_callback_tick(TF_IndustrialDualRelay *industrial_du
 int tf_industrial_dual_relay_set_value(TF_IndustrialDualRelay *industrial_dual_relay, bool channel0, bool channel1);
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * Returns the state of the relays, *true* means on and *false* means off.
  */
 int tf_industrial_dual_relay_get_value(TF_IndustrialDualRelay *industrial_dual_relay, bool *ret_channel0, bool *ret_channel1);
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * The first parameter can be 0 or 1 (relay 0 or relay 1). The second parameter
  * is the desired state of the relay (*true* means on and *false* means off).
@@ -359,7 +359,7 @@ int tf_industrial_dual_relay_get_value(TF_IndustrialDualRelay *industrial_dual_r
 int tf_industrial_dual_relay_set_monoflop(TF_IndustrialDualRelay *industrial_dual_relay, uint8_t channel, bool value, uint32_t time);
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * Returns (for the given relay) the current state and the time as set by
  * {@link tf_industrial_dual_relay_set_monoflop} as well as the remaining time until the state flips.
@@ -370,7 +370,7 @@ int tf_industrial_dual_relay_set_monoflop(TF_IndustrialDualRelay *industrial_dua
 int tf_industrial_dual_relay_get_monoflop(TF_IndustrialDualRelay *industrial_dual_relay, uint8_t channel, bool *ret_value, uint32_t *ret_time, uint32_t *ret_time_remaining);
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * Sets the state of the selected relay, *true* means on and *false*
  * means off.
@@ -383,7 +383,7 @@ int tf_industrial_dual_relay_get_monoflop(TF_IndustrialDualRelay *industrial_dua
 int tf_industrial_dual_relay_set_selected_value(TF_IndustrialDualRelay *industrial_dual_relay, uint8_t channel, bool value);
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * Returns the error count for the communication between Brick and Bricklet.
  * 
@@ -400,7 +400,7 @@ int tf_industrial_dual_relay_set_selected_value(TF_IndustrialDualRelay *industri
 int tf_industrial_dual_relay_get_spitfp_error_count(TF_IndustrialDualRelay *industrial_dual_relay, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
@@ -415,14 +415,14 @@ int tf_industrial_dual_relay_get_spitfp_error_count(TF_IndustrialDualRelay *indu
 int tf_industrial_dual_relay_set_bootloader_mode(TF_IndustrialDualRelay *industrial_dual_relay, uint8_t mode, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * Returns the current bootloader mode, see {@link tf_industrial_dual_relay_set_bootloader_mode}.
  */
 int tf_industrial_dual_relay_get_bootloader_mode(TF_IndustrialDualRelay *industrial_dual_relay, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * Sets the firmware pointer for {@link tf_industrial_dual_relay_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
@@ -434,7 +434,7 @@ int tf_industrial_dual_relay_get_bootloader_mode(TF_IndustrialDualRelay *industr
 int tf_industrial_dual_relay_set_write_firmware_pointer(TF_IndustrialDualRelay *industrial_dual_relay, uint32_t pointer);
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_industrial_dual_relay_set_write_firmware_pointer} before. The firmware is written
@@ -448,7 +448,7 @@ int tf_industrial_dual_relay_set_write_firmware_pointer(TF_IndustrialDualRelay *
 int tf_industrial_dual_relay_write_firmware(TF_IndustrialDualRelay *industrial_dual_relay, const uint8_t data[64], uint8_t *ret_status);
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
@@ -461,14 +461,14 @@ int tf_industrial_dual_relay_write_firmware(TF_IndustrialDualRelay *industrial_d
 int tf_industrial_dual_relay_set_status_led_config(TF_IndustrialDualRelay *industrial_dual_relay, uint8_t config);
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * Returns the configuration as set by {@link tf_industrial_dual_relay_set_status_led_config}
  */
 int tf_industrial_dual_relay_get_status_led_config(TF_IndustrialDualRelay *industrial_dual_relay, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
@@ -480,7 +480,7 @@ int tf_industrial_dual_relay_get_status_led_config(TF_IndustrialDualRelay *indus
 int tf_industrial_dual_relay_get_chip_temperature(TF_IndustrialDualRelay *industrial_dual_relay, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
@@ -492,7 +492,7 @@ int tf_industrial_dual_relay_get_chip_temperature(TF_IndustrialDualRelay *indust
 int tf_industrial_dual_relay_reset(TF_IndustrialDualRelay *industrial_dual_relay);
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
@@ -503,7 +503,7 @@ int tf_industrial_dual_relay_reset(TF_IndustrialDualRelay *industrial_dual_relay
 int tf_industrial_dual_relay_write_uid(TF_IndustrialDualRelay *industrial_dual_relay, uint32_t uid);
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * Returns the current UID as an integer. Encode as
  * Base58 to get the usual string version.
@@ -511,7 +511,7 @@ int tf_industrial_dual_relay_write_uid(TF_IndustrialDualRelay *industrial_dual_r
 int tf_industrial_dual_relay_read_uid(TF_IndustrialDualRelay *industrial_dual_relay, uint32_t *ret_uid);
 
 /**
- * \ingroup BrickletIndustrialDualRelay
+ * \ingroup TF_IndustrialDualRelay
  *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-12.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -8,8 +8,8 @@
  * to the generators git repository on tinkerforge.com       *
  *************************************************************/
 
-#ifndef TF_BRICKLET_CAN_V2_H
-#define TF_BRICKLET_CAN_V2_H
+#ifndef TF_CAN_V2_H
+#define TF_CAN_V2_H
 
 #include "config.h"
 #include "tfp.h"
@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 /**
- * \defgroup BrickletCANV2 CAN Bricklet 2.0
+ * \defgroup TF_CANV2 CAN Bricklet 2.0
  */
 
 struct TF_CANV2;
@@ -33,12 +33,12 @@ typedef void (*TF_CANV2ErrorOccurredHandler)(struct TF_CANV2 *device, void *user
 
 #endif
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Communicates with CAN bus devices
  */
 typedef struct TF_CANV2 {
-    TF_TfpContext *tfp;
+    TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
     TF_CANV2FrameReadLowLevelHandler frame_read_low_level_handler;
     void *frame_read_low_level_user_data;
@@ -54,371 +54,371 @@ typedef struct TF_CANV2 {
 } TF_CANV2;
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_WRITE_FRAME_LOW_LEVEL 1
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_READ_FRAME_LOW_LEVEL 2
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_SET_FRAME_READ_CALLBACK_CONFIGURATION 3
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_GET_FRAME_READ_CALLBACK_CONFIGURATION 4
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_SET_TRANSCEIVER_CONFIGURATION 5
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_GET_TRANSCEIVER_CONFIGURATION 6
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_SET_QUEUE_CONFIGURATION_LOW_LEVEL 7
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_GET_QUEUE_CONFIGURATION_LOW_LEVEL 8
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_SET_READ_FILTER_CONFIGURATION 9
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_GET_READ_FILTER_CONFIGURATION 10
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_GET_ERROR_LOG_LOW_LEVEL 11
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_SET_COMMUNICATION_LED_CONFIG 12
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_GET_COMMUNICATION_LED_CONFIG 13
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_SET_ERROR_LED_CONFIG 14
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_GET_ERROR_LED_CONFIG 15
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_SET_FRAME_READABLE_CALLBACK_CONFIGURATION 17
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_GET_FRAME_READABLE_CALLBACK_CONFIGURATION 18
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_SET_ERROR_OCCURRED_CALLBACK_CONFIGURATION 20
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_GET_ERROR_OCCURRED_CALLBACK_CONFIGURATION 21
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_SET_BOOTLOADER_MODE 235
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_GET_BOOTLOADER_MODE 236
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER 237
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_WRITE_FIRMWARE 238
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_SET_STATUS_LED_CONFIG 239
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_GET_STATUS_LED_CONFIG 240
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_GET_CHIP_TEMPERATURE 242
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_RESET 243
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_WRITE_UID 248
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_READ_UID 249
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FUNCTION_GET_IDENTITY 255
 
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_CALLBACK_FRAME_READ_LOW_LEVEL 16
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_CALLBACK_FRAME_READABLE 19
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_CALLBACK_ERROR_OCCURRED 22
 
 #endif
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FRAME_TYPE_STANDARD_DATA 0
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FRAME_TYPE_STANDARD_REMOTE 1
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FRAME_TYPE_EXTENDED_DATA 2
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FRAME_TYPE_EXTENDED_REMOTE 3
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_TRANSCEIVER_MODE_NORMAL 0
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_TRANSCEIVER_MODE_LOOPBACK 1
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_TRANSCEIVER_MODE_READ_ONLY 2
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FILTER_MODE_ACCEPT_ALL 0
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FILTER_MODE_MATCH_STANDARD_ONLY 1
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FILTER_MODE_MATCH_EXTENDED_ONLY 2
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_FILTER_MODE_MATCH_STANDARD_AND_EXTENDED 3
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_TRANSCEIVER_STATE_ACTIVE 0
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_TRANSCEIVER_STATE_PASSIVE 1
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_TRANSCEIVER_STATE_DISABLED 2
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_COMMUNICATION_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_COMMUNICATION_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_COMMUNICATION_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_COMMUNICATION_LED_CONFIG_SHOW_COMMUNICATION 3
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_ERROR_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_ERROR_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_ERROR_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_ERROR_LED_CONFIG_SHOW_TRANSCEIVER_STATE 3
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_ERROR_LED_CONFIG_SHOW_ERROR 4
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_BOOTLOADER_MODE_FIRMWARE 1
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT 2
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_REBOOT 3
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_ERASE_AND_REBOOT 4
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_BOOTLOADER_STATUS_OK 0
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_BOOTLOADER_STATUS_INVALID_MODE 1
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_BOOTLOADER_STATUS_NO_CHANGE 2
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_BOOTLOADER_STATUS_ENTRY_FUNCTION_NOT_PRESENT 3
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_BOOTLOADER_STATUS_DEVICE_IDENTIFIER_INCORRECT 4
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_BOOTLOADER_STATUS_CRC_MISMATCH 5
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_STATUS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_STATUS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_STATUS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  */
 #define TF_CAN_V2_STATUS_LED_CONFIG_SHOW_STATUS 3
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * This constant is used to identify a CAN Bricklet 2.0.
  *
@@ -429,30 +429,30 @@ typedef struct TF_CANV2 {
 #define TF_CAN_V2_DEVICE_IDENTIFIER 2107
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * This constant represents the display name of a CAN Bricklet 2.0.
  */
 #define TF_CAN_V2_DEVICE_DISPLAY_NAME "CAN Bricklet 2.0"
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Creates the device object \c can_v2 with the unique device ID \c uid and adds
- * it to the IPConnection \c ipcon.
+ * it to the HAL \c hal.
  */
-int tf_can_v2_create(TF_CANV2 *can_v2, const char *uid, TF_HalContext *hal);
+int tf_can_v2_create(TF_CANV2 *can_v2, const char *uid, TF_HAL *hal);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
- * Removes the device object \c can_v2 from its IPConnection and destroys it.
+ * Removes the device object \c can_v2 from its HAL and destroys it.
  * The device object cannot be used anymore afterwards.
  */
 int tf_can_v2_destroy(TF_CANV2 *can_v2);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Returns the response expected flag for the function specified by the
  * \c function_id parameter. It is *true* if the function is expected to
@@ -461,8 +461,8 @@ int tf_can_v2_destroy(TF_CANV2 *can_v2);
  * For getter functions this is enabled by default and cannot be disabled,
  * because those functions will always send a response. For callback
  * configuration functions it is enabled by default too, but can be disabled
- * via the can_v2_set_response_expected function. For setter functions it is
- * disabled by default and can be enabled.
+ * via the tf_can_v2_set_response_expected function. For setter
+ * functions it is disabled by default and can be enabled.
  *
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
@@ -473,7 +473,7 @@ int tf_can_v2_destroy(TF_CANV2 *can_v2);
 int tf_can_v2_get_response_expected(TF_CANV2 *can_v2, uint8_t function_id, bool *ret_response_expected);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Changes the response expected flag of the function specified by the
  * \c function_id parameter. This flag can only be changed for setter
@@ -489,7 +489,7 @@ int tf_can_v2_get_response_expected(TF_CANV2 *can_v2, uint8_t function_id, bool 
 int tf_can_v2_set_response_expected(TF_CANV2 *can_v2, uint8_t function_id, bool response_expected);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
@@ -497,7 +497,7 @@ int tf_can_v2_set_response_expected(TF_CANV2 *can_v2, uint8_t function_id, bool 
 void tf_can_v2_set_response_expected_all(TF_CANV2 *can_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Registers the given \c handler to the Frame Read Low Level callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -522,7 +522,7 @@ int tf_can_v2_register_frame_read_low_level_callback(TF_CANV2 *can_v2, TF_CANV2F
 
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Registers the given \c handler to the Frame Readable callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -546,7 +546,7 @@ int tf_can_v2_register_frame_readable_callback(TF_CANV2 *can_v2, TF_CANV2FrameRe
 
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Registers the given \c handler to the Error Occurred callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -566,7 +566,7 @@ int tf_can_v2_register_error_occurred_callback(TF_CANV2 *can_v2, TF_CANV2ErrorOc
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Polls for callbacks. Will block for the given timeout in microseconds.
  *
@@ -576,7 +576,7 @@ int tf_can_v2_callback_tick(TF_CANV2 *can_v2, uint32_t timeout_us);
 #endif
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Writes a data or remote frame to the write queue to be transmitted over the
  * CAN transceiver.
@@ -610,7 +610,7 @@ int tf_can_v2_callback_tick(TF_CANV2 *can_v2, uint32_t timeout_us);
 int tf_can_v2_write_frame_low_level(TF_CANV2 *can_v2, uint8_t frame_type, uint32_t identifier, uint8_t data_length, const uint8_t data_data[15], bool *ret_success);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Tries to read the next data or remote frame from the read queue and returns it.
  * If a frame was successfully read, then the ``success`` return value is set to
@@ -638,7 +638,7 @@ int tf_can_v2_write_frame_low_level(TF_CANV2 *can_v2, uint8_t frame_type, uint32
 int tf_can_v2_read_frame_low_level(TF_CANV2 *can_v2, bool *ret_success, uint8_t *ret_frame_type, uint32_t *ret_identifier, uint8_t *ret_data_length, uint8_t ret_data_data[15]);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Enables and disables the {@link tf_can_v2_register_frame_read_callback} callback.
  * 
@@ -647,14 +647,14 @@ int tf_can_v2_read_frame_low_level(TF_CANV2 *can_v2, bool *ret_success, uint8_t 
 int tf_can_v2_set_frame_read_callback_configuration(TF_CANV2 *can_v2, bool enabled);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Returns *true* if the {@link tf_can_v2_register_frame_read_callback} callback is enabled, *false* otherwise.
  */
 int tf_can_v2_get_frame_read_callback_configuration(TF_CANV2 *can_v2, bool *ret_enabled);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Sets the transceiver configuration for the CAN bus communication.
  * 
@@ -671,14 +671,14 @@ int tf_can_v2_get_frame_read_callback_configuration(TF_CANV2 *can_v2, bool *ret_
 int tf_can_v2_set_transceiver_configuration(TF_CANV2 *can_v2, uint32_t baud_rate, uint16_t sample_point, uint8_t transceiver_mode);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Returns the configuration as set by {@link tf_can_v2_set_transceiver_configuration}.
  */
 int tf_can_v2_get_transceiver_configuration(TF_CANV2 *can_v2, uint32_t *ret_baud_rate, uint16_t *ret_sample_point, uint8_t *ret_transceiver_mode);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Sets the write and read queue configuration.
  * 
@@ -731,14 +731,14 @@ int tf_can_v2_get_transceiver_configuration(TF_CANV2 *can_v2, uint32_t *ret_baud
 int tf_can_v2_set_queue_configuration_low_level(TF_CANV2 *can_v2, uint8_t write_buffer_size, int32_t write_buffer_timeout, uint16_t write_backlog_size, uint8_t read_buffer_sizes_length, const int8_t read_buffer_sizes_data[32], uint16_t read_backlog_size);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Returns the queue configuration as set by {@link tf_can_v2_set_queue_configuration}.
  */
 int tf_can_v2_get_queue_configuration_low_level(TF_CANV2 *can_v2, uint8_t *ret_write_buffer_size, int32_t *ret_write_buffer_timeout, uint16_t *ret_write_backlog_size, uint8_t *ret_read_buffer_sizes_length, int8_t ret_read_buffer_sizes_data[32], uint16_t *ret_read_backlog_size);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Set the read filter configuration for the given read buffer index. This can be
  * used to define which frames should be received by the CAN transceiver and put
@@ -802,14 +802,14 @@ int tf_can_v2_get_queue_configuration_low_level(TF_CANV2 *can_v2, uint8_t *ret_w
 int tf_can_v2_set_read_filter_configuration(TF_CANV2 *can_v2, uint8_t buffer_index, uint8_t filter_mode, uint32_t filter_mask, uint32_t filter_identifier);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Returns the read filter configuration as set by {@link tf_can_v2_set_read_filter_configuration}.
  */
 int tf_can_v2_get_read_filter_configuration(TF_CANV2 *can_v2, uint8_t buffer_index, uint8_t *ret_filter_mode, uint32_t *ret_filter_mask, uint32_t *ret_filter_identifier);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Returns information about different kinds of errors.
  * 
@@ -850,7 +850,7 @@ int tf_can_v2_get_read_filter_configuration(TF_CANV2 *can_v2, uint8_t buffer_ind
 int tf_can_v2_get_error_log_low_level(TF_CANV2 *can_v2, uint8_t *ret_transceiver_state, uint8_t *ret_transceiver_write_error_level, uint8_t *ret_transceiver_read_error_level, uint32_t *ret_transceiver_stuffing_error_count, uint32_t *ret_transceiver_format_error_count, uint32_t *ret_transceiver_ack_error_count, uint32_t *ret_transceiver_bit1_error_count, uint32_t *ret_transceiver_bit0_error_count, uint32_t *ret_transceiver_crc_error_count, uint32_t *ret_write_buffer_timeout_error_count, uint32_t *ret_read_buffer_overflow_error_count, uint8_t *ret_read_buffer_overflow_error_occurred_length, bool ret_read_buffer_overflow_error_occurred_data[32], uint32_t *ret_read_backlog_overflow_error_count);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Sets the communication LED configuration. By default the LED shows
  * CAN-Bus traffic, it flickers once for every 40 transmitted or received frames.
@@ -862,14 +862,14 @@ int tf_can_v2_get_error_log_low_level(TF_CANV2 *can_v2, uint8_t *ret_transceiver
 int tf_can_v2_set_communication_led_config(TF_CANV2 *can_v2, uint8_t config);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Returns the configuration as set by {@link tf_can_v2_set_communication_led_config}
  */
 int tf_can_v2_get_communication_led_config(TF_CANV2 *can_v2, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Sets the error LED configuration.
  * 
@@ -888,14 +888,14 @@ int tf_can_v2_get_communication_led_config(TF_CANV2 *can_v2, uint8_t *ret_config
 int tf_can_v2_set_error_led_config(TF_CANV2 *can_v2, uint8_t config);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Returns the configuration as set by {@link tf_can_v2_set_error_led_config}.
  */
 int tf_can_v2_get_error_led_config(TF_CANV2 *can_v2, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Enables and disables the {@link tf_can_v2_register_frame_readable_callback} callback.
  * 
@@ -906,7 +906,7 @@ int tf_can_v2_get_error_led_config(TF_CANV2 *can_v2, uint8_t *ret_config);
 int tf_can_v2_set_frame_readable_callback_configuration(TF_CANV2 *can_v2, bool enabled);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Returns *true* if the {@link tf_can_v2_register_frame_readable_callback} callback is enabled, *false* otherwise.
  * 
@@ -915,7 +915,7 @@ int tf_can_v2_set_frame_readable_callback_configuration(TF_CANV2 *can_v2, bool e
 int tf_can_v2_get_frame_readable_callback_configuration(TF_CANV2 *can_v2, bool *ret_enabled);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Enables and disables the {@link tf_can_v2_register_error_occurred_callback} callback.
  * 
@@ -926,7 +926,7 @@ int tf_can_v2_get_frame_readable_callback_configuration(TF_CANV2 *can_v2, bool *
 int tf_can_v2_set_error_occurred_callback_configuration(TF_CANV2 *can_v2, bool enabled);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Returns *true* if the {@link tf_can_v2_register_error_occurred_callback} callback is enabled, *false* otherwise.
  * 
@@ -935,7 +935,7 @@ int tf_can_v2_set_error_occurred_callback_configuration(TF_CANV2 *can_v2, bool e
 int tf_can_v2_get_error_occurred_callback_configuration(TF_CANV2 *can_v2, bool *ret_enabled);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Returns the error count for the communication between Brick and Bricklet.
  * 
@@ -952,7 +952,7 @@ int tf_can_v2_get_error_occurred_callback_configuration(TF_CANV2 *can_v2, bool *
 int tf_can_v2_get_spitfp_error_count(TF_CANV2 *can_v2, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
@@ -967,14 +967,14 @@ int tf_can_v2_get_spitfp_error_count(TF_CANV2 *can_v2, uint32_t *ret_error_count
 int tf_can_v2_set_bootloader_mode(TF_CANV2 *can_v2, uint8_t mode, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Returns the current bootloader mode, see {@link tf_can_v2_set_bootloader_mode}.
  */
 int tf_can_v2_get_bootloader_mode(TF_CANV2 *can_v2, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Sets the firmware pointer for {@link tf_can_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
@@ -986,7 +986,7 @@ int tf_can_v2_get_bootloader_mode(TF_CANV2 *can_v2, uint8_t *ret_mode);
 int tf_can_v2_set_write_firmware_pointer(TF_CANV2 *can_v2, uint32_t pointer);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_can_v2_set_write_firmware_pointer} before. The firmware is written
@@ -1000,7 +1000,7 @@ int tf_can_v2_set_write_firmware_pointer(TF_CANV2 *can_v2, uint32_t pointer);
 int tf_can_v2_write_firmware(TF_CANV2 *can_v2, const uint8_t data[64], uint8_t *ret_status);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
@@ -1013,14 +1013,14 @@ int tf_can_v2_write_firmware(TF_CANV2 *can_v2, const uint8_t data[64], uint8_t *
 int tf_can_v2_set_status_led_config(TF_CANV2 *can_v2, uint8_t config);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Returns the configuration as set by {@link tf_can_v2_set_status_led_config}
  */
 int tf_can_v2_get_status_led_config(TF_CANV2 *can_v2, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
@@ -1032,7 +1032,7 @@ int tf_can_v2_get_status_led_config(TF_CANV2 *can_v2, uint8_t *ret_config);
 int tf_can_v2_get_chip_temperature(TF_CANV2 *can_v2, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
@@ -1044,7 +1044,7 @@ int tf_can_v2_get_chip_temperature(TF_CANV2 *can_v2, int16_t *ret_temperature);
 int tf_can_v2_reset(TF_CANV2 *can_v2);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
@@ -1055,7 +1055,7 @@ int tf_can_v2_reset(TF_CANV2 *can_v2);
 int tf_can_v2_write_uid(TF_CANV2 *can_v2, uint32_t uid);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Returns the current UID as an integer. Encode as
  * Base58 to get the usual string version.
@@ -1063,7 +1063,7 @@ int tf_can_v2_write_uid(TF_CANV2 *can_v2, uint32_t uid);
 int tf_can_v2_read_uid(TF_CANV2 *can_v2, uint32_t *ret_uid);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
@@ -1079,7 +1079,7 @@ int tf_can_v2_read_uid(TF_CANV2 *can_v2, uint32_t *ret_uid);
 int tf_can_v2_get_identity(TF_CANV2 *can_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Writes a data or remote frame to the write queue to be transmitted over the
  * CAN transceiver.
@@ -1113,7 +1113,7 @@ int tf_can_v2_get_identity(TF_CANV2 *can_v2, char ret_uid[8], char ret_connected
 int tf_can_v2_write_frame(TF_CANV2 *can_v2, uint8_t frame_type, uint32_t identifier, const uint8_t *data, uint8_t data_length, bool *ret_success);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Tries to read the next data or remote frame from the read queue and returns it.
  * If a frame was successfully read, then the ``success`` return value is set to
@@ -1141,7 +1141,7 @@ int tf_can_v2_write_frame(TF_CANV2 *can_v2, uint8_t frame_type, uint32_t identif
 int tf_can_v2_read_frame(TF_CANV2 *can_v2, bool *ret_success, uint8_t *ret_frame_type, uint32_t *ret_identifier, uint8_t *ret_data, uint8_t *ret_data_length);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Sets the write and read queue configuration.
  * 
@@ -1194,14 +1194,14 @@ int tf_can_v2_read_frame(TF_CANV2 *can_v2, bool *ret_success, uint8_t *ret_frame
 int tf_can_v2_set_queue_configuration(TF_CANV2 *can_v2, uint8_t write_buffer_size, int32_t write_buffer_timeout, uint16_t write_backlog_size, const int8_t *read_buffer_sizes, uint8_t read_buffer_sizes_length, uint16_t read_backlog_size);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Returns the queue configuration as set by {@link tf_can_v2_set_queue_configuration}.
  */
 int tf_can_v2_get_queue_configuration(TF_CANV2 *can_v2, uint8_t *ret_write_buffer_size, int32_t *ret_write_buffer_timeout, uint16_t *ret_write_backlog_size, int8_t *ret_read_buffer_sizes, uint8_t *ret_read_buffer_sizes_length, uint16_t *ret_read_backlog_size);
 
 /**
- * \ingroup BrickletCANV2
+ * \ingroup TF_CANV2
  *
  * Returns information about different kinds of errors.
  * 

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-12.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -8,8 +8,8 @@
  * to the generators git repository on tinkerforge.com       *
  *************************************************************/
 
-#ifndef TF_BRICKLET_XMC1400_BREAKOUT_H
-#define TF_BRICKLET_XMC1400_BREAKOUT_H
+#ifndef TF_XMC1400_BREAKOUT_H
+#define TF_XMC1400_BREAKOUT_H
 
 #include "config.h"
 #include "tfp.h"
@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 /**
- * \defgroup BrickletXMC1400Breakout XMC1400 Breakout Bricklet
+ * \defgroup TF_XMC1400Breakout XMC1400 Breakout Bricklet
  */
 
 struct TF_XMC1400Breakout;
@@ -32,12 +32,12 @@ typedef void (*TF_XMC1400BreakoutCountHandler)(struct TF_XMC1400Breakout *device
 
 #endif
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Breakout for Infineon XMC1400 microcontroller
  */
 typedef struct TF_XMC1400Breakout {
-    TF_TfpContext *tfp;
+    TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
     TF_XMC1400BreakoutADCValuesHandler adc_values_handler;
     void *adc_values_user_data;
@@ -50,296 +50,296 @@ typedef struct TF_XMC1400Breakout {
 } TF_XMC1400Breakout;
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_FUNCTION_SET_GPIO_CONFIG 1
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_FUNCTION_GET_GPIO_INPUT 2
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_FUNCTION_SET_ADC_CHANNEL_CONFIG 3
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_FUNCTION_GET_ADC_CHANNEL_CONFIG 4
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_FUNCTION_GET_ADC_CHANNEL_VALUE 5
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_FUNCTION_GET_ADC_VALUES 6
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_FUNCTION_SET_ADC_VALUES_CALLBACK_CONFIGURATION 7
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_FUNCTION_GET_ADC_VALUES_CALLBACK_CONFIGURATION 8
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_FUNCTION_GET_COUNT 10
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_FUNCTION_SET_COUNT_CALLBACK_CONFIGURATION 11
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_FUNCTION_GET_COUNT_CALLBACK_CONFIGURATION 12
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_FUNCTION_SET_BOOTLOADER_MODE 235
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_FUNCTION_GET_BOOTLOADER_MODE 236
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_FUNCTION_SET_WRITE_FIRMWARE_POINTER 237
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_FUNCTION_WRITE_FIRMWARE 238
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_FUNCTION_SET_STATUS_LED_CONFIG 239
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_FUNCTION_GET_STATUS_LED_CONFIG 240
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_FUNCTION_GET_CHIP_TEMPERATURE 242
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_FUNCTION_RESET 243
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_FUNCTION_WRITE_UID 248
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_FUNCTION_READ_UID 249
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_FUNCTION_GET_IDENTITY 255
 
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_CALLBACK_ADC_VALUES 9
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_CALLBACK_COUNT 13
 
 #endif
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_THRESHOLD_OPTION_OFF 'x'
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_THRESHOLD_OPTION_OUTSIDE 'o'
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_THRESHOLD_OPTION_INSIDE 'i'
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_THRESHOLD_OPTION_SMALLER '<'
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_THRESHOLD_OPTION_GREATER '>'
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_GPIO_MODE_INPUT_TRISTATE 0
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_GPIO_MODE_INPUT_PULL_DOWN 1
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_GPIO_MODE_INPUT_PULL_UP 2
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_GPIO_MODE_INPUT_SAMPLING 3
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_GPIO_MODE_INPUT_INVERTED_TRISTATE 4
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_GPIO_MODE_INPUT_INVERTED_PULL_DOWN 5
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_GPIO_MODE_INPUT_INVERTED_PULL_UP 6
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_GPIO_MODE_INPUT_INVERTED_SAMPLING 7
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_GPIO_MODE_OUTPUT_PUSH_PULL 8
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_GPIO_MODE_OUTPUT_OPEN_DRAIN 9
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_GPIO_INPUT_HYSTERESIS_STANDARD 0
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_GPIO_INPUT_HYSTERESIS_LARGE 4
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_BOOTLOADER_MODE_FIRMWARE 1
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT 2
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_REBOOT 3
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_ERASE_AND_REBOOT 4
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_BOOTLOADER_STATUS_OK 0
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_BOOTLOADER_STATUS_INVALID_MODE 1
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_BOOTLOADER_STATUS_NO_CHANGE 2
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_BOOTLOADER_STATUS_ENTRY_FUNCTION_NOT_PRESENT 3
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_BOOTLOADER_STATUS_DEVICE_IDENTIFIER_INCORRECT 4
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_BOOTLOADER_STATUS_CRC_MISMATCH 5
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_STATUS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_STATUS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_STATUS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  */
 #define TF_XMC1400_BREAKOUT_STATUS_LED_CONFIG_SHOW_STATUS 3
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * This constant is used to identify a XMC1400 Breakout Bricklet.
  *
@@ -350,30 +350,30 @@ typedef struct TF_XMC1400Breakout {
 #define TF_XMC1400_BREAKOUT_DEVICE_IDENTIFIER 279
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * This constant represents the display name of a XMC1400 Breakout Bricklet.
  */
 #define TF_XMC1400_BREAKOUT_DEVICE_DISPLAY_NAME "XMC1400 Breakout Bricklet"
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Creates the device object \c xmc1400_breakout with the unique device ID \c uid and adds
- * it to the IPConnection \c ipcon.
+ * it to the HAL \c hal.
  */
-int tf_xmc1400_breakout_create(TF_XMC1400Breakout *xmc1400_breakout, const char *uid, TF_HalContext *hal);
+int tf_xmc1400_breakout_create(TF_XMC1400Breakout *xmc1400_breakout, const char *uid, TF_HAL *hal);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
- * Removes the device object \c xmc1400_breakout from its IPConnection and destroys it.
+ * Removes the device object \c xmc1400_breakout from its HAL and destroys it.
  * The device object cannot be used anymore afterwards.
  */
 int tf_xmc1400_breakout_destroy(TF_XMC1400Breakout *xmc1400_breakout);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Returns the response expected flag for the function specified by the
  * \c function_id parameter. It is *true* if the function is expected to
@@ -382,8 +382,8 @@ int tf_xmc1400_breakout_destroy(TF_XMC1400Breakout *xmc1400_breakout);
  * For getter functions this is enabled by default and cannot be disabled,
  * because those functions will always send a response. For callback
  * configuration functions it is enabled by default too, but can be disabled
- * via the xmc1400_breakout_set_response_expected function. For setter functions it is
- * disabled by default and can be enabled.
+ * via the tf_xmc1400_breakout_set_response_expected function. For setter
+ * functions it is disabled by default and can be enabled.
  *
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
@@ -394,7 +394,7 @@ int tf_xmc1400_breakout_destroy(TF_XMC1400Breakout *xmc1400_breakout);
 int tf_xmc1400_breakout_get_response_expected(TF_XMC1400Breakout *xmc1400_breakout, uint8_t function_id, bool *ret_response_expected);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Changes the response expected flag of the function specified by the
  * \c function_id parameter. This flag can only be changed for setter
@@ -410,7 +410,7 @@ int tf_xmc1400_breakout_get_response_expected(TF_XMC1400Breakout *xmc1400_breako
 int tf_xmc1400_breakout_set_response_expected(TF_XMC1400Breakout *xmc1400_breakout, uint8_t function_id, bool response_expected);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
@@ -418,7 +418,7 @@ int tf_xmc1400_breakout_set_response_expected(TF_XMC1400Breakout *xmc1400_breako
 void tf_xmc1400_breakout_set_response_expected_all(TF_XMC1400Breakout *xmc1400_breakout, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Registers the given \c handler to the ADC Values callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -434,7 +434,7 @@ int tf_xmc1400_breakout_register_adc_values_callback(TF_XMC1400Breakout *xmc1400
 
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Registers the given \c handler to the Count callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -450,7 +450,7 @@ int tf_xmc1400_breakout_register_count_callback(TF_XMC1400Breakout *xmc1400_brea
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Polls for callbacks. Will block for the given timeout in microseconds.
  *
@@ -460,7 +460,7 @@ int tf_xmc1400_breakout_callback_tick(TF_XMC1400Breakout *xmc1400_breakout, uint
 #endif
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Example for a setter function. The values are the values that can be given to
  * the XMC_GPIO_Init function. See communication.c in the firmware.
@@ -468,7 +468,7 @@ int tf_xmc1400_breakout_callback_tick(TF_XMC1400Breakout *xmc1400_breakout, uint
 int tf_xmc1400_breakout_set_gpio_config(TF_XMC1400Breakout *xmc1400_breakout, uint8_t port, uint8_t pin, uint8_t mode, uint8_t input_hysteresis, bool output_level);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Example for a getter function. Returns the result of a
  * XMC_GPIO_GetInput call for the given port/pin.
@@ -476,7 +476,7 @@ int tf_xmc1400_breakout_set_gpio_config(TF_XMC1400Breakout *xmc1400_breakout, ui
 int tf_xmc1400_breakout_get_gpio_input(TF_XMC1400Breakout *xmc1400_breakout, uint8_t port, uint8_t pin, bool *ret_value);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Enables a ADC channel for the ADC driver example (adc.c/adc.h).
  * 
@@ -494,21 +494,21 @@ int tf_xmc1400_breakout_get_gpio_input(TF_XMC1400Breakout *xmc1400_breakout, uin
 int tf_xmc1400_breakout_set_adc_channel_config(TF_XMC1400Breakout *xmc1400_breakout, uint8_t channel, bool enable);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Returns the config for the given channel as set by {@link tf_xmc1400_breakout_set_adc_channel_config}.
  */
 int tf_xmc1400_breakout_get_adc_channel_config(TF_XMC1400Breakout *xmc1400_breakout, uint8_t channel, bool *ret_enable);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Returns the 12-bit value of the given ADC channel of the ADC driver example.
  */
 int tf_xmc1400_breakout_get_adc_channel_value(TF_XMC1400Breakout *xmc1400_breakout, uint8_t channel, uint16_t *ret_value);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Returns the values for all 8 ADC channels of the adc driver example.
  * 
@@ -519,7 +519,7 @@ int tf_xmc1400_breakout_get_adc_channel_value(TF_XMC1400Breakout *xmc1400_breako
 int tf_xmc1400_breakout_get_adc_values(TF_XMC1400Breakout *xmc1400_breakout, uint16_t ret_values[8]);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * The period is the period with which the {@link tf_xmc1400_breakout_register_adc_values_callback}
  * callback is triggered periodically. A value of 0 turns the callback off.
@@ -534,7 +534,7 @@ int tf_xmc1400_breakout_get_adc_values(TF_XMC1400Breakout *xmc1400_breakout, uin
 int tf_xmc1400_breakout_set_adc_values_callback_configuration(TF_XMC1400Breakout *xmc1400_breakout, uint32_t period, bool value_has_to_change);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Returns the callback configuration as set by
  * {@link tf_xmc1400_breakout_set_adc_values_callback_configuration}.
@@ -542,7 +542,7 @@ int tf_xmc1400_breakout_set_adc_values_callback_configuration(TF_XMC1400Breakout
 int tf_xmc1400_breakout_get_adc_values_callback_configuration(TF_XMC1400Breakout *xmc1400_breakout, uint32_t *ret_period, bool *ret_value_has_to_change);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Returns the value of the example count (see example.c).
  * 
@@ -558,7 +558,7 @@ int tf_xmc1400_breakout_get_adc_values_callback_configuration(TF_XMC1400Breakout
 int tf_xmc1400_breakout_get_count(TF_XMC1400Breakout *xmc1400_breakout, uint32_t *ret_count);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * The period is the period with which the {@link tf_xmc1400_breakout_register_count_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
@@ -591,14 +591,14 @@ int tf_xmc1400_breakout_get_count(TF_XMC1400Breakout *xmc1400_breakout, uint32_t
 int tf_xmc1400_breakout_set_count_callback_configuration(TF_XMC1400Breakout *xmc1400_breakout, uint32_t period, bool value_has_to_change, char option, uint32_t min, uint32_t max);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Returns the callback configuration as set by {@link tf_xmc1400_breakout_set_count_callback_configuration}.
  */
 int tf_xmc1400_breakout_get_count_callback_configuration(TF_XMC1400Breakout *xmc1400_breakout, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, uint32_t *ret_min, uint32_t *ret_max);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Returns the error count for the communication between Brick and Bricklet.
  * 
@@ -615,7 +615,7 @@ int tf_xmc1400_breakout_get_count_callback_configuration(TF_XMC1400Breakout *xmc
 int tf_xmc1400_breakout_get_spitfp_error_count(TF_XMC1400Breakout *xmc1400_breakout, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
@@ -630,14 +630,14 @@ int tf_xmc1400_breakout_get_spitfp_error_count(TF_XMC1400Breakout *xmc1400_break
 int tf_xmc1400_breakout_set_bootloader_mode(TF_XMC1400Breakout *xmc1400_breakout, uint8_t mode, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Returns the current bootloader mode, see {@link tf_xmc1400_breakout_set_bootloader_mode}.
  */
 int tf_xmc1400_breakout_get_bootloader_mode(TF_XMC1400Breakout *xmc1400_breakout, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Sets the firmware pointer for {@link tf_xmc1400_breakout_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
@@ -649,7 +649,7 @@ int tf_xmc1400_breakout_get_bootloader_mode(TF_XMC1400Breakout *xmc1400_breakout
 int tf_xmc1400_breakout_set_write_firmware_pointer(TF_XMC1400Breakout *xmc1400_breakout, uint32_t pointer);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_xmc1400_breakout_set_write_firmware_pointer} before. The firmware is written
@@ -663,7 +663,7 @@ int tf_xmc1400_breakout_set_write_firmware_pointer(TF_XMC1400Breakout *xmc1400_b
 int tf_xmc1400_breakout_write_firmware(TF_XMC1400Breakout *xmc1400_breakout, const uint8_t data[64], uint8_t *ret_status);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
@@ -676,14 +676,14 @@ int tf_xmc1400_breakout_write_firmware(TF_XMC1400Breakout *xmc1400_breakout, con
 int tf_xmc1400_breakout_set_status_led_config(TF_XMC1400Breakout *xmc1400_breakout, uint8_t config);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Returns the configuration as set by {@link tf_xmc1400_breakout_set_status_led_config}
  */
 int tf_xmc1400_breakout_get_status_led_config(TF_XMC1400Breakout *xmc1400_breakout, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
@@ -695,7 +695,7 @@ int tf_xmc1400_breakout_get_status_led_config(TF_XMC1400Breakout *xmc1400_breako
 int tf_xmc1400_breakout_get_chip_temperature(TF_XMC1400Breakout *xmc1400_breakout, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
@@ -707,7 +707,7 @@ int tf_xmc1400_breakout_get_chip_temperature(TF_XMC1400Breakout *xmc1400_breakou
 int tf_xmc1400_breakout_reset(TF_XMC1400Breakout *xmc1400_breakout);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
@@ -718,7 +718,7 @@ int tf_xmc1400_breakout_reset(TF_XMC1400Breakout *xmc1400_breakout);
 int tf_xmc1400_breakout_write_uid(TF_XMC1400Breakout *xmc1400_breakout, uint32_t uid);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Returns the current UID as an integer. Encode as
  * Base58 to get the usual string version.
@@ -726,7 +726,7 @@ int tf_xmc1400_breakout_write_uid(TF_XMC1400Breakout *xmc1400_breakout, uint32_t
 int tf_xmc1400_breakout_read_uid(TF_XMC1400Breakout *xmc1400_breakout, uint32_t *ret_uid);
 
 /**
- * \ingroup BrickletXMC1400Breakout
+ * \ingroup TF_XMC1400Breakout
  *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the

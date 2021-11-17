@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-12.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -8,8 +8,8 @@
  * to the generators git repository on tinkerforge.com       *
  *************************************************************/
 
-#ifndef TF_BRICKLET_COMPASS_H
-#define TF_BRICKLET_COMPASS_H
+#ifndef TF_COMPASS_H
+#define TF_COMPASS_H
 
 #include "config.h"
 #include "tfp.h"
@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 /**
- * \defgroup BrickletCompass Compass Bricklet
+ * \defgroup TF_Compass Compass Bricklet
  */
 
 struct TF_Compass;
@@ -32,12 +32,12 @@ typedef void (*TF_CompassMagneticFluxDensityHandler)(struct TF_Compass *device, 
 
 #endif
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * 3-axis compass with 10 nanotesla and 0.1° resolution
  */
 typedef struct TF_Compass {
-    TF_TfpContext *tfp;
+    TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
     TF_CompassHeadingHandler heading_handler;
     void *heading_user_data;
@@ -50,251 +50,251 @@ typedef struct TF_Compass {
 } TF_Compass;
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_FUNCTION_GET_HEADING 1
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_FUNCTION_SET_HEADING_CALLBACK_CONFIGURATION 2
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_FUNCTION_GET_HEADING_CALLBACK_CONFIGURATION 3
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_FUNCTION_GET_MAGNETIC_FLUX_DENSITY 5
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_FUNCTION_SET_MAGNETIC_FLUX_DENSITY_CALLBACK_CONFIGURATION 6
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_FUNCTION_GET_MAGNETIC_FLUX_DENSITY_CALLBACK_CONFIGURATION 7
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_FUNCTION_SET_CONFIGURATION 9
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_FUNCTION_GET_CONFIGURATION 10
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_FUNCTION_SET_CALIBRATION 11
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_FUNCTION_GET_CALIBRATION 12
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_FUNCTION_SET_BOOTLOADER_MODE 235
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_FUNCTION_GET_BOOTLOADER_MODE 236
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_FUNCTION_SET_WRITE_FIRMWARE_POINTER 237
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_FUNCTION_WRITE_FIRMWARE 238
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_FUNCTION_SET_STATUS_LED_CONFIG 239
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_FUNCTION_GET_STATUS_LED_CONFIG 240
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_FUNCTION_GET_CHIP_TEMPERATURE 242
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_FUNCTION_RESET 243
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_FUNCTION_WRITE_UID 248
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_FUNCTION_READ_UID 249
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_FUNCTION_GET_IDENTITY 255
 
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_CALLBACK_HEADING 4
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_CALLBACK_MAGNETIC_FLUX_DENSITY 8
 
 #endif
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_THRESHOLD_OPTION_OFF 'x'
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_THRESHOLD_OPTION_OUTSIDE 'o'
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_THRESHOLD_OPTION_INSIDE 'i'
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_THRESHOLD_OPTION_SMALLER '<'
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_THRESHOLD_OPTION_GREATER '>'
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_DATA_RATE_100HZ 0
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_DATA_RATE_200HZ 1
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_DATA_RATE_400HZ 2
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_DATA_RATE_600HZ 3
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_BOOTLOADER_MODE_FIRMWARE 1
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT 2
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_REBOOT 3
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_ERASE_AND_REBOOT 4
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_BOOTLOADER_STATUS_OK 0
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_BOOTLOADER_STATUS_INVALID_MODE 1
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_BOOTLOADER_STATUS_NO_CHANGE 2
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_BOOTLOADER_STATUS_ENTRY_FUNCTION_NOT_PRESENT 3
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_BOOTLOADER_STATUS_DEVICE_IDENTIFIER_INCORRECT 4
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_BOOTLOADER_STATUS_CRC_MISMATCH 5
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_STATUS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_STATUS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_STATUS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  */
 #define TF_COMPASS_STATUS_LED_CONFIG_SHOW_STATUS 3
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * This constant is used to identify a Compass Bricklet.
  *
@@ -305,30 +305,30 @@ typedef struct TF_Compass {
 #define TF_COMPASS_DEVICE_IDENTIFIER 2153
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * This constant represents the display name of a Compass Bricklet.
  */
 #define TF_COMPASS_DEVICE_DISPLAY_NAME "Compass Bricklet"
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Creates the device object \c compass with the unique device ID \c uid and adds
- * it to the IPConnection \c ipcon.
+ * it to the HAL \c hal.
  */
-int tf_compass_create(TF_Compass *compass, const char *uid, TF_HalContext *hal);
+int tf_compass_create(TF_Compass *compass, const char *uid, TF_HAL *hal);
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
- * Removes the device object \c compass from its IPConnection and destroys it.
+ * Removes the device object \c compass from its HAL and destroys it.
  * The device object cannot be used anymore afterwards.
  */
 int tf_compass_destroy(TF_Compass *compass);
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Returns the response expected flag for the function specified by the
  * \c function_id parameter. It is *true* if the function is expected to
@@ -337,8 +337,8 @@ int tf_compass_destroy(TF_Compass *compass);
  * For getter functions this is enabled by default and cannot be disabled,
  * because those functions will always send a response. For callback
  * configuration functions it is enabled by default too, but can be disabled
- * via the compass_set_response_expected function. For setter functions it is
- * disabled by default and can be enabled.
+ * via the tf_compass_set_response_expected function. For setter
+ * functions it is disabled by default and can be enabled.
  *
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
@@ -349,7 +349,7 @@ int tf_compass_destroy(TF_Compass *compass);
 int tf_compass_get_response_expected(TF_Compass *compass, uint8_t function_id, bool *ret_response_expected);
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Changes the response expected flag of the function specified by the
  * \c function_id parameter. This flag can only be changed for setter
@@ -365,7 +365,7 @@ int tf_compass_get_response_expected(TF_Compass *compass, uint8_t function_id, b
 int tf_compass_set_response_expected(TF_Compass *compass, uint8_t function_id, bool response_expected);
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
@@ -373,7 +373,7 @@ int tf_compass_set_response_expected(TF_Compass *compass, uint8_t function_id, b
 void tf_compass_set_response_expected_all(TF_Compass *compass, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Registers the given \c handler to the Heading callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -389,7 +389,7 @@ int tf_compass_register_heading_callback(TF_Compass *compass, TF_CompassHeadingH
 
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Registers the given \c handler to the Magnetic Flux Density callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -405,7 +405,7 @@ int tf_compass_register_magnetic_flux_density_callback(TF_Compass *compass, TF_C
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Polls for callbacks. Will block for the given timeout in microseconds.
  *
@@ -415,7 +415,7 @@ int tf_compass_callback_tick(TF_Compass *compass, uint32_t timeout_us);
 #endif
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Returns the heading (north = 0 degree, east = 90 degree).
  * 
@@ -430,7 +430,7 @@ int tf_compass_callback_tick(TF_Compass *compass, uint32_t timeout_us);
 int tf_compass_get_heading(TF_Compass *compass, int16_t *ret_heading);
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * The period is the period with which the {@link tf_compass_register_heading_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
@@ -463,14 +463,14 @@ int tf_compass_get_heading(TF_Compass *compass, int16_t *ret_heading);
 int tf_compass_set_heading_callback_configuration(TF_Compass *compass, uint32_t period, bool value_has_to_change, char option, int16_t min, int16_t max);
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Returns the callback configuration as set by {@link tf_compass_set_heading_callback_configuration}.
  */
 int tf_compass_get_heading_callback_configuration(TF_Compass *compass, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int16_t *ret_min, int16_t *ret_max);
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Returns the `magnetic flux density (magnetic induction) <https://en.wikipedia.org/wiki/Magnetic_flux>`__
  * for all three axis.
@@ -482,7 +482,7 @@ int tf_compass_get_heading_callback_configuration(TF_Compass *compass, uint32_t 
 int tf_compass_get_magnetic_flux_density(TF_Compass *compass, int32_t *ret_x, int32_t *ret_y, int32_t *ret_z);
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * The period is the period with which the {@link tf_compass_register_magnetic_flux_density_callback} callback
  * is triggered periodically. A value of 0 turns the callback off.
@@ -497,7 +497,7 @@ int tf_compass_get_magnetic_flux_density(TF_Compass *compass, int32_t *ret_x, in
 int tf_compass_set_magnetic_flux_density_callback_configuration(TF_Compass *compass, uint32_t period, bool value_has_to_change);
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Returns the callback configuration as set by
  * {@link tf_compass_set_magnetic_flux_density_callback_configuration}.
@@ -505,7 +505,7 @@ int tf_compass_set_magnetic_flux_density_callback_configuration(TF_Compass *comp
 int tf_compass_get_magnetic_flux_density_callback_configuration(TF_Compass *compass, uint32_t *ret_period, bool *ret_value_has_to_change);
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Configures the data rate and background calibration.
  * 
@@ -523,14 +523,14 @@ int tf_compass_get_magnetic_flux_density_callback_configuration(TF_Compass *comp
 int tf_compass_set_configuration(TF_Compass *compass, uint8_t data_rate, bool background_calibration);
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Returns the configuration as set by {@link tf_compass_set_configuration}.
  */
 int tf_compass_get_configuration(TF_Compass *compass, uint8_t *ret_data_rate, bool *ret_background_calibration);
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Sets offset and gain for each of the three axes.
  * 
@@ -543,14 +543,14 @@ int tf_compass_get_configuration(TF_Compass *compass, uint8_t *ret_data_rate, bo
 int tf_compass_set_calibration(TF_Compass *compass, const int16_t offset[3], const int16_t gain[3]);
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Returns the calibration parameters as set by {@link tf_compass_set_calibration}.
  */
 int tf_compass_get_calibration(TF_Compass *compass, int16_t ret_offset[3], int16_t ret_gain[3]);
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Returns the error count for the communication between Brick and Bricklet.
  * 
@@ -567,7 +567,7 @@ int tf_compass_get_calibration(TF_Compass *compass, int16_t ret_offset[3], int16
 int tf_compass_get_spitfp_error_count(TF_Compass *compass, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
@@ -582,14 +582,14 @@ int tf_compass_get_spitfp_error_count(TF_Compass *compass, uint32_t *ret_error_c
 int tf_compass_set_bootloader_mode(TF_Compass *compass, uint8_t mode, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Returns the current bootloader mode, see {@link tf_compass_set_bootloader_mode}.
  */
 int tf_compass_get_bootloader_mode(TF_Compass *compass, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Sets the firmware pointer for {@link tf_compass_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
@@ -601,7 +601,7 @@ int tf_compass_get_bootloader_mode(TF_Compass *compass, uint8_t *ret_mode);
 int tf_compass_set_write_firmware_pointer(TF_Compass *compass, uint32_t pointer);
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_compass_set_write_firmware_pointer} before. The firmware is written
@@ -615,7 +615,7 @@ int tf_compass_set_write_firmware_pointer(TF_Compass *compass, uint32_t pointer)
 int tf_compass_write_firmware(TF_Compass *compass, const uint8_t data[64], uint8_t *ret_status);
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
@@ -628,14 +628,14 @@ int tf_compass_write_firmware(TF_Compass *compass, const uint8_t data[64], uint8
 int tf_compass_set_status_led_config(TF_Compass *compass, uint8_t config);
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Returns the configuration as set by {@link tf_compass_set_status_led_config}
  */
 int tf_compass_get_status_led_config(TF_Compass *compass, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
@@ -647,7 +647,7 @@ int tf_compass_get_status_led_config(TF_Compass *compass, uint8_t *ret_config);
 int tf_compass_get_chip_temperature(TF_Compass *compass, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
@@ -659,7 +659,7 @@ int tf_compass_get_chip_temperature(TF_Compass *compass, int16_t *ret_temperatur
 int tf_compass_reset(TF_Compass *compass);
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
@@ -670,7 +670,7 @@ int tf_compass_reset(TF_Compass *compass);
 int tf_compass_write_uid(TF_Compass *compass, uint32_t uid);
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Returns the current UID as an integer. Encode as
  * Base58 to get the usual string version.
@@ -678,7 +678,7 @@ int tf_compass_write_uid(TF_Compass *compass, uint32_t uid);
 int tf_compass_read_uid(TF_Compass *compass, uint32_t *ret_uid);
 
 /**
- * \ingroup BrickletCompass
+ * \ingroup TF_Compass
  *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the

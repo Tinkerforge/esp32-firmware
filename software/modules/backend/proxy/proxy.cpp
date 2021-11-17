@@ -29,7 +29,7 @@
 
 #include "web_server.h"
 
-extern TF_HalContext hal;
+extern TF_HAL hal;
 extern WebServer server;
 
 extern TaskScheduler task_scheduler;

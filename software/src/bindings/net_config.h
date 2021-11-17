@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2020 Erik Fleckstein <erik@tinkerforge.com>
+ *
+ * Redistribution and use in source and binary forms of this file,
+ * with or without modification, are permitted. See the Creative
+ * Commons Zero (CC0 1.0) License for more details.
+ */
+
 #ifndef TF_NET_CONFIG_H
 #define TF_NET_CONFIG_H
 
@@ -6,7 +14,7 @@ extern "C" {
 #endif
 
 // Set this to 1 to enable networking.
-// This requires using a TF_NetContext.
+// This requires using a TF_Net.
 #ifndef TF_NET_ENABLE
 #define TF_NET_ENABLE 0
 #endif

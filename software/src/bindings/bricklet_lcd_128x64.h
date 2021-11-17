@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-12.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -8,8 +8,8 @@
  * to the generators git repository on tinkerforge.com       *
  *************************************************************/
 
-#ifndef TF_BRICKLET_LCD_128X64_H
-#define TF_BRICKLET_LCD_128X64_H
+#ifndef TF_LCD_128X64_H
+#define TF_LCD_128X64_H
 
 #include "config.h"
 #include "tfp.h"
@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 /**
- * \defgroup BrickletLCD128x64 LCD 128x64 Bricklet
+ * \defgroup TF_LCD128x64 LCD 128x64 Bricklet
  */
 
 struct TF_LCD128x64;
@@ -35,12 +35,12 @@ typedef void (*TF_LCD128x64GUITabSelectedHandler)(struct TF_LCD128x64 *device, i
 
 #endif
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * 7.1cm (2.8") display with 128x64 pixel and touch screen
  */
 typedef struct TF_LCD128x64 {
-    TF_TfpContext *tfp;
+    TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
     TF_LCD128x64TouchPositionHandler touch_position_handler;
     void *touch_position_user_data;
@@ -62,546 +62,546 @@ typedef struct TF_LCD128x64 {
 } TF_LCD128x64;
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_WRITE_PIXELS_LOW_LEVEL 1
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_READ_PIXELS_LOW_LEVEL 2
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_CLEAR_DISPLAY 3
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_SET_DISPLAY_CONFIGURATION 4
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_GET_DISPLAY_CONFIGURATION 5
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_WRITE_LINE 6
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_DRAW_BUFFERED_FRAME 7
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_GET_TOUCH_POSITION 8
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_SET_TOUCH_POSITION_CALLBACK_CONFIGURATION 9
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_GET_TOUCH_POSITION_CALLBACK_CONFIGURATION 10
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_GET_TOUCH_GESTURE 12
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_SET_TOUCH_GESTURE_CALLBACK_CONFIGURATION 13
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_GET_TOUCH_GESTURE_CALLBACK_CONFIGURATION 14
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_DRAW_LINE 16
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_DRAW_BOX 17
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_DRAW_TEXT 18
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_SET_GUI_BUTTON 19
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_GET_GUI_BUTTON 20
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_REMOVE_GUI_BUTTON 21
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_SET_GUI_BUTTON_PRESSED_CALLBACK_CONFIGURATION 22
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_GET_GUI_BUTTON_PRESSED_CALLBACK_CONFIGURATION 23
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_GET_GUI_BUTTON_PRESSED 24
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_SET_GUI_SLIDER 26
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_GET_GUI_SLIDER 27
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_REMOVE_GUI_SLIDER 28
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_SET_GUI_SLIDER_VALUE_CALLBACK_CONFIGURATION 29
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_GET_GUI_SLIDER_VALUE_CALLBACK_CONFIGURATION 30
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_GET_GUI_SLIDER_VALUE 31
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_SET_GUI_TAB_CONFIGURATION 33
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_GET_GUI_TAB_CONFIGURATION 34
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_SET_GUI_TAB_TEXT 35
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_GET_GUI_TAB_TEXT 36
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_SET_GUI_TAB_ICON 37
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_GET_GUI_TAB_ICON 38
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_REMOVE_GUI_TAB 39
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_SET_GUI_TAB_SELECTED 40
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_SET_GUI_TAB_SELECTED_CALLBACK_CONFIGURATION 41
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_GET_GUI_TAB_SELECTED_CALLBACK_CONFIGURATION 42
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_GET_GUI_TAB_SELECTED 43
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_SET_GUI_GRAPH_CONFIGURATION 45
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_GET_GUI_GRAPH_CONFIGURATION 46
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_SET_GUI_GRAPH_DATA_LOW_LEVEL 47
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_GET_GUI_GRAPH_DATA_LOW_LEVEL 48
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_REMOVE_GUI_GRAPH 49
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_REMOVE_ALL_GUI 50
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_SET_TOUCH_LED_CONFIG 51
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_GET_TOUCH_LED_CONFIG 52
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_SET_BOOTLOADER_MODE 235
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_GET_BOOTLOADER_MODE 236
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_SET_WRITE_FIRMWARE_POINTER 237
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_WRITE_FIRMWARE 238
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_SET_STATUS_LED_CONFIG 239
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_GET_STATUS_LED_CONFIG 240
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_GET_CHIP_TEMPERATURE 242
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_RESET 243
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_WRITE_UID 248
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_READ_UID 249
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FUNCTION_GET_IDENTITY 255
 
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_CALLBACK_TOUCH_POSITION 11
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_CALLBACK_TOUCH_GESTURE 15
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_CALLBACK_GUI_BUTTON_PRESSED 25
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_CALLBACK_GUI_SLIDER_VALUE 32
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_CALLBACK_GUI_TAB_SELECTED 44
 
 #endif
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_GESTURE_LEFT_TO_RIGHT 0
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_GESTURE_RIGHT_TO_LEFT 1
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_GESTURE_TOP_TO_BOTTOM 2
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_GESTURE_BOTTOM_TO_TOP 3
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_COLOR_WHITE false
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_COLOR_BLACK true
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FONT_6X8 0
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FONT_6X16 1
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FONT_6X24 2
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FONT_6X32 3
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FONT_12X16 4
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FONT_12X24 5
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FONT_12X32 6
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FONT_18X24 7
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FONT_18X32 8
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_FONT_24X32 9
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_DIRECTION_HORIZONTAL 0
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_DIRECTION_VERTICAL 1
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_CHANGE_TAB_ON_CLICK 1
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_CHANGE_TAB_ON_SWIPE 2
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_CHANGE_TAB_ON_CLICK_AND_SWIPE 3
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_GRAPH_TYPE_DOT 0
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_GRAPH_TYPE_LINE 1
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_GRAPH_TYPE_BAR 2
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_TOUCH_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_TOUCH_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_TOUCH_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_TOUCH_LED_CONFIG_SHOW_TOUCH 3
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_BOOTLOADER_MODE_FIRMWARE 1
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT 2
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_REBOOT 3
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_ERASE_AND_REBOOT 4
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_BOOTLOADER_STATUS_OK 0
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_BOOTLOADER_STATUS_INVALID_MODE 1
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_BOOTLOADER_STATUS_NO_CHANGE 2
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_BOOTLOADER_STATUS_ENTRY_FUNCTION_NOT_PRESENT 3
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_BOOTLOADER_STATUS_DEVICE_IDENTIFIER_INCORRECT 4
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_BOOTLOADER_STATUS_CRC_MISMATCH 5
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_STATUS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_STATUS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_STATUS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  */
 #define TF_LCD_128X64_STATUS_LED_CONFIG_SHOW_STATUS 3
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * This constant is used to identify a LCD 128x64 Bricklet.
  *
@@ -612,30 +612,30 @@ typedef struct TF_LCD128x64 {
 #define TF_LCD_128X64_DEVICE_IDENTIFIER 298
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * This constant represents the display name of a LCD 128x64 Bricklet.
  */
 #define TF_LCD_128X64_DEVICE_DISPLAY_NAME "LCD 128x64 Bricklet"
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Creates the device object \c lcd_128x64 with the unique device ID \c uid and adds
- * it to the IPConnection \c ipcon.
+ * it to the HAL \c hal.
  */
-int tf_lcd_128x64_create(TF_LCD128x64 *lcd_128x64, const char *uid, TF_HalContext *hal);
+int tf_lcd_128x64_create(TF_LCD128x64 *lcd_128x64, const char *uid, TF_HAL *hal);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
- * Removes the device object \c lcd_128x64 from its IPConnection and destroys it.
+ * Removes the device object \c lcd_128x64 from its HAL and destroys it.
  * The device object cannot be used anymore afterwards.
  */
 int tf_lcd_128x64_destroy(TF_LCD128x64 *lcd_128x64);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the response expected flag for the function specified by the
  * \c function_id parameter. It is *true* if the function is expected to
@@ -644,8 +644,8 @@ int tf_lcd_128x64_destroy(TF_LCD128x64 *lcd_128x64);
  * For getter functions this is enabled by default and cannot be disabled,
  * because those functions will always send a response. For callback
  * configuration functions it is enabled by default too, but can be disabled
- * via the lcd_128x64_set_response_expected function. For setter functions it is
- * disabled by default and can be enabled.
+ * via the tf_lcd_128x64_set_response_expected function. For setter
+ * functions it is disabled by default and can be enabled.
  *
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
@@ -656,7 +656,7 @@ int tf_lcd_128x64_destroy(TF_LCD128x64 *lcd_128x64);
 int tf_lcd_128x64_get_response_expected(TF_LCD128x64 *lcd_128x64, uint8_t function_id, bool *ret_response_expected);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Changes the response expected flag of the function specified by the
  * \c function_id parameter. This flag can only be changed for setter
@@ -672,7 +672,7 @@ int tf_lcd_128x64_get_response_expected(TF_LCD128x64 *lcd_128x64, uint8_t functi
 int tf_lcd_128x64_set_response_expected(TF_LCD128x64 *lcd_128x64, uint8_t function_id, bool response_expected);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
@@ -680,7 +680,7 @@ int tf_lcd_128x64_set_response_expected(TF_LCD128x64 *lcd_128x64, uint8_t functi
 void tf_lcd_128x64_set_response_expected_all(TF_LCD128x64 *lcd_128x64, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Registers the given \c handler to the Touch Position callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -695,7 +695,7 @@ int tf_lcd_128x64_register_touch_position_callback(TF_LCD128x64 *lcd_128x64, TF_
 
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Registers the given \c handler to the Touch Gesture callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -710,7 +710,7 @@ int tf_lcd_128x64_register_touch_gesture_callback(TF_LCD128x64 *lcd_128x64, TF_L
 
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Registers the given \c handler to the GUI Button Pressed callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -727,7 +727,7 @@ int tf_lcd_128x64_register_gui_button_pressed_callback(TF_LCD128x64 *lcd_128x64,
 
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Registers the given \c handler to the GUI Slider Value callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -744,7 +744,7 @@ int tf_lcd_128x64_register_gui_slider_value_callback(TF_LCD128x64 *lcd_128x64, T
 
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Registers the given \c handler to the GUI Tab Selected callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -761,7 +761,7 @@ int tf_lcd_128x64_register_gui_tab_selected_callback(TF_LCD128x64 *lcd_128x64, T
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Polls for callbacks. Will block for the given timeout in microseconds.
  *
@@ -771,7 +771,7 @@ int tf_lcd_128x64_callback_tick(TF_LCD128x64 *lcd_128x64, uint32_t timeout_us);
 #endif
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Writes pixels to the specified window.
  * 
@@ -793,7 +793,7 @@ int tf_lcd_128x64_callback_tick(TF_LCD128x64 *lcd_128x64, uint32_t timeout_us);
 int tf_lcd_128x64_write_pixels_low_level(TF_LCD128x64 *lcd_128x64, uint8_t x_start, uint8_t y_start, uint8_t x_end, uint8_t y_end, uint16_t pixels_length, uint16_t pixels_chunk_offset, const bool pixels_chunk_data[448]);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Reads pixels from the specified window.
  * 
@@ -812,7 +812,7 @@ int tf_lcd_128x64_write_pixels_low_level(TF_LCD128x64 *lcd_128x64, uint8_t x_sta
 int tf_lcd_128x64_read_pixels_low_level(TF_LCD128x64 *lcd_128x64, uint8_t x_start, uint8_t y_start, uint8_t x_end, uint8_t y_end, uint16_t *ret_pixels_length, uint16_t *ret_pixels_chunk_offset, bool ret_pixels_chunk_data[480]);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Clears the complete content of the display.
  * 
@@ -829,7 +829,7 @@ int tf_lcd_128x64_read_pixels_low_level(TF_LCD128x64 *lcd_128x64, uint8_t x_star
 int tf_lcd_128x64_clear_display(TF_LCD128x64 *lcd_128x64);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Sets the configuration of the display.
  * 
@@ -841,14 +841,14 @@ int tf_lcd_128x64_clear_display(TF_LCD128x64 *lcd_128x64);
 int tf_lcd_128x64_set_display_configuration(TF_LCD128x64 *lcd_128x64, uint8_t contrast, uint8_t backlight, bool invert, bool automatic_draw);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the configuration as set by {@link tf_lcd_128x64_set_display_configuration}.
  */
 int tf_lcd_128x64_get_display_configuration(TF_LCD128x64 *lcd_128x64, uint8_t *ret_contrast, uint8_t *ret_backlight, bool *ret_invert, bool *ret_automatic_draw);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Writes text to a specific line with a specific position.
  * 
@@ -877,7 +877,7 @@ int tf_lcd_128x64_get_display_configuration(TF_LCD128x64 *lcd_128x64, uint8_t *r
 int tf_lcd_128x64_write_line(TF_LCD128x64 *lcd_128x64, uint8_t line, uint8_t position, const char *text);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Draws the currently buffered frame. Normally each call of {@link tf_lcd_128x64_write_pixels} and
  * {@link tf_lcd_128x64_write_line} draws directly onto the display. If you turn automatic draw off
@@ -892,7 +892,7 @@ int tf_lcd_128x64_write_line(TF_LCD128x64 *lcd_128x64, uint8_t line, uint8_t pos
 int tf_lcd_128x64_draw_buffered_frame(TF_LCD128x64 *lcd_128x64, bool force_complete_redraw);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the last valid touch position:
  * 
@@ -904,7 +904,7 @@ int tf_lcd_128x64_draw_buffered_frame(TF_LCD128x64 *lcd_128x64, bool force_compl
 int tf_lcd_128x64_get_touch_position(TF_LCD128x64 *lcd_128x64, uint16_t *ret_pressure, uint16_t *ret_x, uint16_t *ret_y, uint32_t *ret_age);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * The period is the period with which the {@link tf_lcd_128x64_register_touch_position_callback} callback
  * is triggered periodically. A value of 0 turns the callback off.
@@ -919,7 +919,7 @@ int tf_lcd_128x64_get_touch_position(TF_LCD128x64 *lcd_128x64, uint16_t *ret_pre
 int tf_lcd_128x64_set_touch_position_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t period, bool value_has_to_change);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the callback configuration as set by
  * {@link tf_lcd_128x64_set_touch_position_callback_configuration}.
@@ -927,7 +927,7 @@ int tf_lcd_128x64_set_touch_position_callback_configuration(TF_LCD128x64 *lcd_12
 int tf_lcd_128x64_get_touch_position_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t *ret_period, bool *ret_value_has_to_change);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns one of four touch gestures that can be automatically detected by the Bricklet.
  * 
@@ -942,7 +942,7 @@ int tf_lcd_128x64_get_touch_position_callback_configuration(TF_LCD128x64 *lcd_12
 int tf_lcd_128x64_get_touch_gesture(TF_LCD128x64 *lcd_128x64, uint8_t *ret_gesture, uint32_t *ret_duration, uint16_t *ret_pressure_max, uint16_t *ret_x_start, uint16_t *ret_y_start, uint16_t *ret_x_end, uint16_t *ret_y_end, uint32_t *ret_age);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * The period is the period with which the {@link tf_lcd_128x64_register_touch_gesture_callback} callback
  * is triggered periodically. A value of 0 turns the callback off.
@@ -957,7 +957,7 @@ int tf_lcd_128x64_get_touch_gesture(TF_LCD128x64 *lcd_128x64, uint8_t *ret_gestu
 int tf_lcd_128x64_set_touch_gesture_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t period, bool value_has_to_change);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the callback configuration as set by
  * {@link tf_lcd_128x64_set_touch_gesture_callback_configuration}.
@@ -965,7 +965,7 @@ int tf_lcd_128x64_set_touch_gesture_callback_configuration(TF_LCD128x64 *lcd_128
 int tf_lcd_128x64_get_touch_gesture_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t *ret_period, bool *ret_value_has_to_change);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Draws a white or black line from (x, y)-start to (x, y)-end.
  * 
@@ -974,7 +974,7 @@ int tf_lcd_128x64_get_touch_gesture_callback_configuration(TF_LCD128x64 *lcd_128
 int tf_lcd_128x64_draw_line(TF_LCD128x64 *lcd_128x64, uint8_t position_x_start, uint8_t position_y_start, uint8_t position_x_end, uint8_t position_y_end, bool color);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Draws a white or black box from (x, y)-start to (x, y)-end.
  * 
@@ -986,7 +986,7 @@ int tf_lcd_128x64_draw_line(TF_LCD128x64 *lcd_128x64, uint8_t position_x_start, 
 int tf_lcd_128x64_draw_box(TF_LCD128x64 *lcd_128x64, uint8_t position_x_start, uint8_t position_y_start, uint8_t position_x_end, uint8_t position_y_end, bool fill, bool color);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Draws a text at the pixel position (x, y).
  * 
@@ -997,7 +997,7 @@ int tf_lcd_128x64_draw_box(TF_LCD128x64 *lcd_128x64, uint8_t position_x_start, u
 int tf_lcd_128x64_draw_text(TF_LCD128x64 *lcd_128x64, uint8_t position_x, uint8_t position_y, uint8_t font, bool color, const char *text);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Draws a clickable button at position (x, y) with the given text.
  * 
@@ -1024,7 +1024,7 @@ int tf_lcd_128x64_draw_text(TF_LCD128x64 *lcd_128x64, uint8_t position_x, uint8_
 int tf_lcd_128x64_set_gui_button(TF_LCD128x64 *lcd_128x64, uint8_t index, uint8_t position_x, uint8_t position_y, uint8_t width, uint8_t height, const char *text);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the button properties for a given `Index` as set by {@link tf_lcd_128x64_set_gui_button}.
  * 
@@ -1036,7 +1036,7 @@ int tf_lcd_128x64_set_gui_button(TF_LCD128x64 *lcd_128x64, uint8_t index, uint8_
 int tf_lcd_128x64_get_gui_button(TF_LCD128x64 *lcd_128x64, uint8_t index, bool *ret_active, uint8_t *ret_position_x, uint8_t *ret_position_y, uint8_t *ret_width, uint8_t *ret_height, char ret_text[16]);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Removes the button with the given index.
  * 
@@ -1047,7 +1047,7 @@ int tf_lcd_128x64_get_gui_button(TF_LCD128x64 *lcd_128x64, uint8_t index, bool *
 int tf_lcd_128x64_remove_gui_button(TF_LCD128x64 *lcd_128x64, uint8_t index);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * The period is the period with which the {@link tf_lcd_128x64_register_gui_button_pressed_callback} callback
  * is triggered periodically. A value of 0 turns the callback off.
@@ -1064,7 +1064,7 @@ int tf_lcd_128x64_remove_gui_button(TF_LCD128x64 *lcd_128x64, uint8_t index);
 int tf_lcd_128x64_set_gui_button_pressed_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t period, bool value_has_to_change);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the callback configuration as set by
  * {@link tf_lcd_128x64_set_gui_button_pressed_callback_configuration}.
@@ -1074,7 +1074,7 @@ int tf_lcd_128x64_set_gui_button_pressed_callback_configuration(TF_LCD128x64 *lc
 int tf_lcd_128x64_get_gui_button_pressed_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t *ret_period, bool *ret_value_has_to_change);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the state of the button for the given index.
  * 
@@ -1085,7 +1085,7 @@ int tf_lcd_128x64_get_gui_button_pressed_callback_configuration(TF_LCD128x64 *lc
 int tf_lcd_128x64_get_gui_button_pressed(TF_LCD128x64 *lcd_128x64, uint8_t index, bool *ret_pressed);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Draws a slider at position (x, y) with the given length.
  * 
@@ -1116,7 +1116,7 @@ int tf_lcd_128x64_get_gui_button_pressed(TF_LCD128x64 *lcd_128x64, uint8_t index
 int tf_lcd_128x64_set_gui_slider(TF_LCD128x64 *lcd_128x64, uint8_t index, uint8_t position_x, uint8_t position_y, uint8_t length, uint8_t direction, uint8_t value);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the slider properties for a given `Index` as set by {@link tf_lcd_128x64_set_gui_slider}.
  * 
@@ -1128,7 +1128,7 @@ int tf_lcd_128x64_set_gui_slider(TF_LCD128x64 *lcd_128x64, uint8_t index, uint8_
 int tf_lcd_128x64_get_gui_slider(TF_LCD128x64 *lcd_128x64, uint8_t index, bool *ret_active, uint8_t *ret_position_x, uint8_t *ret_position_y, uint8_t *ret_length, uint8_t *ret_direction, uint8_t *ret_value);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Removes the slider with the given index.
  * 
@@ -1139,7 +1139,7 @@ int tf_lcd_128x64_get_gui_slider(TF_LCD128x64 *lcd_128x64, uint8_t index, bool *
 int tf_lcd_128x64_remove_gui_slider(TF_LCD128x64 *lcd_128x64, uint8_t index);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * The period is the period with which the {@link tf_lcd_128x64_register_gui_slider_value_callback} callback
  * is triggered periodically. A value of 0 turns the callback off.
@@ -1156,7 +1156,7 @@ int tf_lcd_128x64_remove_gui_slider(TF_LCD128x64 *lcd_128x64, uint8_t index);
 int tf_lcd_128x64_set_gui_slider_value_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t period, bool value_has_to_change);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the callback configuration as set by
  * {@link tf_lcd_128x64_set_gui_slider_value_callback_configuration}.
@@ -1166,7 +1166,7 @@ int tf_lcd_128x64_set_gui_slider_value_callback_configuration(TF_LCD128x64 *lcd_
 int tf_lcd_128x64_get_gui_slider_value_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t *ret_period, bool *ret_value_has_to_change);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the current slider value for the given index.
  * 
@@ -1175,7 +1175,7 @@ int tf_lcd_128x64_get_gui_slider_value_callback_configuration(TF_LCD128x64 *lcd_
 int tf_lcd_128x64_get_gui_slider_value(TF_LCD128x64 *lcd_128x64, uint8_t index, uint8_t *ret_value);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Sets the general configuration for tabs. You can configure the tabs to only
  * accept clicks or only swipes (gesture left/right and right/left) or both.
@@ -1188,7 +1188,7 @@ int tf_lcd_128x64_get_gui_slider_value(TF_LCD128x64 *lcd_128x64, uint8_t index, 
 int tf_lcd_128x64_set_gui_tab_configuration(TF_LCD128x64 *lcd_128x64, uint8_t change_tab_config, bool clear_gui);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the tab configuration as set by {@link tf_lcd_128x64_set_gui_tab_configuration}.
  * 
@@ -1197,7 +1197,7 @@ int tf_lcd_128x64_set_gui_tab_configuration(TF_LCD128x64 *lcd_128x64, uint8_t ch
 int tf_lcd_128x64_get_gui_tab_configuration(TF_LCD128x64 *lcd_128x64, uint8_t *ret_change_tab_config, bool *ret_clear_gui);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Adds a text-tab with the given index.
  * 
@@ -1210,7 +1210,7 @@ int tf_lcd_128x64_get_gui_tab_configuration(TF_LCD128x64 *lcd_128x64, uint8_t *r
 int tf_lcd_128x64_set_gui_tab_text(TF_LCD128x64 *lcd_128x64, uint8_t index, const char *text);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the text for a given index as set by {@link tf_lcd_128x64_set_gui_tab_text}.
  * 
@@ -1222,7 +1222,7 @@ int tf_lcd_128x64_set_gui_tab_text(TF_LCD128x64 *lcd_128x64, uint8_t index, cons
 int tf_lcd_128x64_get_gui_tab_text(TF_LCD128x64 *lcd_128x64, uint8_t index, bool *ret_active, char ret_text[5]);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Adds a icon-tab with the given index. The icon can have a width of 28 pixels
  * with a height of 6 pixels. It is drawn line-by-line from left to right.
@@ -1236,7 +1236,7 @@ int tf_lcd_128x64_get_gui_tab_text(TF_LCD128x64 *lcd_128x64, uint8_t index, bool
 int tf_lcd_128x64_set_gui_tab_icon(TF_LCD128x64 *lcd_128x64, uint8_t index, const bool icon[168]);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the icon for a given index as set by {@link tf_lcd_128x64_set_gui_tab_icon}.
  * 
@@ -1248,7 +1248,7 @@ int tf_lcd_128x64_set_gui_tab_icon(TF_LCD128x64 *lcd_128x64, uint8_t index, cons
 int tf_lcd_128x64_get_gui_tab_icon(TF_LCD128x64 *lcd_128x64, uint8_t index, bool *ret_active, bool ret_icon[168]);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Removes the tab with the given index.
  * 
@@ -1259,7 +1259,7 @@ int tf_lcd_128x64_get_gui_tab_icon(TF_LCD128x64 *lcd_128x64, uint8_t index, bool
 int tf_lcd_128x64_remove_gui_tab(TF_LCD128x64 *lcd_128x64, uint8_t index);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Sets the tab with the given index as selected (drawn as selected on the display).
  * 
@@ -1268,7 +1268,7 @@ int tf_lcd_128x64_remove_gui_tab(TF_LCD128x64 *lcd_128x64, uint8_t index);
 int tf_lcd_128x64_set_gui_tab_selected(TF_LCD128x64 *lcd_128x64, uint8_t index);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * The period is the period with which the {@link tf_lcd_128x64_register_gui_tab_selected_callback} callback
  * is triggered periodically. A value of 0 turns the callback off.
@@ -1285,7 +1285,7 @@ int tf_lcd_128x64_set_gui_tab_selected(TF_LCD128x64 *lcd_128x64, uint8_t index);
 int tf_lcd_128x64_set_gui_tab_selected_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t period, bool value_has_to_change);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the callback configuration as set by
  * {@link tf_lcd_128x64_set_gui_tab_selected_callback_configuration}.
@@ -1295,7 +1295,7 @@ int tf_lcd_128x64_set_gui_tab_selected_callback_configuration(TF_LCD128x64 *lcd_
 int tf_lcd_128x64_get_gui_tab_selected_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t *ret_period, bool *ret_value_has_to_change);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the index of the currently selected tab.
  * If there are not tabs, the returned index is -1.
@@ -1305,7 +1305,7 @@ int tf_lcd_128x64_get_gui_tab_selected_callback_configuration(TF_LCD128x64 *lcd_
 int tf_lcd_128x64_get_gui_tab_selected(TF_LCD128x64 *lcd_128x64, int8_t *ret_index);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Sets the configuration for up to four graphs.
  * 
@@ -1330,7 +1330,7 @@ int tf_lcd_128x64_get_gui_tab_selected(TF_LCD128x64 *lcd_128x64, int8_t *ret_ind
 int tf_lcd_128x64_set_gui_graph_configuration(TF_LCD128x64 *lcd_128x64, uint8_t index, uint8_t graph_type, uint8_t position_x, uint8_t position_y, uint8_t width, uint8_t height, const char *text_x, const char *text_y);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the graph properties for a given `Index` as set by {@link tf_lcd_128x64_set_gui_graph_configuration}.
  * 
@@ -1342,7 +1342,7 @@ int tf_lcd_128x64_set_gui_graph_configuration(TF_LCD128x64 *lcd_128x64, uint8_t 
 int tf_lcd_128x64_get_gui_graph_configuration(TF_LCD128x64 *lcd_128x64, uint8_t index, bool *ret_active, uint8_t *ret_graph_type, uint8_t *ret_position_x, uint8_t *ret_position_y, uint8_t *ret_width, uint8_t *ret_height, char ret_text_x[4], char ret_text_y[4]);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Sets the data for a graph with the given index. You have to configure the graph with
  * {@link tf_lcd_128x64_set_gui_graph_configuration} before you can set the first data.
@@ -1362,7 +1362,7 @@ int tf_lcd_128x64_get_gui_graph_configuration(TF_LCD128x64 *lcd_128x64, uint8_t 
 int tf_lcd_128x64_set_gui_graph_data_low_level(TF_LCD128x64 *lcd_128x64, uint8_t index, uint16_t data_length, uint16_t data_chunk_offset, const uint8_t data_chunk_data[59]);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the graph data for a given index as set by {@link tf_lcd_128x64_set_gui_graph_data}.
  * 
@@ -1371,7 +1371,7 @@ int tf_lcd_128x64_set_gui_graph_data_low_level(TF_LCD128x64 *lcd_128x64, uint8_t
 int tf_lcd_128x64_get_gui_graph_data_low_level(TF_LCD128x64 *lcd_128x64, uint8_t index, uint16_t *ret_data_length, uint16_t *ret_data_chunk_offset, uint8_t ret_data_chunk_data[59]);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Removes the graph with the given index.
  * 
@@ -1382,7 +1382,7 @@ int tf_lcd_128x64_get_gui_graph_data_low_level(TF_LCD128x64 *lcd_128x64, uint8_t
 int tf_lcd_128x64_remove_gui_graph(TF_LCD128x64 *lcd_128x64, uint8_t index);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Removes all GUI elements (buttons, slider, graphs, tabs).
  * 
@@ -1391,7 +1391,7 @@ int tf_lcd_128x64_remove_gui_graph(TF_LCD128x64 *lcd_128x64, uint8_t index);
 int tf_lcd_128x64_remove_all_gui(TF_LCD128x64 *lcd_128x64);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Sets the touch LED configuration. By default the LED is on if the
  * LCD is touched.
@@ -1405,7 +1405,7 @@ int tf_lcd_128x64_remove_all_gui(TF_LCD128x64 *lcd_128x64);
 int tf_lcd_128x64_set_touch_led_config(TF_LCD128x64 *lcd_128x64, uint8_t config);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the configuration as set by {@link tf_lcd_128x64_set_touch_led_config}
  * 
@@ -1414,7 +1414,7 @@ int tf_lcd_128x64_set_touch_led_config(TF_LCD128x64 *lcd_128x64, uint8_t config)
 int tf_lcd_128x64_get_touch_led_config(TF_LCD128x64 *lcd_128x64, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the error count for the communication between Brick and Bricklet.
  * 
@@ -1431,7 +1431,7 @@ int tf_lcd_128x64_get_touch_led_config(TF_LCD128x64 *lcd_128x64, uint8_t *ret_co
 int tf_lcd_128x64_get_spitfp_error_count(TF_LCD128x64 *lcd_128x64, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
@@ -1446,14 +1446,14 @@ int tf_lcd_128x64_get_spitfp_error_count(TF_LCD128x64 *lcd_128x64, uint32_t *ret
 int tf_lcd_128x64_set_bootloader_mode(TF_LCD128x64 *lcd_128x64, uint8_t mode, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the current bootloader mode, see {@link tf_lcd_128x64_set_bootloader_mode}.
  */
 int tf_lcd_128x64_get_bootloader_mode(TF_LCD128x64 *lcd_128x64, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Sets the firmware pointer for {@link tf_lcd_128x64_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
@@ -1465,7 +1465,7 @@ int tf_lcd_128x64_get_bootloader_mode(TF_LCD128x64 *lcd_128x64, uint8_t *ret_mod
 int tf_lcd_128x64_set_write_firmware_pointer(TF_LCD128x64 *lcd_128x64, uint32_t pointer);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_lcd_128x64_set_write_firmware_pointer} before. The firmware is written
@@ -1479,7 +1479,7 @@ int tf_lcd_128x64_set_write_firmware_pointer(TF_LCD128x64 *lcd_128x64, uint32_t 
 int tf_lcd_128x64_write_firmware(TF_LCD128x64 *lcd_128x64, const uint8_t data[64], uint8_t *ret_status);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
@@ -1492,14 +1492,14 @@ int tf_lcd_128x64_write_firmware(TF_LCD128x64 *lcd_128x64, const uint8_t data[64
 int tf_lcd_128x64_set_status_led_config(TF_LCD128x64 *lcd_128x64, uint8_t config);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the configuration as set by {@link tf_lcd_128x64_set_status_led_config}
  */
 int tf_lcd_128x64_get_status_led_config(TF_LCD128x64 *lcd_128x64, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
@@ -1511,7 +1511,7 @@ int tf_lcd_128x64_get_status_led_config(TF_LCD128x64 *lcd_128x64, uint8_t *ret_c
 int tf_lcd_128x64_get_chip_temperature(TF_LCD128x64 *lcd_128x64, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
@@ -1523,7 +1523,7 @@ int tf_lcd_128x64_get_chip_temperature(TF_LCD128x64 *lcd_128x64, int16_t *ret_te
 int tf_lcd_128x64_reset(TF_LCD128x64 *lcd_128x64);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
@@ -1534,7 +1534,7 @@ int tf_lcd_128x64_reset(TF_LCD128x64 *lcd_128x64);
 int tf_lcd_128x64_write_uid(TF_LCD128x64 *lcd_128x64, uint32_t uid);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the current UID as an integer. Encode as
  * Base58 to get the usual string version.
@@ -1542,7 +1542,7 @@ int tf_lcd_128x64_write_uid(TF_LCD128x64 *lcd_128x64, uint32_t uid);
 int tf_lcd_128x64_read_uid(TF_LCD128x64 *lcd_128x64, uint32_t *ret_uid);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
@@ -1558,7 +1558,7 @@ int tf_lcd_128x64_read_uid(TF_LCD128x64 *lcd_128x64, uint32_t *ret_uid);
 int tf_lcd_128x64_get_identity(TF_LCD128x64 *lcd_128x64, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Writes pixels to the specified window.
  * 
@@ -1580,7 +1580,7 @@ int tf_lcd_128x64_get_identity(TF_LCD128x64 *lcd_128x64, char ret_uid[8], char r
 int tf_lcd_128x64_write_pixels(TF_LCD128x64 *lcd_128x64, uint8_t x_start, uint8_t y_start, uint8_t x_end, uint8_t y_end, const bool *pixels, uint16_t pixels_length);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Reads pixels from the specified window.
  * 
@@ -1599,7 +1599,7 @@ int tf_lcd_128x64_write_pixels(TF_LCD128x64 *lcd_128x64, uint8_t x_start, uint8_
 int tf_lcd_128x64_read_pixels(TF_LCD128x64 *lcd_128x64, uint8_t x_start, uint8_t y_start, uint8_t x_end, uint8_t y_end, bool *ret_pixels, uint16_t *ret_pixels_length);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Sets the data for a graph with the given index. You have to configure the graph with
  * {@link tf_lcd_128x64_set_gui_graph_configuration} before you can set the first data.
@@ -1619,7 +1619,7 @@ int tf_lcd_128x64_read_pixels(TF_LCD128x64 *lcd_128x64, uint8_t x_start, uint8_t
 int tf_lcd_128x64_set_gui_graph_data(TF_LCD128x64 *lcd_128x64, uint8_t index, const uint8_t *data, uint16_t data_length);
 
 /**
- * \ingroup BrickletLCD128x64
+ * \ingroup TF_LCD128x64
  *
  * Returns the graph data for a given index as set by {@link tf_lcd_128x64_set_gui_graph_data}.
  * 

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-12.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -8,8 +8,8 @@
  * to the generators git repository on tinkerforge.com       *
  *************************************************************/
 
-#ifndef TF_BRICKLET_SILENT_STEPPER_V2_H
-#define TF_BRICKLET_SILENT_STEPPER_V2_H
+#ifndef TF_SILENT_STEPPER_V2_H
+#define TF_SILENT_STEPPER_V2_H
 
 #include "config.h"
 #include "tfp.h"
@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 /**
- * \defgroup BrickletSilentStepperV2 Silent Stepper Bricklet 2.0
+ * \defgroup TF_SilentStepperV2 Silent Stepper Bricklet 2.0
  */
 
 struct TF_SilentStepperV2;
@@ -35,12 +35,12 @@ typedef void (*TF_SilentStepperV2GPIOStateHandler)(struct TF_SilentStepperV2 *de
 
 #endif
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Silently drives one bipolar stepper motor with up to 46V and 1.6A per phase
  */
 typedef struct TF_SilentStepperV2 {
-    TF_TfpContext *tfp;
+    TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
     TF_SilentStepperV2UnderVoltageHandler under_voltage_handler;
     void *under_voltage_user_data;
@@ -62,686 +62,686 @@ typedef struct TF_SilentStepperV2 {
 } TF_SilentStepperV2;
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_SET_MAX_VELOCITY 1
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_MAX_VELOCITY 2
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_CURRENT_VELOCITY 3
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_SET_SPEED_RAMPING 4
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_SPEED_RAMPING 5
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_FULL_BRAKE 6
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_SET_CURRENT_POSITION 7
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_CURRENT_POSITION 8
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_SET_TARGET_POSITION 9
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_TARGET_POSITION 10
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_SET_STEPS 11
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_STEPS 12
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_REMAINING_STEPS 13
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_SET_STEP_CONFIGURATION 14
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_STEP_CONFIGURATION 15
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_DRIVE_FORWARD 16
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_DRIVE_BACKWARD 17
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_STOP 18
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_INPUT_VOLTAGE 19
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_SET_MOTOR_CURRENT 22
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_MOTOR_CURRENT 23
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_SET_ENABLED 24
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_ENABLED 25
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_SET_BASIC_CONFIGURATION 26
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_BASIC_CONFIGURATION 27
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_SET_SPREADCYCLE_CONFIGURATION 28
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_SPREADCYCLE_CONFIGURATION 29
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_SET_STEALTH_CONFIGURATION 30
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_STEALTH_CONFIGURATION 31
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_SET_COOLSTEP_CONFIGURATION 32
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_COOLSTEP_CONFIGURATION 33
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_SET_MISC_CONFIGURATION 34
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_MISC_CONFIGURATION 35
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_SET_ERROR_LED_CONFIG 36
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_ERROR_LED_CONFIG 37
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_DRIVER_STATUS 38
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_SET_MINIMUM_VOLTAGE 39
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_MINIMUM_VOLTAGE 40
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_SET_TIME_BASE 43
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_TIME_BASE 44
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_ALL_DATA 45
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_SET_ALL_CALLBACK_CONFIGURATION 46
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_ALL_DATA_CALLBACK_CONFIGURATON 47
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_SET_GPIO_CONFIGURATION 48
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_GPIO_CONFIGURATION 49
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_SET_GPIO_ACTION 50
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_GPIO_ACTION 51
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_GPIO_STATE 52
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_SET_BOOTLOADER_MODE 235
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_BOOTLOADER_MODE 236
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER 237
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_WRITE_FIRMWARE 238
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_SET_STATUS_LED_CONFIG 239
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_STATUS_LED_CONFIG 240
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_CHIP_TEMPERATURE 242
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_RESET 243
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_WRITE_UID 248
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_READ_UID 249
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_IDENTITY 255
 
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_CALLBACK_UNDER_VOLTAGE 41
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_CALLBACK_POSITION_REACHED 42
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_CALLBACK_ALL_DATA 53
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_CALLBACK_NEW_STATE 54
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_CALLBACK_GPIO_STATE 55
 
 #endif
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_STEP_RESOLUTION_1 8
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_STEP_RESOLUTION_2 7
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_STEP_RESOLUTION_4 6
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_STEP_RESOLUTION_8 5
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_STEP_RESOLUTION_16 4
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_STEP_RESOLUTION_32 3
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_STEP_RESOLUTION_64 2
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_STEP_RESOLUTION_128 1
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_STEP_RESOLUTION_256 0
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_CHOPPER_MODE_SPREAD_CYCLE 0
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_CHOPPER_MODE_FAST_DECAY 1
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FREEWHEEL_MODE_NORMAL 0
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FREEWHEEL_MODE_FREEWHEELING 1
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FREEWHEEL_MODE_COIL_SHORT_LS 2
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_FREEWHEEL_MODE_COIL_SHORT_HS 3
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_CURRENT_UP_STEP_INCREMENT_1 0
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_CURRENT_UP_STEP_INCREMENT_2 1
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_CURRENT_UP_STEP_INCREMENT_4 2
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_CURRENT_UP_STEP_INCREMENT_8 3
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_CURRENT_DOWN_STEP_DECREMENT_1 0
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_CURRENT_DOWN_STEP_DECREMENT_2 1
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_CURRENT_DOWN_STEP_DECREMENT_8 2
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_CURRENT_DOWN_STEP_DECREMENT_32 3
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_MINIMUM_CURRENT_HALF 0
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_MINIMUM_CURRENT_QUARTER 1
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_STALLGUARD_MODE_STANDARD 0
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_STALLGUARD_MODE_FILTERED 1
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_OPEN_LOAD_NONE 0
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_OPEN_LOAD_PHASE_A 1
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_OPEN_LOAD_PHASE_B 2
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_OPEN_LOAD_PHASE_AB 3
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_SHORT_TO_GROUND_NONE 0
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_SHORT_TO_GROUND_PHASE_A 1
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_SHORT_TO_GROUND_PHASE_B 2
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_SHORT_TO_GROUND_PHASE_AB 3
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_OVER_TEMPERATURE_NONE 0
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_OVER_TEMPERATURE_WARNING 1
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_OVER_TEMPERATURE_LIMIT 2
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_STATE_STOP 1
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_STATE_ACCELERATION 2
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_STATE_RUN 3
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_STATE_DEACCELERATION 4
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_STATE_DIRECTION_CHANGE_TO_FORWARD 5
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_STATE_DIRECTION_CHANGE_TO_BACKWARD 6
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_GPIO_ACTION_NONE 0
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_GPIO_ACTION_NORMAL_STOP_RISING_EDGE 1
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_GPIO_ACTION_NORMAL_STOP_FALLING_EDGE 2
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_GPIO_ACTION_FULL_BRAKE_RISING_EDGE 4
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_GPIO_ACTION_FULL_BRAKE_FALLING_EDGE 8
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_GPIO_ACTION_CALLBACK_RISING_EDGE 16
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_GPIO_ACTION_CALLBACK_FALLING_EDGE 32
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_ERROR_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_ERROR_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_ERROR_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_ERROR_LED_CONFIG_SHOW_ERROR 3
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_BOOTLOADER_MODE_FIRMWARE 1
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT 2
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_REBOOT 3
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_ERASE_AND_REBOOT 4
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_BOOTLOADER_STATUS_OK 0
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_BOOTLOADER_STATUS_INVALID_MODE 1
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_BOOTLOADER_STATUS_NO_CHANGE 2
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_BOOTLOADER_STATUS_ENTRY_FUNCTION_NOT_PRESENT 3
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_BOOTLOADER_STATUS_DEVICE_IDENTIFIER_INCORRECT 4
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_BOOTLOADER_STATUS_CRC_MISMATCH 5
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_STATUS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_STATUS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_STATUS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_STATUS_LED_CONFIG_SHOW_STATUS 3
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * This constant is used to identify a Silent Stepper Bricklet 2.0.
  *
@@ -752,30 +752,30 @@ typedef struct TF_SilentStepperV2 {
 #define TF_SILENT_STEPPER_V2_DEVICE_IDENTIFIER 2166
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * This constant represents the display name of a Silent Stepper Bricklet 2.0.
  */
 #define TF_SILENT_STEPPER_V2_DEVICE_DISPLAY_NAME "Silent Stepper Bricklet 2.0"
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Creates the device object \c silent_stepper_v2 with the unique device ID \c uid and adds
- * it to the IPConnection \c ipcon.
+ * it to the HAL \c hal.
  */
-int tf_silent_stepper_v2_create(TF_SilentStepperV2 *silent_stepper_v2, const char *uid, TF_HalContext *hal);
+int tf_silent_stepper_v2_create(TF_SilentStepperV2 *silent_stepper_v2, const char *uid, TF_HAL *hal);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
- * Removes the device object \c silent_stepper_v2 from its IPConnection and destroys it.
+ * Removes the device object \c silent_stepper_v2 from its HAL and destroys it.
  * The device object cannot be used anymore afterwards.
  */
 int tf_silent_stepper_v2_destroy(TF_SilentStepperV2 *silent_stepper_v2);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the response expected flag for the function specified by the
  * \c function_id parameter. It is *true* if the function is expected to
@@ -784,8 +784,8 @@ int tf_silent_stepper_v2_destroy(TF_SilentStepperV2 *silent_stepper_v2);
  * For getter functions this is enabled by default and cannot be disabled,
  * because those functions will always send a response. For callback
  * configuration functions it is enabled by default too, but can be disabled
- * via the silent_stepper_v2_set_response_expected function. For setter functions it is
- * disabled by default and can be enabled.
+ * via the tf_silent_stepper_v2_set_response_expected function. For setter
+ * functions it is disabled by default and can be enabled.
  *
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
@@ -796,7 +796,7 @@ int tf_silent_stepper_v2_destroy(TF_SilentStepperV2 *silent_stepper_v2);
 int tf_silent_stepper_v2_get_response_expected(TF_SilentStepperV2 *silent_stepper_v2, uint8_t function_id, bool *ret_response_expected);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Changes the response expected flag of the function specified by the
  * \c function_id parameter. This flag can only be changed for setter
@@ -812,7 +812,7 @@ int tf_silent_stepper_v2_get_response_expected(TF_SilentStepperV2 *silent_steppe
 int tf_silent_stepper_v2_set_response_expected(TF_SilentStepperV2 *silent_stepper_v2, uint8_t function_id, bool response_expected);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
@@ -820,7 +820,7 @@ int tf_silent_stepper_v2_set_response_expected(TF_SilentStepperV2 *silent_steppe
 void tf_silent_stepper_v2_set_response_expected_all(TF_SilentStepperV2 *silent_stepper_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Registers the given \c handler to the Under Voltage callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -834,7 +834,7 @@ int tf_silent_stepper_v2_register_under_voltage_callback(TF_SilentStepperV2 *sil
 
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Registers the given \c handler to the Position Reached callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -854,7 +854,7 @@ int tf_silent_stepper_v2_register_position_reached_callback(TF_SilentStepperV2 *
 
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Registers the given \c handler to the All Data callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -870,7 +870,7 @@ int tf_silent_stepper_v2_register_all_data_callback(TF_SilentStepperV2 *silent_s
 
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Registers the given \c handler to the New State callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -884,7 +884,7 @@ int tf_silent_stepper_v2_register_new_state_callback(TF_SilentStepperV2 *silent_
 
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Registers the given \c handler to the GPIO State callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -897,7 +897,7 @@ int tf_silent_stepper_v2_register_gpio_state_callback(TF_SilentStepperV2 *silent
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Polls for callbacks. Will block for the given timeout in microseconds.
  *
@@ -907,7 +907,7 @@ int tf_silent_stepper_v2_callback_tick(TF_SilentStepperV2 *silent_stepper_v2, ui
 #endif
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Sets the maximum velocity of the stepper motor.
  * This function does *not* start the motor, it merely sets the maximum
@@ -918,21 +918,21 @@ int tf_silent_stepper_v2_callback_tick(TF_SilentStepperV2 *silent_stepper_v2, ui
 int tf_silent_stepper_v2_set_max_velocity(TF_SilentStepperV2 *silent_stepper_v2, uint16_t velocity);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the velocity as set by {@link tf_silent_stepper_v2_set_max_velocity}.
  */
 int tf_silent_stepper_v2_get_max_velocity(TF_SilentStepperV2 *silent_stepper_v2, uint16_t *ret_velocity);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the *current* velocity of the stepper motor.
  */
 int tf_silent_stepper_v2_get_current_velocity(TF_SilentStepperV2 *silent_stepper_v2, uint16_t *ret_velocity);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Sets the acceleration and deacceleration of the stepper motor.
  * An acceleration of 1000 means, that
@@ -948,7 +948,7 @@ int tf_silent_stepper_v2_get_current_velocity(TF_SilentStepperV2 *silent_stepper
 int tf_silent_stepper_v2_set_speed_ramping(TF_SilentStepperV2 *silent_stepper_v2, uint16_t acceleration, uint16_t deacceleration);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the acceleration and deacceleration as set by
  * {@link tf_silent_stepper_v2_set_speed_ramping}.
@@ -956,7 +956,7 @@ int tf_silent_stepper_v2_set_speed_ramping(TF_SilentStepperV2 *silent_stepper_v2
 int tf_silent_stepper_v2_get_speed_ramping(TF_SilentStepperV2 *silent_stepper_v2, uint16_t *ret_acceleration, uint16_t *ret_deacceleration);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Executes an active full brake.
  * 
@@ -970,7 +970,7 @@ int tf_silent_stepper_v2_get_speed_ramping(TF_SilentStepperV2 *silent_stepper_v2
 int tf_silent_stepper_v2_full_brake(TF_SilentStepperV2 *silent_stepper_v2);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Sets the current steps of the internal step counter. This can be used to
  * set the current position to 0 when some kind of starting position
@@ -979,7 +979,7 @@ int tf_silent_stepper_v2_full_brake(TF_SilentStepperV2 *silent_stepper_v2);
 int tf_silent_stepper_v2_set_current_position(TF_SilentStepperV2 *silent_stepper_v2, int32_t position);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the current position of the stepper motor in steps. On startup
  * the position is 0. The steps are counted with all possible driving
@@ -990,7 +990,7 @@ int tf_silent_stepper_v2_set_current_position(TF_SilentStepperV2 *silent_stepper
 int tf_silent_stepper_v2_get_current_position(TF_SilentStepperV2 *silent_stepper_v2, int32_t *ret_position);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Sets the target position of the stepper motor in steps. For example,
  * if the current position of the motor is 500 and {@link tf_silent_stepper_v2_set_target_position} is
@@ -1005,14 +1005,14 @@ int tf_silent_stepper_v2_get_current_position(TF_SilentStepperV2 *silent_stepper
 int tf_silent_stepper_v2_set_target_position(TF_SilentStepperV2 *silent_stepper_v2, int32_t position);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the last target position as set by {@link tf_silent_stepper_v2_set_target_position}.
  */
 int tf_silent_stepper_v2_get_target_position(TF_SilentStepperV2 *silent_stepper_v2, int32_t *ret_position);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Sets the number of steps the stepper motor should run. Positive values
  * will drive the motor forward and negative values backward.
@@ -1022,14 +1022,14 @@ int tf_silent_stepper_v2_get_target_position(TF_SilentStepperV2 *silent_stepper_
 int tf_silent_stepper_v2_set_steps(TF_SilentStepperV2 *silent_stepper_v2, int32_t steps);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the last steps as set by {@link tf_silent_stepper_v2_set_steps}.
  */
 int tf_silent_stepper_v2_get_steps(TF_SilentStepperV2 *silent_stepper_v2, int32_t *ret_steps);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the remaining steps of the last call of {@link tf_silent_stepper_v2_set_steps}.
  * For example, if {@link tf_silent_stepper_v2_set_steps} is called with 2000 and
@@ -1039,7 +1039,7 @@ int tf_silent_stepper_v2_get_steps(TF_SilentStepperV2 *silent_stepper_v2, int32_
 int tf_silent_stepper_v2_get_remaining_steps(TF_SilentStepperV2 *silent_stepper_v2, int32_t *ret_steps);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Sets the step resolution from full-step up to 1/256-step.
  * 
@@ -1056,14 +1056,14 @@ int tf_silent_stepper_v2_get_remaining_steps(TF_SilentStepperV2 *silent_stepper_
 int tf_silent_stepper_v2_set_step_configuration(TF_SilentStepperV2 *silent_stepper_v2, uint8_t step_resolution, bool interpolation);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the step mode as set by {@link tf_silent_stepper_v2_set_step_configuration}.
  */
 int tf_silent_stepper_v2_get_step_configuration(TF_SilentStepperV2 *silent_stepper_v2, uint8_t *ret_step_resolution, bool *ret_interpolation);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Drives the stepper motor forward until {@link tf_silent_stepper_v2_drive_backward} or
  * {@link tf_silent_stepper_v2_stop} is called. The velocity, acceleration and deacceleration as
@@ -1072,7 +1072,7 @@ int tf_silent_stepper_v2_get_step_configuration(TF_SilentStepperV2 *silent_stepp
 int tf_silent_stepper_v2_drive_forward(TF_SilentStepperV2 *silent_stepper_v2);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Drives the stepper motor backward until {@link tf_silent_stepper_v2_drive_forward} or
  * {@link tf_silent_stepper_v2_stop} is triggered. The velocity, acceleration and deacceleration as
@@ -1081,7 +1081,7 @@ int tf_silent_stepper_v2_drive_forward(TF_SilentStepperV2 *silent_stepper_v2);
 int tf_silent_stepper_v2_drive_backward(TF_SilentStepperV2 *silent_stepper_v2);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Stops the stepper motor with the deacceleration as set by
  * {@link tf_silent_stepper_v2_set_speed_ramping}.
@@ -1089,7 +1089,7 @@ int tf_silent_stepper_v2_drive_backward(TF_SilentStepperV2 *silent_stepper_v2);
 int tf_silent_stepper_v2_stop(TF_SilentStepperV2 *silent_stepper_v2);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the external input voltage. The external input voltage is
  * given via the black power input connector on the Silent Stepper Bricklet 2.0.
@@ -1107,7 +1107,7 @@ int tf_silent_stepper_v2_stop(TF_SilentStepperV2 *silent_stepper_v2);
 int tf_silent_stepper_v2_get_input_voltage(TF_SilentStepperV2 *silent_stepper_v2, uint16_t *ret_voltage);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Sets the current with which the motor will be driven.
  * 
@@ -1118,14 +1118,14 @@ int tf_silent_stepper_v2_get_input_voltage(TF_SilentStepperV2 *silent_stepper_v2
 int tf_silent_stepper_v2_set_motor_current(TF_SilentStepperV2 *silent_stepper_v2, uint16_t current);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the current as set by {@link tf_silent_stepper_v2_set_motor_current}.
  */
 int tf_silent_stepper_v2_get_motor_current(TF_SilentStepperV2 *silent_stepper_v2, uint16_t *ret_current);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Enables/Disables the driver chip. The driver parameters can be configured (maximum velocity,
  * acceleration, etc) before it is enabled.
@@ -1141,14 +1141,14 @@ int tf_silent_stepper_v2_get_motor_current(TF_SilentStepperV2 *silent_stepper_v2
 int tf_silent_stepper_v2_set_enabled(TF_SilentStepperV2 *silent_stepper_v2, bool enabled);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns *true* if the stepper driver is enabled, *false* otherwise.
  */
 int tf_silent_stepper_v2_get_enabled(TF_SilentStepperV2 *silent_stepper_v2, bool *ret_enabled);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Sets the basic configuration parameters for the different modes (Stealth, Coolstep, Classic).
  * 
@@ -1193,14 +1193,14 @@ int tf_silent_stepper_v2_get_enabled(TF_SilentStepperV2 *silent_stepper_v2, bool
 int tf_silent_stepper_v2_set_basic_configuration(TF_SilentStepperV2 *silent_stepper_v2, uint16_t standstill_current, uint16_t motor_run_current, uint16_t standstill_delay_time, uint16_t power_down_time, uint16_t stealth_threshold, uint16_t coolstep_threshold, uint16_t classic_threshold, bool high_velocity_chopper_mode);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the configuration as set by {@link tf_silent_stepper_v2_set_basic_configuration}.
  */
 int tf_silent_stepper_v2_get_basic_configuration(TF_SilentStepperV2 *silent_stepper_v2, uint16_t *ret_standstill_current, uint16_t *ret_motor_run_current, uint16_t *ret_standstill_delay_time, uint16_t *ret_power_down_time, uint16_t *ret_stealth_threshold, uint16_t *ret_coolstep_threshold, uint16_t *ret_classic_threshold, bool *ret_high_velocity_chopper_mode);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Note: If you don't know what any of this means you can very likely keep all of
  * the values as default!
@@ -1245,14 +1245,14 @@ int tf_silent_stepper_v2_get_basic_configuration(TF_SilentStepperV2 *silent_step
 int tf_silent_stepper_v2_set_spreadcycle_configuration(TF_SilentStepperV2 *silent_stepper_v2, uint8_t slow_decay_duration, bool enable_random_slow_decay, uint8_t fast_decay_duration, uint8_t hysteresis_start_value, int8_t hysteresis_end_value, int8_t sine_wave_offset, uint8_t chopper_mode, uint8_t comparator_blank_time, bool fast_decay_without_comparator);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the configuration as set by {@link tf_silent_stepper_v2_set_basic_configuration}.
  */
 int tf_silent_stepper_v2_get_spreadcycle_configuration(TF_SilentStepperV2 *silent_stepper_v2, uint8_t *ret_slow_decay_duration, bool *ret_enable_random_slow_decay, uint8_t *ret_fast_decay_duration, uint8_t *ret_hysteresis_start_value, int8_t *ret_hysteresis_end_value, int8_t *ret_sine_wave_offset, uint8_t *ret_chopper_mode, uint8_t *ret_comparator_blank_time, bool *ret_fast_decay_without_comparator);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Note: If you don't know what any of this means you can very likely keep all of
  * the values as default!
@@ -1281,14 +1281,14 @@ int tf_silent_stepper_v2_get_spreadcycle_configuration(TF_SilentStepperV2 *silen
 int tf_silent_stepper_v2_set_stealth_configuration(TF_SilentStepperV2 *silent_stepper_v2, bool enable_stealth, uint8_t amplitude, uint8_t gradient, bool enable_autoscale, bool force_symmetric, uint8_t freewheel_mode);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the configuration as set by {@link tf_silent_stepper_v2_set_stealth_configuration}.
  */
 int tf_silent_stepper_v2_get_stealth_configuration(TF_SilentStepperV2 *silent_stepper_v2, bool *ret_enable_stealth, uint8_t *ret_amplitude, uint8_t *ret_gradient, bool *ret_enable_autoscale, bool *ret_force_symmetric, uint8_t *ret_freewheel_mode);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Note: If you don't know what any of this means you can very likely keep all of
  * the values as default!
@@ -1321,14 +1321,14 @@ int tf_silent_stepper_v2_get_stealth_configuration(TF_SilentStepperV2 *silent_st
 int tf_silent_stepper_v2_set_coolstep_configuration(TF_SilentStepperV2 *silent_stepper_v2, uint8_t minimum_stallguard_value, uint8_t maximum_stallguard_value, uint8_t current_up_step_width, uint8_t current_down_step_width, uint8_t minimum_current, int8_t stallguard_threshold_value, uint8_t stallguard_mode);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the configuration as set by {@link tf_silent_stepper_v2_set_coolstep_configuration}.
  */
 int tf_silent_stepper_v2_get_coolstep_configuration(TF_SilentStepperV2 *silent_stepper_v2, uint8_t *ret_minimum_stallguard_value, uint8_t *ret_maximum_stallguard_value, uint8_t *ret_current_up_step_width, uint8_t *ret_current_down_step_width, uint8_t *ret_minimum_current, int8_t *ret_stallguard_threshold_value, uint8_t *ret_stallguard_mode);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Note: If you don't know what any of this means you can very likely keep all of
  * the values as default!
@@ -1347,14 +1347,14 @@ int tf_silent_stepper_v2_get_coolstep_configuration(TF_SilentStepperV2 *silent_s
 int tf_silent_stepper_v2_set_misc_configuration(TF_SilentStepperV2 *silent_stepper_v2, bool disable_short_to_ground_protection, uint8_t synchronize_phase_frequency);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the configuration as set by {@link tf_silent_stepper_v2_set_misc_configuration}.
  */
 int tf_silent_stepper_v2_get_misc_configuration(TF_SilentStepperV2 *silent_stepper_v2, bool *ret_disable_short_to_ground_protection, uint8_t *ret_synchronize_phase_frequency);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Configures the error LED to be either turned off, turned on, blink in
  * heartbeat mode or show an error.
@@ -1369,14 +1369,14 @@ int tf_silent_stepper_v2_get_misc_configuration(TF_SilentStepperV2 *silent_stepp
 int tf_silent_stepper_v2_set_error_led_config(TF_SilentStepperV2 *silent_stepper_v2, uint8_t config);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the LED configuration as set by {@link tf_silent_stepper_v2_set_error_led_config}
  */
 int tf_silent_stepper_v2_get_error_led_config(TF_SilentStepperV2 *silent_stepper_v2, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the current driver status.
  * 
@@ -1409,7 +1409,7 @@ int tf_silent_stepper_v2_get_error_led_config(TF_SilentStepperV2 *silent_stepper
 int tf_silent_stepper_v2_get_driver_status(TF_SilentStepperV2 *silent_stepper_v2, uint8_t *ret_open_load, uint8_t *ret_short_to_ground, uint8_t *ret_over_temperature, bool *ret_motor_stalled, uint8_t *ret_actual_motor_current, bool *ret_full_step_active, uint8_t *ret_stallguard_result, uint8_t *ret_stealth_voltage_amplitude);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Sets the minimum voltage, below which the {@link tf_silent_stepper_v2_register_under_voltage_callback} callback
  * is triggered. The minimum possible value that works with the Silent Stepper
@@ -1421,14 +1421,14 @@ int tf_silent_stepper_v2_get_driver_status(TF_SilentStepperV2 *silent_stepper_v2
 int tf_silent_stepper_v2_set_minimum_voltage(TF_SilentStepperV2 *silent_stepper_v2, uint16_t voltage);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the minimum voltage as set by {@link tf_silent_stepper_v2_set_minimum_voltage}.
  */
 int tf_silent_stepper_v2_get_minimum_voltage(TF_SilentStepperV2 *silent_stepper_v2, uint16_t *ret_voltage);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Sets the time base of the velocity and the acceleration of the Silent Stepper
  * Bricklet 2.0.
@@ -1440,14 +1440,14 @@ int tf_silent_stepper_v2_get_minimum_voltage(TF_SilentStepperV2 *silent_stepper_
 int tf_silent_stepper_v2_set_time_base(TF_SilentStepperV2 *silent_stepper_v2, uint32_t time_base);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the time base as set by {@link tf_silent_stepper_v2_set_time_base}.
  */
 int tf_silent_stepper_v2_get_time_base(TF_SilentStepperV2 *silent_stepper_v2, uint32_t *ret_time_base);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the following parameters: The current velocity,
  * the current position, the remaining steps, the stack voltage, the external
@@ -1466,7 +1466,7 @@ int tf_silent_stepper_v2_get_time_base(TF_SilentStepperV2 *silent_stepper_v2, ui
 int tf_silent_stepper_v2_get_all_data(TF_SilentStepperV2 *silent_stepper_v2, uint16_t *ret_current_velocity, int32_t *ret_current_position, int32_t *ret_remaining_steps, uint16_t *ret_input_voltage, uint16_t *ret_current_consumption);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Sets the period with which the {@link tf_silent_stepper_v2_register_all_data_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
@@ -1474,14 +1474,14 @@ int tf_silent_stepper_v2_get_all_data(TF_SilentStepperV2 *silent_stepper_v2, uin
 int tf_silent_stepper_v2_set_all_callback_configuration(TF_SilentStepperV2 *silent_stepper_v2, uint32_t period);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the period as set by {@link tf_silent_stepper_v2_set_all_callback_configuration}.
  */
 int tf_silent_stepper_v2_get_all_data_callback_configuraton(TF_SilentStepperV2 *silent_stepper_v2, uint32_t *ret_period);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Sets the GPIO configuration for the given channel.
  * You can configure a debounce and the deceleration that is used if the action is
@@ -1490,14 +1490,14 @@ int tf_silent_stepper_v2_get_all_data_callback_configuraton(TF_SilentStepperV2 *
 int tf_silent_stepper_v2_set_gpio_configuration(TF_SilentStepperV2 *silent_stepper_v2, uint8_t channel, uint16_t debounce, uint16_t stop_deceleration);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the GPIO configuration for a channel as set by {@link tf_silent_stepper_v2_set_gpio_configuration}.
  */
 int tf_silent_stepper_v2_get_gpio_configuration(TF_SilentStepperV2 *silent_stepper_v2, uint8_t channel, uint16_t *ret_debounce, uint16_t *ret_stop_deceleration);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Sets the GPIO action for the given channel.
  * 
@@ -1512,14 +1512,14 @@ int tf_silent_stepper_v2_get_gpio_configuration(TF_SilentStepperV2 *silent_stepp
 int tf_silent_stepper_v2_set_gpio_action(TF_SilentStepperV2 *silent_stepper_v2, uint8_t channel, uint32_t action);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the GPIO action for a channel as set by {@link tf_silent_stepper_v2_set_gpio_action}.
  */
 int tf_silent_stepper_v2_get_gpio_action(TF_SilentStepperV2 *silent_stepper_v2, uint8_t channel, uint32_t *ret_action);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the GPIO state for both channels. True if the state is ``high`` and
  * false if the state is ``low``.
@@ -1527,7 +1527,7 @@ int tf_silent_stepper_v2_get_gpio_action(TF_SilentStepperV2 *silent_stepper_v2, 
 int tf_silent_stepper_v2_get_gpio_state(TF_SilentStepperV2 *silent_stepper_v2, bool ret_gpio_state[2]);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the error count for the communication between Brick and Bricklet.
  * 
@@ -1544,7 +1544,7 @@ int tf_silent_stepper_v2_get_gpio_state(TF_SilentStepperV2 *silent_stepper_v2, b
 int tf_silent_stepper_v2_get_spitfp_error_count(TF_SilentStepperV2 *silent_stepper_v2, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
@@ -1559,14 +1559,14 @@ int tf_silent_stepper_v2_get_spitfp_error_count(TF_SilentStepperV2 *silent_stepp
 int tf_silent_stepper_v2_set_bootloader_mode(TF_SilentStepperV2 *silent_stepper_v2, uint8_t mode, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the current bootloader mode, see {@link tf_silent_stepper_v2_set_bootloader_mode}.
  */
 int tf_silent_stepper_v2_get_bootloader_mode(TF_SilentStepperV2 *silent_stepper_v2, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Sets the firmware pointer for {@link tf_silent_stepper_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
@@ -1578,7 +1578,7 @@ int tf_silent_stepper_v2_get_bootloader_mode(TF_SilentStepperV2 *silent_stepper_
 int tf_silent_stepper_v2_set_write_firmware_pointer(TF_SilentStepperV2 *silent_stepper_v2, uint32_t pointer);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_silent_stepper_v2_set_write_firmware_pointer} before. The firmware is written
@@ -1592,7 +1592,7 @@ int tf_silent_stepper_v2_set_write_firmware_pointer(TF_SilentStepperV2 *silent_s
 int tf_silent_stepper_v2_write_firmware(TF_SilentStepperV2 *silent_stepper_v2, const uint8_t data[64], uint8_t *ret_status);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
@@ -1605,14 +1605,14 @@ int tf_silent_stepper_v2_write_firmware(TF_SilentStepperV2 *silent_stepper_v2, c
 int tf_silent_stepper_v2_set_status_led_config(TF_SilentStepperV2 *silent_stepper_v2, uint8_t config);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the configuration as set by {@link tf_silent_stepper_v2_set_status_led_config}
  */
 int tf_silent_stepper_v2_get_status_led_config(TF_SilentStepperV2 *silent_stepper_v2, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
@@ -1624,7 +1624,7 @@ int tf_silent_stepper_v2_get_status_led_config(TF_SilentStepperV2 *silent_steppe
 int tf_silent_stepper_v2_get_chip_temperature(TF_SilentStepperV2 *silent_stepper_v2, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
@@ -1636,7 +1636,7 @@ int tf_silent_stepper_v2_get_chip_temperature(TF_SilentStepperV2 *silent_stepper
 int tf_silent_stepper_v2_reset(TF_SilentStepperV2 *silent_stepper_v2);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
@@ -1647,7 +1647,7 @@ int tf_silent_stepper_v2_reset(TF_SilentStepperV2 *silent_stepper_v2);
 int tf_silent_stepper_v2_write_uid(TF_SilentStepperV2 *silent_stepper_v2, uint32_t uid);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the current UID as an integer. Encode as
  * Base58 to get the usual string version.
@@ -1655,7 +1655,7 @@ int tf_silent_stepper_v2_write_uid(TF_SilentStepperV2 *silent_stepper_v2, uint32
 int tf_silent_stepper_v2_read_uid(TF_SilentStepperV2 *silent_stepper_v2, uint32_t *ret_uid);
 
 /**
- * \ingroup BrickletSilentStepperV2
+ * \ingroup TF_SilentStepperV2
  *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the

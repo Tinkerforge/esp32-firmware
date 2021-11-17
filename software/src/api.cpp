@@ -26,7 +26,7 @@
 #include "event_log.h"
 #include "task_scheduler.h"
 
-extern TF_HalContext hal;
+extern TF_HAL hal;
 
 extern TaskScheduler task_scheduler;
 extern EventLog logger;

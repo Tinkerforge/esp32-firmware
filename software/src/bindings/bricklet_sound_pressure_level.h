@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-12.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -8,8 +8,8 @@
  * to the generators git repository on tinkerforge.com       *
  *************************************************************/
 
-#ifndef TF_BRICKLET_SOUND_PRESSURE_LEVEL_H
-#define TF_BRICKLET_SOUND_PRESSURE_LEVEL_H
+#ifndef TF_SOUND_PRESSURE_LEVEL_H
+#define TF_SOUND_PRESSURE_LEVEL_H
 
 #include "config.h"
 #include "tfp.h"
@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 /**
- * \defgroup BrickletSoundPressureLevel Sound Pressure Level Bricklet
+ * \defgroup TF_SoundPressureLevel Sound Pressure Level Bricklet
  */
 
 struct TF_SoundPressureLevel;
@@ -32,12 +32,12 @@ typedef void (*TF_SoundPressureLevelSpectrumLowLevelHandler)(struct TF_SoundPres
 
 #endif
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Measures Sound Pressure Level in dB(A/B/C/D/Z)
  */
 typedef struct TF_SoundPressureLevel {
-    TF_TfpContext *tfp;
+    TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
     TF_SoundPressureLevelDecibelHandler decibel_handler;
     void *decibel_user_data;
@@ -50,271 +50,271 @@ typedef struct TF_SoundPressureLevel {
 } TF_SoundPressureLevel;
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_FUNCTION_GET_DECIBEL 1
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_FUNCTION_SET_DECIBEL_CALLBACK_CONFIGURATION 2
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_FUNCTION_GET_DECIBEL_CALLBACK_CONFIGURATION 3
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_FUNCTION_GET_SPECTRUM_LOW_LEVEL 5
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_FUNCTION_SET_SPECTRUM_CALLBACK_CONFIGURATION 6
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_FUNCTION_GET_SPECTRUM_CALLBACK_CONFIGURATION 7
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_FUNCTION_SET_CONFIGURATION 9
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_FUNCTION_GET_CONFIGURATION 10
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_FUNCTION_SET_BOOTLOADER_MODE 235
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_FUNCTION_GET_BOOTLOADER_MODE 236
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_FUNCTION_SET_WRITE_FIRMWARE_POINTER 237
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_FUNCTION_WRITE_FIRMWARE 238
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_FUNCTION_SET_STATUS_LED_CONFIG 239
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_FUNCTION_GET_STATUS_LED_CONFIG 240
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_FUNCTION_GET_CHIP_TEMPERATURE 242
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_FUNCTION_RESET 243
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_FUNCTION_WRITE_UID 248
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_FUNCTION_READ_UID 249
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_FUNCTION_GET_IDENTITY 255
 
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_CALLBACK_DECIBEL 4
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_CALLBACK_SPECTRUM_LOW_LEVEL 8
 
 #endif
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_THRESHOLD_OPTION_OFF 'x'
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_THRESHOLD_OPTION_OUTSIDE 'o'
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_THRESHOLD_OPTION_INSIDE 'i'
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_THRESHOLD_OPTION_SMALLER '<'
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_THRESHOLD_OPTION_GREATER '>'
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_FFT_SIZE_128 0
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_FFT_SIZE_256 1
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_FFT_SIZE_512 2
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_FFT_SIZE_1024 3
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_WEIGHTING_A 0
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_WEIGHTING_B 1
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_WEIGHTING_C 2
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_WEIGHTING_D 3
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_WEIGHTING_Z 4
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_WEIGHTING_ITU_R_468 5
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_BOOTLOADER_MODE_FIRMWARE 1
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT 2
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_REBOOT 3
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_ERASE_AND_REBOOT 4
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_BOOTLOADER_STATUS_OK 0
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_BOOTLOADER_STATUS_INVALID_MODE 1
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_BOOTLOADER_STATUS_NO_CHANGE 2
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_BOOTLOADER_STATUS_ENTRY_FUNCTION_NOT_PRESENT 3
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_BOOTLOADER_STATUS_DEVICE_IDENTIFIER_INCORRECT 4
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_BOOTLOADER_STATUS_CRC_MISMATCH 5
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_STATUS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_STATUS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_STATUS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  */
 #define TF_SOUND_PRESSURE_LEVEL_STATUS_LED_CONFIG_SHOW_STATUS 3
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * This constant is used to identify a Sound Pressure Level Bricklet.
  *
@@ -325,30 +325,30 @@ typedef struct TF_SoundPressureLevel {
 #define TF_SOUND_PRESSURE_LEVEL_DEVICE_IDENTIFIER 290
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * This constant represents the display name of a Sound Pressure Level Bricklet.
  */
 #define TF_SOUND_PRESSURE_LEVEL_DEVICE_DISPLAY_NAME "Sound Pressure Level Bricklet"
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Creates the device object \c sound_pressure_level with the unique device ID \c uid and adds
- * it to the IPConnection \c ipcon.
+ * it to the HAL \c hal.
  */
-int tf_sound_pressure_level_create(TF_SoundPressureLevel *sound_pressure_level, const char *uid, TF_HalContext *hal);
+int tf_sound_pressure_level_create(TF_SoundPressureLevel *sound_pressure_level, const char *uid, TF_HAL *hal);
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
- * Removes the device object \c sound_pressure_level from its IPConnection and destroys it.
+ * Removes the device object \c sound_pressure_level from its HAL and destroys it.
  * The device object cannot be used anymore afterwards.
  */
 int tf_sound_pressure_level_destroy(TF_SoundPressureLevel *sound_pressure_level);
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Returns the response expected flag for the function specified by the
  * \c function_id parameter. It is *true* if the function is expected to
@@ -357,8 +357,8 @@ int tf_sound_pressure_level_destroy(TF_SoundPressureLevel *sound_pressure_level)
  * For getter functions this is enabled by default and cannot be disabled,
  * because those functions will always send a response. For callback
  * configuration functions it is enabled by default too, but can be disabled
- * via the sound_pressure_level_set_response_expected function. For setter functions it is
- * disabled by default and can be enabled.
+ * via the tf_sound_pressure_level_set_response_expected function. For setter
+ * functions it is disabled by default and can be enabled.
  *
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
@@ -369,7 +369,7 @@ int tf_sound_pressure_level_destroy(TF_SoundPressureLevel *sound_pressure_level)
 int tf_sound_pressure_level_get_response_expected(TF_SoundPressureLevel *sound_pressure_level, uint8_t function_id, bool *ret_response_expected);
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Changes the response expected flag of the function specified by the
  * \c function_id parameter. This flag can only be changed for setter
@@ -385,7 +385,7 @@ int tf_sound_pressure_level_get_response_expected(TF_SoundPressureLevel *sound_p
 int tf_sound_pressure_level_set_response_expected(TF_SoundPressureLevel *sound_pressure_level, uint8_t function_id, bool response_expected);
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
@@ -393,7 +393,7 @@ int tf_sound_pressure_level_set_response_expected(TF_SoundPressureLevel *sound_p
 void tf_sound_pressure_level_set_response_expected_all(TF_SoundPressureLevel *sound_pressure_level, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Registers the given \c handler to the Decibel callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -409,7 +409,7 @@ int tf_sound_pressure_level_register_decibel_callback(TF_SoundPressureLevel *sou
 
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Registers the given \c handler to the Spectrum Low Level callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -425,7 +425,7 @@ int tf_sound_pressure_level_register_spectrum_low_level_callback(TF_SoundPressur
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Polls for callbacks. Will block for the given timeout in microseconds.
  *
@@ -435,7 +435,7 @@ int tf_sound_pressure_level_callback_tick(TF_SoundPressureLevel *sound_pressure_
 #endif
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Returns the measured sound pressure in decibels.
  * 
@@ -452,7 +452,7 @@ int tf_sound_pressure_level_callback_tick(TF_SoundPressureLevel *sound_pressure_
 int tf_sound_pressure_level_get_decibel(TF_SoundPressureLevel *sound_pressure_level, uint16_t *ret_decibel);
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * The period is the period with which the {@link tf_sound_pressure_level_register_decibel_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
@@ -485,14 +485,14 @@ int tf_sound_pressure_level_get_decibel(TF_SoundPressureLevel *sound_pressure_le
 int tf_sound_pressure_level_set_decibel_callback_configuration(TF_SoundPressureLevel *sound_pressure_level, uint32_t period, bool value_has_to_change, char option, uint16_t min, uint16_t max);
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Returns the callback configuration as set by {@link tf_sound_pressure_level_set_decibel_callback_configuration}.
  */
 int tf_sound_pressure_level_get_decibel_callback_configuration(TF_SoundPressureLevel *sound_pressure_level, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, uint16_t *ret_min, uint16_t *ret_max);
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Returns the frequency spectrum. The length of the spectrum is between
  * 512 (FFT size 1024) and 64 (FFT size 128). See {@link tf_sound_pressure_level_set_configuration}.
@@ -516,7 +516,7 @@ int tf_sound_pressure_level_get_decibel_callback_configuration(TF_SoundPressureL
 int tf_sound_pressure_level_get_spectrum_low_level(TF_SoundPressureLevel *sound_pressure_level, uint16_t *ret_spectrum_length, uint16_t *ret_spectrum_chunk_offset, uint16_t ret_spectrum_chunk_data[30]);
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * The period is the period with which the {@link tf_sound_pressure_level_register_spectrum_callback} callback is
  * triggered periodically. A value of 0 turns the callback off.
@@ -527,7 +527,7 @@ int tf_sound_pressure_level_get_spectrum_low_level(TF_SoundPressureLevel *sound_
 int tf_sound_pressure_level_set_spectrum_callback_configuration(TF_SoundPressureLevel *sound_pressure_level, uint32_t period);
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Returns the callback configuration as set by
  * {@link tf_sound_pressure_level_get_spectrum_callback_configuration}.
@@ -535,7 +535,7 @@ int tf_sound_pressure_level_set_spectrum_callback_configuration(TF_SoundPressure
 int tf_sound_pressure_level_get_spectrum_callback_configuration(TF_SoundPressureLevel *sound_pressure_level, uint32_t *ret_period);
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Sets the Sound Pressure Level Bricklet configuration.
  * 
@@ -562,14 +562,14 @@ int tf_sound_pressure_level_get_spectrum_callback_configuration(TF_SoundPressure
 int tf_sound_pressure_level_set_configuration(TF_SoundPressureLevel *sound_pressure_level, uint8_t fft_size, uint8_t weighting);
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Returns the configuration as set by {@link tf_sound_pressure_level_set_configuration}.
  */
 int tf_sound_pressure_level_get_configuration(TF_SoundPressureLevel *sound_pressure_level, uint8_t *ret_fft_size, uint8_t *ret_weighting);
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Returns the error count for the communication between Brick and Bricklet.
  * 
@@ -586,7 +586,7 @@ int tf_sound_pressure_level_get_configuration(TF_SoundPressureLevel *sound_press
 int tf_sound_pressure_level_get_spitfp_error_count(TF_SoundPressureLevel *sound_pressure_level, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
@@ -601,14 +601,14 @@ int tf_sound_pressure_level_get_spitfp_error_count(TF_SoundPressureLevel *sound_
 int tf_sound_pressure_level_set_bootloader_mode(TF_SoundPressureLevel *sound_pressure_level, uint8_t mode, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Returns the current bootloader mode, see {@link tf_sound_pressure_level_set_bootloader_mode}.
  */
 int tf_sound_pressure_level_get_bootloader_mode(TF_SoundPressureLevel *sound_pressure_level, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Sets the firmware pointer for {@link tf_sound_pressure_level_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
@@ -620,7 +620,7 @@ int tf_sound_pressure_level_get_bootloader_mode(TF_SoundPressureLevel *sound_pre
 int tf_sound_pressure_level_set_write_firmware_pointer(TF_SoundPressureLevel *sound_pressure_level, uint32_t pointer);
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_sound_pressure_level_set_write_firmware_pointer} before. The firmware is written
@@ -634,7 +634,7 @@ int tf_sound_pressure_level_set_write_firmware_pointer(TF_SoundPressureLevel *so
 int tf_sound_pressure_level_write_firmware(TF_SoundPressureLevel *sound_pressure_level, const uint8_t data[64], uint8_t *ret_status);
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
@@ -647,14 +647,14 @@ int tf_sound_pressure_level_write_firmware(TF_SoundPressureLevel *sound_pressure
 int tf_sound_pressure_level_set_status_led_config(TF_SoundPressureLevel *sound_pressure_level, uint8_t config);
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Returns the configuration as set by {@link tf_sound_pressure_level_set_status_led_config}
  */
 int tf_sound_pressure_level_get_status_led_config(TF_SoundPressureLevel *sound_pressure_level, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
@@ -666,7 +666,7 @@ int tf_sound_pressure_level_get_status_led_config(TF_SoundPressureLevel *sound_p
 int tf_sound_pressure_level_get_chip_temperature(TF_SoundPressureLevel *sound_pressure_level, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
@@ -678,7 +678,7 @@ int tf_sound_pressure_level_get_chip_temperature(TF_SoundPressureLevel *sound_pr
 int tf_sound_pressure_level_reset(TF_SoundPressureLevel *sound_pressure_level);
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
@@ -689,7 +689,7 @@ int tf_sound_pressure_level_reset(TF_SoundPressureLevel *sound_pressure_level);
 int tf_sound_pressure_level_write_uid(TF_SoundPressureLevel *sound_pressure_level, uint32_t uid);
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Returns the current UID as an integer. Encode as
  * Base58 to get the usual string version.
@@ -697,7 +697,7 @@ int tf_sound_pressure_level_write_uid(TF_SoundPressureLevel *sound_pressure_leve
 int tf_sound_pressure_level_read_uid(TF_SoundPressureLevel *sound_pressure_level, uint32_t *ret_uid);
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
@@ -713,7 +713,7 @@ int tf_sound_pressure_level_read_uid(TF_SoundPressureLevel *sound_pressure_level
 int tf_sound_pressure_level_get_identity(TF_SoundPressureLevel *sound_pressure_level, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier);
 
 /**
- * \ingroup BrickletSoundPressureLevel
+ * \ingroup TF_SoundPressureLevel
  *
  * Returns the frequency spectrum. The length of the spectrum is between
  * 512 (FFT size 1024) and 64 (FFT size 128). See {@link tf_sound_pressure_level_set_configuration}.

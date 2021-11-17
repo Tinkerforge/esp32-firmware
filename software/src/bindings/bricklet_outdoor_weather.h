@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-12.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -8,8 +8,8 @@
  * to the generators git repository on tinkerforge.com       *
  *************************************************************/
 
-#ifndef TF_BRICKLET_OUTDOOR_WEATHER_H
-#define TF_BRICKLET_OUTDOOR_WEATHER_H
+#ifndef TF_OUTDOOR_WEATHER_H
+#define TF_OUTDOOR_WEATHER_H
 
 #include "config.h"
 #include "tfp.h"
@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 /**
- * \defgroup BrickletOutdoorWeather Outdoor Weather Bricklet
+ * \defgroup TF_OutdoorWeather Outdoor Weather Bricklet
  */
 
 struct TF_OutdoorWeather;
@@ -32,12 +32,12 @@ typedef void (*TF_OutdoorWeatherSensorDataHandler)(struct TF_OutdoorWeather *dev
 
 #endif
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * 433MHz receiver for outdoor weather station
  */
 typedef struct TF_OutdoorWeather {
-    TF_TfpContext *tfp;
+    TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
     TF_OutdoorWeatherStationDataHandler station_data_handler;
     void *station_data_user_data;
@@ -50,281 +50,281 @@ typedef struct TF_OutdoorWeather {
 } TF_OutdoorWeather;
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_FUNCTION_GET_STATION_IDENTIFIERS_LOW_LEVEL 1
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_FUNCTION_GET_SENSOR_IDENTIFIERS_LOW_LEVEL 2
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_FUNCTION_GET_STATION_DATA 3
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_FUNCTION_GET_SENSOR_DATA 4
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_FUNCTION_SET_STATION_CALLBACK_CONFIGURATION 5
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_FUNCTION_GET_STATION_CALLBACK_CONFIGURATION 6
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_FUNCTION_SET_SENSOR_CALLBACK_CONFIGURATION 7
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_FUNCTION_GET_SENSOR_CALLBACK_CONFIGURATION 8
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_FUNCTION_SET_BOOTLOADER_MODE 235
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_FUNCTION_GET_BOOTLOADER_MODE 236
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_FUNCTION_SET_WRITE_FIRMWARE_POINTER 237
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_FUNCTION_WRITE_FIRMWARE 238
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_FUNCTION_SET_STATUS_LED_CONFIG 239
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_FUNCTION_GET_STATUS_LED_CONFIG 240
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_FUNCTION_GET_CHIP_TEMPERATURE 242
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_FUNCTION_RESET 243
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_FUNCTION_WRITE_UID 248
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_FUNCTION_READ_UID 249
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_FUNCTION_GET_IDENTITY 255
 
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_CALLBACK_STATION_DATA 9
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_CALLBACK_SENSOR_DATA 10
 
 #endif
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_WIND_DIRECTION_N 0
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_WIND_DIRECTION_NNE 1
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_WIND_DIRECTION_NE 2
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_WIND_DIRECTION_ENE 3
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_WIND_DIRECTION_E 4
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_WIND_DIRECTION_ESE 5
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_WIND_DIRECTION_SE 6
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_WIND_DIRECTION_SSE 7
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_WIND_DIRECTION_S 8
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_WIND_DIRECTION_SSW 9
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_WIND_DIRECTION_SW 10
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_WIND_DIRECTION_WSW 11
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_WIND_DIRECTION_W 12
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_WIND_DIRECTION_WNW 13
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_WIND_DIRECTION_NW 14
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_WIND_DIRECTION_NNW 15
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_WIND_DIRECTION_ERROR 255
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_BOOTLOADER_MODE_FIRMWARE 1
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT 2
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_REBOOT 3
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_ERASE_AND_REBOOT 4
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_BOOTLOADER_STATUS_OK 0
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_BOOTLOADER_STATUS_INVALID_MODE 1
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_BOOTLOADER_STATUS_NO_CHANGE 2
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_BOOTLOADER_STATUS_ENTRY_FUNCTION_NOT_PRESENT 3
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_BOOTLOADER_STATUS_DEVICE_IDENTIFIER_INCORRECT 4
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_BOOTLOADER_STATUS_CRC_MISMATCH 5
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_STATUS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_STATUS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_STATUS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  */
 #define TF_OUTDOOR_WEATHER_STATUS_LED_CONFIG_SHOW_STATUS 3
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * This constant is used to identify a Outdoor Weather Bricklet.
  *
@@ -335,30 +335,30 @@ typedef struct TF_OutdoorWeather {
 #define TF_OUTDOOR_WEATHER_DEVICE_IDENTIFIER 288
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * This constant represents the display name of a Outdoor Weather Bricklet.
  */
 #define TF_OUTDOOR_WEATHER_DEVICE_DISPLAY_NAME "Outdoor Weather Bricklet"
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Creates the device object \c outdoor_weather with the unique device ID \c uid and adds
- * it to the IPConnection \c ipcon.
+ * it to the HAL \c hal.
  */
-int tf_outdoor_weather_create(TF_OutdoorWeather *outdoor_weather, const char *uid, TF_HalContext *hal);
+int tf_outdoor_weather_create(TF_OutdoorWeather *outdoor_weather, const char *uid, TF_HAL *hal);
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
- * Removes the device object \c outdoor_weather from its IPConnection and destroys it.
+ * Removes the device object \c outdoor_weather from its HAL and destroys it.
  * The device object cannot be used anymore afterwards.
  */
 int tf_outdoor_weather_destroy(TF_OutdoorWeather *outdoor_weather);
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Returns the response expected flag for the function specified by the
  * \c function_id parameter. It is *true* if the function is expected to
@@ -367,8 +367,8 @@ int tf_outdoor_weather_destroy(TF_OutdoorWeather *outdoor_weather);
  * For getter functions this is enabled by default and cannot be disabled,
  * because those functions will always send a response. For callback
  * configuration functions it is enabled by default too, but can be disabled
- * via the outdoor_weather_set_response_expected function. For setter functions it is
- * disabled by default and can be enabled.
+ * via the tf_outdoor_weather_set_response_expected function. For setter
+ * functions it is disabled by default and can be enabled.
  *
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
@@ -379,7 +379,7 @@ int tf_outdoor_weather_destroy(TF_OutdoorWeather *outdoor_weather);
 int tf_outdoor_weather_get_response_expected(TF_OutdoorWeather *outdoor_weather, uint8_t function_id, bool *ret_response_expected);
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Changes the response expected flag of the function specified by the
  * \c function_id parameter. This flag can only be changed for setter
@@ -395,7 +395,7 @@ int tf_outdoor_weather_get_response_expected(TF_OutdoorWeather *outdoor_weather,
 int tf_outdoor_weather_set_response_expected(TF_OutdoorWeather *outdoor_weather, uint8_t function_id, bool response_expected);
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
@@ -403,7 +403,7 @@ int tf_outdoor_weather_set_response_expected(TF_OutdoorWeather *outdoor_weather,
 void tf_outdoor_weather_set_response_expected_all(TF_OutdoorWeather *outdoor_weather, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Registers the given \c handler to the Station Data callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -422,7 +422,7 @@ int tf_outdoor_weather_register_station_data_callback(TF_OutdoorWeather *outdoor
 
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Registers the given \c handler to the Sensor Data callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -441,7 +441,7 @@ int tf_outdoor_weather_register_sensor_data_callback(TF_OutdoorWeather *outdoor_
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Polls for callbacks. Will block for the given timeout in microseconds.
  *
@@ -451,7 +451,7 @@ int tf_outdoor_weather_callback_tick(TF_OutdoorWeather *outdoor_weather, uint32_
 #endif
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Returns the identifiers (number between 0 and 255) of all `stations
  * <https://www.tinkerforge.com/en/shop/accessories/sensors/outdoor-weather-station-ws-6147.html>`__
@@ -465,7 +465,7 @@ int tf_outdoor_weather_callback_tick(TF_OutdoorWeather *outdoor_weather, uint32_
 int tf_outdoor_weather_get_station_identifiers_low_level(TF_OutdoorWeather *outdoor_weather, uint16_t *ret_identifiers_length, uint16_t *ret_identifiers_chunk_offset, uint8_t ret_identifiers_chunk_data[60]);
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Returns the identifiers (number between 0 and 255) of all `sensors
  * <https://www.tinkerforge.com/en/shop/accessories/sensors/temperature-humidity-sensor-th-6148.html>`__
@@ -479,7 +479,7 @@ int tf_outdoor_weather_get_station_identifiers_low_level(TF_OutdoorWeather *outd
 int tf_outdoor_weather_get_sensor_identifiers_low_level(TF_OutdoorWeather *outdoor_weather, uint16_t *ret_identifiers_length, uint16_t *ret_identifiers_chunk_offset, uint8_t ret_identifiers_chunk_data[60]);
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Returns the last received data for a station with the given identifier.
  * Call {@link tf_outdoor_weather_get_station_identifiers} for a list of all available identifiers.
@@ -498,7 +498,7 @@ int tf_outdoor_weather_get_sensor_identifiers_low_level(TF_OutdoorWeather *outdo
 int tf_outdoor_weather_get_station_data(TF_OutdoorWeather *outdoor_weather, uint8_t identifier, int16_t *ret_temperature, uint8_t *ret_humidity, uint32_t *ret_wind_speed, uint32_t *ret_gust_speed, uint32_t *ret_rain, uint8_t *ret_wind_direction, bool *ret_battery_low, uint16_t *ret_last_change);
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Returns the last measured data for a sensor with the given identifier.
  * Call {@link tf_outdoor_weather_get_sensor_identifiers} for a list of all available identifiers.
@@ -512,35 +512,35 @@ int tf_outdoor_weather_get_station_data(TF_OutdoorWeather *outdoor_weather, uint
 int tf_outdoor_weather_get_sensor_data(TF_OutdoorWeather *outdoor_weather, uint8_t identifier, int16_t *ret_temperature, uint8_t *ret_humidity, uint16_t *ret_last_change);
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Turns callback for station data on or off.
  */
 int tf_outdoor_weather_set_station_callback_configuration(TF_OutdoorWeather *outdoor_weather, bool enable_callback);
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Returns the configuration as set by {@link tf_outdoor_weather_set_station_callback_configuration}.
  */
 int tf_outdoor_weather_get_station_callback_configuration(TF_OutdoorWeather *outdoor_weather, bool *ret_enable_callback);
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Turns callback for sensor data on or off.
  */
 int tf_outdoor_weather_set_sensor_callback_configuration(TF_OutdoorWeather *outdoor_weather, bool enable_callback);
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Returns the configuration as set by {@link tf_outdoor_weather_set_sensor_callback_configuration}.
  */
 int tf_outdoor_weather_get_sensor_callback_configuration(TF_OutdoorWeather *outdoor_weather, bool *ret_enable_callback);
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Returns the error count for the communication between Brick and Bricklet.
  * 
@@ -557,7 +557,7 @@ int tf_outdoor_weather_get_sensor_callback_configuration(TF_OutdoorWeather *outd
 int tf_outdoor_weather_get_spitfp_error_count(TF_OutdoorWeather *outdoor_weather, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
@@ -572,14 +572,14 @@ int tf_outdoor_weather_get_spitfp_error_count(TF_OutdoorWeather *outdoor_weather
 int tf_outdoor_weather_set_bootloader_mode(TF_OutdoorWeather *outdoor_weather, uint8_t mode, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Returns the current bootloader mode, see {@link tf_outdoor_weather_set_bootloader_mode}.
  */
 int tf_outdoor_weather_get_bootloader_mode(TF_OutdoorWeather *outdoor_weather, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Sets the firmware pointer for {@link tf_outdoor_weather_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
@@ -591,7 +591,7 @@ int tf_outdoor_weather_get_bootloader_mode(TF_OutdoorWeather *outdoor_weather, u
 int tf_outdoor_weather_set_write_firmware_pointer(TF_OutdoorWeather *outdoor_weather, uint32_t pointer);
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_outdoor_weather_set_write_firmware_pointer} before. The firmware is written
@@ -605,7 +605,7 @@ int tf_outdoor_weather_set_write_firmware_pointer(TF_OutdoorWeather *outdoor_wea
 int tf_outdoor_weather_write_firmware(TF_OutdoorWeather *outdoor_weather, const uint8_t data[64], uint8_t *ret_status);
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
@@ -618,14 +618,14 @@ int tf_outdoor_weather_write_firmware(TF_OutdoorWeather *outdoor_weather, const 
 int tf_outdoor_weather_set_status_led_config(TF_OutdoorWeather *outdoor_weather, uint8_t config);
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Returns the configuration as set by {@link tf_outdoor_weather_set_status_led_config}
  */
 int tf_outdoor_weather_get_status_led_config(TF_OutdoorWeather *outdoor_weather, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
@@ -637,7 +637,7 @@ int tf_outdoor_weather_get_status_led_config(TF_OutdoorWeather *outdoor_weather,
 int tf_outdoor_weather_get_chip_temperature(TF_OutdoorWeather *outdoor_weather, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
@@ -649,7 +649,7 @@ int tf_outdoor_weather_get_chip_temperature(TF_OutdoorWeather *outdoor_weather, 
 int tf_outdoor_weather_reset(TF_OutdoorWeather *outdoor_weather);
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
@@ -660,7 +660,7 @@ int tf_outdoor_weather_reset(TF_OutdoorWeather *outdoor_weather);
 int tf_outdoor_weather_write_uid(TF_OutdoorWeather *outdoor_weather, uint32_t uid);
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Returns the current UID as an integer. Encode as
  * Base58 to get the usual string version.
@@ -668,7 +668,7 @@ int tf_outdoor_weather_write_uid(TF_OutdoorWeather *outdoor_weather, uint32_t ui
 int tf_outdoor_weather_read_uid(TF_OutdoorWeather *outdoor_weather, uint32_t *ret_uid);
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
@@ -684,7 +684,7 @@ int tf_outdoor_weather_read_uid(TF_OutdoorWeather *outdoor_weather, uint32_t *re
 int tf_outdoor_weather_get_identity(TF_OutdoorWeather *outdoor_weather, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier);
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Returns the identifiers (number between 0 and 255) of all `stations
  * <https://www.tinkerforge.com/en/shop/accessories/sensors/outdoor-weather-station-ws-6147.html>`__
@@ -698,7 +698,7 @@ int tf_outdoor_weather_get_identity(TF_OutdoorWeather *outdoor_weather, char ret
 int tf_outdoor_weather_get_station_identifiers(TF_OutdoorWeather *outdoor_weather, uint8_t *ret_identifiers, uint16_t *ret_identifiers_length);
 
 /**
- * \ingroup BrickletOutdoorWeather
+ * \ingroup TF_OutdoorWeather
  *
  * Returns the identifiers (number between 0 and 255) of all `sensors
  * <https://www.tinkerforge.com/en/shop/accessories/sensors/temperature-humidity-sensor-th-6148.html>`__

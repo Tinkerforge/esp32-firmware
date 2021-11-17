@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-08.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -8,8 +8,8 @@
  * to the generators git repository on tinkerforge.com       *
  *************************************************************/
 
-#ifndef TF_BRICKLET_ARINC429_H
-#define TF_BRICKLET_ARINC429_H
+#ifndef TF_ARINC429_H
+#define TF_ARINC429_H
 
 #include "config.h"
 #include "tfp.h"
@@ -21,11 +21,11 @@ extern "C" {
 #endif
 
 /**
- * \defgroup BrickletARINC429 ARINC429 Bricklet
+ * \defgroup TF_ARINC429 ARINC429 Bricklet
  */
 
 struct TF_ARINC429;
-#ifdef TF_IMPLEMENT_CALLBACKS
+#if TF_IMPLEMENT_CALLBACKS != 0
 
 typedef void (*TF_ARINC429HeartbeatMessageHandler)(struct TF_ARINC429 *device, uint8_t channel, uint8_t status, uint8_t seq_number, uint16_t timestamp, uint16_t frames_processed, uint16_t frames_lost, void *user_data);
 typedef void (*TF_ARINC429FrameMessageHandler)(struct TF_ARINC429 *device, uint8_t channel, uint8_t status, uint8_t seq_number, uint16_t timestamp, uint32_t frame, uint16_t age, void *user_data);
@@ -33,13 +33,13 @@ typedef void (*TF_ARINC429SchedulerMessageHandler)(struct TF_ARINC429 *device, u
 
 #endif
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * ARINC429 single transmitter and dual receiver
  */
 typedef struct TF_ARINC429 {
-    TF_TfpContext *tfp;
-#ifdef TF_IMPLEMENT_CALLBACKS
+    TF_TFP *tfp;
+#if TF_IMPLEMENT_CALLBACKS != 0
     TF_ARINC429HeartbeatMessageHandler heartbeat_message_handler;
     void *heartbeat_message_user_data;
 
@@ -54,441 +54,441 @@ typedef struct TF_ARINC429 {
 } TF_ARINC429;
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_GET_CAPABILITIES 1
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_SET_HEARTBEAT_CALLBACK_CONFIGURATION 2
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_GET_HEARTBEAT_CALLBACK_CONFIGURATION 3
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_SET_CHANNEL_CONFIGURATION 5
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_GET_CHANNEL_CONFIGURATION 6
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_SET_CHANNEL_MODE 7
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_GET_CHANNEL_MODE 8
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_CLEAR_ALL_RX_FILTERS 9
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_CLEAR_RX_FILTER 10
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_SET_RX_STANDARD_FILTERS 11
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_SET_RX_FILTER 12
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_GET_RX_FILTER 13
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_READ_FRAME 14
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_SET_RX_CALLBACK_CONFIGURATION 15
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_GET_RX_CALLBACK_CONFIGURATION 16
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_WRITE_FRAME_DIRECT 18
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_WRITE_FRAME_SCHEDULED 19
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_CLEAR_SCHEDULE_ENTRIES 20
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_SET_SCHEDULE_ENTRY 21
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_GET_SCHEDULE_ENTRY 22
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_RESTART 23
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_SET_FRAME_MODE 25
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_SET_BOOTLOADER_MODE 235
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_GET_BOOTLOADER_MODE 236
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_SET_WRITE_FIRMWARE_POINTER 237
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_WRITE_FIRMWARE 238
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_SET_STATUS_LED_CONFIG 239
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_GET_STATUS_LED_CONFIG 240
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_GET_CHIP_TEMPERATURE 242
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_RESET 243
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_WRITE_UID 248
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_READ_UID 249
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_FUNCTION_GET_IDENTITY 255
 
-#ifdef TF_IMPLEMENT_CALLBACKS
+#if TF_IMPLEMENT_CALLBACKS != 0
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_CALLBACK_HEARTBEAT_MESSAGE 4
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_CALLBACK_FRAME_MESSAGE 17
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_CALLBACK_SCHEDULER_MESSAGE 24
 
 #endif
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_CHANNEL_TX 0
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_CHANNEL_TX1 1
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_CHANNEL_RX 32
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_CHANNEL_RX1 33
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_CHANNEL_RX2 34
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_SDI_SDI0 0
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_SDI_SDI1 1
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_SDI_SDI2 2
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_SDI_SDI3 3
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_SDI_DATA 4
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_PARITY_DATA 0
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_PARITY_AUTO 1
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_SPEED_HS 0
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_SPEED_LS 1
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_CHANNEL_MODE_PASSIVE 0
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_CHANNEL_MODE_ACTIVE 1
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_CHANNEL_MODE_RUN 2
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_STATUS_NEW 0
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_STATUS_UPDATE 1
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_STATUS_TIMEOUT 2
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_STATUS_SCHEDULER 3
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_STATUS_STATISTICS 4
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_SCHEDULER_JOB_SKIP 0
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_SCHEDULER_JOB_CALLBACK 1
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_SCHEDULER_JOB_STOP 2
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_SCHEDULER_JOB_JUMP 3
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_SCHEDULER_JOB_RETURN 4
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_SCHEDULER_JOB_DWELL 5
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_SCHEDULER_JOB_SINGLE 6
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_SCHEDULER_JOB_CYCLIC 7
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_SCHEDULER_JOB_RETRANS_RX1 8
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_SCHEDULER_JOB_RETRANS_RX2 9
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_TX_MODE_TRANSMIT 0
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_TX_MODE_MUTE 1
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_BOOTLOADER_MODE_FIRMWARE 1
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT 2
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_REBOOT 3
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_ERASE_AND_REBOOT 4
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_BOOTLOADER_STATUS_OK 0
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_BOOTLOADER_STATUS_INVALID_MODE 1
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_BOOTLOADER_STATUS_NO_CHANGE 2
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_BOOTLOADER_STATUS_ENTRY_FUNCTION_NOT_PRESENT 3
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_BOOTLOADER_STATUS_DEVICE_IDENTIFIER_INCORRECT 4
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_BOOTLOADER_STATUS_CRC_MISMATCH 5
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_STATUS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_STATUS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_STATUS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  */
 #define TF_ARINC429_STATUS_LED_CONFIG_SHOW_STATUS 3
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * This constant is used to identify a ARINC429 Bricklet.
  *
@@ -499,30 +499,30 @@ typedef struct TF_ARINC429 {
 #define TF_ARINC429_DEVICE_IDENTIFIER 2160
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * This constant represents the display name of a ARINC429 Bricklet.
  */
 #define TF_ARINC429_DEVICE_DISPLAY_NAME "ARINC429 Bricklet"
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Creates the device object \c arinc429 with the unique device ID \c uid and adds
- * it to the IPConnection \c ipcon.
+ * it to the HAL \c hal.
  */
-int tf_arinc429_create(TF_ARINC429 *arinc429, const char *uid, TF_HalContext *hal);
+int tf_arinc429_create(TF_ARINC429 *arinc429, const char *uid, TF_HAL *hal);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
- * Removes the device object \c arinc429 from its IPConnection and destroys it.
+ * Removes the device object \c arinc429 from its HAL and destroys it.
  * The device object cannot be used anymore afterwards.
  */
 int tf_arinc429_destroy(TF_ARINC429 *arinc429);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Returns the response expected flag for the function specified by the
  * \c function_id parameter. It is *true* if the function is expected to
@@ -531,8 +531,8 @@ int tf_arinc429_destroy(TF_ARINC429 *arinc429);
  * For getter functions this is enabled by default and cannot be disabled,
  * because those functions will always send a response. For callback
  * configuration functions it is enabled by default too, but can be disabled
- * via the arinc429_set_response_expected function. For setter functions it is
- * disabled by default and can be enabled.
+ * via the tf_arinc429_set_response_expected function. For setter
+ * functions it is disabled by default and can be enabled.
  *
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
@@ -543,7 +543,7 @@ int tf_arinc429_destroy(TF_ARINC429 *arinc429);
 int tf_arinc429_get_response_expected(TF_ARINC429 *arinc429, uint8_t function_id, bool *ret_response_expected);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Changes the response expected flag of the function specified by the
  * \c function_id parameter. This flag can only be changed for setter
@@ -559,15 +559,15 @@ int tf_arinc429_get_response_expected(TF_ARINC429 *arinc429, uint8_t function_id
 int tf_arinc429_set_response_expected(TF_ARINC429 *arinc429, uint8_t function_id, bool response_expected);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
 void tf_arinc429_set_response_expected_all(TF_ARINC429 *arinc429, bool response_expected);
-#ifdef TF_IMPLEMENT_CALLBACKS
+#if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Registers the given \c handler to the Heartbeat Message callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -589,7 +589,7 @@ int tf_arinc429_register_heartbeat_message_callback(TF_ARINC429 *arinc429, TF_AR
 
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Registers the given \c handler to the Frame Message callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -609,7 +609,7 @@ int tf_arinc429_register_frame_message_callback(TF_ARINC429 *arinc429, TF_ARINC4
 
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Registers the given \c handler to the Scheduler Message callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -626,9 +626,9 @@ int tf_arinc429_register_frame_message_callback(TF_ARINC429 *arinc429, TF_ARINC4
  */
 int tf_arinc429_register_scheduler_message_callback(TF_ARINC429 *arinc429, TF_ARINC429SchedulerMessageHandler handler, void *user_data);
 #endif
-#ifdef TF_IMPLEMENT_CALLBACKS
+#if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Polls for callbacks. Will block for the given timeout in microseconds.
  *
@@ -638,7 +638,7 @@ int tf_arinc429_callback_tick(TF_ARINC429 *arinc429, uint32_t timeout_us);
 #endif
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Gets the capabilities of the ARINC429 Bricklet as of the currently loaded firmware:
  * 
@@ -650,7 +650,7 @@ int tf_arinc429_callback_tick(TF_ARINC429 *arinc429, uint32_t timeout_us);
 int tf_arinc429_get_capabilities(TF_ARINC429 *arinc429, uint16_t *ret_tx_total_scheduler_jobs, uint16_t *ret_tx_used_scheduler_jobs, uint16_t *ret_rx_total_frame_filters, uint16_t ret_rx_used_frame_filters[2]);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Sets the bricklet heartbeat callback function which reports the statistics counters for processed frames and lost frames.
  * The period is the period with which the {@link tf_arinc429_register_heartbeat_message_callback} callback is triggered periodically. A value of 0 turns the callback off.
@@ -659,14 +659,14 @@ int tf_arinc429_get_capabilities(TF_ARINC429 *arinc429, uint16_t *ret_tx_total_s
 int tf_arinc429_set_heartbeat_callback_configuration(TF_ARINC429 *arinc429, uint8_t channel, bool enabled, bool value_has_to_change, uint16_t period);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Gets the current configuration of the bricklet heartbeat callback, see {@link tf_arinc429_set_heartbeat_callback_configuration}.
  */
 int tf_arinc429_get_heartbeat_callback_configuration(TF_ARINC429 *arinc429, uint8_t channel, bool *ret_enabled, bool *ret_value_has_to_change, uint16_t *ret_period);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Sets the data transmission properties of the selected channel:
  * 
@@ -679,7 +679,7 @@ int tf_arinc429_get_heartbeat_callback_configuration(TF_ARINC429 *arinc429, uint
 int tf_arinc429_set_channel_configuration(TF_ARINC429 *arinc429, uint8_t channel, uint8_t parity, uint8_t speed);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Gets the data transmission properties of the selected channel. The channel parameter and the data returned use the same constants
  * as the {@link tf_arinc429_set_channel_configuration},  despite that the all-channels constants CHANNEL_TX and CHANNEL_RX can not be used.
@@ -687,7 +687,7 @@ int tf_arinc429_set_channel_configuration(TF_ARINC429 *arinc429, uint8_t channel
 int tf_arinc429_get_channel_configuration(TF_ARINC429 *arinc429, uint8_t channel, uint8_t *ret_parity, uint8_t *ret_speed);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Sets the operating mode of the selected channel(s):
  * 
@@ -698,7 +698,7 @@ int tf_arinc429_get_channel_configuration(TF_ARINC429 *arinc429, uint8_t channel
 int tf_arinc429_set_channel_mode(TF_ARINC429 *arinc429, uint8_t channel, uint8_t mode);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Gets the operating mode of the selected channel.  The channel parameter and the  data returned use the same constants as the
  * {@link tf_arinc429_set_channel_configuration}, despite that the all-channels constants CHANNEL_TX and CHANNEL_RX can not be used.
@@ -706,7 +706,7 @@ int tf_arinc429_set_channel_mode(TF_ARINC429 *arinc429, uint8_t channel, uint8_t
 int tf_arinc429_get_channel_mode(TF_ARINC429 *arinc429, uint8_t channel, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Clears all receive filters on the selected RX channel(s). The RX channels will only process those Arinc429 frames that pass the
  * input filtering stage. With this command, all filters are cleared, thus all incoming Arinc429 frames will be blocked from further
@@ -715,7 +715,7 @@ int tf_arinc429_get_channel_mode(TF_ARINC429 *arinc429, uint8_t channel, uint8_t
 int tf_arinc429_clear_all_rx_filters(TF_ARINC429 *arinc429, uint8_t channel);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Clears a specific receive filter on the selected RX channel(s). The RX channels will only process those Arinc429 frames that pass
  * the input filtering stage. With this command, an Arinc429 frame matching the given parameters will be blocked by the filter.
@@ -729,14 +729,14 @@ int tf_arinc429_clear_all_rx_filters(TF_ARINC429 *arinc429, uint8_t channel);
 int tf_arinc429_clear_rx_filter(TF_ARINC429 *arinc429, uint8_t channel, uint8_t label, uint8_t sdi, bool *ret_success);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Sets a receive filter for each label value (0-255 / 0o000-0o377) with the SDI bits set for data. Any previously existing filters will be overwritten.
  */
 int tf_arinc429_set_rx_standard_filters(TF_ARINC429 *arinc429, uint8_t channel);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Sets a specific receive filter on the selected channel(s):
  * 
@@ -750,7 +750,7 @@ int tf_arinc429_set_rx_standard_filters(TF_ARINC429 *arinc429, uint8_t channel);
 int tf_arinc429_set_rx_filter(TF_ARINC429 *arinc429, uint8_t channel, uint8_t label, uint8_t sdi, bool *ret_success);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Queries if a filter for the given combination of label and SDI is set up or not:
  * 
@@ -763,7 +763,7 @@ int tf_arinc429_set_rx_filter(TF_ARINC429 *arinc429, uint8_t channel, uint8_t la
 int tf_arinc429_get_rx_filter(TF_ARINC429 *arinc429, uint8_t channel, uint8_t label, uint8_t sdi, bool *ret_configured);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Executes a direct read of an Arinc429 frame, i.e. without using the callback mechanism.
  * In order to be able to do a direct read of a frame with a certain label and SDI combination, a respective receive filter needs to be set up beforehand.
@@ -781,7 +781,7 @@ int tf_arinc429_get_rx_filter(TF_ARINC429 *arinc429, uint8_t channel, uint8_t la
 int tf_arinc429_read_frame(TF_ARINC429 *arinc429, uint8_t channel, uint8_t label, uint8_t sdi, bool *ret_status, uint32_t *ret_frame, uint16_t *ret_age);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Sets the configuration of the Arinc429 frame reception callback:
  * 
@@ -796,14 +796,14 @@ int tf_arinc429_read_frame(TF_ARINC429 *arinc429, uint8_t channel, uint8_t label
 int tf_arinc429_set_rx_callback_configuration(TF_ARINC429 *arinc429, uint8_t channel, bool enabled, bool value_has_to_change, uint16_t timeout);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Gets the configuration of the frame reception callback, see the {@link tf_arinc429_set_rx_callback_configuration}.
  */
 int tf_arinc429_get_rx_callback_configuration(TF_ARINC429 *arinc429, uint8_t channel, bool *ret_enabled, bool *ret_value_has_to_change, uint16_t *ret_timeout);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Immediately transmits an Arinc429 frame, given that the channel is in either ACTIVE or RUN mode. If the channel is in RUN mode and frames are sent
  * as per programmed schedule, using this function will inject additional frames into the transmission, independent of the scheduler's activities.
@@ -823,7 +823,7 @@ int tf_arinc429_get_rx_callback_configuration(TF_ARINC429 *arinc429, uint8_t cha
 int tf_arinc429_write_frame_direct(TF_ARINC429 *arinc429, uint8_t channel, uint32_t frame);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Sets or updates an Arinc429 frame that is to be transmitted via the scheduler using the scheduler job types 'Single' or 'Cyclic'.
  * 
@@ -842,7 +842,7 @@ int tf_arinc429_write_frame_direct(TF_ARINC429 *arinc429, uint8_t channel, uint3
 int tf_arinc429_write_frame_scheduled(TF_ARINC429 *arinc429, uint8_t channel, uint16_t frame_index, uint32_t frame);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Clears a range of transmit scheduler job table entries:
  * 
@@ -856,7 +856,7 @@ int tf_arinc429_write_frame_scheduled(TF_ARINC429 *arinc429, uint8_t channel, ui
 int tf_arinc429_clear_schedule_entries(TF_ARINC429 *arinc429, uint8_t channel, uint16_t job_index_first, uint16_t job_index_last);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Sets an entry in the transmit scheduler job table:
  * 
@@ -926,21 +926,21 @@ int tf_arinc429_clear_schedule_entries(TF_ARINC429 *arinc429, uint8_t channel, u
 int tf_arinc429_set_schedule_entry(TF_ARINC429 *arinc429, uint8_t channel, uint16_t job_index, uint8_t job, uint16_t frame_index, uint8_t dwell_time);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Gets the definition of a transmit scheduler job table entry, refer to the {@link tf_arinc429_set_schedule_entry}.
  */
 int tf_arinc429_get_schedule_entry(TF_ARINC429 *arinc429, uint8_t channel, uint16_t job_index, uint8_t *ret_job, uint16_t *ret_frame_index, uint32_t *ret_frame, uint8_t *ret_dwell_time);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Reverts the whole bricklet into its power-up default state.
  */
 int tf_arinc429_restart(TF_ARINC429 *arinc429);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Stops / resumes the transmission of a specific frame or trigger another single-transmit. This
  * function only works on frames that are sent via the TX scheduler jobs 'single' and 'cyclic'.
@@ -952,7 +952,7 @@ int tf_arinc429_restart(TF_ARINC429 *arinc429);
 int tf_arinc429_set_frame_mode(TF_ARINC429 *arinc429, uint8_t channel, uint16_t frame_index, uint8_t mode);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Returns the error count for the communication between Brick and Bricklet.
  * 
@@ -969,7 +969,7 @@ int tf_arinc429_set_frame_mode(TF_ARINC429 *arinc429, uint8_t channel, uint16_t 
 int tf_arinc429_get_spitfp_error_count(TF_ARINC429 *arinc429, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
@@ -984,14 +984,14 @@ int tf_arinc429_get_spitfp_error_count(TF_ARINC429 *arinc429, uint32_t *ret_erro
 int tf_arinc429_set_bootloader_mode(TF_ARINC429 *arinc429, uint8_t mode, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Returns the current bootloader mode, see {@link tf_arinc429_set_bootloader_mode}.
  */
 int tf_arinc429_get_bootloader_mode(TF_ARINC429 *arinc429, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Sets the firmware pointer for {@link tf_arinc429_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
@@ -1003,7 +1003,7 @@ int tf_arinc429_get_bootloader_mode(TF_ARINC429 *arinc429, uint8_t *ret_mode);
 int tf_arinc429_set_write_firmware_pointer(TF_ARINC429 *arinc429, uint32_t pointer);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_arinc429_set_write_firmware_pointer} before. The firmware is written
@@ -1017,7 +1017,7 @@ int tf_arinc429_set_write_firmware_pointer(TF_ARINC429 *arinc429, uint32_t point
 int tf_arinc429_write_firmware(TF_ARINC429 *arinc429, const uint8_t data[64], uint8_t *ret_status);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
@@ -1030,14 +1030,14 @@ int tf_arinc429_write_firmware(TF_ARINC429 *arinc429, const uint8_t data[64], ui
 int tf_arinc429_set_status_led_config(TF_ARINC429 *arinc429, uint8_t config);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Returns the configuration as set by {@link tf_arinc429_set_status_led_config}
  */
 int tf_arinc429_get_status_led_config(TF_ARINC429 *arinc429, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
@@ -1049,7 +1049,7 @@ int tf_arinc429_get_status_led_config(TF_ARINC429 *arinc429, uint8_t *ret_config
 int tf_arinc429_get_chip_temperature(TF_ARINC429 *arinc429, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
@@ -1061,7 +1061,7 @@ int tf_arinc429_get_chip_temperature(TF_ARINC429 *arinc429, int16_t *ret_tempera
 int tf_arinc429_reset(TF_ARINC429 *arinc429);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
@@ -1072,7 +1072,7 @@ int tf_arinc429_reset(TF_ARINC429 *arinc429);
 int tf_arinc429_write_uid(TF_ARINC429 *arinc429, uint32_t uid);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Returns the current UID as an integer. Encode as
  * Base58 to get the usual string version.
@@ -1080,7 +1080,7 @@ int tf_arinc429_write_uid(TF_ARINC429 *arinc429, uint32_t uid);
 int tf_arinc429_read_uid(TF_ARINC429 *arinc429, uint32_t *ret_uid);
 
 /**
- * \ingroup BrickletARINC429
+ * \ingroup TF_ARINC429
  *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the

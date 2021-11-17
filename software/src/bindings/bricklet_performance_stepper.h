@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-08.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -8,8 +8,8 @@
  * to the generators git repository on tinkerforge.com       *
  *************************************************************/
 
-#ifndef TF_BRICKLET_PERFORMANCE_STEPPER_H
-#define TF_BRICKLET_PERFORMANCE_STEPPER_H
+#ifndef TF_PERFORMANCE_STEPPER_H
+#define TF_PERFORMANCE_STEPPER_H
 
 #include "config.h"
 #include "tfp.h"
@@ -21,788 +21,788 @@ extern "C" {
 #endif
 
 /**
- * \defgroup BrickletPerformanceStepper Performance Stepper Bricklet
+ * \defgroup TF_PerformanceStepper Performance Stepper Bricklet
  */
 
 struct TF_PerformanceStepper;
-#ifdef TF_IMPLEMENT_CALLBACKS
+#if TF_IMPLEMENT_CALLBACKS != 0
 
 
 #endif
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * TBD
  */
 typedef struct TF_PerformanceStepper {
-    TF_TfpContext *tfp;
-#ifdef TF_IMPLEMENT_CALLBACKS
+    TF_TFP *tfp;
+#if TF_IMPLEMENT_CALLBACKS != 0
 
 #endif
     uint8_t response_expected[3];
 } TF_PerformanceStepper;
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_SET_MOTION_CONFIGURATION 1
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_MOTION_CONFIGURATION 2
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_SET_CURRENT_POSITION 3
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_CURRENT_POSITION 4
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_CURRENT_VELOCITY 5
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_SET_TARGET_POSITION 6
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_TARGET_POSITION 7
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_SET_STEPS 8
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_STEPS 9
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_REMAINING_STEPS 10
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_SET_STEP_CONFIGURATION 11
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_STEP_CONFIGURATION 12
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_SET_MOTOR_CURRENT 22
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_MOTOR_CURRENT 23
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_SET_ENABLED 24
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_ENABLED 25
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_SET_BASIC_CONFIGURATION 26
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_BASIC_CONFIGURATION 27
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_SET_SPREADCYCLE_CONFIGURATION 28
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_SPREADCYCLE_CONFIGURATION 29
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_SET_STEALTH_CONFIGURATION 30
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_STEALTH_CONFIGURATION 31
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_SET_COOLSTEP_CONFIGURATION 32
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_COOLSTEP_CONFIGURATION 33
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_SET_SHORT_CONFIGURATION 34
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_SHORT_CONFIGURATION 35
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_DRIVER_STATUS 36
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_INPUT_VOLTAGE 37
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_TEMPERATURE 38
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_SET_GPIO_CONFIGURATION 39
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_GPIO_CONFIGURATION 40
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_SET_GPIO_ACTION 41
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_GPIO_ACTION 42
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_GPIO_STATE 43
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_SET_ERROR_LED_CONFIG 44
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_ERROR_LED_CONFIG 45
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_SET_ENABLE_LED_CONFIG 46
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_ENABLE_LED_CONFIG 47
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_SET_STEPS_LED_CONFIG 48
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_STEPS_LED_CONFIG 49
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_SET_GPIO_LED_CONFIG 50
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_GPIO_LED_CONFIG 51
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_WRITE_REGISTER 52
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_READ_REGISTER 53
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_SET_BOOTLOADER_MODE 235
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_BOOTLOADER_MODE 236
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_SET_WRITE_FIRMWARE_POINTER 237
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_WRITE_FIRMWARE 238
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_SET_STATUS_LED_CONFIG 239
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_STATUS_LED_CONFIG 240
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_CHIP_TEMPERATURE 242
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_RESET 243
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_WRITE_UID 248
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_READ_UID 249
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FUNCTION_GET_IDENTITY 255
 
-#ifdef TF_IMPLEMENT_CALLBACKS
+#if TF_IMPLEMENT_CALLBACKS != 0
 
 #endif
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_STEP_RESOLUTION_1 8
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_STEP_RESOLUTION_2 7
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_STEP_RESOLUTION_4 6
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_STEP_RESOLUTION_8 5
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_STEP_RESOLUTION_16 4
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_STEP_RESOLUTION_32 3
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_STEP_RESOLUTION_64 2
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_STEP_RESOLUTION_128 1
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_STEP_RESOLUTION_256 0
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_RAMPING_MODE_POSITIONING 0
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_RAMPING_MODE_VELOCITY_NEGATIVE 1
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_RAMPING_MODE_VELOCITY_POSITIVE 2
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_RAMPING_MODE_HOLD 3
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_CHOPPER_MODE_SPREAD_CYCLE 0
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_CHOPPER_MODE_FAST_DECAY 1
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FREEWHEEL_MODE_NORMAL 0
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FREEWHEEL_MODE_FREEWHEELING 1
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FREEWHEEL_MODE_COIL_SHORT_LS 2
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FREEWHEEL_MODE_COIL_SHORT_HS 3
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_CURRENT_UP_STEP_INCREMENT_1 0
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_CURRENT_UP_STEP_INCREMENT_2 1
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_CURRENT_UP_STEP_INCREMENT_4 2
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_CURRENT_UP_STEP_INCREMENT_8 3
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_CURRENT_DOWN_STEP_DECREMENT_1 0
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_CURRENT_DOWN_STEP_DECREMENT_2 1
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_CURRENT_DOWN_STEP_DECREMENT_8 2
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_CURRENT_DOWN_STEP_DECREMENT_32 3
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_MINIMUM_CURRENT_HALF 0
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_MINIMUM_CURRENT_QUARTER 1
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_STALLGUARD_MODE_STANDARD 0
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_STALLGUARD_MODE_FILTERED 1
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_OPEN_LOAD_NONE 0
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_OPEN_LOAD_PHASE_A 1
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_OPEN_LOAD_PHASE_B 2
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_OPEN_LOAD_PHASE_AB 3
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_SHORT_TO_GROUND_NONE 0
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_SHORT_TO_GROUND_PHASE_A 1
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_SHORT_TO_GROUND_PHASE_B 2
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_SHORT_TO_GROUND_PHASE_AB 3
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_OVER_TEMPERATURE_NONE 0
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_OVER_TEMPERATURE_WARNING 1
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_OVER_TEMPERATURE_LIMIT 2
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_STATE_STOP 1
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_STATE_ACCELERATION 2
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_STATE_RUN 3
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_STATE_DEACCELERATION 4
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_STATE_DIRECTION_CHANGE_TO_FORWARD 5
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_STATE_DIRECTION_CHANGE_TO_BACKWARD 6
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_GPIO_ACTION_NONE 0
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_GPIO_ACTION_NORMAL_STOP_RISING_EDGE 1
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_GPIO_ACTION_NORMAL_STOP_FALLING_EDGE 2
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_GPIO_ACTION_EMERGENCY_STOP_RISING_EDGE 4
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_GPIO_ACTION_EMERGENCY_STOP_FALLING_EDGE 8
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_GPIO_ACTION_CALLBACK_RISING_EDGE 16
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_GPIO_ACTION_CALLBACK_FALLING_EDGE 32
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_ERROR_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_ERROR_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_ERROR_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_ERROR_LED_CONFIG_SHOW_ERROR 3
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_ENABLE_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_ENABLE_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_ENABLE_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_ENABLE_LED_CONFIG_SHOW_ENABLE 3
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_STEPS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_STEPS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_STEPS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_STEPS_LED_CONFIG_SHOW_STEPS 3
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_GPIO_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_GPIO_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_GPIO_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_GPIO_LED_CONFIG_SHOW_GPIO_ACTIVE_HIGH 3
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_GPIO_LED_CONFIG_SHOW_GPIO_ACTIVE_LOW 4
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FILTER_TIME_100 0
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FILTER_TIME_200 1
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FILTER_TIME_300 2
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_FILTER_TIME_400 3
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_SPIKE_FILTER_BANDWIDTH_100 0
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_SPIKE_FILTER_BANDWIDTH_1000 1
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_SPIKE_FILTER_BANDWIDTH_2000 2
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_SPIKE_FILTER_BANDWIDTH_3000 3
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_BOOTLOADER_MODE_FIRMWARE 1
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT 2
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_REBOOT 3
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_ERASE_AND_REBOOT 4
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_BOOTLOADER_STATUS_OK 0
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_BOOTLOADER_STATUS_INVALID_MODE 1
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_BOOTLOADER_STATUS_NO_CHANGE 2
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_BOOTLOADER_STATUS_ENTRY_FUNCTION_NOT_PRESENT 3
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_BOOTLOADER_STATUS_DEVICE_IDENTIFIER_INCORRECT 4
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_BOOTLOADER_STATUS_CRC_MISMATCH 5
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_STATUS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_STATUS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_STATUS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  */
 #define TF_PERFORMANCE_STEPPER_STATUS_LED_CONFIG_SHOW_STATUS 3
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * This constant is used to identify a Performance Stepper Bricklet.
  *
@@ -813,30 +813,30 @@ typedef struct TF_PerformanceStepper {
 #define TF_PERFORMANCE_STEPPER_DEVICE_IDENTIFIER 2158
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * This constant represents the display name of a Performance Stepper Bricklet.
  */
 #define TF_PERFORMANCE_STEPPER_DEVICE_DISPLAY_NAME "Performance Stepper Bricklet"
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Creates the device object \c performance_stepper with the unique device ID \c uid and adds
- * it to the IPConnection \c ipcon.
+ * it to the HAL \c hal.
  */
-int tf_performance_stepper_create(TF_PerformanceStepper *performance_stepper, const char *uid, TF_HalContext *hal);
+int tf_performance_stepper_create(TF_PerformanceStepper *performance_stepper, const char *uid, TF_HAL *hal);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
- * Removes the device object \c performance_stepper from its IPConnection and destroys it.
+ * Removes the device object \c performance_stepper from its HAL and destroys it.
  * The device object cannot be used anymore afterwards.
  */
 int tf_performance_stepper_destroy(TF_PerformanceStepper *performance_stepper);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Returns the response expected flag for the function specified by the
  * \c function_id parameter. It is *true* if the function is expected to
@@ -845,8 +845,8 @@ int tf_performance_stepper_destroy(TF_PerformanceStepper *performance_stepper);
  * For getter functions this is enabled by default and cannot be disabled,
  * because those functions will always send a response. For callback
  * configuration functions it is enabled by default too, but can be disabled
- * via the performance_stepper_set_response_expected function. For setter functions it is
- * disabled by default and can be enabled.
+ * via the tf_performance_stepper_set_response_expected function. For setter
+ * functions it is disabled by default and can be enabled.
  *
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
@@ -857,7 +857,7 @@ int tf_performance_stepper_destroy(TF_PerformanceStepper *performance_stepper);
 int tf_performance_stepper_get_response_expected(TF_PerformanceStepper *performance_stepper, uint8_t function_id, bool *ret_response_expected);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Changes the response expected flag of the function specified by the
  * \c function_id parameter. This flag can only be changed for setter
@@ -873,7 +873,7 @@ int tf_performance_stepper_get_response_expected(TF_PerformanceStepper *performa
 int tf_performance_stepper_set_response_expected(TF_PerformanceStepper *performance_stepper, uint8_t function_id, bool response_expected);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
@@ -881,9 +881,9 @@ int tf_performance_stepper_set_response_expected(TF_PerformanceStepper *performa
 void tf_performance_stepper_set_response_expected_all(TF_PerformanceStepper *performance_stepper, bool response_expected);
 
 
-#ifdef TF_IMPLEMENT_CALLBACKS
+#if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Polls for callbacks. Will block for the given timeout in microseconds.
  *
@@ -893,21 +893,21 @@ int tf_performance_stepper_callback_tick(TF_PerformanceStepper *performance_step
 #endif
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * TBD
  */
 int tf_performance_stepper_set_motion_configuration(TF_PerformanceStepper *performance_stepper, uint8_t ramping_mode, int32_t velocity_start, int32_t acceleration_1, int32_t velocity_1, int32_t acceleration_max, int32_t velocity_max, int32_t deceleration_max, int32_t deceleration_1, int32_t velocity_stop, int32_t ramp_zero_wait);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * TBD
  */
 int tf_performance_stepper_get_motion_configuration(TF_PerformanceStepper *performance_stepper, uint8_t *ret_ramping_mode, int32_t *ret_velocity_start, int32_t *ret_acceleration_1, int32_t *ret_velocity_1, int32_t *ret_acceleration_max, int32_t *ret_velocity_max, int32_t *ret_deceleration_max, int32_t *ret_deceleration_1, int32_t *ret_velocity_stop, int32_t *ret_ramp_zero_wait);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Sets the current steps of the internal step counter. This can be used to
  * set the current position to 0 when some kind of starting position
@@ -916,7 +916,7 @@ int tf_performance_stepper_get_motion_configuration(TF_PerformanceStepper *perfo
 int tf_performance_stepper_set_current_position(TF_PerformanceStepper *performance_stepper, int32_t position);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Returns the current position of the stepper motor in steps. On startup
  * the position is 0. The steps are counted with all possible driving
@@ -927,14 +927,14 @@ int tf_performance_stepper_set_current_position(TF_PerformanceStepper *performan
 int tf_performance_stepper_get_current_position(TF_PerformanceStepper *performance_stepper, int32_t *ret_position);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * TBD
  */
 int tf_performance_stepper_get_current_velocity(TF_PerformanceStepper *performance_stepper, int32_t *ret_velocity);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Sets the target position of the stepper motor in steps. For example,
  * if the current position of the motor is 500 and {@link tf_performance_stepper_set_target_position} is
@@ -949,14 +949,14 @@ int tf_performance_stepper_get_current_velocity(TF_PerformanceStepper *performan
 int tf_performance_stepper_set_target_position(TF_PerformanceStepper *performance_stepper, int32_t position);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Returns the last target position as set by {@link tf_performance_stepper_set_target_position}.
  */
 int tf_performance_stepper_get_target_position(TF_PerformanceStepper *performance_stepper, int32_t *ret_position);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Sets the number of steps the stepper motor should run. Positive values
  * will drive the motor forward and negative values backward.
@@ -966,14 +966,14 @@ int tf_performance_stepper_get_target_position(TF_PerformanceStepper *performanc
 int tf_performance_stepper_set_steps(TF_PerformanceStepper *performance_stepper, int32_t steps);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Returns the last steps as set by {@link tf_performance_stepper_set_steps}.
  */
 int tf_performance_stepper_get_steps(TF_PerformanceStepper *performance_stepper, int32_t *ret_steps);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Returns the remaining steps of the last call of {@link tf_performance_stepper_set_steps}.
  * For example, if {@link tf_performance_stepper_set_steps} is called with 2000 and
@@ -983,7 +983,7 @@ int tf_performance_stepper_get_steps(TF_PerformanceStepper *performance_stepper,
 int tf_performance_stepper_get_remaining_steps(TF_PerformanceStepper *performance_stepper, int32_t *ret_steps);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Sets the step resolution from full-step up to 1/256-step.
  * 
@@ -1000,14 +1000,14 @@ int tf_performance_stepper_get_remaining_steps(TF_PerformanceStepper *performanc
 int tf_performance_stepper_set_step_configuration(TF_PerformanceStepper *performance_stepper, uint8_t step_resolution, bool interpolation);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Returns the step mode as set by {@link tf_performance_stepper_set_step_configuration}.
  */
 int tf_performance_stepper_get_step_configuration(TF_PerformanceStepper *performance_stepper, uint8_t *ret_step_resolution, bool *ret_interpolation);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Sets the current with which the motor will be driven.
  * 
@@ -1018,14 +1018,14 @@ int tf_performance_stepper_get_step_configuration(TF_PerformanceStepper *perform
 int tf_performance_stepper_set_motor_current(TF_PerformanceStepper *performance_stepper, uint16_t current);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Returns the current as set by {@link tf_performance_stepper_set_motor_current}.
  */
 int tf_performance_stepper_get_motor_current(TF_PerformanceStepper *performance_stepper, uint16_t *ret_current);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Enables the driver chip. The driver parameters can be configured (maximum velocity,
  * acceleration, etc) before it is enabled.
@@ -1033,14 +1033,14 @@ int tf_performance_stepper_get_motor_current(TF_PerformanceStepper *performance_
 int tf_performance_stepper_set_enabled(TF_PerformanceStepper *performance_stepper, bool enabled);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * TBD
  */
 int tf_performance_stepper_get_enabled(TF_PerformanceStepper *performance_stepper, bool *ret_enabled);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Sets the basic configuration parameters for the different modes (Stealth, Coolstep, Classic).
  * 
@@ -1085,14 +1085,14 @@ int tf_performance_stepper_get_enabled(TF_PerformanceStepper *performance_steppe
 int tf_performance_stepper_set_basic_configuration(TF_PerformanceStepper *performance_stepper, uint16_t standstill_current, uint16_t motor_run_current, uint16_t standstill_delay_time, uint16_t power_down_time, uint16_t stealth_threshold, uint16_t coolstep_threshold, uint16_t classic_threshold, bool high_velocity_chopper_mode);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Returns the configuration as set by {@link tf_performance_stepper_set_basic_configuration}.
  */
 int tf_performance_stepper_get_basic_configuration(TF_PerformanceStepper *performance_stepper, uint16_t *ret_standstill_current, uint16_t *ret_motor_run_current, uint16_t *ret_standstill_delay_time, uint16_t *ret_power_down_time, uint16_t *ret_stealth_threshold, uint16_t *ret_coolstep_threshold, uint16_t *ret_classic_threshold, bool *ret_high_velocity_chopper_mode);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Note: If you don't know what any of this means you can very likely keep all of
  * the values as default!
@@ -1136,14 +1136,14 @@ int tf_performance_stepper_get_basic_configuration(TF_PerformanceStepper *perfor
 int tf_performance_stepper_set_spreadcycle_configuration(TF_PerformanceStepper *performance_stepper, uint8_t slow_decay_duration, bool high_velocity_fullstep, uint8_t fast_decay_duration, uint8_t hysteresis_start_value, int8_t hysteresis_end_value, int8_t sine_wave_offset, uint8_t chopper_mode, uint8_t comparator_blank_time, bool fast_decay_without_comparator);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Returns the configuration as set by {@link tf_performance_stepper_set_basic_configuration}.
  */
 int tf_performance_stepper_get_spreadcycle_configuration(TF_PerformanceStepper *performance_stepper, uint8_t *ret_slow_decay_duration, bool *ret_high_velocity_fullstep, bool *ret_enable_random_slow_decay, uint8_t *ret_fast_decay_duration, uint8_t *ret_hysteresis_start_value, int8_t *ret_hysteresis_end_value, int8_t *ret_sine_wave_offset, uint8_t *ret_chopper_mode, uint8_t *ret_comparator_blank_time, bool *ret_fast_decay_without_comparator);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Note: If you don't know what any of this means you can very likely keep all of
  * the values as default!
@@ -1171,14 +1171,14 @@ int tf_performance_stepper_get_spreadcycle_configuration(TF_PerformanceStepper *
 int tf_performance_stepper_set_stealth_configuration(TF_PerformanceStepper *performance_stepper, bool enable_stealth, uint8_t offset, uint8_t gradient, bool enable_autoscale, bool enable_autogradient, uint8_t freewheel_mode, uint8_t regulation_loop_gradient, uint8_t amplitude_limit);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Returns the configuration as set by {@link tf_performance_stepper_set_stealth_configuration}.
  */
 int tf_performance_stepper_get_stealth_configuration(TF_PerformanceStepper *performance_stepper, bool *ret_enable_stealth, uint8_t *ret_offset, uint8_t *ret_gradient, bool *ret_enable_autoscale, bool *ret_enable_autogradient, uint8_t *ret_freewheel_mode, uint8_t *ret_regulation_loop_gradient, uint8_t *ret_amplitude_limit);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Note: If you don't know what any of this means you can very likely keep all of
  * the values as default!
@@ -1211,14 +1211,14 @@ int tf_performance_stepper_get_stealth_configuration(TF_PerformanceStepper *perf
 int tf_performance_stepper_set_coolstep_configuration(TF_PerformanceStepper *performance_stepper, uint8_t minimum_stallguard_value, uint8_t maximum_stallguard_value, uint8_t current_up_step_width, uint8_t current_down_step_width, uint8_t minimum_current, int8_t stallguard_threshold_value, uint8_t stallguard_mode);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Returns the configuration as set by {@link tf_performance_stepper_set_coolstep_configuration}.
  */
 int tf_performance_stepper_get_coolstep_configuration(TF_PerformanceStepper *performance_stepper, uint8_t *ret_minimum_stallguard_value, uint8_t *ret_maximum_stallguard_value, uint8_t *ret_current_up_step_width, uint8_t *ret_current_down_step_width, uint8_t *ret_minimum_current, int8_t *ret_stallguard_threshold_value, uint8_t *ret_stallguard_mode);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Note: If you don't know what any of this means you can very likely keep all of
  * the values as default!
@@ -1233,14 +1233,14 @@ int tf_performance_stepper_get_coolstep_configuration(TF_PerformanceStepper *per
 int tf_performance_stepper_set_short_configuration(TF_PerformanceStepper *performance_stepper, bool disable_short_to_voltage_protection, bool disable_short_to_ground_protection, uint8_t short_to_voltage_level, uint8_t short_to_ground_level, uint8_t spike_filter_bandwidth, bool short_detection_delay, uint8_t filter_time);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Returns the configuration as set by {@link tf_performance_stepper_set_short_configuration}.
  */
 int tf_performance_stepper_get_short_configuration(TF_PerformanceStepper *performance_stepper, bool *ret_disable_short_to_voltage_protection, bool *ret_disable_short_to_ground_protection, uint8_t *ret_short_to_voltage_level, uint8_t *ret_short_to_ground_level, uint8_t *ret_spike_filter_bandwidth, bool *ret_short_detection_delay, uint8_t *ret_filter_time);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Returns the current driver status.
  * 
@@ -1273,56 +1273,56 @@ int tf_performance_stepper_get_short_configuration(TF_PerformanceStepper *perfor
 int tf_performance_stepper_get_driver_status(TF_PerformanceStepper *performance_stepper, uint8_t *ret_open_load, uint8_t *ret_short_to_ground, uint8_t *ret_over_temperature, bool *ret_motor_stalled, uint8_t *ret_actual_motor_current, bool *ret_full_step_active, uint8_t *ret_stallguard_result, uint8_t *ret_stealth_voltage_amplitude);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * TBD
  */
 int tf_performance_stepper_get_input_voltage(TF_PerformanceStepper *performance_stepper, uint16_t *ret_voltage);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * TBD
  */
 int tf_performance_stepper_get_temperature(TF_PerformanceStepper *performance_stepper, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * TBD
  */
 int tf_performance_stepper_set_gpio_configuration(TF_PerformanceStepper *performance_stepper, uint16_t debounce, int32_t stop_deceleration);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * TBD
  */
 int tf_performance_stepper_get_gpio_configuration(TF_PerformanceStepper *performance_stepper, uint16_t *ret_debounce, int32_t *ret_stop_deceleration);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * TBD
  */
 int tf_performance_stepper_set_gpio_action(TF_PerformanceStepper *performance_stepper, uint8_t channel, uint32_t action);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * TBD
  */
 int tf_performance_stepper_get_gpio_action(TF_PerformanceStepper *performance_stepper, uint8_t channel, uint32_t *ret_action);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * TBD
  */
 int tf_performance_stepper_get_gpio_state(TF_PerformanceStepper *performance_stepper, bool ret_gpio_state[2]);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Configures the touch LED to be either turned off, turned on, blink in
  * heartbeat mode or show TBD.
@@ -1336,14 +1336,14 @@ int tf_performance_stepper_get_gpio_state(TF_PerformanceStepper *performance_ste
 int tf_performance_stepper_set_error_led_config(TF_PerformanceStepper *performance_stepper, uint8_t config);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Returns the LED configuration as set by {@link tf_performance_stepper_set_error_led_config}
  */
 int tf_performance_stepper_get_error_led_config(TF_PerformanceStepper *performance_stepper, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Configures the touch LED to be either turned off, turned on, blink in
  * heartbeat mode or show TBD.
@@ -1351,14 +1351,14 @@ int tf_performance_stepper_get_error_led_config(TF_PerformanceStepper *performan
 int tf_performance_stepper_set_enable_led_config(TF_PerformanceStepper *performance_stepper, uint8_t config);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Returns the LED configuration as set by {@link tf_performance_stepper_set_enable_led_config}
  */
 int tf_performance_stepper_get_enable_led_config(TF_PerformanceStepper *performance_stepper, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Configures the touch LED to be either turned off, turned on, blink in
  * heartbeat mode or show TBD.
@@ -1366,14 +1366,14 @@ int tf_performance_stepper_get_enable_led_config(TF_PerformanceStepper *performa
 int tf_performance_stepper_set_steps_led_config(TF_PerformanceStepper *performance_stepper, uint8_t config);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Returns the LED configuration as set by {@link tf_performance_stepper_set_steps_led_config}
  */
 int tf_performance_stepper_get_steps_led_config(TF_PerformanceStepper *performance_stepper, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Configures the touch LED to be either turned off, turned on, blink in
  * heartbeat mode or show TBD.
@@ -1381,28 +1381,28 @@ int tf_performance_stepper_get_steps_led_config(TF_PerformanceStepper *performan
 int tf_performance_stepper_set_gpio_led_config(TF_PerformanceStepper *performance_stepper, uint8_t channel, uint8_t config);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Returns the LED configuration as set by {@link tf_performance_stepper_set_gpio_led_config}
  */
 int tf_performance_stepper_get_gpio_led_config(TF_PerformanceStepper *performance_stepper, uint8_t channel, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * TBD
  */
 int tf_performance_stepper_write_register(TF_PerformanceStepper *performance_stepper, uint8_t register_, uint32_t value, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * TBD
  */
 int tf_performance_stepper_read_register(TF_PerformanceStepper *performance_stepper, uint8_t register_, uint8_t *ret_status, uint32_t *ret_value);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Returns the error count for the communication between Brick and Bricklet.
  * 
@@ -1419,7 +1419,7 @@ int tf_performance_stepper_read_register(TF_PerformanceStepper *performance_step
 int tf_performance_stepper_get_spitfp_error_count(TF_PerformanceStepper *performance_stepper, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
@@ -1434,14 +1434,14 @@ int tf_performance_stepper_get_spitfp_error_count(TF_PerformanceStepper *perform
 int tf_performance_stepper_set_bootloader_mode(TF_PerformanceStepper *performance_stepper, uint8_t mode, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Returns the current bootloader mode, see {@link tf_performance_stepper_set_bootloader_mode}.
  */
 int tf_performance_stepper_get_bootloader_mode(TF_PerformanceStepper *performance_stepper, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Sets the firmware pointer for {@link tf_performance_stepper_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
@@ -1453,7 +1453,7 @@ int tf_performance_stepper_get_bootloader_mode(TF_PerformanceStepper *performanc
 int tf_performance_stepper_set_write_firmware_pointer(TF_PerformanceStepper *performance_stepper, uint32_t pointer);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_performance_stepper_set_write_firmware_pointer} before. The firmware is written
@@ -1467,7 +1467,7 @@ int tf_performance_stepper_set_write_firmware_pointer(TF_PerformanceStepper *per
 int tf_performance_stepper_write_firmware(TF_PerformanceStepper *performance_stepper, const uint8_t data[64], uint8_t *ret_status);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
@@ -1480,14 +1480,14 @@ int tf_performance_stepper_write_firmware(TF_PerformanceStepper *performance_ste
 int tf_performance_stepper_set_status_led_config(TF_PerformanceStepper *performance_stepper, uint8_t config);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Returns the configuration as set by {@link tf_performance_stepper_set_status_led_config}
  */
 int tf_performance_stepper_get_status_led_config(TF_PerformanceStepper *performance_stepper, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
@@ -1499,7 +1499,7 @@ int tf_performance_stepper_get_status_led_config(TF_PerformanceStepper *performa
 int tf_performance_stepper_get_chip_temperature(TF_PerformanceStepper *performance_stepper, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
@@ -1511,7 +1511,7 @@ int tf_performance_stepper_get_chip_temperature(TF_PerformanceStepper *performan
 int tf_performance_stepper_reset(TF_PerformanceStepper *performance_stepper);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
@@ -1522,7 +1522,7 @@ int tf_performance_stepper_reset(TF_PerformanceStepper *performance_stepper);
 int tf_performance_stepper_write_uid(TF_PerformanceStepper *performance_stepper, uint32_t uid);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Returns the current UID as an integer. Encode as
  * Base58 to get the usual string version.
@@ -1530,7 +1530,7 @@ int tf_performance_stepper_write_uid(TF_PerformanceStepper *performance_stepper,
 int tf_performance_stepper_read_uid(TF_PerformanceStepper *performance_stepper, uint32_t *ret_uid);
 
 /**
- * \ingroup BrickletPerformanceStepper
+ * \ingroup TF_PerformanceStepper
  *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the

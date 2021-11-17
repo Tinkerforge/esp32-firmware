@@ -43,9 +43,9 @@ API api;
 
 {{{module_decls}}}
 
-//declared and initialized by board module
-extern TF_HalContext hal;
-//initialized by board module
+// declared and initialized by board module
+extern TF_HAL hal;
+// initialized by board module
 uint32_t uid_numeric = 0;
 char uid[7] = {0};
 char passphrase[20] = {0};

@@ -32,7 +32,7 @@ public:
     bool initialized = false;
 
 private:
-    TF_NetContext net;
+    TF_Net net;
     Config devices;
     Config error_counters;
 };

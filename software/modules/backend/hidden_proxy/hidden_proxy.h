@@ -32,5 +32,5 @@ private:
     void start_proxy();
     void stop_proxy();
 
-    TF_NetContext net;
+    TF_Net net;
 };

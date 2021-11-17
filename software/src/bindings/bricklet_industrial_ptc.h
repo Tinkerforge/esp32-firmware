@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-12.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -8,8 +8,8 @@
  * to the generators git repository on tinkerforge.com       *
  *************************************************************/
 
-#ifndef TF_BRICKLET_INDUSTRIAL_PTC_H
-#define TF_BRICKLET_INDUSTRIAL_PTC_H
+#ifndef TF_INDUSTRIAL_PTC_H
+#define TF_INDUSTRIAL_PTC_H
 
 #include "config.h"
 #include "tfp.h"
@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 /**
- * \defgroup BrickletIndustrialPTC Industrial PTC Bricklet
+ * \defgroup TF_IndustrialPTC Industrial PTC Bricklet
  */
 
 struct TF_IndustrialPTC;
@@ -33,12 +33,12 @@ typedef void (*TF_IndustrialPTCSensorConnectedHandler)(struct TF_IndustrialPTC *
 
 #endif
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Reads temperatures from Pt100 und Pt1000 sensors
  */
 typedef struct TF_IndustrialPTC {
-    TF_TfpContext *tfp;
+    TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
     TF_IndustrialPTCTemperatureHandler temperature_handler;
     void *temperature_user_data;
@@ -54,286 +54,286 @@ typedef struct TF_IndustrialPTC {
 } TF_IndustrialPTC;
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_GET_TEMPERATURE 1
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_SET_TEMPERATURE_CALLBACK_CONFIGURATION 2
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_GET_TEMPERATURE_CALLBACK_CONFIGURATION 3
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_GET_RESISTANCE 5
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_SET_RESISTANCE_CALLBACK_CONFIGURATION 6
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_GET_RESISTANCE_CALLBACK_CONFIGURATION 7
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_SET_NOISE_REJECTION_FILTER 9
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_GET_NOISE_REJECTION_FILTER 10
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_IS_SENSOR_CONNECTED 11
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_SET_WIRE_MODE 12
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_GET_WIRE_MODE 13
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_SET_MOVING_AVERAGE_CONFIGURATION 14
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_GET_MOVING_AVERAGE_CONFIGURATION 15
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_SET_SENSOR_CONNECTED_CALLBACK_CONFIGURATION 16
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_GET_SENSOR_CONNECTED_CALLBACK_CONFIGURATION 17
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_SET_BOOTLOADER_MODE 235
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_GET_BOOTLOADER_MODE 236
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_SET_WRITE_FIRMWARE_POINTER 237
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_WRITE_FIRMWARE 238
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_SET_STATUS_LED_CONFIG 239
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_GET_STATUS_LED_CONFIG 240
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_GET_CHIP_TEMPERATURE 242
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_RESET 243
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_WRITE_UID 248
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_READ_UID 249
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FUNCTION_GET_IDENTITY 255
 
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_CALLBACK_TEMPERATURE 4
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_CALLBACK_RESISTANCE 8
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_CALLBACK_SENSOR_CONNECTED 18
 
 #endif
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_THRESHOLD_OPTION_OFF 'x'
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_THRESHOLD_OPTION_OUTSIDE 'o'
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_THRESHOLD_OPTION_INSIDE 'i'
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_THRESHOLD_OPTION_SMALLER '<'
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_THRESHOLD_OPTION_GREATER '>'
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FILTER_OPTION_50HZ 0
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_FILTER_OPTION_60HZ 1
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_WIRE_MODE_2 2
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_WIRE_MODE_3 3
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_WIRE_MODE_4 4
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_BOOTLOADER_MODE_FIRMWARE 1
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT 2
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_REBOOT 3
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_ERASE_AND_REBOOT 4
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_BOOTLOADER_STATUS_OK 0
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_BOOTLOADER_STATUS_INVALID_MODE 1
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_BOOTLOADER_STATUS_NO_CHANGE 2
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_BOOTLOADER_STATUS_ENTRY_FUNCTION_NOT_PRESENT 3
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_BOOTLOADER_STATUS_DEVICE_IDENTIFIER_INCORRECT 4
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_BOOTLOADER_STATUS_CRC_MISMATCH 5
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_STATUS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_STATUS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_STATUS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  */
 #define TF_INDUSTRIAL_PTC_STATUS_LED_CONFIG_SHOW_STATUS 3
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * This constant is used to identify a Industrial PTC Bricklet.
  *
@@ -344,30 +344,30 @@ typedef struct TF_IndustrialPTC {
 #define TF_INDUSTRIAL_PTC_DEVICE_IDENTIFIER 2164
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * This constant represents the display name of a Industrial PTC Bricklet.
  */
 #define TF_INDUSTRIAL_PTC_DEVICE_DISPLAY_NAME "Industrial PTC Bricklet"
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Creates the device object \c industrial_ptc with the unique device ID \c uid and adds
- * it to the IPConnection \c ipcon.
+ * it to the HAL \c hal.
  */
-int tf_industrial_ptc_create(TF_IndustrialPTC *industrial_ptc, const char *uid, TF_HalContext *hal);
+int tf_industrial_ptc_create(TF_IndustrialPTC *industrial_ptc, const char *uid, TF_HAL *hal);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
- * Removes the device object \c industrial_ptc from its IPConnection and destroys it.
+ * Removes the device object \c industrial_ptc from its HAL and destroys it.
  * The device object cannot be used anymore afterwards.
  */
 int tf_industrial_ptc_destroy(TF_IndustrialPTC *industrial_ptc);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Returns the response expected flag for the function specified by the
  * \c function_id parameter. It is *true* if the function is expected to
@@ -376,8 +376,8 @@ int tf_industrial_ptc_destroy(TF_IndustrialPTC *industrial_ptc);
  * For getter functions this is enabled by default and cannot be disabled,
  * because those functions will always send a response. For callback
  * configuration functions it is enabled by default too, but can be disabled
- * via the industrial_ptc_set_response_expected function. For setter functions it is
- * disabled by default and can be enabled.
+ * via the tf_industrial_ptc_set_response_expected function. For setter
+ * functions it is disabled by default and can be enabled.
  *
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
@@ -388,7 +388,7 @@ int tf_industrial_ptc_destroy(TF_IndustrialPTC *industrial_ptc);
 int tf_industrial_ptc_get_response_expected(TF_IndustrialPTC *industrial_ptc, uint8_t function_id, bool *ret_response_expected);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Changes the response expected flag of the function specified by the
  * \c function_id parameter. This flag can only be changed for setter
@@ -404,7 +404,7 @@ int tf_industrial_ptc_get_response_expected(TF_IndustrialPTC *industrial_ptc, ui
 int tf_industrial_ptc_set_response_expected(TF_IndustrialPTC *industrial_ptc, uint8_t function_id, bool response_expected);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
@@ -412,7 +412,7 @@ int tf_industrial_ptc_set_response_expected(TF_IndustrialPTC *industrial_ptc, ui
 void tf_industrial_ptc_set_response_expected_all(TF_IndustrialPTC *industrial_ptc, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Registers the given \c handler to the Temperature callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -428,7 +428,7 @@ int tf_industrial_ptc_register_temperature_callback(TF_IndustrialPTC *industrial
 
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Registers the given \c handler to the Resistance callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -444,7 +444,7 @@ int tf_industrial_ptc_register_resistance_callback(TF_IndustrialPTC *industrial_
 
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Registers the given \c handler to the Sensor Connected callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -460,7 +460,7 @@ int tf_industrial_ptc_register_sensor_connected_callback(TF_IndustrialPTC *indus
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Polls for callbacks. Will block for the given timeout in microseconds.
  *
@@ -470,7 +470,7 @@ int tf_industrial_ptc_callback_tick(TF_IndustrialPTC *industrial_ptc, uint32_t t
 #endif
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Returns the temperature of the connected sensor.
  * 
@@ -482,7 +482,7 @@ int tf_industrial_ptc_callback_tick(TF_IndustrialPTC *industrial_ptc, uint32_t t
 int tf_industrial_ptc_get_temperature(TF_IndustrialPTC *industrial_ptc, int32_t *ret_temperature);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * The period is the period with which the {@link tf_industrial_ptc_register_temperature_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
@@ -515,14 +515,14 @@ int tf_industrial_ptc_get_temperature(TF_IndustrialPTC *industrial_ptc, int32_t 
 int tf_industrial_ptc_set_temperature_callback_configuration(TF_IndustrialPTC *industrial_ptc, uint32_t period, bool value_has_to_change, char option, int32_t min, int32_t max);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Returns the callback configuration as set by {@link tf_industrial_ptc_set_temperature_callback_configuration}.
  */
 int tf_industrial_ptc_get_temperature_callback_configuration(TF_IndustrialPTC *industrial_ptc, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int32_t *ret_min, int32_t *ret_max);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Returns the value as measured by the MAX31865 precision delta-sigma ADC.
  * 
@@ -539,7 +539,7 @@ int tf_industrial_ptc_get_temperature_callback_configuration(TF_IndustrialPTC *i
 int tf_industrial_ptc_get_resistance(TF_IndustrialPTC *industrial_ptc, int32_t *ret_resistance);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * The period is the period with which the {@link tf_industrial_ptc_register_resistance_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
@@ -572,14 +572,14 @@ int tf_industrial_ptc_get_resistance(TF_IndustrialPTC *industrial_ptc, int32_t *
 int tf_industrial_ptc_set_resistance_callback_configuration(TF_IndustrialPTC *industrial_ptc, uint32_t period, bool value_has_to_change, char option, int32_t min, int32_t max);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Returns the callback configuration as set by {@link tf_industrial_ptc_set_resistance_callback_configuration}.
  */
 int tf_industrial_ptc_get_resistance_callback_configuration(TF_IndustrialPTC *industrial_ptc, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int32_t *ret_min, int32_t *ret_max);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Sets the noise rejection filter to either 50Hz (0) or 60Hz (1).
  * Noise from 50Hz or 60Hz power sources (including
@@ -589,7 +589,7 @@ int tf_industrial_ptc_get_resistance_callback_configuration(TF_IndustrialPTC *in
 int tf_industrial_ptc_set_noise_rejection_filter(TF_IndustrialPTC *industrial_ptc, uint8_t filter);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Returns the noise rejection filter option as set by
  * {@link tf_industrial_ptc_set_noise_rejection_filter}
@@ -597,7 +597,7 @@ int tf_industrial_ptc_set_noise_rejection_filter(TF_IndustrialPTC *industrial_pt
 int tf_industrial_ptc_get_noise_rejection_filter(TF_IndustrialPTC *industrial_ptc, uint8_t *ret_filter);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Returns *true* if the sensor is connected correctly.
  * 
@@ -612,7 +612,7 @@ int tf_industrial_ptc_get_noise_rejection_filter(TF_IndustrialPTC *industrial_pt
 int tf_industrial_ptc_is_sensor_connected(TF_IndustrialPTC *industrial_ptc, bool *ret_connected);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Sets the wire mode of the sensor. Possible values are 2, 3 and 4 which
  * correspond to 2-, 3- and 4-wire sensors. The value has to match the jumper
@@ -621,14 +621,14 @@ int tf_industrial_ptc_is_sensor_connected(TF_IndustrialPTC *industrial_ptc, bool
 int tf_industrial_ptc_set_wire_mode(TF_IndustrialPTC *industrial_ptc, uint8_t mode);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Returns the wire mode as set by {@link tf_industrial_ptc_set_wire_mode}
  */
 int tf_industrial_ptc_get_wire_mode(TF_IndustrialPTC *industrial_ptc, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Sets the length of a `moving averaging <https://en.wikipedia.org/wiki/Moving_average>`__
  * for the resistance and temperature.
@@ -645,14 +645,14 @@ int tf_industrial_ptc_get_wire_mode(TF_IndustrialPTC *industrial_ptc, uint8_t *r
 int tf_industrial_ptc_set_moving_average_configuration(TF_IndustrialPTC *industrial_ptc, uint16_t moving_average_length_resistance, uint16_t moving_average_length_temperature);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Returns the moving average configuration as set by {@link tf_industrial_ptc_set_moving_average_configuration}.
  */
 int tf_industrial_ptc_get_moving_average_configuration(TF_IndustrialPTC *industrial_ptc, uint16_t *ret_moving_average_length_resistance, uint16_t *ret_moving_average_length_temperature);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * If you enable this callback, the {@link tf_industrial_ptc_register_sensor_connected_callback} callback is triggered
  * every time a Pt sensor is connected/disconnected.
@@ -660,14 +660,14 @@ int tf_industrial_ptc_get_moving_average_configuration(TF_IndustrialPTC *industr
 int tf_industrial_ptc_set_sensor_connected_callback_configuration(TF_IndustrialPTC *industrial_ptc, bool enabled);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Returns the configuration as set by {@link tf_industrial_ptc_set_sensor_connected_callback_configuration}.
  */
 int tf_industrial_ptc_get_sensor_connected_callback_configuration(TF_IndustrialPTC *industrial_ptc, bool *ret_enabled);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Returns the error count for the communication between Brick and Bricklet.
  * 
@@ -684,7 +684,7 @@ int tf_industrial_ptc_get_sensor_connected_callback_configuration(TF_IndustrialP
 int tf_industrial_ptc_get_spitfp_error_count(TF_IndustrialPTC *industrial_ptc, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
@@ -699,14 +699,14 @@ int tf_industrial_ptc_get_spitfp_error_count(TF_IndustrialPTC *industrial_ptc, u
 int tf_industrial_ptc_set_bootloader_mode(TF_IndustrialPTC *industrial_ptc, uint8_t mode, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Returns the current bootloader mode, see {@link tf_industrial_ptc_set_bootloader_mode}.
  */
 int tf_industrial_ptc_get_bootloader_mode(TF_IndustrialPTC *industrial_ptc, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Sets the firmware pointer for {@link tf_industrial_ptc_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
@@ -718,7 +718,7 @@ int tf_industrial_ptc_get_bootloader_mode(TF_IndustrialPTC *industrial_ptc, uint
 int tf_industrial_ptc_set_write_firmware_pointer(TF_IndustrialPTC *industrial_ptc, uint32_t pointer);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_industrial_ptc_set_write_firmware_pointer} before. The firmware is written
@@ -732,7 +732,7 @@ int tf_industrial_ptc_set_write_firmware_pointer(TF_IndustrialPTC *industrial_pt
 int tf_industrial_ptc_write_firmware(TF_IndustrialPTC *industrial_ptc, const uint8_t data[64], uint8_t *ret_status);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
@@ -745,14 +745,14 @@ int tf_industrial_ptc_write_firmware(TF_IndustrialPTC *industrial_ptc, const uin
 int tf_industrial_ptc_set_status_led_config(TF_IndustrialPTC *industrial_ptc, uint8_t config);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Returns the configuration as set by {@link tf_industrial_ptc_set_status_led_config}
  */
 int tf_industrial_ptc_get_status_led_config(TF_IndustrialPTC *industrial_ptc, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
@@ -764,7 +764,7 @@ int tf_industrial_ptc_get_status_led_config(TF_IndustrialPTC *industrial_ptc, ui
 int tf_industrial_ptc_get_chip_temperature(TF_IndustrialPTC *industrial_ptc, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
@@ -776,7 +776,7 @@ int tf_industrial_ptc_get_chip_temperature(TF_IndustrialPTC *industrial_ptc, int
 int tf_industrial_ptc_reset(TF_IndustrialPTC *industrial_ptc);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
@@ -787,7 +787,7 @@ int tf_industrial_ptc_reset(TF_IndustrialPTC *industrial_ptc);
 int tf_industrial_ptc_write_uid(TF_IndustrialPTC *industrial_ptc, uint32_t uid);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Returns the current UID as an integer. Encode as
  * Base58 to get the usual string version.
@@ -795,7 +795,7 @@ int tf_industrial_ptc_write_uid(TF_IndustrialPTC *industrial_ptc, uint32_t uid);
 int tf_industrial_ptc_read_uid(TF_IndustrialPTC *industrial_ptc, uint32_t *ret_uid);
 
 /**
- * \ingroup BrickletIndustrialPTC
+ * \ingroup TF_IndustrialPTC
  *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the

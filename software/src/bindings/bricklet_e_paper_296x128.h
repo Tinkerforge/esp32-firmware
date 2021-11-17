@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-12.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -8,8 +8,8 @@
  * to the generators git repository on tinkerforge.com       *
  *************************************************************/
 
-#ifndef TF_BRICKLET_E_PAPER_296X128_H
-#define TF_BRICKLET_E_PAPER_296X128_H
+#ifndef TF_E_PAPER_296X128_H
+#define TF_E_PAPER_296X128_H
 
 #include "config.h"
 #include "tfp.h"
@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 /**
- * \defgroup BrickletEPaper296x128 E-Paper 296x128 Bricklet
+ * \defgroup TF_EPaper296x128 E-Paper 296x128 Bricklet
  */
 
 struct TF_EPaper296x128;
@@ -31,12 +31,12 @@ typedef void (*TF_EPaper296x128DrawStatusHandler)(struct TF_EPaper296x128 *devic
 
 #endif
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Three color 296x128 e-paper display
  */
 typedef struct TF_EPaper296x128 {
-    TF_TfpContext *tfp;
+    TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
     TF_EPaper296x128DrawStatusHandler draw_status_handler;
     void *draw_status_user_data;
@@ -46,361 +46,361 @@ typedef struct TF_EPaper296x128 {
 } TF_EPaper296x128;
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_DRAW 1
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_GET_DRAW_STATUS 2
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_WRITE_BLACK_WHITE_LOW_LEVEL 3
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_READ_BLACK_WHITE_LOW_LEVEL 4
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_WRITE_COLOR_LOW_LEVEL 5
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_READ_COLOR_LOW_LEVEL 6
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_FILL_DISPLAY 7
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_DRAW_TEXT 8
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_DRAW_LINE 9
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_DRAW_BOX 10
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_SET_UPDATE_MODE 12
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_GET_UPDATE_MODE 13
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_SET_DISPLAY_TYPE 14
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_GET_DISPLAY_TYPE 15
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_SET_DISPLAY_DRIVER 16
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_GET_DISPLAY_DRIVER 17
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_SET_BOOTLOADER_MODE 235
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_GET_BOOTLOADER_MODE 236
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_SET_WRITE_FIRMWARE_POINTER 237
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_WRITE_FIRMWARE 238
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_SET_STATUS_LED_CONFIG 239
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_GET_STATUS_LED_CONFIG 240
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_GET_CHIP_TEMPERATURE 242
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_RESET 243
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_WRITE_UID 248
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_READ_UID 249
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FUNCTION_GET_IDENTITY 255
 
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_CALLBACK_DRAW_STATUS 11
 
 #endif
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_DRAW_STATUS_IDLE 0
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_DRAW_STATUS_COPYING 1
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_DRAW_STATUS_DRAWING 2
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_COLOR_BLACK 0
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_COLOR_WHITE 1
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_COLOR_RED 2
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_COLOR_GRAY 2
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FONT_6X8 0
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FONT_6X16 1
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FONT_6X24 2
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FONT_6X32 3
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FONT_12X16 4
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FONT_12X24 5
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FONT_12X32 6
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FONT_18X24 7
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FONT_18X32 8
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_FONT_24X32 9
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_ORIENTATION_HORIZONTAL 0
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_ORIENTATION_VERTICAL 1
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_UPDATE_MODE_DEFAULT 0
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_UPDATE_MODE_BLACK_WHITE 1
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_UPDATE_MODE_DELTA 2
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_DISPLAY_TYPE_BLACK_WHITE_RED 0
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_DISPLAY_TYPE_BLACK_WHITE_GRAY 1
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_DISPLAY_DRIVER_SSD1675A 0
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_DISPLAY_DRIVER_SSD1680 1
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_BOOTLOADER_MODE_FIRMWARE 1
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT 2
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_REBOOT 3
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_ERASE_AND_REBOOT 4
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_BOOTLOADER_STATUS_OK 0
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_BOOTLOADER_STATUS_INVALID_MODE 1
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_BOOTLOADER_STATUS_NO_CHANGE 2
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_BOOTLOADER_STATUS_ENTRY_FUNCTION_NOT_PRESENT 3
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_BOOTLOADER_STATUS_DEVICE_IDENTIFIER_INCORRECT 4
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_BOOTLOADER_STATUS_CRC_MISMATCH 5
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_STATUS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_STATUS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_STATUS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  */
 #define TF_E_PAPER_296X128_STATUS_LED_CONFIG_SHOW_STATUS 3
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * This constant is used to identify a E-Paper 296x128 Bricklet.
  *
@@ -411,30 +411,30 @@ typedef struct TF_EPaper296x128 {
 #define TF_E_PAPER_296X128_DEVICE_IDENTIFIER 2146
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * This constant represents the display name of a E-Paper 296x128 Bricklet.
  */
 #define TF_E_PAPER_296X128_DEVICE_DISPLAY_NAME "E-Paper 296x128 Bricklet"
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Creates the device object \c e_paper_296x128 with the unique device ID \c uid and adds
- * it to the IPConnection \c ipcon.
+ * it to the HAL \c hal.
  */
-int tf_e_paper_296x128_create(TF_EPaper296x128 *e_paper_296x128, const char *uid, TF_HalContext *hal);
+int tf_e_paper_296x128_create(TF_EPaper296x128 *e_paper_296x128, const char *uid, TF_HAL *hal);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
- * Removes the device object \c e_paper_296x128 from its IPConnection and destroys it.
+ * Removes the device object \c e_paper_296x128 from its HAL and destroys it.
  * The device object cannot be used anymore afterwards.
  */
 int tf_e_paper_296x128_destroy(TF_EPaper296x128 *e_paper_296x128);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Returns the response expected flag for the function specified by the
  * \c function_id parameter. It is *true* if the function is expected to
@@ -443,8 +443,8 @@ int tf_e_paper_296x128_destroy(TF_EPaper296x128 *e_paper_296x128);
  * For getter functions this is enabled by default and cannot be disabled,
  * because those functions will always send a response. For callback
  * configuration functions it is enabled by default too, but can be disabled
- * via the e_paper_296x128_set_response_expected function. For setter functions it is
- * disabled by default and can be enabled.
+ * via the tf_e_paper_296x128_set_response_expected function. For setter
+ * functions it is disabled by default and can be enabled.
  *
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
@@ -455,7 +455,7 @@ int tf_e_paper_296x128_destroy(TF_EPaper296x128 *e_paper_296x128);
 int tf_e_paper_296x128_get_response_expected(TF_EPaper296x128 *e_paper_296x128, uint8_t function_id, bool *ret_response_expected);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Changes the response expected flag of the function specified by the
  * \c function_id parameter. This flag can only be changed for setter
@@ -471,7 +471,7 @@ int tf_e_paper_296x128_get_response_expected(TF_EPaper296x128 *e_paper_296x128, 
 int tf_e_paper_296x128_set_response_expected(TF_EPaper296x128 *e_paper_296x128, uint8_t function_id, bool response_expected);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
@@ -479,7 +479,7 @@ int tf_e_paper_296x128_set_response_expected(TF_EPaper296x128 *e_paper_296x128, 
 void tf_e_paper_296x128_set_response_expected_all(TF_EPaper296x128 *e_paper_296x128, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Registers the given \c handler to the Draw Status callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -493,7 +493,7 @@ int tf_e_paper_296x128_register_draw_status_callback(TF_EPaper296x128 *e_paper_2
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Polls for callbacks. Will block for the given timeout in microseconds.
  *
@@ -503,7 +503,7 @@ int tf_e_paper_296x128_callback_tick(TF_EPaper296x128 *e_paper_296x128, uint32_t
 #endif
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Draws the current black/white and red or gray buffer to the e-paper display.
  * 
@@ -513,7 +513,7 @@ int tf_e_paper_296x128_callback_tick(TF_EPaper296x128 *e_paper_296x128, uint32_t
 int tf_e_paper_296x128_draw(TF_EPaper296x128 *e_paper_296x128);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Returns one of three draw statuses:
  * 
@@ -528,7 +528,7 @@ int tf_e_paper_296x128_draw(TF_EPaper296x128 *e_paper_296x128);
 int tf_e_paper_296x128_get_draw_status(TF_EPaper296x128 *e_paper_296x128, uint8_t *ret_draw_status);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Writes black/white pixels to the specified window into the buffer.
  * 
@@ -546,7 +546,7 @@ int tf_e_paper_296x128_get_draw_status(TF_EPaper296x128 *e_paper_296x128, uint8_
 int tf_e_paper_296x128_write_black_white_low_level(TF_EPaper296x128 *e_paper_296x128, uint16_t x_start, uint8_t y_start, uint16_t x_end, uint8_t y_end, uint16_t pixels_length, uint16_t pixels_chunk_offset, const bool pixels_chunk_data[432]);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Returns the current content of the black/white pixel buffer for the specified window.
  * 
@@ -560,7 +560,7 @@ int tf_e_paper_296x128_write_black_white_low_level(TF_EPaper296x128 *e_paper_296
 int tf_e_paper_296x128_read_black_white_low_level(TF_EPaper296x128 *e_paper_296x128, uint16_t x_start, uint8_t y_start, uint16_t x_end, uint8_t y_end, uint16_t *ret_pixels_length, uint16_t *ret_pixels_chunk_offset, bool ret_pixels_chunk_data[464]);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * The E-Paper 296x128 Bricklet is available with the colors black/white/red and
  * black/white/gray. Depending on the model this function writes either red or
@@ -581,7 +581,7 @@ int tf_e_paper_296x128_read_black_white_low_level(TF_EPaper296x128 *e_paper_296x
 int tf_e_paper_296x128_write_color_low_level(TF_EPaper296x128 *e_paper_296x128, uint16_t x_start, uint8_t y_start, uint16_t x_end, uint8_t y_end, uint16_t pixels_length, uint16_t pixels_chunk_offset, const bool pixels_chunk_data[432]);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Returns the current content of the red or gray pixel buffer for the specified window.
  * 
@@ -595,7 +595,7 @@ int tf_e_paper_296x128_write_color_low_level(TF_EPaper296x128 *e_paper_296x128, 
 int tf_e_paper_296x128_read_color_low_level(TF_EPaper296x128 *e_paper_296x128, uint16_t x_start, uint8_t y_start, uint16_t x_end, uint8_t y_end, uint16_t *ret_pixels_length, uint16_t *ret_pixels_chunk_offset, bool ret_pixels_chunk_data[464]);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Fills the complete content of the display with the given color.
  * 
@@ -605,7 +605,7 @@ int tf_e_paper_296x128_read_color_low_level(TF_EPaper296x128 *e_paper_296x128, u
 int tf_e_paper_296x128_fill_display(TF_EPaper296x128 *e_paper_296x128, uint8_t color);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Draws a text with up to 50 characters at the pixel position (x, y).
  * 
@@ -618,7 +618,7 @@ int tf_e_paper_296x128_fill_display(TF_EPaper296x128 *e_paper_296x128, uint8_t c
 int tf_e_paper_296x128_draw_text(TF_EPaper296x128 *e_paper_296x128, uint16_t position_x, uint8_t position_y, uint8_t font, uint8_t color, uint8_t orientation, const char *text);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Draws a line from (x, y)-start to (x, y)-end in the given color.
  * 
@@ -628,7 +628,7 @@ int tf_e_paper_296x128_draw_text(TF_EPaper296x128 *e_paper_296x128, uint16_t pos
 int tf_e_paper_296x128_draw_line(TF_EPaper296x128 *e_paper_296x128, uint16_t position_x_start, uint8_t position_y_start, uint16_t position_x_end, uint8_t position_y_end, uint8_t color);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Draws a box from (x, y)-start to (x, y)-end in the given color.
  * 
@@ -641,7 +641,7 @@ int tf_e_paper_296x128_draw_line(TF_EPaper296x128 *e_paper_296x128, uint16_t pos
 int tf_e_paper_296x128_draw_box(TF_EPaper296x128 *e_paper_296x128, uint16_t position_x_start, uint8_t position_y_start, uint16_t position_x_end, uint8_t position_y_end, bool fill, uint8_t color);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * \note
  *  The default update mode corresponds to the default e-paper display
@@ -681,14 +681,14 @@ int tf_e_paper_296x128_draw_box(TF_EPaper296x128 *e_paper_296x128, uint16_t posi
 int tf_e_paper_296x128_set_update_mode(TF_EPaper296x128 *e_paper_296x128, uint8_t update_mode);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Returns the update mode as set by {@link tf_e_paper_296x128_set_update_mode}.
  */
 int tf_e_paper_296x128_get_update_mode(TF_EPaper296x128 *e_paper_296x128, uint8_t *ret_update_mode);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Sets the type of the display. The e-paper display is available
  * in black/white/red and black/white/gray. This will be factory set
@@ -698,7 +698,7 @@ int tf_e_paper_296x128_get_update_mode(TF_EPaper296x128 *e_paper_296x128, uint8_
 int tf_e_paper_296x128_set_display_type(TF_EPaper296x128 *e_paper_296x128, uint8_t display_type);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Returns the type of the e-paper display. It can either be
  * black/white/red or black/white/gray.
@@ -706,7 +706,7 @@ int tf_e_paper_296x128_set_display_type(TF_EPaper296x128 *e_paper_296x128, uint8
 int tf_e_paper_296x128_get_display_type(TF_EPaper296x128 *e_paper_296x128, uint8_t *ret_display_type);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Sets the type of display driver. The Bricklet can currently support
  * SSD1675A and SSD1680. This will be factory set
@@ -718,7 +718,7 @@ int tf_e_paper_296x128_get_display_type(TF_EPaper296x128 *e_paper_296x128, uint8
 int tf_e_paper_296x128_set_display_driver(TF_EPaper296x128 *e_paper_296x128, uint8_t display_driver);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Returns the e-paper display driver.
  * 
@@ -727,7 +727,7 @@ int tf_e_paper_296x128_set_display_driver(TF_EPaper296x128 *e_paper_296x128, uin
 int tf_e_paper_296x128_get_display_driver(TF_EPaper296x128 *e_paper_296x128, uint8_t *ret_display_driver);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Returns the error count for the communication between Brick and Bricklet.
  * 
@@ -744,7 +744,7 @@ int tf_e_paper_296x128_get_display_driver(TF_EPaper296x128 *e_paper_296x128, uin
 int tf_e_paper_296x128_get_spitfp_error_count(TF_EPaper296x128 *e_paper_296x128, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
@@ -759,14 +759,14 @@ int tf_e_paper_296x128_get_spitfp_error_count(TF_EPaper296x128 *e_paper_296x128,
 int tf_e_paper_296x128_set_bootloader_mode(TF_EPaper296x128 *e_paper_296x128, uint8_t mode, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Returns the current bootloader mode, see {@link tf_e_paper_296x128_set_bootloader_mode}.
  */
 int tf_e_paper_296x128_get_bootloader_mode(TF_EPaper296x128 *e_paper_296x128, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Sets the firmware pointer for {@link tf_e_paper_296x128_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
@@ -778,7 +778,7 @@ int tf_e_paper_296x128_get_bootloader_mode(TF_EPaper296x128 *e_paper_296x128, ui
 int tf_e_paper_296x128_set_write_firmware_pointer(TF_EPaper296x128 *e_paper_296x128, uint32_t pointer);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_e_paper_296x128_set_write_firmware_pointer} before. The firmware is written
@@ -792,7 +792,7 @@ int tf_e_paper_296x128_set_write_firmware_pointer(TF_EPaper296x128 *e_paper_296x
 int tf_e_paper_296x128_write_firmware(TF_EPaper296x128 *e_paper_296x128, const uint8_t data[64], uint8_t *ret_status);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
@@ -805,14 +805,14 @@ int tf_e_paper_296x128_write_firmware(TF_EPaper296x128 *e_paper_296x128, const u
 int tf_e_paper_296x128_set_status_led_config(TF_EPaper296x128 *e_paper_296x128, uint8_t config);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Returns the configuration as set by {@link tf_e_paper_296x128_set_status_led_config}
  */
 int tf_e_paper_296x128_get_status_led_config(TF_EPaper296x128 *e_paper_296x128, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
@@ -824,7 +824,7 @@ int tf_e_paper_296x128_get_status_led_config(TF_EPaper296x128 *e_paper_296x128, 
 int tf_e_paper_296x128_get_chip_temperature(TF_EPaper296x128 *e_paper_296x128, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
@@ -836,7 +836,7 @@ int tf_e_paper_296x128_get_chip_temperature(TF_EPaper296x128 *e_paper_296x128, i
 int tf_e_paper_296x128_reset(TF_EPaper296x128 *e_paper_296x128);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
@@ -847,7 +847,7 @@ int tf_e_paper_296x128_reset(TF_EPaper296x128 *e_paper_296x128);
 int tf_e_paper_296x128_write_uid(TF_EPaper296x128 *e_paper_296x128, uint32_t uid);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Returns the current UID as an integer. Encode as
  * Base58 to get the usual string version.
@@ -855,7 +855,7 @@ int tf_e_paper_296x128_write_uid(TF_EPaper296x128 *e_paper_296x128, uint32_t uid
 int tf_e_paper_296x128_read_uid(TF_EPaper296x128 *e_paper_296x128, uint32_t *ret_uid);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
@@ -871,7 +871,7 @@ int tf_e_paper_296x128_read_uid(TF_EPaper296x128 *e_paper_296x128, uint32_t *ret
 int tf_e_paper_296x128_get_identity(TF_EPaper296x128 *e_paper_296x128, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Writes black/white pixels to the specified window into the buffer.
  * 
@@ -889,7 +889,7 @@ int tf_e_paper_296x128_get_identity(TF_EPaper296x128 *e_paper_296x128, char ret_
 int tf_e_paper_296x128_write_black_white(TF_EPaper296x128 *e_paper_296x128, uint16_t x_start, uint8_t y_start, uint16_t x_end, uint8_t y_end, const bool *pixels, uint16_t pixels_length);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Returns the current content of the black/white pixel buffer for the specified window.
  * 
@@ -903,7 +903,7 @@ int tf_e_paper_296x128_write_black_white(TF_EPaper296x128 *e_paper_296x128, uint
 int tf_e_paper_296x128_read_black_white(TF_EPaper296x128 *e_paper_296x128, uint16_t x_start, uint8_t y_start, uint16_t x_end, uint8_t y_end, bool *ret_pixels, uint16_t *ret_pixels_length);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * The E-Paper 296x128 Bricklet is available with the colors black/white/red and
  * black/white/gray. Depending on the model this function writes either red or
@@ -924,7 +924,7 @@ int tf_e_paper_296x128_read_black_white(TF_EPaper296x128 *e_paper_296x128, uint1
 int tf_e_paper_296x128_write_color(TF_EPaper296x128 *e_paper_296x128, uint16_t x_start, uint8_t y_start, uint16_t x_end, uint8_t y_end, const bool *pixels, uint16_t pixels_length);
 
 /**
- * \ingroup BrickletEPaper296x128
+ * \ingroup TF_EPaper296x128
  *
  * Returns the current content of the red or gray pixel buffer for the specified window.
  * 

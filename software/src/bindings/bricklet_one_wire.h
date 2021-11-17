@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-12.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -8,8 +8,8 @@
  * to the generators git repository on tinkerforge.com       *
  *************************************************************/
 
-#ifndef TF_BRICKLET_ONE_WIRE_H
-#define TF_BRICKLET_ONE_WIRE_H
+#ifndef TF_ONE_WIRE_H
+#define TF_ONE_WIRE_H
 
 #include "config.h"
 #include "tfp.h"
@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 /**
- * \defgroup BrickletOneWire One Wire Bricklet
+ * \defgroup TF_OneWire One Wire Bricklet
  */
 
 struct TF_OneWire;
@@ -30,12 +30,12 @@ struct TF_OneWire;
 
 #endif
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Communicates with up 64 1-Wire devices
  */
 typedef struct TF_OneWire {
-    TF_TfpContext *tfp;
+    TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 #endif
@@ -43,97 +43,97 @@ typedef struct TF_OneWire {
 } TF_OneWire;
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_FUNCTION_SEARCH_BUS_LOW_LEVEL 1
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_FUNCTION_RESET_BUS 2
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_FUNCTION_WRITE 3
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_FUNCTION_READ 4
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_FUNCTION_WRITE_COMMAND 5
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_FUNCTION_SET_COMMUNICATION_LED_CONFIG 6
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_FUNCTION_GET_COMMUNICATION_LED_CONFIG 7
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_FUNCTION_SET_BOOTLOADER_MODE 235
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_FUNCTION_GET_BOOTLOADER_MODE 236
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_FUNCTION_SET_WRITE_FIRMWARE_POINTER 237
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_FUNCTION_WRITE_FIRMWARE 238
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_FUNCTION_SET_STATUS_LED_CONFIG 239
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_FUNCTION_GET_STATUS_LED_CONFIG 240
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_FUNCTION_GET_CHIP_TEMPERATURE 242
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_FUNCTION_RESET 243
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_FUNCTION_WRITE_UID 248
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_FUNCTION_READ_UID 249
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_FUNCTION_GET_IDENTITY 255
 
@@ -142,127 +142,127 @@ typedef struct TF_OneWire {
 #endif
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_STATUS_OK 0
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_STATUS_BUSY 1
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_STATUS_NO_PRESENCE 2
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_STATUS_TIMEOUT 3
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_STATUS_ERROR 4
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_COMMUNICATION_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_COMMUNICATION_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_COMMUNICATION_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_COMMUNICATION_LED_CONFIG_SHOW_COMMUNICATION 3
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_BOOTLOADER_MODE_FIRMWARE 1
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT 2
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_REBOOT 3
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_ERASE_AND_REBOOT 4
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_BOOTLOADER_STATUS_OK 0
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_BOOTLOADER_STATUS_INVALID_MODE 1
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_BOOTLOADER_STATUS_NO_CHANGE 2
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_BOOTLOADER_STATUS_ENTRY_FUNCTION_NOT_PRESENT 3
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_BOOTLOADER_STATUS_DEVICE_IDENTIFIER_INCORRECT 4
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_BOOTLOADER_STATUS_CRC_MISMATCH 5
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_STATUS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_STATUS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_STATUS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  */
 #define TF_ONE_WIRE_STATUS_LED_CONFIG_SHOW_STATUS 3
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * This constant is used to identify a One Wire Bricklet.
  *
@@ -273,30 +273,30 @@ typedef struct TF_OneWire {
 #define TF_ONE_WIRE_DEVICE_IDENTIFIER 2123
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * This constant represents the display name of a One Wire Bricklet.
  */
 #define TF_ONE_WIRE_DEVICE_DISPLAY_NAME "One Wire Bricklet"
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Creates the device object \c one_wire with the unique device ID \c uid and adds
- * it to the IPConnection \c ipcon.
+ * it to the HAL \c hal.
  */
-int tf_one_wire_create(TF_OneWire *one_wire, const char *uid, TF_HalContext *hal);
+int tf_one_wire_create(TF_OneWire *one_wire, const char *uid, TF_HAL *hal);
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
- * Removes the device object \c one_wire from its IPConnection and destroys it.
+ * Removes the device object \c one_wire from its HAL and destroys it.
  * The device object cannot be used anymore afterwards.
  */
 int tf_one_wire_destroy(TF_OneWire *one_wire);
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Returns the response expected flag for the function specified by the
  * \c function_id parameter. It is *true* if the function is expected to
@@ -305,8 +305,8 @@ int tf_one_wire_destroy(TF_OneWire *one_wire);
  * For getter functions this is enabled by default and cannot be disabled,
  * because those functions will always send a response. For callback
  * configuration functions it is enabled by default too, but can be disabled
- * via the one_wire_set_response_expected function. For setter functions it is
- * disabled by default and can be enabled.
+ * via the tf_one_wire_set_response_expected function. For setter
+ * functions it is disabled by default and can be enabled.
  *
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
@@ -317,7 +317,7 @@ int tf_one_wire_destroy(TF_OneWire *one_wire);
 int tf_one_wire_get_response_expected(TF_OneWire *one_wire, uint8_t function_id, bool *ret_response_expected);
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Changes the response expected flag of the function specified by the
  * \c function_id parameter. This flag can only be changed for setter
@@ -333,7 +333,7 @@ int tf_one_wire_get_response_expected(TF_OneWire *one_wire, uint8_t function_id,
 int tf_one_wire_set_response_expected(TF_OneWire *one_wire, uint8_t function_id, bool response_expected);
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
@@ -343,7 +343,7 @@ void tf_one_wire_set_response_expected_all(TF_OneWire *one_wire, bool response_e
 
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Polls for callbacks. Will block for the given timeout in microseconds.
  *
@@ -353,7 +353,7 @@ int tf_one_wire_callback_tick(TF_OneWire *one_wire, uint32_t timeout_us);
 #endif
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Returns a list of up to 64 identifiers of the connected 1-Wire devices.
  * Each identifier is 64-bit and consists of 8-bit family code, 48-bit ID and
@@ -366,28 +366,28 @@ int tf_one_wire_callback_tick(TF_OneWire *one_wire, uint32_t timeout_us);
 int tf_one_wire_search_bus_low_level(TF_OneWire *one_wire, uint16_t *ret_identifier_length, uint16_t *ret_identifier_chunk_offset, uint64_t ret_identifier_chunk_data[7], uint8_t *ret_status);
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Resets the bus with the 1-Wire reset operation.
  */
 int tf_one_wire_reset_bus(TF_OneWire *one_wire, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Writes a byte of data to the 1-Wire bus.
  */
 int tf_one_wire_write(TF_OneWire *one_wire, uint8_t data, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Reads a byte of data from the 1-Wire bus.
  */
 int tf_one_wire_read(TF_OneWire *one_wire, uint8_t *ret_data, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Writes a command to the 1-Wire device with the given identifier. You can obtain
  * the identifier by calling {@link tf_one_wire_search_bus}. The MATCH ROM operation is used to
@@ -400,7 +400,7 @@ int tf_one_wire_read(TF_OneWire *one_wire, uint8_t *ret_data, uint8_t *ret_statu
 int tf_one_wire_write_command(TF_OneWire *one_wire, uint64_t identifier, uint8_t command, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Sets the communication LED configuration. By default the LED shows 1-wire
  * communication traffic by flickering.
@@ -412,14 +412,14 @@ int tf_one_wire_write_command(TF_OneWire *one_wire, uint64_t identifier, uint8_t
 int tf_one_wire_set_communication_led_config(TF_OneWire *one_wire, uint8_t config);
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Returns the configuration as set by {@link tf_one_wire_set_communication_led_config}
  */
 int tf_one_wire_get_communication_led_config(TF_OneWire *one_wire, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Returns the error count for the communication between Brick and Bricklet.
  * 
@@ -436,7 +436,7 @@ int tf_one_wire_get_communication_led_config(TF_OneWire *one_wire, uint8_t *ret_
 int tf_one_wire_get_spitfp_error_count(TF_OneWire *one_wire, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
@@ -451,14 +451,14 @@ int tf_one_wire_get_spitfp_error_count(TF_OneWire *one_wire, uint32_t *ret_error
 int tf_one_wire_set_bootloader_mode(TF_OneWire *one_wire, uint8_t mode, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Returns the current bootloader mode, see {@link tf_one_wire_set_bootloader_mode}.
  */
 int tf_one_wire_get_bootloader_mode(TF_OneWire *one_wire, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Sets the firmware pointer for {@link tf_one_wire_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
@@ -470,7 +470,7 @@ int tf_one_wire_get_bootloader_mode(TF_OneWire *one_wire, uint8_t *ret_mode);
 int tf_one_wire_set_write_firmware_pointer(TF_OneWire *one_wire, uint32_t pointer);
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_one_wire_set_write_firmware_pointer} before. The firmware is written
@@ -484,7 +484,7 @@ int tf_one_wire_set_write_firmware_pointer(TF_OneWire *one_wire, uint32_t pointe
 int tf_one_wire_write_firmware(TF_OneWire *one_wire, const uint8_t data[64], uint8_t *ret_status);
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
@@ -497,14 +497,14 @@ int tf_one_wire_write_firmware(TF_OneWire *one_wire, const uint8_t data[64], uin
 int tf_one_wire_set_status_led_config(TF_OneWire *one_wire, uint8_t config);
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Returns the configuration as set by {@link tf_one_wire_set_status_led_config}
  */
 int tf_one_wire_get_status_led_config(TF_OneWire *one_wire, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
@@ -516,7 +516,7 @@ int tf_one_wire_get_status_led_config(TF_OneWire *one_wire, uint8_t *ret_config)
 int tf_one_wire_get_chip_temperature(TF_OneWire *one_wire, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
@@ -528,7 +528,7 @@ int tf_one_wire_get_chip_temperature(TF_OneWire *one_wire, int16_t *ret_temperat
 int tf_one_wire_reset(TF_OneWire *one_wire);
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
@@ -539,7 +539,7 @@ int tf_one_wire_reset(TF_OneWire *one_wire);
 int tf_one_wire_write_uid(TF_OneWire *one_wire, uint32_t uid);
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Returns the current UID as an integer. Encode as
  * Base58 to get the usual string version.
@@ -547,7 +547,7 @@ int tf_one_wire_write_uid(TF_OneWire *one_wire, uint32_t uid);
 int tf_one_wire_read_uid(TF_OneWire *one_wire, uint32_t *ret_uid);
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
@@ -563,7 +563,7 @@ int tf_one_wire_read_uid(TF_OneWire *one_wire, uint32_t *ret_uid);
 int tf_one_wire_get_identity(TF_OneWire *one_wire, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier);
 
 /**
- * \ingroup BrickletOneWire
+ * \ingroup TF_OneWire
  *
  * Returns a list of up to 64 identifiers of the connected 1-Wire devices.
  * Each identifier is 64-bit and consists of 8-bit family code, 48-bit ID and

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-12.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -8,8 +8,8 @@
  * to the generators git repository on tinkerforge.com       *
  *************************************************************/
 
-#ifndef TF_BRICKLET_HALL_EFFECT_V2_H
-#define TF_BRICKLET_HALL_EFFECT_V2_H
+#ifndef TF_HALL_EFFECT_V2_H
+#define TF_HALL_EFFECT_V2_H
 
 #include "config.h"
 #include "tfp.h"
@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 /**
- * \defgroup BrickletHallEffectV2 Hall Effect Bricklet 2.0
+ * \defgroup TF_HallEffectV2 Hall Effect Bricklet 2.0
  */
 
 struct TF_HallEffectV2;
@@ -32,12 +32,12 @@ typedef void (*TF_HallEffectV2CounterHandler)(struct TF_HallEffectV2 *device, ui
 
 #endif
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Measures magnetic flux density between -7mT and +7mT
  */
 typedef struct TF_HallEffectV2 {
-    TF_TfpContext *tfp;
+    TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
     TF_HallEffectV2MagneticFluxDensityHandler magnetic_flux_density_handler;
     void *magnetic_flux_density_user_data;
@@ -50,221 +50,221 @@ typedef struct TF_HallEffectV2 {
 } TF_HallEffectV2;
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_FUNCTION_GET_MAGNETIC_FLUX_DENSITY 1
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_FUNCTION_SET_MAGNETIC_FLUX_DENSITY_CALLBACK_CONFIGURATION 2
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_FUNCTION_GET_MAGNETIC_FLUX_DENSITY_CALLBACK_CONFIGURATION 3
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_FUNCTION_GET_COUNTER 5
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_FUNCTION_SET_COUNTER_CONFIG 6
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_FUNCTION_GET_COUNTER_CONFIG 7
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_FUNCTION_SET_COUNTER_CALLBACK_CONFIGURATION 8
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_FUNCTION_GET_COUNTER_CALLBACK_CONFIGURATION 9
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_FUNCTION_SET_BOOTLOADER_MODE 235
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_FUNCTION_GET_BOOTLOADER_MODE 236
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER 237
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_FUNCTION_WRITE_FIRMWARE 238
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_FUNCTION_SET_STATUS_LED_CONFIG 239
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_FUNCTION_GET_STATUS_LED_CONFIG 240
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_FUNCTION_GET_CHIP_TEMPERATURE 242
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_FUNCTION_RESET 243
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_FUNCTION_WRITE_UID 248
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_FUNCTION_READ_UID 249
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_FUNCTION_GET_IDENTITY 255
 
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_CALLBACK_MAGNETIC_FLUX_DENSITY 4
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_CALLBACK_COUNTER 10
 
 #endif
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_THRESHOLD_OPTION_OFF 'x'
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_THRESHOLD_OPTION_OUTSIDE 'o'
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_THRESHOLD_OPTION_INSIDE 'i'
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_THRESHOLD_OPTION_SMALLER '<'
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_THRESHOLD_OPTION_GREATER '>'
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_BOOTLOADER_MODE_FIRMWARE 1
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT 2
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_REBOOT 3
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_ERASE_AND_REBOOT 4
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_BOOTLOADER_STATUS_OK 0
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_BOOTLOADER_STATUS_INVALID_MODE 1
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_BOOTLOADER_STATUS_NO_CHANGE 2
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_BOOTLOADER_STATUS_ENTRY_FUNCTION_NOT_PRESENT 3
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_BOOTLOADER_STATUS_DEVICE_IDENTIFIER_INCORRECT 4
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_BOOTLOADER_STATUS_CRC_MISMATCH 5
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_STATUS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_STATUS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_STATUS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  */
 #define TF_HALL_EFFECT_V2_STATUS_LED_CONFIG_SHOW_STATUS 3
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * This constant is used to identify a Hall Effect Bricklet 2.0.
  *
@@ -275,30 +275,30 @@ typedef struct TF_HallEffectV2 {
 #define TF_HALL_EFFECT_V2_DEVICE_IDENTIFIER 2132
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * This constant represents the display name of a Hall Effect Bricklet 2.0.
  */
 #define TF_HALL_EFFECT_V2_DEVICE_DISPLAY_NAME "Hall Effect Bricklet 2.0"
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Creates the device object \c hall_effect_v2 with the unique device ID \c uid and adds
- * it to the IPConnection \c ipcon.
+ * it to the HAL \c hal.
  */
-int tf_hall_effect_v2_create(TF_HallEffectV2 *hall_effect_v2, const char *uid, TF_HalContext *hal);
+int tf_hall_effect_v2_create(TF_HallEffectV2 *hall_effect_v2, const char *uid, TF_HAL *hal);
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
- * Removes the device object \c hall_effect_v2 from its IPConnection and destroys it.
+ * Removes the device object \c hall_effect_v2 from its HAL and destroys it.
  * The device object cannot be used anymore afterwards.
  */
 int tf_hall_effect_v2_destroy(TF_HallEffectV2 *hall_effect_v2);
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Returns the response expected flag for the function specified by the
  * \c function_id parameter. It is *true* if the function is expected to
@@ -307,8 +307,8 @@ int tf_hall_effect_v2_destroy(TF_HallEffectV2 *hall_effect_v2);
  * For getter functions this is enabled by default and cannot be disabled,
  * because those functions will always send a response. For callback
  * configuration functions it is enabled by default too, but can be disabled
- * via the hall_effect_v2_set_response_expected function. For setter functions it is
- * disabled by default and can be enabled.
+ * via the tf_hall_effect_v2_set_response_expected function. For setter
+ * functions it is disabled by default and can be enabled.
  *
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
@@ -319,7 +319,7 @@ int tf_hall_effect_v2_destroy(TF_HallEffectV2 *hall_effect_v2);
 int tf_hall_effect_v2_get_response_expected(TF_HallEffectV2 *hall_effect_v2, uint8_t function_id, bool *ret_response_expected);
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Changes the response expected flag of the function specified by the
  * \c function_id parameter. This flag can only be changed for setter
@@ -335,7 +335,7 @@ int tf_hall_effect_v2_get_response_expected(TF_HallEffectV2 *hall_effect_v2, uin
 int tf_hall_effect_v2_set_response_expected(TF_HallEffectV2 *hall_effect_v2, uint8_t function_id, bool response_expected);
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
@@ -343,7 +343,7 @@ int tf_hall_effect_v2_set_response_expected(TF_HallEffectV2 *hall_effect_v2, uin
 void tf_hall_effect_v2_set_response_expected_all(TF_HallEffectV2 *hall_effect_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Registers the given \c handler to the Magnetic Flux Density callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -359,7 +359,7 @@ int tf_hall_effect_v2_register_magnetic_flux_density_callback(TF_HallEffectV2 *h
 
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Registers the given \c handler to the Counter callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -375,7 +375,7 @@ int tf_hall_effect_v2_register_counter_callback(TF_HallEffectV2 *hall_effect_v2,
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Polls for callbacks. Will block for the given timeout in microseconds.
  *
@@ -385,7 +385,7 @@ int tf_hall_effect_v2_callback_tick(TF_HallEffectV2 *hall_effect_v2, uint32_t ti
 #endif
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Returns the `magnetic flux density (magnetic induction) <https://en.wikipedia.org/wiki/Magnetic_flux>`__.
  * 
@@ -397,7 +397,7 @@ int tf_hall_effect_v2_callback_tick(TF_HallEffectV2 *hall_effect_v2, uint32_t ti
 int tf_hall_effect_v2_get_magnetic_flux_density(TF_HallEffectV2 *hall_effect_v2, int16_t *ret_magnetic_flux_density);
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * The period is the period with which the {@link tf_hall_effect_v2_register_magnetic_flux_density_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
@@ -430,14 +430,14 @@ int tf_hall_effect_v2_get_magnetic_flux_density(TF_HallEffectV2 *hall_effect_v2,
 int tf_hall_effect_v2_set_magnetic_flux_density_callback_configuration(TF_HallEffectV2 *hall_effect_v2, uint32_t period, bool value_has_to_change, char option, int16_t min, int16_t max);
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Returns the callback configuration as set by {@link tf_hall_effect_v2_set_magnetic_flux_density_callback_configuration}.
  */
 int tf_hall_effect_v2_get_magnetic_flux_density_callback_configuration(TF_HallEffectV2 *hall_effect_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int16_t *ret_min, int16_t *ret_max);
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Returns the current value of the counter.
  * 
@@ -454,7 +454,7 @@ int tf_hall_effect_v2_get_magnetic_flux_density_callback_configuration(TF_HallEf
 int tf_hall_effect_v2_get_counter(TF_HallEffectV2 *hall_effect_v2, bool reset_counter, uint32_t *ret_count);
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Sets a high and a low threshold as well as a debounce time.
  * 
@@ -466,14 +466,14 @@ int tf_hall_effect_v2_get_counter(TF_HallEffectV2 *hall_effect_v2, bool reset_co
 int tf_hall_effect_v2_set_counter_config(TF_HallEffectV2 *hall_effect_v2, int16_t high_threshold, int16_t low_threshold, uint32_t debounce);
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Returns the counter config as set by {@link tf_hall_effect_v2_set_counter_config}.
  */
 int tf_hall_effect_v2_get_counter_config(TF_HallEffectV2 *hall_effect_v2, int16_t *ret_high_threshold, int16_t *ret_low_threshold, uint32_t *ret_debounce);
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * The period is the period with which the {@link tf_hall_effect_v2_register_counter_callback}
  * callback is triggered periodically. A value of 0 turns the callback off.
@@ -488,7 +488,7 @@ int tf_hall_effect_v2_get_counter_config(TF_HallEffectV2 *hall_effect_v2, int16_
 int tf_hall_effect_v2_set_counter_callback_configuration(TF_HallEffectV2 *hall_effect_v2, uint32_t period, bool value_has_to_change);
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Returns the callback configuration as set by
  * {@link tf_hall_effect_v2_set_counter_callback_configuration}.
@@ -496,7 +496,7 @@ int tf_hall_effect_v2_set_counter_callback_configuration(TF_HallEffectV2 *hall_e
 int tf_hall_effect_v2_get_counter_callback_configuration(TF_HallEffectV2 *hall_effect_v2, uint32_t *ret_period, bool *ret_value_has_to_change);
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Returns the error count for the communication between Brick and Bricklet.
  * 
@@ -513,7 +513,7 @@ int tf_hall_effect_v2_get_counter_callback_configuration(TF_HallEffectV2 *hall_e
 int tf_hall_effect_v2_get_spitfp_error_count(TF_HallEffectV2 *hall_effect_v2, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
@@ -528,14 +528,14 @@ int tf_hall_effect_v2_get_spitfp_error_count(TF_HallEffectV2 *hall_effect_v2, ui
 int tf_hall_effect_v2_set_bootloader_mode(TF_HallEffectV2 *hall_effect_v2, uint8_t mode, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Returns the current bootloader mode, see {@link tf_hall_effect_v2_set_bootloader_mode}.
  */
 int tf_hall_effect_v2_get_bootloader_mode(TF_HallEffectV2 *hall_effect_v2, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Sets the firmware pointer for {@link tf_hall_effect_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
@@ -547,7 +547,7 @@ int tf_hall_effect_v2_get_bootloader_mode(TF_HallEffectV2 *hall_effect_v2, uint8
 int tf_hall_effect_v2_set_write_firmware_pointer(TF_HallEffectV2 *hall_effect_v2, uint32_t pointer);
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_hall_effect_v2_set_write_firmware_pointer} before. The firmware is written
@@ -561,7 +561,7 @@ int tf_hall_effect_v2_set_write_firmware_pointer(TF_HallEffectV2 *hall_effect_v2
 int tf_hall_effect_v2_write_firmware(TF_HallEffectV2 *hall_effect_v2, const uint8_t data[64], uint8_t *ret_status);
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
@@ -574,14 +574,14 @@ int tf_hall_effect_v2_write_firmware(TF_HallEffectV2 *hall_effect_v2, const uint
 int tf_hall_effect_v2_set_status_led_config(TF_HallEffectV2 *hall_effect_v2, uint8_t config);
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Returns the configuration as set by {@link tf_hall_effect_v2_set_status_led_config}
  */
 int tf_hall_effect_v2_get_status_led_config(TF_HallEffectV2 *hall_effect_v2, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
@@ -593,7 +593,7 @@ int tf_hall_effect_v2_get_status_led_config(TF_HallEffectV2 *hall_effect_v2, uin
 int tf_hall_effect_v2_get_chip_temperature(TF_HallEffectV2 *hall_effect_v2, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
@@ -605,7 +605,7 @@ int tf_hall_effect_v2_get_chip_temperature(TF_HallEffectV2 *hall_effect_v2, int1
 int tf_hall_effect_v2_reset(TF_HallEffectV2 *hall_effect_v2);
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
@@ -616,7 +616,7 @@ int tf_hall_effect_v2_reset(TF_HallEffectV2 *hall_effect_v2);
 int tf_hall_effect_v2_write_uid(TF_HallEffectV2 *hall_effect_v2, uint32_t uid);
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Returns the current UID as an integer. Encode as
  * Base58 to get the usual string version.
@@ -624,7 +624,7 @@ int tf_hall_effect_v2_write_uid(TF_HallEffectV2 *hall_effect_v2, uint32_t uid);
 int tf_hall_effect_v2_read_uid(TF_HallEffectV2 *hall_effect_v2, uint32_t *ret_uid);
 
 /**
- * \ingroup BrickletHallEffectV2
+ * \ingroup TF_HallEffectV2
  *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the

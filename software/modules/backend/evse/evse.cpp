@@ -33,7 +33,7 @@
 extern EventLog logger;
 
 extern TaskScheduler task_scheduler;
-extern TF_HalContext hal;
+extern TF_HAL hal;
 extern WebServer server;
 
 extern API api;

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-12.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -8,8 +8,8 @@
  * to the generators git repository on tinkerforge.com       *
  *************************************************************/
 
-#ifndef TF_BRICKLET_REMOTE_SWITCH_V2_H
-#define TF_BRICKLET_REMOTE_SWITCH_V2_H
+#ifndef TF_REMOTE_SWITCH_V2_H
+#define TF_REMOTE_SWITCH_V2_H
 
 #include "config.h"
 #include "tfp.h"
@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 /**
- * \defgroup BrickletRemoteSwitchV2 Remote Switch Bricklet 2.0
+ * \defgroup TF_RemoteSwitchV2 Remote Switch Bricklet 2.0
  */
 
 struct TF_RemoteSwitchV2;
@@ -34,12 +34,12 @@ typedef void (*TF_RemoteSwitchV2RemoteStatusCHandler)(struct TF_RemoteSwitchV2 *
 
 #endif
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Controls remote mains switches and receives signals from remotes
  */
 typedef struct TF_RemoteSwitchV2 {
-    TF_TfpContext *tfp;
+    TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
     TF_RemoteSwitchV2SwitchingDoneHandler switching_done_handler;
     void *switching_done_user_data;
@@ -58,261 +58,261 @@ typedef struct TF_RemoteSwitchV2 {
 } TF_RemoteSwitchV2;
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_FUNCTION_GET_SWITCHING_STATE 1
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_FUNCTION_SET_REPEATS 3
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_FUNCTION_GET_REPEATS 4
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_FUNCTION_SWITCH_SOCKET_A 5
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_FUNCTION_SWITCH_SOCKET_B 6
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_FUNCTION_DIM_SOCKET_B 7
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_FUNCTION_SWITCH_SOCKET_C 8
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_FUNCTION_SET_REMOTE_CONFIGURATION 9
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_FUNCTION_GET_REMOTE_CONFIGURATION 10
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_FUNCTION_GET_REMOTE_STATUS_A 11
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_FUNCTION_GET_REMOTE_STATUS_B 12
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_FUNCTION_GET_REMOTE_STATUS_C 13
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_FUNCTION_SET_BOOTLOADER_MODE 235
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_FUNCTION_GET_BOOTLOADER_MODE 236
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER 237
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_FUNCTION_WRITE_FIRMWARE 238
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_FUNCTION_SET_STATUS_LED_CONFIG 239
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_FUNCTION_GET_STATUS_LED_CONFIG 240
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_FUNCTION_GET_CHIP_TEMPERATURE 242
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_FUNCTION_RESET 243
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_FUNCTION_WRITE_UID 248
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_FUNCTION_READ_UID 249
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_FUNCTION_GET_IDENTITY 255
 
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_CALLBACK_SWITCHING_DONE 2
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_CALLBACK_REMOTE_STATUS_A 14
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_CALLBACK_REMOTE_STATUS_B 15
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_CALLBACK_REMOTE_STATUS_C 16
 
 #endif
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_SWITCHING_STATE_READY 0
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_SWITCHING_STATE_BUSY 1
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_SWITCH_TO_OFF 0
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_SWITCH_TO_ON 1
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_REMOTE_TYPE_A 0
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_REMOTE_TYPE_B 1
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_REMOTE_TYPE_C 2
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_BOOTLOADER_MODE_FIRMWARE 1
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT 2
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_REBOOT 3
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_ERASE_AND_REBOOT 4
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_BOOTLOADER_STATUS_OK 0
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_BOOTLOADER_STATUS_INVALID_MODE 1
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_BOOTLOADER_STATUS_NO_CHANGE 2
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_BOOTLOADER_STATUS_ENTRY_FUNCTION_NOT_PRESENT 3
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_BOOTLOADER_STATUS_DEVICE_IDENTIFIER_INCORRECT 4
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_BOOTLOADER_STATUS_CRC_MISMATCH 5
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_STATUS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_STATUS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_STATUS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  */
 #define TF_REMOTE_SWITCH_V2_STATUS_LED_CONFIG_SHOW_STATUS 3
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * This constant is used to identify a Remote Switch Bricklet 2.0.
  *
@@ -323,30 +323,30 @@ typedef struct TF_RemoteSwitchV2 {
 #define TF_REMOTE_SWITCH_V2_DEVICE_IDENTIFIER 289
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * This constant represents the display name of a Remote Switch Bricklet 2.0.
  */
 #define TF_REMOTE_SWITCH_V2_DEVICE_DISPLAY_NAME "Remote Switch Bricklet 2.0"
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Creates the device object \c remote_switch_v2 with the unique device ID \c uid and adds
- * it to the IPConnection \c ipcon.
+ * it to the HAL \c hal.
  */
-int tf_remote_switch_v2_create(TF_RemoteSwitchV2 *remote_switch_v2, const char *uid, TF_HalContext *hal);
+int tf_remote_switch_v2_create(TF_RemoteSwitchV2 *remote_switch_v2, const char *uid, TF_HAL *hal);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
- * Removes the device object \c remote_switch_v2 from its IPConnection and destroys it.
+ * Removes the device object \c remote_switch_v2 from its HAL and destroys it.
  * The device object cannot be used anymore afterwards.
  */
 int tf_remote_switch_v2_destroy(TF_RemoteSwitchV2 *remote_switch_v2);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Returns the response expected flag for the function specified by the
  * \c function_id parameter. It is *true* if the function is expected to
@@ -355,8 +355,8 @@ int tf_remote_switch_v2_destroy(TF_RemoteSwitchV2 *remote_switch_v2);
  * For getter functions this is enabled by default and cannot be disabled,
  * because those functions will always send a response. For callback
  * configuration functions it is enabled by default too, but can be disabled
- * via the remote_switch_v2_set_response_expected function. For setter functions it is
- * disabled by default and can be enabled.
+ * via the tf_remote_switch_v2_set_response_expected function. For setter
+ * functions it is disabled by default and can be enabled.
  *
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
@@ -367,7 +367,7 @@ int tf_remote_switch_v2_destroy(TF_RemoteSwitchV2 *remote_switch_v2);
 int tf_remote_switch_v2_get_response_expected(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t function_id, bool *ret_response_expected);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Changes the response expected flag of the function specified by the
  * \c function_id parameter. This flag can only be changed for setter
@@ -383,7 +383,7 @@ int tf_remote_switch_v2_get_response_expected(TF_RemoteSwitchV2 *remote_switch_v
 int tf_remote_switch_v2_set_response_expected(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t function_id, bool response_expected);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
@@ -391,7 +391,7 @@ int tf_remote_switch_v2_set_response_expected(TF_RemoteSwitchV2 *remote_switch_v
 void tf_remote_switch_v2_set_response_expected_all(TF_RemoteSwitchV2 *remote_switch_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Registers the given \c handler to the Switching Done callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -405,7 +405,7 @@ int tf_remote_switch_v2_register_switching_done_callback(TF_RemoteSwitchV2 *remo
 
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Registers the given \c handler to the Remote Status A callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -426,7 +426,7 @@ int tf_remote_switch_v2_register_remote_status_a_callback(TF_RemoteSwitchV2 *rem
 
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Registers the given \c handler to the Remote Status B callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -449,7 +449,7 @@ int tf_remote_switch_v2_register_remote_status_b_callback(TF_RemoteSwitchV2 *rem
 
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Registers the given \c handler to the Remote Status C callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -470,7 +470,7 @@ int tf_remote_switch_v2_register_remote_status_c_callback(TF_RemoteSwitchV2 *rem
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Polls for callbacks. Will block for the given timeout in microseconds.
  *
@@ -480,7 +480,7 @@ int tf_remote_switch_v2_callback_tick(TF_RemoteSwitchV2 *remote_switch_v2, uint3
 #endif
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Returns the current switching state. If the current state is busy, the
  * Bricklet is currently sending a code to switch a socket. It will not
@@ -492,7 +492,7 @@ int tf_remote_switch_v2_callback_tick(TF_RemoteSwitchV2 *remote_switch_v2, uint3
 int tf_remote_switch_v2_get_switching_state(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t *ret_state);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Sets the number of times the code is sent when one of the Switch Socket
  * functions is called. The repeats basically correspond to the amount of time
@@ -504,14 +504,14 @@ int tf_remote_switch_v2_get_switching_state(TF_RemoteSwitchV2 *remote_switch_v2,
 int tf_remote_switch_v2_set_repeats(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t repeats);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Returns the number of repeats as set by {@link tf_remote_switch_v2_set_repeats}.
  */
 int tf_remote_switch_v2_get_repeats(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t *ret_repeats);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * To switch a type A socket you have to give the house code, receiver code and the
  * state (on or off) you want to switch to.
@@ -522,7 +522,7 @@ int tf_remote_switch_v2_get_repeats(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t
 int tf_remote_switch_v2_switch_socket_a(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t house_code, uint8_t receiver_code, uint8_t switch_to);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * To switch a type B socket you have to give the address, unit and the state
  * (on or off) you want to switch to.
@@ -535,7 +535,7 @@ int tf_remote_switch_v2_switch_socket_a(TF_RemoteSwitchV2 *remote_switch_v2, uin
 int tf_remote_switch_v2_switch_socket_b(TF_RemoteSwitchV2 *remote_switch_v2, uint32_t address, uint8_t unit, uint8_t switch_to);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * To control a type B dimmer you have to give the address, unit and the
  * dim value you want to set the dimmer to.
@@ -546,7 +546,7 @@ int tf_remote_switch_v2_switch_socket_b(TF_RemoteSwitchV2 *remote_switch_v2, uin
 int tf_remote_switch_v2_dim_socket_b(TF_RemoteSwitchV2 *remote_switch_v2, uint32_t address, uint8_t unit, uint8_t dim_value);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * To switch a type C socket you have to give the system code, device code and the
  * state (on or off) you want to switch to.
@@ -557,7 +557,7 @@ int tf_remote_switch_v2_dim_socket_b(TF_RemoteSwitchV2 *remote_switch_v2, uint32
 int tf_remote_switch_v2_switch_socket_c(TF_RemoteSwitchV2 *remote_switch_v2, char system_code, uint8_t device_code, uint8_t switch_to);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Sets the configuration for **receiving** data from a remote of type A, B or C.
  * 
@@ -570,14 +570,14 @@ int tf_remote_switch_v2_switch_socket_c(TF_RemoteSwitchV2 *remote_switch_v2, cha
 int tf_remote_switch_v2_set_remote_configuration(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t remote_type, uint16_t minimum_repeats, bool callback_enabled);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Returns the remote configuration as set by {@link tf_remote_switch_v2_set_remote_configuration}
  */
 int tf_remote_switch_v2_get_remote_configuration(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t *ret_remote_type, uint16_t *ret_minimum_repeats, bool *ret_callback_enabled);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Returns the house code, receiver code, switch state (on/off) and number of
  * repeats for remote type A.
@@ -593,7 +593,7 @@ int tf_remote_switch_v2_get_remote_configuration(TF_RemoteSwitchV2 *remote_switc
 int tf_remote_switch_v2_get_remote_status_a(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t *ret_house_code, uint8_t *ret_receiver_code, uint8_t *ret_switch_to, uint16_t *ret_repeats);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Returns the address (unique per remote), unit (button number), switch state
  * (on/off) and number of repeats for remote type B.
@@ -610,7 +610,7 @@ int tf_remote_switch_v2_get_remote_status_a(TF_RemoteSwitchV2 *remote_switch_v2,
 int tf_remote_switch_v2_get_remote_status_b(TF_RemoteSwitchV2 *remote_switch_v2, uint32_t *ret_address, uint8_t *ret_unit, uint8_t *ret_switch_to, uint8_t *ret_dim_value, uint16_t *ret_repeats);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Returns the system code, device code, switch state (on/off) and number of repeats for
  * remote type C.
@@ -625,7 +625,7 @@ int tf_remote_switch_v2_get_remote_status_b(TF_RemoteSwitchV2 *remote_switch_v2,
 int tf_remote_switch_v2_get_remote_status_c(TF_RemoteSwitchV2 *remote_switch_v2, char *ret_system_code, uint8_t *ret_device_code, uint8_t *ret_switch_to, uint16_t *ret_repeats);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Returns the error count for the communication between Brick and Bricklet.
  * 
@@ -642,7 +642,7 @@ int tf_remote_switch_v2_get_remote_status_c(TF_RemoteSwitchV2 *remote_switch_v2,
 int tf_remote_switch_v2_get_spitfp_error_count(TF_RemoteSwitchV2 *remote_switch_v2, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
@@ -657,14 +657,14 @@ int tf_remote_switch_v2_get_spitfp_error_count(TF_RemoteSwitchV2 *remote_switch_
 int tf_remote_switch_v2_set_bootloader_mode(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t mode, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Returns the current bootloader mode, see {@link tf_remote_switch_v2_set_bootloader_mode}.
  */
 int tf_remote_switch_v2_get_bootloader_mode(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Sets the firmware pointer for {@link tf_remote_switch_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
@@ -676,7 +676,7 @@ int tf_remote_switch_v2_get_bootloader_mode(TF_RemoteSwitchV2 *remote_switch_v2,
 int tf_remote_switch_v2_set_write_firmware_pointer(TF_RemoteSwitchV2 *remote_switch_v2, uint32_t pointer);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_remote_switch_v2_set_write_firmware_pointer} before. The firmware is written
@@ -690,7 +690,7 @@ int tf_remote_switch_v2_set_write_firmware_pointer(TF_RemoteSwitchV2 *remote_swi
 int tf_remote_switch_v2_write_firmware(TF_RemoteSwitchV2 *remote_switch_v2, const uint8_t data[64], uint8_t *ret_status);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
@@ -703,14 +703,14 @@ int tf_remote_switch_v2_write_firmware(TF_RemoteSwitchV2 *remote_switch_v2, cons
 int tf_remote_switch_v2_set_status_led_config(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t config);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Returns the configuration as set by {@link tf_remote_switch_v2_set_status_led_config}
  */
 int tf_remote_switch_v2_get_status_led_config(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
@@ -722,7 +722,7 @@ int tf_remote_switch_v2_get_status_led_config(TF_RemoteSwitchV2 *remote_switch_v
 int tf_remote_switch_v2_get_chip_temperature(TF_RemoteSwitchV2 *remote_switch_v2, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
@@ -734,7 +734,7 @@ int tf_remote_switch_v2_get_chip_temperature(TF_RemoteSwitchV2 *remote_switch_v2
 int tf_remote_switch_v2_reset(TF_RemoteSwitchV2 *remote_switch_v2);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
@@ -745,7 +745,7 @@ int tf_remote_switch_v2_reset(TF_RemoteSwitchV2 *remote_switch_v2);
 int tf_remote_switch_v2_write_uid(TF_RemoteSwitchV2 *remote_switch_v2, uint32_t uid);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Returns the current UID as an integer. Encode as
  * Base58 to get the usual string version.
@@ -753,7 +753,7 @@ int tf_remote_switch_v2_write_uid(TF_RemoteSwitchV2 *remote_switch_v2, uint32_t 
 int tf_remote_switch_v2_read_uid(TF_RemoteSwitchV2 *remote_switch_v2, uint32_t *ret_uid);
 
 /**
- * \ingroup BrickletRemoteSwitchV2
+ * \ingroup TF_RemoteSwitchV2
  *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the

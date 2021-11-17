@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-12.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -8,8 +8,8 @@
  * to the generators git repository on tinkerforge.com       *
  *************************************************************/
 
-#ifndef TF_BRICK_HAT_H
-#define TF_BRICK_HAT_H
+#ifndef TF_HAT_H
+#define TF_HAT_H
 
 #include "config.h"
 #include "tfp.h"
@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 /**
- * \defgroup BrickHAT HAT Brick
+ * \defgroup TF_HAT HAT Brick
  */
 
 struct TF_HAT;
@@ -31,12 +31,12 @@ typedef void (*TF_HATVoltagesHandler)(struct TF_HAT *device, uint16_t voltage_us
 
 #endif
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * HAT for Raspberry Pi with 8 Bricklets ports and real-time clock
  */
 typedef struct TF_HAT {
-    TF_TfpContext *tfp;
+    TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
     TF_HATVoltagesHandler voltages_handler;
     void *voltages_user_data;
@@ -46,206 +46,206 @@ typedef struct TF_HAT {
 } TF_HAT;
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_FUNCTION_SET_SLEEP_MODE 1
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_FUNCTION_GET_SLEEP_MODE 2
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_FUNCTION_SET_BRICKLET_POWER 3
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_FUNCTION_GET_BRICKLET_POWER 4
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_FUNCTION_GET_VOLTAGES 5
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_FUNCTION_SET_VOLTAGES_CALLBACK_CONFIGURATION 6
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_FUNCTION_GET_VOLTAGES_CALLBACK_CONFIGURATION 7
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_FUNCTION_SET_RTC_DRIVER 9
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_FUNCTION_GET_RTC_DRIVER 10
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_FUNCTION_SET_BOOTLOADER_MODE 235
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_FUNCTION_GET_BOOTLOADER_MODE 236
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_FUNCTION_SET_WRITE_FIRMWARE_POINTER 237
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_FUNCTION_WRITE_FIRMWARE 238
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_FUNCTION_SET_STATUS_LED_CONFIG 239
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_FUNCTION_GET_STATUS_LED_CONFIG 240
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_FUNCTION_GET_CHIP_TEMPERATURE 242
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_FUNCTION_RESET 243
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_FUNCTION_WRITE_UID 248
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_FUNCTION_READ_UID 249
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_FUNCTION_GET_IDENTITY 255
 
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_CALLBACK_VOLTAGES 8
 
 #endif
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_RTC_DRIVER_PCF8523 0
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_RTC_DRIVER_DS1338 1
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_BOOTLOADER_MODE_FIRMWARE 1
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT 2
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_REBOOT 3
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_ERASE_AND_REBOOT 4
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_BOOTLOADER_STATUS_OK 0
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_BOOTLOADER_STATUS_INVALID_MODE 1
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_BOOTLOADER_STATUS_NO_CHANGE 2
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_BOOTLOADER_STATUS_ENTRY_FUNCTION_NOT_PRESENT 3
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_BOOTLOADER_STATUS_DEVICE_IDENTIFIER_INCORRECT 4
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_BOOTLOADER_STATUS_CRC_MISMATCH 5
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_STATUS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_STATUS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_STATUS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  */
 #define TF_HAT_STATUS_LED_CONFIG_SHOW_STATUS 3
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * This constant is used to identify a HAT Brick.
  *
@@ -256,30 +256,30 @@ typedef struct TF_HAT {
 #define TF_HAT_DEVICE_IDENTIFIER 111
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * This constant represents the display name of a HAT Brick.
  */
 #define TF_HAT_DEVICE_DISPLAY_NAME "HAT Brick"
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Creates the device object \c hat with the unique device ID \c uid and adds
- * it to the IPConnection \c ipcon.
+ * it to the HAL \c hal.
  */
-int tf_hat_create(TF_HAT *hat, const char *uid, TF_HalContext *hal);
+int tf_hat_create(TF_HAT *hat, const char *uid, TF_HAL *hal);
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
- * Removes the device object \c hat from its IPConnection and destroys it.
+ * Removes the device object \c hat from its HAL and destroys it.
  * The device object cannot be used anymore afterwards.
  */
 int tf_hat_destroy(TF_HAT *hat);
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Returns the response expected flag for the function specified by the
  * \c function_id parameter. It is *true* if the function is expected to
@@ -288,8 +288,8 @@ int tf_hat_destroy(TF_HAT *hat);
  * For getter functions this is enabled by default and cannot be disabled,
  * because those functions will always send a response. For callback
  * configuration functions it is enabled by default too, but can be disabled
- * via the hat_set_response_expected function. For setter functions it is
- * disabled by default and can be enabled.
+ * via the tf_hat_set_response_expected function. For setter
+ * functions it is disabled by default and can be enabled.
  *
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
@@ -300,7 +300,7 @@ int tf_hat_destroy(TF_HAT *hat);
 int tf_hat_get_response_expected(TF_HAT *hat, uint8_t function_id, bool *ret_response_expected);
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Changes the response expected flag of the function specified by the
  * \c function_id parameter. This flag can only be changed for setter
@@ -316,7 +316,7 @@ int tf_hat_get_response_expected(TF_HAT *hat, uint8_t function_id, bool *ret_res
 int tf_hat_set_response_expected(TF_HAT *hat, uint8_t function_id, bool response_expected);
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
@@ -324,7 +324,7 @@ int tf_hat_set_response_expected(TF_HAT *hat, uint8_t function_id, bool response
 void tf_hat_set_response_expected_all(TF_HAT *hat, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Registers the given \c handler to the Voltages callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -342,7 +342,7 @@ int tf_hat_register_voltages_callback(TF_HAT *hat, TF_HATVoltagesHandler handler
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Polls for callbacks. Will block for the given timeout in microseconds.
  *
@@ -352,7 +352,7 @@ int tf_hat_callback_tick(TF_HAT *hat, uint32_t timeout_us);
 #endif
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Sets the sleep mode.
  * 
@@ -380,28 +380,28 @@ int tf_hat_callback_tick(TF_HAT *hat, uint32_t timeout_us);
 int tf_hat_set_sleep_mode(TF_HAT *hat, uint32_t power_off_delay, uint32_t power_off_duration, bool raspberry_pi_off, bool bricklets_off, bool enable_sleep_indicator);
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Returns the sleep mode settings as set by {@link tf_hat_set_sleep_mode}.
  */
 int tf_hat_get_sleep_mode(TF_HAT *hat, uint32_t *ret_power_off_delay, uint32_t *ret_power_off_duration, bool *ret_raspberry_pi_off, bool *ret_bricklets_off, bool *ret_enable_sleep_indicator);
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Set to true/false to turn the power supply of the connected Bricklets on/off.
  */
 int tf_hat_set_bricklet_power(TF_HAT *hat, bool bricklet_power);
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Returns the power status of the connected Bricklets as set by {@link tf_hat_set_bricklet_power}.
  */
 int tf_hat_get_bricklet_power(TF_HAT *hat, bool *ret_bricklet_power);
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Returns the USB supply voltage and the DC input supply voltage.
  * 
@@ -421,7 +421,7 @@ int tf_hat_get_bricklet_power(TF_HAT *hat, bool *ret_bricklet_power);
 int tf_hat_get_voltages(TF_HAT *hat, uint16_t *ret_voltage_usb, uint16_t *ret_voltage_dc);
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * The period is the period with which the {@link tf_hat_register_voltages_callback}
  * callback is triggered periodically. A value of 0 turns the callback off.
@@ -438,7 +438,7 @@ int tf_hat_get_voltages(TF_HAT *hat, uint16_t *ret_voltage_usb, uint16_t *ret_vo
 int tf_hat_set_voltages_callback_configuration(TF_HAT *hat, uint32_t period, bool value_has_to_change);
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Returns the callback configuration as set by
  * {@link tf_hat_set_voltages_callback_configuration}.
@@ -448,7 +448,7 @@ int tf_hat_set_voltages_callback_configuration(TF_HAT *hat, uint32_t period, boo
 int tf_hat_get_voltages_callback_configuration(TF_HAT *hat, uint32_t *ret_period, bool *ret_value_has_to_change);
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Configures the RTC driver that is given to the Raspberry Pi to be used.
  * Currently there are two different RTCs used:
@@ -463,7 +463,7 @@ int tf_hat_get_voltages_callback_configuration(TF_HAT *hat, uint32_t *ret_period
 int tf_hat_set_rtc_driver(TF_HAT *hat, uint8_t rtc_driver);
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Returns the RTC driver as set by {@link tf_hat_set_rtc_driver}.
  * 
@@ -472,7 +472,7 @@ int tf_hat_set_rtc_driver(TF_HAT *hat, uint8_t rtc_driver);
 int tf_hat_get_rtc_driver(TF_HAT *hat, uint8_t *ret_rtc_driver);
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Returns the error count for the communication between Brick and Bricklet.
  * 
@@ -489,7 +489,7 @@ int tf_hat_get_rtc_driver(TF_HAT *hat, uint8_t *ret_rtc_driver);
 int tf_hat_get_spitfp_error_count(TF_HAT *hat, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
@@ -504,14 +504,14 @@ int tf_hat_get_spitfp_error_count(TF_HAT *hat, uint32_t *ret_error_count_ack_che
 int tf_hat_set_bootloader_mode(TF_HAT *hat, uint8_t mode, uint8_t *ret_status);
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Returns the current bootloader mode, see {@link tf_hat_set_bootloader_mode}.
  */
 int tf_hat_get_bootloader_mode(TF_HAT *hat, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Sets the firmware pointer for {@link tf_hat_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
@@ -523,7 +523,7 @@ int tf_hat_get_bootloader_mode(TF_HAT *hat, uint8_t *ret_mode);
 int tf_hat_set_write_firmware_pointer(TF_HAT *hat, uint32_t pointer);
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_hat_set_write_firmware_pointer} before. The firmware is written
@@ -537,7 +537,7 @@ int tf_hat_set_write_firmware_pointer(TF_HAT *hat, uint32_t pointer);
 int tf_hat_write_firmware(TF_HAT *hat, const uint8_t data[64], uint8_t *ret_status);
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
@@ -550,14 +550,14 @@ int tf_hat_write_firmware(TF_HAT *hat, const uint8_t data[64], uint8_t *ret_stat
 int tf_hat_set_status_led_config(TF_HAT *hat, uint8_t config);
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Returns the configuration as set by {@link tf_hat_set_status_led_config}
  */
 int tf_hat_get_status_led_config(TF_HAT *hat, uint8_t *ret_config);
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
@@ -569,7 +569,7 @@ int tf_hat_get_status_led_config(TF_HAT *hat, uint8_t *ret_config);
 int tf_hat_get_chip_temperature(TF_HAT *hat, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
@@ -581,7 +581,7 @@ int tf_hat_get_chip_temperature(TF_HAT *hat, int16_t *ret_temperature);
 int tf_hat_reset(TF_HAT *hat);
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
@@ -592,7 +592,7 @@ int tf_hat_reset(TF_HAT *hat);
 int tf_hat_write_uid(TF_HAT *hat, uint32_t uid);
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Returns the current UID as an integer. Encode as
  * Base58 to get the usual string version.
@@ -600,7 +600,7 @@ int tf_hat_write_uid(TF_HAT *hat, uint32_t uid);
 int tf_hat_read_uid(TF_HAT *hat, uint32_t *ret_uid);
 
 /**
- * \ingroup BrickHAT
+ * \ingroup TF_HAT
  *
  * Returns the UID, the UID where the HAT is connected to
  * (typically '0' as the HAT is the root device in the topology),

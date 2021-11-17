@@ -39,7 +39,7 @@ bool deadline_elapsed(uint32_t deadline_ms) {
     return ((uint32_t)(now - deadline_ms)) < (UINT32_MAX / 2);
 }
 
-bool find_uid_by_did(TF_HalContext *hal, uint16_t device_id, char uid[7]) {
+bool find_uid_by_did(TF_HAL *hal, uint16_t device_id, char uid[7]) {
     char pos;
     uint16_t did;
     for (size_t i = 0; tf_hal_get_device_info(hal, i, uid, &pos, &did) == TF_E_OK; ++i) {
@@ -50,7 +50,7 @@ bool find_uid_by_did(TF_HalContext *hal, uint16_t device_id, char uid[7]) {
     return false;
 }
 
-bool find_uid_by_did_at_port(TF_HalContext *hal, uint16_t device_id, char port, char uid[7]) {
+bool find_uid_by_did_at_port(TF_HAL *hal, uint16_t device_id, char port, char uid[7]) {
     char pos;
     uint16_t did;
     for (size_t i = 0; tf_hal_get_device_info(hal, i, uid, &pos, &did) == TF_E_OK; ++i) {
@@ -327,7 +327,7 @@ static bool flash_firmware(TF_Unknown *bricklet, const uint8_t *firmware, size_t
 #define FIRMWARE_MINOR_OFFSET 11
 #define FIRMWARE_PATCH_OFFSET 12
 
-int ensure_matching_firmware(TF_HalContext *hal, const char *uid, const char* name, const char *purpose, const uint8_t *firmware, size_t firmware_len, EventLog *logger, bool force) {
+int ensure_matching_firmware(TF_HAL *hal, const char *uid, const char* name, const char *purpose, const uint8_t *firmware, size_t firmware_len, EventLog *logger, bool force) {
     TF_Unknown bricklet;
 
     uint32_t numeric_uid;

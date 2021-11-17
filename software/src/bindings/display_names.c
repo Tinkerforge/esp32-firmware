@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-12.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -12,7 +12,7 @@
 
 #if TF_IMPLEMENT_STRERROR != 0
 const char *tf_get_device_display_name(uint16_t device_id) {
-    switch(device_id) {
+    switch (device_id) {
         case  111: return "HAT Brick";
         case  112: return "HAT Zero Brick";
         case 2130: return "Accelerometer Bricklet 2.0";

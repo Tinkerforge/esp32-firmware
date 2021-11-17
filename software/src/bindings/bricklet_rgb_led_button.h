@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-12.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -8,8 +8,8 @@
  * to the generators git repository on tinkerforge.com       *
  *************************************************************/
 
-#ifndef TF_BRICKLET_RGB_LED_BUTTON_H
-#define TF_BRICKLET_RGB_LED_BUTTON_H
+#ifndef TF_RGB_LED_BUTTON_H
+#define TF_RGB_LED_BUTTON_H
 
 #include "config.h"
 #include "tfp.h"
@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 /**
- * \defgroup BrickletRGBLEDButton RGB LED Button Bricklet
+ * \defgroup TF_RGBLEDButton RGB LED Button Bricklet
  */
 
 struct TF_RGBLEDButton;
@@ -31,12 +31,12 @@ typedef void (*TF_RGBLEDButtonButtonStateChangedHandler)(struct TF_RGBLEDButton 
 
 #endif
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * Push button with built-in RGB LED
  */
 typedef struct TF_RGBLEDButton {
-    TF_TfpContext *tfp;
+    TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
     TF_RGBLEDButtonButtonStateChangedHandler button_state_changed_handler;
     void *button_state_changed_user_data;
@@ -46,186 +46,186 @@ typedef struct TF_RGBLEDButton {
 } TF_RGBLEDButton;
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_FUNCTION_SET_COLOR 1
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_FUNCTION_GET_COLOR 2
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_FUNCTION_GET_BUTTON_STATE 3
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_FUNCTION_SET_COLOR_CALIBRATION 5
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_FUNCTION_GET_COLOR_CALIBRATION 6
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_FUNCTION_SET_BOOTLOADER_MODE 235
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_FUNCTION_GET_BOOTLOADER_MODE 236
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_FUNCTION_SET_WRITE_FIRMWARE_POINTER 237
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_FUNCTION_WRITE_FIRMWARE 238
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_FUNCTION_SET_STATUS_LED_CONFIG 239
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_FUNCTION_GET_STATUS_LED_CONFIG 240
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_FUNCTION_GET_CHIP_TEMPERATURE 242
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_FUNCTION_RESET 243
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_FUNCTION_WRITE_UID 248
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_FUNCTION_READ_UID 249
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_FUNCTION_GET_IDENTITY 255
 
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_CALLBACK_BUTTON_STATE_CHANGED 4
 
 #endif
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_BUTTON_STATE_PRESSED 0
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_BUTTON_STATE_RELEASED 1
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_BOOTLOADER_MODE_FIRMWARE 1
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT 2
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_REBOOT 3
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_ERASE_AND_REBOOT 4
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_BOOTLOADER_STATUS_OK 0
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_BOOTLOADER_STATUS_INVALID_MODE 1
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_BOOTLOADER_STATUS_NO_CHANGE 2
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_BOOTLOADER_STATUS_ENTRY_FUNCTION_NOT_PRESENT 3
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_BOOTLOADER_STATUS_DEVICE_IDENTIFIER_INCORRECT 4
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_BOOTLOADER_STATUS_CRC_MISMATCH 5
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_STATUS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_STATUS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_STATUS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  */
 #define TF_RGB_LED_BUTTON_STATUS_LED_CONFIG_SHOW_STATUS 3
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * This constant is used to identify a RGB LED Button Bricklet.
  *
@@ -236,30 +236,30 @@ typedef struct TF_RGBLEDButton {
 #define TF_RGB_LED_BUTTON_DEVICE_IDENTIFIER 282
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * This constant represents the display name of a RGB LED Button Bricklet.
  */
 #define TF_RGB_LED_BUTTON_DEVICE_DISPLAY_NAME "RGB LED Button Bricklet"
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * Creates the device object \c rgb_led_button with the unique device ID \c uid and adds
- * it to the IPConnection \c ipcon.
+ * it to the HAL \c hal.
  */
-int tf_rgb_led_button_create(TF_RGBLEDButton *rgb_led_button, const char *uid, TF_HalContext *hal);
+int tf_rgb_led_button_create(TF_RGBLEDButton *rgb_led_button, const char *uid, TF_HAL *hal);
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
- * Removes the device object \c rgb_led_button from its IPConnection and destroys it.
+ * Removes the device object \c rgb_led_button from its HAL and destroys it.
  * The device object cannot be used anymore afterwards.
  */
 int tf_rgb_led_button_destroy(TF_RGBLEDButton *rgb_led_button);
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * Returns the response expected flag for the function specified by the
  * \c function_id parameter. It is *true* if the function is expected to
@@ -268,8 +268,8 @@ int tf_rgb_led_button_destroy(TF_RGBLEDButton *rgb_led_button);
  * For getter functions this is enabled by default and cannot be disabled,
  * because those functions will always send a response. For callback
  * configuration functions it is enabled by default too, but can be disabled
- * via the rgb_led_button_set_response_expected function. For setter functions it is
- * disabled by default and can be enabled.
+ * via the tf_rgb_led_button_set_response_expected function. For setter
+ * functions it is disabled by default and can be enabled.
  *
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
@@ -280,7 +280,7 @@ int tf_rgb_led_button_destroy(TF_RGBLEDButton *rgb_led_button);
 int tf_rgb_led_button_get_response_expected(TF_RGBLEDButton *rgb_led_button, uint8_t function_id, bool *ret_response_expected);
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * Changes the response expected flag of the function specified by the
  * \c function_id parameter. This flag can only be changed for setter
@@ -296,7 +296,7 @@ int tf_rgb_led_button_get_response_expected(TF_RGBLEDButton *rgb_led_button, uin
 int tf_rgb_led_button_set_response_expected(TF_RGBLEDButton *rgb_led_button, uint8_t function_id, bool response_expected);
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
@@ -304,7 +304,7 @@ int tf_rgb_led_button_set_response_expected(TF_RGBLEDButton *rgb_led_button, uin
 void tf_rgb_led_button_set_response_expected_all(TF_RGBLEDButton *rgb_led_button, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * Registers the given \c handler to the Button State Changed callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -320,7 +320,7 @@ int tf_rgb_led_button_register_button_state_changed_callback(TF_RGBLEDButton *rg
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * Polls for callbacks. Will block for the given timeout in microseconds.
  *
@@ -330,28 +330,28 @@ int tf_rgb_led_button_callback_tick(TF_RGBLEDButton *rgb_led_button, uint32_t ti
 #endif
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * Sets the color of the LED.
  */
 int tf_rgb_led_button_set_color(TF_RGBLEDButton *rgb_led_button, uint8_t red, uint8_t green, uint8_t blue);
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * Returns the LED color as set by {@link tf_rgb_led_button_set_color}.
  */
 int tf_rgb_led_button_get_color(TF_RGBLEDButton *rgb_led_button, uint8_t *ret_red, uint8_t *ret_green, uint8_t *ret_blue);
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * Returns the current state of the button (either pressed or released).
  */
 int tf_rgb_led_button_get_button_state(TF_RGBLEDButton *rgb_led_button, uint8_t *ret_state);
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * Sets a color calibration. Some colors appear brighter then others,
  * so a calibration may be necessary for uniform colors.
@@ -362,14 +362,14 @@ int tf_rgb_led_button_get_button_state(TF_RGBLEDButton *rgb_led_button, uint8_t 
 int tf_rgb_led_button_set_color_calibration(TF_RGBLEDButton *rgb_led_button, uint8_t red, uint8_t green, uint8_t blue);
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * Returns the color calibration as set by {@link tf_rgb_led_button_set_color_calibration}.
  */
 int tf_rgb_led_button_get_color_calibration(TF_RGBLEDButton *rgb_led_button, uint8_t *ret_red, uint8_t *ret_green, uint8_t *ret_blue);
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * Returns the error count for the communication between Brick and Bricklet.
  * 
@@ -386,7 +386,7 @@ int tf_rgb_led_button_get_color_calibration(TF_RGBLEDButton *rgb_led_button, uin
 int tf_rgb_led_button_get_spitfp_error_count(TF_RGBLEDButton *rgb_led_button, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
@@ -401,14 +401,14 @@ int tf_rgb_led_button_get_spitfp_error_count(TF_RGBLEDButton *rgb_led_button, ui
 int tf_rgb_led_button_set_bootloader_mode(TF_RGBLEDButton *rgb_led_button, uint8_t mode, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * Returns the current bootloader mode, see {@link tf_rgb_led_button_set_bootloader_mode}.
  */
 int tf_rgb_led_button_get_bootloader_mode(TF_RGBLEDButton *rgb_led_button, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * Sets the firmware pointer for {@link tf_rgb_led_button_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
@@ -420,7 +420,7 @@ int tf_rgb_led_button_get_bootloader_mode(TF_RGBLEDButton *rgb_led_button, uint8
 int tf_rgb_led_button_set_write_firmware_pointer(TF_RGBLEDButton *rgb_led_button, uint32_t pointer);
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_rgb_led_button_set_write_firmware_pointer} before. The firmware is written
@@ -434,7 +434,7 @@ int tf_rgb_led_button_set_write_firmware_pointer(TF_RGBLEDButton *rgb_led_button
 int tf_rgb_led_button_write_firmware(TF_RGBLEDButton *rgb_led_button, const uint8_t data[64], uint8_t *ret_status);
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
@@ -447,14 +447,14 @@ int tf_rgb_led_button_write_firmware(TF_RGBLEDButton *rgb_led_button, const uint
 int tf_rgb_led_button_set_status_led_config(TF_RGBLEDButton *rgb_led_button, uint8_t config);
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * Returns the configuration as set by {@link tf_rgb_led_button_set_status_led_config}
  */
 int tf_rgb_led_button_get_status_led_config(TF_RGBLEDButton *rgb_led_button, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
@@ -466,7 +466,7 @@ int tf_rgb_led_button_get_status_led_config(TF_RGBLEDButton *rgb_led_button, uin
 int tf_rgb_led_button_get_chip_temperature(TF_RGBLEDButton *rgb_led_button, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
@@ -478,7 +478,7 @@ int tf_rgb_led_button_get_chip_temperature(TF_RGBLEDButton *rgb_led_button, int1
 int tf_rgb_led_button_reset(TF_RGBLEDButton *rgb_led_button);
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
@@ -489,7 +489,7 @@ int tf_rgb_led_button_reset(TF_RGBLEDButton *rgb_led_button);
 int tf_rgb_led_button_write_uid(TF_RGBLEDButton *rgb_led_button, uint32_t uid);
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * Returns the current UID as an integer. Encode as
  * Base58 to get the usual string version.
@@ -497,7 +497,7 @@ int tf_rgb_led_button_write_uid(TF_RGBLEDButton *rgb_led_button, uint32_t uid);
 int tf_rgb_led_button_read_uid(TF_RGBLEDButton *rgb_led_button, uint32_t *ret_uid);
 
 /**
- * \ingroup BrickletRGBLEDButton
+ * \ingroup TF_RGBLEDButton
  *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the

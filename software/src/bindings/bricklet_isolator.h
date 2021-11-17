@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-12.      *
+ * This file was automatically generated on 2021-11-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -8,8 +8,8 @@
  * to the generators git repository on tinkerforge.com       *
  *************************************************************/
 
-#ifndef TF_BRICKLET_ISOLATOR_H
-#define TF_BRICKLET_ISOLATOR_H
+#ifndef TF_ISOLATOR_H
+#define TF_ISOLATOR_H
 
 #include "config.h"
 #include "tfp.h"
@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 /**
- * \defgroup BrickletIsolator Isolator Bricklet
+ * \defgroup TF_Isolator Isolator Bricklet
  */
 
 struct TF_Isolator;
@@ -31,12 +31,12 @@ typedef void (*TF_IsolatorStatisticsHandler)(struct TF_Isolator *device, uint32_
 
 #endif
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * Galvanically isolates any Bricklet from any Brick
  */
 typedef struct TF_Isolator {
-    TF_TfpContext *tfp;
+    TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
     TF_IsolatorStatisticsHandler statistics_handler;
     void *statistics_user_data;
@@ -46,191 +46,191 @@ typedef struct TF_Isolator {
 } TF_Isolator;
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_FUNCTION_GET_STATISTICS 1
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_FUNCTION_SET_SPITFP_BAUDRATE_CONFIG 2
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_FUNCTION_GET_SPITFP_BAUDRATE_CONFIG 3
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_FUNCTION_SET_SPITFP_BAUDRATE 4
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_FUNCTION_GET_SPITFP_BAUDRATE 5
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_FUNCTION_GET_ISOLATOR_SPITFP_ERROR_COUNT 6
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_FUNCTION_SET_STATISTICS_CALLBACK_CONFIGURATION 7
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_FUNCTION_GET_STATISTICS_CALLBACK_CONFIGURATION 8
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_FUNCTION_SET_BOOTLOADER_MODE 235
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_FUNCTION_GET_BOOTLOADER_MODE 236
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_FUNCTION_SET_WRITE_FIRMWARE_POINTER 237
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_FUNCTION_WRITE_FIRMWARE 238
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_FUNCTION_SET_STATUS_LED_CONFIG 239
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_FUNCTION_GET_STATUS_LED_CONFIG 240
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_FUNCTION_GET_CHIP_TEMPERATURE 242
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_FUNCTION_RESET 243
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_FUNCTION_WRITE_UID 248
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_FUNCTION_READ_UID 249
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_FUNCTION_GET_IDENTITY 255
 
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_CALLBACK_STATISTICS 9
 
 #endif
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_BOOTLOADER_MODE_FIRMWARE 1
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT 2
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_REBOOT 3
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_BOOTLOADER_MODE_FIRMWARE_WAIT_FOR_ERASE_AND_REBOOT 4
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_BOOTLOADER_STATUS_OK 0
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_BOOTLOADER_STATUS_INVALID_MODE 1
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_BOOTLOADER_STATUS_NO_CHANGE 2
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_BOOTLOADER_STATUS_ENTRY_FUNCTION_NOT_PRESENT 3
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_BOOTLOADER_STATUS_DEVICE_IDENTIFIER_INCORRECT 4
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_BOOTLOADER_STATUS_CRC_MISMATCH 5
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_STATUS_LED_CONFIG_OFF 0
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_STATUS_LED_CONFIG_ON 1
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_STATUS_LED_CONFIG_SHOW_HEARTBEAT 2
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  */
 #define TF_ISOLATOR_STATUS_LED_CONFIG_SHOW_STATUS 3
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * This constant is used to identify a Isolator Bricklet.
  *
@@ -241,30 +241,30 @@ typedef struct TF_Isolator {
 #define TF_ISOLATOR_DEVICE_IDENTIFIER 2122
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * This constant represents the display name of a Isolator Bricklet.
  */
 #define TF_ISOLATOR_DEVICE_DISPLAY_NAME "Isolator Bricklet"
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * Creates the device object \c isolator with the unique device ID \c uid and adds
- * it to the IPConnection \c ipcon.
+ * it to the HAL \c hal.
  */
-int tf_isolator_create(TF_Isolator *isolator, const char *uid, TF_HalContext *hal);
+int tf_isolator_create(TF_Isolator *isolator, const char *uid, TF_HAL *hal);
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
- * Removes the device object \c isolator from its IPConnection and destroys it.
+ * Removes the device object \c isolator from its HAL and destroys it.
  * The device object cannot be used anymore afterwards.
  */
 int tf_isolator_destroy(TF_Isolator *isolator);
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * Returns the response expected flag for the function specified by the
  * \c function_id parameter. It is *true* if the function is expected to
@@ -273,8 +273,8 @@ int tf_isolator_destroy(TF_Isolator *isolator);
  * For getter functions this is enabled by default and cannot be disabled,
  * because those functions will always send a response. For callback
  * configuration functions it is enabled by default too, but can be disabled
- * via the isolator_set_response_expected function. For setter functions it is
- * disabled by default and can be enabled.
+ * via the tf_isolator_set_response_expected function. For setter
+ * functions it is disabled by default and can be enabled.
  *
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
@@ -285,7 +285,7 @@ int tf_isolator_destroy(TF_Isolator *isolator);
 int tf_isolator_get_response_expected(TF_Isolator *isolator, uint8_t function_id, bool *ret_response_expected);
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * Changes the response expected flag of the function specified by the
  * \c function_id parameter. This flag can only be changed for setter
@@ -301,7 +301,7 @@ int tf_isolator_get_response_expected(TF_Isolator *isolator, uint8_t function_id
 int tf_isolator_set_response_expected(TF_Isolator *isolator, uint8_t function_id, bool response_expected);
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
@@ -309,7 +309,7 @@ int tf_isolator_set_response_expected(TF_Isolator *isolator, uint8_t function_id
 void tf_isolator_set_response_expected_all(TF_Isolator *isolator, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * Registers the given \c handler to the Statistics callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
@@ -327,7 +327,7 @@ int tf_isolator_register_statistics_callback(TF_Isolator *isolator, TF_IsolatorS
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * Polls for callbacks. Will block for the given timeout in microseconds.
  *
@@ -337,14 +337,14 @@ int tf_isolator_callback_tick(TF_Isolator *isolator, uint32_t timeout_us);
 #endif
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * Returns statistics for the Isolator Bricklet.
  */
 int tf_isolator_get_statistics(TF_Isolator *isolator, uint32_t *ret_messages_from_brick, uint32_t *ret_messages_from_bricklet, uint16_t *ret_connected_bricklet_device_identifier, char ret_connected_bricklet_uid[8]);
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * The SPITF protocol can be used with a dynamic baudrate. If the dynamic baudrate is
  * enabled, the Isolator Bricklet will try to adapt the baudrate for the communication
@@ -371,14 +371,14 @@ int tf_isolator_get_statistics(TF_Isolator *isolator, uint32_t *ret_messages_fro
 int tf_isolator_set_spitfp_baudrate_config(TF_Isolator *isolator, bool enable_dynamic_baudrate, uint32_t minimum_dynamic_baudrate);
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * Returns the baudrate config, see {@link tf_isolator_set_spitfp_baudrate_config}.
  */
 int tf_isolator_get_spitfp_baudrate_config(TF_Isolator *isolator, bool *ret_enable_dynamic_baudrate, uint32_t *ret_minimum_dynamic_baudrate);
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * Sets the baudrate for a the communication between Isolator Bricklet
  * and the connected Bricklet. The baudrate for communication between
@@ -399,14 +399,14 @@ int tf_isolator_get_spitfp_baudrate_config(TF_Isolator *isolator, bool *ret_enab
 int tf_isolator_set_spitfp_baudrate(TF_Isolator *isolator, uint32_t baudrate);
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * Returns the baudrate, see {@link tf_isolator_set_spitfp_baudrate}.
  */
 int tf_isolator_get_spitfp_baudrate(TF_Isolator *isolator, uint32_t *ret_baudrate);
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * Returns the error count for the communication between Isolator Bricklet and
  * the connected Bricklet. Call {@link tf_isolator_get_spitfp_error_count} to get the
@@ -422,7 +422,7 @@ int tf_isolator_get_spitfp_baudrate(TF_Isolator *isolator, uint32_t *ret_baudrat
 int tf_isolator_get_isolator_spitfp_error_count(TF_Isolator *isolator, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * The period is the period with which the {@link tf_isolator_register_statistics_callback}
  * callback is triggered periodically. A value of 0 turns the callback off.
@@ -439,7 +439,7 @@ int tf_isolator_get_isolator_spitfp_error_count(TF_Isolator *isolator, uint32_t 
 int tf_isolator_set_statistics_callback_configuration(TF_Isolator *isolator, uint32_t period, bool value_has_to_change);
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * Returns the callback configuration as set by
  * {@link tf_isolator_set_statistics_callback_configuration}.
@@ -449,7 +449,7 @@ int tf_isolator_set_statistics_callback_configuration(TF_Isolator *isolator, uin
 int tf_isolator_get_statistics_callback_configuration(TF_Isolator *isolator, uint32_t *ret_period, bool *ret_value_has_to_change);
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * Returns the error count for the communication between Brick and Bricklet.
  * 
@@ -466,7 +466,7 @@ int tf_isolator_get_statistics_callback_configuration(TF_Isolator *isolator, uin
 int tf_isolator_get_spitfp_error_count(TF_Isolator *isolator, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow);
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
@@ -481,14 +481,14 @@ int tf_isolator_get_spitfp_error_count(TF_Isolator *isolator, uint32_t *ret_erro
 int tf_isolator_set_bootloader_mode(TF_Isolator *isolator, uint8_t mode, uint8_t *ret_status);
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * Returns the current bootloader mode, see {@link tf_isolator_set_bootloader_mode}.
  */
 int tf_isolator_get_bootloader_mode(TF_Isolator *isolator, uint8_t *ret_mode);
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * Sets the firmware pointer for {@link tf_isolator_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
@@ -500,7 +500,7 @@ int tf_isolator_get_bootloader_mode(TF_Isolator *isolator, uint8_t *ret_mode);
 int tf_isolator_set_write_firmware_pointer(TF_Isolator *isolator, uint32_t pointer);
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_isolator_set_write_firmware_pointer} before. The firmware is written
@@ -514,7 +514,7 @@ int tf_isolator_set_write_firmware_pointer(TF_Isolator *isolator, uint32_t point
 int tf_isolator_write_firmware(TF_Isolator *isolator, const uint8_t data[64], uint8_t *ret_status);
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
@@ -527,14 +527,14 @@ int tf_isolator_write_firmware(TF_Isolator *isolator, const uint8_t data[64], ui
 int tf_isolator_set_status_led_config(TF_Isolator *isolator, uint8_t config);
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * Returns the configuration as set by {@link tf_isolator_set_status_led_config}
  */
 int tf_isolator_get_status_led_config(TF_Isolator *isolator, uint8_t *ret_config);
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
@@ -546,7 +546,7 @@ int tf_isolator_get_status_led_config(TF_Isolator *isolator, uint8_t *ret_config
 int tf_isolator_get_chip_temperature(TF_Isolator *isolator, int16_t *ret_temperature);
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
@@ -558,7 +558,7 @@ int tf_isolator_get_chip_temperature(TF_Isolator *isolator, int16_t *ret_tempera
 int tf_isolator_reset(TF_Isolator *isolator);
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
@@ -569,7 +569,7 @@ int tf_isolator_reset(TF_Isolator *isolator);
 int tf_isolator_write_uid(TF_Isolator *isolator, uint32_t uid);
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * Returns the current UID as an integer. Encode as
  * Base58 to get the usual string version.
@@ -577,7 +577,7 @@ int tf_isolator_write_uid(TF_Isolator *isolator, uint32_t uid);
 int tf_isolator_read_uid(TF_Isolator *isolator, uint32_t *ret_uid);
 
 /**
- * \ingroup BrickletIsolator
+ * \ingroup TF_Isolator
  *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the

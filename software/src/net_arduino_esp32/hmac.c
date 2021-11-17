@@ -11,8 +11,8 @@
 #include "hmac.h"
 
 void tf_hmac_sha1(const uint8_t *secret, int secret_length,
-               const uint8_t *data, int data_length,
-               uint8_t digest[TF_SHA1_DIGEST_LENGTH]) {
+                  const uint8_t *data, int data_length,
+                  uint8_t digest[TF_SHA1_DIGEST_LENGTH]) {
 	TF_SHA1 sha1;
 	uint8_t secret_digest[TF_SHA1_DIGEST_LENGTH];
 	uint8_t inner_digest[TF_SHA1_DIGEST_LENGTH];
