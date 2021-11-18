@@ -37,9 +37,8 @@ def get_nested_keys(d, path=""):
             r.append(path + "." + k)
     return r
 
-
 def main():
-    translations = {}
+    translation = {}
     used_placeholders = []
 
     for root, dirs, files in os.walk("./src"):
@@ -66,28 +65,27 @@ def main():
                 end = content.find(END_PATTERN)
                 json_dict = content[:end+1]
                 json_dict = re.sub(",\s*\}", "}", json_dict)
-                json_dict = json_dict.replace("util.emptyText()", '""')
+                json_dict = json_dict.replace("{{{empty_text}}}", '""')
                 try:
-                    merge(translations, json.loads(json_dict))
+                    merge(translation, json.loads(json_dict))
                 except Exception as e:
                     print("error:", e, json_dict)
 
                 content = content[end+len(END_PATTERN):]
                 start = content.find(START_PATTERN)
 
+    assert len(translation) > 0
+
     with open("./src/index.html") as f:
         content = f.read()
 
     used_placeholders += flatten([x.split(" ") for x in re.findall('data-i18n="([^"]*)"', content)])
-
     used_placeholders = set(used_placeholders)
-
-
     used_but_missing = []
 
     for p in used_placeholders:
         keys = p.split(".")
-        for l, v in translations.items():
+        for l, v in translation.items():
             try:
                 get_and_delete(v, keys)
             except KeyError:
@@ -98,7 +96,7 @@ def main():
         for x in used_but_missing:
             print("\t" + x)
 
-    unused = get_nested_keys(translations)
+    unused = get_nested_keys(translation)
     if len(unused) > 0:
         print("Unused placeholders:")
         for x in unused:

@@ -294,10 +294,6 @@ export function passwordUpdate(input_selector: string) {
     return value.length > 0 ? value : null;
 }
 
-export function emptyText() {
-    return "​"; // Zero width space to work around a bug in the translation library: empty strings are replaced with "null"
-}
-
 export function downloadToFile(content: BlobPart, filename: string, contentType: string) {
     const a = document.createElement('a');
     const file = new Blob([content], {type: contentType});

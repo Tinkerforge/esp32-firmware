@@ -19,41 +19,15 @@
 
 import $ from "jquery";
 
-import * as util from "../util";
-
-declare function __(s: string): string;
-
 export function init() {
     $('#system').on('hide.bs.collapse', () => $('#system-chevron').removeClass("rotated-chevron"));
     $('#system').on('show.bs.collapse', () => $('#system-chevron').addClass("rotated-chevron"));
 }
 
-export function addEventListeners(source: EventSource) {}
+export function addEventListeners(source: EventSource) {
 
-export function updateLockState(module_init: any) {}
+}
 
-export function getTranslation(lang: string) {
-    const translations: {[index: string]:any} = {
-        "de": {
-            "system_start": {
-                "status": {},
-                "navbar": {
-                    "system_start": "System"
-                },
-                "content": {},
-                "script": {}
-            }
-        },
-        "en": {
-            "system_start": {
-                "status": {},
-                "navbar": {
-                    "system_start": "System"
-                },
-                "content": {},
-                "script": {}
-            }
-        }
-    };
-    return translations[lang];
+export function updateLockState(module_init: any) {
+
 }

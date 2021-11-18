@@ -11,6 +11,7 @@ import sys
 import time
 import re
 import hashlib
+import json
 from zlib import crc32
 
 NameFlavors = namedtuple('NameFlavors', 'space lower camel headless under upper dash camel_abbrv lower_no_space camel_constant_safe')
@@ -160,6 +161,16 @@ def write_firmware_info(display_name, major, minor, patch, build_time):
     with open(os.path.join("build", "fw_info.bin"), "wb") as f:
         f.write(buf)
 
+def update_translation(translation, update):
+    assert isinstance(translation, dict)
+    assert isinstance(update, dict)
+
+    for key, value in update.items():
+        if not isinstance(value, dict) or key not in translation:
+            translation[key] = value
+        else:
+            update_translation(translation[key], value)
+
 def main():
     # Add build flags
     timestamp = int(time.time())
@@ -224,6 +235,9 @@ def main():
     main_ts_entries = []
     frontend_modules = [FlavoredName(x).get() for x in env.GetProjectOption("frontend_modules").splitlines()]
 
+    with open(os.path.join('web', 'translation.json')) as f:
+        translation = json.loads(f.read())
+
     recreate_dir(os.path.join("web", "src", "ts", "modules"))
     for frontend_module in frontend_modules:
         mod_path = os.path.join("modules", "frontend", frontend_module.under)
@@ -248,6 +262,13 @@ def main():
             main_ts_entries.append(frontend_module)
             shutil.copy(os.path.join(mod_path, 'main.ts'), os.path.join("web", "src", "ts", "modules", frontend_module.under + ".ts"))
 
+        if os.path.exists(os.path.join(mod_path, 'translation.json')):
+            with open(os.path.join(mod_path, 'translation.json')) as f:
+                update_translation(translation, json.loads(f.read()))
+
+    translation_str = json.dumps(translation, indent=4).replace('\n', '\n    ')
+    translation_str = translation_str.replace('{{{empty_text}}}', '\u200b') # Zero Width Space to work around a bug in the translation library: empty strings are replaced with "null"
+
     specialize_template(os.path.join("web", "index.html.template"), os.path.join("web", "src", "index.html"), {
         '{{{navbar}}}': '\n                        '.join(navbar_entries),
         '{{{content}}}': '\n                    '.join(content_entries),
@@ -259,6 +280,7 @@ def main():
         '{{{module_imports}}}': '\n'.join(['import * as {0} from "./ts/modules/{0}";'.format(x.under) for x in main_ts_entries]),
         '{{{module_interface}}}': ',\n    '.join('{}: boolean'.format(x.under) for x in backend_modules),
         '{{{modules}}}': ', '.join([x.under for x in main_ts_entries]),
+        '{{{translation}}}': translation_str,
     })
 
     # Check translation completeness

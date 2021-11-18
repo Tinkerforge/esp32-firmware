@@ -1,0 +1,34 @@
+{
+    "de": {
+        "main": {
+            "navbar_status": "Status",
+            "content_status": "Status"
+        },
+        "util": {
+            "reboot_title": "Starte neu...",
+            "reboot_text": "Das Webinterface wird nach dem Neustart automatisch neu geladen.",
+            "event_connection_lost_title": "Verbindung zur Wallbox verloren!",
+            "event_connection_lost": "Verbindung wird wiederhergestellt...",
+            "to_be_cleared": "Wird beim Speichern geleert",
+            "unchanged": "unverändert"
+        },
+        "days": "Tage",
+        "day": "Tag"
+    },
+    "en": {
+        "main": {
+            "navbar_status": "Status",
+            "content_status": "Status"
+        },
+        "util": {
+            "reboot_title": "Rebooting...",
+            "reboot_text": "The web interface will be reloaded automatically after the restart.",
+            "event_connection_lost_title": "Wallbox connection lost!",
+            "event_connection_lost": "Connection will be reestablished...",
+            "to_be_cleared": "Will be cleared on save.",
+            "unchanged": "unchanged"
+        },
+        "days": "days",
+        "day": "day"
+    }
+}

@@ -96,61 +96,6 @@ export function init() {
 
 }
 
-
 export function updateLockState(module_init: any) {
     $('#sidebar-bricklets').prop('hidden', !module_init.proxy);
-}
-
-export function getTranslation(lang: string) {
-    const translations: {[index: string]:any} = {
-        "de": {
-            "proxy": {
-                "status": {
-
-                },
-                "navbar": {
-                    "bricklets": "Bricklets"
-                },
-                "content": {
-                    "bricklets": "Bricklets",
-                    "port": "Port",
-                    "UID": "UID",
-                    "device_type": "Gerätetyp",
-                    "error_counters": "Fehlerzähler",
-                    "spitfp_checksum": "SPI-TFP-Prüfsumme",
-                    "spitfp_frame": "SPI-TFP-Frame",
-                    "tfp_frame": "TFP-Frame",
-                    "tfp_unexpected": "TFP unerwartet",
-                },
-                "script": {
-                    "unknown_device": "unbekanntes Gerät"
-                }
-            }
-        },
-        "en": {
-            "proxy": {
-                "status": {
-
-                },
-                "navbar": {
-                    "bricklets": "Bricklets"
-                },
-                "content": {
-                    "bricklets": "Bricklets",
-                    "port": "Port",
-                    "UID": "UID",
-                    "device_type": "Device Type",
-                    "error_counters": "Error Counters",
-                    "spitfp_checksum": "SPI-TFP Checksum",
-                    "spitfp_frame": "SPI-TFP Frame",
-                    "tfp_frame": "TFP Frame",
-                    "tfp_unexpected": "TFP Unexpected",
-                },
-                "script": {
-                    "unknown_device": "unknown device"
-                }
-            }
-        }
-    };
-    return translations[lang];
 }
