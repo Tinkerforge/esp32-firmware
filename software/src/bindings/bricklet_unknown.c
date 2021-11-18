@@ -80,6 +80,7 @@ int tf_unknown_create(TF_Unknown *unknown, const char *uid, TF_HAL *hal, uint8_t
     }
 
     unknown->tfp->device = unknown;
+    unknown->tfp->uid = numeric_uid;
     unknown->tfp->cb_handler = tf_unknown_callback_handler;
     TF_PortCommon *port_common = tf_hal_get_port_common(hal, port_id);
     rc = tf_spitfp_create(&port_common->spitfp, hal, port_id);
@@ -778,7 +779,6 @@ int tf_unknown_register_enumerate_callback(TF_Unknown *unknown, TF_Unknown_Enume
 
     if (handler == NULL) {
         unknown->tfp->needs_callback_tick = false;
-
     } else {
         unknown->tfp->needs_callback_tick = true;
     }

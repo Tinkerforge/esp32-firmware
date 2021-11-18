@@ -1017,7 +1017,6 @@ int tf_industrial_dual_ac_relay_register_monoflop_done_callback(TF_IndustrialDua
 
     if (handler == NULL) {
         industrial_dual_ac_relay->tfp->needs_callback_tick = false;
-        
     } else {
         industrial_dual_ac_relay->tfp->needs_callback_tick = true;
     }

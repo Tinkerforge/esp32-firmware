@@ -1110,7 +1110,6 @@ int tf_segment_display_4x7_v2_register_counter_finished_callback(TF_SegmentDispl
 
     if (handler == NULL) {
         segment_display_4x7_v2->tfp->needs_callback_tick = false;
-        
     } else {
         segment_display_4x7_v2->tfp->needs_callback_tick = true;
     }

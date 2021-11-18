@@ -908,7 +908,6 @@ int tf_ambient_light_v3_register_illuminance_callback(TF_AmbientLightV3 *ambient
 
     if (handler == NULL) {
         ambient_light_v3->tfp->needs_callback_tick = false;
-        
     } else {
         ambient_light_v3->tfp->needs_callback_tick = true;
     }

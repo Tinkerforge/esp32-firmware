@@ -906,7 +906,6 @@ int tf_rgb_led_button_register_button_state_changed_callback(TF_RGBLEDButton *rg
 
     if (handler == NULL) {
         rgb_led_button->tfp->needs_callback_tick = false;
-        
     } else {
         rgb_led_button->tfp->needs_callback_tick = true;
     }

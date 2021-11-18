@@ -906,7 +906,6 @@ int tf_temperature_v2_register_temperature_callback(TF_TemperatureV2 *temperatur
 
     if (handler == NULL) {
         temperature_v2->tfp->needs_callback_tick = false;
-        
     } else {
         temperature_v2->tfp->needs_callback_tick = true;
     }

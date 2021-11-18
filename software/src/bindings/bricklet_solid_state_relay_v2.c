@@ -862,7 +862,6 @@ int tf_solid_state_relay_v2_register_monoflop_done_callback(TF_SolidStateRelayV2
 
     if (handler == NULL) {
         solid_state_relay_v2->tfp->needs_callback_tick = false;
-        
     } else {
         solid_state_relay_v2->tfp->needs_callback_tick = true;
     }

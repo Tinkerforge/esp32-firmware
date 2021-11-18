@@ -1016,7 +1016,6 @@ int tf_industrial_quad_relay_v2_register_monoflop_done_callback(TF_IndustrialQua
 
     if (handler == NULL) {
         industrial_quad_relay_v2->tfp->needs_callback_tick = false;
-        
     } else {
         industrial_quad_relay_v2->tfp->needs_callback_tick = true;
     }

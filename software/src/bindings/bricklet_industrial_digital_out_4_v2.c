@@ -1114,7 +1114,6 @@ int tf_industrial_digital_out_4_v2_register_monoflop_done_callback(TF_Industrial
 
     if (handler == NULL) {
         industrial_digital_out_4_v2->tfp->needs_callback_tick = false;
-        
     } else {
         industrial_digital_out_4_v2->tfp->needs_callback_tick = true;
     }

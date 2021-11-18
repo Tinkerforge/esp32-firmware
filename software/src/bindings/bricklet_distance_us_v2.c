@@ -996,7 +996,6 @@ int tf_distance_us_v2_register_distance_callback(TF_DistanceUSV2 *distance_us_v2
 
     if (handler == NULL) {
         distance_us_v2->tfp->needs_callback_tick = false;
-        
     } else {
         distance_us_v2->tfp->needs_callback_tick = true;
     }

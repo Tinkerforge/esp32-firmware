@@ -1723,7 +1723,6 @@ int tf_e_paper_296x128_register_draw_status_callback(TF_EPaper296x128 *e_paper_2
 
     if (handler == NULL) {
         e_paper_296x128->tfp->needs_callback_tick = false;
-        
     } else {
         e_paper_296x128->tfp->needs_callback_tick = true;
     }

@@ -1000,7 +1000,6 @@ int tf_analog_in_v3_register_voltage_callback(TF_AnalogInV3 *analog_in_v3, TF_An
 
     if (handler == NULL) {
         analog_in_v3->tfp->needs_callback_tick = false;
-        
     } else {
         analog_in_v3->tfp->needs_callback_tick = true;
     }

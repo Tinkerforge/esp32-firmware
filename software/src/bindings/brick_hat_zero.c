@@ -816,7 +816,6 @@ int tf_hat_zero_register_usb_voltage_callback(TF_HATZero *hat_zero, TF_HATZero_U
 
     if (handler == NULL) {
         hat_zero->tfp->needs_callback_tick = false;
-        
     } else {
         hat_zero->tfp->needs_callback_tick = true;
     }

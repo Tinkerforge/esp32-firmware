@@ -1882,7 +1882,6 @@ int tf_servo_v2_register_position_reached_callback(TF_ServoV2 *servo_v2, TF_Serv
 
     if (handler == NULL) {
         servo_v2->tfp->needs_callback_tick = false;
-        
     } else {
         servo_v2->tfp->needs_callback_tick = true;
     }

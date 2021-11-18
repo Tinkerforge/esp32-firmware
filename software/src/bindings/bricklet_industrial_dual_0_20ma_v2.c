@@ -1201,7 +1201,6 @@ int tf_industrial_dual_0_20ma_v2_register_current_callback(TF_IndustrialDual020m
 
     if (handler == NULL) {
         industrial_dual_0_20ma_v2->tfp->needs_callback_tick = false;
-        
     } else {
         industrial_dual_0_20ma_v2->tfp->needs_callback_tick = true;
     }

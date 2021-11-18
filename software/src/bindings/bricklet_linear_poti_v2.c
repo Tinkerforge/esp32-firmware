@@ -816,7 +816,6 @@ int tf_linear_poti_v2_register_position_callback(TF_LinearPotiV2 *linear_poti_v2
 
     if (handler == NULL) {
         linear_poti_v2->tfp->needs_callback_tick = false;
-        
     } else {
         linear_poti_v2->tfp->needs_callback_tick = true;
     }

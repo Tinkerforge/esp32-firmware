@@ -1187,7 +1187,6 @@ int tf_load_cell_v2_register_weight_callback(TF_LoadCellV2 *load_cell_v2, TF_Loa
 
     if (handler == NULL) {
         load_cell_v2->tfp->needs_callback_tick = false;
-        
     } else {
         load_cell_v2->tfp->needs_callback_tick = true;
     }

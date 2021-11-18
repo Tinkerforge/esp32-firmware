@@ -1186,7 +1186,6 @@ int tf_energy_monitor_register_energy_data_callback(TF_EnergyMonitor *energy_mon
 
     if (handler == NULL) {
         energy_monitor->tfp->needs_callback_tick = false;
-        
     } else {
         energy_monitor->tfp->needs_callback_tick = true;
     }

@@ -1129,7 +1129,6 @@ int tf_rgb_led_matrix_register_frame_started_callback(TF_RGBLEDMatrix *rgb_led_m
 
     if (handler == NULL) {
         rgb_led_matrix->tfp->needs_callback_tick = false;
-        
     } else {
         rgb_led_matrix->tfp->needs_callback_tick = true;
     }

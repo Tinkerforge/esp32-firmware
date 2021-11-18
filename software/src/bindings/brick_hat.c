@@ -1090,7 +1090,6 @@ int tf_hat_register_voltages_callback(TF_HAT *hat, TF_HAT_VoltagesHandler handle
 
     if (handler == NULL) {
         hat->tfp->needs_callback_tick = false;
-        
     } else {
         hat->tfp->needs_callback_tick = true;
     }

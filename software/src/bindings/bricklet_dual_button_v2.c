@@ -956,7 +956,6 @@ int tf_dual_button_v2_register_state_changed_callback(TF_DualButtonV2 *dual_butt
 
     if (handler == NULL) {
         dual_button_v2->tfp->needs_callback_tick = false;
-        
     } else {
         dual_button_v2->tfp->needs_callback_tick = true;
     }

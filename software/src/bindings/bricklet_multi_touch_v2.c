@@ -1129,7 +1129,6 @@ int tf_multi_touch_v2_register_touch_state_callback(TF_MultiTouchV2 *multi_touch
 
     if (handler == NULL) {
         multi_touch_v2->tfp->needs_callback_tick = false;
-        
     } else {
         multi_touch_v2->tfp->needs_callback_tick = true;
     }

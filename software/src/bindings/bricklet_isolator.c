@@ -1040,7 +1040,6 @@ int tf_isolator_register_statistics_callback(TF_Isolator *isolator, TF_Isolator_
 
     if (handler == NULL) {
         isolator->tfp->needs_callback_tick = false;
-        
     } else {
         isolator->tfp->needs_callback_tick = true;
     }

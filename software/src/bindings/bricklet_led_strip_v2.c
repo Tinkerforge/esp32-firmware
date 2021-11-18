@@ -1398,7 +1398,6 @@ int tf_led_strip_v2_register_frame_started_callback(TF_LEDStripV2 *led_strip_v2,
 
     if (handler == NULL) {
         led_strip_v2->tfp->needs_callback_tick = false;
-        
     } else {
         led_strip_v2->tfp->needs_callback_tick = true;
     }

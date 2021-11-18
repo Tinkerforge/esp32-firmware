@@ -816,7 +816,6 @@ int tf_rotary_poti_v2_register_position_callback(TF_RotaryPotiV2 *rotary_poti_v2
 
     if (handler == NULL) {
         rotary_poti_v2->tfp->needs_callback_tick = false;
-        
     } else {
         rotary_poti_v2->tfp->needs_callback_tick = true;
     }
