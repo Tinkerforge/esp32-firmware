@@ -13,7 +13,7 @@
                 "event_log_desc_muted": "{{{empty_text}}}",
                 "debug_report": "Debug-Report und Ereignis-Log herunterladen",
                 "debug_report_desc": "Debug-Report",
-                "debug_report_desc_muted": "Ein kompletter Report aller Statusinformationen des Geräts außer Passwörtern",
+                "debug_report_desc_muted": null,
                 "event_log_placeholder": "Lade Ereignis-Log..."
             },
             "script": {
@@ -35,7 +35,7 @@
                 "event_log_desc_muted": "{{{empty_text}}}",
                 "debug_report": "Download debug report and event log",
                 "debug_report_desc": "Debug report",
-                "debug_report_desc_muted": "A complete report of all status information of this device except passwords",
+                "debug_report_desc_muted": null,
                 "event_log_placeholder": "Loading event log..."
             },
             "script": {

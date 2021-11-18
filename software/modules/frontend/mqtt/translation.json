@@ -13,7 +13,7 @@
             },
             "content": {
                 "mqtt": "MQTT-Einstellungen",
-                "enable_mqtt_desc": "Hierdurch kann das Gerät über den konfigurierten MQTT-Broker kontrolliert werden. <a href=\"https://warp-charger.com/api.html\">MQTT-API-Dokumentation</a>",
+                "enable_mqtt_desc": null,
                 "enable_mqtt": "MQTT aktiviert",
                 "broker_host": "Broker-Hostname oder -IP-Adresse",
                 "port": "<span class=\"form-label pr-2\">Broker-Port</span><span class=\"text-muted\">typischerweise 1883</span>",
@@ -47,7 +47,7 @@
             },
             "content": {
                 "mqtt": "MQTT Settings",
-                "enable_mqtt_desc": "This allows controlling the device over the configured MQTT broker. <a href=\"https://warp-charger.com/api.html\">MQTT API documentation (german only)</a>",
+                "enable_mqtt_desc": null,
                 "enable_mqtt": "Enable MQTT",
                 "broker_host": "Broker hostname or IP address",
                 "port": "<span class=\"form-label pr-2\">Broker port</span><span class=\"text-muted\">typically 1883</span>",

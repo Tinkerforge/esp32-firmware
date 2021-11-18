@@ -161,15 +161,32 @@ def write_firmware_info(display_name, major, minor, patch, build_time):
     with open(os.path.join("build", "fw_info.bin"), "wb") as f:
         f.write(buf)
 
-def update_translation(translation, update):
-    assert isinstance(translation, dict)
-    assert isinstance(update, dict)
+def update_translation(translation, update, parent_key=None):
+    if parent_key == None:
+        parent_key = []
+
+    assert isinstance(translation, dict), '.'.join(parent_key)
+    assert isinstance(update, dict), '.'.join(parent_key)
 
     for key, value in update.items():
         if not isinstance(value, dict) or key not in translation:
+            assert translation.get(key) == None, '.'.join(parent_key + [key]) + ' cannot override non-null value'
+
             translation[key] = value
         else:
-            update_translation(translation[key], value)
+            update_translation(translation[key], value, parent_key=parent_key + [key])
+
+def check_translation(translation, parent_key=None):
+    if parent_key == None:
+        parent_key = []
+
+    assert isinstance(translation, dict), '.'.join(parent_key)
+
+    for key, value in translation.items():
+        assert isinstance(value, (dict, str)), '.'.join(parent_key + [key]) + ' has unexpected type ' + type(value).__name__
+
+        if isinstance(value, dict):
+            check_translation(value, parent_key=parent_key + [key])
 
 def main():
     # Add build flags
@@ -264,7 +281,15 @@ def main():
 
         if os.path.exists(os.path.join(mod_path, 'translation.json')):
             with open(os.path.join(mod_path, 'translation.json')) as f:
-                update_translation(translation, json.loads(f.read()))
+                try:
+                    update = json.loads(f.read())
+                except:
+                    print('error in file translation.json at', mod_path)
+                    raise
+
+                update_translation(translation, update)
+
+    check_translation(translation)
 
     translation_str = json.dumps(translation, indent=4).replace('\n', '\n    ')
     translation_str = translation_str.replace('{{{empty_text}}}', '\u200b') # Zero Width Space to work around a bug in the translation library: empty strings are replaced with "null"

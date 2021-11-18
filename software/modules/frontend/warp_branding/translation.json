@@ -1,0 +1,62 @@
+{
+    "de": {
+        "ethernet": {
+            "content": {
+                "enable_desc": "Wenn aktiviert, verbindet sich die Wallbox beim Start oder wenn ein Kabel eingesteckt wird, automatisch."
+            }
+        },
+        "event_log": {
+            "content": {
+                "debug_report_desc_muted": "Ein kompletter Report aller Statusinformationen der Wallbox außer Passwörtern"
+            }
+        },
+        "firmware_update": {
+            "content": {
+                "factory_reset_modal_text": "Hiermit wird die gesamte Konfiguration auf den Auslieferungszustand zurückgesetzt. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Die Wallbox öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus dem Handbuch. Fortfahren?",
+                "reboot_desc": "Startet das Webinterface neu. Eine laufende Ladung wird dabei nicht unterbrochen"
+            },
+            "script": {
+                "no_info_page": "Firmware-Datei ist beschädigt oder für WARP 1 (Firmware-Info-Seite fehlt)",
+                "wrong_firmware_type": "Firmware-Datei ist für anderen Wallbox-Typ"
+            }
+        },
+        "mqtt": {
+            "content": {
+                "enable_mqtt_desc": "Hierdurch kann die Wallbox über den konfigurierten MQTT-Broker kontrolliert werden. <a href=\"https://warp-charger.com/api.html\">MQTT-API-Dokumentation</a>"
+            }
+        },
+        "wifi": {
+            "content": {
+                "sta_enable_sta_desc": "Wenn aktiviert, verbindet sich die Wallbox beim Start automatisch zum konfigurierten Netzwerk.",
+                "ap_hide_ssid_desc_pre": "Versteckt den Netzwerknamen. Die Wallbox ist unter der BSSID "
+            }
+        }
+    },
+    "en": {
+        "event_log": {
+            "content": {
+                "debug_report_desc_muted": "A complete report of all status information of this wallbox except passwords"
+            }
+        },
+        "firmware_update": {
+            "content": {
+                "factory_reset_modal_text": "A factory reset will reset all configuration to their default values. <b>This action cannot be undone!</b> The wallbox will re-open the WiFi access point with the default SSID and passphrase. Are you sure?",
+                "reboot_desc": "Restarts the web interface. Charging will not be interrupted."
+            },
+            "script": {
+                "no_info_page": "Firmware file corrupted or for WARP 1 (info page missing)",
+                "wrong_firmware_type": "Firmware file is for another type of wallbox"
+            }
+        },
+        "mqtt": {
+            "content": {
+                "enable_mqtt_desc": "This allows controlling the wallbox over the configured MQTT broker. <a href=\"https://warp-charger.com/api.html\">MQTT API documentation (german only)</a>"
+            }
+        },
+        "wifi": {
+            "content": {
+                "ap_hide_ssid_desc_pre": "Hides the network name. The wallbox is reachable under the BSSID "
+            }
+        }
+    }
+}
