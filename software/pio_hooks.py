@@ -10,6 +10,7 @@ import subprocess
 import sys
 import time
 import re
+import hashlib
 from zlib import crc32
 
 NameFlavors = namedtuple('NameFlavors', 'space lower camel headless under upper dash camel_abbrv lower_no_space camel_constant_safe')
@@ -265,12 +266,53 @@ def main():
         subprocess.run(["python3", "check_translation_completeness.py"], check=True)
 
     # Generate web interface
-    with ChangedDirectory('web'):
-        if not os.path.isdir("node_modules"):
-            print("Web interface dependencies not installed. Installing now.")
-            subprocess.run(["npm", "install", "--save-dev"])
-        subprocess.run(["npx", "gulp"])
+    h = hashlib.sha256()
 
-    shutil.copy2("web/dist/index.html.h", "src/index.html.h")
+    for name in sorted(os.listdir('web')):
+        path = os.path.join('web', name)
+
+        if not os.path.isfile(path):
+            continue
+
+        with open(path, 'rb') as f:
+            h.update(f.read())
+
+    for root, dirs, files in sorted(os.walk('web/src')):
+        for name in files:
+            path = os.path.join(root, name)
+
+            with open(path, 'rb') as f:
+                h.update(f.read())
+
+    new_digest = h.hexdigest()
+
+    try:
+        with open('src/index.html.h.digest', 'r') as f:
+            old_digest = f.read().strip()
+    except FileNotFoundError:
+        old_digest = None
+
+    if old_digest != new_digest or not os.path.exists('src/index.html.h'):
+        try:
+            os.remove('src/index.html.h')
+        except FileNotFoundError:
+            pass
+
+        try:
+            os.remove('src/index.html.h.digest')
+        except FileNotFoundError:
+            pass
+
+        with ChangedDirectory('web'):
+            if not os.path.isdir("node_modules"):
+                print("Web interface dependencies not installed. Installing now.")
+                subprocess.run(["npm", "install", "--save-dev"])
+
+            subprocess.run(["npx", "gulp"])
+
+        shutil.copy2("web/dist/index.html.h", "src/index.html.h")
+
+        with open('src/index.html.h.digest', 'w') as f:
+            f.write(new_digest)
 
 main()
