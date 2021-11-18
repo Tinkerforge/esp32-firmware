@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,7 +27,7 @@ extern "C" {
 struct TF_EPaper296x128;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_EPaper296x128DrawStatusHandler)(struct TF_EPaper296x128 *device, uint8_t draw_status, void *user_data);
+typedef void (*TF_EPaper296x128_DrawStatusHandler)(struct TF_EPaper296x128 *device, uint8_t draw_status, void *user_data);
 
 #endif
 /**
@@ -38,7 +38,7 @@ typedef void (*TF_EPaper296x128DrawStatusHandler)(struct TF_EPaper296x128 *devic
 typedef struct TF_EPaper296x128 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_EPaper296x128DrawStatusHandler draw_status_handler;
+    TF_EPaper296x128_DrawStatusHandler draw_status_handler;
     void *draw_status_user_data;
 
 #endif
@@ -476,7 +476,7 @@ int tf_e_paper_296x128_set_response_expected(TF_EPaper296x128 *e_paper_296x128, 
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_e_paper_296x128_set_response_expected_all(TF_EPaper296x128 *e_paper_296x128, bool response_expected);
+int tf_e_paper_296x128_set_response_expected_all(TF_EPaper296x128 *e_paper_296x128, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_EPaper296x128
@@ -489,7 +489,7 @@ void tf_e_paper_296x128_set_response_expected_all(TF_EPaper296x128 *e_paper_296x
  * Callback for the current draw status. Will be called every time the
  * draw status changes (see {@link tf_e_paper_296x128_get_draw_status}).
  */
-int tf_e_paper_296x128_register_draw_status_callback(TF_EPaper296x128 *e_paper_296x128, TF_EPaper296x128DrawStatusHandler handler, void *user_data);
+int tf_e_paper_296x128_register_draw_status_callback(TF_EPaper296x128 *e_paper_296x128, TF_EPaper296x128_DrawStatusHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

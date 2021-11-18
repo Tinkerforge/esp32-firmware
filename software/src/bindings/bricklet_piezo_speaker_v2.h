@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,8 +27,8 @@ extern "C" {
 struct TF_PiezoSpeakerV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_PiezoSpeakerV2BeepFinishedHandler)(struct TF_PiezoSpeakerV2 *device, void *user_data);
-typedef void (*TF_PiezoSpeakerV2AlarmFinishedHandler)(struct TF_PiezoSpeakerV2 *device, void *user_data);
+typedef void (*TF_PiezoSpeakerV2_BeepFinishedHandler)(struct TF_PiezoSpeakerV2 *device, void *user_data);
+typedef void (*TF_PiezoSpeakerV2_AlarmFinishedHandler)(struct TF_PiezoSpeakerV2 *device, void *user_data);
 
 #endif
 /**
@@ -39,10 +39,10 @@ typedef void (*TF_PiezoSpeakerV2AlarmFinishedHandler)(struct TF_PiezoSpeakerV2 *
 typedef struct TF_PiezoSpeakerV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_PiezoSpeakerV2BeepFinishedHandler beep_finished_handler;
+    TF_PiezoSpeakerV2_BeepFinishedHandler beep_finished_handler;
     void *beep_finished_user_data;
 
-    TF_PiezoSpeakerV2AlarmFinishedHandler alarm_finished_handler;
+    TF_PiezoSpeakerV2_AlarmFinishedHandler alarm_finished_handler;
     void *alarm_finished_user_data;
 
 #endif
@@ -325,7 +325,7 @@ int tf_piezo_speaker_v2_set_response_expected(TF_PiezoSpeakerV2 *piezo_speaker_v
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_piezo_speaker_v2_set_response_expected_all(TF_PiezoSpeakerV2 *piezo_speaker_v2, bool response_expected);
+int tf_piezo_speaker_v2_set_response_expected_all(TF_PiezoSpeakerV2 *piezo_speaker_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_PiezoSpeakerV2
@@ -337,7 +337,7 @@ void tf_piezo_speaker_v2_set_response_expected_all(TF_PiezoSpeakerV2 *piezo_spea
  * 
  * This callback is triggered if a beep set by {@link tf_piezo_speaker_v2_set_beep} is finished
  */
-int tf_piezo_speaker_v2_register_beep_finished_callback(TF_PiezoSpeakerV2 *piezo_speaker_v2, TF_PiezoSpeakerV2BeepFinishedHandler handler, void *user_data);
+int tf_piezo_speaker_v2_register_beep_finished_callback(TF_PiezoSpeakerV2 *piezo_speaker_v2, TF_PiezoSpeakerV2_BeepFinishedHandler handler, void *user_data);
 
 
 /**
@@ -350,7 +350,7 @@ int tf_piezo_speaker_v2_register_beep_finished_callback(TF_PiezoSpeakerV2 *piezo
  * 
  * This callback is triggered if a alarm set by {@link tf_piezo_speaker_v2_set_alarm} is finished
  */
-int tf_piezo_speaker_v2_register_alarm_finished_callback(TF_PiezoSpeakerV2 *piezo_speaker_v2, TF_PiezoSpeakerV2AlarmFinishedHandler handler, void *user_data);
+int tf_piezo_speaker_v2_register_alarm_finished_callback(TF_PiezoSpeakerV2 *piezo_speaker_v2, TF_PiezoSpeakerV2_AlarmFinishedHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

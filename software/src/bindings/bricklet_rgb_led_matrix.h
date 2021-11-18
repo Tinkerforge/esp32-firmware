@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,7 +27,7 @@ extern "C" {
 struct TF_RGBLEDMatrix;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_RGBLEDMatrixFrameStartedHandler)(struct TF_RGBLEDMatrix *device, uint32_t frame_number, void *user_data);
+typedef void (*TF_RGBLEDMatrix_FrameStartedHandler)(struct TF_RGBLEDMatrix *device, uint32_t frame_number, void *user_data);
 
 #endif
 /**
@@ -38,7 +38,7 @@ typedef void (*TF_RGBLEDMatrixFrameStartedHandler)(struct TF_RGBLEDMatrix *devic
 typedef struct TF_RGBLEDMatrix {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_RGBLEDMatrixFrameStartedHandler frame_started_handler;
+    TF_RGBLEDMatrix_FrameStartedHandler frame_started_handler;
     void *frame_started_user_data;
 
 #endif
@@ -316,7 +316,7 @@ int tf_rgb_led_matrix_set_response_expected(TF_RGBLEDMatrix *rgb_led_matrix, uin
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_rgb_led_matrix_set_response_expected_all(TF_RGBLEDMatrix *rgb_led_matrix, bool response_expected);
+int tf_rgb_led_matrix_set_response_expected_all(TF_RGBLEDMatrix *rgb_led_matrix, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_RGBLEDMatrix
@@ -330,7 +330,7 @@ void tf_rgb_led_matrix_set_response_expected_all(TF_RGBLEDMatrix *rgb_led_matrix
  * The LED values are double buffered, so you can send the LED values
  * for the next frame directly after this callback is triggered.
  */
-int tf_rgb_led_matrix_register_frame_started_callback(TF_RGBLEDMatrix *rgb_led_matrix, TF_RGBLEDMatrixFrameStartedHandler handler, void *user_data);
+int tf_rgb_led_matrix_register_frame_started_callback(TF_RGBLEDMatrix *rgb_led_matrix, TF_RGBLEDMatrix_FrameStartedHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

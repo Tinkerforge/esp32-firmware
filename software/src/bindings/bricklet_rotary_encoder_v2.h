@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,9 +27,9 @@ extern "C" {
 struct TF_RotaryEncoderV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_RotaryEncoderV2CountHandler)(struct TF_RotaryEncoderV2 *device, int32_t count, void *user_data);
-typedef void (*TF_RotaryEncoderV2PressedHandler)(struct TF_RotaryEncoderV2 *device, void *user_data);
-typedef void (*TF_RotaryEncoderV2ReleasedHandler)(struct TF_RotaryEncoderV2 *device, void *user_data);
+typedef void (*TF_RotaryEncoderV2_CountHandler)(struct TF_RotaryEncoderV2 *device, int32_t count, void *user_data);
+typedef void (*TF_RotaryEncoderV2_PressedHandler)(struct TF_RotaryEncoderV2 *device, void *user_data);
+typedef void (*TF_RotaryEncoderV2_ReleasedHandler)(struct TF_RotaryEncoderV2 *device, void *user_data);
 
 #endif
 /**
@@ -40,13 +40,13 @@ typedef void (*TF_RotaryEncoderV2ReleasedHandler)(struct TF_RotaryEncoderV2 *dev
 typedef struct TF_RotaryEncoderV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_RotaryEncoderV2CountHandler count_handler;
+    TF_RotaryEncoderV2_CountHandler count_handler;
     void *count_user_data;
 
-    TF_RotaryEncoderV2PressedHandler pressed_handler;
+    TF_RotaryEncoderV2_PressedHandler pressed_handler;
     void *pressed_user_data;
 
-    TF_RotaryEncoderV2ReleasedHandler released_handler;
+    TF_RotaryEncoderV2_ReleasedHandler released_handler;
     void *released_user_data;
 
 #endif
@@ -329,7 +329,7 @@ int tf_rotary_encoder_v2_set_response_expected(TF_RotaryEncoderV2 *rotary_encode
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_rotary_encoder_v2_set_response_expected_all(TF_RotaryEncoderV2 *rotary_encoder_v2, bool response_expected);
+int tf_rotary_encoder_v2_set_response_expected_all(TF_RotaryEncoderV2 *rotary_encoder_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_RotaryEncoderV2
@@ -344,7 +344,7 @@ void tf_rotary_encoder_v2_set_response_expected_all(TF_RotaryEncoderV2 *rotary_e
  * 
  * The parameter is the same as {@link tf_rotary_encoder_v2_get_count}.
  */
-int tf_rotary_encoder_v2_register_count_callback(TF_RotaryEncoderV2 *rotary_encoder_v2, TF_RotaryEncoderV2CountHandler handler, void *user_data);
+int tf_rotary_encoder_v2_register_count_callback(TF_RotaryEncoderV2 *rotary_encoder_v2, TF_RotaryEncoderV2_CountHandler handler, void *user_data);
 
 
 /**
@@ -357,7 +357,7 @@ int tf_rotary_encoder_v2_register_count_callback(TF_RotaryEncoderV2 *rotary_enco
  * 
  * This callback is triggered when the button is pressed.
  */
-int tf_rotary_encoder_v2_register_pressed_callback(TF_RotaryEncoderV2 *rotary_encoder_v2, TF_RotaryEncoderV2PressedHandler handler, void *user_data);
+int tf_rotary_encoder_v2_register_pressed_callback(TF_RotaryEncoderV2 *rotary_encoder_v2, TF_RotaryEncoderV2_PressedHandler handler, void *user_data);
 
 
 /**
@@ -370,7 +370,7 @@ int tf_rotary_encoder_v2_register_pressed_callback(TF_RotaryEncoderV2 *rotary_en
  * 
  * This callback is triggered when the button is released.
  */
-int tf_rotary_encoder_v2_register_released_callback(TF_RotaryEncoderV2 *rotary_encoder_v2, TF_RotaryEncoderV2ReleasedHandler handler, void *user_data);
+int tf_rotary_encoder_v2_register_released_callback(TF_RotaryEncoderV2 *rotary_encoder_v2, TF_RotaryEncoderV2_ReleasedHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

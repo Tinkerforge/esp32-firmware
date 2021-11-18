@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -222,8 +222,14 @@ int tf_industrial_analog_out_v2_set_response_expected(TF_IndustrialAnalogOutV2 *
     return TF_E_OK;
 }
 
-void tf_industrial_analog_out_v2_set_response_expected_all(TF_IndustrialAnalogOutV2 *industrial_analog_out_v2, bool response_expected) {
+int tf_industrial_analog_out_v2_set_response_expected_all(TF_IndustrialAnalogOutV2 *industrial_analog_out_v2, bool response_expected) {
+    if (industrial_analog_out_v2 == NULL) {
+        return TF_E_NULL;
+    }
+
     memset(industrial_analog_out_v2->response_expected, response_expected ? 0xFF : 0, 2);
+
+    return TF_E_OK;
 }
 
 int tf_industrial_analog_out_v2_set_enabled(TF_IndustrialAnalogOutV2 *industrial_analog_out_v2, bool enabled) {
@@ -231,7 +237,7 @@ int tf_industrial_analog_out_v2_set_enabled(TF_IndustrialAnalogOutV2 *industrial
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -243,7 +249,7 @@ int tf_industrial_analog_out_v2_set_enabled(TF_IndustrialAnalogOutV2 *industrial
 
     buf[0] = enabled ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_analog_out_v2->tfp, response_expected, deadline, &error_code);
@@ -270,14 +276,14 @@ int tf_industrial_analog_out_v2_get_enabled(TF_IndustrialAnalogOutV2 *industrial
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(industrial_analog_out_v2->tfp, TF_INDUSTRIAL_ANALOG_OUT_V2_FUNCTION_GET_ENABLED, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_analog_out_v2->tfp, response_expected, deadline, &error_code);
@@ -309,7 +315,7 @@ int tf_industrial_analog_out_v2_set_voltage(TF_IndustrialAnalogOutV2 *industrial
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -321,7 +327,7 @@ int tf_industrial_analog_out_v2_set_voltage(TF_IndustrialAnalogOutV2 *industrial
 
     voltage = tf_leconvert_uint16_to(voltage); memcpy(buf + 0, &voltage, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_analog_out_v2->tfp, response_expected, deadline, &error_code);
@@ -348,14 +354,14 @@ int tf_industrial_analog_out_v2_get_voltage(TF_IndustrialAnalogOutV2 *industrial
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(industrial_analog_out_v2->tfp, TF_INDUSTRIAL_ANALOG_OUT_V2_FUNCTION_GET_VOLTAGE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_analog_out_v2->tfp, response_expected, deadline, &error_code);
@@ -387,7 +393,7 @@ int tf_industrial_analog_out_v2_set_current(TF_IndustrialAnalogOutV2 *industrial
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -399,7 +405,7 @@ int tf_industrial_analog_out_v2_set_current(TF_IndustrialAnalogOutV2 *industrial
 
     current = tf_leconvert_uint16_to(current); memcpy(buf + 0, &current, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_analog_out_v2->tfp, response_expected, deadline, &error_code);
@@ -426,14 +432,14 @@ int tf_industrial_analog_out_v2_get_current(TF_IndustrialAnalogOutV2 *industrial
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(industrial_analog_out_v2->tfp, TF_INDUSTRIAL_ANALOG_OUT_V2_FUNCTION_GET_CURRENT, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_analog_out_v2->tfp, response_expected, deadline, &error_code);
@@ -465,7 +471,7 @@ int tf_industrial_analog_out_v2_set_configuration(TF_IndustrialAnalogOutV2 *indu
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -478,7 +484,7 @@ int tf_industrial_analog_out_v2_set_configuration(TF_IndustrialAnalogOutV2 *indu
     buf[0] = (uint8_t)voltage_range;
     buf[1] = (uint8_t)current_range;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_analog_out_v2->tfp, response_expected, deadline, &error_code);
@@ -505,14 +511,14 @@ int tf_industrial_analog_out_v2_get_configuration(TF_IndustrialAnalogOutV2 *indu
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(industrial_analog_out_v2->tfp, TF_INDUSTRIAL_ANALOG_OUT_V2_FUNCTION_GET_CONFIGURATION, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_analog_out_v2->tfp, response_expected, deadline, &error_code);
@@ -545,7 +551,7 @@ int tf_industrial_analog_out_v2_set_out_led_config(TF_IndustrialAnalogOutV2 *ind
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -557,7 +563,7 @@ int tf_industrial_analog_out_v2_set_out_led_config(TF_IndustrialAnalogOutV2 *ind
 
     buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_analog_out_v2->tfp, response_expected, deadline, &error_code);
@@ -584,14 +590,14 @@ int tf_industrial_analog_out_v2_get_out_led_config(TF_IndustrialAnalogOutV2 *ind
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(industrial_analog_out_v2->tfp, TF_INDUSTRIAL_ANALOG_OUT_V2_FUNCTION_GET_OUT_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_analog_out_v2->tfp, response_expected, deadline, &error_code);
@@ -623,7 +629,7 @@ int tf_industrial_analog_out_v2_set_out_led_status_config(TF_IndustrialAnalogOut
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -637,7 +643,7 @@ int tf_industrial_analog_out_v2_set_out_led_status_config(TF_IndustrialAnalogOut
     max = tf_leconvert_uint16_to(max); memcpy(buf + 2, &max, 2);
     buf[4] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_analog_out_v2->tfp, response_expected, deadline, &error_code);
@@ -664,14 +670,14 @@ int tf_industrial_analog_out_v2_get_out_led_status_config(TF_IndustrialAnalogOut
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(industrial_analog_out_v2->tfp, TF_INDUSTRIAL_ANALOG_OUT_V2_FUNCTION_GET_OUT_LED_STATUS_CONFIG, 0, 5, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_analog_out_v2->tfp, response_expected, deadline, &error_code);
@@ -705,14 +711,14 @@ int tf_industrial_analog_out_v2_get_spitfp_error_count(TF_IndustrialAnalogOutV2 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(industrial_analog_out_v2->tfp, TF_INDUSTRIAL_ANALOG_OUT_V2_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_analog_out_v2->tfp, response_expected, deadline, &error_code);
@@ -747,7 +753,7 @@ int tf_industrial_analog_out_v2_set_bootloader_mode(TF_IndustrialAnalogOutV2 *in
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -758,7 +764,7 @@ int tf_industrial_analog_out_v2_set_bootloader_mode(TF_IndustrialAnalogOutV2 *in
 
     buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_analog_out_v2->tfp, response_expected, deadline, &error_code);
@@ -790,14 +796,14 @@ int tf_industrial_analog_out_v2_get_bootloader_mode(TF_IndustrialAnalogOutV2 *in
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(industrial_analog_out_v2->tfp, TF_INDUSTRIAL_ANALOG_OUT_V2_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_analog_out_v2->tfp, response_expected, deadline, &error_code);
@@ -829,7 +835,7 @@ int tf_industrial_analog_out_v2_set_write_firmware_pointer(TF_IndustrialAnalogOu
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -841,7 +847,7 @@ int tf_industrial_analog_out_v2_set_write_firmware_pointer(TF_IndustrialAnalogOu
 
     pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_analog_out_v2->tfp, response_expected, deadline, &error_code);
@@ -868,7 +874,7 @@ int tf_industrial_analog_out_v2_write_firmware(TF_IndustrialAnalogOutV2 *industr
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -879,7 +885,7 @@ int tf_industrial_analog_out_v2_write_firmware(TF_IndustrialAnalogOutV2 *industr
 
     memcpy(buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_analog_out_v2->tfp, response_expected, deadline, &error_code);
@@ -911,7 +917,7 @@ int tf_industrial_analog_out_v2_set_status_led_config(TF_IndustrialAnalogOutV2 *
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -923,7 +929,7 @@ int tf_industrial_analog_out_v2_set_status_led_config(TF_IndustrialAnalogOutV2 *
 
     buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_analog_out_v2->tfp, response_expected, deadline, &error_code);
@@ -950,14 +956,14 @@ int tf_industrial_analog_out_v2_get_status_led_config(TF_IndustrialAnalogOutV2 *
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(industrial_analog_out_v2->tfp, TF_INDUSTRIAL_ANALOG_OUT_V2_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_analog_out_v2->tfp, response_expected, deadline, &error_code);
@@ -989,14 +995,14 @@ int tf_industrial_analog_out_v2_get_chip_temperature(TF_IndustrialAnalogOutV2 *i
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(industrial_analog_out_v2->tfp, TF_INDUSTRIAL_ANALOG_OUT_V2_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_analog_out_v2->tfp, response_expected, deadline, &error_code);
@@ -1028,7 +1034,7 @@ int tf_industrial_analog_out_v2_reset(TF_IndustrialAnalogOutV2 *industrial_analo
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1036,7 +1042,7 @@ int tf_industrial_analog_out_v2_reset(TF_IndustrialAnalogOutV2 *industrial_analo
     tf_industrial_analog_out_v2_get_response_expected(industrial_analog_out_v2, TF_INDUSTRIAL_ANALOG_OUT_V2_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(industrial_analog_out_v2->tfp, TF_INDUSTRIAL_ANALOG_OUT_V2_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_analog_out_v2->tfp, response_expected, deadline, &error_code);
@@ -1063,7 +1069,7 @@ int tf_industrial_analog_out_v2_write_uid(TF_IndustrialAnalogOutV2 *industrial_a
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1075,7 +1081,7 @@ int tf_industrial_analog_out_v2_write_uid(TF_IndustrialAnalogOutV2 *industrial_a
 
     uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_analog_out_v2->tfp, response_expected, deadline, &error_code);
@@ -1102,14 +1108,14 @@ int tf_industrial_analog_out_v2_read_uid(TF_IndustrialAnalogOutV2 *industrial_an
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(industrial_analog_out_v2->tfp, TF_INDUSTRIAL_ANALOG_OUT_V2_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_analog_out_v2->tfp, response_expected, deadline, &error_code);
@@ -1141,7 +1147,7 @@ int tf_industrial_analog_out_v2_get_identity(TF_IndustrialAnalogOutV2 *industria
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1149,7 +1155,7 @@ int tf_industrial_analog_out_v2_get_identity(TF_IndustrialAnalogOutV2 *industria
     tf_tfp_prepare_send(industrial_analog_out_v2->tfp, TF_INDUSTRIAL_ANALOG_OUT_V2_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_analog_out_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_analog_out_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_analog_out_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_analog_out_v2->tfp, response_expected, deadline, &error_code);
@@ -1171,7 +1177,7 @@ int tf_industrial_analog_out_v2_get_identity(TF_IndustrialAnalogOutV2 *industria
         if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&industrial_analog_out_v2->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&industrial_analog_out_v2->tfp->spitfp->recv_buf, 3); }
         if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&industrial_analog_out_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&industrial_analog_out_v2->tfp->spitfp->recv_buf, 2); }
         if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL*)industrial_analog_out_v2->tfp->hal, industrial_analog_out_v2->tfp->spitfp->port_id);
+            *ret_position = tf_hal_get_port_name((TF_HAL *)industrial_analog_out_v2->tfp->hal, industrial_analog_out_v2->tfp->spitfp->port_id);
         }
         if (ret_connected_uid != NULL) {
             memcpy(ret_connected_uid, tmp_connected_uid, 8);
@@ -1194,7 +1200,7 @@ int tf_industrial_analog_out_v2_callback_tick(TF_IndustrialAnalogOutV2 *industri
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(industrial_analog_out_v2->tfp, tf_hal_current_time_us((TF_HAL*)industrial_analog_out_v2->tfp->hal) + timeout_us);
+    return tf_tfp_callback_tick(industrial_analog_out_v2->tfp, tf_hal_current_time_us((TF_HAL *)industrial_analog_out_v2->tfp->hal) + timeout_us);
 }
 
 #ifdef __cplusplus

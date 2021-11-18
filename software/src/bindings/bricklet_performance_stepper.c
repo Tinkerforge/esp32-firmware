@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -367,8 +367,14 @@ int tf_performance_stepper_set_response_expected(TF_PerformanceStepper *performa
     return TF_E_OK;
 }
 
-void tf_performance_stepper_set_response_expected_all(TF_PerformanceStepper *performance_stepper, bool response_expected) {
+int tf_performance_stepper_set_response_expected_all(TF_PerformanceStepper *performance_stepper, bool response_expected) {
+    if (performance_stepper == NULL) {
+        return TF_E_NULL;
+    }
+
     memset(performance_stepper->response_expected, response_expected ? 0xFF : 0, 3);
+
+    return TF_E_OK;
 }
 
 int tf_performance_stepper_set_motion_configuration(TF_PerformanceStepper *performance_stepper, uint8_t ramping_mode, int32_t velocity_start, int32_t acceleration_1, int32_t velocity_1, int32_t acceleration_max, int32_t velocity_max, int32_t deceleration_max, int32_t deceleration_1, int32_t velocity_stop, int32_t ramp_zero_wait) {
@@ -376,7 +382,7 @@ int tf_performance_stepper_set_motion_configuration(TF_PerformanceStepper *perfo
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -397,7 +403,7 @@ int tf_performance_stepper_set_motion_configuration(TF_PerformanceStepper *perfo
     velocity_stop = tf_leconvert_int32_to(velocity_stop); memcpy(buf + 29, &velocity_stop, 4);
     ramp_zero_wait = tf_leconvert_int32_to(ramp_zero_wait); memcpy(buf + 33, &ramp_zero_wait, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -424,14 +430,14 @@ int tf_performance_stepper_get_motion_configuration(TF_PerformanceStepper *perfo
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_MOTION_CONFIGURATION, 0, 37, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -472,7 +478,7 @@ int tf_performance_stepper_set_current_position(TF_PerformanceStepper *performan
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -484,7 +490,7 @@ int tf_performance_stepper_set_current_position(TF_PerformanceStepper *performan
 
     position = tf_leconvert_int32_to(position); memcpy(buf + 0, &position, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -511,14 +517,14 @@ int tf_performance_stepper_get_current_position(TF_PerformanceStepper *performan
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_CURRENT_POSITION, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -550,14 +556,14 @@ int tf_performance_stepper_get_current_velocity(TF_PerformanceStepper *performan
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_CURRENT_VELOCITY, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -589,7 +595,7 @@ int tf_performance_stepper_set_target_position(TF_PerformanceStepper *performanc
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -601,7 +607,7 @@ int tf_performance_stepper_set_target_position(TF_PerformanceStepper *performanc
 
     position = tf_leconvert_int32_to(position); memcpy(buf + 0, &position, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -628,14 +634,14 @@ int tf_performance_stepper_get_target_position(TF_PerformanceStepper *performanc
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_TARGET_POSITION, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -667,7 +673,7 @@ int tf_performance_stepper_set_steps(TF_PerformanceStepper *performance_stepper,
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -679,7 +685,7 @@ int tf_performance_stepper_set_steps(TF_PerformanceStepper *performance_stepper,
 
     steps = tf_leconvert_int32_to(steps); memcpy(buf + 0, &steps, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -706,14 +712,14 @@ int tf_performance_stepper_get_steps(TF_PerformanceStepper *performance_stepper,
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_STEPS, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -745,14 +751,14 @@ int tf_performance_stepper_get_remaining_steps(TF_PerformanceStepper *performanc
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_REMAINING_STEPS, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -784,7 +790,7 @@ int tf_performance_stepper_set_step_configuration(TF_PerformanceStepper *perform
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -797,7 +803,7 @@ int tf_performance_stepper_set_step_configuration(TF_PerformanceStepper *perform
     buf[0] = (uint8_t)step_resolution;
     buf[1] = interpolation ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -824,14 +830,14 @@ int tf_performance_stepper_get_step_configuration(TF_PerformanceStepper *perform
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_STEP_CONFIGURATION, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -864,7 +870,7 @@ int tf_performance_stepper_set_motor_current(TF_PerformanceStepper *performance_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -876,7 +882,7 @@ int tf_performance_stepper_set_motor_current(TF_PerformanceStepper *performance_
 
     current = tf_leconvert_uint16_to(current); memcpy(buf + 0, &current, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -903,14 +909,14 @@ int tf_performance_stepper_get_motor_current(TF_PerformanceStepper *performance_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_MOTOR_CURRENT, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -942,7 +948,7 @@ int tf_performance_stepper_set_enabled(TF_PerformanceStepper *performance_steppe
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -954,7 +960,7 @@ int tf_performance_stepper_set_enabled(TF_PerformanceStepper *performance_steppe
 
     buf[0] = enabled ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -981,14 +987,14 @@ int tf_performance_stepper_get_enabled(TF_PerformanceStepper *performance_steppe
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_ENABLED, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -1020,7 +1026,7 @@ int tf_performance_stepper_set_basic_configuration(TF_PerformanceStepper *perfor
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1039,7 +1045,7 @@ int tf_performance_stepper_set_basic_configuration(TF_PerformanceStepper *perfor
     classic_threshold = tf_leconvert_uint16_to(classic_threshold); memcpy(buf + 12, &classic_threshold, 2);
     buf[14] = high_velocity_chopper_mode ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -1066,14 +1072,14 @@ int tf_performance_stepper_get_basic_configuration(TF_PerformanceStepper *perfor
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_BASIC_CONFIGURATION, 0, 15, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -1112,7 +1118,7 @@ int tf_performance_stepper_set_spreadcycle_configuration(TF_PerformanceStepper *
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1132,7 +1138,7 @@ int tf_performance_stepper_set_spreadcycle_configuration(TF_PerformanceStepper *
     buf[7] = (uint8_t)comparator_blank_time;
     buf[8] = fast_decay_without_comparator ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -1159,14 +1165,14 @@ int tf_performance_stepper_get_spreadcycle_configuration(TF_PerformanceStepper *
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_SPREADCYCLE_CONFIGURATION, 0, 10, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -1207,7 +1213,7 @@ int tf_performance_stepper_set_stealth_configuration(TF_PerformanceStepper *perf
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1226,7 +1232,7 @@ int tf_performance_stepper_set_stealth_configuration(TF_PerformanceStepper *perf
     buf[6] = (uint8_t)regulation_loop_gradient;
     buf[7] = (uint8_t)amplitude_limit;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -1253,14 +1259,14 @@ int tf_performance_stepper_get_stealth_configuration(TF_PerformanceStepper *perf
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_STEALTH_CONFIGURATION, 0, 8, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -1299,7 +1305,7 @@ int tf_performance_stepper_set_coolstep_configuration(TF_PerformanceStepper *per
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1317,7 +1323,7 @@ int tf_performance_stepper_set_coolstep_configuration(TF_PerformanceStepper *per
     buf[5] = (uint8_t)stallguard_threshold_value;
     buf[6] = (uint8_t)stallguard_mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -1344,14 +1350,14 @@ int tf_performance_stepper_get_coolstep_configuration(TF_PerformanceStepper *per
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_COOLSTEP_CONFIGURATION, 0, 7, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -1389,7 +1395,7 @@ int tf_performance_stepper_set_short_configuration(TF_PerformanceStepper *perfor
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1407,7 +1413,7 @@ int tf_performance_stepper_set_short_configuration(TF_PerformanceStepper *perfor
     buf[5] = short_detection_delay ? 1 : 0;
     buf[6] = (uint8_t)filter_time;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -1434,14 +1440,14 @@ int tf_performance_stepper_get_short_configuration(TF_PerformanceStepper *perfor
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_SHORT_CONFIGURATION, 0, 7, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -1479,14 +1485,14 @@ int tf_performance_stepper_get_driver_status(TF_PerformanceStepper *performance_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_DRIVER_STATUS, 0, 8, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -1525,14 +1531,14 @@ int tf_performance_stepper_get_input_voltage(TF_PerformanceStepper *performance_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_INPUT_VOLTAGE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -1564,14 +1570,14 @@ int tf_performance_stepper_get_temperature(TF_PerformanceStepper *performance_st
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -1603,7 +1609,7 @@ int tf_performance_stepper_set_gpio_configuration(TF_PerformanceStepper *perform
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1616,7 +1622,7 @@ int tf_performance_stepper_set_gpio_configuration(TF_PerformanceStepper *perform
     debounce = tf_leconvert_uint16_to(debounce); memcpy(buf + 0, &debounce, 2);
     stop_deceleration = tf_leconvert_int32_to(stop_deceleration); memcpy(buf + 2, &stop_deceleration, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -1643,14 +1649,14 @@ int tf_performance_stepper_get_gpio_configuration(TF_PerformanceStepper *perform
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_GPIO_CONFIGURATION, 0, 6, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -1683,7 +1689,7 @@ int tf_performance_stepper_set_gpio_action(TF_PerformanceStepper *performance_st
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1696,7 +1702,7 @@ int tf_performance_stepper_set_gpio_action(TF_PerformanceStepper *performance_st
     buf[0] = (uint8_t)channel;
     action = tf_leconvert_uint32_to(action); memcpy(buf + 1, &action, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -1723,7 +1729,7 @@ int tf_performance_stepper_get_gpio_action(TF_PerformanceStepper *performance_st
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1734,7 +1740,7 @@ int tf_performance_stepper_get_gpio_action(TF_PerformanceStepper *performance_st
 
     buf[0] = (uint8_t)channel;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -1766,14 +1772,14 @@ int tf_performance_stepper_get_gpio_state(TF_PerformanceStepper *performance_ste
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_GPIO_STATE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -1805,7 +1811,7 @@ int tf_performance_stepper_set_error_led_config(TF_PerformanceStepper *performan
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1817,7 +1823,7 @@ int tf_performance_stepper_set_error_led_config(TF_PerformanceStepper *performan
 
     buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -1844,14 +1850,14 @@ int tf_performance_stepper_get_error_led_config(TF_PerformanceStepper *performan
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_ERROR_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -1883,7 +1889,7 @@ int tf_performance_stepper_set_enable_led_config(TF_PerformanceStepper *performa
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1895,7 +1901,7 @@ int tf_performance_stepper_set_enable_led_config(TF_PerformanceStepper *performa
 
     buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -1922,14 +1928,14 @@ int tf_performance_stepper_get_enable_led_config(TF_PerformanceStepper *performa
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_ENABLE_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -1961,7 +1967,7 @@ int tf_performance_stepper_set_steps_led_config(TF_PerformanceStepper *performan
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1973,7 +1979,7 @@ int tf_performance_stepper_set_steps_led_config(TF_PerformanceStepper *performan
 
     buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -2000,14 +2006,14 @@ int tf_performance_stepper_get_steps_led_config(TF_PerformanceStepper *performan
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_STEPS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -2039,7 +2045,7 @@ int tf_performance_stepper_set_gpio_led_config(TF_PerformanceStepper *performanc
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2052,7 +2058,7 @@ int tf_performance_stepper_set_gpio_led_config(TF_PerformanceStepper *performanc
     buf[0] = (uint8_t)channel;
     buf[1] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -2079,7 +2085,7 @@ int tf_performance_stepper_get_gpio_led_config(TF_PerformanceStepper *performanc
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2090,7 +2096,7 @@ int tf_performance_stepper_get_gpio_led_config(TF_PerformanceStepper *performanc
 
     buf[0] = (uint8_t)channel;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -2122,7 +2128,7 @@ int tf_performance_stepper_write_register(TF_PerformanceStepper *performance_ste
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2134,7 +2140,7 @@ int tf_performance_stepper_write_register(TF_PerformanceStepper *performance_ste
     buf[0] = (uint8_t)register_;
     value = tf_leconvert_uint32_to(value); memcpy(buf + 1, &value, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -2166,7 +2172,7 @@ int tf_performance_stepper_read_register(TF_PerformanceStepper *performance_step
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2177,7 +2183,7 @@ int tf_performance_stepper_read_register(TF_PerformanceStepper *performance_step
 
     buf[0] = (uint8_t)register_;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -2210,14 +2216,14 @@ int tf_performance_stepper_get_spitfp_error_count(TF_PerformanceStepper *perform
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -2252,7 +2258,7 @@ int tf_performance_stepper_set_bootloader_mode(TF_PerformanceStepper *performanc
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2263,7 +2269,7 @@ int tf_performance_stepper_set_bootloader_mode(TF_PerformanceStepper *performanc
 
     buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -2295,14 +2301,14 @@ int tf_performance_stepper_get_bootloader_mode(TF_PerformanceStepper *performanc
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -2334,7 +2340,7 @@ int tf_performance_stepper_set_write_firmware_pointer(TF_PerformanceStepper *per
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2346,7 +2352,7 @@ int tf_performance_stepper_set_write_firmware_pointer(TF_PerformanceStepper *per
 
     pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -2373,7 +2379,7 @@ int tf_performance_stepper_write_firmware(TF_PerformanceStepper *performance_ste
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2384,7 +2390,7 @@ int tf_performance_stepper_write_firmware(TF_PerformanceStepper *performance_ste
 
     memcpy(buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -2416,7 +2422,7 @@ int tf_performance_stepper_set_status_led_config(TF_PerformanceStepper *performa
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2428,7 +2434,7 @@ int tf_performance_stepper_set_status_led_config(TF_PerformanceStepper *performa
 
     buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -2455,14 +2461,14 @@ int tf_performance_stepper_get_status_led_config(TF_PerformanceStepper *performa
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -2494,14 +2500,14 @@ int tf_performance_stepper_get_chip_temperature(TF_PerformanceStepper *performan
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -2533,7 +2539,7 @@ int tf_performance_stepper_reset(TF_PerformanceStepper *performance_stepper) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2541,7 +2547,7 @@ int tf_performance_stepper_reset(TF_PerformanceStepper *performance_stepper) {
     tf_performance_stepper_get_response_expected(performance_stepper, TF_PERFORMANCE_STEPPER_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -2568,7 +2574,7 @@ int tf_performance_stepper_write_uid(TF_PerformanceStepper *performance_stepper,
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2580,7 +2586,7 @@ int tf_performance_stepper_write_uid(TF_PerformanceStepper *performance_stepper,
 
     uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -2607,14 +2613,14 @@ int tf_performance_stepper_read_uid(TF_PerformanceStepper *performance_stepper, 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -2646,7 +2652,7 @@ int tf_performance_stepper_get_identity(TF_PerformanceStepper *performance_stepp
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2654,7 +2660,7 @@ int tf_performance_stepper_get_identity(TF_PerformanceStepper *performance_stepp
     tf_tfp_prepare_send(performance_stepper->tfp, TF_PERFORMANCE_STEPPER_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL*)performance_stepper->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_stepper->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(performance_stepper->tfp, response_expected, deadline, &error_code);
@@ -2676,7 +2682,7 @@ int tf_performance_stepper_get_identity(TF_PerformanceStepper *performance_stepp
         if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&performance_stepper->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&performance_stepper->tfp->spitfp->recv_buf, 3); }
         if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&performance_stepper->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_stepper->tfp->spitfp->recv_buf, 2); }
         if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL*)performance_stepper->tfp->hal, performance_stepper->tfp->spitfp->port_id);
+            *ret_position = tf_hal_get_port_name((TF_HAL *)performance_stepper->tfp->hal, performance_stepper->tfp->spitfp->port_id);
         }
         if (ret_connected_uid != NULL) {
             memcpy(ret_connected_uid, tmp_connected_uid, 8);
@@ -2699,7 +2705,7 @@ int tf_performance_stepper_callback_tick(TF_PerformanceStepper *performance_step
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(performance_stepper->tfp, tf_hal_current_time_us((TF_HAL*)performance_stepper->tfp->hal) + timeout_us);
+    return tf_tfp_callback_tick(performance_stepper->tfp, tf_hal_current_time_us((TF_HAL *)performance_stepper->tfp->hal) + timeout_us);
 }
 
 #ifdef __cplusplus

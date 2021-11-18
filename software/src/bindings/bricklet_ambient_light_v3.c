@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,21 +27,21 @@ static bool tf_ambient_light_v3_callback_handler(void *dev, uint8_t fid, TF_Pack
     (void)payload;
 
     switch (fid) {
-
         case TF_AMBIENT_LIGHT_V3_CALLBACK_ILLUMINANCE: {
-            TF_AmbientLightV3IlluminanceHandler fn = ambient_light_v3->illuminance_handler;
+            TF_AmbientLightV3_IlluminanceHandler fn = ambient_light_v3->illuminance_handler;
             void *user_data = ambient_light_v3->illuminance_user_data;
             if (fn == NULL) {
                 return false;
             }
 
             uint32_t illuminance = tf_packet_buffer_read_uint32_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal);
             hal_common->locked = true;
             fn(ambient_light_v3, illuminance, user_data);
             hal_common->locked = false;
             break;
         }
+
         default:
             return false;
     }
@@ -198,8 +198,14 @@ int tf_ambient_light_v3_set_response_expected(TF_AmbientLightV3 *ambient_light_v
     return TF_E_OK;
 }
 
-void tf_ambient_light_v3_set_response_expected_all(TF_AmbientLightV3 *ambient_light_v3, bool response_expected) {
+int tf_ambient_light_v3_set_response_expected_all(TF_AmbientLightV3 *ambient_light_v3, bool response_expected) {
+    if (ambient_light_v3 == NULL) {
+        return TF_E_NULL;
+    }
+
     memset(ambient_light_v3->response_expected, response_expected ? 0xFF : 0, 1);
+
+    return TF_E_OK;
 }
 
 int tf_ambient_light_v3_get_illuminance(TF_AmbientLightV3 *ambient_light_v3, uint32_t *ret_illuminance) {
@@ -207,14 +213,14 @@ int tf_ambient_light_v3_get_illuminance(TF_AmbientLightV3 *ambient_light_v3, uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(ambient_light_v3->tfp, TF_AMBIENT_LIGHT_V3_FUNCTION_GET_ILLUMINANCE, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(ambient_light_v3->tfp, response_expected, deadline, &error_code);
@@ -246,7 +252,7 @@ int tf_ambient_light_v3_set_illuminance_callback_configuration(TF_AmbientLightV3
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -262,7 +268,7 @@ int tf_ambient_light_v3_set_illuminance_callback_configuration(TF_AmbientLightV3
     min = tf_leconvert_uint32_to(min); memcpy(buf + 6, &min, 4);
     max = tf_leconvert_uint32_to(max); memcpy(buf + 10, &max, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(ambient_light_v3->tfp, response_expected, deadline, &error_code);
@@ -289,14 +295,14 @@ int tf_ambient_light_v3_get_illuminance_callback_configuration(TF_AmbientLightV3
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(ambient_light_v3->tfp, TF_AMBIENT_LIGHT_V3_FUNCTION_GET_ILLUMINANCE_CALLBACK_CONFIGURATION, 0, 14, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(ambient_light_v3->tfp, response_expected, deadline, &error_code);
@@ -332,7 +338,7 @@ int tf_ambient_light_v3_set_configuration(TF_AmbientLightV3 *ambient_light_v3, u
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -345,7 +351,7 @@ int tf_ambient_light_v3_set_configuration(TF_AmbientLightV3 *ambient_light_v3, u
     buf[0] = (uint8_t)illuminance_range;
     buf[1] = (uint8_t)integration_time;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(ambient_light_v3->tfp, response_expected, deadline, &error_code);
@@ -372,14 +378,14 @@ int tf_ambient_light_v3_get_configuration(TF_AmbientLightV3 *ambient_light_v3, u
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(ambient_light_v3->tfp, TF_AMBIENT_LIGHT_V3_FUNCTION_GET_CONFIGURATION, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(ambient_light_v3->tfp, response_expected, deadline, &error_code);
@@ -412,14 +418,14 @@ int tf_ambient_light_v3_get_spitfp_error_count(TF_AmbientLightV3 *ambient_light_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(ambient_light_v3->tfp, TF_AMBIENT_LIGHT_V3_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(ambient_light_v3->tfp, response_expected, deadline, &error_code);
@@ -454,7 +460,7 @@ int tf_ambient_light_v3_set_bootloader_mode(TF_AmbientLightV3 *ambient_light_v3,
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -465,7 +471,7 @@ int tf_ambient_light_v3_set_bootloader_mode(TF_AmbientLightV3 *ambient_light_v3,
 
     buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(ambient_light_v3->tfp, response_expected, deadline, &error_code);
@@ -497,14 +503,14 @@ int tf_ambient_light_v3_get_bootloader_mode(TF_AmbientLightV3 *ambient_light_v3,
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(ambient_light_v3->tfp, TF_AMBIENT_LIGHT_V3_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(ambient_light_v3->tfp, response_expected, deadline, &error_code);
@@ -536,7 +542,7 @@ int tf_ambient_light_v3_set_write_firmware_pointer(TF_AmbientLightV3 *ambient_li
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -548,7 +554,7 @@ int tf_ambient_light_v3_set_write_firmware_pointer(TF_AmbientLightV3 *ambient_li
 
     pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(ambient_light_v3->tfp, response_expected, deadline, &error_code);
@@ -575,7 +581,7 @@ int tf_ambient_light_v3_write_firmware(TF_AmbientLightV3 *ambient_light_v3, cons
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -586,7 +592,7 @@ int tf_ambient_light_v3_write_firmware(TF_AmbientLightV3 *ambient_light_v3, cons
 
     memcpy(buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(ambient_light_v3->tfp, response_expected, deadline, &error_code);
@@ -618,7 +624,7 @@ int tf_ambient_light_v3_set_status_led_config(TF_AmbientLightV3 *ambient_light_v
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -630,7 +636,7 @@ int tf_ambient_light_v3_set_status_led_config(TF_AmbientLightV3 *ambient_light_v
 
     buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(ambient_light_v3->tfp, response_expected, deadline, &error_code);
@@ -657,14 +663,14 @@ int tf_ambient_light_v3_get_status_led_config(TF_AmbientLightV3 *ambient_light_v
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(ambient_light_v3->tfp, TF_AMBIENT_LIGHT_V3_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(ambient_light_v3->tfp, response_expected, deadline, &error_code);
@@ -696,14 +702,14 @@ int tf_ambient_light_v3_get_chip_temperature(TF_AmbientLightV3 *ambient_light_v3
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(ambient_light_v3->tfp, TF_AMBIENT_LIGHT_V3_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(ambient_light_v3->tfp, response_expected, deadline, &error_code);
@@ -735,7 +741,7 @@ int tf_ambient_light_v3_reset(TF_AmbientLightV3 *ambient_light_v3) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -743,7 +749,7 @@ int tf_ambient_light_v3_reset(TF_AmbientLightV3 *ambient_light_v3) {
     tf_ambient_light_v3_get_response_expected(ambient_light_v3, TF_AMBIENT_LIGHT_V3_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(ambient_light_v3->tfp, TF_AMBIENT_LIGHT_V3_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(ambient_light_v3->tfp, response_expected, deadline, &error_code);
@@ -770,7 +776,7 @@ int tf_ambient_light_v3_write_uid(TF_AmbientLightV3 *ambient_light_v3, uint32_t 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -782,7 +788,7 @@ int tf_ambient_light_v3_write_uid(TF_AmbientLightV3 *ambient_light_v3, uint32_t 
 
     uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(ambient_light_v3->tfp, response_expected, deadline, &error_code);
@@ -809,14 +815,14 @@ int tf_ambient_light_v3_read_uid(TF_AmbientLightV3 *ambient_light_v3, uint32_t *
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(ambient_light_v3->tfp, TF_AMBIENT_LIGHT_V3_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(ambient_light_v3->tfp, response_expected, deadline, &error_code);
@@ -848,7 +854,7 @@ int tf_ambient_light_v3_get_identity(TF_AmbientLightV3 *ambient_light_v3, char r
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -856,7 +862,7 @@ int tf_ambient_light_v3_get_identity(TF_AmbientLightV3 *ambient_light_v3, char r
     tf_tfp_prepare_send(ambient_light_v3->tfp, TF_AMBIENT_LIGHT_V3_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)ambient_light_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)ambient_light_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)ambient_light_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(ambient_light_v3->tfp, response_expected, deadline, &error_code);
@@ -878,7 +884,7 @@ int tf_ambient_light_v3_get_identity(TF_AmbientLightV3 *ambient_light_v3, char r
         if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&ambient_light_v3->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&ambient_light_v3->tfp->spitfp->recv_buf, 3); }
         if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&ambient_light_v3->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&ambient_light_v3->tfp->spitfp->recv_buf, 2); }
         if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL*)ambient_light_v3->tfp->hal, ambient_light_v3->tfp->spitfp->port_id);
+            *ret_position = tf_hal_get_port_name((TF_HAL *)ambient_light_v3->tfp->hal, ambient_light_v3->tfp->spitfp->port_id);
         }
         if (ret_connected_uid != NULL) {
             memcpy(ret_connected_uid, tmp_connected_uid, 8);
@@ -895,7 +901,7 @@ int tf_ambient_light_v3_get_identity(TF_AmbientLightV3 *ambient_light_v3, char r
     return tf_tfp_get_error(error_code);
 }
 #if TF_IMPLEMENT_CALLBACKS != 0
-int tf_ambient_light_v3_register_illuminance_callback(TF_AmbientLightV3 *ambient_light_v3, TF_AmbientLightV3IlluminanceHandler handler, void *user_data) {
+int tf_ambient_light_v3_register_illuminance_callback(TF_AmbientLightV3 *ambient_light_v3, TF_AmbientLightV3_IlluminanceHandler handler, void *user_data) {
     if (ambient_light_v3 == NULL) {
         return TF_E_NULL;
     }
@@ -918,7 +924,7 @@ int tf_ambient_light_v3_callback_tick(TF_AmbientLightV3 *ambient_light_v3, uint3
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(ambient_light_v3->tfp, tf_hal_current_time_us((TF_HAL*)ambient_light_v3->tfp->hal) + timeout_us);
+    return tf_tfp_callback_tick(ambient_light_v3->tfp, tf_hal_current_time_us((TF_HAL *)ambient_light_v3->tfp->hal) + timeout_us);
 }
 
 #ifdef __cplusplus

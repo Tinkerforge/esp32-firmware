@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,9 +27,9 @@ extern "C" {
 struct TF_ARINC429;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_ARINC429HeartbeatMessageHandler)(struct TF_ARINC429 *device, uint8_t channel, uint8_t status, uint8_t seq_number, uint16_t timestamp, uint16_t frames_processed, uint16_t frames_lost, void *user_data);
-typedef void (*TF_ARINC429FrameMessageHandler)(struct TF_ARINC429 *device, uint8_t channel, uint8_t status, uint8_t seq_number, uint16_t timestamp, uint32_t frame, uint16_t age, void *user_data);
-typedef void (*TF_ARINC429SchedulerMessageHandler)(struct TF_ARINC429 *device, uint8_t channel, uint8_t status, uint8_t seq_number, uint16_t timestamp, uint8_t userdata, void *user_data);
+typedef void (*TF_ARINC429_HeartbeatMessageHandler)(struct TF_ARINC429 *device, uint8_t channel, uint8_t status, uint8_t seq_number, uint16_t timestamp, uint16_t frames_processed, uint16_t frames_lost, void *user_data);
+typedef void (*TF_ARINC429_FrameMessageHandler)(struct TF_ARINC429 *device, uint8_t channel, uint8_t status, uint8_t seq_number, uint16_t timestamp, uint32_t frame, uint16_t age, void *user_data);
+typedef void (*TF_ARINC429_SchedulerMessageHandler)(struct TF_ARINC429 *device, uint8_t channel, uint8_t status, uint8_t seq_number, uint16_t timestamp, uint8_t userdata, void *user_data);
 
 #endif
 /**
@@ -40,13 +40,13 @@ typedef void (*TF_ARINC429SchedulerMessageHandler)(struct TF_ARINC429 *device, u
 typedef struct TF_ARINC429 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_ARINC429HeartbeatMessageHandler heartbeat_message_handler;
+    TF_ARINC429_HeartbeatMessageHandler heartbeat_message_handler;
     void *heartbeat_message_user_data;
 
-    TF_ARINC429FrameMessageHandler frame_message_handler;
+    TF_ARINC429_FrameMessageHandler frame_message_handler;
     void *frame_message_user_data;
 
-    TF_ARINC429SchedulerMessageHandler scheduler_message_handler;
+    TF_ARINC429_SchedulerMessageHandler scheduler_message_handler;
     void *scheduler_message_user_data;
 
 #endif
@@ -564,7 +564,7 @@ int tf_arinc429_set_response_expected(TF_ARINC429 *arinc429, uint8_t function_id
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_arinc429_set_response_expected_all(TF_ARINC429 *arinc429, bool response_expected);
+int tf_arinc429_set_response_expected_all(TF_ARINC429 *arinc429, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_ARINC429
@@ -585,7 +585,7 @@ void tf_arinc429_set_response_expected_all(TF_ARINC429 *arinc429, bool response_
  * * Frames Processed: number of Arinc429 frames that are transmitted or received on the respective channels TX, RX1 and RX2.
  * * Frames Lost:      TX channel: number of Arinc429 frames that could not be transmitted due to a full transmit FIFO buffer, RX channels: number of received Arinc429 frames that could not be reported due to a full callback FIFO buffer.
  */
-int tf_arinc429_register_heartbeat_message_callback(TF_ARINC429 *arinc429, TF_ARINC429HeartbeatMessageHandler handler, void *user_data);
+int tf_arinc429_register_heartbeat_message_callback(TF_ARINC429 *arinc429, TF_ARINC429_HeartbeatMessageHandler handler, void *user_data);
 
 
 /**
@@ -605,7 +605,7 @@ int tf_arinc429_register_heartbeat_message_callback(TF_ARINC429 *arinc429, TF_AR
  * * Frame:        holds the complete Arinc429 frame including the label and SDI bits as a 32 bit integer. If 'parity_auto' is set for the channel, the parity bit will always come as 0. Opposite to the line transmission format, in the API functions the label code is mirrored such that the label code can directly be extracted from the frame by simply grabbing the lower 8 bits.
  * * Age:          time in milliseconds since this frame (label + SDI combination) was received last. If not received for so far or after a previous timeout, 60000 or the timeout value set with the {@link tf_arinc429_set_rx_callback_configuration} will be returned.
  */
-int tf_arinc429_register_frame_message_callback(TF_ARINC429 *arinc429, TF_ARINC429FrameMessageHandler handler, void *user_data);
+int tf_arinc429_register_frame_message_callback(TF_ARINC429 *arinc429, TF_ARINC429_FrameMessageHandler handler, void *user_data);
 
 
 /**
@@ -624,7 +624,7 @@ int tf_arinc429_register_frame_message_callback(TF_ARINC429 *arinc429, TF_ARINC4
  * * Timestamp:        running counter that is incremented on every millisecond, starting when the bricklet is powered up and rolling over after 65535 to 0. This counter can be used to measure the relative timing between frame receptions.
  * * Userdata:         8 bit number as set in the scheduler callback job
  */
-int tf_arinc429_register_scheduler_message_callback(TF_ARINC429 *arinc429, TF_ARINC429SchedulerMessageHandler handler, void *user_data);
+int tf_arinc429_register_scheduler_message_callback(TF_ARINC429 *arinc429, TF_ARINC429_SchedulerMessageHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

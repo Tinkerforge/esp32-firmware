@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,9 +27,8 @@ static bool tf_imu_v3_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *
     (void)payload;
 
     switch (fid) {
-
         case TF_IMU_V3_CALLBACK_ACCELERATION: {
-            TF_IMUV3AccelerationHandler fn = imu_v3->acceleration_handler;
+            TF_IMUV3_AccelerationHandler fn = imu_v3->acceleration_handler;
             void *user_data = imu_v3->acceleration_user_data;
             if (fn == NULL) {
                 return false;
@@ -38,7 +37,7 @@ static bool tf_imu_v3_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *
             int16_t x = tf_packet_buffer_read_int16_t(payload);
             int16_t y = tf_packet_buffer_read_int16_t(payload);
             int16_t z = tf_packet_buffer_read_int16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal);
             hal_common->locked = true;
             fn(imu_v3, x, y, z, user_data);
             hal_common->locked = false;
@@ -46,7 +45,7 @@ static bool tf_imu_v3_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *
         }
 
         case TF_IMU_V3_CALLBACK_MAGNETIC_FIELD: {
-            TF_IMUV3MagneticFieldHandler fn = imu_v3->magnetic_field_handler;
+            TF_IMUV3_MagneticFieldHandler fn = imu_v3->magnetic_field_handler;
             void *user_data = imu_v3->magnetic_field_user_data;
             if (fn == NULL) {
                 return false;
@@ -55,7 +54,7 @@ static bool tf_imu_v3_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *
             int16_t x = tf_packet_buffer_read_int16_t(payload);
             int16_t y = tf_packet_buffer_read_int16_t(payload);
             int16_t z = tf_packet_buffer_read_int16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal);
             hal_common->locked = true;
             fn(imu_v3, x, y, z, user_data);
             hal_common->locked = false;
@@ -63,7 +62,7 @@ static bool tf_imu_v3_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *
         }
 
         case TF_IMU_V3_CALLBACK_ANGULAR_VELOCITY: {
-            TF_IMUV3AngularVelocityHandler fn = imu_v3->angular_velocity_handler;
+            TF_IMUV3_AngularVelocityHandler fn = imu_v3->angular_velocity_handler;
             void *user_data = imu_v3->angular_velocity_user_data;
             if (fn == NULL) {
                 return false;
@@ -72,7 +71,7 @@ static bool tf_imu_v3_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *
             int16_t x = tf_packet_buffer_read_int16_t(payload);
             int16_t y = tf_packet_buffer_read_int16_t(payload);
             int16_t z = tf_packet_buffer_read_int16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal);
             hal_common->locked = true;
             fn(imu_v3, x, y, z, user_data);
             hal_common->locked = false;
@@ -80,14 +79,14 @@ static bool tf_imu_v3_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *
         }
 
         case TF_IMU_V3_CALLBACK_TEMPERATURE: {
-            TF_IMUV3TemperatureHandler fn = imu_v3->temperature_handler;
+            TF_IMUV3_TemperatureHandler fn = imu_v3->temperature_handler;
             void *user_data = imu_v3->temperature_user_data;
             if (fn == NULL) {
                 return false;
             }
 
             int8_t temperature = tf_packet_buffer_read_int8_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal);
             hal_common->locked = true;
             fn(imu_v3, temperature, user_data);
             hal_common->locked = false;
@@ -95,7 +94,7 @@ static bool tf_imu_v3_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *
         }
 
         case TF_IMU_V3_CALLBACK_LINEAR_ACCELERATION: {
-            TF_IMUV3LinearAccelerationHandler fn = imu_v3->linear_acceleration_handler;
+            TF_IMUV3_LinearAccelerationHandler fn = imu_v3->linear_acceleration_handler;
             void *user_data = imu_v3->linear_acceleration_user_data;
             if (fn == NULL) {
                 return false;
@@ -104,7 +103,7 @@ static bool tf_imu_v3_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *
             int16_t x = tf_packet_buffer_read_int16_t(payload);
             int16_t y = tf_packet_buffer_read_int16_t(payload);
             int16_t z = tf_packet_buffer_read_int16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal);
             hal_common->locked = true;
             fn(imu_v3, x, y, z, user_data);
             hal_common->locked = false;
@@ -112,7 +111,7 @@ static bool tf_imu_v3_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *
         }
 
         case TF_IMU_V3_CALLBACK_GRAVITY_VECTOR: {
-            TF_IMUV3GravityVectorHandler fn = imu_v3->gravity_vector_handler;
+            TF_IMUV3_GravityVectorHandler fn = imu_v3->gravity_vector_handler;
             void *user_data = imu_v3->gravity_vector_user_data;
             if (fn == NULL) {
                 return false;
@@ -121,7 +120,7 @@ static bool tf_imu_v3_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *
             int16_t x = tf_packet_buffer_read_int16_t(payload);
             int16_t y = tf_packet_buffer_read_int16_t(payload);
             int16_t z = tf_packet_buffer_read_int16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal);
             hal_common->locked = true;
             fn(imu_v3, x, y, z, user_data);
             hal_common->locked = false;
@@ -129,7 +128,7 @@ static bool tf_imu_v3_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *
         }
 
         case TF_IMU_V3_CALLBACK_ORIENTATION: {
-            TF_IMUV3OrientationHandler fn = imu_v3->orientation_handler;
+            TF_IMUV3_OrientationHandler fn = imu_v3->orientation_handler;
             void *user_data = imu_v3->orientation_user_data;
             if (fn == NULL) {
                 return false;
@@ -138,7 +137,7 @@ static bool tf_imu_v3_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *
             int16_t heading = tf_packet_buffer_read_int16_t(payload);
             int16_t roll = tf_packet_buffer_read_int16_t(payload);
             int16_t pitch = tf_packet_buffer_read_int16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal);
             hal_common->locked = true;
             fn(imu_v3, heading, roll, pitch, user_data);
             hal_common->locked = false;
@@ -146,7 +145,7 @@ static bool tf_imu_v3_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *
         }
 
         case TF_IMU_V3_CALLBACK_QUATERNION: {
-            TF_IMUV3QuaternionHandler fn = imu_v3->quaternion_handler;
+            TF_IMUV3_QuaternionHandler fn = imu_v3->quaternion_handler;
             void *user_data = imu_v3->quaternion_user_data;
             if (fn == NULL) {
                 return false;
@@ -156,7 +155,7 @@ static bool tf_imu_v3_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *
             int16_t x = tf_packet_buffer_read_int16_t(payload);
             int16_t y = tf_packet_buffer_read_int16_t(payload);
             int16_t z = tf_packet_buffer_read_int16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal);
             hal_common->locked = true;
             fn(imu_v3, w, x, y, z, user_data);
             hal_common->locked = false;
@@ -164,7 +163,7 @@ static bool tf_imu_v3_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *
         }
 
         case TF_IMU_V3_CALLBACK_ALL_DATA: {
-            TF_IMUV3AllDataHandler fn = imu_v3->all_data_handler;
+            TF_IMUV3_AllDataHandler fn = imu_v3->all_data_handler;
             void *user_data = imu_v3->all_data_user_data;
             if (fn == NULL) {
                 return false;
@@ -179,12 +178,13 @@ static bool tf_imu_v3_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *
             int16_t gravity_vector[3]; for (i = 0; i < 3; ++i) gravity_vector[i] = tf_packet_buffer_read_int16_t(payload);
             int8_t temperature = tf_packet_buffer_read_int8_t(payload);
             uint8_t calibration_status = tf_packet_buffer_read_uint8_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal);
             hal_common->locked = true;
             fn(imu_v3, acceleration, magnetic_field, angular_velocity, euler_angle, quaternion, linear_acceleration, gravity_vector, temperature, calibration_status, user_data);
             hal_common->locked = false;
             break;
         }
+
         default:
             return false;
     }
@@ -450,8 +450,14 @@ int tf_imu_v3_set_response_expected(TF_IMUV3 *imu_v3, uint8_t function_id, bool 
     return TF_E_OK;
 }
 
-void tf_imu_v3_set_response_expected_all(TF_IMUV3 *imu_v3, bool response_expected) {
+int tf_imu_v3_set_response_expected_all(TF_IMUV3 *imu_v3, bool response_expected) {
+    if (imu_v3 == NULL) {
+        return TF_E_NULL;
+    }
+
     memset(imu_v3->response_expected, response_expected ? 0xFF : 0, 2);
+
+    return TF_E_OK;
 }
 
 int tf_imu_v3_get_acceleration(TF_IMUV3 *imu_v3, int16_t *ret_x, int16_t *ret_y, int16_t *ret_z) {
@@ -459,14 +465,14 @@ int tf_imu_v3_get_acceleration(TF_IMUV3 *imu_v3, int16_t *ret_x, int16_t *ret_y,
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_GET_ACCELERATION, 0, 6, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -500,14 +506,14 @@ int tf_imu_v3_get_magnetic_field(TF_IMUV3 *imu_v3, int16_t *ret_x, int16_t *ret_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_GET_MAGNETIC_FIELD, 0, 6, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -541,14 +547,14 @@ int tf_imu_v3_get_angular_velocity(TF_IMUV3 *imu_v3, int16_t *ret_x, int16_t *re
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_GET_ANGULAR_VELOCITY, 0, 6, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -582,14 +588,14 @@ int tf_imu_v3_get_temperature(TF_IMUV3 *imu_v3, int8_t *ret_temperature) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_GET_TEMPERATURE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -621,14 +627,14 @@ int tf_imu_v3_get_orientation(TF_IMUV3 *imu_v3, int16_t *ret_heading, int16_t *r
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_GET_ORIENTATION, 0, 6, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -662,14 +668,14 @@ int tf_imu_v3_get_linear_acceleration(TF_IMUV3 *imu_v3, int16_t *ret_x, int16_t 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_GET_LINEAR_ACCELERATION, 0, 6, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -703,14 +709,14 @@ int tf_imu_v3_get_gravity_vector(TF_IMUV3 *imu_v3, int16_t *ret_x, int16_t *ret_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_GET_GRAVITY_VECTOR, 0, 6, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -744,14 +750,14 @@ int tf_imu_v3_get_quaternion(TF_IMUV3 *imu_v3, int16_t *ret_w, int16_t *ret_x, i
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_GET_QUATERNION, 0, 8, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -786,7 +792,7 @@ int tf_imu_v3_get_all_data(TF_IMUV3 *imu_v3, int16_t ret_acceleration[3], int16_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -794,7 +800,7 @@ int tf_imu_v3_get_all_data(TF_IMUV3 *imu_v3, int16_t ret_acceleration[3], int16_
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_GET_ALL_DATA, 0, 46, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -834,14 +840,14 @@ int tf_imu_v3_save_calibration(TF_IMUV3 *imu_v3, bool *ret_calibration_done) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_SAVE_CALIBRATION, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -873,7 +879,7 @@ int tf_imu_v3_set_sensor_configuration(TF_IMUV3 *imu_v3, uint8_t magnetometer_ra
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -889,7 +895,7 @@ int tf_imu_v3_set_sensor_configuration(TF_IMUV3 *imu_v3, uint8_t magnetometer_ra
     buf[3] = (uint8_t)accelerometer_range;
     buf[4] = (uint8_t)accelerometer_bandwidth;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -916,14 +922,14 @@ int tf_imu_v3_get_sensor_configuration(TF_IMUV3 *imu_v3, uint8_t *ret_magnetomet
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_GET_SENSOR_CONFIGURATION, 0, 5, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -959,7 +965,7 @@ int tf_imu_v3_set_sensor_fusion_mode(TF_IMUV3 *imu_v3, uint8_t mode) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -971,7 +977,7 @@ int tf_imu_v3_set_sensor_fusion_mode(TF_IMUV3 *imu_v3, uint8_t mode) {
 
     buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -998,14 +1004,14 @@ int tf_imu_v3_get_sensor_fusion_mode(TF_IMUV3 *imu_v3, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_GET_SENSOR_FUSION_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -1037,7 +1043,7 @@ int tf_imu_v3_set_acceleration_callback_configuration(TF_IMUV3 *imu_v3, uint32_t
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1050,7 +1056,7 @@ int tf_imu_v3_set_acceleration_callback_configuration(TF_IMUV3 *imu_v3, uint32_t
     period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
     buf[4] = value_has_to_change ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -1077,14 +1083,14 @@ int tf_imu_v3_get_acceleration_callback_configuration(TF_IMUV3 *imu_v3, uint32_t
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_GET_ACCELERATION_CALLBACK_CONFIGURATION, 0, 5, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -1117,7 +1123,7 @@ int tf_imu_v3_set_magnetic_field_callback_configuration(TF_IMUV3 *imu_v3, uint32
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1130,7 +1136,7 @@ int tf_imu_v3_set_magnetic_field_callback_configuration(TF_IMUV3 *imu_v3, uint32
     period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
     buf[4] = value_has_to_change ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -1157,14 +1163,14 @@ int tf_imu_v3_get_magnetic_field_callback_configuration(TF_IMUV3 *imu_v3, uint32
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_GET_MAGNETIC_FIELD_CALLBACK_CONFIGURATION, 0, 5, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -1197,7 +1203,7 @@ int tf_imu_v3_set_angular_velocity_callback_configuration(TF_IMUV3 *imu_v3, uint
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1210,7 +1216,7 @@ int tf_imu_v3_set_angular_velocity_callback_configuration(TF_IMUV3 *imu_v3, uint
     period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
     buf[4] = value_has_to_change ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -1237,14 +1243,14 @@ int tf_imu_v3_get_angular_velocity_callback_configuration(TF_IMUV3 *imu_v3, uint
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_GET_ANGULAR_VELOCITY_CALLBACK_CONFIGURATION, 0, 5, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -1277,7 +1283,7 @@ int tf_imu_v3_set_temperature_callback_configuration(TF_IMUV3 *imu_v3, uint32_t 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1290,7 +1296,7 @@ int tf_imu_v3_set_temperature_callback_configuration(TF_IMUV3 *imu_v3, uint32_t 
     period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
     buf[4] = value_has_to_change ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -1317,14 +1323,14 @@ int tf_imu_v3_get_temperature_callback_configuration(TF_IMUV3 *imu_v3, uint32_t 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_GET_TEMPERATURE_CALLBACK_CONFIGURATION, 0, 5, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -1357,7 +1363,7 @@ int tf_imu_v3_set_orientation_callback_configuration(TF_IMUV3 *imu_v3, uint32_t 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1370,7 +1376,7 @@ int tf_imu_v3_set_orientation_callback_configuration(TF_IMUV3 *imu_v3, uint32_t 
     period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
     buf[4] = value_has_to_change ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -1397,14 +1403,14 @@ int tf_imu_v3_get_orientation_callback_configuration(TF_IMUV3 *imu_v3, uint32_t 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_GET_ORIENTATION_CALLBACK_CONFIGURATION, 0, 5, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -1437,7 +1443,7 @@ int tf_imu_v3_set_linear_acceleration_callback_configuration(TF_IMUV3 *imu_v3, u
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1450,7 +1456,7 @@ int tf_imu_v3_set_linear_acceleration_callback_configuration(TF_IMUV3 *imu_v3, u
     period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
     buf[4] = value_has_to_change ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -1477,14 +1483,14 @@ int tf_imu_v3_get_linear_acceleration_callback_configuration(TF_IMUV3 *imu_v3, u
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_GET_LINEAR_ACCELERATION_CALLBACK_CONFIGURATION, 0, 5, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -1517,7 +1523,7 @@ int tf_imu_v3_set_gravity_vector_callback_configuration(TF_IMUV3 *imu_v3, uint32
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1530,7 +1536,7 @@ int tf_imu_v3_set_gravity_vector_callback_configuration(TF_IMUV3 *imu_v3, uint32
     period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
     buf[4] = value_has_to_change ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -1557,14 +1563,14 @@ int tf_imu_v3_get_gravity_vector_callback_configuration(TF_IMUV3 *imu_v3, uint32
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_GET_GRAVITY_VECTOR_CALLBACK_CONFIGURATION, 0, 5, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -1597,7 +1603,7 @@ int tf_imu_v3_set_quaternion_callback_configuration(TF_IMUV3 *imu_v3, uint32_t p
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1610,7 +1616,7 @@ int tf_imu_v3_set_quaternion_callback_configuration(TF_IMUV3 *imu_v3, uint32_t p
     period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
     buf[4] = value_has_to_change ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -1637,14 +1643,14 @@ int tf_imu_v3_get_quaternion_callback_configuration(TF_IMUV3 *imu_v3, uint32_t *
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_GET_QUATERNION_CALLBACK_CONFIGURATION, 0, 5, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -1677,7 +1683,7 @@ int tf_imu_v3_set_all_data_callback_configuration(TF_IMUV3 *imu_v3, uint32_t per
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1690,7 +1696,7 @@ int tf_imu_v3_set_all_data_callback_configuration(TF_IMUV3 *imu_v3, uint32_t per
     period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
     buf[4] = value_has_to_change ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -1717,14 +1723,14 @@ int tf_imu_v3_get_all_data_callback_configuration(TF_IMUV3 *imu_v3, uint32_t *re
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_GET_ALL_DATA_CALLBACK_CONFIGURATION, 0, 5, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -1757,14 +1763,14 @@ int tf_imu_v3_get_spitfp_error_count(TF_IMUV3 *imu_v3, uint32_t *ret_error_count
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -1799,7 +1805,7 @@ int tf_imu_v3_set_bootloader_mode(TF_IMUV3 *imu_v3, uint8_t mode, uint8_t *ret_s
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1810,7 +1816,7 @@ int tf_imu_v3_set_bootloader_mode(TF_IMUV3 *imu_v3, uint8_t mode, uint8_t *ret_s
 
     buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -1842,14 +1848,14 @@ int tf_imu_v3_get_bootloader_mode(TF_IMUV3 *imu_v3, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -1881,7 +1887,7 @@ int tf_imu_v3_set_write_firmware_pointer(TF_IMUV3 *imu_v3, uint32_t pointer) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1893,7 +1899,7 @@ int tf_imu_v3_set_write_firmware_pointer(TF_IMUV3 *imu_v3, uint32_t pointer) {
 
     pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -1920,7 +1926,7 @@ int tf_imu_v3_write_firmware(TF_IMUV3 *imu_v3, const uint8_t data[64], uint8_t *
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1931,7 +1937,7 @@ int tf_imu_v3_write_firmware(TF_IMUV3 *imu_v3, const uint8_t data[64], uint8_t *
 
     memcpy(buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -1963,7 +1969,7 @@ int tf_imu_v3_set_status_led_config(TF_IMUV3 *imu_v3, uint8_t config) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1975,7 +1981,7 @@ int tf_imu_v3_set_status_led_config(TF_IMUV3 *imu_v3, uint8_t config) {
 
     buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -2002,14 +2008,14 @@ int tf_imu_v3_get_status_led_config(TF_IMUV3 *imu_v3, uint8_t *ret_config) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -2041,14 +2047,14 @@ int tf_imu_v3_get_chip_temperature(TF_IMUV3 *imu_v3, int16_t *ret_temperature) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -2080,7 +2086,7 @@ int tf_imu_v3_reset(TF_IMUV3 *imu_v3) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2088,7 +2094,7 @@ int tf_imu_v3_reset(TF_IMUV3 *imu_v3) {
     tf_imu_v3_get_response_expected(imu_v3, TF_IMU_V3_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -2115,7 +2121,7 @@ int tf_imu_v3_write_uid(TF_IMUV3 *imu_v3, uint32_t uid) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2127,7 +2133,7 @@ int tf_imu_v3_write_uid(TF_IMUV3 *imu_v3, uint32_t uid) {
 
     uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -2154,14 +2160,14 @@ int tf_imu_v3_read_uid(TF_IMUV3 *imu_v3, uint32_t *ret_uid) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -2193,7 +2199,7 @@ int tf_imu_v3_get_identity(TF_IMUV3 *imu_v3, char ret_uid[8], char ret_connected
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2201,7 +2207,7 @@ int tf_imu_v3_get_identity(TF_IMUV3 *imu_v3, char ret_uid[8], char ret_connected
     tf_tfp_prepare_send(imu_v3->tfp, TF_IMU_V3_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL*)imu_v3->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + tf_hal_get_common((TF_HAL *)imu_v3->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(imu_v3->tfp, response_expected, deadline, &error_code);
@@ -2223,7 +2229,7 @@ int tf_imu_v3_get_identity(TF_IMUV3 *imu_v3, char ret_uid[8], char ret_connected
         if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&imu_v3->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&imu_v3->tfp->spitfp->recv_buf, 3); }
         if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&imu_v3->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&imu_v3->tfp->spitfp->recv_buf, 2); }
         if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL*)imu_v3->tfp->hal, imu_v3->tfp->spitfp->port_id);
+            *ret_position = tf_hal_get_port_name((TF_HAL *)imu_v3->tfp->hal, imu_v3->tfp->spitfp->port_id);
         }
         if (ret_connected_uid != NULL) {
             memcpy(ret_connected_uid, tmp_connected_uid, 8);
@@ -2240,7 +2246,7 @@ int tf_imu_v3_get_identity(TF_IMUV3 *imu_v3, char ret_uid[8], char ret_connected
     return tf_tfp_get_error(error_code);
 }
 #if TF_IMPLEMENT_CALLBACKS != 0
-int tf_imu_v3_register_acceleration_callback(TF_IMUV3 *imu_v3, TF_IMUV3AccelerationHandler handler, void *user_data) {
+int tf_imu_v3_register_acceleration_callback(TF_IMUV3 *imu_v3, TF_IMUV3_AccelerationHandler handler, void *user_data) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
     }
@@ -2266,7 +2272,7 @@ int tf_imu_v3_register_acceleration_callback(TF_IMUV3 *imu_v3, TF_IMUV3Accelerat
 }
 
 
-int tf_imu_v3_register_magnetic_field_callback(TF_IMUV3 *imu_v3, TF_IMUV3MagneticFieldHandler handler, void *user_data) {
+int tf_imu_v3_register_magnetic_field_callback(TF_IMUV3 *imu_v3, TF_IMUV3_MagneticFieldHandler handler, void *user_data) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
     }
@@ -2292,7 +2298,7 @@ int tf_imu_v3_register_magnetic_field_callback(TF_IMUV3 *imu_v3, TF_IMUV3Magneti
 }
 
 
-int tf_imu_v3_register_angular_velocity_callback(TF_IMUV3 *imu_v3, TF_IMUV3AngularVelocityHandler handler, void *user_data) {
+int tf_imu_v3_register_angular_velocity_callback(TF_IMUV3 *imu_v3, TF_IMUV3_AngularVelocityHandler handler, void *user_data) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
     }
@@ -2318,7 +2324,7 @@ int tf_imu_v3_register_angular_velocity_callback(TF_IMUV3 *imu_v3, TF_IMUV3Angul
 }
 
 
-int tf_imu_v3_register_temperature_callback(TF_IMUV3 *imu_v3, TF_IMUV3TemperatureHandler handler, void *user_data) {
+int tf_imu_v3_register_temperature_callback(TF_IMUV3 *imu_v3, TF_IMUV3_TemperatureHandler handler, void *user_data) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
     }
@@ -2344,7 +2350,7 @@ int tf_imu_v3_register_temperature_callback(TF_IMUV3 *imu_v3, TF_IMUV3Temperatur
 }
 
 
-int tf_imu_v3_register_linear_acceleration_callback(TF_IMUV3 *imu_v3, TF_IMUV3LinearAccelerationHandler handler, void *user_data) {
+int tf_imu_v3_register_linear_acceleration_callback(TF_IMUV3 *imu_v3, TF_IMUV3_LinearAccelerationHandler handler, void *user_data) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
     }
@@ -2370,7 +2376,7 @@ int tf_imu_v3_register_linear_acceleration_callback(TF_IMUV3 *imu_v3, TF_IMUV3Li
 }
 
 
-int tf_imu_v3_register_gravity_vector_callback(TF_IMUV3 *imu_v3, TF_IMUV3GravityVectorHandler handler, void *user_data) {
+int tf_imu_v3_register_gravity_vector_callback(TF_IMUV3 *imu_v3, TF_IMUV3_GravityVectorHandler handler, void *user_data) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
     }
@@ -2396,7 +2402,7 @@ int tf_imu_v3_register_gravity_vector_callback(TF_IMUV3 *imu_v3, TF_IMUV3Gravity
 }
 
 
-int tf_imu_v3_register_orientation_callback(TF_IMUV3 *imu_v3, TF_IMUV3OrientationHandler handler, void *user_data) {
+int tf_imu_v3_register_orientation_callback(TF_IMUV3 *imu_v3, TF_IMUV3_OrientationHandler handler, void *user_data) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
     }
@@ -2422,7 +2428,7 @@ int tf_imu_v3_register_orientation_callback(TF_IMUV3 *imu_v3, TF_IMUV3Orientatio
 }
 
 
-int tf_imu_v3_register_quaternion_callback(TF_IMUV3 *imu_v3, TF_IMUV3QuaternionHandler handler, void *user_data) {
+int tf_imu_v3_register_quaternion_callback(TF_IMUV3 *imu_v3, TF_IMUV3_QuaternionHandler handler, void *user_data) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
     }
@@ -2448,7 +2454,7 @@ int tf_imu_v3_register_quaternion_callback(TF_IMUV3 *imu_v3, TF_IMUV3QuaternionH
 }
 
 
-int tf_imu_v3_register_all_data_callback(TF_IMUV3 *imu_v3, TF_IMUV3AllDataHandler handler, void *user_data) {
+int tf_imu_v3_register_all_data_callback(TF_IMUV3 *imu_v3, TF_IMUV3_AllDataHandler handler, void *user_data) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
     }
@@ -2478,7 +2484,7 @@ int tf_imu_v3_callback_tick(TF_IMUV3 *imu_v3, uint32_t timeout_us) {
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(imu_v3->tfp, tf_hal_current_time_us((TF_HAL*)imu_v3->tfp->hal) + timeout_us);
+    return tf_tfp_callback_tick(imu_v3->tfp, tf_hal_current_time_us((TF_HAL *)imu_v3->tfp->hal) + timeout_us);
 }
 
 #ifdef __cplusplus

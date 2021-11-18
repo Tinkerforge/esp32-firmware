@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,7 +27,7 @@ extern "C" {
 struct TF_AmbientLightV3;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_AmbientLightV3IlluminanceHandler)(struct TF_AmbientLightV3 *device, uint32_t illuminance, void *user_data);
+typedef void (*TF_AmbientLightV3_IlluminanceHandler)(struct TF_AmbientLightV3 *device, uint32_t illuminance, void *user_data);
 
 #endif
 /**
@@ -38,7 +38,7 @@ typedef void (*TF_AmbientLightV3IlluminanceHandler)(struct TF_AmbientLightV3 *de
 typedef struct TF_AmbientLightV3 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_AmbientLightV3IlluminanceHandler illuminance_handler;
+    TF_AmbientLightV3_IlluminanceHandler illuminance_handler;
     void *illuminance_user_data;
 
 #endif
@@ -391,7 +391,7 @@ int tf_ambient_light_v3_set_response_expected(TF_AmbientLightV3 *ambient_light_v
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_ambient_light_v3_set_response_expected_all(TF_AmbientLightV3 *ambient_light_v3, bool response_expected);
+int tf_ambient_light_v3_set_response_expected_all(TF_AmbientLightV3 *ambient_light_v3, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_AmbientLightV3
@@ -406,7 +406,7 @@ void tf_ambient_light_v3_set_response_expected_all(TF_AmbientLightV3 *ambient_li
  * 
  * The parameter is the same as {@link tf_ambient_light_v3_get_illuminance}.
  */
-int tf_ambient_light_v3_register_illuminance_callback(TF_AmbientLightV3 *ambient_light_v3, TF_AmbientLightV3IlluminanceHandler handler, void *user_data);
+int tf_ambient_light_v3_register_illuminance_callback(TF_AmbientLightV3 *ambient_light_v3, TF_AmbientLightV3_IlluminanceHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,9 +27,9 @@ extern "C" {
 struct TF_NFC;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_NFCReaderStateChangedHandler)(struct TF_NFC *device, uint8_t state, bool idle, void *user_data);
-typedef void (*TF_NFCCardemuStateChangedHandler)(struct TF_NFC *device, uint8_t state, bool idle, void *user_data);
-typedef void (*TF_NFCP2PStateChangedHandler)(struct TF_NFC *device, uint8_t state, bool idle, void *user_data);
+typedef void (*TF_NFC_ReaderStateChangedHandler)(struct TF_NFC *device, uint8_t state, bool idle, void *user_data);
+typedef void (*TF_NFC_CardemuStateChangedHandler)(struct TF_NFC *device, uint8_t state, bool idle, void *user_data);
+typedef void (*TF_NFC_P2PStateChangedHandler)(struct TF_NFC *device, uint8_t state, bool idle, void *user_data);
 
 #endif
 /**
@@ -40,13 +40,13 @@ typedef void (*TF_NFCP2PStateChangedHandler)(struct TF_NFC *device, uint8_t stat
 typedef struct TF_NFC {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_NFCReaderStateChangedHandler reader_state_changed_handler;
+    TF_NFC_ReaderStateChangedHandler reader_state_changed_handler;
     void *reader_state_changed_user_data;
 
-    TF_NFCCardemuStateChangedHandler cardemu_state_changed_handler;
+    TF_NFC_CardemuStateChangedHandler cardemu_state_changed_handler;
     void *cardemu_state_changed_user_data;
 
-    TF_NFCP2PStateChangedHandler p2p_state_changed_handler;
+    TF_NFC_P2PStateChangedHandler p2p_state_changed_handler;
     void *p2p_state_changed_user_data;
 
 #endif
@@ -734,7 +734,7 @@ int tf_nfc_set_response_expected(TF_NFC *nfc, uint8_t function_id, bool response
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_nfc_set_response_expected_all(TF_NFC *nfc, bool response_expected);
+int tf_nfc_set_response_expected_all(TF_NFC *nfc, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_NFC
@@ -747,7 +747,7 @@ void tf_nfc_set_response_expected_all(TF_NFC *nfc, bool response_expected);
  * This callback is called if the reader state of the NFC Bricklet changes.
  * See {@link tf_nfc_reader_get_state} for more information about the possible states.
  */
-int tf_nfc_register_reader_state_changed_callback(TF_NFC *nfc, TF_NFCReaderStateChangedHandler handler, void *user_data);
+int tf_nfc_register_reader_state_changed_callback(TF_NFC *nfc, TF_NFC_ReaderStateChangedHandler handler, void *user_data);
 
 
 /**
@@ -761,7 +761,7 @@ int tf_nfc_register_reader_state_changed_callback(TF_NFC *nfc, TF_NFCReaderState
  * This callback is called if the cardemu state of the NFC Bricklet changes.
  * See {@link tf_nfc_cardemu_get_state} for more information about the possible states.
  */
-int tf_nfc_register_cardemu_state_changed_callback(TF_NFC *nfc, TF_NFCCardemuStateChangedHandler handler, void *user_data);
+int tf_nfc_register_cardemu_state_changed_callback(TF_NFC *nfc, TF_NFC_CardemuStateChangedHandler handler, void *user_data);
 
 
 /**
@@ -775,7 +775,7 @@ int tf_nfc_register_cardemu_state_changed_callback(TF_NFC *nfc, TF_NFCCardemuSta
  * This callback is called if the P2P state of the NFC Bricklet changes.
  * See {@link tf_nfc_p2p_get_state} for more information about the possible states.
  */
-int tf_nfc_register_p2p_state_changed_callback(TF_NFC *nfc, TF_NFCP2PStateChangedHandler handler, void *user_data);
+int tf_nfc_register_p2p_state_changed_callback(TF_NFC *nfc, TF_NFC_P2PStateChangedHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

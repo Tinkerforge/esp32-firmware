@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,9 +27,8 @@ static bool tf_arinc429_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer
     (void)payload;
 
     switch (fid) {
-
         case TF_ARINC429_CALLBACK_HEARTBEAT_MESSAGE: {
-            TF_ARINC429HeartbeatMessageHandler fn = arinc429->heartbeat_message_handler;
+            TF_ARINC429_HeartbeatMessageHandler fn = arinc429->heartbeat_message_handler;
             void *user_data = arinc429->heartbeat_message_user_data;
             if (fn == NULL) {
                 return false;
@@ -41,7 +40,7 @@ static bool tf_arinc429_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer
             uint16_t timestamp = tf_packet_buffer_read_uint16_t(payload);
             uint16_t frames_processed = tf_packet_buffer_read_uint16_t(payload);
             uint16_t frames_lost = tf_packet_buffer_read_uint16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)arinc429->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)arinc429->tfp->hal);
             hal_common->locked = true;
             fn(arinc429, channel, status, seq_number, timestamp, frames_processed, frames_lost, user_data);
             hal_common->locked = false;
@@ -49,7 +48,7 @@ static bool tf_arinc429_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer
         }
 
         case TF_ARINC429_CALLBACK_FRAME_MESSAGE: {
-            TF_ARINC429FrameMessageHandler fn = arinc429->frame_message_handler;
+            TF_ARINC429_FrameMessageHandler fn = arinc429->frame_message_handler;
             void *user_data = arinc429->frame_message_user_data;
             if (fn == NULL) {
                 return false;
@@ -61,7 +60,7 @@ static bool tf_arinc429_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer
             uint16_t timestamp = tf_packet_buffer_read_uint16_t(payload);
             uint32_t frame = tf_packet_buffer_read_uint32_t(payload);
             uint16_t age = tf_packet_buffer_read_uint16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)arinc429->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)arinc429->tfp->hal);
             hal_common->locked = true;
             fn(arinc429, channel, status, seq_number, timestamp, frame, age, user_data);
             hal_common->locked = false;
@@ -69,7 +68,7 @@ static bool tf_arinc429_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer
         }
 
         case TF_ARINC429_CALLBACK_SCHEDULER_MESSAGE: {
-            TF_ARINC429SchedulerMessageHandler fn = arinc429->scheduler_message_handler;
+            TF_ARINC429_SchedulerMessageHandler fn = arinc429->scheduler_message_handler;
             void *user_data = arinc429->scheduler_message_user_data;
             if (fn == NULL) {
                 return false;
@@ -80,12 +79,13 @@ static bool tf_arinc429_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer
             uint8_t seq_number = tf_packet_buffer_read_uint8_t(payload);
             uint16_t timestamp = tf_packet_buffer_read_uint16_t(payload);
             uint8_t userdata = tf_packet_buffer_read_uint8_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)arinc429->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)arinc429->tfp->hal);
             hal_common->locked = true;
             fn(arinc429, channel, status, seq_number, timestamp, userdata, user_data);
             hal_common->locked = false;
             break;
         }
+
         default:
             return false;
     }
@@ -363,8 +363,14 @@ int tf_arinc429_set_response_expected(TF_ARINC429 *arinc429, uint8_t function_id
     return TF_E_OK;
 }
 
-void tf_arinc429_set_response_expected_all(TF_ARINC429 *arinc429, bool response_expected) {
+int tf_arinc429_set_response_expected_all(TF_ARINC429 *arinc429, bool response_expected) {
+    if (arinc429 == NULL) {
+        return TF_E_NULL;
+    }
+
     memset(arinc429->response_expected, response_expected ? 0xFF : 0, 2);
+
+    return TF_E_OK;
 }
 
 int tf_arinc429_get_capabilities(TF_ARINC429 *arinc429, uint16_t *ret_tx_total_scheduler_jobs, uint16_t *ret_tx_used_scheduler_jobs, uint16_t *ret_rx_total_frame_filters, uint16_t ret_rx_used_frame_filters[2]) {
@@ -372,7 +378,7 @@ int tf_arinc429_get_capabilities(TF_ARINC429 *arinc429, uint16_t *ret_tx_total_s
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -380,7 +386,7 @@ int tf_arinc429_get_capabilities(TF_ARINC429 *arinc429, uint16_t *ret_tx_total_s
     tf_tfp_prepare_send(arinc429->tfp, TF_ARINC429_FUNCTION_GET_CAPABILITIES, 0, 10, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -415,7 +421,7 @@ int tf_arinc429_set_heartbeat_callback_configuration(TF_ARINC429 *arinc429, uint
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -430,7 +436,7 @@ int tf_arinc429_set_heartbeat_callback_configuration(TF_ARINC429 *arinc429, uint
     buf[2] = value_has_to_change ? 1 : 0;
     period = tf_leconvert_uint16_to(period); memcpy(buf + 3, &period, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -457,7 +463,7 @@ int tf_arinc429_get_heartbeat_callback_configuration(TF_ARINC429 *arinc429, uint
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -468,7 +474,7 @@ int tf_arinc429_get_heartbeat_callback_configuration(TF_ARINC429 *arinc429, uint
 
     buf[0] = (uint8_t)channel;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -502,7 +508,7 @@ int tf_arinc429_set_channel_configuration(TF_ARINC429 *arinc429, uint8_t channel
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -516,7 +522,7 @@ int tf_arinc429_set_channel_configuration(TF_ARINC429 *arinc429, uint8_t channel
     buf[1] = (uint8_t)parity;
     buf[2] = (uint8_t)speed;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -543,7 +549,7 @@ int tf_arinc429_get_channel_configuration(TF_ARINC429 *arinc429, uint8_t channel
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -554,7 +560,7 @@ int tf_arinc429_get_channel_configuration(TF_ARINC429 *arinc429, uint8_t channel
 
     buf[0] = (uint8_t)channel;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -587,7 +593,7 @@ int tf_arinc429_set_channel_mode(TF_ARINC429 *arinc429, uint8_t channel, uint8_t
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -600,7 +606,7 @@ int tf_arinc429_set_channel_mode(TF_ARINC429 *arinc429, uint8_t channel, uint8_t
     buf[0] = (uint8_t)channel;
     buf[1] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -627,7 +633,7 @@ int tf_arinc429_get_channel_mode(TF_ARINC429 *arinc429, uint8_t channel, uint8_t
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -638,7 +644,7 @@ int tf_arinc429_get_channel_mode(TF_ARINC429 *arinc429, uint8_t channel, uint8_t
 
     buf[0] = (uint8_t)channel;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -670,7 +676,7 @@ int tf_arinc429_clear_all_rx_filters(TF_ARINC429 *arinc429, uint8_t channel) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -682,7 +688,7 @@ int tf_arinc429_clear_all_rx_filters(TF_ARINC429 *arinc429, uint8_t channel) {
 
     buf[0] = (uint8_t)channel;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -709,7 +715,7 @@ int tf_arinc429_clear_rx_filter(TF_ARINC429 *arinc429, uint8_t channel, uint8_t 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -722,7 +728,7 @@ int tf_arinc429_clear_rx_filter(TF_ARINC429 *arinc429, uint8_t channel, uint8_t 
     buf[1] = (uint8_t)label;
     buf[2] = (uint8_t)sdi;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -754,7 +760,7 @@ int tf_arinc429_set_rx_standard_filters(TF_ARINC429 *arinc429, uint8_t channel) 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -766,7 +772,7 @@ int tf_arinc429_set_rx_standard_filters(TF_ARINC429 *arinc429, uint8_t channel) 
 
     buf[0] = (uint8_t)channel;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -793,7 +799,7 @@ int tf_arinc429_set_rx_filter(TF_ARINC429 *arinc429, uint8_t channel, uint8_t la
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -806,7 +812,7 @@ int tf_arinc429_set_rx_filter(TF_ARINC429 *arinc429, uint8_t channel, uint8_t la
     buf[1] = (uint8_t)label;
     buf[2] = (uint8_t)sdi;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -838,7 +844,7 @@ int tf_arinc429_get_rx_filter(TF_ARINC429 *arinc429, uint8_t channel, uint8_t la
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -851,7 +857,7 @@ int tf_arinc429_get_rx_filter(TF_ARINC429 *arinc429, uint8_t channel, uint8_t la
     buf[1] = (uint8_t)label;
     buf[2] = (uint8_t)sdi;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -883,7 +889,7 @@ int tf_arinc429_read_frame(TF_ARINC429 *arinc429, uint8_t channel, uint8_t label
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -896,7 +902,7 @@ int tf_arinc429_read_frame(TF_ARINC429 *arinc429, uint8_t channel, uint8_t label
     buf[1] = (uint8_t)label;
     buf[2] = (uint8_t)sdi;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -930,7 +936,7 @@ int tf_arinc429_set_rx_callback_configuration(TF_ARINC429 *arinc429, uint8_t cha
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -945,7 +951,7 @@ int tf_arinc429_set_rx_callback_configuration(TF_ARINC429 *arinc429, uint8_t cha
     buf[2] = value_has_to_change ? 1 : 0;
     timeout = tf_leconvert_uint16_to(timeout); memcpy(buf + 3, &timeout, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -972,7 +978,7 @@ int tf_arinc429_get_rx_callback_configuration(TF_ARINC429 *arinc429, uint8_t cha
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -983,7 +989,7 @@ int tf_arinc429_get_rx_callback_configuration(TF_ARINC429 *arinc429, uint8_t cha
 
     buf[0] = (uint8_t)channel;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -1017,7 +1023,7 @@ int tf_arinc429_write_frame_direct(TF_ARINC429 *arinc429, uint8_t channel, uint3
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1030,7 +1036,7 @@ int tf_arinc429_write_frame_direct(TF_ARINC429 *arinc429, uint8_t channel, uint3
     buf[0] = (uint8_t)channel;
     frame = tf_leconvert_uint32_to(frame); memcpy(buf + 1, &frame, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -1057,7 +1063,7 @@ int tf_arinc429_write_frame_scheduled(TF_ARINC429 *arinc429, uint8_t channel, ui
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1071,7 +1077,7 @@ int tf_arinc429_write_frame_scheduled(TF_ARINC429 *arinc429, uint8_t channel, ui
     frame_index = tf_leconvert_uint16_to(frame_index); memcpy(buf + 1, &frame_index, 2);
     frame = tf_leconvert_uint32_to(frame); memcpy(buf + 3, &frame, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -1098,7 +1104,7 @@ int tf_arinc429_clear_schedule_entries(TF_ARINC429 *arinc429, uint8_t channel, u
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1112,7 +1118,7 @@ int tf_arinc429_clear_schedule_entries(TF_ARINC429 *arinc429, uint8_t channel, u
     job_index_first = tf_leconvert_uint16_to(job_index_first); memcpy(buf + 1, &job_index_first, 2);
     job_index_last = tf_leconvert_uint16_to(job_index_last); memcpy(buf + 3, &job_index_last, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -1139,7 +1145,7 @@ int tf_arinc429_set_schedule_entry(TF_ARINC429 *arinc429, uint8_t channel, uint1
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1155,7 +1161,7 @@ int tf_arinc429_set_schedule_entry(TF_ARINC429 *arinc429, uint8_t channel, uint1
     frame_index = tf_leconvert_uint16_to(frame_index); memcpy(buf + 4, &frame_index, 2);
     buf[6] = (uint8_t)dwell_time;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -1182,7 +1188,7 @@ int tf_arinc429_get_schedule_entry(TF_ARINC429 *arinc429, uint8_t channel, uint1
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1194,7 +1200,7 @@ int tf_arinc429_get_schedule_entry(TF_ARINC429 *arinc429, uint8_t channel, uint1
     buf[0] = (uint8_t)channel;
     job_index = tf_leconvert_uint16_to(job_index); memcpy(buf + 1, &job_index, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -1229,7 +1235,7 @@ int tf_arinc429_restart(TF_ARINC429 *arinc429) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1237,7 +1243,7 @@ int tf_arinc429_restart(TF_ARINC429 *arinc429) {
     tf_arinc429_get_response_expected(arinc429, TF_ARINC429_FUNCTION_RESTART, &response_expected);
     tf_tfp_prepare_send(arinc429->tfp, TF_ARINC429_FUNCTION_RESTART, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -1264,7 +1270,7 @@ int tf_arinc429_set_frame_mode(TF_ARINC429 *arinc429, uint8_t channel, uint16_t 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1278,7 +1284,7 @@ int tf_arinc429_set_frame_mode(TF_ARINC429 *arinc429, uint8_t channel, uint16_t 
     frame_index = tf_leconvert_uint16_to(frame_index); memcpy(buf + 1, &frame_index, 2);
     buf[3] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -1305,14 +1311,14 @@ int tf_arinc429_get_spitfp_error_count(TF_ARINC429 *arinc429, uint32_t *ret_erro
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(arinc429->tfp, TF_ARINC429_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -1347,7 +1353,7 @@ int tf_arinc429_set_bootloader_mode(TF_ARINC429 *arinc429, uint8_t mode, uint8_t
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1358,7 +1364,7 @@ int tf_arinc429_set_bootloader_mode(TF_ARINC429 *arinc429, uint8_t mode, uint8_t
 
     buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -1390,14 +1396,14 @@ int tf_arinc429_get_bootloader_mode(TF_ARINC429 *arinc429, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(arinc429->tfp, TF_ARINC429_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -1429,7 +1435,7 @@ int tf_arinc429_set_write_firmware_pointer(TF_ARINC429 *arinc429, uint32_t point
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1441,7 +1447,7 @@ int tf_arinc429_set_write_firmware_pointer(TF_ARINC429 *arinc429, uint32_t point
 
     pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -1468,7 +1474,7 @@ int tf_arinc429_write_firmware(TF_ARINC429 *arinc429, const uint8_t data[64], ui
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1479,7 +1485,7 @@ int tf_arinc429_write_firmware(TF_ARINC429 *arinc429, const uint8_t data[64], ui
 
     memcpy(buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -1511,7 +1517,7 @@ int tf_arinc429_set_status_led_config(TF_ARINC429 *arinc429, uint8_t config) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1523,7 +1529,7 @@ int tf_arinc429_set_status_led_config(TF_ARINC429 *arinc429, uint8_t config) {
 
     buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -1550,14 +1556,14 @@ int tf_arinc429_get_status_led_config(TF_ARINC429 *arinc429, uint8_t *ret_config
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(arinc429->tfp, TF_ARINC429_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -1589,14 +1595,14 @@ int tf_arinc429_get_chip_temperature(TF_ARINC429 *arinc429, int16_t *ret_tempera
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(arinc429->tfp, TF_ARINC429_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -1628,7 +1634,7 @@ int tf_arinc429_reset(TF_ARINC429 *arinc429) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1636,7 +1642,7 @@ int tf_arinc429_reset(TF_ARINC429 *arinc429) {
     tf_arinc429_get_response_expected(arinc429, TF_ARINC429_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(arinc429->tfp, TF_ARINC429_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -1663,7 +1669,7 @@ int tf_arinc429_write_uid(TF_ARINC429 *arinc429, uint32_t uid) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1675,7 +1681,7 @@ int tf_arinc429_write_uid(TF_ARINC429 *arinc429, uint32_t uid) {
 
     uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -1702,14 +1708,14 @@ int tf_arinc429_read_uid(TF_ARINC429 *arinc429, uint32_t *ret_uid) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(arinc429->tfp, TF_ARINC429_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -1741,7 +1747,7 @@ int tf_arinc429_get_identity(TF_ARINC429 *arinc429, char ret_uid[8], char ret_co
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1749,7 +1755,7 @@ int tf_arinc429_get_identity(TF_ARINC429 *arinc429, char ret_uid[8], char ret_co
     tf_tfp_prepare_send(arinc429->tfp, TF_ARINC429_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL*)arinc429->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + tf_hal_get_common((TF_HAL *)arinc429->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(arinc429->tfp, response_expected, deadline, &error_code);
@@ -1771,7 +1777,7 @@ int tf_arinc429_get_identity(TF_ARINC429 *arinc429, char ret_uid[8], char ret_co
         if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&arinc429->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&arinc429->tfp->spitfp->recv_buf, 3); }
         if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&arinc429->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&arinc429->tfp->spitfp->recv_buf, 2); }
         if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL*)arinc429->tfp->hal, arinc429->tfp->spitfp->port_id);
+            *ret_position = tf_hal_get_port_name((TF_HAL *)arinc429->tfp->hal, arinc429->tfp->spitfp->port_id);
         }
         if (ret_connected_uid != NULL) {
             memcpy(ret_connected_uid, tmp_connected_uid, 8);
@@ -1788,7 +1794,7 @@ int tf_arinc429_get_identity(TF_ARINC429 *arinc429, char ret_uid[8], char ret_co
     return tf_tfp_get_error(error_code);
 }
 #if TF_IMPLEMENT_CALLBACKS != 0
-int tf_arinc429_register_heartbeat_message_callback(TF_ARINC429 *arinc429, TF_ARINC429HeartbeatMessageHandler handler, void *user_data) {
+int tf_arinc429_register_heartbeat_message_callback(TF_ARINC429 *arinc429, TF_ARINC429_HeartbeatMessageHandler handler, void *user_data) {
     if (arinc429 == NULL) {
         return TF_E_NULL;
     }
@@ -1808,7 +1814,7 @@ int tf_arinc429_register_heartbeat_message_callback(TF_ARINC429 *arinc429, TF_AR
 }
 
 
-int tf_arinc429_register_frame_message_callback(TF_ARINC429 *arinc429, TF_ARINC429FrameMessageHandler handler, void *user_data) {
+int tf_arinc429_register_frame_message_callback(TF_ARINC429 *arinc429, TF_ARINC429_FrameMessageHandler handler, void *user_data) {
     if (arinc429 == NULL) {
         return TF_E_NULL;
     }
@@ -1828,7 +1834,7 @@ int tf_arinc429_register_frame_message_callback(TF_ARINC429 *arinc429, TF_ARINC4
 }
 
 
-int tf_arinc429_register_scheduler_message_callback(TF_ARINC429 *arinc429, TF_ARINC429SchedulerMessageHandler handler, void *user_data) {
+int tf_arinc429_register_scheduler_message_callback(TF_ARINC429 *arinc429, TF_ARINC429_SchedulerMessageHandler handler, void *user_data) {
     if (arinc429 == NULL) {
         return TF_E_NULL;
     }
@@ -1852,7 +1858,7 @@ int tf_arinc429_callback_tick(TF_ARINC429 *arinc429, uint32_t timeout_us) {
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(arinc429->tfp, tf_hal_current_time_us((TF_HAL*)arinc429->tfp->hal) + timeout_us);
+    return tf_tfp_callback_tick(arinc429->tfp, tf_hal_current_time_us((TF_HAL *)arinc429->tfp->hal) + timeout_us);
 }
 
 #ifdef __cplusplus

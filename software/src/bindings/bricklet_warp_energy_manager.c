@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -210,8 +210,14 @@ int tf_warp_energy_manager_set_response_expected(TF_WARPEnergyManager *warp_ener
     return TF_E_OK;
 }
 
-void tf_warp_energy_manager_set_response_expected_all(TF_WARPEnergyManager *warp_energy_manager, bool response_expected) {
+int tf_warp_energy_manager_set_response_expected_all(TF_WARPEnergyManager *warp_energy_manager, bool response_expected) {
+    if (warp_energy_manager == NULL) {
+        return TF_E_NULL;
+    }
+
     memset(warp_energy_manager->response_expected, response_expected ? 0xFF : 0, 2);
+
+    return TF_E_OK;
 }
 
 int tf_warp_energy_manager_set_contactor(TF_WARPEnergyManager *warp_energy_manager, bool value) {
@@ -219,7 +225,7 @@ int tf_warp_energy_manager_set_contactor(TF_WARPEnergyManager *warp_energy_manag
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -231,7 +237,7 @@ int tf_warp_energy_manager_set_contactor(TF_WARPEnergyManager *warp_energy_manag
 
     buf[0] = value ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -258,14 +264,14 @@ int tf_warp_energy_manager_get_contactor(TF_WARPEnergyManager *warp_energy_manag
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_CONTACTOR, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -297,7 +303,7 @@ int tf_warp_energy_manager_set_rgb_value(TF_WARPEnergyManager *warp_energy_manag
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -311,7 +317,7 @@ int tf_warp_energy_manager_set_rgb_value(TF_WARPEnergyManager *warp_energy_manag
     buf[1] = (uint8_t)g;
     buf[2] = (uint8_t)b;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -338,14 +344,14 @@ int tf_warp_energy_manager_get_rgb_value(TF_WARPEnergyManager *warp_energy_manag
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_RGB_VALUE, 0, 3, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -379,14 +385,14 @@ int tf_warp_energy_manager_get_energy_meter_values(TF_WARPEnergyManager *warp_en
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_ENERGY_METER_VALUES, 0, 14, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -422,7 +428,7 @@ int tf_warp_energy_manager_get_energy_meter_detailed_values_low_level(TF_WARPEne
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -430,7 +436,7 @@ int tf_warp_energy_manager_get_energy_meter_detailed_values_low_level(TF_WARPEne
     tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_ENERGY_METER_DETAILED_VALUES_LOW_LEVEL, 0, 62, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -463,7 +469,7 @@ int tf_warp_energy_manager_get_energy_meter_state(TF_WARPEnergyManager *warp_ene
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -471,7 +477,7 @@ int tf_warp_energy_manager_get_energy_meter_state(TF_WARPEnergyManager *warp_ene
     tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_ENERGY_METER_STATE, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -504,7 +510,7 @@ int tf_warp_energy_manager_reset_energy_meter(TF_WARPEnergyManager *warp_energy_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -512,7 +518,7 @@ int tf_warp_energy_manager_reset_energy_meter(TF_WARPEnergyManager *warp_energy_
     tf_warp_energy_manager_get_response_expected(warp_energy_manager, TF_WARP_ENERGY_MANAGER_FUNCTION_RESET_ENERGY_METER, &response_expected);
     tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_RESET_ENERGY_METER, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -539,14 +545,14 @@ int tf_warp_energy_manager_get_input(TF_WARPEnergyManager *warp_energy_manager, 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_INPUT, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -578,7 +584,7 @@ int tf_warp_energy_manager_set_output(TF_WARPEnergyManager *warp_energy_manager,
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -590,7 +596,7 @@ int tf_warp_energy_manager_set_output(TF_WARPEnergyManager *warp_energy_manager,
 
     buf[0] = output ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -617,14 +623,14 @@ int tf_warp_energy_manager_get_output(TF_WARPEnergyManager *warp_energy_manager,
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_OUTPUT, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -656,7 +662,7 @@ int tf_warp_energy_manager_set_input_configuration(TF_WARPEnergyManager *warp_en
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -668,7 +674,7 @@ int tf_warp_energy_manager_set_input_configuration(TF_WARPEnergyManager *warp_en
 
     memcpy(buf + 0, input_configuration, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -695,7 +701,7 @@ int tf_warp_energy_manager_get_input_configuration(TF_WARPEnergyManager *warp_en
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -703,7 +709,7 @@ int tf_warp_energy_manager_get_input_configuration(TF_WARPEnergyManager *warp_en
     tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_INPUT_CONFIGURATION, 0, 2, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -735,14 +741,14 @@ int tf_warp_energy_manager_get_input_voltage(TF_WARPEnergyManager *warp_energy_m
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_INPUT_VOLTAGE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -774,14 +780,14 @@ int tf_warp_energy_manager_get_state(TF_WARPEnergyManager *warp_energy_manager, 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_STATE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -813,14 +819,14 @@ int tf_warp_energy_manager_get_spitfp_error_count(TF_WARPEnergyManager *warp_ene
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -855,7 +861,7 @@ int tf_warp_energy_manager_set_bootloader_mode(TF_WARPEnergyManager *warp_energy
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -866,7 +872,7 @@ int tf_warp_energy_manager_set_bootloader_mode(TF_WARPEnergyManager *warp_energy
 
     buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -898,14 +904,14 @@ int tf_warp_energy_manager_get_bootloader_mode(TF_WARPEnergyManager *warp_energy
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -937,7 +943,7 @@ int tf_warp_energy_manager_set_write_firmware_pointer(TF_WARPEnergyManager *warp
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -949,7 +955,7 @@ int tf_warp_energy_manager_set_write_firmware_pointer(TF_WARPEnergyManager *warp
 
     pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -976,7 +982,7 @@ int tf_warp_energy_manager_write_firmware(TF_WARPEnergyManager *warp_energy_mana
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -987,7 +993,7 @@ int tf_warp_energy_manager_write_firmware(TF_WARPEnergyManager *warp_energy_mana
 
     memcpy(buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -1019,7 +1025,7 @@ int tf_warp_energy_manager_set_status_led_config(TF_WARPEnergyManager *warp_ener
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1031,7 +1037,7 @@ int tf_warp_energy_manager_set_status_led_config(TF_WARPEnergyManager *warp_ener
 
     buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -1058,14 +1064,14 @@ int tf_warp_energy_manager_get_status_led_config(TF_WARPEnergyManager *warp_ener
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -1097,14 +1103,14 @@ int tf_warp_energy_manager_get_chip_temperature(TF_WARPEnergyManager *warp_energ
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -1136,7 +1142,7 @@ int tf_warp_energy_manager_reset(TF_WARPEnergyManager *warp_energy_manager) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1144,7 +1150,7 @@ int tf_warp_energy_manager_reset(TF_WARPEnergyManager *warp_energy_manager) {
     tf_warp_energy_manager_get_response_expected(warp_energy_manager, TF_WARP_ENERGY_MANAGER_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -1171,7 +1177,7 @@ int tf_warp_energy_manager_write_uid(TF_WARPEnergyManager *warp_energy_manager, 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1183,7 +1189,7 @@ int tf_warp_energy_manager_write_uid(TF_WARPEnergyManager *warp_energy_manager, 
 
     uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -1210,14 +1216,14 @@ int tf_warp_energy_manager_read_uid(TF_WARPEnergyManager *warp_energy_manager, u
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -1249,7 +1255,7 @@ int tf_warp_energy_manager_get_identity(TF_WARPEnergyManager *warp_energy_manage
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1257,7 +1263,7 @@ int tf_warp_energy_manager_get_identity(TF_WARPEnergyManager *warp_energy_manage
     tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL*)warp_energy_manager->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + tf_hal_get_common((TF_HAL *)warp_energy_manager->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
@@ -1279,7 +1285,7 @@ int tf_warp_energy_manager_get_identity(TF_WARPEnergyManager *warp_energy_manage
         if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&warp_energy_manager->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&warp_energy_manager->tfp->spitfp->recv_buf, 3); }
         if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&warp_energy_manager->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&warp_energy_manager->tfp->spitfp->recv_buf, 2); }
         if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL*)warp_energy_manager->tfp->hal, warp_energy_manager->tfp->spitfp->port_id);
+            *ret_position = tf_hal_get_port_name((TF_HAL *)warp_energy_manager->tfp->hal, warp_energy_manager->tfp->spitfp->port_id);
         }
         if (ret_connected_uid != NULL) {
             memcpy(ret_connected_uid, tmp_connected_uid, 8);
@@ -1395,7 +1401,7 @@ int tf_warp_energy_manager_callback_tick(TF_WARPEnergyManager *warp_energy_manag
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(warp_energy_manager->tfp, tf_hal_current_time_us((TF_HAL*)warp_energy_manager->tfp->hal) + timeout_us);
+    return tf_tfp_callback_tick(warp_energy_manager->tfp, tf_hal_current_time_us((TF_HAL *)warp_energy_manager->tfp->hal) + timeout_us);
 }
 
 #ifdef __cplusplus

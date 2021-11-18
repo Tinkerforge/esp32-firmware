@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,7 +27,7 @@ extern "C" {
 struct TF_SolidStateRelayV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_SolidStateRelayV2MonoflopDoneHandler)(struct TF_SolidStateRelayV2 *device, bool state, void *user_data);
+typedef void (*TF_SolidStateRelayV2_MonoflopDoneHandler)(struct TF_SolidStateRelayV2 *device, bool state, void *user_data);
 
 #endif
 /**
@@ -38,7 +38,7 @@ typedef void (*TF_SolidStateRelayV2MonoflopDoneHandler)(struct TF_SolidStateRela
 typedef struct TF_SolidStateRelayV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_SolidStateRelayV2MonoflopDoneHandler monoflop_done_handler;
+    TF_SolidStateRelayV2_MonoflopDoneHandler monoflop_done_handler;
     void *monoflop_done_user_data;
 
 #endif
@@ -286,7 +286,7 @@ int tf_solid_state_relay_v2_set_response_expected(TF_SolidStateRelayV2 *solid_st
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_solid_state_relay_v2_set_response_expected_all(TF_SolidStateRelayV2 *solid_state_relay_v2, bool response_expected);
+int tf_solid_state_relay_v2_set_response_expected_all(TF_SolidStateRelayV2 *solid_state_relay_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_SolidStateRelayV2
@@ -300,7 +300,7 @@ void tf_solid_state_relay_v2_set_response_expected_all(TF_SolidStateRelayV2 *sol
  * The parameter is the current state of the relay
  * (the state after the monoflop).
  */
-int tf_solid_state_relay_v2_register_monoflop_done_callback(TF_SolidStateRelayV2 *solid_state_relay_v2, TF_SolidStateRelayV2MonoflopDoneHandler handler, void *user_data);
+int tf_solid_state_relay_v2_register_monoflop_done_callback(TF_SolidStateRelayV2 *solid_state_relay_v2, TF_SolidStateRelayV2_MonoflopDoneHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

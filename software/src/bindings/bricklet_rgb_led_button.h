@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,7 +27,7 @@ extern "C" {
 struct TF_RGBLEDButton;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_RGBLEDButtonButtonStateChangedHandler)(struct TF_RGBLEDButton *device, uint8_t state, void *user_data);
+typedef void (*TF_RGBLEDButton_ButtonStateChangedHandler)(struct TF_RGBLEDButton *device, uint8_t state, void *user_data);
 
 #endif
 /**
@@ -38,7 +38,7 @@ typedef void (*TF_RGBLEDButtonButtonStateChangedHandler)(struct TF_RGBLEDButton 
 typedef struct TF_RGBLEDButton {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_RGBLEDButtonButtonStateChangedHandler button_state_changed_handler;
+    TF_RGBLEDButton_ButtonStateChangedHandler button_state_changed_handler;
     void *button_state_changed_user_data;
 
 #endif
@@ -301,7 +301,7 @@ int tf_rgb_led_button_set_response_expected(TF_RGBLEDButton *rgb_led_button, uin
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_rgb_led_button_set_response_expected_all(TF_RGBLEDButton *rgb_led_button, bool response_expected);
+int tf_rgb_led_button_set_response_expected_all(TF_RGBLEDButton *rgb_led_button, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_RGBLEDButton
@@ -316,7 +316,7 @@ void tf_rgb_led_button_set_response_expected_all(TF_RGBLEDButton *rgb_led_button
  * 
  * The parameter is the current state of the button.
  */
-int tf_rgb_led_button_register_button_state_changed_callback(TF_RGBLEDButton *rgb_led_button, TF_RGBLEDButtonButtonStateChangedHandler handler, void *user_data);
+int tf_rgb_led_button_register_button_state_changed_callback(TF_RGBLEDButton *rgb_led_button, TF_RGBLEDButton_ButtonStateChangedHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

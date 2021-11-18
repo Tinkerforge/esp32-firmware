@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,9 +27,9 @@ extern "C" {
 struct TF_VoltageCurrentV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_VoltageCurrentV2CurrentHandler)(struct TF_VoltageCurrentV2 *device, int32_t current, void *user_data);
-typedef void (*TF_VoltageCurrentV2VoltageHandler)(struct TF_VoltageCurrentV2 *device, int32_t voltage, void *user_data);
-typedef void (*TF_VoltageCurrentV2PowerHandler)(struct TF_VoltageCurrentV2 *device, int32_t power, void *user_data);
+typedef void (*TF_VoltageCurrentV2_CurrentHandler)(struct TF_VoltageCurrentV2 *device, int32_t current, void *user_data);
+typedef void (*TF_VoltageCurrentV2_VoltageHandler)(struct TF_VoltageCurrentV2 *device, int32_t voltage, void *user_data);
+typedef void (*TF_VoltageCurrentV2_PowerHandler)(struct TF_VoltageCurrentV2 *device, int32_t power, void *user_data);
 
 #endif
 /**
@@ -40,13 +40,13 @@ typedef void (*TF_VoltageCurrentV2PowerHandler)(struct TF_VoltageCurrentV2 *devi
 typedef struct TF_VoltageCurrentV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_VoltageCurrentV2CurrentHandler current_handler;
+    TF_VoltageCurrentV2_CurrentHandler current_handler;
     void *current_user_data;
 
-    TF_VoltageCurrentV2VoltageHandler voltage_handler;
+    TF_VoltageCurrentV2_VoltageHandler voltage_handler;
     void *voltage_user_data;
 
-    TF_VoltageCurrentV2PowerHandler power_handler;
+    TF_VoltageCurrentV2_PowerHandler power_handler;
     void *power_user_data;
 
 #endif
@@ -454,7 +454,7 @@ int tf_voltage_current_v2_set_response_expected(TF_VoltageCurrentV2 *voltage_cur
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_voltage_current_v2_set_response_expected_all(TF_VoltageCurrentV2 *voltage_current_v2, bool response_expected);
+int tf_voltage_current_v2_set_response_expected_all(TF_VoltageCurrentV2 *voltage_current_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_VoltageCurrentV2
@@ -469,7 +469,7 @@ void tf_voltage_current_v2_set_response_expected_all(TF_VoltageCurrentV2 *voltag
  * 
  * The parameter is the same as {@link tf_voltage_current_v2_get_current}.
  */
-int tf_voltage_current_v2_register_current_callback(TF_VoltageCurrentV2 *voltage_current_v2, TF_VoltageCurrentV2CurrentHandler handler, void *user_data);
+int tf_voltage_current_v2_register_current_callback(TF_VoltageCurrentV2 *voltage_current_v2, TF_VoltageCurrentV2_CurrentHandler handler, void *user_data);
 
 
 /**
@@ -485,7 +485,7 @@ int tf_voltage_current_v2_register_current_callback(TF_VoltageCurrentV2 *voltage
  * 
  * The parameter is the same as {@link tf_voltage_current_v2_get_voltage}.
  */
-int tf_voltage_current_v2_register_voltage_callback(TF_VoltageCurrentV2 *voltage_current_v2, TF_VoltageCurrentV2VoltageHandler handler, void *user_data);
+int tf_voltage_current_v2_register_voltage_callback(TF_VoltageCurrentV2 *voltage_current_v2, TF_VoltageCurrentV2_VoltageHandler handler, void *user_data);
 
 
 /**
@@ -501,7 +501,7 @@ int tf_voltage_current_v2_register_voltage_callback(TF_VoltageCurrentV2 *voltage
  * 
  * The parameter is the same as {@link tf_voltage_current_v2_get_power}.
  */
-int tf_voltage_current_v2_register_power_callback(TF_VoltageCurrentV2 *voltage_current_v2, TF_VoltageCurrentV2PowerHandler handler, void *user_data);
+int tf_voltage_current_v2_register_power_callback(TF_VoltageCurrentV2 *voltage_current_v2, TF_VoltageCurrentV2_PowerHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

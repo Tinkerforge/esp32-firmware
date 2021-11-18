@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,8 +27,8 @@ extern "C" {
 struct TF_IndustrialCounter;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_IndustrialCounterAllCounterHandler)(struct TF_IndustrialCounter *device, int64_t counter[4], void *user_data);
-typedef void (*TF_IndustrialCounterAllSignalDataHandler)(struct TF_IndustrialCounter *device, uint16_t duty_cycle[4], uint64_t period[4], uint32_t frequency[4], bool value[4], void *user_data);
+typedef void (*TF_IndustrialCounter_AllCounterHandler)(struct TF_IndustrialCounter *device, int64_t counter[4], void *user_data);
+typedef void (*TF_IndustrialCounter_AllSignalDataHandler)(struct TF_IndustrialCounter *device, uint16_t duty_cycle[4], uint64_t period[4], uint32_t frequency[4], bool value[4], void *user_data);
 
 #endif
 /**
@@ -39,10 +39,10 @@ typedef void (*TF_IndustrialCounterAllSignalDataHandler)(struct TF_IndustrialCou
 typedef struct TF_IndustrialCounter {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_IndustrialCounterAllCounterHandler all_counter_handler;
+    TF_IndustrialCounter_AllCounterHandler all_counter_handler;
     void *all_counter_user_data;
 
-    TF_IndustrialCounterAllSignalDataHandler all_signal_data_handler;
+    TF_IndustrialCounter_AllSignalDataHandler all_signal_data_handler;
     void *all_signal_data_user_data;
 
 #endif
@@ -565,7 +565,7 @@ int tf_industrial_counter_set_response_expected(TF_IndustrialCounter *industrial
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_industrial_counter_set_response_expected_all(TF_IndustrialCounter *industrial_counter, bool response_expected);
+int tf_industrial_counter_set_response_expected_all(TF_IndustrialCounter *industrial_counter, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_IndustrialCounter
@@ -580,7 +580,7 @@ void tf_industrial_counter_set_response_expected_all(TF_IndustrialCounter *indus
  * 
  * The parameters are the same as {@link tf_industrial_counter_get_all_counter}.
  */
-int tf_industrial_counter_register_all_counter_callback(TF_IndustrialCounter *industrial_counter, TF_IndustrialCounterAllCounterHandler handler, void *user_data);
+int tf_industrial_counter_register_all_counter_callback(TF_IndustrialCounter *industrial_counter, TF_IndustrialCounter_AllCounterHandler handler, void *user_data);
 
 
 /**
@@ -596,7 +596,7 @@ int tf_industrial_counter_register_all_counter_callback(TF_IndustrialCounter *in
  * 
  * The parameters are the same as {@link tf_industrial_counter_get_all_signal_data}.
  */
-int tf_industrial_counter_register_all_signal_data_callback(TF_IndustrialCounter *industrial_counter, TF_IndustrialCounterAllSignalDataHandler handler, void *user_data);
+int tf_industrial_counter_register_all_signal_data_callback(TF_IndustrialCounter *industrial_counter, TF_IndustrialCounter_AllSignalDataHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

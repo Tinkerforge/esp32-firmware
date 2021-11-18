@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,7 +27,7 @@ extern "C" {
 struct TF_IndustrialDualACRelay;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_IndustrialDualACRelayMonoflopDoneHandler)(struct TF_IndustrialDualACRelay *device, uint8_t channel, bool value, void *user_data);
+typedef void (*TF_IndustrialDualACRelay_MonoflopDoneHandler)(struct TF_IndustrialDualACRelay *device, uint8_t channel, bool value, void *user_data);
 
 #endif
 /**
@@ -38,7 +38,7 @@ typedef void (*TF_IndustrialDualACRelayMonoflopDoneHandler)(struct TF_Industrial
 typedef struct TF_IndustrialDualACRelay {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_IndustrialDualACRelayMonoflopDoneHandler monoflop_done_handler;
+    TF_IndustrialDualACRelay_MonoflopDoneHandler monoflop_done_handler;
     void *monoflop_done_user_data;
 
 #endif
@@ -321,7 +321,7 @@ int tf_industrial_dual_ac_relay_set_response_expected(TF_IndustrialDualACRelay *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_industrial_dual_ac_relay_set_response_expected_all(TF_IndustrialDualACRelay *industrial_dual_ac_relay, bool response_expected);
+int tf_industrial_dual_ac_relay_set_response_expected_all(TF_IndustrialDualACRelay *industrial_dual_ac_relay, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_IndustrialDualACRelay
@@ -335,7 +335,7 @@ void tf_industrial_dual_ac_relay_set_response_expected_all(TF_IndustrialDualACRe
  * parameters contain the relay and the current state of the relay
  * (the state after the monoflop).
  */
-int tf_industrial_dual_ac_relay_register_monoflop_done_callback(TF_IndustrialDualACRelay *industrial_dual_ac_relay, TF_IndustrialDualACRelayMonoflopDoneHandler handler, void *user_data);
+int tf_industrial_dual_ac_relay_register_monoflop_done_callback(TF_IndustrialDualACRelay *industrial_dual_ac_relay, TF_IndustrialDualACRelay_MonoflopDoneHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

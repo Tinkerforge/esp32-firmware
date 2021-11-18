@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,9 +27,9 @@ extern "C" {
 struct TF_IndustrialPTC;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_IndustrialPTCTemperatureHandler)(struct TF_IndustrialPTC *device, int32_t temperature, void *user_data);
-typedef void (*TF_IndustrialPTCResistanceHandler)(struct TF_IndustrialPTC *device, int32_t resistance, void *user_data);
-typedef void (*TF_IndustrialPTCSensorConnectedHandler)(struct TF_IndustrialPTC *device, bool connected, void *user_data);
+typedef void (*TF_IndustrialPTC_TemperatureHandler)(struct TF_IndustrialPTC *device, int32_t temperature, void *user_data);
+typedef void (*TF_IndustrialPTC_ResistanceHandler)(struct TF_IndustrialPTC *device, int32_t resistance, void *user_data);
+typedef void (*TF_IndustrialPTC_SensorConnectedHandler)(struct TF_IndustrialPTC *device, bool connected, void *user_data);
 
 #endif
 /**
@@ -40,13 +40,13 @@ typedef void (*TF_IndustrialPTCSensorConnectedHandler)(struct TF_IndustrialPTC *
 typedef struct TF_IndustrialPTC {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_IndustrialPTCTemperatureHandler temperature_handler;
+    TF_IndustrialPTC_TemperatureHandler temperature_handler;
     void *temperature_user_data;
 
-    TF_IndustrialPTCResistanceHandler resistance_handler;
+    TF_IndustrialPTC_ResistanceHandler resistance_handler;
     void *resistance_user_data;
 
-    TF_IndustrialPTCSensorConnectedHandler sensor_connected_handler;
+    TF_IndustrialPTC_SensorConnectedHandler sensor_connected_handler;
     void *sensor_connected_user_data;
 
 #endif
@@ -409,7 +409,7 @@ int tf_industrial_ptc_set_response_expected(TF_IndustrialPTC *industrial_ptc, ui
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_industrial_ptc_set_response_expected_all(TF_IndustrialPTC *industrial_ptc, bool response_expected);
+int tf_industrial_ptc_set_response_expected_all(TF_IndustrialPTC *industrial_ptc, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_IndustrialPTC
@@ -424,7 +424,7 @@ void tf_industrial_ptc_set_response_expected_all(TF_IndustrialPTC *industrial_pt
  * 
  * The parameter is the same as {@link tf_industrial_ptc_get_temperature}.
  */
-int tf_industrial_ptc_register_temperature_callback(TF_IndustrialPTC *industrial_ptc, TF_IndustrialPTCTemperatureHandler handler, void *user_data);
+int tf_industrial_ptc_register_temperature_callback(TF_IndustrialPTC *industrial_ptc, TF_IndustrialPTC_TemperatureHandler handler, void *user_data);
 
 
 /**
@@ -440,7 +440,7 @@ int tf_industrial_ptc_register_temperature_callback(TF_IndustrialPTC *industrial
  * 
  * The parameter is the same as {@link tf_industrial_ptc_get_resistance}.
  */
-int tf_industrial_ptc_register_resistance_callback(TF_IndustrialPTC *industrial_ptc, TF_IndustrialPTCResistanceHandler handler, void *user_data);
+int tf_industrial_ptc_register_resistance_callback(TF_IndustrialPTC *industrial_ptc, TF_IndustrialPTC_ResistanceHandler handler, void *user_data);
 
 
 /**
@@ -456,7 +456,7 @@ int tf_industrial_ptc_register_resistance_callback(TF_IndustrialPTC *industrial_
  * 
  * The parameter is the same as {@link tf_industrial_ptc_is_sensor_connected}.
  */
-int tf_industrial_ptc_register_sensor_connected_callback(TF_IndustrialPTC *industrial_ptc, TF_IndustrialPTCSensorConnectedHandler handler, void *user_data);
+int tf_industrial_ptc_register_sensor_connected_callback(TF_IndustrialPTC *industrial_ptc, TF_IndustrialPTC_SensorConnectedHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

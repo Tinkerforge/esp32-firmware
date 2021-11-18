@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,7 +27,7 @@ extern "C" {
 struct TF_AnalogInV3;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_AnalogInV3VoltageHandler)(struct TF_AnalogInV3 *device, uint16_t voltage, void *user_data);
+typedef void (*TF_AnalogInV3_VoltageHandler)(struct TF_AnalogInV3 *device, uint16_t voltage, void *user_data);
 
 #endif
 /**
@@ -38,7 +38,7 @@ typedef void (*TF_AnalogInV3VoltageHandler)(struct TF_AnalogInV3 *device, uint16
 typedef struct TF_AnalogInV3 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_AnalogInV3VoltageHandler voltage_handler;
+    TF_AnalogInV3_VoltageHandler voltage_handler;
     void *voltage_user_data;
 
 #endif
@@ -376,7 +376,7 @@ int tf_analog_in_v3_set_response_expected(TF_AnalogInV3 *analog_in_v3, uint8_t f
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_analog_in_v3_set_response_expected_all(TF_AnalogInV3 *analog_in_v3, bool response_expected);
+int tf_analog_in_v3_set_response_expected_all(TF_AnalogInV3 *analog_in_v3, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_AnalogInV3
@@ -391,7 +391,7 @@ void tf_analog_in_v3_set_response_expected_all(TF_AnalogInV3 *analog_in_v3, bool
  * 
  * The parameter is the same as {@link tf_analog_in_v3_get_voltage}.
  */
-int tf_analog_in_v3_register_voltage_callback(TF_AnalogInV3 *analog_in_v3, TF_AnalogInV3VoltageHandler handler, void *user_data);
+int tf_analog_in_v3_register_voltage_callback(TF_AnalogInV3 *analog_in_v3, TF_AnalogInV3_VoltageHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,8 +27,8 @@ extern "C" {
 struct TF_XMC1400Breakout;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_XMC1400BreakoutADCValuesHandler)(struct TF_XMC1400Breakout *device, uint16_t values[8], void *user_data);
-typedef void (*TF_XMC1400BreakoutCountHandler)(struct TF_XMC1400Breakout *device, uint32_t count, void *user_data);
+typedef void (*TF_XMC1400Breakout_ADCValuesHandler)(struct TF_XMC1400Breakout *device, uint16_t values[8], void *user_data);
+typedef void (*TF_XMC1400Breakout_CountHandler)(struct TF_XMC1400Breakout *device, uint32_t count, void *user_data);
 
 #endif
 /**
@@ -39,10 +39,10 @@ typedef void (*TF_XMC1400BreakoutCountHandler)(struct TF_XMC1400Breakout *device
 typedef struct TF_XMC1400Breakout {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_XMC1400BreakoutADCValuesHandler adc_values_handler;
+    TF_XMC1400Breakout_ADCValuesHandler adc_values_handler;
     void *adc_values_user_data;
 
-    TF_XMC1400BreakoutCountHandler count_handler;
+    TF_XMC1400Breakout_CountHandler count_handler;
     void *count_user_data;
 
 #endif
@@ -415,7 +415,7 @@ int tf_xmc1400_breakout_set_response_expected(TF_XMC1400Breakout *xmc1400_breako
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_xmc1400_breakout_set_response_expected_all(TF_XMC1400Breakout *xmc1400_breakout, bool response_expected);
+int tf_xmc1400_breakout_set_response_expected_all(TF_XMC1400Breakout *xmc1400_breakout, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_XMC1400Breakout
@@ -430,7 +430,7 @@ void tf_xmc1400_breakout_set_response_expected_all(TF_XMC1400Breakout *xmc1400_b
  * 
  * The parameters are the same as {@link tf_xmc1400_breakout_get_adc_values}.
  */
-int tf_xmc1400_breakout_register_adc_values_callback(TF_XMC1400Breakout *xmc1400_breakout, TF_XMC1400BreakoutADCValuesHandler handler, void *user_data);
+int tf_xmc1400_breakout_register_adc_values_callback(TF_XMC1400Breakout *xmc1400_breakout, TF_XMC1400Breakout_ADCValuesHandler handler, void *user_data);
 
 
 /**
@@ -446,7 +446,7 @@ int tf_xmc1400_breakout_register_adc_values_callback(TF_XMC1400Breakout *xmc1400
  * 
  * The parameter is the same as {@link tf_xmc1400_breakout_get_count}.
  */
-int tf_xmc1400_breakout_register_count_callback(TF_XMC1400Breakout *xmc1400_breakout, TF_XMC1400BreakoutCountHandler handler, void *user_data);
+int tf_xmc1400_breakout_register_count_callback(TF_XMC1400Breakout *xmc1400_breakout, TF_XMC1400Breakout_CountHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

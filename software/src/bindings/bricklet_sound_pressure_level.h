@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,8 +27,8 @@ extern "C" {
 struct TF_SoundPressureLevel;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_SoundPressureLevelDecibelHandler)(struct TF_SoundPressureLevel *device, uint16_t decibel, void *user_data);
-typedef void (*TF_SoundPressureLevelSpectrumLowLevelHandler)(struct TF_SoundPressureLevel *device, uint16_t spectrum_length, uint16_t spectrum_chunk_offset, uint16_t spectrum_chunk_data[30], void *user_data);
+typedef void (*TF_SoundPressureLevel_DecibelHandler)(struct TF_SoundPressureLevel *device, uint16_t decibel, void *user_data);
+typedef void (*TF_SoundPressureLevel_SpectrumLowLevelHandler)(struct TF_SoundPressureLevel *device, uint16_t spectrum_length, uint16_t spectrum_chunk_offset, uint16_t spectrum_chunk_data[30], void *user_data);
 
 #endif
 /**
@@ -39,10 +39,10 @@ typedef void (*TF_SoundPressureLevelSpectrumLowLevelHandler)(struct TF_SoundPres
 typedef struct TF_SoundPressureLevel {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_SoundPressureLevelDecibelHandler decibel_handler;
+    TF_SoundPressureLevel_DecibelHandler decibel_handler;
     void *decibel_user_data;
 
-    TF_SoundPressureLevelSpectrumLowLevelHandler spectrum_low_level_handler;
+    TF_SoundPressureLevel_SpectrumLowLevelHandler spectrum_low_level_handler;
     void *spectrum_low_level_user_data;
 
 #endif
@@ -390,7 +390,7 @@ int tf_sound_pressure_level_set_response_expected(TF_SoundPressureLevel *sound_p
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_sound_pressure_level_set_response_expected_all(TF_SoundPressureLevel *sound_pressure_level, bool response_expected);
+int tf_sound_pressure_level_set_response_expected_all(TF_SoundPressureLevel *sound_pressure_level, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_SoundPressureLevel
@@ -405,7 +405,7 @@ void tf_sound_pressure_level_set_response_expected_all(TF_SoundPressureLevel *so
  * 
  * The parameter is the same as {@link tf_sound_pressure_level_get_decibel}.
  */
-int tf_sound_pressure_level_register_decibel_callback(TF_SoundPressureLevel *sound_pressure_level, TF_SoundPressureLevelDecibelHandler handler, void *user_data);
+int tf_sound_pressure_level_register_decibel_callback(TF_SoundPressureLevel *sound_pressure_level, TF_SoundPressureLevel_DecibelHandler handler, void *user_data);
 
 
 /**
@@ -421,7 +421,7 @@ int tf_sound_pressure_level_register_decibel_callback(TF_SoundPressureLevel *sou
  * 
  * The parameter is the same as {@link tf_sound_pressure_level_get_spectrum}.
  */
-int tf_sound_pressure_level_register_spectrum_low_level_callback(TF_SoundPressureLevel *sound_pressure_level, TF_SoundPressureLevelSpectrumLowLevelHandler handler, void *user_data);
+int tf_sound_pressure_level_register_spectrum_low_level_callback(TF_SoundPressureLevel *sound_pressure_level, TF_SoundPressureLevel_SpectrumLowLevelHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

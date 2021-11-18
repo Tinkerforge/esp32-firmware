@@ -74,7 +74,6 @@ uint8_t *tf_spitfp_get_payload_buffer(TF_SPITFP *spitfp) TF_ATTRIBUTE_NONNULL_AL
 uint8_t tf_spitfp_build_packet(TF_SPITFP *spitfp, bool retransmission) TF_ATTRIBUTE_NONNULL_ALL;
 void tf_spitfp_packet_processed(TF_SPITFP *spitfp) TF_ATTRIBUTE_NONNULL_ALL;
 
-// FIXME: rename from TF_TICK_* to TF_SPITFP_TICK_*?
 #define TF_TICK_PACKET_RECEIVED 1
 #define TF_TICK_PACKET_SENT 2
 #define TF_TICK_AGAIN 4

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,8 +27,8 @@ extern "C" {
 struct TF_HallEffectV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_HallEffectV2MagneticFluxDensityHandler)(struct TF_HallEffectV2 *device, int16_t magnetic_flux_density, void *user_data);
-typedef void (*TF_HallEffectV2CounterHandler)(struct TF_HallEffectV2 *device, uint32_t count, void *user_data);
+typedef void (*TF_HallEffectV2_MagneticFluxDensityHandler)(struct TF_HallEffectV2 *device, int16_t magnetic_flux_density, void *user_data);
+typedef void (*TF_HallEffectV2_CounterHandler)(struct TF_HallEffectV2 *device, uint32_t count, void *user_data);
 
 #endif
 /**
@@ -39,10 +39,10 @@ typedef void (*TF_HallEffectV2CounterHandler)(struct TF_HallEffectV2 *device, ui
 typedef struct TF_HallEffectV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_HallEffectV2MagneticFluxDensityHandler magnetic_flux_density_handler;
+    TF_HallEffectV2_MagneticFluxDensityHandler magnetic_flux_density_handler;
     void *magnetic_flux_density_user_data;
 
-    TF_HallEffectV2CounterHandler counter_handler;
+    TF_HallEffectV2_CounterHandler counter_handler;
     void *counter_user_data;
 
 #endif
@@ -340,7 +340,7 @@ int tf_hall_effect_v2_set_response_expected(TF_HallEffectV2 *hall_effect_v2, uin
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_hall_effect_v2_set_response_expected_all(TF_HallEffectV2 *hall_effect_v2, bool response_expected);
+int tf_hall_effect_v2_set_response_expected_all(TF_HallEffectV2 *hall_effect_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_HallEffectV2
@@ -355,7 +355,7 @@ void tf_hall_effect_v2_set_response_expected_all(TF_HallEffectV2 *hall_effect_v2
  * 
  * The parameter is the same as {@link tf_hall_effect_v2_get_magnetic_flux_density}.
  */
-int tf_hall_effect_v2_register_magnetic_flux_density_callback(TF_HallEffectV2 *hall_effect_v2, TF_HallEffectV2MagneticFluxDensityHandler handler, void *user_data);
+int tf_hall_effect_v2_register_magnetic_flux_density_callback(TF_HallEffectV2 *hall_effect_v2, TF_HallEffectV2_MagneticFluxDensityHandler handler, void *user_data);
 
 
 /**
@@ -371,7 +371,7 @@ int tf_hall_effect_v2_register_magnetic_flux_density_callback(TF_HallEffectV2 *h
  * 
  * The count is the same as you would get with {@link tf_hall_effect_v2_get_counter}.
  */
-int tf_hall_effect_v2_register_counter_callback(TF_HallEffectV2 *hall_effect_v2, TF_HallEffectV2CounterHandler handler, void *user_data);
+int tf_hall_effect_v2_register_counter_callback(TF_HallEffectV2 *hall_effect_v2, TF_HallEffectV2_CounterHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,7 +27,7 @@ extern "C" {
 struct TF_HATZero;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_HATZeroUSBVoltageHandler)(struct TF_HATZero *device, uint16_t voltage, void *user_data);
+typedef void (*TF_HATZero_USBVoltageHandler)(struct TF_HATZero *device, uint16_t voltage, void *user_data);
 
 #endif
 /**
@@ -38,7 +38,7 @@ typedef void (*TF_HATZeroUSBVoltageHandler)(struct TF_HATZero *device, uint16_t 
 typedef struct TF_HATZero {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_HATZeroUSBVoltageHandler usb_voltage_handler;
+    TF_HATZero_USBVoltageHandler usb_voltage_handler;
     void *usb_voltage_user_data;
 
 #endif
@@ -306,7 +306,7 @@ int tf_hat_zero_set_response_expected(TF_HATZero *hat_zero, uint8_t function_id,
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_hat_zero_set_response_expected_all(TF_HATZero *hat_zero, bool response_expected);
+int tf_hat_zero_set_response_expected_all(TF_HATZero *hat_zero, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_HATZero
@@ -323,7 +323,7 @@ void tf_hat_zero_set_response_expected_all(TF_HATZero *hat_zero, bool response_e
  * 
  * .. versionadded:: 2.0.1$nbsp;(Firmware)
  */
-int tf_hat_zero_register_usb_voltage_callback(TF_HATZero *hat_zero, TF_HATZeroUSBVoltageHandler handler, void *user_data);
+int tf_hat_zero_register_usb_voltage_callback(TF_HATZero *hat_zero, TF_HATZero_USBVoltageHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

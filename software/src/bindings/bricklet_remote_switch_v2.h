@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,10 +27,10 @@ extern "C" {
 struct TF_RemoteSwitchV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_RemoteSwitchV2SwitchingDoneHandler)(struct TF_RemoteSwitchV2 *device, void *user_data);
-typedef void (*TF_RemoteSwitchV2RemoteStatusAHandler)(struct TF_RemoteSwitchV2 *device, uint8_t house_code, uint8_t receiver_code, uint8_t switch_to, uint16_t repeats, void *user_data);
-typedef void (*TF_RemoteSwitchV2RemoteStatusBHandler)(struct TF_RemoteSwitchV2 *device, uint32_t address, uint8_t unit, uint8_t switch_to, uint8_t dim_value, uint16_t repeats, void *user_data);
-typedef void (*TF_RemoteSwitchV2RemoteStatusCHandler)(struct TF_RemoteSwitchV2 *device, char system_code, uint8_t device_code, uint8_t switch_to, uint16_t repeats, void *user_data);
+typedef void (*TF_RemoteSwitchV2_SwitchingDoneHandler)(struct TF_RemoteSwitchV2 *device, void *user_data);
+typedef void (*TF_RemoteSwitchV2_RemoteStatusAHandler)(struct TF_RemoteSwitchV2 *device, uint8_t house_code, uint8_t receiver_code, uint8_t switch_to, uint16_t repeats, void *user_data);
+typedef void (*TF_RemoteSwitchV2_RemoteStatusBHandler)(struct TF_RemoteSwitchV2 *device, uint32_t address, uint8_t unit, uint8_t switch_to, uint8_t dim_value, uint16_t repeats, void *user_data);
+typedef void (*TF_RemoteSwitchV2_RemoteStatusCHandler)(struct TF_RemoteSwitchV2 *device, char system_code, uint8_t device_code, uint8_t switch_to, uint16_t repeats, void *user_data);
 
 #endif
 /**
@@ -41,16 +41,16 @@ typedef void (*TF_RemoteSwitchV2RemoteStatusCHandler)(struct TF_RemoteSwitchV2 *
 typedef struct TF_RemoteSwitchV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_RemoteSwitchV2SwitchingDoneHandler switching_done_handler;
+    TF_RemoteSwitchV2_SwitchingDoneHandler switching_done_handler;
     void *switching_done_user_data;
 
-    TF_RemoteSwitchV2RemoteStatusAHandler remote_status_a_handler;
+    TF_RemoteSwitchV2_RemoteStatusAHandler remote_status_a_handler;
     void *remote_status_a_user_data;
 
-    TF_RemoteSwitchV2RemoteStatusBHandler remote_status_b_handler;
+    TF_RemoteSwitchV2_RemoteStatusBHandler remote_status_b_handler;
     void *remote_status_b_user_data;
 
-    TF_RemoteSwitchV2RemoteStatusCHandler remote_status_c_handler;
+    TF_RemoteSwitchV2_RemoteStatusCHandler remote_status_c_handler;
     void *remote_status_c_user_data;
 
 #endif
@@ -388,7 +388,7 @@ int tf_remote_switch_v2_set_response_expected(TF_RemoteSwitchV2 *remote_switch_v
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_remote_switch_v2_set_response_expected_all(TF_RemoteSwitchV2 *remote_switch_v2, bool response_expected);
+int tf_remote_switch_v2_set_response_expected_all(TF_RemoteSwitchV2 *remote_switch_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_RemoteSwitchV2
@@ -401,7 +401,7 @@ void tf_remote_switch_v2_set_response_expected_all(TF_RemoteSwitchV2 *remote_swi
  * This callback is triggered whenever the switching state changes
  * from busy to ready, see {@link tf_remote_switch_v2_get_switching_state}.
  */
-int tf_remote_switch_v2_register_switching_done_callback(TF_RemoteSwitchV2 *remote_switch_v2, TF_RemoteSwitchV2SwitchingDoneHandler handler, void *user_data);
+int tf_remote_switch_v2_register_switching_done_callback(TF_RemoteSwitchV2 *remote_switch_v2, TF_RemoteSwitchV2_SwitchingDoneHandler handler, void *user_data);
 
 
 /**
@@ -422,7 +422,7 @@ int tf_remote_switch_v2_register_switching_done_callback(TF_RemoteSwitchV2 *remo
  * of repeats that you can set in the configuration is the minimum number of repeats that have
  * to be seen before the callback is triggered for the first time.
  */
-int tf_remote_switch_v2_register_remote_status_a_callback(TF_RemoteSwitchV2 *remote_switch_v2, TF_RemoteSwitchV2RemoteStatusAHandler handler, void *user_data);
+int tf_remote_switch_v2_register_remote_status_a_callback(TF_RemoteSwitchV2 *remote_switch_v2, TF_RemoteSwitchV2_RemoteStatusAHandler handler, void *user_data);
 
 
 /**
@@ -445,7 +445,7 @@ int tf_remote_switch_v2_register_remote_status_a_callback(TF_RemoteSwitchV2 *rem
  * of repeats that you can set in the configuration is the minimum number of repeats that have
  * to be seen before the callback is triggered for the first time.
  */
-int tf_remote_switch_v2_register_remote_status_b_callback(TF_RemoteSwitchV2 *remote_switch_v2, TF_RemoteSwitchV2RemoteStatusBHandler handler, void *user_data);
+int tf_remote_switch_v2_register_remote_status_b_callback(TF_RemoteSwitchV2 *remote_switch_v2, TF_RemoteSwitchV2_RemoteStatusBHandler handler, void *user_data);
 
 
 /**
@@ -466,7 +466,7 @@ int tf_remote_switch_v2_register_remote_status_b_callback(TF_RemoteSwitchV2 *rem
  * of repeats that you can set in the configuration is the minimum number of repeats that have
  * to be seen before the callback is triggered for the first time.
  */
-int tf_remote_switch_v2_register_remote_status_c_callback(TF_RemoteSwitchV2 *remote_switch_v2, TF_RemoteSwitchV2RemoteStatusCHandler handler, void *user_data);
+int tf_remote_switch_v2_register_remote_status_c_callback(TF_RemoteSwitchV2 *remote_switch_v2, TF_RemoteSwitchV2_RemoteStatusCHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,9 +27,8 @@ static bool tf_air_quality_callback_handler(void *dev, uint8_t fid, TF_PacketBuf
     (void)payload;
 
     switch (fid) {
-
         case TF_AIR_QUALITY_CALLBACK_ALL_VALUES: {
-            TF_AirQualityAllValuesHandler fn = air_quality->all_values_handler;
+            TF_AirQuality_AllValuesHandler fn = air_quality->all_values_handler;
             void *user_data = air_quality->all_values_user_data;
             if (fn == NULL) {
                 return false;
@@ -40,7 +39,7 @@ static bool tf_air_quality_callback_handler(void *dev, uint8_t fid, TF_PacketBuf
             int32_t temperature = tf_packet_buffer_read_int32_t(payload);
             int32_t humidity = tf_packet_buffer_read_int32_t(payload);
             int32_t air_pressure = tf_packet_buffer_read_int32_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)air_quality->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)air_quality->tfp->hal);
             hal_common->locked = true;
             fn(air_quality, iaq_index, iaq_index_accuracy, temperature, humidity, air_pressure, user_data);
             hal_common->locked = false;
@@ -48,7 +47,7 @@ static bool tf_air_quality_callback_handler(void *dev, uint8_t fid, TF_PacketBuf
         }
 
         case TF_AIR_QUALITY_CALLBACK_IAQ_INDEX: {
-            TF_AirQualityIAQIndexHandler fn = air_quality->iaq_index_handler;
+            TF_AirQuality_IAQIndexHandler fn = air_quality->iaq_index_handler;
             void *user_data = air_quality->iaq_index_user_data;
             if (fn == NULL) {
                 return false;
@@ -56,7 +55,7 @@ static bool tf_air_quality_callback_handler(void *dev, uint8_t fid, TF_PacketBuf
 
             int32_t iaq_index = tf_packet_buffer_read_int32_t(payload);
             uint8_t iaq_index_accuracy = tf_packet_buffer_read_uint8_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)air_quality->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)air_quality->tfp->hal);
             hal_common->locked = true;
             fn(air_quality, iaq_index, iaq_index_accuracy, user_data);
             hal_common->locked = false;
@@ -64,14 +63,14 @@ static bool tf_air_quality_callback_handler(void *dev, uint8_t fid, TF_PacketBuf
         }
 
         case TF_AIR_QUALITY_CALLBACK_TEMPERATURE: {
-            TF_AirQualityTemperatureHandler fn = air_quality->temperature_handler;
+            TF_AirQuality_TemperatureHandler fn = air_quality->temperature_handler;
             void *user_data = air_quality->temperature_user_data;
             if (fn == NULL) {
                 return false;
             }
 
             int32_t temperature = tf_packet_buffer_read_int32_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)air_quality->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)air_quality->tfp->hal);
             hal_common->locked = true;
             fn(air_quality, temperature, user_data);
             hal_common->locked = false;
@@ -79,14 +78,14 @@ static bool tf_air_quality_callback_handler(void *dev, uint8_t fid, TF_PacketBuf
         }
 
         case TF_AIR_QUALITY_CALLBACK_HUMIDITY: {
-            TF_AirQualityHumidityHandler fn = air_quality->humidity_handler;
+            TF_AirQuality_HumidityHandler fn = air_quality->humidity_handler;
             void *user_data = air_quality->humidity_user_data;
             if (fn == NULL) {
                 return false;
             }
 
             int32_t humidity = tf_packet_buffer_read_int32_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)air_quality->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)air_quality->tfp->hal);
             hal_common->locked = true;
             fn(air_quality, humidity, user_data);
             hal_common->locked = false;
@@ -94,19 +93,20 @@ static bool tf_air_quality_callback_handler(void *dev, uint8_t fid, TF_PacketBuf
         }
 
         case TF_AIR_QUALITY_CALLBACK_AIR_PRESSURE: {
-            TF_AirQualityAirPressureHandler fn = air_quality->air_pressure_handler;
+            TF_AirQuality_AirPressureHandler fn = air_quality->air_pressure_handler;
             void *user_data = air_quality->air_pressure_user_data;
             if (fn == NULL) {
                 return false;
             }
 
             int32_t air_pressure = tf_packet_buffer_read_int32_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)air_quality->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)air_quality->tfp->hal);
             hal_common->locked = true;
             fn(air_quality, air_pressure, user_data);
             hal_common->locked = false;
             break;
         }
+
         default:
             return false;
     }
@@ -336,8 +336,14 @@ int tf_air_quality_set_response_expected(TF_AirQuality *air_quality, uint8_t fun
     return TF_E_OK;
 }
 
-void tf_air_quality_set_response_expected_all(TF_AirQuality *air_quality, bool response_expected) {
+int tf_air_quality_set_response_expected_all(TF_AirQuality *air_quality, bool response_expected) {
+    if (air_quality == NULL) {
+        return TF_E_NULL;
+    }
+
     memset(air_quality->response_expected, response_expected ? 0xFF : 0, 2);
+
+    return TF_E_OK;
 }
 
 int tf_air_quality_get_all_values(TF_AirQuality *air_quality, int32_t *ret_iaq_index, uint8_t *ret_iaq_index_accuracy, int32_t *ret_temperature, int32_t *ret_humidity, int32_t *ret_air_pressure) {
@@ -345,14 +351,14 @@ int tf_air_quality_get_all_values(TF_AirQuality *air_quality, int32_t *ret_iaq_i
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(air_quality->tfp, TF_AIR_QUALITY_FUNCTION_GET_ALL_VALUES, 0, 17, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -388,7 +394,7 @@ int tf_air_quality_set_temperature_offset(TF_AirQuality *air_quality, int32_t of
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -400,7 +406,7 @@ int tf_air_quality_set_temperature_offset(TF_AirQuality *air_quality, int32_t of
 
     offset = tf_leconvert_int32_to(offset); memcpy(buf + 0, &offset, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -427,14 +433,14 @@ int tf_air_quality_get_temperature_offset(TF_AirQuality *air_quality, int32_t *r
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(air_quality->tfp, TF_AIR_QUALITY_FUNCTION_GET_TEMPERATURE_OFFSET, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -466,7 +472,7 @@ int tf_air_quality_set_all_values_callback_configuration(TF_AirQuality *air_qual
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -479,7 +485,7 @@ int tf_air_quality_set_all_values_callback_configuration(TF_AirQuality *air_qual
     period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
     buf[4] = value_has_to_change ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -506,14 +512,14 @@ int tf_air_quality_get_all_values_callback_configuration(TF_AirQuality *air_qual
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(air_quality->tfp, TF_AIR_QUALITY_FUNCTION_GET_ALL_VALUES_CALLBACK_CONFIGURATION, 0, 5, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -546,14 +552,14 @@ int tf_air_quality_get_iaq_index(TF_AirQuality *air_quality, int32_t *ret_iaq_in
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(air_quality->tfp, TF_AIR_QUALITY_FUNCTION_GET_IAQ_INDEX, 0, 5, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -586,7 +592,7 @@ int tf_air_quality_set_iaq_index_callback_configuration(TF_AirQuality *air_quali
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -599,7 +605,7 @@ int tf_air_quality_set_iaq_index_callback_configuration(TF_AirQuality *air_quali
     period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
     buf[4] = value_has_to_change ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -626,14 +632,14 @@ int tf_air_quality_get_iaq_index_callback_configuration(TF_AirQuality *air_quali
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(air_quality->tfp, TF_AIR_QUALITY_FUNCTION_GET_IAQ_INDEX_CALLBACK_CONFIGURATION, 0, 5, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -666,14 +672,14 @@ int tf_air_quality_get_temperature(TF_AirQuality *air_quality, int32_t *ret_temp
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(air_quality->tfp, TF_AIR_QUALITY_FUNCTION_GET_TEMPERATURE, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -705,7 +711,7 @@ int tf_air_quality_set_temperature_callback_configuration(TF_AirQuality *air_qua
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -721,7 +727,7 @@ int tf_air_quality_set_temperature_callback_configuration(TF_AirQuality *air_qua
     min = tf_leconvert_int32_to(min); memcpy(buf + 6, &min, 4);
     max = tf_leconvert_int32_to(max); memcpy(buf + 10, &max, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -748,14 +754,14 @@ int tf_air_quality_get_temperature_callback_configuration(TF_AirQuality *air_qua
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(air_quality->tfp, TF_AIR_QUALITY_FUNCTION_GET_TEMPERATURE_CALLBACK_CONFIGURATION, 0, 14, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -791,14 +797,14 @@ int tf_air_quality_get_humidity(TF_AirQuality *air_quality, int32_t *ret_humidit
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(air_quality->tfp, TF_AIR_QUALITY_FUNCTION_GET_HUMIDITY, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -830,7 +836,7 @@ int tf_air_quality_set_humidity_callback_configuration(TF_AirQuality *air_qualit
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -846,7 +852,7 @@ int tf_air_quality_set_humidity_callback_configuration(TF_AirQuality *air_qualit
     min = tf_leconvert_int32_to(min); memcpy(buf + 6, &min, 4);
     max = tf_leconvert_int32_to(max); memcpy(buf + 10, &max, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -873,14 +879,14 @@ int tf_air_quality_get_humidity_callback_configuration(TF_AirQuality *air_qualit
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(air_quality->tfp, TF_AIR_QUALITY_FUNCTION_GET_HUMIDITY_CALLBACK_CONFIGURATION, 0, 14, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -916,14 +922,14 @@ int tf_air_quality_get_air_pressure(TF_AirQuality *air_quality, int32_t *ret_air
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(air_quality->tfp, TF_AIR_QUALITY_FUNCTION_GET_AIR_PRESSURE, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -955,7 +961,7 @@ int tf_air_quality_set_air_pressure_callback_configuration(TF_AirQuality *air_qu
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -971,7 +977,7 @@ int tf_air_quality_set_air_pressure_callback_configuration(TF_AirQuality *air_qu
     min = tf_leconvert_int32_to(min); memcpy(buf + 6, &min, 4);
     max = tf_leconvert_int32_to(max); memcpy(buf + 10, &max, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -998,14 +1004,14 @@ int tf_air_quality_get_air_pressure_callback_configuration(TF_AirQuality *air_qu
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(air_quality->tfp, TF_AIR_QUALITY_FUNCTION_GET_AIR_PRESSURE_CALLBACK_CONFIGURATION, 0, 14, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -1041,7 +1047,7 @@ int tf_air_quality_remove_calibration(TF_AirQuality *air_quality) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1049,7 +1055,7 @@ int tf_air_quality_remove_calibration(TF_AirQuality *air_quality) {
     tf_air_quality_get_response_expected(air_quality, TF_AIR_QUALITY_FUNCTION_REMOVE_CALIBRATION, &response_expected);
     tf_tfp_prepare_send(air_quality->tfp, TF_AIR_QUALITY_FUNCTION_REMOVE_CALIBRATION, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -1076,7 +1082,7 @@ int tf_air_quality_set_background_calibration_duration(TF_AirQuality *air_qualit
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1088,7 +1094,7 @@ int tf_air_quality_set_background_calibration_duration(TF_AirQuality *air_qualit
 
     buf[0] = (uint8_t)duration;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -1115,14 +1121,14 @@ int tf_air_quality_get_background_calibration_duration(TF_AirQuality *air_qualit
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(air_quality->tfp, TF_AIR_QUALITY_FUNCTION_GET_BACKGROUND_CALIBRATION_DURATION, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -1154,14 +1160,14 @@ int tf_air_quality_get_spitfp_error_count(TF_AirQuality *air_quality, uint32_t *
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(air_quality->tfp, TF_AIR_QUALITY_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -1196,7 +1202,7 @@ int tf_air_quality_set_bootloader_mode(TF_AirQuality *air_quality, uint8_t mode,
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1207,7 +1213,7 @@ int tf_air_quality_set_bootloader_mode(TF_AirQuality *air_quality, uint8_t mode,
 
     buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -1239,14 +1245,14 @@ int tf_air_quality_get_bootloader_mode(TF_AirQuality *air_quality, uint8_t *ret_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(air_quality->tfp, TF_AIR_QUALITY_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -1278,7 +1284,7 @@ int tf_air_quality_set_write_firmware_pointer(TF_AirQuality *air_quality, uint32
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1290,7 +1296,7 @@ int tf_air_quality_set_write_firmware_pointer(TF_AirQuality *air_quality, uint32
 
     pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -1317,7 +1323,7 @@ int tf_air_quality_write_firmware(TF_AirQuality *air_quality, const uint8_t data
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1328,7 +1334,7 @@ int tf_air_quality_write_firmware(TF_AirQuality *air_quality, const uint8_t data
 
     memcpy(buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -1360,7 +1366,7 @@ int tf_air_quality_set_status_led_config(TF_AirQuality *air_quality, uint8_t con
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1372,7 +1378,7 @@ int tf_air_quality_set_status_led_config(TF_AirQuality *air_quality, uint8_t con
 
     buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -1399,14 +1405,14 @@ int tf_air_quality_get_status_led_config(TF_AirQuality *air_quality, uint8_t *re
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(air_quality->tfp, TF_AIR_QUALITY_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -1438,14 +1444,14 @@ int tf_air_quality_get_chip_temperature(TF_AirQuality *air_quality, int16_t *ret
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(air_quality->tfp, TF_AIR_QUALITY_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -1477,7 +1483,7 @@ int tf_air_quality_reset(TF_AirQuality *air_quality) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1485,7 +1491,7 @@ int tf_air_quality_reset(TF_AirQuality *air_quality) {
     tf_air_quality_get_response_expected(air_quality, TF_AIR_QUALITY_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(air_quality->tfp, TF_AIR_QUALITY_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -1512,7 +1518,7 @@ int tf_air_quality_write_uid(TF_AirQuality *air_quality, uint32_t uid) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1524,7 +1530,7 @@ int tf_air_quality_write_uid(TF_AirQuality *air_quality, uint32_t uid) {
 
     uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -1551,14 +1557,14 @@ int tf_air_quality_read_uid(TF_AirQuality *air_quality, uint32_t *ret_uid) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(air_quality->tfp, TF_AIR_QUALITY_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -1590,7 +1596,7 @@ int tf_air_quality_get_identity(TF_AirQuality *air_quality, char ret_uid[8], cha
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1598,7 +1604,7 @@ int tf_air_quality_get_identity(TF_AirQuality *air_quality, char ret_uid[8], cha
     tf_tfp_prepare_send(air_quality->tfp, TF_AIR_QUALITY_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL*)air_quality->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + tf_hal_get_common((TF_HAL *)air_quality->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(air_quality->tfp, response_expected, deadline, &error_code);
@@ -1620,7 +1626,7 @@ int tf_air_quality_get_identity(TF_AirQuality *air_quality, char ret_uid[8], cha
         if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&air_quality->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&air_quality->tfp->spitfp->recv_buf, 3); }
         if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&air_quality->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&air_quality->tfp->spitfp->recv_buf, 2); }
         if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL*)air_quality->tfp->hal, air_quality->tfp->spitfp->port_id);
+            *ret_position = tf_hal_get_port_name((TF_HAL *)air_quality->tfp->hal, air_quality->tfp->spitfp->port_id);
         }
         if (ret_connected_uid != NULL) {
             memcpy(ret_connected_uid, tmp_connected_uid, 8);
@@ -1637,7 +1643,7 @@ int tf_air_quality_get_identity(TF_AirQuality *air_quality, char ret_uid[8], cha
     return tf_tfp_get_error(error_code);
 }
 #if TF_IMPLEMENT_CALLBACKS != 0
-int tf_air_quality_register_all_values_callback(TF_AirQuality *air_quality, TF_AirQualityAllValuesHandler handler, void *user_data) {
+int tf_air_quality_register_all_values_callback(TF_AirQuality *air_quality, TF_AirQuality_AllValuesHandler handler, void *user_data) {
     if (air_quality == NULL) {
         return TF_E_NULL;
     }
@@ -1659,7 +1665,7 @@ int tf_air_quality_register_all_values_callback(TF_AirQuality *air_quality, TF_A
 }
 
 
-int tf_air_quality_register_iaq_index_callback(TF_AirQuality *air_quality, TF_AirQualityIAQIndexHandler handler, void *user_data) {
+int tf_air_quality_register_iaq_index_callback(TF_AirQuality *air_quality, TF_AirQuality_IAQIndexHandler handler, void *user_data) {
     if (air_quality == NULL) {
         return TF_E_NULL;
     }
@@ -1681,7 +1687,7 @@ int tf_air_quality_register_iaq_index_callback(TF_AirQuality *air_quality, TF_Ai
 }
 
 
-int tf_air_quality_register_temperature_callback(TF_AirQuality *air_quality, TF_AirQualityTemperatureHandler handler, void *user_data) {
+int tf_air_quality_register_temperature_callback(TF_AirQuality *air_quality, TF_AirQuality_TemperatureHandler handler, void *user_data) {
     if (air_quality == NULL) {
         return TF_E_NULL;
     }
@@ -1703,7 +1709,7 @@ int tf_air_quality_register_temperature_callback(TF_AirQuality *air_quality, TF_
 }
 
 
-int tf_air_quality_register_humidity_callback(TF_AirQuality *air_quality, TF_AirQualityHumidityHandler handler, void *user_data) {
+int tf_air_quality_register_humidity_callback(TF_AirQuality *air_quality, TF_AirQuality_HumidityHandler handler, void *user_data) {
     if (air_quality == NULL) {
         return TF_E_NULL;
     }
@@ -1725,7 +1731,7 @@ int tf_air_quality_register_humidity_callback(TF_AirQuality *air_quality, TF_Air
 }
 
 
-int tf_air_quality_register_air_pressure_callback(TF_AirQuality *air_quality, TF_AirQualityAirPressureHandler handler, void *user_data) {
+int tf_air_quality_register_air_pressure_callback(TF_AirQuality *air_quality, TF_AirQuality_AirPressureHandler handler, void *user_data) {
     if (air_quality == NULL) {
         return TF_E_NULL;
     }
@@ -1751,7 +1757,7 @@ int tf_air_quality_callback_tick(TF_AirQuality *air_quality, uint32_t timeout_us
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(air_quality->tfp, tf_hal_current_time_us((TF_HAL*)air_quality->tfp->hal) + timeout_us);
+    return tf_tfp_callback_tick(air_quality->tfp, tf_hal_current_time_us((TF_HAL *)air_quality->tfp->hal) + timeout_us);
 }
 
 #ifdef __cplusplus

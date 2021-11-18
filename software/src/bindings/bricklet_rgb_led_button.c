@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,21 +27,21 @@ static bool tf_rgb_led_button_callback_handler(void *dev, uint8_t fid, TF_Packet
     (void)payload;
 
     switch (fid) {
-
         case TF_RGB_LED_BUTTON_CALLBACK_BUTTON_STATE_CHANGED: {
-            TF_RGBLEDButtonButtonStateChangedHandler fn = rgb_led_button->button_state_changed_handler;
+            TF_RGBLEDButton_ButtonStateChangedHandler fn = rgb_led_button->button_state_changed_handler;
             void *user_data = rgb_led_button->button_state_changed_user_data;
             if (fn == NULL) {
                 return false;
             }
 
             uint8_t state = tf_packet_buffer_read_uint8_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal);
             hal_common->locked = true;
             fn(rgb_led_button, state, user_data);
             hal_common->locked = false;
             break;
         }
+
         default:
             return false;
     }
@@ -198,8 +198,14 @@ int tf_rgb_led_button_set_response_expected(TF_RGBLEDButton *rgb_led_button, uin
     return TF_E_OK;
 }
 
-void tf_rgb_led_button_set_response_expected_all(TF_RGBLEDButton *rgb_led_button, bool response_expected) {
+int tf_rgb_led_button_set_response_expected_all(TF_RGBLEDButton *rgb_led_button, bool response_expected) {
+    if (rgb_led_button == NULL) {
+        return TF_E_NULL;
+    }
+
     memset(rgb_led_button->response_expected, response_expected ? 0xFF : 0, 1);
+
+    return TF_E_OK;
 }
 
 int tf_rgb_led_button_set_color(TF_RGBLEDButton *rgb_led_button, uint8_t red, uint8_t green, uint8_t blue) {
@@ -207,7 +213,7 @@ int tf_rgb_led_button_set_color(TF_RGBLEDButton *rgb_led_button, uint8_t red, ui
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -221,7 +227,7 @@ int tf_rgb_led_button_set_color(TF_RGBLEDButton *rgb_led_button, uint8_t red, ui
     buf[1] = (uint8_t)green;
     buf[2] = (uint8_t)blue;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rgb_led_button->tfp, response_expected, deadline, &error_code);
@@ -248,14 +254,14 @@ int tf_rgb_led_button_get_color(TF_RGBLEDButton *rgb_led_button, uint8_t *ret_re
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(rgb_led_button->tfp, TF_RGB_LED_BUTTON_FUNCTION_GET_COLOR, 0, 3, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rgb_led_button->tfp, response_expected, deadline, &error_code);
@@ -289,14 +295,14 @@ int tf_rgb_led_button_get_button_state(TF_RGBLEDButton *rgb_led_button, uint8_t 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(rgb_led_button->tfp, TF_RGB_LED_BUTTON_FUNCTION_GET_BUTTON_STATE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rgb_led_button->tfp, response_expected, deadline, &error_code);
@@ -328,7 +334,7 @@ int tf_rgb_led_button_set_color_calibration(TF_RGBLEDButton *rgb_led_button, uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -342,7 +348,7 @@ int tf_rgb_led_button_set_color_calibration(TF_RGBLEDButton *rgb_led_button, uin
     buf[1] = (uint8_t)green;
     buf[2] = (uint8_t)blue;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rgb_led_button->tfp, response_expected, deadline, &error_code);
@@ -369,14 +375,14 @@ int tf_rgb_led_button_get_color_calibration(TF_RGBLEDButton *rgb_led_button, uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(rgb_led_button->tfp, TF_RGB_LED_BUTTON_FUNCTION_GET_COLOR_CALIBRATION, 0, 3, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rgb_led_button->tfp, response_expected, deadline, &error_code);
@@ -410,14 +416,14 @@ int tf_rgb_led_button_get_spitfp_error_count(TF_RGBLEDButton *rgb_led_button, ui
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(rgb_led_button->tfp, TF_RGB_LED_BUTTON_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rgb_led_button->tfp, response_expected, deadline, &error_code);
@@ -452,7 +458,7 @@ int tf_rgb_led_button_set_bootloader_mode(TF_RGBLEDButton *rgb_led_button, uint8
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -463,7 +469,7 @@ int tf_rgb_led_button_set_bootloader_mode(TF_RGBLEDButton *rgb_led_button, uint8
 
     buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rgb_led_button->tfp, response_expected, deadline, &error_code);
@@ -495,14 +501,14 @@ int tf_rgb_led_button_get_bootloader_mode(TF_RGBLEDButton *rgb_led_button, uint8
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(rgb_led_button->tfp, TF_RGB_LED_BUTTON_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rgb_led_button->tfp, response_expected, deadline, &error_code);
@@ -534,7 +540,7 @@ int tf_rgb_led_button_set_write_firmware_pointer(TF_RGBLEDButton *rgb_led_button
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -546,7 +552,7 @@ int tf_rgb_led_button_set_write_firmware_pointer(TF_RGBLEDButton *rgb_led_button
 
     pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rgb_led_button->tfp, response_expected, deadline, &error_code);
@@ -573,7 +579,7 @@ int tf_rgb_led_button_write_firmware(TF_RGBLEDButton *rgb_led_button, const uint
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -584,7 +590,7 @@ int tf_rgb_led_button_write_firmware(TF_RGBLEDButton *rgb_led_button, const uint
 
     memcpy(buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rgb_led_button->tfp, response_expected, deadline, &error_code);
@@ -616,7 +622,7 @@ int tf_rgb_led_button_set_status_led_config(TF_RGBLEDButton *rgb_led_button, uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -628,7 +634,7 @@ int tf_rgb_led_button_set_status_led_config(TF_RGBLEDButton *rgb_led_button, uin
 
     buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rgb_led_button->tfp, response_expected, deadline, &error_code);
@@ -655,14 +661,14 @@ int tf_rgb_led_button_get_status_led_config(TF_RGBLEDButton *rgb_led_button, uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(rgb_led_button->tfp, TF_RGB_LED_BUTTON_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rgb_led_button->tfp, response_expected, deadline, &error_code);
@@ -694,14 +700,14 @@ int tf_rgb_led_button_get_chip_temperature(TF_RGBLEDButton *rgb_led_button, int1
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(rgb_led_button->tfp, TF_RGB_LED_BUTTON_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rgb_led_button->tfp, response_expected, deadline, &error_code);
@@ -733,7 +739,7 @@ int tf_rgb_led_button_reset(TF_RGBLEDButton *rgb_led_button) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -741,7 +747,7 @@ int tf_rgb_led_button_reset(TF_RGBLEDButton *rgb_led_button) {
     tf_rgb_led_button_get_response_expected(rgb_led_button, TF_RGB_LED_BUTTON_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(rgb_led_button->tfp, TF_RGB_LED_BUTTON_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rgb_led_button->tfp, response_expected, deadline, &error_code);
@@ -768,7 +774,7 @@ int tf_rgb_led_button_write_uid(TF_RGBLEDButton *rgb_led_button, uint32_t uid) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -780,7 +786,7 @@ int tf_rgb_led_button_write_uid(TF_RGBLEDButton *rgb_led_button, uint32_t uid) {
 
     uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rgb_led_button->tfp, response_expected, deadline, &error_code);
@@ -807,14 +813,14 @@ int tf_rgb_led_button_read_uid(TF_RGBLEDButton *rgb_led_button, uint32_t *ret_ui
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(rgb_led_button->tfp, TF_RGB_LED_BUTTON_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rgb_led_button->tfp, response_expected, deadline, &error_code);
@@ -846,7 +852,7 @@ int tf_rgb_led_button_get_identity(TF_RGBLEDButton *rgb_led_button, char ret_uid
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -854,7 +860,7 @@ int tf_rgb_led_button_get_identity(TF_RGBLEDButton *rgb_led_button, char ret_uid
     tf_tfp_prepare_send(rgb_led_button->tfp, TF_RGB_LED_BUTTON_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL*)rgb_led_button->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rgb_led_button->tfp->hal) + tf_hal_get_common((TF_HAL *)rgb_led_button->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rgb_led_button->tfp, response_expected, deadline, &error_code);
@@ -876,7 +882,7 @@ int tf_rgb_led_button_get_identity(TF_RGBLEDButton *rgb_led_button, char ret_uid
         if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&rgb_led_button->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&rgb_led_button->tfp->spitfp->recv_buf, 3); }
         if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&rgb_led_button->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&rgb_led_button->tfp->spitfp->recv_buf, 2); }
         if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL*)rgb_led_button->tfp->hal, rgb_led_button->tfp->spitfp->port_id);
+            *ret_position = tf_hal_get_port_name((TF_HAL *)rgb_led_button->tfp->hal, rgb_led_button->tfp->spitfp->port_id);
         }
         if (ret_connected_uid != NULL) {
             memcpy(ret_connected_uid, tmp_connected_uid, 8);
@@ -893,7 +899,7 @@ int tf_rgb_led_button_get_identity(TF_RGBLEDButton *rgb_led_button, char ret_uid
     return tf_tfp_get_error(error_code);
 }
 #if TF_IMPLEMENT_CALLBACKS != 0
-int tf_rgb_led_button_register_button_state_changed_callback(TF_RGBLEDButton *rgb_led_button, TF_RGBLEDButtonButtonStateChangedHandler handler, void *user_data) {
+int tf_rgb_led_button_register_button_state_changed_callback(TF_RGBLEDButton *rgb_led_button, TF_RGBLEDButton_ButtonStateChangedHandler handler, void *user_data) {
     if (rgb_led_button == NULL) {
         return TF_E_NULL;
     }
@@ -916,7 +922,7 @@ int tf_rgb_led_button_callback_tick(TF_RGBLEDButton *rgb_led_button, uint32_t ti
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(rgb_led_button->tfp, tf_hal_current_time_us((TF_HAL*)rgb_led_button->tfp->hal) + timeout_us);
+    return tf_tfp_callback_tick(rgb_led_button->tfp, tf_hal_current_time_us((TF_HAL *)rgb_led_button->tfp->hal) + timeout_us);
 }
 
 #ifdef __cplusplus

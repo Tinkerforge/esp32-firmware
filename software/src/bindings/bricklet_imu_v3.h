@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,15 +27,15 @@ extern "C" {
 struct TF_IMUV3;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_IMUV3AccelerationHandler)(struct TF_IMUV3 *device, int16_t x, int16_t y, int16_t z, void *user_data);
-typedef void (*TF_IMUV3MagneticFieldHandler)(struct TF_IMUV3 *device, int16_t x, int16_t y, int16_t z, void *user_data);
-typedef void (*TF_IMUV3AngularVelocityHandler)(struct TF_IMUV3 *device, int16_t x, int16_t y, int16_t z, void *user_data);
-typedef void (*TF_IMUV3TemperatureHandler)(struct TF_IMUV3 *device, int8_t temperature, void *user_data);
-typedef void (*TF_IMUV3LinearAccelerationHandler)(struct TF_IMUV3 *device, int16_t x, int16_t y, int16_t z, void *user_data);
-typedef void (*TF_IMUV3GravityVectorHandler)(struct TF_IMUV3 *device, int16_t x, int16_t y, int16_t z, void *user_data);
-typedef void (*TF_IMUV3OrientationHandler)(struct TF_IMUV3 *device, int16_t heading, int16_t roll, int16_t pitch, void *user_data);
-typedef void (*TF_IMUV3QuaternionHandler)(struct TF_IMUV3 *device, int16_t w, int16_t x, int16_t y, int16_t z, void *user_data);
-typedef void (*TF_IMUV3AllDataHandler)(struct TF_IMUV3 *device, int16_t acceleration[3], int16_t magnetic_field[3], int16_t angular_velocity[3], int16_t euler_angle[3], int16_t quaternion[4], int16_t linear_acceleration[3], int16_t gravity_vector[3], int8_t temperature, uint8_t calibration_status, void *user_data);
+typedef void (*TF_IMUV3_AccelerationHandler)(struct TF_IMUV3 *device, int16_t x, int16_t y, int16_t z, void *user_data);
+typedef void (*TF_IMUV3_MagneticFieldHandler)(struct TF_IMUV3 *device, int16_t x, int16_t y, int16_t z, void *user_data);
+typedef void (*TF_IMUV3_AngularVelocityHandler)(struct TF_IMUV3 *device, int16_t x, int16_t y, int16_t z, void *user_data);
+typedef void (*TF_IMUV3_TemperatureHandler)(struct TF_IMUV3 *device, int8_t temperature, void *user_data);
+typedef void (*TF_IMUV3_LinearAccelerationHandler)(struct TF_IMUV3 *device, int16_t x, int16_t y, int16_t z, void *user_data);
+typedef void (*TF_IMUV3_GravityVectorHandler)(struct TF_IMUV3 *device, int16_t x, int16_t y, int16_t z, void *user_data);
+typedef void (*TF_IMUV3_OrientationHandler)(struct TF_IMUV3 *device, int16_t heading, int16_t roll, int16_t pitch, void *user_data);
+typedef void (*TF_IMUV3_QuaternionHandler)(struct TF_IMUV3 *device, int16_t w, int16_t x, int16_t y, int16_t z, void *user_data);
+typedef void (*TF_IMUV3_AllDataHandler)(struct TF_IMUV3 *device, int16_t acceleration[3], int16_t magnetic_field[3], int16_t angular_velocity[3], int16_t euler_angle[3], int16_t quaternion[4], int16_t linear_acceleration[3], int16_t gravity_vector[3], int8_t temperature, uint8_t calibration_status, void *user_data);
 
 #endif
 /**
@@ -46,31 +46,31 @@ typedef void (*TF_IMUV3AllDataHandler)(struct TF_IMUV3 *device, int16_t accelera
 typedef struct TF_IMUV3 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_IMUV3AccelerationHandler acceleration_handler;
+    TF_IMUV3_AccelerationHandler acceleration_handler;
     void *acceleration_user_data;
 
-    TF_IMUV3MagneticFieldHandler magnetic_field_handler;
+    TF_IMUV3_MagneticFieldHandler magnetic_field_handler;
     void *magnetic_field_user_data;
 
-    TF_IMUV3AngularVelocityHandler angular_velocity_handler;
+    TF_IMUV3_AngularVelocityHandler angular_velocity_handler;
     void *angular_velocity_user_data;
 
-    TF_IMUV3TemperatureHandler temperature_handler;
+    TF_IMUV3_TemperatureHandler temperature_handler;
     void *temperature_user_data;
 
-    TF_IMUV3LinearAccelerationHandler linear_acceleration_handler;
+    TF_IMUV3_LinearAccelerationHandler linear_acceleration_handler;
     void *linear_acceleration_user_data;
 
-    TF_IMUV3GravityVectorHandler gravity_vector_handler;
+    TF_IMUV3_GravityVectorHandler gravity_vector_handler;
     void *gravity_vector_user_data;
 
-    TF_IMUV3OrientationHandler orientation_handler;
+    TF_IMUV3_OrientationHandler orientation_handler;
     void *orientation_user_data;
 
-    TF_IMUV3QuaternionHandler quaternion_handler;
+    TF_IMUV3_QuaternionHandler quaternion_handler;
     void *quaternion_user_data;
 
-    TF_IMUV3AllDataHandler all_data_handler;
+    TF_IMUV3_AllDataHandler all_data_handler;
     void *all_data_user_data;
 
 #endif
@@ -683,7 +683,7 @@ int tf_imu_v3_set_response_expected(TF_IMUV3 *imu_v3, uint8_t function_id, bool 
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_imu_v3_set_response_expected_all(TF_IMUV3 *imu_v3, bool response_expected);
+int tf_imu_v3_set_response_expected_all(TF_IMUV3 *imu_v3, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_IMUV3
@@ -697,7 +697,7 @@ void tf_imu_v3_set_response_expected_all(TF_IMUV3 *imu_v3, bool response_expecte
  * {@link tf_imu_v3_set_acceleration_callback_configuration}. The parameters are the acceleration
  * for the x, y and z axis.
  */
-int tf_imu_v3_register_acceleration_callback(TF_IMUV3 *imu_v3, TF_IMUV3AccelerationHandler handler, void *user_data);
+int tf_imu_v3_register_acceleration_callback(TF_IMUV3 *imu_v3, TF_IMUV3_AccelerationHandler handler, void *user_data);
 
 
 /**
@@ -712,7 +712,7 @@ int tf_imu_v3_register_acceleration_callback(TF_IMUV3 *imu_v3, TF_IMUV3Accelerat
  * {@link tf_imu_v3_set_magnetic_field_callback_configuration}. The parameters are the magnetic
  * field for the x, y and z axis.
  */
-int tf_imu_v3_register_magnetic_field_callback(TF_IMUV3 *imu_v3, TF_IMUV3MagneticFieldHandler handler, void *user_data);
+int tf_imu_v3_register_magnetic_field_callback(TF_IMUV3 *imu_v3, TF_IMUV3_MagneticFieldHandler handler, void *user_data);
 
 
 /**
@@ -727,7 +727,7 @@ int tf_imu_v3_register_magnetic_field_callback(TF_IMUV3 *imu_v3, TF_IMUV3Magneti
  * {@link tf_imu_v3_set_angular_velocity_callback_configuration}. The parameters are the angular
  * velocity for the x, y and z axis.
  */
-int tf_imu_v3_register_angular_velocity_callback(TF_IMUV3 *imu_v3, TF_IMUV3AngularVelocityHandler handler, void *user_data);
+int tf_imu_v3_register_angular_velocity_callback(TF_IMUV3 *imu_v3, TF_IMUV3_AngularVelocityHandler handler, void *user_data);
 
 
 /**
@@ -741,7 +741,7 @@ int tf_imu_v3_register_angular_velocity_callback(TF_IMUV3 *imu_v3, TF_IMUV3Angul
  * This callback is triggered periodically with the period that is set by
  * {@link tf_imu_v3_set_temperature_callback_configuration}. The parameter is the temperature.
  */
-int tf_imu_v3_register_temperature_callback(TF_IMUV3 *imu_v3, TF_IMUV3TemperatureHandler handler, void *user_data);
+int tf_imu_v3_register_temperature_callback(TF_IMUV3 *imu_v3, TF_IMUV3_TemperatureHandler handler, void *user_data);
 
 
 /**
@@ -756,7 +756,7 @@ int tf_imu_v3_register_temperature_callback(TF_IMUV3 *imu_v3, TF_IMUV3Temperatur
  * {@link tf_imu_v3_set_linear_acceleration_callback_configuration}. The parameters are the
  * linear acceleration for the x, y and z axis.
  */
-int tf_imu_v3_register_linear_acceleration_callback(TF_IMUV3 *imu_v3, TF_IMUV3LinearAccelerationHandler handler, void *user_data);
+int tf_imu_v3_register_linear_acceleration_callback(TF_IMUV3 *imu_v3, TF_IMUV3_LinearAccelerationHandler handler, void *user_data);
 
 
 /**
@@ -771,7 +771,7 @@ int tf_imu_v3_register_linear_acceleration_callback(TF_IMUV3 *imu_v3, TF_IMUV3Li
  * {@link tf_imu_v3_set_gravity_vector_callback_configuration}. The parameters gravity vector
  * for the x, y and z axis.
  */
-int tf_imu_v3_register_gravity_vector_callback(TF_IMUV3 *imu_v3, TF_IMUV3GravityVectorHandler handler, void *user_data);
+int tf_imu_v3_register_gravity_vector_callback(TF_IMUV3 *imu_v3, TF_IMUV3_GravityVectorHandler handler, void *user_data);
 
 
 /**
@@ -787,7 +787,7 @@ int tf_imu_v3_register_gravity_vector_callback(TF_IMUV3 *imu_v3, TF_IMUV3Gravity
  * (heading (yaw), roll, pitch) of the IMU Brick in Euler angles. See
  * {@link tf_imu_v3_get_orientation} for details.
  */
-int tf_imu_v3_register_orientation_callback(TF_IMUV3 *imu_v3, TF_IMUV3OrientationHandler handler, void *user_data);
+int tf_imu_v3_register_orientation_callback(TF_IMUV3 *imu_v3, TF_IMUV3_OrientationHandler handler, void *user_data);
 
 
 /**
@@ -803,7 +803,7 @@ int tf_imu_v3_register_orientation_callback(TF_IMUV3 *imu_v3, TF_IMUV3Orientatio
  * (w, x, y, z) of the IMU Brick in quaternions. See {@link tf_imu_v3_get_quaternion}
  * for details.
  */
-int tf_imu_v3_register_quaternion_callback(TF_IMUV3 *imu_v3, TF_IMUV3QuaternionHandler handler, void *user_data);
+int tf_imu_v3_register_quaternion_callback(TF_IMUV3 *imu_v3, TF_IMUV3_QuaternionHandler handler, void *user_data);
 
 
 /**
@@ -818,7 +818,7 @@ int tf_imu_v3_register_quaternion_callback(TF_IMUV3 *imu_v3, TF_IMUV3QuaternionH
  * {@link tf_imu_v3_set_all_data_callback_configuration}. The parameters are as for
  * {@link tf_imu_v3_get_all_data}.
  */
-int tf_imu_v3_register_all_data_callback(TF_IMUV3 *imu_v3, TF_IMUV3AllDataHandler handler, void *user_data);
+int tf_imu_v3_register_all_data_callback(TF_IMUV3 *imu_v3, TF_IMUV3_AllDataHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

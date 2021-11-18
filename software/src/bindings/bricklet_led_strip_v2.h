@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,7 +27,7 @@ extern "C" {
 struct TF_LEDStripV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_LEDStripV2FrameStartedHandler)(struct TF_LEDStripV2 *device, uint16_t length, void *user_data);
+typedef void (*TF_LEDStripV2_FrameStartedHandler)(struct TF_LEDStripV2 *device, uint16_t length, void *user_data);
 
 #endif
 /**
@@ -38,7 +38,7 @@ typedef void (*TF_LEDStripV2FrameStartedHandler)(struct TF_LEDStripV2 *device, u
 typedef struct TF_LEDStripV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_LEDStripV2FrameStartedHandler frame_started_handler;
+    TF_LEDStripV2_FrameStartedHandler frame_started_handler;
     void *frame_started_user_data;
 
 #endif
@@ -506,7 +506,7 @@ int tf_led_strip_v2_set_response_expected(TF_LEDStripV2 *led_strip_v2, uint8_t f
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_led_strip_v2_set_response_expected_all(TF_LEDStripV2 *led_strip_v2, bool response_expected);
+int tf_led_strip_v2_set_response_expected_all(TF_LEDStripV2 *led_strip_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_LEDStripV2
@@ -524,7 +524,7 @@ void tf_led_strip_v2_set_response_expected_all(TF_LEDStripV2 *led_strip_v2, bool
  * 
  * For an explanation of the general approach see {@link tf_led_strip_v2_set_led_values}.
  */
-int tf_led_strip_v2_register_frame_started_callback(TF_LEDStripV2 *led_strip_v2, TF_LEDStripV2FrameStartedHandler handler, void *user_data);
+int tf_led_strip_v2_register_frame_started_callback(TF_LEDStripV2 *led_strip_v2, TF_LEDStripV2_FrameStartedHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

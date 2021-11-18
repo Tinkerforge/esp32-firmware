@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,9 +27,9 @@ extern "C" {
 struct TF_RS232V2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_RS232V2ReadLowLevelHandler)(struct TF_RS232V2 *device, uint16_t message_length, uint16_t message_chunk_offset, char message_chunk_data[60], void *user_data);
-typedef void (*TF_RS232V2ErrorCountHandler)(struct TF_RS232V2 *device, uint32_t error_count_overrun, uint32_t error_count_parity, void *user_data);
-typedef void (*TF_RS232V2FrameReadableHandler)(struct TF_RS232V2 *device, uint16_t frame_count, void *user_data);
+typedef void (*TF_RS232V2_ReadLowLevelHandler)(struct TF_RS232V2 *device, uint16_t message_length, uint16_t message_chunk_offset, char message_chunk_data[60], void *user_data);
+typedef void (*TF_RS232V2_ErrorCountHandler)(struct TF_RS232V2 *device, uint32_t error_count_overrun, uint32_t error_count_parity, void *user_data);
+typedef void (*TF_RS232V2_FrameReadableHandler)(struct TF_RS232V2 *device, uint16_t frame_count, void *user_data);
 
 #endif
 /**
@@ -40,13 +40,13 @@ typedef void (*TF_RS232V2FrameReadableHandler)(struct TF_RS232V2 *device, uint16
 typedef struct TF_RS232V2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_RS232V2ReadLowLevelHandler read_low_level_handler;
+    TF_RS232V2_ReadLowLevelHandler read_low_level_handler;
     void *read_low_level_user_data;
 
-    TF_RS232V2ErrorCountHandler error_count_handler;
+    TF_RS232V2_ErrorCountHandler error_count_handler;
     void *error_count_user_data;
 
-    TF_RS232V2FrameReadableHandler frame_readable_handler;
+    TF_RS232V2_FrameReadableHandler frame_readable_handler;
     void *frame_readable_user_data;
 
 #endif
@@ -409,7 +409,7 @@ int tf_rs232_v2_set_response_expected(TF_RS232V2 *rs232_v2, uint8_t function_id,
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_rs232_v2_set_response_expected_all(TF_RS232V2 *rs232_v2, bool response_expected);
+int tf_rs232_v2_set_response_expected_all(TF_RS232V2 *rs232_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_RS232V2
@@ -423,7 +423,7 @@ void tf_rs232_v2_set_response_expected_all(TF_RS232V2 *rs232_v2, bool response_e
  * 
  * To enable this callback, use {@link tf_rs232_v2_enable_read_callback}.
  */
-int tf_rs232_v2_register_read_low_level_callback(TF_RS232V2 *rs232_v2, TF_RS232V2ReadLowLevelHandler handler, void *user_data);
+int tf_rs232_v2_register_read_low_level_callback(TF_RS232V2 *rs232_v2, TF_RS232V2_ReadLowLevelHandler handler, void *user_data);
 
 
 /**
@@ -437,7 +437,7 @@ int tf_rs232_v2_register_read_low_level_callback(TF_RS232V2 *rs232_v2, TF_RS232V
  * This callback is called if a new error occurs. It returns
  * the current overrun and parity error count.
  */
-int tf_rs232_v2_register_error_count_callback(TF_RS232V2 *rs232_v2, TF_RS232V2ErrorCountHandler handler, void *user_data);
+int tf_rs232_v2_register_error_count_callback(TF_RS232V2 *rs232_v2, TF_RS232V2_ErrorCountHandler handler, void *user_data);
 
 
 /**
@@ -455,7 +455,7 @@ int tf_rs232_v2_register_error_count_callback(TF_RS232V2 *rs232_v2, TF_RS232V2Er
  * 
  * .. versionadded:: 2.0.3$nbsp;(Plugin)
  */
-int tf_rs232_v2_register_frame_readable_callback(TF_RS232V2 *rs232_v2, TF_RS232V2FrameReadableHandler handler, void *user_data);
+int tf_rs232_v2_register_frame_readable_callback(TF_RS232V2 *rs232_v2, TF_RS232V2_FrameReadableHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

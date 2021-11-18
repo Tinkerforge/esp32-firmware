@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,8 +27,8 @@ extern "C" {
 struct TF_ParticulateMatter;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_ParticulateMatterPMConcentrationHandler)(struct TF_ParticulateMatter *device, uint16_t pm10, uint16_t pm25, uint16_t pm100, void *user_data);
-typedef void (*TF_ParticulateMatterPMCountHandler)(struct TF_ParticulateMatter *device, uint16_t greater03um, uint16_t greater05um, uint16_t greater10um, uint16_t greater25um, uint16_t greater50um, uint16_t greater100um, void *user_data);
+typedef void (*TF_ParticulateMatter_PMConcentrationHandler)(struct TF_ParticulateMatter *device, uint16_t pm10, uint16_t pm25, uint16_t pm100, void *user_data);
+typedef void (*TF_ParticulateMatter_PMCountHandler)(struct TF_ParticulateMatter *device, uint16_t greater03um, uint16_t greater05um, uint16_t greater10um, uint16_t greater25um, uint16_t greater50um, uint16_t greater100um, void *user_data);
 
 #endif
 /**
@@ -39,10 +39,10 @@ typedef void (*TF_ParticulateMatterPMCountHandler)(struct TF_ParticulateMatter *
 typedef struct TF_ParticulateMatter {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_ParticulateMatterPMConcentrationHandler pm_concentration_handler;
+    TF_ParticulateMatter_PMConcentrationHandler pm_concentration_handler;
     void *pm_concentration_user_data;
 
-    TF_ParticulateMatterPMCountHandler pm_count_handler;
+    TF_ParticulateMatter_PMCountHandler pm_count_handler;
     void *pm_count_user_data;
 
 #endif
@@ -320,7 +320,7 @@ int tf_particulate_matter_set_response_expected(TF_ParticulateMatter *particulat
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_particulate_matter_set_response_expected_all(TF_ParticulateMatter *particulate_matter, bool response_expected);
+int tf_particulate_matter_set_response_expected_all(TF_ParticulateMatter *particulate_matter, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_ParticulateMatter
@@ -335,7 +335,7 @@ void tf_particulate_matter_set_response_expected_all(TF_ParticulateMatter *parti
  * 
  * The parameters are the same as {@link tf_particulate_matter_get_pm_concentration}.
  */
-int tf_particulate_matter_register_pm_concentration_callback(TF_ParticulateMatter *particulate_matter, TF_ParticulateMatterPMConcentrationHandler handler, void *user_data);
+int tf_particulate_matter_register_pm_concentration_callback(TF_ParticulateMatter *particulate_matter, TF_ParticulateMatter_PMConcentrationHandler handler, void *user_data);
 
 
 /**
@@ -351,7 +351,7 @@ int tf_particulate_matter_register_pm_concentration_callback(TF_ParticulateMatte
  * 
  * The parameters are the same as {@link tf_particulate_matter_get_pm_count}.
  */
-int tf_particulate_matter_register_pm_count_callback(TF_ParticulateMatter *particulate_matter, TF_ParticulateMatterPMCountHandler handler, void *user_data);
+int tf_particulate_matter_register_pm_count_callback(TF_ParticulateMatter *particulate_matter, TF_ParticulateMatter_PMCountHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

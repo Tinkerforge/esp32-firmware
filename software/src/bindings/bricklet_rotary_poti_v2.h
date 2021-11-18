@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,7 +27,7 @@ extern "C" {
 struct TF_RotaryPotiV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_RotaryPotiV2PositionHandler)(struct TF_RotaryPotiV2 *device, int16_t position, void *user_data);
+typedef void (*TF_RotaryPotiV2_PositionHandler)(struct TF_RotaryPotiV2 *device, int16_t position, void *user_data);
 
 #endif
 /**
@@ -38,7 +38,7 @@ typedef void (*TF_RotaryPotiV2PositionHandler)(struct TF_RotaryPotiV2 *device, i
 typedef struct TF_RotaryPotiV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_RotaryPotiV2PositionHandler position_handler;
+    TF_RotaryPotiV2_PositionHandler position_handler;
     void *position_user_data;
 
 #endif
@@ -306,7 +306,7 @@ int tf_rotary_poti_v2_set_response_expected(TF_RotaryPotiV2 *rotary_poti_v2, uin
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_rotary_poti_v2_set_response_expected_all(TF_RotaryPotiV2 *rotary_poti_v2, bool response_expected);
+int tf_rotary_poti_v2_set_response_expected_all(TF_RotaryPotiV2 *rotary_poti_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_RotaryPotiV2
@@ -321,7 +321,7 @@ void tf_rotary_poti_v2_set_response_expected_all(TF_RotaryPotiV2 *rotary_poti_v2
  * 
  * The parameter is the same as {@link tf_rotary_poti_v2_get_position}.
  */
-int tf_rotary_poti_v2_register_position_callback(TF_RotaryPotiV2 *rotary_poti_v2, TF_RotaryPotiV2PositionHandler handler, void *user_data);
+int tf_rotary_poti_v2_register_position_callback(TF_RotaryPotiV2 *rotary_poti_v2, TF_RotaryPotiV2_PositionHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,16 +27,15 @@ static bool tf_humidity_v2_callback_handler(void *dev, uint8_t fid, TF_PacketBuf
     (void)payload;
 
     switch (fid) {
-
         case TF_HUMIDITY_V2_CALLBACK_HUMIDITY: {
-            TF_HumidityV2HumidityHandler fn = humidity_v2->humidity_handler;
+            TF_HumidityV2_HumidityHandler fn = humidity_v2->humidity_handler;
             void *user_data = humidity_v2->humidity_user_data;
             if (fn == NULL) {
                 return false;
             }
 
             uint16_t humidity = tf_packet_buffer_read_uint16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal);
             hal_common->locked = true;
             fn(humidity_v2, humidity, user_data);
             hal_common->locked = false;
@@ -44,19 +43,20 @@ static bool tf_humidity_v2_callback_handler(void *dev, uint8_t fid, TF_PacketBuf
         }
 
         case TF_HUMIDITY_V2_CALLBACK_TEMPERATURE: {
-            TF_HumidityV2TemperatureHandler fn = humidity_v2->temperature_handler;
+            TF_HumidityV2_TemperatureHandler fn = humidity_v2->temperature_handler;
             void *user_data = humidity_v2->temperature_user_data;
             if (fn == NULL) {
                 return false;
             }
 
             int16_t temperature = tf_packet_buffer_read_int16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal);
             hal_common->locked = true;
             fn(humidity_v2, temperature, user_data);
             hal_common->locked = false;
             break;
         }
+
         default:
             return false;
     }
@@ -250,8 +250,14 @@ int tf_humidity_v2_set_response_expected(TF_HumidityV2 *humidity_v2, uint8_t fun
     return TF_E_OK;
 }
 
-void tf_humidity_v2_set_response_expected_all(TF_HumidityV2 *humidity_v2, bool response_expected) {
+int tf_humidity_v2_set_response_expected_all(TF_HumidityV2 *humidity_v2, bool response_expected) {
+    if (humidity_v2 == NULL) {
+        return TF_E_NULL;
+    }
+
     memset(humidity_v2->response_expected, response_expected ? 0xFF : 0, 2);
+
+    return TF_E_OK;
 }
 
 int tf_humidity_v2_get_humidity(TF_HumidityV2 *humidity_v2, uint16_t *ret_humidity) {
@@ -259,14 +265,14 @@ int tf_humidity_v2_get_humidity(TF_HumidityV2 *humidity_v2, uint16_t *ret_humidi
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(humidity_v2->tfp, TF_HUMIDITY_V2_FUNCTION_GET_HUMIDITY, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(humidity_v2->tfp, response_expected, deadline, &error_code);
@@ -298,7 +304,7 @@ int tf_humidity_v2_set_humidity_callback_configuration(TF_HumidityV2 *humidity_v
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -314,7 +320,7 @@ int tf_humidity_v2_set_humidity_callback_configuration(TF_HumidityV2 *humidity_v
     min = tf_leconvert_uint16_to(min); memcpy(buf + 6, &min, 2);
     max = tf_leconvert_uint16_to(max); memcpy(buf + 8, &max, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(humidity_v2->tfp, response_expected, deadline, &error_code);
@@ -341,14 +347,14 @@ int tf_humidity_v2_get_humidity_callback_configuration(TF_HumidityV2 *humidity_v
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(humidity_v2->tfp, TF_HUMIDITY_V2_FUNCTION_GET_HUMIDITY_CALLBACK_CONFIGURATION, 0, 10, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(humidity_v2->tfp, response_expected, deadline, &error_code);
@@ -384,14 +390,14 @@ int tf_humidity_v2_get_temperature(TF_HumidityV2 *humidity_v2, int16_t *ret_temp
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(humidity_v2->tfp, TF_HUMIDITY_V2_FUNCTION_GET_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(humidity_v2->tfp, response_expected, deadline, &error_code);
@@ -423,7 +429,7 @@ int tf_humidity_v2_set_temperature_callback_configuration(TF_HumidityV2 *humidit
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -439,7 +445,7 @@ int tf_humidity_v2_set_temperature_callback_configuration(TF_HumidityV2 *humidit
     min = tf_leconvert_int16_to(min); memcpy(buf + 6, &min, 2);
     max = tf_leconvert_int16_to(max); memcpy(buf + 8, &max, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(humidity_v2->tfp, response_expected, deadline, &error_code);
@@ -466,14 +472,14 @@ int tf_humidity_v2_get_temperature_callback_configuration(TF_HumidityV2 *humidit
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(humidity_v2->tfp, TF_HUMIDITY_V2_FUNCTION_GET_TEMPERATURE_CALLBACK_CONFIGURATION, 0, 10, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(humidity_v2->tfp, response_expected, deadline, &error_code);
@@ -509,7 +515,7 @@ int tf_humidity_v2_set_heater_configuration(TF_HumidityV2 *humidity_v2, uint8_t 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -521,7 +527,7 @@ int tf_humidity_v2_set_heater_configuration(TF_HumidityV2 *humidity_v2, uint8_t 
 
     buf[0] = (uint8_t)heater_config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(humidity_v2->tfp, response_expected, deadline, &error_code);
@@ -548,14 +554,14 @@ int tf_humidity_v2_get_heater_configuration(TF_HumidityV2 *humidity_v2, uint8_t 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(humidity_v2->tfp, TF_HUMIDITY_V2_FUNCTION_GET_HEATER_CONFIGURATION, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(humidity_v2->tfp, response_expected, deadline, &error_code);
@@ -587,7 +593,7 @@ int tf_humidity_v2_set_moving_average_configuration(TF_HumidityV2 *humidity_v2, 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -600,7 +606,7 @@ int tf_humidity_v2_set_moving_average_configuration(TF_HumidityV2 *humidity_v2, 
     moving_average_length_humidity = tf_leconvert_uint16_to(moving_average_length_humidity); memcpy(buf + 0, &moving_average_length_humidity, 2);
     moving_average_length_temperature = tf_leconvert_uint16_to(moving_average_length_temperature); memcpy(buf + 2, &moving_average_length_temperature, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(humidity_v2->tfp, response_expected, deadline, &error_code);
@@ -627,14 +633,14 @@ int tf_humidity_v2_get_moving_average_configuration(TF_HumidityV2 *humidity_v2, 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(humidity_v2->tfp, TF_HUMIDITY_V2_FUNCTION_GET_MOVING_AVERAGE_CONFIGURATION, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(humidity_v2->tfp, response_expected, deadline, &error_code);
@@ -667,7 +673,7 @@ int tf_humidity_v2_set_samples_per_second(TF_HumidityV2 *humidity_v2, uint8_t sp
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -679,7 +685,7 @@ int tf_humidity_v2_set_samples_per_second(TF_HumidityV2 *humidity_v2, uint8_t sp
 
     buf[0] = (uint8_t)sps;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(humidity_v2->tfp, response_expected, deadline, &error_code);
@@ -706,14 +712,14 @@ int tf_humidity_v2_get_samples_per_second(TF_HumidityV2 *humidity_v2, uint8_t *r
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(humidity_v2->tfp, TF_HUMIDITY_V2_FUNCTION_GET_SAMPLES_PER_SECOND, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(humidity_v2->tfp, response_expected, deadline, &error_code);
@@ -745,14 +751,14 @@ int tf_humidity_v2_get_spitfp_error_count(TF_HumidityV2 *humidity_v2, uint32_t *
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(humidity_v2->tfp, TF_HUMIDITY_V2_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(humidity_v2->tfp, response_expected, deadline, &error_code);
@@ -787,7 +793,7 @@ int tf_humidity_v2_set_bootloader_mode(TF_HumidityV2 *humidity_v2, uint8_t mode,
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -798,7 +804,7 @@ int tf_humidity_v2_set_bootloader_mode(TF_HumidityV2 *humidity_v2, uint8_t mode,
 
     buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(humidity_v2->tfp, response_expected, deadline, &error_code);
@@ -830,14 +836,14 @@ int tf_humidity_v2_get_bootloader_mode(TF_HumidityV2 *humidity_v2, uint8_t *ret_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(humidity_v2->tfp, TF_HUMIDITY_V2_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(humidity_v2->tfp, response_expected, deadline, &error_code);
@@ -869,7 +875,7 @@ int tf_humidity_v2_set_write_firmware_pointer(TF_HumidityV2 *humidity_v2, uint32
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -881,7 +887,7 @@ int tf_humidity_v2_set_write_firmware_pointer(TF_HumidityV2 *humidity_v2, uint32
 
     pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(humidity_v2->tfp, response_expected, deadline, &error_code);
@@ -908,7 +914,7 @@ int tf_humidity_v2_write_firmware(TF_HumidityV2 *humidity_v2, const uint8_t data
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -919,7 +925,7 @@ int tf_humidity_v2_write_firmware(TF_HumidityV2 *humidity_v2, const uint8_t data
 
     memcpy(buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(humidity_v2->tfp, response_expected, deadline, &error_code);
@@ -951,7 +957,7 @@ int tf_humidity_v2_set_status_led_config(TF_HumidityV2 *humidity_v2, uint8_t con
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -963,7 +969,7 @@ int tf_humidity_v2_set_status_led_config(TF_HumidityV2 *humidity_v2, uint8_t con
 
     buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(humidity_v2->tfp, response_expected, deadline, &error_code);
@@ -990,14 +996,14 @@ int tf_humidity_v2_get_status_led_config(TF_HumidityV2 *humidity_v2, uint8_t *re
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(humidity_v2->tfp, TF_HUMIDITY_V2_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(humidity_v2->tfp, response_expected, deadline, &error_code);
@@ -1029,14 +1035,14 @@ int tf_humidity_v2_get_chip_temperature(TF_HumidityV2 *humidity_v2, int16_t *ret
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(humidity_v2->tfp, TF_HUMIDITY_V2_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(humidity_v2->tfp, response_expected, deadline, &error_code);
@@ -1068,7 +1074,7 @@ int tf_humidity_v2_reset(TF_HumidityV2 *humidity_v2) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1076,7 +1082,7 @@ int tf_humidity_v2_reset(TF_HumidityV2 *humidity_v2) {
     tf_humidity_v2_get_response_expected(humidity_v2, TF_HUMIDITY_V2_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(humidity_v2->tfp, TF_HUMIDITY_V2_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(humidity_v2->tfp, response_expected, deadline, &error_code);
@@ -1103,7 +1109,7 @@ int tf_humidity_v2_write_uid(TF_HumidityV2 *humidity_v2, uint32_t uid) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1115,7 +1121,7 @@ int tf_humidity_v2_write_uid(TF_HumidityV2 *humidity_v2, uint32_t uid) {
 
     uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(humidity_v2->tfp, response_expected, deadline, &error_code);
@@ -1142,14 +1148,14 @@ int tf_humidity_v2_read_uid(TF_HumidityV2 *humidity_v2, uint32_t *ret_uid) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(humidity_v2->tfp, TF_HUMIDITY_V2_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(humidity_v2->tfp, response_expected, deadline, &error_code);
@@ -1181,7 +1187,7 @@ int tf_humidity_v2_get_identity(TF_HumidityV2 *humidity_v2, char ret_uid[8], cha
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1189,7 +1195,7 @@ int tf_humidity_v2_get_identity(TF_HumidityV2 *humidity_v2, char ret_uid[8], cha
     tf_tfp_prepare_send(humidity_v2->tfp, TF_HUMIDITY_V2_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)humidity_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)humidity_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)humidity_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(humidity_v2->tfp, response_expected, deadline, &error_code);
@@ -1211,7 +1217,7 @@ int tf_humidity_v2_get_identity(TF_HumidityV2 *humidity_v2, char ret_uid[8], cha
         if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&humidity_v2->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&humidity_v2->tfp->spitfp->recv_buf, 3); }
         if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&humidity_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&humidity_v2->tfp->spitfp->recv_buf, 2); }
         if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL*)humidity_v2->tfp->hal, humidity_v2->tfp->spitfp->port_id);
+            *ret_position = tf_hal_get_port_name((TF_HAL *)humidity_v2->tfp->hal, humidity_v2->tfp->spitfp->port_id);
         }
         if (ret_connected_uid != NULL) {
             memcpy(ret_connected_uid, tmp_connected_uid, 8);
@@ -1228,7 +1234,7 @@ int tf_humidity_v2_get_identity(TF_HumidityV2 *humidity_v2, char ret_uid[8], cha
     return tf_tfp_get_error(error_code);
 }
 #if TF_IMPLEMENT_CALLBACKS != 0
-int tf_humidity_v2_register_humidity_callback(TF_HumidityV2 *humidity_v2, TF_HumidityV2HumidityHandler handler, void *user_data) {
+int tf_humidity_v2_register_humidity_callback(TF_HumidityV2 *humidity_v2, TF_HumidityV2_HumidityHandler handler, void *user_data) {
     if (humidity_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -1247,7 +1253,7 @@ int tf_humidity_v2_register_humidity_callback(TF_HumidityV2 *humidity_v2, TF_Hum
 }
 
 
-int tf_humidity_v2_register_temperature_callback(TF_HumidityV2 *humidity_v2, TF_HumidityV2TemperatureHandler handler, void *user_data) {
+int tf_humidity_v2_register_temperature_callback(TF_HumidityV2 *humidity_v2, TF_HumidityV2_TemperatureHandler handler, void *user_data) {
     if (humidity_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -1270,7 +1276,7 @@ int tf_humidity_v2_callback_tick(TF_HumidityV2 *humidity_v2, uint32_t timeout_us
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(humidity_v2->tfp, tf_hal_current_time_us((TF_HAL*)humidity_v2->tfp->hal) + timeout_us);
+    return tf_tfp_callback_tick(humidity_v2->tfp, tf_hal_current_time_us((TF_HAL *)humidity_v2->tfp->hal) + timeout_us);
 }
 
 #ifdef __cplusplus

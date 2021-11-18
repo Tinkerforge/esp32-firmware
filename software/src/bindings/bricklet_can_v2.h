@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,9 +27,9 @@ extern "C" {
 struct TF_CANV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_CANV2FrameReadLowLevelHandler)(struct TF_CANV2 *device, uint8_t frame_type, uint32_t identifier, uint8_t data_length, uint8_t data_data[15], void *user_data);
-typedef void (*TF_CANV2FrameReadableHandler)(struct TF_CANV2 *device, void *user_data);
-typedef void (*TF_CANV2ErrorOccurredHandler)(struct TF_CANV2 *device, void *user_data);
+typedef void (*TF_CANV2_FrameReadLowLevelHandler)(struct TF_CANV2 *device, uint8_t frame_type, uint32_t identifier, uint8_t data_length, uint8_t data_data[15], void *user_data);
+typedef void (*TF_CANV2_FrameReadableHandler)(struct TF_CANV2 *device, void *user_data);
+typedef void (*TF_CANV2_ErrorOccurredHandler)(struct TF_CANV2 *device, void *user_data);
 
 #endif
 /**
@@ -40,13 +40,13 @@ typedef void (*TF_CANV2ErrorOccurredHandler)(struct TF_CANV2 *device, void *user
 typedef struct TF_CANV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_CANV2FrameReadLowLevelHandler frame_read_low_level_handler;
+    TF_CANV2_FrameReadLowLevelHandler frame_read_low_level_handler;
     void *frame_read_low_level_user_data;
 
-    TF_CANV2FrameReadableHandler frame_readable_handler;
+    TF_CANV2_FrameReadableHandler frame_readable_handler;
     void *frame_readable_user_data;
 
-    TF_CANV2ErrorOccurredHandler error_occurred_handler;
+    TF_CANV2_ErrorOccurredHandler error_occurred_handler;
     void *error_occurred_user_data;
 
 #endif
@@ -494,7 +494,7 @@ int tf_can_v2_set_response_expected(TF_CANV2 *can_v2, uint8_t function_id, bool 
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_can_v2_set_response_expected_all(TF_CANV2 *can_v2, bool response_expected);
+int tf_can_v2_set_response_expected_all(TF_CANV2 *can_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_CANV2
@@ -518,7 +518,7 @@ void tf_can_v2_set_response_expected_all(TF_CANV2 *can_v2, bool response_expecte
  * 
  * To enable this callback, use {@link tf_can_v2_set_frame_read_callback_configuration}.
  */
-int tf_can_v2_register_frame_read_low_level_callback(TF_CANV2 *can_v2, TF_CANV2FrameReadLowLevelHandler handler, void *user_data);
+int tf_can_v2_register_frame_read_low_level_callback(TF_CANV2 *can_v2, TF_CANV2_FrameReadLowLevelHandler handler, void *user_data);
 
 
 /**
@@ -542,7 +542,7 @@ int tf_can_v2_register_frame_read_low_level_callback(TF_CANV2 *can_v2, TF_CANV2F
  * 
  * .. versionadded:: 2.0.3$nbsp;(Plugin)
  */
-int tf_can_v2_register_frame_readable_callback(TF_CANV2 *can_v2, TF_CANV2FrameReadableHandler handler, void *user_data);
+int tf_can_v2_register_frame_readable_callback(TF_CANV2 *can_v2, TF_CANV2_FrameReadableHandler handler, void *user_data);
 
 
 /**
@@ -562,7 +562,7 @@ int tf_can_v2_register_frame_readable_callback(TF_CANV2 *can_v2, TF_CANV2FrameRe
  * 
  * .. versionadded:: 2.0.3$nbsp;(Plugin)
  */
-int tf_can_v2_register_error_occurred_callback(TF_CANV2 *can_v2, TF_CANV2ErrorOccurredHandler handler, void *user_data);
+int tf_can_v2_register_error_occurred_callback(TF_CANV2 *can_v2, TF_CANV2_ErrorOccurredHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

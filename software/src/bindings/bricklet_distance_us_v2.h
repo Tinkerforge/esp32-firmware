@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,7 +27,7 @@ extern "C" {
 struct TF_DistanceUSV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_DistanceUSV2DistanceHandler)(struct TF_DistanceUSV2 *device, uint16_t distance, void *user_data);
+typedef void (*TF_DistanceUSV2_DistanceHandler)(struct TF_DistanceUSV2 *device, uint16_t distance, void *user_data);
 
 #endif
 /**
@@ -38,7 +38,7 @@ typedef void (*TF_DistanceUSV2DistanceHandler)(struct TF_DistanceUSV2 *device, u
 typedef struct TF_DistanceUSV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_DistanceUSV2DistanceHandler distance_handler;
+    TF_DistanceUSV2_DistanceHandler distance_handler;
     void *distance_user_data;
 
 #endif
@@ -356,7 +356,7 @@ int tf_distance_us_v2_set_response_expected(TF_DistanceUSV2 *distance_us_v2, uin
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_distance_us_v2_set_response_expected_all(TF_DistanceUSV2 *distance_us_v2, bool response_expected);
+int tf_distance_us_v2_set_response_expected_all(TF_DistanceUSV2 *distance_us_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_DistanceUSV2
@@ -371,7 +371,7 @@ void tf_distance_us_v2_set_response_expected_all(TF_DistanceUSV2 *distance_us_v2
  * 
  * The parameter is the same as {@link tf_distance_us_v2_get_distance}.
  */
-int tf_distance_us_v2_register_distance_callback(TF_DistanceUSV2 *distance_us_v2, TF_DistanceUSV2DistanceHandler handler, void *user_data);
+int tf_distance_us_v2_register_distance_callback(TF_DistanceUSV2 *distance_us_v2, TF_DistanceUSV2_DistanceHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

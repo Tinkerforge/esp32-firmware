@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,21 +27,21 @@ static bool tf_hat_zero_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer
     (void)payload;
 
     switch (fid) {
-
         case TF_HAT_ZERO_CALLBACK_USB_VOLTAGE: {
-            TF_HATZeroUSBVoltageHandler fn = hat_zero->usb_voltage_handler;
+            TF_HATZero_USBVoltageHandler fn = hat_zero->usb_voltage_handler;
             void *user_data = hat_zero->usb_voltage_user_data;
             if (fn == NULL) {
                 return false;
             }
 
             uint16_t voltage = tf_packet_buffer_read_uint16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal);
             hal_common->locked = true;
             fn(hat_zero, voltage, user_data);
             hal_common->locked = false;
             break;
         }
+
         default:
             return false;
     }
@@ -186,8 +186,14 @@ int tf_hat_zero_set_response_expected(TF_HATZero *hat_zero, uint8_t function_id,
     return TF_E_OK;
 }
 
-void tf_hat_zero_set_response_expected_all(TF_HATZero *hat_zero, bool response_expected) {
+int tf_hat_zero_set_response_expected_all(TF_HATZero *hat_zero, bool response_expected) {
+    if (hat_zero == NULL) {
+        return TF_E_NULL;
+    }
+
     memset(hat_zero->response_expected, response_expected ? 0xFF : 0, 1);
+
+    return TF_E_OK;
 }
 
 int tf_hat_zero_get_usb_voltage(TF_HATZero *hat_zero, uint16_t *ret_voltage) {
@@ -195,14 +201,14 @@ int tf_hat_zero_get_usb_voltage(TF_HATZero *hat_zero, uint16_t *ret_voltage) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(hat_zero->tfp, TF_HAT_ZERO_FUNCTION_GET_USB_VOLTAGE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(hat_zero->tfp, response_expected, deadline, &error_code);
@@ -234,7 +240,7 @@ int tf_hat_zero_set_usb_voltage_callback_configuration(TF_HATZero *hat_zero, uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -250,7 +256,7 @@ int tf_hat_zero_set_usb_voltage_callback_configuration(TF_HATZero *hat_zero, uin
     min = tf_leconvert_uint16_to(min); memcpy(buf + 6, &min, 2);
     max = tf_leconvert_uint16_to(max); memcpy(buf + 8, &max, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(hat_zero->tfp, response_expected, deadline, &error_code);
@@ -277,14 +283,14 @@ int tf_hat_zero_get_usb_voltage_callback_configuration(TF_HATZero *hat_zero, uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(hat_zero->tfp, TF_HAT_ZERO_FUNCTION_GET_USB_VOLTAGE_CALLBACK_CONFIGURATION, 0, 10, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(hat_zero->tfp, response_expected, deadline, &error_code);
@@ -320,14 +326,14 @@ int tf_hat_zero_get_spitfp_error_count(TF_HATZero *hat_zero, uint32_t *ret_error
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(hat_zero->tfp, TF_HAT_ZERO_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(hat_zero->tfp, response_expected, deadline, &error_code);
@@ -362,7 +368,7 @@ int tf_hat_zero_set_bootloader_mode(TF_HATZero *hat_zero, uint8_t mode, uint8_t 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -373,7 +379,7 @@ int tf_hat_zero_set_bootloader_mode(TF_HATZero *hat_zero, uint8_t mode, uint8_t 
 
     buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(hat_zero->tfp, response_expected, deadline, &error_code);
@@ -405,14 +411,14 @@ int tf_hat_zero_get_bootloader_mode(TF_HATZero *hat_zero, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(hat_zero->tfp, TF_HAT_ZERO_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(hat_zero->tfp, response_expected, deadline, &error_code);
@@ -444,7 +450,7 @@ int tf_hat_zero_set_write_firmware_pointer(TF_HATZero *hat_zero, uint32_t pointe
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -456,7 +462,7 @@ int tf_hat_zero_set_write_firmware_pointer(TF_HATZero *hat_zero, uint32_t pointe
 
     pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(hat_zero->tfp, response_expected, deadline, &error_code);
@@ -483,7 +489,7 @@ int tf_hat_zero_write_firmware(TF_HATZero *hat_zero, const uint8_t data[64], uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -494,7 +500,7 @@ int tf_hat_zero_write_firmware(TF_HATZero *hat_zero, const uint8_t data[64], uin
 
     memcpy(buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(hat_zero->tfp, response_expected, deadline, &error_code);
@@ -526,7 +532,7 @@ int tf_hat_zero_set_status_led_config(TF_HATZero *hat_zero, uint8_t config) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -538,7 +544,7 @@ int tf_hat_zero_set_status_led_config(TF_HATZero *hat_zero, uint8_t config) {
 
     buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(hat_zero->tfp, response_expected, deadline, &error_code);
@@ -565,14 +571,14 @@ int tf_hat_zero_get_status_led_config(TF_HATZero *hat_zero, uint8_t *ret_config)
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(hat_zero->tfp, TF_HAT_ZERO_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(hat_zero->tfp, response_expected, deadline, &error_code);
@@ -604,14 +610,14 @@ int tf_hat_zero_get_chip_temperature(TF_HATZero *hat_zero, int16_t *ret_temperat
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(hat_zero->tfp, TF_HAT_ZERO_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(hat_zero->tfp, response_expected, deadline, &error_code);
@@ -643,7 +649,7 @@ int tf_hat_zero_reset(TF_HATZero *hat_zero) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -651,7 +657,7 @@ int tf_hat_zero_reset(TF_HATZero *hat_zero) {
     tf_hat_zero_get_response_expected(hat_zero, TF_HAT_ZERO_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(hat_zero->tfp, TF_HAT_ZERO_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(hat_zero->tfp, response_expected, deadline, &error_code);
@@ -678,7 +684,7 @@ int tf_hat_zero_write_uid(TF_HATZero *hat_zero, uint32_t uid) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -690,7 +696,7 @@ int tf_hat_zero_write_uid(TF_HATZero *hat_zero, uint32_t uid) {
 
     uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(hat_zero->tfp, response_expected, deadline, &error_code);
@@ -717,14 +723,14 @@ int tf_hat_zero_read_uid(TF_HATZero *hat_zero, uint32_t *ret_uid) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(hat_zero->tfp, TF_HAT_ZERO_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(hat_zero->tfp, response_expected, deadline, &error_code);
@@ -756,7 +762,7 @@ int tf_hat_zero_get_identity(TF_HATZero *hat_zero, char ret_uid[8], char ret_con
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -764,7 +770,7 @@ int tf_hat_zero_get_identity(TF_HATZero *hat_zero, char ret_uid[8], char ret_con
     tf_tfp_prepare_send(hat_zero->tfp, TF_HAT_ZERO_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL*)hat_zero->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)hat_zero->tfp->hal) + tf_hal_get_common((TF_HAL *)hat_zero->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(hat_zero->tfp, response_expected, deadline, &error_code);
@@ -786,7 +792,7 @@ int tf_hat_zero_get_identity(TF_HATZero *hat_zero, char ret_uid[8], char ret_con
         if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&hat_zero->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&hat_zero->tfp->spitfp->recv_buf, 3); }
         if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&hat_zero->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&hat_zero->tfp->spitfp->recv_buf, 2); }
         if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL*)hat_zero->tfp->hal, hat_zero->tfp->spitfp->port_id);
+            *ret_position = tf_hal_get_port_name((TF_HAL *)hat_zero->tfp->hal, hat_zero->tfp->spitfp->port_id);
         }
         if (ret_connected_uid != NULL) {
             memcpy(ret_connected_uid, tmp_connected_uid, 8);
@@ -803,7 +809,7 @@ int tf_hat_zero_get_identity(TF_HATZero *hat_zero, char ret_uid[8], char ret_con
     return tf_tfp_get_error(error_code);
 }
 #if TF_IMPLEMENT_CALLBACKS != 0
-int tf_hat_zero_register_usb_voltage_callback(TF_HATZero *hat_zero, TF_HATZeroUSBVoltageHandler handler, void *user_data) {
+int tf_hat_zero_register_usb_voltage_callback(TF_HATZero *hat_zero, TF_HATZero_USBVoltageHandler handler, void *user_data) {
     if (hat_zero == NULL) {
         return TF_E_NULL;
     }
@@ -826,7 +832,7 @@ int tf_hat_zero_callback_tick(TF_HATZero *hat_zero, uint32_t timeout_us) {
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(hat_zero->tfp, tf_hal_current_time_us((TF_HAL*)hat_zero->tfp->hal) + timeout_us);
+    return tf_tfp_callback_tick(hat_zero->tfp, tf_hal_current_time_us((TF_HAL *)hat_zero->tfp->hal) + timeout_us);
 }
 
 #ifdef __cplusplus

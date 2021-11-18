@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,16 +27,15 @@ static bool tf_silent_stepper_v2_callback_handler(void *dev, uint8_t fid, TF_Pac
     (void)payload;
 
     switch (fid) {
-
         case TF_SILENT_STEPPER_V2_CALLBACK_UNDER_VOLTAGE: {
-            TF_SilentStepperV2UnderVoltageHandler fn = silent_stepper_v2->under_voltage_handler;
+            TF_SilentStepperV2_UnderVoltageHandler fn = silent_stepper_v2->under_voltage_handler;
             void *user_data = silent_stepper_v2->under_voltage_user_data;
             if (fn == NULL) {
                 return false;
             }
 
             uint16_t voltage = tf_packet_buffer_read_uint16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal);
             hal_common->locked = true;
             fn(silent_stepper_v2, voltage, user_data);
             hal_common->locked = false;
@@ -44,14 +43,14 @@ static bool tf_silent_stepper_v2_callback_handler(void *dev, uint8_t fid, TF_Pac
         }
 
         case TF_SILENT_STEPPER_V2_CALLBACK_POSITION_REACHED: {
-            TF_SilentStepperV2PositionReachedHandler fn = silent_stepper_v2->position_reached_handler;
+            TF_SilentStepperV2_PositionReachedHandler fn = silent_stepper_v2->position_reached_handler;
             void *user_data = silent_stepper_v2->position_reached_user_data;
             if (fn == NULL) {
                 return false;
             }
 
             int32_t position = tf_packet_buffer_read_int32_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal);
             hal_common->locked = true;
             fn(silent_stepper_v2, position, user_data);
             hal_common->locked = false;
@@ -59,7 +58,7 @@ static bool tf_silent_stepper_v2_callback_handler(void *dev, uint8_t fid, TF_Pac
         }
 
         case TF_SILENT_STEPPER_V2_CALLBACK_ALL_DATA: {
-            TF_SilentStepperV2AllDataHandler fn = silent_stepper_v2->all_data_handler;
+            TF_SilentStepperV2_AllDataHandler fn = silent_stepper_v2->all_data_handler;
             void *user_data = silent_stepper_v2->all_data_user_data;
             if (fn == NULL) {
                 return false;
@@ -70,7 +69,7 @@ static bool tf_silent_stepper_v2_callback_handler(void *dev, uint8_t fid, TF_Pac
             int32_t remaining_steps = tf_packet_buffer_read_int32_t(payload);
             uint16_t input_voltage = tf_packet_buffer_read_uint16_t(payload);
             uint16_t current_consumption = tf_packet_buffer_read_uint16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal);
             hal_common->locked = true;
             fn(silent_stepper_v2, current_velocity, current_position, remaining_steps, input_voltage, current_consumption, user_data);
             hal_common->locked = false;
@@ -78,7 +77,7 @@ static bool tf_silent_stepper_v2_callback_handler(void *dev, uint8_t fid, TF_Pac
         }
 
         case TF_SILENT_STEPPER_V2_CALLBACK_NEW_STATE: {
-            TF_SilentStepperV2NewStateHandler fn = silent_stepper_v2->new_state_handler;
+            TF_SilentStepperV2_NewStateHandler fn = silent_stepper_v2->new_state_handler;
             void *user_data = silent_stepper_v2->new_state_user_data;
             if (fn == NULL) {
                 return false;
@@ -86,7 +85,7 @@ static bool tf_silent_stepper_v2_callback_handler(void *dev, uint8_t fid, TF_Pac
 
             uint8_t state_new = tf_packet_buffer_read_uint8_t(payload);
             uint8_t state_previous = tf_packet_buffer_read_uint8_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal);
             hal_common->locked = true;
             fn(silent_stepper_v2, state_new, state_previous, user_data);
             hal_common->locked = false;
@@ -94,19 +93,20 @@ static bool tf_silent_stepper_v2_callback_handler(void *dev, uint8_t fid, TF_Pac
         }
 
         case TF_SILENT_STEPPER_V2_CALLBACK_GPIO_STATE: {
-            TF_SilentStepperV2GPIOStateHandler fn = silent_stepper_v2->gpio_state_handler;
+            TF_SilentStepperV2_GPIOStateHandler fn = silent_stepper_v2->gpio_state_handler;
             void *user_data = silent_stepper_v2->gpio_state_user_data;
             if (fn == NULL) {
                 return false;
             }
 
             bool gpio_state[2]; tf_packet_buffer_read_bool_array(payload, gpio_state, 2);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal);
             hal_common->locked = true;
             fn(silent_stepper_v2, gpio_state, user_data);
             hal_common->locked = false;
             break;
         }
+
         default:
             return false;
     }
@@ -518,8 +518,14 @@ int tf_silent_stepper_v2_set_response_expected(TF_SilentStepperV2 *silent_steppe
     return TF_E_OK;
 }
 
-void tf_silent_stepper_v2_set_response_expected_all(TF_SilentStepperV2 *silent_stepper_v2, bool response_expected) {
+int tf_silent_stepper_v2_set_response_expected_all(TF_SilentStepperV2 *silent_stepper_v2, bool response_expected) {
+    if (silent_stepper_v2 == NULL) {
+        return TF_E_NULL;
+    }
+
     memset(silent_stepper_v2->response_expected, response_expected ? 0xFF : 0, 4);
+
+    return TF_E_OK;
 }
 
 int tf_silent_stepper_v2_set_max_velocity(TF_SilentStepperV2 *silent_stepper_v2, uint16_t velocity) {
@@ -527,7 +533,7 @@ int tf_silent_stepper_v2_set_max_velocity(TF_SilentStepperV2 *silent_stepper_v2,
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -539,7 +545,7 @@ int tf_silent_stepper_v2_set_max_velocity(TF_SilentStepperV2 *silent_stepper_v2,
 
     velocity = tf_leconvert_uint16_to(velocity); memcpy(buf + 0, &velocity, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -566,14 +572,14 @@ int tf_silent_stepper_v2_get_max_velocity(TF_SilentStepperV2 *silent_stepper_v2,
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_MAX_VELOCITY, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -605,14 +611,14 @@ int tf_silent_stepper_v2_get_current_velocity(TF_SilentStepperV2 *silent_stepper
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_CURRENT_VELOCITY, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -644,7 +650,7 @@ int tf_silent_stepper_v2_set_speed_ramping(TF_SilentStepperV2 *silent_stepper_v2
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -657,7 +663,7 @@ int tf_silent_stepper_v2_set_speed_ramping(TF_SilentStepperV2 *silent_stepper_v2
     acceleration = tf_leconvert_uint16_to(acceleration); memcpy(buf + 0, &acceleration, 2);
     deacceleration = tf_leconvert_uint16_to(deacceleration); memcpy(buf + 2, &deacceleration, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -684,14 +690,14 @@ int tf_silent_stepper_v2_get_speed_ramping(TF_SilentStepperV2 *silent_stepper_v2
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_SPEED_RAMPING, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -724,7 +730,7 @@ int tf_silent_stepper_v2_full_brake(TF_SilentStepperV2 *silent_stepper_v2) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -732,7 +738,7 @@ int tf_silent_stepper_v2_full_brake(TF_SilentStepperV2 *silent_stepper_v2) {
     tf_silent_stepper_v2_get_response_expected(silent_stepper_v2, TF_SILENT_STEPPER_V2_FUNCTION_FULL_BRAKE, &response_expected);
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_FULL_BRAKE, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -759,7 +765,7 @@ int tf_silent_stepper_v2_set_current_position(TF_SilentStepperV2 *silent_stepper
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -771,7 +777,7 @@ int tf_silent_stepper_v2_set_current_position(TF_SilentStepperV2 *silent_stepper
 
     position = tf_leconvert_int32_to(position); memcpy(buf + 0, &position, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -798,14 +804,14 @@ int tf_silent_stepper_v2_get_current_position(TF_SilentStepperV2 *silent_stepper
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_CURRENT_POSITION, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -837,7 +843,7 @@ int tf_silent_stepper_v2_set_target_position(TF_SilentStepperV2 *silent_stepper_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -849,7 +855,7 @@ int tf_silent_stepper_v2_set_target_position(TF_SilentStepperV2 *silent_stepper_
 
     position = tf_leconvert_int32_to(position); memcpy(buf + 0, &position, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -876,14 +882,14 @@ int tf_silent_stepper_v2_get_target_position(TF_SilentStepperV2 *silent_stepper_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_TARGET_POSITION, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -915,7 +921,7 @@ int tf_silent_stepper_v2_set_steps(TF_SilentStepperV2 *silent_stepper_v2, int32_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -927,7 +933,7 @@ int tf_silent_stepper_v2_set_steps(TF_SilentStepperV2 *silent_stepper_v2, int32_
 
     steps = tf_leconvert_int32_to(steps); memcpy(buf + 0, &steps, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -954,14 +960,14 @@ int tf_silent_stepper_v2_get_steps(TF_SilentStepperV2 *silent_stepper_v2, int32_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_STEPS, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -993,14 +999,14 @@ int tf_silent_stepper_v2_get_remaining_steps(TF_SilentStepperV2 *silent_stepper_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_REMAINING_STEPS, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -1032,7 +1038,7 @@ int tf_silent_stepper_v2_set_step_configuration(TF_SilentStepperV2 *silent_stepp
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1045,7 +1051,7 @@ int tf_silent_stepper_v2_set_step_configuration(TF_SilentStepperV2 *silent_stepp
     buf[0] = (uint8_t)step_resolution;
     buf[1] = interpolation ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -1072,14 +1078,14 @@ int tf_silent_stepper_v2_get_step_configuration(TF_SilentStepperV2 *silent_stepp
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_STEP_CONFIGURATION, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -1112,7 +1118,7 @@ int tf_silent_stepper_v2_drive_forward(TF_SilentStepperV2 *silent_stepper_v2) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1120,7 +1126,7 @@ int tf_silent_stepper_v2_drive_forward(TF_SilentStepperV2 *silent_stepper_v2) {
     tf_silent_stepper_v2_get_response_expected(silent_stepper_v2, TF_SILENT_STEPPER_V2_FUNCTION_DRIVE_FORWARD, &response_expected);
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_DRIVE_FORWARD, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -1147,7 +1153,7 @@ int tf_silent_stepper_v2_drive_backward(TF_SilentStepperV2 *silent_stepper_v2) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1155,7 +1161,7 @@ int tf_silent_stepper_v2_drive_backward(TF_SilentStepperV2 *silent_stepper_v2) {
     tf_silent_stepper_v2_get_response_expected(silent_stepper_v2, TF_SILENT_STEPPER_V2_FUNCTION_DRIVE_BACKWARD, &response_expected);
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_DRIVE_BACKWARD, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -1182,7 +1188,7 @@ int tf_silent_stepper_v2_stop(TF_SilentStepperV2 *silent_stepper_v2) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1190,7 +1196,7 @@ int tf_silent_stepper_v2_stop(TF_SilentStepperV2 *silent_stepper_v2) {
     tf_silent_stepper_v2_get_response_expected(silent_stepper_v2, TF_SILENT_STEPPER_V2_FUNCTION_STOP, &response_expected);
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_STOP, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -1217,14 +1223,14 @@ int tf_silent_stepper_v2_get_input_voltage(TF_SilentStepperV2 *silent_stepper_v2
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_INPUT_VOLTAGE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -1256,7 +1262,7 @@ int tf_silent_stepper_v2_set_motor_current(TF_SilentStepperV2 *silent_stepper_v2
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1268,7 +1274,7 @@ int tf_silent_stepper_v2_set_motor_current(TF_SilentStepperV2 *silent_stepper_v2
 
     current = tf_leconvert_uint16_to(current); memcpy(buf + 0, &current, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -1295,14 +1301,14 @@ int tf_silent_stepper_v2_get_motor_current(TF_SilentStepperV2 *silent_stepper_v2
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_MOTOR_CURRENT, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -1334,7 +1340,7 @@ int tf_silent_stepper_v2_set_enabled(TF_SilentStepperV2 *silent_stepper_v2, bool
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1346,7 +1352,7 @@ int tf_silent_stepper_v2_set_enabled(TF_SilentStepperV2 *silent_stepper_v2, bool
 
     buf[0] = enabled ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -1373,14 +1379,14 @@ int tf_silent_stepper_v2_get_enabled(TF_SilentStepperV2 *silent_stepper_v2, bool
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_ENABLED, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -1412,7 +1418,7 @@ int tf_silent_stepper_v2_set_basic_configuration(TF_SilentStepperV2 *silent_step
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1431,7 +1437,7 @@ int tf_silent_stepper_v2_set_basic_configuration(TF_SilentStepperV2 *silent_step
     classic_threshold = tf_leconvert_uint16_to(classic_threshold); memcpy(buf + 12, &classic_threshold, 2);
     buf[14] = high_velocity_chopper_mode ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -1458,14 +1464,14 @@ int tf_silent_stepper_v2_get_basic_configuration(TF_SilentStepperV2 *silent_step
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_BASIC_CONFIGURATION, 0, 15, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -1504,7 +1510,7 @@ int tf_silent_stepper_v2_set_spreadcycle_configuration(TF_SilentStepperV2 *silen
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1524,7 +1530,7 @@ int tf_silent_stepper_v2_set_spreadcycle_configuration(TF_SilentStepperV2 *silen
     buf[7] = (uint8_t)comparator_blank_time;
     buf[8] = fast_decay_without_comparator ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -1551,14 +1557,14 @@ int tf_silent_stepper_v2_get_spreadcycle_configuration(TF_SilentStepperV2 *silen
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_SPREADCYCLE_CONFIGURATION, 0, 9, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -1598,7 +1604,7 @@ int tf_silent_stepper_v2_set_stealth_configuration(TF_SilentStepperV2 *silent_st
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1615,7 +1621,7 @@ int tf_silent_stepper_v2_set_stealth_configuration(TF_SilentStepperV2 *silent_st
     buf[4] = force_symmetric ? 1 : 0;
     buf[5] = (uint8_t)freewheel_mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -1642,14 +1648,14 @@ int tf_silent_stepper_v2_get_stealth_configuration(TF_SilentStepperV2 *silent_st
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_STEALTH_CONFIGURATION, 0, 6, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -1686,7 +1692,7 @@ int tf_silent_stepper_v2_set_coolstep_configuration(TF_SilentStepperV2 *silent_s
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1704,7 +1710,7 @@ int tf_silent_stepper_v2_set_coolstep_configuration(TF_SilentStepperV2 *silent_s
     buf[5] = (uint8_t)stallguard_threshold_value;
     buf[6] = (uint8_t)stallguard_mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -1731,14 +1737,14 @@ int tf_silent_stepper_v2_get_coolstep_configuration(TF_SilentStepperV2 *silent_s
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_COOLSTEP_CONFIGURATION, 0, 7, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -1776,7 +1782,7 @@ int tf_silent_stepper_v2_set_misc_configuration(TF_SilentStepperV2 *silent_stepp
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1789,7 +1795,7 @@ int tf_silent_stepper_v2_set_misc_configuration(TF_SilentStepperV2 *silent_stepp
     buf[0] = disable_short_to_ground_protection ? 1 : 0;
     buf[1] = (uint8_t)synchronize_phase_frequency;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -1816,14 +1822,14 @@ int tf_silent_stepper_v2_get_misc_configuration(TF_SilentStepperV2 *silent_stepp
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_MISC_CONFIGURATION, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -1856,7 +1862,7 @@ int tf_silent_stepper_v2_set_error_led_config(TF_SilentStepperV2 *silent_stepper
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1868,7 +1874,7 @@ int tf_silent_stepper_v2_set_error_led_config(TF_SilentStepperV2 *silent_stepper
 
     buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -1895,14 +1901,14 @@ int tf_silent_stepper_v2_get_error_led_config(TF_SilentStepperV2 *silent_stepper
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_ERROR_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -1934,14 +1940,14 @@ int tf_silent_stepper_v2_get_driver_status(TF_SilentStepperV2 *silent_stepper_v2
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_DRIVER_STATUS, 0, 8, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -1980,7 +1986,7 @@ int tf_silent_stepper_v2_set_minimum_voltage(TF_SilentStepperV2 *silent_stepper_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1992,7 +1998,7 @@ int tf_silent_stepper_v2_set_minimum_voltage(TF_SilentStepperV2 *silent_stepper_
 
     voltage = tf_leconvert_uint16_to(voltage); memcpy(buf + 0, &voltage, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -2019,14 +2025,14 @@ int tf_silent_stepper_v2_get_minimum_voltage(TF_SilentStepperV2 *silent_stepper_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_MINIMUM_VOLTAGE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -2058,7 +2064,7 @@ int tf_silent_stepper_v2_set_time_base(TF_SilentStepperV2 *silent_stepper_v2, ui
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2070,7 +2076,7 @@ int tf_silent_stepper_v2_set_time_base(TF_SilentStepperV2 *silent_stepper_v2, ui
 
     time_base = tf_leconvert_uint32_to(time_base); memcpy(buf + 0, &time_base, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -2097,14 +2103,14 @@ int tf_silent_stepper_v2_get_time_base(TF_SilentStepperV2 *silent_stepper_v2, ui
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_TIME_BASE, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -2136,14 +2142,14 @@ int tf_silent_stepper_v2_get_all_data(TF_SilentStepperV2 *silent_stepper_v2, uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_ALL_DATA, 0, 14, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -2179,7 +2185,7 @@ int tf_silent_stepper_v2_set_all_callback_configuration(TF_SilentStepperV2 *sile
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2191,7 +2197,7 @@ int tf_silent_stepper_v2_set_all_callback_configuration(TF_SilentStepperV2 *sile
 
     period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -2218,14 +2224,14 @@ int tf_silent_stepper_v2_get_all_data_callback_configuraton(TF_SilentStepperV2 *
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_ALL_DATA_CALLBACK_CONFIGURATON, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -2257,7 +2263,7 @@ int tf_silent_stepper_v2_set_gpio_configuration(TF_SilentStepperV2 *silent_stepp
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2271,7 +2277,7 @@ int tf_silent_stepper_v2_set_gpio_configuration(TF_SilentStepperV2 *silent_stepp
     debounce = tf_leconvert_uint16_to(debounce); memcpy(buf + 1, &debounce, 2);
     stop_deceleration = tf_leconvert_uint16_to(stop_deceleration); memcpy(buf + 3, &stop_deceleration, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -2298,7 +2304,7 @@ int tf_silent_stepper_v2_get_gpio_configuration(TF_SilentStepperV2 *silent_stepp
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2309,7 +2315,7 @@ int tf_silent_stepper_v2_get_gpio_configuration(TF_SilentStepperV2 *silent_stepp
 
     buf[0] = (uint8_t)channel;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -2342,7 +2348,7 @@ int tf_silent_stepper_v2_set_gpio_action(TF_SilentStepperV2 *silent_stepper_v2, 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2355,7 +2361,7 @@ int tf_silent_stepper_v2_set_gpio_action(TF_SilentStepperV2 *silent_stepper_v2, 
     buf[0] = (uint8_t)channel;
     action = tf_leconvert_uint32_to(action); memcpy(buf + 1, &action, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -2382,7 +2388,7 @@ int tf_silent_stepper_v2_get_gpio_action(TF_SilentStepperV2 *silent_stepper_v2, 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2393,7 +2399,7 @@ int tf_silent_stepper_v2_get_gpio_action(TF_SilentStepperV2 *silent_stepper_v2, 
 
     buf[0] = (uint8_t)channel;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -2425,14 +2431,14 @@ int tf_silent_stepper_v2_get_gpio_state(TF_SilentStepperV2 *silent_stepper_v2, b
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_GPIO_STATE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -2464,14 +2470,14 @@ int tf_silent_stepper_v2_get_spitfp_error_count(TF_SilentStepperV2 *silent_stepp
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -2506,7 +2512,7 @@ int tf_silent_stepper_v2_set_bootloader_mode(TF_SilentStepperV2 *silent_stepper_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2517,7 +2523,7 @@ int tf_silent_stepper_v2_set_bootloader_mode(TF_SilentStepperV2 *silent_stepper_
 
     buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -2549,14 +2555,14 @@ int tf_silent_stepper_v2_get_bootloader_mode(TF_SilentStepperV2 *silent_stepper_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -2588,7 +2594,7 @@ int tf_silent_stepper_v2_set_write_firmware_pointer(TF_SilentStepperV2 *silent_s
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2600,7 +2606,7 @@ int tf_silent_stepper_v2_set_write_firmware_pointer(TF_SilentStepperV2 *silent_s
 
     pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -2627,7 +2633,7 @@ int tf_silent_stepper_v2_write_firmware(TF_SilentStepperV2 *silent_stepper_v2, c
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2638,7 +2644,7 @@ int tf_silent_stepper_v2_write_firmware(TF_SilentStepperV2 *silent_stepper_v2, c
 
     memcpy(buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -2670,7 +2676,7 @@ int tf_silent_stepper_v2_set_status_led_config(TF_SilentStepperV2 *silent_steppe
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2682,7 +2688,7 @@ int tf_silent_stepper_v2_set_status_led_config(TF_SilentStepperV2 *silent_steppe
 
     buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -2709,14 +2715,14 @@ int tf_silent_stepper_v2_get_status_led_config(TF_SilentStepperV2 *silent_steppe
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -2748,14 +2754,14 @@ int tf_silent_stepper_v2_get_chip_temperature(TF_SilentStepperV2 *silent_stepper
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -2787,7 +2793,7 @@ int tf_silent_stepper_v2_reset(TF_SilentStepperV2 *silent_stepper_v2) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2795,7 +2801,7 @@ int tf_silent_stepper_v2_reset(TF_SilentStepperV2 *silent_stepper_v2) {
     tf_silent_stepper_v2_get_response_expected(silent_stepper_v2, TF_SILENT_STEPPER_V2_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -2822,7 +2828,7 @@ int tf_silent_stepper_v2_write_uid(TF_SilentStepperV2 *silent_stepper_v2, uint32
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2834,7 +2840,7 @@ int tf_silent_stepper_v2_write_uid(TF_SilentStepperV2 *silent_stepper_v2, uint32
 
     uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -2861,14 +2867,14 @@ int tf_silent_stepper_v2_read_uid(TF_SilentStepperV2 *silent_stepper_v2, uint32_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -2900,7 +2906,7 @@ int tf_silent_stepper_v2_get_identity(TF_SilentStepperV2 *silent_stepper_v2, cha
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2908,7 +2914,7 @@ int tf_silent_stepper_v2_get_identity(TF_SilentStepperV2 *silent_stepper_v2, cha
     tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)silent_stepper_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)silent_stepper_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(silent_stepper_v2->tfp, response_expected, deadline, &error_code);
@@ -2930,7 +2936,7 @@ int tf_silent_stepper_v2_get_identity(TF_SilentStepperV2 *silent_stepper_v2, cha
         if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&silent_stepper_v2->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&silent_stepper_v2->tfp->spitfp->recv_buf, 3); }
         if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&silent_stepper_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&silent_stepper_v2->tfp->spitfp->recv_buf, 2); }
         if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL*)silent_stepper_v2->tfp->hal, silent_stepper_v2->tfp->spitfp->port_id);
+            *ret_position = tf_hal_get_port_name((TF_HAL *)silent_stepper_v2->tfp->hal, silent_stepper_v2->tfp->spitfp->port_id);
         }
         if (ret_connected_uid != NULL) {
             memcpy(ret_connected_uid, tmp_connected_uid, 8);
@@ -2947,7 +2953,7 @@ int tf_silent_stepper_v2_get_identity(TF_SilentStepperV2 *silent_stepper_v2, cha
     return tf_tfp_get_error(error_code);
 }
 #if TF_IMPLEMENT_CALLBACKS != 0
-int tf_silent_stepper_v2_register_under_voltage_callback(TF_SilentStepperV2 *silent_stepper_v2, TF_SilentStepperV2UnderVoltageHandler handler, void *user_data) {
+int tf_silent_stepper_v2_register_under_voltage_callback(TF_SilentStepperV2 *silent_stepper_v2, TF_SilentStepperV2_UnderVoltageHandler handler, void *user_data) {
     if (silent_stepper_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -2969,7 +2975,7 @@ int tf_silent_stepper_v2_register_under_voltage_callback(TF_SilentStepperV2 *sil
 }
 
 
-int tf_silent_stepper_v2_register_position_reached_callback(TF_SilentStepperV2 *silent_stepper_v2, TF_SilentStepperV2PositionReachedHandler handler, void *user_data) {
+int tf_silent_stepper_v2_register_position_reached_callback(TF_SilentStepperV2 *silent_stepper_v2, TF_SilentStepperV2_PositionReachedHandler handler, void *user_data) {
     if (silent_stepper_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -2991,7 +2997,7 @@ int tf_silent_stepper_v2_register_position_reached_callback(TF_SilentStepperV2 *
 }
 
 
-int tf_silent_stepper_v2_register_all_data_callback(TF_SilentStepperV2 *silent_stepper_v2, TF_SilentStepperV2AllDataHandler handler, void *user_data) {
+int tf_silent_stepper_v2_register_all_data_callback(TF_SilentStepperV2 *silent_stepper_v2, TF_SilentStepperV2_AllDataHandler handler, void *user_data) {
     if (silent_stepper_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -3013,7 +3019,7 @@ int tf_silent_stepper_v2_register_all_data_callback(TF_SilentStepperV2 *silent_s
 }
 
 
-int tf_silent_stepper_v2_register_new_state_callback(TF_SilentStepperV2 *silent_stepper_v2, TF_SilentStepperV2NewStateHandler handler, void *user_data) {
+int tf_silent_stepper_v2_register_new_state_callback(TF_SilentStepperV2 *silent_stepper_v2, TF_SilentStepperV2_NewStateHandler handler, void *user_data) {
     if (silent_stepper_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -3035,7 +3041,7 @@ int tf_silent_stepper_v2_register_new_state_callback(TF_SilentStepperV2 *silent_
 }
 
 
-int tf_silent_stepper_v2_register_gpio_state_callback(TF_SilentStepperV2 *silent_stepper_v2, TF_SilentStepperV2GPIOStateHandler handler, void *user_data) {
+int tf_silent_stepper_v2_register_gpio_state_callback(TF_SilentStepperV2 *silent_stepper_v2, TF_SilentStepperV2_GPIOStateHandler handler, void *user_data) {
     if (silent_stepper_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -3061,7 +3067,7 @@ int tf_silent_stepper_v2_callback_tick(TF_SilentStepperV2 *silent_stepper_v2, ui
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(silent_stepper_v2->tfp, tf_hal_current_time_us((TF_HAL*)silent_stepper_v2->tfp->hal) + timeout_us);
+    return tf_tfp_callback_tick(silent_stepper_v2->tfp, tf_hal_current_time_us((TF_HAL *)silent_stepper_v2->tfp->hal) + timeout_us);
 }
 
 #ifdef __cplusplus

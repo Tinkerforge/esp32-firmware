@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,8 +27,8 @@ extern "C" {
 struct TF_IndustrialDigitalIn4V2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_IndustrialDigitalIn4V2ValueHandler)(struct TF_IndustrialDigitalIn4V2 *device, uint8_t channel, bool changed, bool value, void *user_data);
-typedef void (*TF_IndustrialDigitalIn4V2AllValueHandler)(struct TF_IndustrialDigitalIn4V2 *device, bool changed[4], bool value[4], void *user_data);
+typedef void (*TF_IndustrialDigitalIn4V2_ValueHandler)(struct TF_IndustrialDigitalIn4V2 *device, uint8_t channel, bool changed, bool value, void *user_data);
+typedef void (*TF_IndustrialDigitalIn4V2_AllValueHandler)(struct TF_IndustrialDigitalIn4V2 *device, bool changed[4], bool value[4], void *user_data);
 
 #endif
 /**
@@ -39,10 +39,10 @@ typedef void (*TF_IndustrialDigitalIn4V2AllValueHandler)(struct TF_IndustrialDig
 typedef struct TF_IndustrialDigitalIn4V2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_IndustrialDigitalIn4V2ValueHandler value_handler;
+    TF_IndustrialDigitalIn4V2_ValueHandler value_handler;
     void *value_user_data;
 
-    TF_IndustrialDigitalIn4V2AllValueHandler all_value_handler;
+    TF_IndustrialDigitalIn4V2_AllValueHandler all_value_handler;
     void *all_value_user_data;
 
 #endif
@@ -380,7 +380,7 @@ int tf_industrial_digital_in_4_v2_set_response_expected(TF_IndustrialDigitalIn4V
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_industrial_digital_in_4_v2_set_response_expected_all(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, bool response_expected);
+int tf_industrial_digital_in_4_v2_set_response_expected_all(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_IndustrialDigitalIn4V2
@@ -397,7 +397,7 @@ void tf_industrial_digital_in_4_v2_set_response_expected_all(TF_IndustrialDigita
  * value for the channel. The `changed` parameter is true if the value has changed
  * since the last callback.
  */
-int tf_industrial_digital_in_4_v2_register_value_callback(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, TF_IndustrialDigitalIn4V2ValueHandler handler, void *user_data);
+int tf_industrial_digital_in_4_v2_register_value_callback(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, TF_IndustrialDigitalIn4V2_ValueHandler handler, void *user_data);
 
 
 /**
@@ -415,7 +415,7 @@ int tf_industrial_digital_in_4_v2_register_value_callback(TF_IndustrialDigitalIn
  * `changed` parameter is true if the value has changed since
  * the last callback.
  */
-int tf_industrial_digital_in_4_v2_register_all_value_callback(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, TF_IndustrialDigitalIn4V2AllValueHandler handler, void *user_data);
+int tf_industrial_digital_in_4_v2_register_all_value_callback(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, TF_IndustrialDigitalIn4V2_AllValueHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

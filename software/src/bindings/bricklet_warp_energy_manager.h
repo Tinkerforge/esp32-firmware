@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -333,7 +333,7 @@ int tf_warp_energy_manager_set_response_expected(TF_WARPEnergyManager *warp_ener
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_warp_energy_manager_set_response_expected_all(TF_WARPEnergyManager *warp_energy_manager, bool response_expected);
+int tf_warp_energy_manager_set_response_expected_all(TF_WARPEnergyManager *warp_energy_manager, bool response_expected);
 
 
 #if TF_IMPLEMENT_CALLBACKS != 0

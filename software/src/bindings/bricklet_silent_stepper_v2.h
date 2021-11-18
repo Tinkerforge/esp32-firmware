@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,11 +27,11 @@ extern "C" {
 struct TF_SilentStepperV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_SilentStepperV2UnderVoltageHandler)(struct TF_SilentStepperV2 *device, uint16_t voltage, void *user_data);
-typedef void (*TF_SilentStepperV2PositionReachedHandler)(struct TF_SilentStepperV2 *device, int32_t position, void *user_data);
-typedef void (*TF_SilentStepperV2AllDataHandler)(struct TF_SilentStepperV2 *device, uint16_t current_velocity, int32_t current_position, int32_t remaining_steps, uint16_t input_voltage, uint16_t current_consumption, void *user_data);
-typedef void (*TF_SilentStepperV2NewStateHandler)(struct TF_SilentStepperV2 *device, uint8_t state_new, uint8_t state_previous, void *user_data);
-typedef void (*TF_SilentStepperV2GPIOStateHandler)(struct TF_SilentStepperV2 *device, bool gpio_state[2], void *user_data);
+typedef void (*TF_SilentStepperV2_UnderVoltageHandler)(struct TF_SilentStepperV2 *device, uint16_t voltage, void *user_data);
+typedef void (*TF_SilentStepperV2_PositionReachedHandler)(struct TF_SilentStepperV2 *device, int32_t position, void *user_data);
+typedef void (*TF_SilentStepperV2_AllDataHandler)(struct TF_SilentStepperV2 *device, uint16_t current_velocity, int32_t current_position, int32_t remaining_steps, uint16_t input_voltage, uint16_t current_consumption, void *user_data);
+typedef void (*TF_SilentStepperV2_NewStateHandler)(struct TF_SilentStepperV2 *device, uint8_t state_new, uint8_t state_previous, void *user_data);
+typedef void (*TF_SilentStepperV2_GPIOStateHandler)(struct TF_SilentStepperV2 *device, bool gpio_state[2], void *user_data);
 
 #endif
 /**
@@ -42,19 +42,19 @@ typedef void (*TF_SilentStepperV2GPIOStateHandler)(struct TF_SilentStepperV2 *de
 typedef struct TF_SilentStepperV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_SilentStepperV2UnderVoltageHandler under_voltage_handler;
+    TF_SilentStepperV2_UnderVoltageHandler under_voltage_handler;
     void *under_voltage_user_data;
 
-    TF_SilentStepperV2PositionReachedHandler position_reached_handler;
+    TF_SilentStepperV2_PositionReachedHandler position_reached_handler;
     void *position_reached_user_data;
 
-    TF_SilentStepperV2AllDataHandler all_data_handler;
+    TF_SilentStepperV2_AllDataHandler all_data_handler;
     void *all_data_user_data;
 
-    TF_SilentStepperV2NewStateHandler new_state_handler;
+    TF_SilentStepperV2_NewStateHandler new_state_handler;
     void *new_state_user_data;
 
-    TF_SilentStepperV2GPIOStateHandler gpio_state_handler;
+    TF_SilentStepperV2_GPIOStateHandler gpio_state_handler;
     void *gpio_state_user_data;
 
 #endif
@@ -817,7 +817,7 @@ int tf_silent_stepper_v2_set_response_expected(TF_SilentStepperV2 *silent_steppe
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_silent_stepper_v2_set_response_expected_all(TF_SilentStepperV2 *silent_stepper_v2, bool response_expected);
+int tf_silent_stepper_v2_set_response_expected_all(TF_SilentStepperV2 *silent_stepper_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_SilentStepperV2
@@ -830,7 +830,7 @@ void tf_silent_stepper_v2_set_response_expected_all(TF_SilentStepperV2 *silent_s
  * This callback is triggered when the input voltage drops below the value set by
  * {@link tf_silent_stepper_v2_set_minimum_voltage}. The parameter is the current voltage.
  */
-int tf_silent_stepper_v2_register_under_voltage_callback(TF_SilentStepperV2 *silent_stepper_v2, TF_SilentStepperV2UnderVoltageHandler handler, void *user_data);
+int tf_silent_stepper_v2_register_under_voltage_callback(TF_SilentStepperV2 *silent_stepper_v2, TF_SilentStepperV2_UnderVoltageHandler handler, void *user_data);
 
 
 /**
@@ -850,7 +850,7 @@ int tf_silent_stepper_v2_register_under_voltage_callback(TF_SilentStepperV2 *sil
  *  maximum acceleration of the motor. Otherwise the motor will lag behind the
  *  control value and the callback will be triggered too early.
  */
-int tf_silent_stepper_v2_register_position_reached_callback(TF_SilentStepperV2 *silent_stepper_v2, TF_SilentStepperV2PositionReachedHandler handler, void *user_data);
+int tf_silent_stepper_v2_register_position_reached_callback(TF_SilentStepperV2 *silent_stepper_v2, TF_SilentStepperV2_PositionReachedHandler handler, void *user_data);
 
 
 /**
@@ -866,7 +866,7 @@ int tf_silent_stepper_v2_register_position_reached_callback(TF_SilentStepperV2 *
  * the current position, the remaining steps, the stack voltage, the external
  * voltage and the current consumption of the stepper motor.
  */
-int tf_silent_stepper_v2_register_all_data_callback(TF_SilentStepperV2 *silent_stepper_v2, TF_SilentStepperV2AllDataHandler handler, void *user_data);
+int tf_silent_stepper_v2_register_all_data_callback(TF_SilentStepperV2 *silent_stepper_v2, TF_SilentStepperV2_AllDataHandler handler, void *user_data);
 
 
 /**
@@ -880,7 +880,7 @@ int tf_silent_stepper_v2_register_all_data_callback(TF_SilentStepperV2 *silent_s
  * This callback is triggered whenever the Silent Stepper Bricklet 2.0 enters a new state.
  * It returns the new state as well as the previous state.
  */
-int tf_silent_stepper_v2_register_new_state_callback(TF_SilentStepperV2 *silent_stepper_v2, TF_SilentStepperV2NewStateHandler handler, void *user_data);
+int tf_silent_stepper_v2_register_new_state_callback(TF_SilentStepperV2 *silent_stepper_v2, TF_SilentStepperV2_NewStateHandler handler, void *user_data);
 
 
 /**
@@ -893,7 +893,7 @@ int tf_silent_stepper_v2_register_new_state_callback(TF_SilentStepperV2 *silent_
  * 
  * This callback is triggered by GPIO changes if it is activated through {@link tf_silent_stepper_v2_set_gpio_action}.
  */
-int tf_silent_stepper_v2_register_gpio_state_callback(TF_SilentStepperV2 *silent_stepper_v2, TF_SilentStepperV2GPIOStateHandler handler, void *user_data);
+int tf_silent_stepper_v2_register_gpio_state_callback(TF_SilentStepperV2 *silent_stepper_v2, TF_SilentStepperV2_GPIOStateHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

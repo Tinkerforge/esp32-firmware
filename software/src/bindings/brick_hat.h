@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,7 +27,7 @@ extern "C" {
 struct TF_HAT;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_HATVoltagesHandler)(struct TF_HAT *device, uint16_t voltage_usb, uint16_t voltage_dc, void *user_data);
+typedef void (*TF_HAT_VoltagesHandler)(struct TF_HAT *device, uint16_t voltage_usb, uint16_t voltage_dc, void *user_data);
 
 #endif
 /**
@@ -38,7 +38,7 @@ typedef void (*TF_HATVoltagesHandler)(struct TF_HAT *device, uint16_t voltage_us
 typedef struct TF_HAT {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_HATVoltagesHandler voltages_handler;
+    TF_HAT_VoltagesHandler voltages_handler;
     void *voltages_user_data;
 
 #endif
@@ -321,7 +321,7 @@ int tf_hat_set_response_expected(TF_HAT *hat, uint8_t function_id, bool response
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_hat_set_response_expected_all(TF_HAT *hat, bool response_expected);
+int tf_hat_set_response_expected_all(TF_HAT *hat, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_HAT
@@ -338,7 +338,7 @@ void tf_hat_set_response_expected_all(TF_HAT *hat, bool response_expected);
  * 
  * .. versionadded:: 2.0.1$nbsp;(Firmware)
  */
-int tf_hat_register_voltages_callback(TF_HAT *hat, TF_HATVoltagesHandler handler, void *user_data);
+int tf_hat_register_voltages_callback(TF_HAT *hat, TF_HAT_VoltagesHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

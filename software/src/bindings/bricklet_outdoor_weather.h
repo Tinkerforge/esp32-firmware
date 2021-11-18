@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,8 +27,8 @@ extern "C" {
 struct TF_OutdoorWeather;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_OutdoorWeatherStationDataHandler)(struct TF_OutdoorWeather *device, uint8_t identifier, int16_t temperature, uint8_t humidity, uint32_t wind_speed, uint32_t gust_speed, uint32_t rain, uint8_t wind_direction, bool battery_low, void *user_data);
-typedef void (*TF_OutdoorWeatherSensorDataHandler)(struct TF_OutdoorWeather *device, uint8_t identifier, int16_t temperature, uint8_t humidity, void *user_data);
+typedef void (*TF_OutdoorWeather_StationDataHandler)(struct TF_OutdoorWeather *device, uint8_t identifier, int16_t temperature, uint8_t humidity, uint32_t wind_speed, uint32_t gust_speed, uint32_t rain, uint8_t wind_direction, bool battery_low, void *user_data);
+typedef void (*TF_OutdoorWeather_SensorDataHandler)(struct TF_OutdoorWeather *device, uint8_t identifier, int16_t temperature, uint8_t humidity, void *user_data);
 
 #endif
 /**
@@ -39,10 +39,10 @@ typedef void (*TF_OutdoorWeatherSensorDataHandler)(struct TF_OutdoorWeather *dev
 typedef struct TF_OutdoorWeather {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_OutdoorWeatherStationDataHandler station_data_handler;
+    TF_OutdoorWeather_StationDataHandler station_data_handler;
     void *station_data_user_data;
 
-    TF_OutdoorWeatherSensorDataHandler sensor_data_handler;
+    TF_OutdoorWeather_SensorDataHandler sensor_data_handler;
     void *sensor_data_user_data;
 
 #endif
@@ -400,7 +400,7 @@ int tf_outdoor_weather_set_response_expected(TF_OutdoorWeather *outdoor_weather,
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_outdoor_weather_set_response_expected_all(TF_OutdoorWeather *outdoor_weather, bool response_expected);
+int tf_outdoor_weather_set_response_expected_all(TF_OutdoorWeather *outdoor_weather, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_OutdoorWeather
@@ -418,7 +418,7 @@ void tf_outdoor_weather_set_response_expected_all(TF_OutdoorWeather *outdoor_wea
  * Turn the callback on/off with {@link tf_outdoor_weather_set_station_callback_configuration}
  * (by default it is turned off).
  */
-int tf_outdoor_weather_register_station_data_callback(TF_OutdoorWeather *outdoor_weather, TF_OutdoorWeatherStationDataHandler handler, void *user_data);
+int tf_outdoor_weather_register_station_data_callback(TF_OutdoorWeather *outdoor_weather, TF_OutdoorWeather_StationDataHandler handler, void *user_data);
 
 
 /**
@@ -437,7 +437,7 @@ int tf_outdoor_weather_register_station_data_callback(TF_OutdoorWeather *outdoor
  * Turn the callback on/off with {@link tf_outdoor_weather_set_sensor_callback_configuration}
  * (by default it is turned off).
  */
-int tf_outdoor_weather_register_sensor_data_callback(TF_OutdoorWeather *outdoor_weather, TF_OutdoorWeatherSensorDataHandler handler, void *user_data);
+int tf_outdoor_weather_register_sensor_data_callback(TF_OutdoorWeather *outdoor_weather, TF_OutdoorWeather_SensorDataHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

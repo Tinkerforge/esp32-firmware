@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,8 +27,8 @@ extern "C" {
 struct TF_MotionDetectorV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_MotionDetectorV2MotionDetectedHandler)(struct TF_MotionDetectorV2 *device, void *user_data);
-typedef void (*TF_MotionDetectorV2DetectionCycleEndedHandler)(struct TF_MotionDetectorV2 *device, void *user_data);
+typedef void (*TF_MotionDetectorV2_MotionDetectedHandler)(struct TF_MotionDetectorV2 *device, void *user_data);
+typedef void (*TF_MotionDetectorV2_DetectionCycleEndedHandler)(struct TF_MotionDetectorV2 *device, void *user_data);
 
 #endif
 /**
@@ -39,10 +39,10 @@ typedef void (*TF_MotionDetectorV2DetectionCycleEndedHandler)(struct TF_MotionDe
 typedef struct TF_MotionDetectorV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_MotionDetectorV2MotionDetectedHandler motion_detected_handler;
+    TF_MotionDetectorV2_MotionDetectedHandler motion_detected_handler;
     void *motion_detected_user_data;
 
-    TF_MotionDetectorV2DetectionCycleEndedHandler detection_cycle_ended_handler;
+    TF_MotionDetectorV2_DetectionCycleEndedHandler detection_cycle_ended_handler;
     void *detection_cycle_ended_user_data;
 
 #endif
@@ -310,7 +310,7 @@ int tf_motion_detector_v2_set_response_expected(TF_MotionDetectorV2 *motion_dete
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_motion_detector_v2_set_response_expected_all(TF_MotionDetectorV2 *motion_detector_v2, bool response_expected);
+int tf_motion_detector_v2_set_response_expected_all(TF_MotionDetectorV2 *motion_detector_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_MotionDetectorV2
@@ -322,7 +322,7 @@ void tf_motion_detector_v2_set_response_expected_all(TF_MotionDetectorV2 *motion
  * 
  * This callback is called after a motion was detected.
  */
-int tf_motion_detector_v2_register_motion_detected_callback(TF_MotionDetectorV2 *motion_detector_v2, TF_MotionDetectorV2MotionDetectedHandler handler, void *user_data);
+int tf_motion_detector_v2_register_motion_detected_callback(TF_MotionDetectorV2 *motion_detector_v2, TF_MotionDetectorV2_MotionDetectedHandler handler, void *user_data);
 
 
 /**
@@ -337,7 +337,7 @@ int tf_motion_detector_v2_register_motion_detected_callback(TF_MotionDetectorV2 
  * callback is called, a new motion can be detected again after approximately 2
  * seconds.
  */
-int tf_motion_detector_v2_register_detection_cycle_ended_callback(TF_MotionDetectorV2 *motion_detector_v2, TF_MotionDetectorV2DetectionCycleEndedHandler handler, void *user_data);
+int tf_motion_detector_v2_register_detection_cycle_ended_callback(TF_MotionDetectorV2 *motion_detector_v2, TF_MotionDetectorV2_DetectionCycleEndedHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

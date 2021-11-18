@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,7 +27,7 @@ extern "C" {
 struct TF_TemperatureV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_TemperatureV2TemperatureHandler)(struct TF_TemperatureV2 *device, int16_t temperature, void *user_data);
+typedef void (*TF_TemperatureV2_TemperatureHandler)(struct TF_TemperatureV2 *device, int16_t temperature, void *user_data);
 
 #endif
 /**
@@ -38,7 +38,7 @@ typedef void (*TF_TemperatureV2TemperatureHandler)(struct TF_TemperatureV2 *devi
 typedef struct TF_TemperatureV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_TemperatureV2TemperatureHandler temperature_handler;
+    TF_TemperatureV2_TemperatureHandler temperature_handler;
     void *temperature_user_data;
 
 #endif
@@ -326,7 +326,7 @@ int tf_temperature_v2_set_response_expected(TF_TemperatureV2 *temperature_v2, ui
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_temperature_v2_set_response_expected_all(TF_TemperatureV2 *temperature_v2, bool response_expected);
+int tf_temperature_v2_set_response_expected_all(TF_TemperatureV2 *temperature_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_TemperatureV2
@@ -341,7 +341,7 @@ void tf_temperature_v2_set_response_expected_all(TF_TemperatureV2 *temperature_v
  * 
  * The parameter is the same as {@link tf_temperature_v2_get_temperature}.
  */
-int tf_temperature_v2_register_temperature_callback(TF_TemperatureV2 *temperature_v2, TF_TemperatureV2TemperatureHandler handler, void *user_data);
+int tf_temperature_v2_register_temperature_callback(TF_TemperatureV2 *temperature_v2, TF_TemperatureV2_TemperatureHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

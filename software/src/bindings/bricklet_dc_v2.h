@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,9 +27,9 @@ extern "C" {
 struct TF_DCV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_DCV2EmergencyShutdownHandler)(struct TF_DCV2 *device, void *user_data);
-typedef void (*TF_DCV2VelocityReachedHandler)(struct TF_DCV2 *device, int16_t velocity, void *user_data);
-typedef void (*TF_DCV2CurrentVelocityHandler)(struct TF_DCV2 *device, int16_t velocity, void *user_data);
+typedef void (*TF_DCV2_EmergencyShutdownHandler)(struct TF_DCV2 *device, void *user_data);
+typedef void (*TF_DCV2_VelocityReachedHandler)(struct TF_DCV2 *device, int16_t velocity, void *user_data);
+typedef void (*TF_DCV2_CurrentVelocityHandler)(struct TF_DCV2 *device, int16_t velocity, void *user_data);
 
 #endif
 /**
@@ -40,13 +40,13 @@ typedef void (*TF_DCV2CurrentVelocityHandler)(struct TF_DCV2 *device, int16_t ve
 typedef struct TF_DCV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_DCV2EmergencyShutdownHandler emergency_shutdown_handler;
+    TF_DCV2_EmergencyShutdownHandler emergency_shutdown_handler;
     void *emergency_shutdown_user_data;
 
-    TF_DCV2VelocityReachedHandler velocity_reached_handler;
+    TF_DCV2_VelocityReachedHandler velocity_reached_handler;
     void *velocity_reached_user_data;
 
-    TF_DCV2CurrentVelocityHandler current_velocity_handler;
+    TF_DCV2_CurrentVelocityHandler current_velocity_handler;
     void *current_velocity_user_data;
 
 #endif
@@ -419,7 +419,7 @@ int tf_dc_v2_set_response_expected(TF_DCV2 *dc_v2, uint8_t function_id, bool res
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_dc_v2_set_response_expected_all(TF_DCV2 *dc_v2, bool response_expected);
+int tf_dc_v2_set_response_expected_all(TF_DCV2 *dc_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_DCV2
@@ -444,7 +444,7 @@ void tf_dc_v2_set_response_expected_all(TF_DCV2 *dc_v2, bool response_expected);
  *  Drive/Coast mode it is unfortunately impossible to reliably read the
  *  overcurrent/overtemperature signal from the driver chip.
  */
-int tf_dc_v2_register_emergency_shutdown_callback(TF_DCV2 *dc_v2, TF_DCV2EmergencyShutdownHandler handler, void *user_data);
+int tf_dc_v2_register_emergency_shutdown_callback(TF_DCV2 *dc_v2, TF_DCV2_EmergencyShutdownHandler handler, void *user_data);
 
 
 /**
@@ -466,7 +466,7 @@ int tf_dc_v2_register_emergency_shutdown_callback(TF_DCV2 *dc_v2, TF_DCV2Emergen
  *  maximum acceleration of the motor. Otherwise the motor will lag behind the
  *  control value and the callback will be triggered too early.
  */
-int tf_dc_v2_register_velocity_reached_callback(TF_DCV2 *dc_v2, TF_DCV2VelocityReachedHandler handler, void *user_data);
+int tf_dc_v2_register_velocity_reached_callback(TF_DCV2 *dc_v2, TF_DCV2_VelocityReachedHandler handler, void *user_data);
 
 
 /**
@@ -484,7 +484,7 @@ int tf_dc_v2_register_velocity_reached_callback(TF_DCV2 *dc_v2, TF_DCV2VelocityR
  * The {@link tf_dc_v2_register_current_velocity_callback} callback is only triggered after the set period
  * if there is a change in the velocity.
  */
-int tf_dc_v2_register_current_velocity_callback(TF_DCV2 *dc_v2, TF_DCV2CurrentVelocityHandler handler, void *user_data);
+int tf_dc_v2_register_current_velocity_callback(TF_DCV2 *dc_v2, TF_DCV2_CurrentVelocityHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

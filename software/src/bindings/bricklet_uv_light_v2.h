@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,9 +27,9 @@ extern "C" {
 struct TF_UVLightV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_UVLightV2UVAHandler)(struct TF_UVLightV2 *device, int32_t uva, void *user_data);
-typedef void (*TF_UVLightV2UVBHandler)(struct TF_UVLightV2 *device, int32_t uvb, void *user_data);
-typedef void (*TF_UVLightV2UVIHandler)(struct TF_UVLightV2 *device, int32_t uvi, void *user_data);
+typedef void (*TF_UVLightV2_UVAHandler)(struct TF_UVLightV2 *device, int32_t uva, void *user_data);
+typedef void (*TF_UVLightV2_UVBHandler)(struct TF_UVLightV2 *device, int32_t uvb, void *user_data);
+typedef void (*TF_UVLightV2_UVIHandler)(struct TF_UVLightV2 *device, int32_t uvi, void *user_data);
 
 #endif
 /**
@@ -40,13 +40,13 @@ typedef void (*TF_UVLightV2UVIHandler)(struct TF_UVLightV2 *device, int32_t uvi,
 typedef struct TF_UVLightV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_UVLightV2UVAHandler uva_handler;
+    TF_UVLightV2_UVAHandler uva_handler;
     void *uva_user_data;
 
-    TF_UVLightV2UVBHandler uvb_handler;
+    TF_UVLightV2_UVBHandler uvb_handler;
     void *uvb_user_data;
 
-    TF_UVLightV2UVIHandler uvi_handler;
+    TF_UVLightV2_UVIHandler uvi_handler;
     void *uvi_user_data;
 
 #endif
@@ -389,7 +389,7 @@ int tf_uv_light_v2_set_response_expected(TF_UVLightV2 *uv_light_v2, uint8_t func
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_uv_light_v2_set_response_expected_all(TF_UVLightV2 *uv_light_v2, bool response_expected);
+int tf_uv_light_v2_set_response_expected_all(TF_UVLightV2 *uv_light_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_UVLightV2
@@ -404,7 +404,7 @@ void tf_uv_light_v2_set_response_expected_all(TF_UVLightV2 *uv_light_v2, bool re
  * 
  * The parameter is the same as {@link tf_uv_light_v2_get_uva}.
  */
-int tf_uv_light_v2_register_uva_callback(TF_UVLightV2 *uv_light_v2, TF_UVLightV2UVAHandler handler, void *user_data);
+int tf_uv_light_v2_register_uva_callback(TF_UVLightV2 *uv_light_v2, TF_UVLightV2_UVAHandler handler, void *user_data);
 
 
 /**
@@ -420,7 +420,7 @@ int tf_uv_light_v2_register_uva_callback(TF_UVLightV2 *uv_light_v2, TF_UVLightV2
  * 
  * The parameter is the same as {@link tf_uv_light_v2_get_uvb}.
  */
-int tf_uv_light_v2_register_uvb_callback(TF_UVLightV2 *uv_light_v2, TF_UVLightV2UVBHandler handler, void *user_data);
+int tf_uv_light_v2_register_uvb_callback(TF_UVLightV2 *uv_light_v2, TF_UVLightV2_UVBHandler handler, void *user_data);
 
 
 /**
@@ -436,7 +436,7 @@ int tf_uv_light_v2_register_uvb_callback(TF_UVLightV2 *uv_light_v2, TF_UVLightV2
  * 
  * The parameter is the same as {@link tf_uv_light_v2_get_uvi}.
  */
-int tf_uv_light_v2_register_uvi_callback(TF_UVLightV2 *uv_light_v2, TF_UVLightV2UVIHandler handler, void *user_data);
+int tf_uv_light_v2_register_uvi_callback(TF_UVLightV2 *uv_light_v2, TF_UVLightV2_UVIHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

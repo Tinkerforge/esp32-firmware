@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,9 +27,9 @@ extern "C" {
 struct TF_ColorV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_ColorV2ColorHandler)(struct TF_ColorV2 *device, uint16_t r, uint16_t g, uint16_t b, uint16_t c, void *user_data);
-typedef void (*TF_ColorV2IlluminanceHandler)(struct TF_ColorV2 *device, uint32_t illuminance, void *user_data);
-typedef void (*TF_ColorV2ColorTemperatureHandler)(struct TF_ColorV2 *device, uint16_t color_temperature, void *user_data);
+typedef void (*TF_ColorV2_ColorHandler)(struct TF_ColorV2 *device, uint16_t r, uint16_t g, uint16_t b, uint16_t c, void *user_data);
+typedef void (*TF_ColorV2_IlluminanceHandler)(struct TF_ColorV2 *device, uint32_t illuminance, void *user_data);
+typedef void (*TF_ColorV2_ColorTemperatureHandler)(struct TF_ColorV2 *device, uint16_t color_temperature, void *user_data);
 
 #endif
 /**
@@ -40,13 +40,13 @@ typedef void (*TF_ColorV2ColorTemperatureHandler)(struct TF_ColorV2 *device, uin
 typedef struct TF_ColorV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_ColorV2ColorHandler color_handler;
+    TF_ColorV2_ColorHandler color_handler;
     void *color_user_data;
 
-    TF_ColorV2IlluminanceHandler illuminance_handler;
+    TF_ColorV2_IlluminanceHandler illuminance_handler;
     void *illuminance_user_data;
 
-    TF_ColorV2ColorTemperatureHandler color_temperature_handler;
+    TF_ColorV2_ColorTemperatureHandler color_temperature_handler;
     void *color_temperature_user_data;
 
 #endif
@@ -419,7 +419,7 @@ int tf_color_v2_set_response_expected(TF_ColorV2 *color_v2, uint8_t function_id,
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_color_v2_set_response_expected_all(TF_ColorV2 *color_v2, bool response_expected);
+int tf_color_v2_set_response_expected_all(TF_ColorV2 *color_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_ColorV2
@@ -436,7 +436,7 @@ void tf_color_v2_set_response_expected_all(TF_ColorV2 *color_v2, bool response_e
  * The {@link tf_color_v2_register_color_callback} callback is only triggered if the color has changed since the
  * last triggering.
  */
-int tf_color_v2_register_color_callback(TF_ColorV2 *color_v2, TF_ColorV2ColorHandler handler, void *user_data);
+int tf_color_v2_register_color_callback(TF_ColorV2 *color_v2, TF_ColorV2_ColorHandler handler, void *user_data);
 
 
 /**
@@ -452,7 +452,7 @@ int tf_color_v2_register_color_callback(TF_ColorV2 *color_v2, TF_ColorV2ColorHan
  * 
  * The parameter is the same as {@link tf_color_v2_get_illuminance}.
  */
-int tf_color_v2_register_illuminance_callback(TF_ColorV2 *color_v2, TF_ColorV2IlluminanceHandler handler, void *user_data);
+int tf_color_v2_register_illuminance_callback(TF_ColorV2 *color_v2, TF_ColorV2_IlluminanceHandler handler, void *user_data);
 
 
 /**
@@ -468,7 +468,7 @@ int tf_color_v2_register_illuminance_callback(TF_ColorV2 *color_v2, TF_ColorV2Il
  * 
  * The parameter is the same as {@link tf_color_v2_get_color_temperature}.
  */
-int tf_color_v2_register_color_temperature_callback(TF_ColorV2 *color_v2, TF_ColorV2ColorTemperatureHandler handler, void *user_data);
+int tf_color_v2_register_color_temperature_callback(TF_ColorV2 *color_v2, TF_ColorV2_ColorTemperatureHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,8 +27,8 @@ extern "C" {
 struct TF_ThermalImaging;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_ThermalImagingHighContrastImageLowLevelHandler)(struct TF_ThermalImaging *device, uint16_t image_chunk_offset, uint8_t image_chunk_data[62], void *user_data);
-typedef void (*TF_ThermalImagingTemperatureImageLowLevelHandler)(struct TF_ThermalImaging *device, uint16_t image_chunk_offset, uint16_t image_chunk_data[31], void *user_data);
+typedef void (*TF_ThermalImaging_HighContrastImageLowLevelHandler)(struct TF_ThermalImaging *device, uint16_t image_chunk_offset, uint8_t image_chunk_data[62], void *user_data);
+typedef void (*TF_ThermalImaging_TemperatureImageLowLevelHandler)(struct TF_ThermalImaging *device, uint16_t image_chunk_offset, uint16_t image_chunk_data[31], void *user_data);
 
 #endif
 /**
@@ -39,10 +39,10 @@ typedef void (*TF_ThermalImagingTemperatureImageLowLevelHandler)(struct TF_Therm
 typedef struct TF_ThermalImaging {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_ThermalImagingHighContrastImageLowLevelHandler high_contrast_image_low_level_handler;
+    TF_ThermalImaging_HighContrastImageLowLevelHandler high_contrast_image_low_level_handler;
     void *high_contrast_image_low_level_user_data;
 
-    TF_ThermalImagingTemperatureImageLowLevelHandler temperature_image_low_level_handler;
+    TF_ThermalImaging_TemperatureImageLowLevelHandler temperature_image_low_level_handler;
     void *temperature_image_low_level_user_data;
 
 #endif
@@ -390,7 +390,7 @@ int tf_thermal_imaging_set_response_expected(TF_ThermalImaging *thermal_imaging,
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_thermal_imaging_set_response_expected_all(TF_ThermalImaging *thermal_imaging, bool response_expected);
+int tf_thermal_imaging_set_response_expected_all(TF_ThermalImaging *thermal_imaging, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_ThermalImaging
@@ -410,7 +410,7 @@ void tf_thermal_imaging_set_response_expected_all(TF_ThermalImaging *thermal_ima
  * Each 8-bit value represents one gray-scale image pixel that can directly be
  * shown to a user on a display.
  */
-int tf_thermal_imaging_register_high_contrast_image_low_level_callback(TF_ThermalImaging *thermal_imaging, TF_ThermalImagingHighContrastImageLowLevelHandler handler, void *user_data);
+int tf_thermal_imaging_register_high_contrast_image_low_level_callback(TF_ThermalImaging *thermal_imaging, TF_ThermalImaging_HighContrastImageLowLevelHandler handler, void *user_data);
 
 
 /**
@@ -431,7 +431,7 @@ int tf_thermal_imaging_register_high_contrast_image_low_level_callback(TF_Therma
  * Each 16-bit value represents one temperature measurement in either
  * Kelvin/10 or Kelvin/100 (depending on the resolution set with {@link tf_thermal_imaging_set_resolution}).
  */
-int tf_thermal_imaging_register_temperature_image_low_level_callback(TF_ThermalImaging *thermal_imaging, TF_ThermalImagingTemperatureImageLowLevelHandler handler, void *user_data);
+int tf_thermal_imaging_register_temperature_image_low_level_callback(TF_ThermalImaging *thermal_imaging, TF_ThermalImaging_TemperatureImageLowLevelHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

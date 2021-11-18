@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,12 +27,12 @@ extern "C" {
 struct TF_GPSV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_GPSV2PulsePerSecondHandler)(struct TF_GPSV2 *device, void *user_data);
-typedef void (*TF_GPSV2CoordinatesHandler)(struct TF_GPSV2 *device, uint32_t latitude, char ns, uint32_t longitude, char ew, void *user_data);
-typedef void (*TF_GPSV2StatusHandler)(struct TF_GPSV2 *device, bool has_fix, uint8_t satellites_view, void *user_data);
-typedef void (*TF_GPSV2AltitudeHandler)(struct TF_GPSV2 *device, int32_t altitude, int32_t geoidal_separation, void *user_data);
-typedef void (*TF_GPSV2MotionHandler)(struct TF_GPSV2 *device, uint32_t course, uint32_t speed, void *user_data);
-typedef void (*TF_GPSV2DateTimeHandler)(struct TF_GPSV2 *device, uint32_t date, uint32_t time, void *user_data);
+typedef void (*TF_GPSV2_PulsePerSecondHandler)(struct TF_GPSV2 *device, void *user_data);
+typedef void (*TF_GPSV2_CoordinatesHandler)(struct TF_GPSV2 *device, uint32_t latitude, char ns, uint32_t longitude, char ew, void *user_data);
+typedef void (*TF_GPSV2_StatusHandler)(struct TF_GPSV2 *device, bool has_fix, uint8_t satellites_view, void *user_data);
+typedef void (*TF_GPSV2_AltitudeHandler)(struct TF_GPSV2 *device, int32_t altitude, int32_t geoidal_separation, void *user_data);
+typedef void (*TF_GPSV2_MotionHandler)(struct TF_GPSV2 *device, uint32_t course, uint32_t speed, void *user_data);
+typedef void (*TF_GPSV2_DateTimeHandler)(struct TF_GPSV2 *device, uint32_t date, uint32_t time, void *user_data);
 
 #endif
 /**
@@ -43,22 +43,22 @@ typedef void (*TF_GPSV2DateTimeHandler)(struct TF_GPSV2 *device, uint32_t date, 
 typedef struct TF_GPSV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_GPSV2PulsePerSecondHandler pulse_per_second_handler;
+    TF_GPSV2_PulsePerSecondHandler pulse_per_second_handler;
     void *pulse_per_second_user_data;
 
-    TF_GPSV2CoordinatesHandler coordinates_handler;
+    TF_GPSV2_CoordinatesHandler coordinates_handler;
     void *coordinates_user_data;
 
-    TF_GPSV2StatusHandler status_handler;
+    TF_GPSV2_StatusHandler status_handler;
     void *status_user_data;
 
-    TF_GPSV2AltitudeHandler altitude_handler;
+    TF_GPSV2_AltitudeHandler altitude_handler;
     void *altitude_user_data;
 
-    TF_GPSV2MotionHandler motion_handler;
+    TF_GPSV2_MotionHandler motion_handler;
     void *motion_user_data;
 
-    TF_GPSV2DateTimeHandler date_time_handler;
+    TF_GPSV2_DateTimeHandler date_time_handler;
     void *date_time_user_data;
 
 #endif
@@ -506,7 +506,7 @@ int tf_gps_v2_set_response_expected(TF_GPSV2 *gps_v2, uint8_t function_id, bool 
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_gps_v2_set_response_expected_all(TF_GPSV2 *gps_v2, bool response_expected);
+int tf_gps_v2_set_response_expected_all(TF_GPSV2 *gps_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_GPSV2
@@ -524,7 +524,7 @@ void tf_gps_v2_set_response_expected_all(TF_GPSV2 *gps_v2, bool response_expecte
  * long run this will be very precise. For example a count of
  * 3600 pulses will take exactly 1 hour.
  */
-int tf_gps_v2_register_pulse_per_second_callback(TF_GPSV2 *gps_v2, TF_GPSV2PulsePerSecondHandler handler, void *user_data);
+int tf_gps_v2_register_pulse_per_second_callback(TF_GPSV2 *gps_v2, TF_GPSV2_PulsePerSecondHandler handler, void *user_data);
 
 
 /**
@@ -543,7 +543,7 @@ int tf_gps_v2_register_pulse_per_second_callback(TF_GPSV2 *gps_v2, TF_GPSV2Pulse
  * since the last triggering and if there is currently a fix as indicated by
  * {@link tf_gps_v2_get_status}.
  */
-int tf_gps_v2_register_coordinates_callback(TF_GPSV2 *gps_v2, TF_GPSV2CoordinatesHandler handler, void *user_data);
+int tf_gps_v2_register_coordinates_callback(TF_GPSV2 *gps_v2, TF_GPSV2_CoordinatesHandler handler, void *user_data);
 
 
 /**
@@ -561,7 +561,7 @@ int tf_gps_v2_register_coordinates_callback(TF_GPSV2 *gps_v2, TF_GPSV2Coordinate
  * The {@link tf_gps_v2_register_status_callback} callback is only triggered if the status changed since the
  * last triggering.
  */
-int tf_gps_v2_register_status_callback(TF_GPSV2 *gps_v2, TF_GPSV2StatusHandler handler, void *user_data);
+int tf_gps_v2_register_status_callback(TF_GPSV2 *gps_v2, TF_GPSV2_StatusHandler handler, void *user_data);
 
 
 /**
@@ -580,7 +580,7 @@ int tf_gps_v2_register_status_callback(TF_GPSV2 *gps_v2, TF_GPSV2StatusHandler h
  * last triggering and if there is currently a fix as indicated by
  * {@link tf_gps_v2_get_status}.
  */
-int tf_gps_v2_register_altitude_callback(TF_GPSV2 *gps_v2, TF_GPSV2AltitudeHandler handler, void *user_data);
+int tf_gps_v2_register_altitude_callback(TF_GPSV2 *gps_v2, TF_GPSV2_AltitudeHandler handler, void *user_data);
 
 
 /**
@@ -599,7 +599,7 @@ int tf_gps_v2_register_altitude_callback(TF_GPSV2 *gps_v2, TF_GPSV2AltitudeHandl
  * last triggering and if there is currently a fix as indicated by
  * {@link tf_gps_v2_get_status}.
  */
-int tf_gps_v2_register_motion_callback(TF_GPSV2 *gps_v2, TF_GPSV2MotionHandler handler, void *user_data);
+int tf_gps_v2_register_motion_callback(TF_GPSV2 *gps_v2, TF_GPSV2_MotionHandler handler, void *user_data);
 
 
 /**
@@ -617,7 +617,7 @@ int tf_gps_v2_register_motion_callback(TF_GPSV2 *gps_v2, TF_GPSV2MotionHandler h
  * The {@link tf_gps_v2_register_date_time_callback} callback is only triggered if the date or time changed
  * since the last triggering.
  */
-int tf_gps_v2_register_date_time_callback(TF_GPSV2 *gps_v2, TF_GPSV2DateTimeHandler handler, void *user_data);
+int tf_gps_v2_register_date_time_callback(TF_GPSV2 *gps_v2, TF_GPSV2_DateTimeHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

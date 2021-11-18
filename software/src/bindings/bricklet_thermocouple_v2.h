@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,8 +27,8 @@ extern "C" {
 struct TF_ThermocoupleV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_ThermocoupleV2TemperatureHandler)(struct TF_ThermocoupleV2 *device, int32_t temperature, void *user_data);
-typedef void (*TF_ThermocoupleV2ErrorStateHandler)(struct TF_ThermocoupleV2 *device, bool over_under, bool open_circuit, void *user_data);
+typedef void (*TF_ThermocoupleV2_TemperatureHandler)(struct TF_ThermocoupleV2 *device, int32_t temperature, void *user_data);
+typedef void (*TF_ThermocoupleV2_ErrorStateHandler)(struct TF_ThermocoupleV2 *device, bool over_under, bool open_circuit, void *user_data);
 
 #endif
 /**
@@ -39,10 +39,10 @@ typedef void (*TF_ThermocoupleV2ErrorStateHandler)(struct TF_ThermocoupleV2 *dev
 typedef struct TF_ThermocoupleV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_ThermocoupleV2TemperatureHandler temperature_handler;
+    TF_ThermocoupleV2_TemperatureHandler temperature_handler;
     void *temperature_user_data;
 
-    TF_ThermocoupleV2ErrorStateHandler error_state_handler;
+    TF_ThermocoupleV2_ErrorStateHandler error_state_handler;
     void *error_state_user_data;
 
 #endif
@@ -415,7 +415,7 @@ int tf_thermocouple_v2_set_response_expected(TF_ThermocoupleV2 *thermocouple_v2,
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_thermocouple_v2_set_response_expected_all(TF_ThermocoupleV2 *thermocouple_v2, bool response_expected);
+int tf_thermocouple_v2_set_response_expected_all(TF_ThermocoupleV2 *thermocouple_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_ThermocoupleV2
@@ -430,7 +430,7 @@ void tf_thermocouple_v2_set_response_expected_all(TF_ThermocoupleV2 *thermocoupl
  * 
  * The parameter is the same as {@link tf_thermocouple_v2_get_temperature}.
  */
-int tf_thermocouple_v2_register_temperature_callback(TF_ThermocoupleV2 *thermocouple_v2, TF_ThermocoupleV2TemperatureHandler handler, void *user_data);
+int tf_thermocouple_v2_register_temperature_callback(TF_ThermocoupleV2 *thermocouple_v2, TF_ThermocoupleV2_TemperatureHandler handler, void *user_data);
 
 
 /**
@@ -444,7 +444,7 @@ int tf_thermocouple_v2_register_temperature_callback(TF_ThermocoupleV2 *thermoco
  * This Callback is triggered every time the error state changes
  * (see {@link tf_thermocouple_v2_get_error_state}).
  */
-int tf_thermocouple_v2_register_error_state_callback(TF_ThermocoupleV2 *thermocouple_v2, TF_ThermocoupleV2ErrorStateHandler handler, void *user_data);
+int tf_thermocouple_v2_register_error_state_callback(TF_ThermocoupleV2 *thermocouple_v2, TF_ThermocoupleV2_ErrorStateHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

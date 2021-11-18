@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,11 +27,11 @@ extern "C" {
 struct TF_LCD128x64;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_LCD128x64TouchPositionHandler)(struct TF_LCD128x64 *device, uint16_t pressure, uint16_t x, uint16_t y, uint32_t age, void *user_data);
-typedef void (*TF_LCD128x64TouchGestureHandler)(struct TF_LCD128x64 *device, uint8_t gesture, uint32_t duration, uint16_t pressure_max, uint16_t x_start, uint16_t y_start, uint16_t x_end, uint16_t y_end, uint32_t age, void *user_data);
-typedef void (*TF_LCD128x64GUIButtonPressedHandler)(struct TF_LCD128x64 *device, uint8_t index, bool pressed, void *user_data);
-typedef void (*TF_LCD128x64GUISliderValueHandler)(struct TF_LCD128x64 *device, uint8_t index, uint8_t value, void *user_data);
-typedef void (*TF_LCD128x64GUITabSelectedHandler)(struct TF_LCD128x64 *device, int8_t index, void *user_data);
+typedef void (*TF_LCD128x64_TouchPositionHandler)(struct TF_LCD128x64 *device, uint16_t pressure, uint16_t x, uint16_t y, uint32_t age, void *user_data);
+typedef void (*TF_LCD128x64_TouchGestureHandler)(struct TF_LCD128x64 *device, uint8_t gesture, uint32_t duration, uint16_t pressure_max, uint16_t x_start, uint16_t y_start, uint16_t x_end, uint16_t y_end, uint32_t age, void *user_data);
+typedef void (*TF_LCD128x64_GUIButtonPressedHandler)(struct TF_LCD128x64 *device, uint8_t index, bool pressed, void *user_data);
+typedef void (*TF_LCD128x64_GUISliderValueHandler)(struct TF_LCD128x64 *device, uint8_t index, uint8_t value, void *user_data);
+typedef void (*TF_LCD128x64_GUITabSelectedHandler)(struct TF_LCD128x64 *device, int8_t index, void *user_data);
 
 #endif
 /**
@@ -42,19 +42,19 @@ typedef void (*TF_LCD128x64GUITabSelectedHandler)(struct TF_LCD128x64 *device, i
 typedef struct TF_LCD128x64 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_LCD128x64TouchPositionHandler touch_position_handler;
+    TF_LCD128x64_TouchPositionHandler touch_position_handler;
     void *touch_position_user_data;
 
-    TF_LCD128x64TouchGestureHandler touch_gesture_handler;
+    TF_LCD128x64_TouchGestureHandler touch_gesture_handler;
     void *touch_gesture_user_data;
 
-    TF_LCD128x64GUIButtonPressedHandler gui_button_pressed_handler;
+    TF_LCD128x64_GUIButtonPressedHandler gui_button_pressed_handler;
     void *gui_button_pressed_user_data;
 
-    TF_LCD128x64GUISliderValueHandler gui_slider_value_handler;
+    TF_LCD128x64_GUISliderValueHandler gui_slider_value_handler;
     void *gui_slider_value_user_data;
 
-    TF_LCD128x64GUITabSelectedHandler gui_tab_selected_handler;
+    TF_LCD128x64_GUITabSelectedHandler gui_tab_selected_handler;
     void *gui_tab_selected_user_data;
 
 #endif
@@ -677,7 +677,7 @@ int tf_lcd_128x64_set_response_expected(TF_LCD128x64 *lcd_128x64, uint8_t functi
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_lcd_128x64_set_response_expected_all(TF_LCD128x64 *lcd_128x64, bool response_expected);
+int tf_lcd_128x64_set_response_expected_all(TF_LCD128x64 *lcd_128x64, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_LCD128x64
@@ -691,7 +691,7 @@ void tf_lcd_128x64_set_response_expected_all(TF_LCD128x64 *lcd_128x64, bool resp
  * {@link tf_lcd_128x64_set_touch_position_callback_configuration}. The parameters are the
  * same as for {@link tf_lcd_128x64_get_touch_position}.
  */
-int tf_lcd_128x64_register_touch_position_callback(TF_LCD128x64 *lcd_128x64, TF_LCD128x64TouchPositionHandler handler, void *user_data);
+int tf_lcd_128x64_register_touch_position_callback(TF_LCD128x64 *lcd_128x64, TF_LCD128x64_TouchPositionHandler handler, void *user_data);
 
 
 /**
@@ -706,7 +706,7 @@ int tf_lcd_128x64_register_touch_position_callback(TF_LCD128x64 *lcd_128x64, TF_
  * {@link tf_lcd_128x64_set_touch_gesture_callback_configuration}. The parameters are the
  * same as for {@link tf_lcd_128x64_get_touch_gesture}.
  */
-int tf_lcd_128x64_register_touch_gesture_callback(TF_LCD128x64 *lcd_128x64, TF_LCD128x64TouchGestureHandler handler, void *user_data);
+int tf_lcd_128x64_register_touch_gesture_callback(TF_LCD128x64 *lcd_128x64, TF_LCD128x64_TouchGestureHandler handler, void *user_data);
 
 
 /**
@@ -723,7 +723,7 @@ int tf_lcd_128x64_register_touch_gesture_callback(TF_LCD128x64 *lcd_128x64, TF_L
  * 
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
-int tf_lcd_128x64_register_gui_button_pressed_callback(TF_LCD128x64 *lcd_128x64, TF_LCD128x64GUIButtonPressedHandler handler, void *user_data);
+int tf_lcd_128x64_register_gui_button_pressed_callback(TF_LCD128x64 *lcd_128x64, TF_LCD128x64_GUIButtonPressedHandler handler, void *user_data);
 
 
 /**
@@ -740,7 +740,7 @@ int tf_lcd_128x64_register_gui_button_pressed_callback(TF_LCD128x64 *lcd_128x64,
  * 
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
-int tf_lcd_128x64_register_gui_slider_value_callback(TF_LCD128x64 *lcd_128x64, TF_LCD128x64GUISliderValueHandler handler, void *user_data);
+int tf_lcd_128x64_register_gui_slider_value_callback(TF_LCD128x64 *lcd_128x64, TF_LCD128x64_GUISliderValueHandler handler, void *user_data);
 
 
 /**
@@ -757,7 +757,7 @@ int tf_lcd_128x64_register_gui_slider_value_callback(TF_LCD128x64 *lcd_128x64, T
  * 
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
-int tf_lcd_128x64_register_gui_tab_selected_callback(TF_LCD128x64 *lcd_128x64, TF_LCD128x64GUITabSelectedHandler handler, void *user_data);
+int tf_lcd_128x64_register_gui_tab_selected_callback(TF_LCD128x64 *lcd_128x64, TF_LCD128x64_GUITabSelectedHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

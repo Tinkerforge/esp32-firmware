@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,16 +27,15 @@ static bool tf_thermocouple_v2_callback_handler(void *dev, uint8_t fid, TF_Packe
     (void)payload;
 
     switch (fid) {
-
         case TF_THERMOCOUPLE_V2_CALLBACK_TEMPERATURE: {
-            TF_ThermocoupleV2TemperatureHandler fn = thermocouple_v2->temperature_handler;
+            TF_ThermocoupleV2_TemperatureHandler fn = thermocouple_v2->temperature_handler;
             void *user_data = thermocouple_v2->temperature_user_data;
             if (fn == NULL) {
                 return false;
             }
 
             int32_t temperature = tf_packet_buffer_read_int32_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal);
             hal_common->locked = true;
             fn(thermocouple_v2, temperature, user_data);
             hal_common->locked = false;
@@ -44,7 +43,7 @@ static bool tf_thermocouple_v2_callback_handler(void *dev, uint8_t fid, TF_Packe
         }
 
         case TF_THERMOCOUPLE_V2_CALLBACK_ERROR_STATE: {
-            TF_ThermocoupleV2ErrorStateHandler fn = thermocouple_v2->error_state_handler;
+            TF_ThermocoupleV2_ErrorStateHandler fn = thermocouple_v2->error_state_handler;
             void *user_data = thermocouple_v2->error_state_user_data;
             if (fn == NULL) {
                 return false;
@@ -52,12 +51,13 @@ static bool tf_thermocouple_v2_callback_handler(void *dev, uint8_t fid, TF_Packe
 
             bool over_under = tf_packet_buffer_read_bool(payload);
             bool open_circuit = tf_packet_buffer_read_bool(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal);
             hal_common->locked = true;
             fn(thermocouple_v2, over_under, open_circuit, user_data);
             hal_common->locked = false;
             break;
         }
+
         default:
             return false;
     }
@@ -214,8 +214,14 @@ int tf_thermocouple_v2_set_response_expected(TF_ThermocoupleV2 *thermocouple_v2,
     return TF_E_OK;
 }
 
-void tf_thermocouple_v2_set_response_expected_all(TF_ThermocoupleV2 *thermocouple_v2, bool response_expected) {
+int tf_thermocouple_v2_set_response_expected_all(TF_ThermocoupleV2 *thermocouple_v2, bool response_expected) {
+    if (thermocouple_v2 == NULL) {
+        return TF_E_NULL;
+    }
+
     memset(thermocouple_v2->response_expected, response_expected ? 0xFF : 0, 1);
+
+    return TF_E_OK;
 }
 
 int tf_thermocouple_v2_get_temperature(TF_ThermocoupleV2 *thermocouple_v2, int32_t *ret_temperature) {
@@ -223,14 +229,14 @@ int tf_thermocouple_v2_get_temperature(TF_ThermocoupleV2 *thermocouple_v2, int32
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(thermocouple_v2->tfp, TF_THERMOCOUPLE_V2_FUNCTION_GET_TEMPERATURE, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(thermocouple_v2->tfp, response_expected, deadline, &error_code);
@@ -262,7 +268,7 @@ int tf_thermocouple_v2_set_temperature_callback_configuration(TF_ThermocoupleV2 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -278,7 +284,7 @@ int tf_thermocouple_v2_set_temperature_callback_configuration(TF_ThermocoupleV2 
     min = tf_leconvert_int32_to(min); memcpy(buf + 6, &min, 4);
     max = tf_leconvert_int32_to(max); memcpy(buf + 10, &max, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(thermocouple_v2->tfp, response_expected, deadline, &error_code);
@@ -305,14 +311,14 @@ int tf_thermocouple_v2_get_temperature_callback_configuration(TF_ThermocoupleV2 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(thermocouple_v2->tfp, TF_THERMOCOUPLE_V2_FUNCTION_GET_TEMPERATURE_CALLBACK_CONFIGURATION, 0, 14, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(thermocouple_v2->tfp, response_expected, deadline, &error_code);
@@ -348,7 +354,7 @@ int tf_thermocouple_v2_set_configuration(TF_ThermocoupleV2 *thermocouple_v2, uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -362,7 +368,7 @@ int tf_thermocouple_v2_set_configuration(TF_ThermocoupleV2 *thermocouple_v2, uin
     buf[1] = (uint8_t)thermocouple_type;
     buf[2] = (uint8_t)filter;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(thermocouple_v2->tfp, response_expected, deadline, &error_code);
@@ -389,14 +395,14 @@ int tf_thermocouple_v2_get_configuration(TF_ThermocoupleV2 *thermocouple_v2, uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(thermocouple_v2->tfp, TF_THERMOCOUPLE_V2_FUNCTION_GET_CONFIGURATION, 0, 3, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(thermocouple_v2->tfp, response_expected, deadline, &error_code);
@@ -430,14 +436,14 @@ int tf_thermocouple_v2_get_error_state(TF_ThermocoupleV2 *thermocouple_v2, bool 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(thermocouple_v2->tfp, TF_THERMOCOUPLE_V2_FUNCTION_GET_ERROR_STATE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(thermocouple_v2->tfp, response_expected, deadline, &error_code);
@@ -470,14 +476,14 @@ int tf_thermocouple_v2_get_spitfp_error_count(TF_ThermocoupleV2 *thermocouple_v2
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(thermocouple_v2->tfp, TF_THERMOCOUPLE_V2_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(thermocouple_v2->tfp, response_expected, deadline, &error_code);
@@ -512,7 +518,7 @@ int tf_thermocouple_v2_set_bootloader_mode(TF_ThermocoupleV2 *thermocouple_v2, u
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -523,7 +529,7 @@ int tf_thermocouple_v2_set_bootloader_mode(TF_ThermocoupleV2 *thermocouple_v2, u
 
     buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(thermocouple_v2->tfp, response_expected, deadline, &error_code);
@@ -555,14 +561,14 @@ int tf_thermocouple_v2_get_bootloader_mode(TF_ThermocoupleV2 *thermocouple_v2, u
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(thermocouple_v2->tfp, TF_THERMOCOUPLE_V2_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(thermocouple_v2->tfp, response_expected, deadline, &error_code);
@@ -594,7 +600,7 @@ int tf_thermocouple_v2_set_write_firmware_pointer(TF_ThermocoupleV2 *thermocoupl
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -606,7 +612,7 @@ int tf_thermocouple_v2_set_write_firmware_pointer(TF_ThermocoupleV2 *thermocoupl
 
     pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(thermocouple_v2->tfp, response_expected, deadline, &error_code);
@@ -633,7 +639,7 @@ int tf_thermocouple_v2_write_firmware(TF_ThermocoupleV2 *thermocouple_v2, const 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -644,7 +650,7 @@ int tf_thermocouple_v2_write_firmware(TF_ThermocoupleV2 *thermocouple_v2, const 
 
     memcpy(buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(thermocouple_v2->tfp, response_expected, deadline, &error_code);
@@ -676,7 +682,7 @@ int tf_thermocouple_v2_set_status_led_config(TF_ThermocoupleV2 *thermocouple_v2,
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -688,7 +694,7 @@ int tf_thermocouple_v2_set_status_led_config(TF_ThermocoupleV2 *thermocouple_v2,
 
     buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(thermocouple_v2->tfp, response_expected, deadline, &error_code);
@@ -715,14 +721,14 @@ int tf_thermocouple_v2_get_status_led_config(TF_ThermocoupleV2 *thermocouple_v2,
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(thermocouple_v2->tfp, TF_THERMOCOUPLE_V2_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(thermocouple_v2->tfp, response_expected, deadline, &error_code);
@@ -754,14 +760,14 @@ int tf_thermocouple_v2_get_chip_temperature(TF_ThermocoupleV2 *thermocouple_v2, 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(thermocouple_v2->tfp, TF_THERMOCOUPLE_V2_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(thermocouple_v2->tfp, response_expected, deadline, &error_code);
@@ -793,7 +799,7 @@ int tf_thermocouple_v2_reset(TF_ThermocoupleV2 *thermocouple_v2) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -801,7 +807,7 @@ int tf_thermocouple_v2_reset(TF_ThermocoupleV2 *thermocouple_v2) {
     tf_thermocouple_v2_get_response_expected(thermocouple_v2, TF_THERMOCOUPLE_V2_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(thermocouple_v2->tfp, TF_THERMOCOUPLE_V2_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(thermocouple_v2->tfp, response_expected, deadline, &error_code);
@@ -828,7 +834,7 @@ int tf_thermocouple_v2_write_uid(TF_ThermocoupleV2 *thermocouple_v2, uint32_t ui
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -840,7 +846,7 @@ int tf_thermocouple_v2_write_uid(TF_ThermocoupleV2 *thermocouple_v2, uint32_t ui
 
     uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(thermocouple_v2->tfp, response_expected, deadline, &error_code);
@@ -867,14 +873,14 @@ int tf_thermocouple_v2_read_uid(TF_ThermocoupleV2 *thermocouple_v2, uint32_t *re
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(thermocouple_v2->tfp, TF_THERMOCOUPLE_V2_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(thermocouple_v2->tfp, response_expected, deadline, &error_code);
@@ -906,7 +912,7 @@ int tf_thermocouple_v2_get_identity(TF_ThermocoupleV2 *thermocouple_v2, char ret
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -914,7 +920,7 @@ int tf_thermocouple_v2_get_identity(TF_ThermocoupleV2 *thermocouple_v2, char ret
     tf_tfp_prepare_send(thermocouple_v2->tfp, TF_THERMOCOUPLE_V2_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)thermocouple_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)thermocouple_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)thermocouple_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(thermocouple_v2->tfp, response_expected, deadline, &error_code);
@@ -936,7 +942,7 @@ int tf_thermocouple_v2_get_identity(TF_ThermocoupleV2 *thermocouple_v2, char ret
         if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&thermocouple_v2->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&thermocouple_v2->tfp->spitfp->recv_buf, 3); }
         if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&thermocouple_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&thermocouple_v2->tfp->spitfp->recv_buf, 2); }
         if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL*)thermocouple_v2->tfp->hal, thermocouple_v2->tfp->spitfp->port_id);
+            *ret_position = tf_hal_get_port_name((TF_HAL *)thermocouple_v2->tfp->hal, thermocouple_v2->tfp->spitfp->port_id);
         }
         if (ret_connected_uid != NULL) {
             memcpy(ret_connected_uid, tmp_connected_uid, 8);
@@ -953,7 +959,7 @@ int tf_thermocouple_v2_get_identity(TF_ThermocoupleV2 *thermocouple_v2, char ret
     return tf_tfp_get_error(error_code);
 }
 #if TF_IMPLEMENT_CALLBACKS != 0
-int tf_thermocouple_v2_register_temperature_callback(TF_ThermocoupleV2 *thermocouple_v2, TF_ThermocoupleV2TemperatureHandler handler, void *user_data) {
+int tf_thermocouple_v2_register_temperature_callback(TF_ThermocoupleV2 *thermocouple_v2, TF_ThermocoupleV2_TemperatureHandler handler, void *user_data) {
     if (thermocouple_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -972,7 +978,7 @@ int tf_thermocouple_v2_register_temperature_callback(TF_ThermocoupleV2 *thermoco
 }
 
 
-int tf_thermocouple_v2_register_error_state_callback(TF_ThermocoupleV2 *thermocouple_v2, TF_ThermocoupleV2ErrorStateHandler handler, void *user_data) {
+int tf_thermocouple_v2_register_error_state_callback(TF_ThermocoupleV2 *thermocouple_v2, TF_ThermocoupleV2_ErrorStateHandler handler, void *user_data) {
     if (thermocouple_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -995,7 +1001,7 @@ int tf_thermocouple_v2_callback_tick(TF_ThermocoupleV2 *thermocouple_v2, uint32_
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(thermocouple_v2->tfp, tf_hal_current_time_us((TF_HAL*)thermocouple_v2->tfp->hal) + timeout_us);
+    return tf_tfp_callback_tick(thermocouple_v2->tfp, tf_hal_current_time_us((TF_HAL *)thermocouple_v2->tfp->hal) + timeout_us);
 }
 
 #ifdef __cplusplus

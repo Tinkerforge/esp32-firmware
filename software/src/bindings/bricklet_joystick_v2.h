@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,8 +27,8 @@ extern "C" {
 struct TF_JoystickV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_JoystickV2PositionHandler)(struct TF_JoystickV2 *device, int16_t x, int16_t y, void *user_data);
-typedef void (*TF_JoystickV2PressedHandler)(struct TF_JoystickV2 *device, bool pressed, void *user_data);
+typedef void (*TF_JoystickV2_PositionHandler)(struct TF_JoystickV2 *device, int16_t x, int16_t y, void *user_data);
+typedef void (*TF_JoystickV2_PressedHandler)(struct TF_JoystickV2 *device, bool pressed, void *user_data);
 
 #endif
 /**
@@ -39,10 +39,10 @@ typedef void (*TF_JoystickV2PressedHandler)(struct TF_JoystickV2 *device, bool p
 typedef struct TF_JoystickV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_JoystickV2PositionHandler position_handler;
+    TF_JoystickV2_PositionHandler position_handler;
     void *position_user_data;
 
-    TF_JoystickV2PressedHandler pressed_handler;
+    TF_JoystickV2_PressedHandler pressed_handler;
     void *pressed_user_data;
 
 #endif
@@ -310,7 +310,7 @@ int tf_joystick_v2_set_response_expected(TF_JoystickV2 *joystick_v2, uint8_t fun
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_joystick_v2_set_response_expected_all(TF_JoystickV2 *joystick_v2, bool response_expected);
+int tf_joystick_v2_set_response_expected_all(TF_JoystickV2 *joystick_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_JoystickV2
@@ -325,7 +325,7 @@ void tf_joystick_v2_set_response_expected_all(TF_JoystickV2 *joystick_v2, bool r
  * 
  * The parameters are the same as with {@link tf_joystick_v2_get_position}.
  */
-int tf_joystick_v2_register_position_callback(TF_JoystickV2 *joystick_v2, TF_JoystickV2PositionHandler handler, void *user_data);
+int tf_joystick_v2_register_position_callback(TF_JoystickV2 *joystick_v2, TF_JoystickV2_PositionHandler handler, void *user_data);
 
 
 /**
@@ -341,7 +341,7 @@ int tf_joystick_v2_register_position_callback(TF_JoystickV2 *joystick_v2, TF_Joy
  * 
  * The parameters are the same as with {@link tf_joystick_v2_is_pressed}.
  */
-int tf_joystick_v2_register_pressed_callback(TF_JoystickV2 *joystick_v2, TF_JoystickV2PressedHandler handler, void *user_data);
+int tf_joystick_v2_register_pressed_callback(TF_JoystickV2 *joystick_v2, TF_JoystickV2_PressedHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

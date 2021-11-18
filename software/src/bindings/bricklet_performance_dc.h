@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,10 +27,10 @@ extern "C" {
 struct TF_PerformanceDC;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_PerformanceDCEmergencyShutdownHandler)(struct TF_PerformanceDC *device, void *user_data);
-typedef void (*TF_PerformanceDCVelocityReachedHandler)(struct TF_PerformanceDC *device, int16_t velocity, void *user_data);
-typedef void (*TF_PerformanceDCCurrentVelocityHandler)(struct TF_PerformanceDC *device, int16_t velocity, void *user_data);
-typedef void (*TF_PerformanceDCGPIOStateHandler)(struct TF_PerformanceDC *device, bool gpio_state[2], void *user_data);
+typedef void (*TF_PerformanceDC_EmergencyShutdownHandler)(struct TF_PerformanceDC *device, void *user_data);
+typedef void (*TF_PerformanceDC_VelocityReachedHandler)(struct TF_PerformanceDC *device, int16_t velocity, void *user_data);
+typedef void (*TF_PerformanceDC_CurrentVelocityHandler)(struct TF_PerformanceDC *device, int16_t velocity, void *user_data);
+typedef void (*TF_PerformanceDC_GPIOStateHandler)(struct TF_PerformanceDC *device, bool gpio_state[2], void *user_data);
 
 #endif
 /**
@@ -41,16 +41,16 @@ typedef void (*TF_PerformanceDCGPIOStateHandler)(struct TF_PerformanceDC *device
 typedef struct TF_PerformanceDC {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_PerformanceDCEmergencyShutdownHandler emergency_shutdown_handler;
+    TF_PerformanceDC_EmergencyShutdownHandler emergency_shutdown_handler;
     void *emergency_shutdown_user_data;
 
-    TF_PerformanceDCVelocityReachedHandler velocity_reached_handler;
+    TF_PerformanceDC_VelocityReachedHandler velocity_reached_handler;
     void *velocity_reached_user_data;
 
-    TF_PerformanceDCCurrentVelocityHandler current_velocity_handler;
+    TF_PerformanceDC_CurrentVelocityHandler current_velocity_handler;
     void *current_velocity_user_data;
 
-    TF_PerformanceDCGPIOStateHandler gpio_state_handler;
+    TF_PerformanceDC_GPIOStateHandler gpio_state_handler;
     void *gpio_state_user_data;
 
 #endif
@@ -603,7 +603,7 @@ int tf_performance_dc_set_response_expected(TF_PerformanceDC *performance_dc, ui
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_performance_dc_set_response_expected_all(TF_PerformanceDC *performance_dc, bool response_expected);
+int tf_performance_dc_set_response_expected_all(TF_PerformanceDC *performance_dc, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_PerformanceDC
@@ -622,7 +622,7 @@ void tf_performance_dc_set_response_expected_all(TF_PerformanceDC *performance_d
  * If this callback is triggered, the driver chip gets disabled at the same time.
  * That means, {@link tf_performance_dc_set_enabled} has to be called to drive the motor again.
  */
-int tf_performance_dc_register_emergency_shutdown_callback(TF_PerformanceDC *performance_dc, TF_PerformanceDCEmergencyShutdownHandler handler, void *user_data);
+int tf_performance_dc_register_emergency_shutdown_callback(TF_PerformanceDC *performance_dc, TF_PerformanceDC_EmergencyShutdownHandler handler, void *user_data);
 
 
 /**
@@ -644,7 +644,7 @@ int tf_performance_dc_register_emergency_shutdown_callback(TF_PerformanceDC *per
  *  maximum acceleration of the motor. Otherwise the motor will lag behind the
  *  control value and the callback will be triggered too early.
  */
-int tf_performance_dc_register_velocity_reached_callback(TF_PerformanceDC *performance_dc, TF_PerformanceDCVelocityReachedHandler handler, void *user_data);
+int tf_performance_dc_register_velocity_reached_callback(TF_PerformanceDC *performance_dc, TF_PerformanceDC_VelocityReachedHandler handler, void *user_data);
 
 
 /**
@@ -662,7 +662,7 @@ int tf_performance_dc_register_velocity_reached_callback(TF_PerformanceDC *perfo
  * The {@link tf_performance_dc_register_current_velocity_callback} callback is only triggered after the set period
  * if there is a change in the velocity.
  */
-int tf_performance_dc_register_current_velocity_callback(TF_PerformanceDC *performance_dc, TF_PerformanceDCCurrentVelocityHandler handler, void *user_data);
+int tf_performance_dc_register_current_velocity_callback(TF_PerformanceDC *performance_dc, TF_PerformanceDC_CurrentVelocityHandler handler, void *user_data);
 
 
 /**
@@ -677,7 +677,7 @@ int tf_performance_dc_register_current_velocity_callback(TF_PerformanceDC *perfo
  * 
  * .. versionadded:: 2.0.1$nbsp;(Plugin)
  */
-int tf_performance_dc_register_gpio_state_callback(TF_PerformanceDC *performance_dc, TF_PerformanceDCGPIOStateHandler handler, void *user_data);
+int tf_performance_dc_register_gpio_state_callback(TF_PerformanceDC *performance_dc, TF_PerformanceDC_GPIOStateHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

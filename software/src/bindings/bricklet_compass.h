@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,8 +27,8 @@ extern "C" {
 struct TF_Compass;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_CompassHeadingHandler)(struct TF_Compass *device, int16_t heading, void *user_data);
-typedef void (*TF_CompassMagneticFluxDensityHandler)(struct TF_Compass *device, int32_t x, int32_t y, int32_t z, void *user_data);
+typedef void (*TF_Compass_HeadingHandler)(struct TF_Compass *device, int16_t heading, void *user_data);
+typedef void (*TF_Compass_MagneticFluxDensityHandler)(struct TF_Compass *device, int32_t x, int32_t y, int32_t z, void *user_data);
 
 #endif
 /**
@@ -39,10 +39,10 @@ typedef void (*TF_CompassMagneticFluxDensityHandler)(struct TF_Compass *device, 
 typedef struct TF_Compass {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_CompassHeadingHandler heading_handler;
+    TF_Compass_HeadingHandler heading_handler;
     void *heading_user_data;
 
-    TF_CompassMagneticFluxDensityHandler magnetic_flux_density_handler;
+    TF_Compass_MagneticFluxDensityHandler magnetic_flux_density_handler;
     void *magnetic_flux_density_user_data;
 
 #endif
@@ -370,7 +370,7 @@ int tf_compass_set_response_expected(TF_Compass *compass, uint8_t function_id, b
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_compass_set_response_expected_all(TF_Compass *compass, bool response_expected);
+int tf_compass_set_response_expected_all(TF_Compass *compass, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_Compass
@@ -385,7 +385,7 @@ void tf_compass_set_response_expected_all(TF_Compass *compass, bool response_exp
  * 
  * The parameter is the same as {@link tf_compass_get_heading}.
  */
-int tf_compass_register_heading_callback(TF_Compass *compass, TF_CompassHeadingHandler handler, void *user_data);
+int tf_compass_register_heading_callback(TF_Compass *compass, TF_Compass_HeadingHandler handler, void *user_data);
 
 
 /**
@@ -401,7 +401,7 @@ int tf_compass_register_heading_callback(TF_Compass *compass, TF_CompassHeadingH
  * 
  * The parameters are the same as {@link tf_compass_get_magnetic_flux_density}.
  */
-int tf_compass_register_magnetic_flux_density_callback(TF_Compass *compass, TF_CompassMagneticFluxDensityHandler handler, void *user_data);
+int tf_compass_register_magnetic_flux_density_callback(TF_Compass *compass, TF_Compass_MagneticFluxDensityHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

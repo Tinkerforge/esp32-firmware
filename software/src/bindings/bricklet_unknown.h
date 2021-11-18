@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,7 +27,7 @@ extern "C" {
 struct TF_Unknown;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_UnknownEnumerateHandler)(struct TF_Unknown *device, char uid[8], char connected_uid[8], char position, uint8_t hardware_version[3], uint8_t firmware_version[3], uint16_t device_identifier, uint8_t enumeration_type, void *user_data);
+typedef void (*TF_Unknown_EnumerateHandler)(struct TF_Unknown *device, char uid[8], char connected_uid[8], char position, uint8_t hardware_version[3], uint8_t firmware_version[3], uint16_t device_identifier, uint8_t enumeration_type, void *user_data);
 
 #endif
 /**
@@ -38,7 +38,7 @@ typedef void (*TF_UnknownEnumerateHandler)(struct TF_Unknown *device, char uid[8
 typedef struct TF_Unknown {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_UnknownEnumerateHandler enumerate_handler;
+    TF_Unknown_EnumerateHandler enumerate_handler;
     void *enumerate_user_data;
 
 #endif
@@ -291,7 +291,7 @@ int tf_unknown_set_response_expected(TF_Unknown *unknown, uint8_t function_id, b
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_unknown_set_response_expected_all(TF_Unknown *unknown, bool response_expected);
+int tf_unknown_set_response_expected_all(TF_Unknown *unknown, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_Unknown
@@ -331,7 +331,7 @@ void tf_unknown_set_response_expected_all(TF_Unknown *unknown, bool response_exp
  *  It should be possible to implement plug-and-play functionality with this
  *  (as is done in Brick Viewer).
  */
-int tf_unknown_register_enumerate_callback(TF_Unknown *unknown, TF_UnknownEnumerateHandler handler, void *user_data);
+int tf_unknown_register_enumerate_callback(TF_Unknown *unknown, TF_Unknown_EnumerateHandler handler, void *user_data);
 #endif
 /**
  * \ingroup TF_Unknown

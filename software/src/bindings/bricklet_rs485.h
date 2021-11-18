@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,25 +27,25 @@ extern "C" {
 struct TF_RS485;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_RS485ReadLowLevelHandler)(struct TF_RS485 *device, uint16_t message_length, uint16_t message_chunk_offset, char message_chunk_data[60], void *user_data);
-typedef void (*TF_RS485ErrorCountHandler)(struct TF_RS485 *device, uint32_t overrun_error_count, uint32_t parity_error_count, void *user_data);
-typedef void (*TF_RS485ModbusSlaveReadCoilsRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t count, void *user_data);
-typedef void (*TF_RS485ModbusMasterReadCoilsResponseLowLevelHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t coils_length, uint16_t coils_chunk_offset, bool coils_chunk_data[464], void *user_data);
-typedef void (*TF_RS485ModbusSlaveReadHoldingRegistersRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t count, void *user_data);
-typedef void (*TF_RS485ModbusMasterReadHoldingRegistersResponseLowLevelHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t holding_registers_length, uint16_t holding_registers_chunk_offset, uint16_t holding_registers_chunk_data[29], void *user_data);
-typedef void (*TF_RS485ModbusSlaveWriteSingleCoilRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t coil_address, bool coil_value, void *user_data);
-typedef void (*TF_RS485ModbusMasterWriteSingleCoilResponseHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, void *user_data);
-typedef void (*TF_RS485ModbusSlaveWriteSingleRegisterRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t register_address, uint16_t register_value, void *user_data);
-typedef void (*TF_RS485ModbusMasterWriteSingleRegisterResponseHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, void *user_data);
-typedef void (*TF_RS485ModbusSlaveWriteMultipleCoilsRequestLowLevelHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t coils_length, uint16_t coils_chunk_offset, bool coils_chunk_data[440], void *user_data);
-typedef void (*TF_RS485ModbusMasterWriteMultipleCoilsResponseHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, void *user_data);
-typedef void (*TF_RS485ModbusSlaveWriteMultipleRegistersRequestLowLevelHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t registers_length, uint16_t registers_chunk_offset, uint16_t registers_chunk_data[27], void *user_data);
-typedef void (*TF_RS485ModbusMasterWriteMultipleRegistersResponseHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, void *user_data);
-typedef void (*TF_RS485ModbusSlaveReadDiscreteInputsRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t count, void *user_data);
-typedef void (*TF_RS485ModbusMasterReadDiscreteInputsResponseLowLevelHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t discrete_inputs_length, uint16_t discrete_inputs_chunk_offset, bool discrete_inputs_chunk_data[464], void *user_data);
-typedef void (*TF_RS485ModbusSlaveReadInputRegistersRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t count, void *user_data);
-typedef void (*TF_RS485ModbusMasterReadInputRegistersResponseLowLevelHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t input_registers_length, uint16_t input_registers_chunk_offset, uint16_t input_registers_chunk_data[29], void *user_data);
-typedef void (*TF_RS485FrameReadableHandler)(struct TF_RS485 *device, uint16_t frame_count, void *user_data);
+typedef void (*TF_RS485_ReadLowLevelHandler)(struct TF_RS485 *device, uint16_t message_length, uint16_t message_chunk_offset, char message_chunk_data[60], void *user_data);
+typedef void (*TF_RS485_ErrorCountHandler)(struct TF_RS485 *device, uint32_t overrun_error_count, uint32_t parity_error_count, void *user_data);
+typedef void (*TF_RS485_ModbusSlaveReadCoilsRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t count, void *user_data);
+typedef void (*TF_RS485_ModbusMasterReadCoilsResponseLowLevelHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t coils_length, uint16_t coils_chunk_offset, bool coils_chunk_data[464], void *user_data);
+typedef void (*TF_RS485_ModbusSlaveReadHoldingRegistersRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t count, void *user_data);
+typedef void (*TF_RS485_ModbusMasterReadHoldingRegistersResponseLowLevelHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t holding_registers_length, uint16_t holding_registers_chunk_offset, uint16_t holding_registers_chunk_data[29], void *user_data);
+typedef void (*TF_RS485_ModbusSlaveWriteSingleCoilRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t coil_address, bool coil_value, void *user_data);
+typedef void (*TF_RS485_ModbusMasterWriteSingleCoilResponseHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, void *user_data);
+typedef void (*TF_RS485_ModbusSlaveWriteSingleRegisterRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t register_address, uint16_t register_value, void *user_data);
+typedef void (*TF_RS485_ModbusMasterWriteSingleRegisterResponseHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, void *user_data);
+typedef void (*TF_RS485_ModbusSlaveWriteMultipleCoilsRequestLowLevelHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t coils_length, uint16_t coils_chunk_offset, bool coils_chunk_data[440], void *user_data);
+typedef void (*TF_RS485_ModbusMasterWriteMultipleCoilsResponseHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, void *user_data);
+typedef void (*TF_RS485_ModbusSlaveWriteMultipleRegistersRequestLowLevelHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t registers_length, uint16_t registers_chunk_offset, uint16_t registers_chunk_data[27], void *user_data);
+typedef void (*TF_RS485_ModbusMasterWriteMultipleRegistersResponseHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, void *user_data);
+typedef void (*TF_RS485_ModbusSlaveReadDiscreteInputsRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t count, void *user_data);
+typedef void (*TF_RS485_ModbusMasterReadDiscreteInputsResponseLowLevelHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t discrete_inputs_length, uint16_t discrete_inputs_chunk_offset, bool discrete_inputs_chunk_data[464], void *user_data);
+typedef void (*TF_RS485_ModbusSlaveReadInputRegistersRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t count, void *user_data);
+typedef void (*TF_RS485_ModbusMasterReadInputRegistersResponseLowLevelHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t input_registers_length, uint16_t input_registers_chunk_offset, uint16_t input_registers_chunk_data[29], void *user_data);
+typedef void (*TF_RS485_FrameReadableHandler)(struct TF_RS485 *device, uint16_t frame_count, void *user_data);
 
 #endif
 /**
@@ -56,61 +56,61 @@ typedef void (*TF_RS485FrameReadableHandler)(struct TF_RS485 *device, uint16_t f
 typedef struct TF_RS485 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_RS485ReadLowLevelHandler read_low_level_handler;
+    TF_RS485_ReadLowLevelHandler read_low_level_handler;
     void *read_low_level_user_data;
 
-    TF_RS485ErrorCountHandler error_count_handler;
+    TF_RS485_ErrorCountHandler error_count_handler;
     void *error_count_user_data;
 
-    TF_RS485ModbusSlaveReadCoilsRequestHandler modbus_slave_read_coils_request_handler;
+    TF_RS485_ModbusSlaveReadCoilsRequestHandler modbus_slave_read_coils_request_handler;
     void *modbus_slave_read_coils_request_user_data;
 
-    TF_RS485ModbusMasterReadCoilsResponseLowLevelHandler modbus_master_read_coils_response_low_level_handler;
+    TF_RS485_ModbusMasterReadCoilsResponseLowLevelHandler modbus_master_read_coils_response_low_level_handler;
     void *modbus_master_read_coils_response_low_level_user_data;
 
-    TF_RS485ModbusSlaveReadHoldingRegistersRequestHandler modbus_slave_read_holding_registers_request_handler;
+    TF_RS485_ModbusSlaveReadHoldingRegistersRequestHandler modbus_slave_read_holding_registers_request_handler;
     void *modbus_slave_read_holding_registers_request_user_data;
 
-    TF_RS485ModbusMasterReadHoldingRegistersResponseLowLevelHandler modbus_master_read_holding_registers_response_low_level_handler;
+    TF_RS485_ModbusMasterReadHoldingRegistersResponseLowLevelHandler modbus_master_read_holding_registers_response_low_level_handler;
     void *modbus_master_read_holding_registers_response_low_level_user_data;
 
-    TF_RS485ModbusSlaveWriteSingleCoilRequestHandler modbus_slave_write_single_coil_request_handler;
+    TF_RS485_ModbusSlaveWriteSingleCoilRequestHandler modbus_slave_write_single_coil_request_handler;
     void *modbus_slave_write_single_coil_request_user_data;
 
-    TF_RS485ModbusMasterWriteSingleCoilResponseHandler modbus_master_write_single_coil_response_handler;
+    TF_RS485_ModbusMasterWriteSingleCoilResponseHandler modbus_master_write_single_coil_response_handler;
     void *modbus_master_write_single_coil_response_user_data;
 
-    TF_RS485ModbusSlaveWriteSingleRegisterRequestHandler modbus_slave_write_single_register_request_handler;
+    TF_RS485_ModbusSlaveWriteSingleRegisterRequestHandler modbus_slave_write_single_register_request_handler;
     void *modbus_slave_write_single_register_request_user_data;
 
-    TF_RS485ModbusMasterWriteSingleRegisterResponseHandler modbus_master_write_single_register_response_handler;
+    TF_RS485_ModbusMasterWriteSingleRegisterResponseHandler modbus_master_write_single_register_response_handler;
     void *modbus_master_write_single_register_response_user_data;
 
-    TF_RS485ModbusSlaveWriteMultipleCoilsRequestLowLevelHandler modbus_slave_write_multiple_coils_request_low_level_handler;
+    TF_RS485_ModbusSlaveWriteMultipleCoilsRequestLowLevelHandler modbus_slave_write_multiple_coils_request_low_level_handler;
     void *modbus_slave_write_multiple_coils_request_low_level_user_data;
 
-    TF_RS485ModbusMasterWriteMultipleCoilsResponseHandler modbus_master_write_multiple_coils_response_handler;
+    TF_RS485_ModbusMasterWriteMultipleCoilsResponseHandler modbus_master_write_multiple_coils_response_handler;
     void *modbus_master_write_multiple_coils_response_user_data;
 
-    TF_RS485ModbusSlaveWriteMultipleRegistersRequestLowLevelHandler modbus_slave_write_multiple_registers_request_low_level_handler;
+    TF_RS485_ModbusSlaveWriteMultipleRegistersRequestLowLevelHandler modbus_slave_write_multiple_registers_request_low_level_handler;
     void *modbus_slave_write_multiple_registers_request_low_level_user_data;
 
-    TF_RS485ModbusMasterWriteMultipleRegistersResponseHandler modbus_master_write_multiple_registers_response_handler;
+    TF_RS485_ModbusMasterWriteMultipleRegistersResponseHandler modbus_master_write_multiple_registers_response_handler;
     void *modbus_master_write_multiple_registers_response_user_data;
 
-    TF_RS485ModbusSlaveReadDiscreteInputsRequestHandler modbus_slave_read_discrete_inputs_request_handler;
+    TF_RS485_ModbusSlaveReadDiscreteInputsRequestHandler modbus_slave_read_discrete_inputs_request_handler;
     void *modbus_slave_read_discrete_inputs_request_user_data;
 
-    TF_RS485ModbusMasterReadDiscreteInputsResponseLowLevelHandler modbus_master_read_discrete_inputs_response_low_level_handler;
+    TF_RS485_ModbusMasterReadDiscreteInputsResponseLowLevelHandler modbus_master_read_discrete_inputs_response_low_level_handler;
     void *modbus_master_read_discrete_inputs_response_low_level_user_data;
 
-    TF_RS485ModbusSlaveReadInputRegistersRequestHandler modbus_slave_read_input_registers_request_handler;
+    TF_RS485_ModbusSlaveReadInputRegistersRequestHandler modbus_slave_read_input_registers_request_handler;
     void *modbus_slave_read_input_registers_request_user_data;
 
-    TF_RS485ModbusMasterReadInputRegistersResponseLowLevelHandler modbus_master_read_input_registers_response_low_level_handler;
+    TF_RS485_ModbusMasterReadInputRegistersResponseLowLevelHandler modbus_master_read_input_registers_response_low_level_handler;
     void *modbus_master_read_input_registers_response_low_level_user_data;
 
-    TF_RS485FrameReadableHandler frame_readable_handler;
+    TF_RS485_FrameReadableHandler frame_readable_handler;
     void *frame_readable_user_data;
 
 #endif
@@ -803,7 +803,7 @@ int tf_rs485_set_response_expected(TF_RS485 *rs485, uint8_t function_id, bool re
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_rs485_set_response_expected_all(TF_RS485 *rs485, bool response_expected);
+int tf_rs485_set_response_expected_all(TF_RS485 *rs485, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_RS485
@@ -817,7 +817,7 @@ void tf_rs485_set_response_expected_all(TF_RS485 *rs485, bool response_expected)
  * 
  * To enable this callback, use {@link tf_rs485_enable_read_callback}.
  */
-int tf_rs485_register_read_low_level_callback(TF_RS485 *rs485, TF_RS485ReadLowLevelHandler handler, void *user_data);
+int tf_rs485_register_read_low_level_callback(TF_RS485 *rs485, TF_RS485_ReadLowLevelHandler handler, void *user_data);
 
 
 /**
@@ -831,7 +831,7 @@ int tf_rs485_register_read_low_level_callback(TF_RS485 *rs485, TF_RS485ReadLowLe
  * This callback is called if a new error occurs. It returns
  * the current overrun and parity error count.
  */
-int tf_rs485_register_error_count_callback(TF_RS485 *rs485, TF_RS485ErrorCountHandler handler, void *user_data);
+int tf_rs485_register_error_count_callback(TF_RS485 *rs485, TF_RS485_ErrorCountHandler handler, void *user_data);
 
 
 /**
@@ -850,7 +850,7 @@ int tf_rs485_register_error_count_callback(TF_RS485 *rs485, TF_RS485ErrorCountHa
  * 
  * To send a response of this request use {@link tf_rs485_modbus_slave_answer_read_coils_request}.
  */
-int tf_rs485_register_modbus_slave_read_coils_request_callback(TF_RS485 *rs485, TF_RS485ModbusSlaveReadCoilsRequestHandler handler, void *user_data);
+int tf_rs485_register_modbus_slave_read_coils_request_callback(TF_RS485 *rs485, TF_RS485_ModbusSlaveReadCoilsRequestHandler handler, void *user_data);
 
 
 /**
@@ -875,7 +875,7 @@ int tf_rs485_register_modbus_slave_read_coils_request_callback(TF_RS485 *rs485, 
  * request within the master request timeout period as set by
  * {@link tf_rs485_set_modbus_configuration}.
  */
-int tf_rs485_register_modbus_master_read_coils_response_low_level_callback(TF_RS485 *rs485, TF_RS485ModbusMasterReadCoilsResponseLowLevelHandler handler, void *user_data);
+int tf_rs485_register_modbus_master_read_coils_response_low_level_callback(TF_RS485 *rs485, TF_RS485_ModbusMasterReadCoilsResponseLowLevelHandler handler, void *user_data);
 
 
 /**
@@ -894,7 +894,7 @@ int tf_rs485_register_modbus_master_read_coils_response_low_level_callback(TF_RS
  * 
  * To send a response of this request use {@link tf_rs485_modbus_slave_answer_read_holding_registers_request}.
  */
-int tf_rs485_register_modbus_slave_read_holding_registers_request_callback(TF_RS485 *rs485, TF_RS485ModbusSlaveReadHoldingRegistersRequestHandler handler, void *user_data);
+int tf_rs485_register_modbus_slave_read_holding_registers_request_callback(TF_RS485 *rs485, TF_RS485_ModbusSlaveReadHoldingRegistersRequestHandler handler, void *user_data);
 
 
 /**
@@ -919,7 +919,7 @@ int tf_rs485_register_modbus_slave_read_holding_registers_request_callback(TF_RS
  * request within the master request timeout period as set by
  * {@link tf_rs485_set_modbus_configuration}.
  */
-int tf_rs485_register_modbus_master_read_holding_registers_response_low_level_callback(TF_RS485 *rs485, TF_RS485ModbusMasterReadHoldingRegistersResponseLowLevelHandler handler, void *user_data);
+int tf_rs485_register_modbus_master_read_holding_registers_response_low_level_callback(TF_RS485 *rs485, TF_RS485_ModbusMasterReadHoldingRegistersResponseLowLevelHandler handler, void *user_data);
 
 
 /**
@@ -938,7 +938,7 @@ int tf_rs485_register_modbus_master_read_holding_registers_response_low_level_ca
  * 
  * To send a response of this request use {@link tf_rs485_modbus_slave_answer_write_single_coil_request}.
  */
-int tf_rs485_register_modbus_slave_write_single_coil_request_callback(TF_RS485 *rs485, TF_RS485ModbusSlaveWriteSingleCoilRequestHandler handler, void *user_data);
+int tf_rs485_register_modbus_slave_write_single_coil_request_callback(TF_RS485 *rs485, TF_RS485_ModbusSlaveWriteSingleCoilRequestHandler handler, void *user_data);
 
 
 /**
@@ -962,7 +962,7 @@ int tf_rs485_register_modbus_slave_write_single_coil_request_callback(TF_RS485 *
  * any valid response of the request within the master request timeout period as set
  * by {@link tf_rs485_set_modbus_configuration}.
  */
-int tf_rs485_register_modbus_master_write_single_coil_response_callback(TF_RS485 *rs485, TF_RS485ModbusMasterWriteSingleCoilResponseHandler handler, void *user_data);
+int tf_rs485_register_modbus_master_write_single_coil_response_callback(TF_RS485 *rs485, TF_RS485_ModbusMasterWriteSingleCoilResponseHandler handler, void *user_data);
 
 
 /**
@@ -981,7 +981,7 @@ int tf_rs485_register_modbus_master_write_single_coil_response_callback(TF_RS485
  * 
  * To send a response of this request use {@link tf_rs485_modbus_slave_answer_write_single_register_request}.
  */
-int tf_rs485_register_modbus_slave_write_single_register_request_callback(TF_RS485 *rs485, TF_RS485ModbusSlaveWriteSingleRegisterRequestHandler handler, void *user_data);
+int tf_rs485_register_modbus_slave_write_single_register_request_callback(TF_RS485 *rs485, TF_RS485_ModbusSlaveWriteSingleRegisterRequestHandler handler, void *user_data);
 
 
 /**
@@ -1005,7 +1005,7 @@ int tf_rs485_register_modbus_slave_write_single_register_request_callback(TF_RS4
  * master did not receive any valid response of the request within the master request
  * timeout period as set by {@link tf_rs485_set_modbus_configuration}.
  */
-int tf_rs485_register_modbus_master_write_single_register_response_callback(TF_RS485 *rs485, TF_RS485ModbusMasterWriteSingleRegisterResponseHandler handler, void *user_data);
+int tf_rs485_register_modbus_master_write_single_register_response_callback(TF_RS485 *rs485, TF_RS485_ModbusMasterWriteSingleRegisterResponseHandler handler, void *user_data);
 
 
 /**
@@ -1024,7 +1024,7 @@ int tf_rs485_register_modbus_master_write_single_register_response_callback(TF_R
  * 
  * To send a response of this request use {@link tf_rs485_modbus_slave_answer_write_multiple_coils_request}.
  */
-int tf_rs485_register_modbus_slave_write_multiple_coils_request_low_level_callback(TF_RS485 *rs485, TF_RS485ModbusSlaveWriteMultipleCoilsRequestLowLevelHandler handler, void *user_data);
+int tf_rs485_register_modbus_slave_write_multiple_coils_request_low_level_callback(TF_RS485 *rs485, TF_RS485_ModbusSlaveWriteMultipleCoilsRequestLowLevelHandler handler, void *user_data);
 
 
 /**
@@ -1048,7 +1048,7 @@ int tf_rs485_register_modbus_slave_write_multiple_coils_request_low_level_callba
  * master did not receive any valid response of the request within the master request
  * timeout period as set by {@link tf_rs485_set_modbus_configuration}.
  */
-int tf_rs485_register_modbus_master_write_multiple_coils_response_callback(TF_RS485 *rs485, TF_RS485ModbusMasterWriteMultipleCoilsResponseHandler handler, void *user_data);
+int tf_rs485_register_modbus_master_write_multiple_coils_response_callback(TF_RS485 *rs485, TF_RS485_ModbusMasterWriteMultipleCoilsResponseHandler handler, void *user_data);
 
 
 /**
@@ -1067,7 +1067,7 @@ int tf_rs485_register_modbus_master_write_multiple_coils_response_callback(TF_RS
  * 
  * To send a response of this request use {@link tf_rs485_modbus_slave_answer_write_multiple_registers_request}.
  */
-int tf_rs485_register_modbus_slave_write_multiple_registers_request_low_level_callback(TF_RS485 *rs485, TF_RS485ModbusSlaveWriteMultipleRegistersRequestLowLevelHandler handler, void *user_data);
+int tf_rs485_register_modbus_slave_write_multiple_registers_request_low_level_callback(TF_RS485 *rs485, TF_RS485_ModbusSlaveWriteMultipleRegistersRequestLowLevelHandler handler, void *user_data);
 
 
 /**
@@ -1091,7 +1091,7 @@ int tf_rs485_register_modbus_slave_write_multiple_registers_request_low_level_ca
  * that the master did not receive any valid response of the request within the master
  * request timeout period as set by {@link tf_rs485_set_modbus_configuration}.
  */
-int tf_rs485_register_modbus_master_write_multiple_registers_response_callback(TF_RS485 *rs485, TF_RS485ModbusMasterWriteMultipleRegistersResponseHandler handler, void *user_data);
+int tf_rs485_register_modbus_master_write_multiple_registers_response_callback(TF_RS485 *rs485, TF_RS485_ModbusMasterWriteMultipleRegistersResponseHandler handler, void *user_data);
 
 
 /**
@@ -1110,7 +1110,7 @@ int tf_rs485_register_modbus_master_write_multiple_registers_response_callback(T
  * 
  * To send a response of this request use {@link tf_rs485_modbus_slave_answer_read_discrete_inputs_request}.
  */
-int tf_rs485_register_modbus_slave_read_discrete_inputs_request_callback(TF_RS485 *rs485, TF_RS485ModbusSlaveReadDiscreteInputsRequestHandler handler, void *user_data);
+int tf_rs485_register_modbus_slave_read_discrete_inputs_request_callback(TF_RS485 *rs485, TF_RS485_ModbusSlaveReadDiscreteInputsRequestHandler handler, void *user_data);
 
 
 /**
@@ -1135,7 +1135,7 @@ int tf_rs485_register_modbus_slave_read_discrete_inputs_request_callback(TF_RS48
  * request within the master request timeout period as set by
  * {@link tf_rs485_set_modbus_configuration}.
  */
-int tf_rs485_register_modbus_master_read_discrete_inputs_response_low_level_callback(TF_RS485 *rs485, TF_RS485ModbusMasterReadDiscreteInputsResponseLowLevelHandler handler, void *user_data);
+int tf_rs485_register_modbus_master_read_discrete_inputs_response_low_level_callback(TF_RS485 *rs485, TF_RS485_ModbusMasterReadDiscreteInputsResponseLowLevelHandler handler, void *user_data);
 
 
 /**
@@ -1154,7 +1154,7 @@ int tf_rs485_register_modbus_master_read_discrete_inputs_response_low_level_call
  * 
  * To send a response of this request use {@link tf_rs485_modbus_slave_answer_read_input_registers_request}.
  */
-int tf_rs485_register_modbus_slave_read_input_registers_request_callback(TF_RS485 *rs485, TF_RS485ModbusSlaveReadInputRegistersRequestHandler handler, void *user_data);
+int tf_rs485_register_modbus_slave_read_input_registers_request_callback(TF_RS485 *rs485, TF_RS485_ModbusSlaveReadInputRegistersRequestHandler handler, void *user_data);
 
 
 /**
@@ -1179,7 +1179,7 @@ int tf_rs485_register_modbus_slave_read_input_registers_request_callback(TF_RS48
  * request within the master request timeout period as set by
  * {@link tf_rs485_set_modbus_configuration}.
  */
-int tf_rs485_register_modbus_master_read_input_registers_response_low_level_callback(TF_RS485 *rs485, TF_RS485ModbusMasterReadInputRegistersResponseLowLevelHandler handler, void *user_data);
+int tf_rs485_register_modbus_master_read_input_registers_response_low_level_callback(TF_RS485 *rs485, TF_RS485_ModbusMasterReadInputRegistersResponseLowLevelHandler handler, void *user_data);
 
 
 /**
@@ -1197,7 +1197,7 @@ int tf_rs485_register_modbus_master_read_input_registers_response_low_level_call
  * 
  * .. versionadded:: 2.0.5$nbsp;(Plugin)
  */
-int tf_rs485_register_frame_readable_callback(TF_RS485 *rs485, TF_RS485FrameReadableHandler handler, void *user_data);
+int tf_rs485_register_frame_readable_callback(TF_RS485 *rs485, TF_RS485_FrameReadableHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

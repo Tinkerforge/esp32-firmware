@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,16 +27,15 @@ static bool tf_motorized_linear_poti_callback_handler(void *dev, uint8_t fid, TF
     (void)payload;
 
     switch (fid) {
-
         case TF_MOTORIZED_LINEAR_POTI_CALLBACK_POSITION: {
-            TF_MotorizedLinearPotiPositionHandler fn = motorized_linear_poti->position_handler;
+            TF_MotorizedLinearPoti_PositionHandler fn = motorized_linear_poti->position_handler;
             void *user_data = motorized_linear_poti->position_user_data;
             if (fn == NULL) {
                 return false;
             }
 
             uint16_t position = tf_packet_buffer_read_uint16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal);
             hal_common->locked = true;
             fn(motorized_linear_poti, position, user_data);
             hal_common->locked = false;
@@ -44,19 +43,20 @@ static bool tf_motorized_linear_poti_callback_handler(void *dev, uint8_t fid, TF
         }
 
         case TF_MOTORIZED_LINEAR_POTI_CALLBACK_POSITION_REACHED: {
-            TF_MotorizedLinearPotiPositionReachedHandler fn = motorized_linear_poti->position_reached_handler;
+            TF_MotorizedLinearPoti_PositionReachedHandler fn = motorized_linear_poti->position_reached_handler;
             void *user_data = motorized_linear_poti->position_reached_user_data;
             if (fn == NULL) {
                 return false;
             }
 
             uint16_t position = tf_packet_buffer_read_uint16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal);
             hal_common->locked = true;
             fn(motorized_linear_poti, position, user_data);
             hal_common->locked = false;
             break;
         }
+
         default:
             return false;
     }
@@ -237,8 +237,14 @@ int tf_motorized_linear_poti_set_response_expected(TF_MotorizedLinearPoti *motor
     return TF_E_OK;
 }
 
-void tf_motorized_linear_poti_set_response_expected_all(TF_MotorizedLinearPoti *motorized_linear_poti, bool response_expected) {
+int tf_motorized_linear_poti_set_response_expected_all(TF_MotorizedLinearPoti *motorized_linear_poti, bool response_expected) {
+    if (motorized_linear_poti == NULL) {
+        return TF_E_NULL;
+    }
+
     memset(motorized_linear_poti->response_expected, response_expected ? 0xFF : 0, 1);
+
+    return TF_E_OK;
 }
 
 int tf_motorized_linear_poti_get_position(TF_MotorizedLinearPoti *motorized_linear_poti, uint16_t *ret_position) {
@@ -246,14 +252,14 @@ int tf_motorized_linear_poti_get_position(TF_MotorizedLinearPoti *motorized_line
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(motorized_linear_poti->tfp, TF_MOTORIZED_LINEAR_POTI_FUNCTION_GET_POSITION, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(motorized_linear_poti->tfp, response_expected, deadline, &error_code);
@@ -285,7 +291,7 @@ int tf_motorized_linear_poti_set_position_callback_configuration(TF_MotorizedLin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -301,7 +307,7 @@ int tf_motorized_linear_poti_set_position_callback_configuration(TF_MotorizedLin
     min = tf_leconvert_uint16_to(min); memcpy(buf + 6, &min, 2);
     max = tf_leconvert_uint16_to(max); memcpy(buf + 8, &max, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(motorized_linear_poti->tfp, response_expected, deadline, &error_code);
@@ -328,14 +334,14 @@ int tf_motorized_linear_poti_get_position_callback_configuration(TF_MotorizedLin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(motorized_linear_poti->tfp, TF_MOTORIZED_LINEAR_POTI_FUNCTION_GET_POSITION_CALLBACK_CONFIGURATION, 0, 10, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(motorized_linear_poti->tfp, response_expected, deadline, &error_code);
@@ -371,7 +377,7 @@ int tf_motorized_linear_poti_set_motor_position(TF_MotorizedLinearPoti *motorize
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -385,7 +391,7 @@ int tf_motorized_linear_poti_set_motor_position(TF_MotorizedLinearPoti *motorize
     buf[2] = (uint8_t)drive_mode;
     buf[3] = hold_position ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(motorized_linear_poti->tfp, response_expected, deadline, &error_code);
@@ -412,14 +418,14 @@ int tf_motorized_linear_poti_get_motor_position(TF_MotorizedLinearPoti *motorize
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(motorized_linear_poti->tfp, TF_MOTORIZED_LINEAR_POTI_FUNCTION_GET_MOTOR_POSITION, 0, 5, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(motorized_linear_poti->tfp, response_expected, deadline, &error_code);
@@ -454,7 +460,7 @@ int tf_motorized_linear_poti_calibrate(TF_MotorizedLinearPoti *motorized_linear_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -462,7 +468,7 @@ int tf_motorized_linear_poti_calibrate(TF_MotorizedLinearPoti *motorized_linear_
     tf_motorized_linear_poti_get_response_expected(motorized_linear_poti, TF_MOTORIZED_LINEAR_POTI_FUNCTION_CALIBRATE, &response_expected);
     tf_tfp_prepare_send(motorized_linear_poti->tfp, TF_MOTORIZED_LINEAR_POTI_FUNCTION_CALIBRATE, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(motorized_linear_poti->tfp, response_expected, deadline, &error_code);
@@ -489,7 +495,7 @@ int tf_motorized_linear_poti_set_position_reached_callback_configuration(TF_Moto
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -501,7 +507,7 @@ int tf_motorized_linear_poti_set_position_reached_callback_configuration(TF_Moto
 
     buf[0] = enabled ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(motorized_linear_poti->tfp, response_expected, deadline, &error_code);
@@ -528,14 +534,14 @@ int tf_motorized_linear_poti_get_position_reached_callback_configuration(TF_Moto
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(motorized_linear_poti->tfp, TF_MOTORIZED_LINEAR_POTI_FUNCTION_GET_POSITION_REACHED_CALLBACK_CONFIGURATION, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(motorized_linear_poti->tfp, response_expected, deadline, &error_code);
@@ -567,14 +573,14 @@ int tf_motorized_linear_poti_get_spitfp_error_count(TF_MotorizedLinearPoti *moto
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(motorized_linear_poti->tfp, TF_MOTORIZED_LINEAR_POTI_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(motorized_linear_poti->tfp, response_expected, deadline, &error_code);
@@ -609,7 +615,7 @@ int tf_motorized_linear_poti_set_bootloader_mode(TF_MotorizedLinearPoti *motoriz
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -620,7 +626,7 @@ int tf_motorized_linear_poti_set_bootloader_mode(TF_MotorizedLinearPoti *motoriz
 
     buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(motorized_linear_poti->tfp, response_expected, deadline, &error_code);
@@ -652,14 +658,14 @@ int tf_motorized_linear_poti_get_bootloader_mode(TF_MotorizedLinearPoti *motoriz
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(motorized_linear_poti->tfp, TF_MOTORIZED_LINEAR_POTI_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(motorized_linear_poti->tfp, response_expected, deadline, &error_code);
@@ -691,7 +697,7 @@ int tf_motorized_linear_poti_set_write_firmware_pointer(TF_MotorizedLinearPoti *
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -703,7 +709,7 @@ int tf_motorized_linear_poti_set_write_firmware_pointer(TF_MotorizedLinearPoti *
 
     pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(motorized_linear_poti->tfp, response_expected, deadline, &error_code);
@@ -730,7 +736,7 @@ int tf_motorized_linear_poti_write_firmware(TF_MotorizedLinearPoti *motorized_li
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -741,7 +747,7 @@ int tf_motorized_linear_poti_write_firmware(TF_MotorizedLinearPoti *motorized_li
 
     memcpy(buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(motorized_linear_poti->tfp, response_expected, deadline, &error_code);
@@ -773,7 +779,7 @@ int tf_motorized_linear_poti_set_status_led_config(TF_MotorizedLinearPoti *motor
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -785,7 +791,7 @@ int tf_motorized_linear_poti_set_status_led_config(TF_MotorizedLinearPoti *motor
 
     buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(motorized_linear_poti->tfp, response_expected, deadline, &error_code);
@@ -812,14 +818,14 @@ int tf_motorized_linear_poti_get_status_led_config(TF_MotorizedLinearPoti *motor
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(motorized_linear_poti->tfp, TF_MOTORIZED_LINEAR_POTI_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(motorized_linear_poti->tfp, response_expected, deadline, &error_code);
@@ -851,14 +857,14 @@ int tf_motorized_linear_poti_get_chip_temperature(TF_MotorizedLinearPoti *motori
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(motorized_linear_poti->tfp, TF_MOTORIZED_LINEAR_POTI_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(motorized_linear_poti->tfp, response_expected, deadline, &error_code);
@@ -890,7 +896,7 @@ int tf_motorized_linear_poti_reset(TF_MotorizedLinearPoti *motorized_linear_poti
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -898,7 +904,7 @@ int tf_motorized_linear_poti_reset(TF_MotorizedLinearPoti *motorized_linear_poti
     tf_motorized_linear_poti_get_response_expected(motorized_linear_poti, TF_MOTORIZED_LINEAR_POTI_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(motorized_linear_poti->tfp, TF_MOTORIZED_LINEAR_POTI_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(motorized_linear_poti->tfp, response_expected, deadline, &error_code);
@@ -925,7 +931,7 @@ int tf_motorized_linear_poti_write_uid(TF_MotorizedLinearPoti *motorized_linear_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -937,7 +943,7 @@ int tf_motorized_linear_poti_write_uid(TF_MotorizedLinearPoti *motorized_linear_
 
     uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(motorized_linear_poti->tfp, response_expected, deadline, &error_code);
@@ -964,14 +970,14 @@ int tf_motorized_linear_poti_read_uid(TF_MotorizedLinearPoti *motorized_linear_p
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(motorized_linear_poti->tfp, TF_MOTORIZED_LINEAR_POTI_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(motorized_linear_poti->tfp, response_expected, deadline, &error_code);
@@ -1003,7 +1009,7 @@ int tf_motorized_linear_poti_get_identity(TF_MotorizedLinearPoti *motorized_line
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1011,7 +1017,7 @@ int tf_motorized_linear_poti_get_identity(TF_MotorizedLinearPoti *motorized_line
     tf_tfp_prepare_send(motorized_linear_poti->tfp, TF_MOTORIZED_LINEAR_POTI_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL*)motorized_linear_poti->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)motorized_linear_poti->tfp->hal) + tf_hal_get_common((TF_HAL *)motorized_linear_poti->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(motorized_linear_poti->tfp, response_expected, deadline, &error_code);
@@ -1033,7 +1039,7 @@ int tf_motorized_linear_poti_get_identity(TF_MotorizedLinearPoti *motorized_line
         if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&motorized_linear_poti->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&motorized_linear_poti->tfp->spitfp->recv_buf, 3); }
         if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&motorized_linear_poti->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&motorized_linear_poti->tfp->spitfp->recv_buf, 2); }
         if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL*)motorized_linear_poti->tfp->hal, motorized_linear_poti->tfp->spitfp->port_id);
+            *ret_position = tf_hal_get_port_name((TF_HAL *)motorized_linear_poti->tfp->hal, motorized_linear_poti->tfp->spitfp->port_id);
         }
         if (ret_connected_uid != NULL) {
             memcpy(ret_connected_uid, tmp_connected_uid, 8);
@@ -1050,7 +1056,7 @@ int tf_motorized_linear_poti_get_identity(TF_MotorizedLinearPoti *motorized_line
     return tf_tfp_get_error(error_code);
 }
 #if TF_IMPLEMENT_CALLBACKS != 0
-int tf_motorized_linear_poti_register_position_callback(TF_MotorizedLinearPoti *motorized_linear_poti, TF_MotorizedLinearPotiPositionHandler handler, void *user_data) {
+int tf_motorized_linear_poti_register_position_callback(TF_MotorizedLinearPoti *motorized_linear_poti, TF_MotorizedLinearPoti_PositionHandler handler, void *user_data) {
     if (motorized_linear_poti == NULL) {
         return TF_E_NULL;
     }
@@ -1069,7 +1075,7 @@ int tf_motorized_linear_poti_register_position_callback(TF_MotorizedLinearPoti *
 }
 
 
-int tf_motorized_linear_poti_register_position_reached_callback(TF_MotorizedLinearPoti *motorized_linear_poti, TF_MotorizedLinearPotiPositionReachedHandler handler, void *user_data) {
+int tf_motorized_linear_poti_register_position_reached_callback(TF_MotorizedLinearPoti *motorized_linear_poti, TF_MotorizedLinearPoti_PositionReachedHandler handler, void *user_data) {
     if (motorized_linear_poti == NULL) {
         return TF_E_NULL;
     }
@@ -1092,7 +1098,7 @@ int tf_motorized_linear_poti_callback_tick(TF_MotorizedLinearPoti *motorized_lin
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(motorized_linear_poti->tfp, tf_hal_current_time_us((TF_HAL*)motorized_linear_poti->tfp->hal) + timeout_us);
+    return tf_tfp_callback_tick(motorized_linear_poti->tfp, tf_hal_current_time_us((TF_HAL *)motorized_linear_poti->tfp->hal) + timeout_us);
 }
 
 #ifdef __cplusplus

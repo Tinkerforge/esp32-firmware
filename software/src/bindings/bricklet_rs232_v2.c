@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,9 +27,8 @@ static bool tf_rs232_v2_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer
     (void)payload;
 
     switch (fid) {
-
         case TF_RS232_V2_CALLBACK_READ_LOW_LEVEL: {
-            TF_RS232V2ReadLowLevelHandler fn = rs232_v2->read_low_level_handler;
+            TF_RS232V2_ReadLowLevelHandler fn = rs232_v2->read_low_level_handler;
             void *user_data = rs232_v2->read_low_level_user_data;
             if (fn == NULL) {
                 return false;
@@ -38,7 +37,7 @@ static bool tf_rs232_v2_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer
             uint16_t message_length = tf_packet_buffer_read_uint16_t(payload);
             uint16_t message_chunk_offset = tf_packet_buffer_read_uint16_t(payload);
             char message_chunk_data[60]; for (i = 0; i < 60; ++i) message_chunk_data[i] = tf_packet_buffer_read_char(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal);
             hal_common->locked = true;
             fn(rs232_v2, message_length, message_chunk_offset, message_chunk_data, user_data);
             hal_common->locked = false;
@@ -46,7 +45,7 @@ static bool tf_rs232_v2_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer
         }
 
         case TF_RS232_V2_CALLBACK_ERROR_COUNT: {
-            TF_RS232V2ErrorCountHandler fn = rs232_v2->error_count_handler;
+            TF_RS232V2_ErrorCountHandler fn = rs232_v2->error_count_handler;
             void *user_data = rs232_v2->error_count_user_data;
             if (fn == NULL) {
                 return false;
@@ -54,7 +53,7 @@ static bool tf_rs232_v2_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer
 
             uint32_t error_count_overrun = tf_packet_buffer_read_uint32_t(payload);
             uint32_t error_count_parity = tf_packet_buffer_read_uint32_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal);
             hal_common->locked = true;
             fn(rs232_v2, error_count_overrun, error_count_parity, user_data);
             hal_common->locked = false;
@@ -62,19 +61,20 @@ static bool tf_rs232_v2_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer
         }
 
         case TF_RS232_V2_CALLBACK_FRAME_READABLE: {
-            TF_RS232V2FrameReadableHandler fn = rs232_v2->frame_readable_handler;
+            TF_RS232V2_FrameReadableHandler fn = rs232_v2->frame_readable_handler;
             void *user_data = rs232_v2->frame_readable_user_data;
             if (fn == NULL) {
                 return false;
             }
 
             uint16_t frame_count = tf_packet_buffer_read_uint16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal);
             hal_common->locked = true;
             fn(rs232_v2, frame_count, user_data);
             hal_common->locked = false;
             break;
         }
+
         default:
             return false;
     }
@@ -268,8 +268,14 @@ int tf_rs232_v2_set_response_expected(TF_RS232V2 *rs232_v2, uint8_t function_id,
     return TF_E_OK;
 }
 
-void tf_rs232_v2_set_response_expected_all(TF_RS232V2 *rs232_v2, bool response_expected) {
+int tf_rs232_v2_set_response_expected_all(TF_RS232V2 *rs232_v2, bool response_expected) {
+    if (rs232_v2 == NULL) {
+        return TF_E_NULL;
+    }
+
     memset(rs232_v2->response_expected, response_expected ? 0xFF : 0, 2);
+
+    return TF_E_OK;
 }
 
 int tf_rs232_v2_write_low_level(TF_RS232V2 *rs232_v2, uint16_t message_length, uint16_t message_chunk_offset, const char message_chunk_data[60], uint8_t *ret_message_chunk_written) {
@@ -277,7 +283,7 @@ int tf_rs232_v2_write_low_level(TF_RS232V2 *rs232_v2, uint16_t message_length, u
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -290,7 +296,7 @@ int tf_rs232_v2_write_low_level(TF_RS232V2 *rs232_v2, uint16_t message_length, u
     message_chunk_offset = tf_leconvert_uint16_to(message_chunk_offset); memcpy(buf + 2, &message_chunk_offset, 2);
     memcpy(buf + 4, message_chunk_data, 60);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rs232_v2->tfp, response_expected, deadline, &error_code);
@@ -322,7 +328,7 @@ int tf_rs232_v2_read_low_level(TF_RS232V2 *rs232_v2, uint16_t length, uint16_t *
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -334,7 +340,7 @@ int tf_rs232_v2_read_low_level(TF_RS232V2 *rs232_v2, uint16_t length, uint16_t *
 
     length = tf_leconvert_uint16_to(length); memcpy(buf + 0, &length, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rs232_v2->tfp, response_expected, deadline, &error_code);
@@ -368,7 +374,7 @@ int tf_rs232_v2_enable_read_callback(TF_RS232V2 *rs232_v2) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -376,7 +382,7 @@ int tf_rs232_v2_enable_read_callback(TF_RS232V2 *rs232_v2) {
     tf_rs232_v2_get_response_expected(rs232_v2, TF_RS232_V2_FUNCTION_ENABLE_READ_CALLBACK, &response_expected);
     tf_tfp_prepare_send(rs232_v2->tfp, TF_RS232_V2_FUNCTION_ENABLE_READ_CALLBACK, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rs232_v2->tfp, response_expected, deadline, &error_code);
@@ -403,7 +409,7 @@ int tf_rs232_v2_disable_read_callback(TF_RS232V2 *rs232_v2) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -411,7 +417,7 @@ int tf_rs232_v2_disable_read_callback(TF_RS232V2 *rs232_v2) {
     tf_rs232_v2_get_response_expected(rs232_v2, TF_RS232_V2_FUNCTION_DISABLE_READ_CALLBACK, &response_expected);
     tf_tfp_prepare_send(rs232_v2->tfp, TF_RS232_V2_FUNCTION_DISABLE_READ_CALLBACK, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rs232_v2->tfp, response_expected, deadline, &error_code);
@@ -438,14 +444,14 @@ int tf_rs232_v2_is_read_callback_enabled(TF_RS232V2 *rs232_v2, bool *ret_enabled
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(rs232_v2->tfp, TF_RS232_V2_FUNCTION_IS_READ_CALLBACK_ENABLED, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rs232_v2->tfp, response_expected, deadline, &error_code);
@@ -477,7 +483,7 @@ int tf_rs232_v2_set_configuration(TF_RS232V2 *rs232_v2, uint32_t baudrate, uint8
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -493,7 +499,7 @@ int tf_rs232_v2_set_configuration(TF_RS232V2 *rs232_v2, uint32_t baudrate, uint8
     buf[6] = (uint8_t)wordlength;
     buf[7] = (uint8_t)flowcontrol;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rs232_v2->tfp, response_expected, deadline, &error_code);
@@ -520,14 +526,14 @@ int tf_rs232_v2_get_configuration(TF_RS232V2 *rs232_v2, uint32_t *ret_baudrate, 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(rs232_v2->tfp, TF_RS232_V2_FUNCTION_GET_CONFIGURATION, 0, 8, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rs232_v2->tfp, response_expected, deadline, &error_code);
@@ -563,7 +569,7 @@ int tf_rs232_v2_set_buffer_config(TF_RS232V2 *rs232_v2, uint16_t send_buffer_siz
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -576,7 +582,7 @@ int tf_rs232_v2_set_buffer_config(TF_RS232V2 *rs232_v2, uint16_t send_buffer_siz
     send_buffer_size = tf_leconvert_uint16_to(send_buffer_size); memcpy(buf + 0, &send_buffer_size, 2);
     receive_buffer_size = tf_leconvert_uint16_to(receive_buffer_size); memcpy(buf + 2, &receive_buffer_size, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rs232_v2->tfp, response_expected, deadline, &error_code);
@@ -603,14 +609,14 @@ int tf_rs232_v2_get_buffer_config(TF_RS232V2 *rs232_v2, uint16_t *ret_send_buffe
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(rs232_v2->tfp, TF_RS232_V2_FUNCTION_GET_BUFFER_CONFIG, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rs232_v2->tfp, response_expected, deadline, &error_code);
@@ -643,14 +649,14 @@ int tf_rs232_v2_get_buffer_status(TF_RS232V2 *rs232_v2, uint16_t *ret_send_buffe
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(rs232_v2->tfp, TF_RS232_V2_FUNCTION_GET_BUFFER_STATUS, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rs232_v2->tfp, response_expected, deadline, &error_code);
@@ -683,14 +689,14 @@ int tf_rs232_v2_get_error_count(TF_RS232V2 *rs232_v2, uint32_t *ret_error_count_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(rs232_v2->tfp, TF_RS232_V2_FUNCTION_GET_ERROR_COUNT, 0, 8, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rs232_v2->tfp, response_expected, deadline, &error_code);
@@ -723,7 +729,7 @@ int tf_rs232_v2_set_frame_readable_callback_configuration(TF_RS232V2 *rs232_v2, 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -735,7 +741,7 @@ int tf_rs232_v2_set_frame_readable_callback_configuration(TF_RS232V2 *rs232_v2, 
 
     frame_size = tf_leconvert_uint16_to(frame_size); memcpy(buf + 0, &frame_size, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rs232_v2->tfp, response_expected, deadline, &error_code);
@@ -762,14 +768,14 @@ int tf_rs232_v2_get_frame_readable_callback_configuration(TF_RS232V2 *rs232_v2, 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(rs232_v2->tfp, TF_RS232_V2_FUNCTION_GET_FRAME_READABLE_CALLBACK_CONFIGURATION, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rs232_v2->tfp, response_expected, deadline, &error_code);
@@ -801,14 +807,14 @@ int tf_rs232_v2_get_spitfp_error_count(TF_RS232V2 *rs232_v2, uint32_t *ret_error
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(rs232_v2->tfp, TF_RS232_V2_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rs232_v2->tfp, response_expected, deadline, &error_code);
@@ -843,7 +849,7 @@ int tf_rs232_v2_set_bootloader_mode(TF_RS232V2 *rs232_v2, uint8_t mode, uint8_t 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -854,7 +860,7 @@ int tf_rs232_v2_set_bootloader_mode(TF_RS232V2 *rs232_v2, uint8_t mode, uint8_t 
 
     buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rs232_v2->tfp, response_expected, deadline, &error_code);
@@ -886,14 +892,14 @@ int tf_rs232_v2_get_bootloader_mode(TF_RS232V2 *rs232_v2, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(rs232_v2->tfp, TF_RS232_V2_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rs232_v2->tfp, response_expected, deadline, &error_code);
@@ -925,7 +931,7 @@ int tf_rs232_v2_set_write_firmware_pointer(TF_RS232V2 *rs232_v2, uint32_t pointe
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -937,7 +943,7 @@ int tf_rs232_v2_set_write_firmware_pointer(TF_RS232V2 *rs232_v2, uint32_t pointe
 
     pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rs232_v2->tfp, response_expected, deadline, &error_code);
@@ -964,7 +970,7 @@ int tf_rs232_v2_write_firmware(TF_RS232V2 *rs232_v2, const uint8_t data[64], uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -975,7 +981,7 @@ int tf_rs232_v2_write_firmware(TF_RS232V2 *rs232_v2, const uint8_t data[64], uin
 
     memcpy(buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rs232_v2->tfp, response_expected, deadline, &error_code);
@@ -1007,7 +1013,7 @@ int tf_rs232_v2_set_status_led_config(TF_RS232V2 *rs232_v2, uint8_t config) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1019,7 +1025,7 @@ int tf_rs232_v2_set_status_led_config(TF_RS232V2 *rs232_v2, uint8_t config) {
 
     buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rs232_v2->tfp, response_expected, deadline, &error_code);
@@ -1046,14 +1052,14 @@ int tf_rs232_v2_get_status_led_config(TF_RS232V2 *rs232_v2, uint8_t *ret_config)
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(rs232_v2->tfp, TF_RS232_V2_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rs232_v2->tfp, response_expected, deadline, &error_code);
@@ -1085,14 +1091,14 @@ int tf_rs232_v2_get_chip_temperature(TF_RS232V2 *rs232_v2, int16_t *ret_temperat
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(rs232_v2->tfp, TF_RS232_V2_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rs232_v2->tfp, response_expected, deadline, &error_code);
@@ -1124,7 +1130,7 @@ int tf_rs232_v2_reset(TF_RS232V2 *rs232_v2) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1132,7 +1138,7 @@ int tf_rs232_v2_reset(TF_RS232V2 *rs232_v2) {
     tf_rs232_v2_get_response_expected(rs232_v2, TF_RS232_V2_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(rs232_v2->tfp, TF_RS232_V2_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rs232_v2->tfp, response_expected, deadline, &error_code);
@@ -1159,7 +1165,7 @@ int tf_rs232_v2_write_uid(TF_RS232V2 *rs232_v2, uint32_t uid) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1171,7 +1177,7 @@ int tf_rs232_v2_write_uid(TF_RS232V2 *rs232_v2, uint32_t uid) {
 
     uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rs232_v2->tfp, response_expected, deadline, &error_code);
@@ -1198,14 +1204,14 @@ int tf_rs232_v2_read_uid(TF_RS232V2 *rs232_v2, uint32_t *ret_uid) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(rs232_v2->tfp, TF_RS232_V2_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rs232_v2->tfp, response_expected, deadline, &error_code);
@@ -1237,7 +1243,7 @@ int tf_rs232_v2_get_identity(TF_RS232V2 *rs232_v2, char ret_uid[8], char ret_con
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1245,7 +1251,7 @@ int tf_rs232_v2_get_identity(TF_RS232V2 *rs232_v2, char ret_uid[8], char ret_con
     tf_tfp_prepare_send(rs232_v2->tfp, TF_RS232_V2_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)rs232_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)rs232_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(rs232_v2->tfp, response_expected, deadline, &error_code);
@@ -1267,7 +1273,7 @@ int tf_rs232_v2_get_identity(TF_RS232V2 *rs232_v2, char ret_uid[8], char ret_con
         if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&rs232_v2->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&rs232_v2->tfp->spitfp->recv_buf, 3); }
         if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&rs232_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&rs232_v2->tfp->spitfp->recv_buf, 2); }
         if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL*)rs232_v2->tfp->hal, rs232_v2->tfp->spitfp->port_id);
+            *ret_position = tf_hal_get_port_name((TF_HAL *)rs232_v2->tfp->hal, rs232_v2->tfp->spitfp->port_id);
         }
         if (ret_connected_uid != NULL) {
             memcpy(ret_connected_uid, tmp_connected_uid, 8);
@@ -1438,7 +1444,7 @@ int tf_rs232_v2_read(TF_RS232V2 *rs232_v2, uint16_t length, char *ret_message, u
     return ret;
 }
 #if TF_IMPLEMENT_CALLBACKS != 0
-int tf_rs232_v2_register_read_low_level_callback(TF_RS232V2 *rs232_v2, TF_RS232V2ReadLowLevelHandler handler, void *user_data) {
+int tf_rs232_v2_register_read_low_level_callback(TF_RS232V2 *rs232_v2, TF_RS232V2_ReadLowLevelHandler handler, void *user_data) {
     if (rs232_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -1458,7 +1464,7 @@ int tf_rs232_v2_register_read_low_level_callback(TF_RS232V2 *rs232_v2, TF_RS232V
 }
 
 
-int tf_rs232_v2_register_error_count_callback(TF_RS232V2 *rs232_v2, TF_RS232V2ErrorCountHandler handler, void *user_data) {
+int tf_rs232_v2_register_error_count_callback(TF_RS232V2 *rs232_v2, TF_RS232V2_ErrorCountHandler handler, void *user_data) {
     if (rs232_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -1478,7 +1484,7 @@ int tf_rs232_v2_register_error_count_callback(TF_RS232V2 *rs232_v2, TF_RS232V2Er
 }
 
 
-int tf_rs232_v2_register_frame_readable_callback(TF_RS232V2 *rs232_v2, TF_RS232V2FrameReadableHandler handler, void *user_data) {
+int tf_rs232_v2_register_frame_readable_callback(TF_RS232V2 *rs232_v2, TF_RS232V2_FrameReadableHandler handler, void *user_data) {
     if (rs232_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -1502,7 +1508,7 @@ int tf_rs232_v2_callback_tick(TF_RS232V2 *rs232_v2, uint32_t timeout_us) {
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(rs232_v2->tfp, tf_hal_current_time_us((TF_HAL*)rs232_v2->tfp->hal) + timeout_us);
+    return tf_tfp_callback_tick(rs232_v2->tfp, tf_hal_current_time_us((TF_HAL *)rs232_v2->tfp->hal) + timeout_us);
 }
 
 #ifdef __cplusplus

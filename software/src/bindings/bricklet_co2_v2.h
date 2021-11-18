@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,10 +27,10 @@ extern "C" {
 struct TF_CO2V2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_CO2V2AllValuesHandler)(struct TF_CO2V2 *device, uint16_t co2_concentration, int16_t temperature, uint16_t humidity, void *user_data);
-typedef void (*TF_CO2V2CO2ConcentrationHandler)(struct TF_CO2V2 *device, uint16_t co2_concentration, void *user_data);
-typedef void (*TF_CO2V2TemperatureHandler)(struct TF_CO2V2 *device, int16_t temperature, void *user_data);
-typedef void (*TF_CO2V2HumidityHandler)(struct TF_CO2V2 *device, uint16_t humidity, void *user_data);
+typedef void (*TF_CO2V2_AllValuesHandler)(struct TF_CO2V2 *device, uint16_t co2_concentration, int16_t temperature, uint16_t humidity, void *user_data);
+typedef void (*TF_CO2V2_CO2ConcentrationHandler)(struct TF_CO2V2 *device, uint16_t co2_concentration, void *user_data);
+typedef void (*TF_CO2V2_TemperatureHandler)(struct TF_CO2V2 *device, int16_t temperature, void *user_data);
+typedef void (*TF_CO2V2_HumidityHandler)(struct TF_CO2V2 *device, uint16_t humidity, void *user_data);
 
 #endif
 /**
@@ -41,16 +41,16 @@ typedef void (*TF_CO2V2HumidityHandler)(struct TF_CO2V2 *device, uint16_t humidi
 typedef struct TF_CO2V2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_CO2V2AllValuesHandler all_values_handler;
+    TF_CO2V2_AllValuesHandler all_values_handler;
     void *all_values_user_data;
 
-    TF_CO2V2CO2ConcentrationHandler co2_concentration_handler;
+    TF_CO2V2_CO2ConcentrationHandler co2_concentration_handler;
     void *co2_concentration_user_data;
 
-    TF_CO2V2TemperatureHandler temperature_handler;
+    TF_CO2V2_TemperatureHandler temperature_handler;
     void *temperature_user_data;
 
-    TF_CO2V2HumidityHandler humidity_handler;
+    TF_CO2V2_HumidityHandler humidity_handler;
     void *humidity_user_data;
 
 #endif
@@ -398,7 +398,7 @@ int tf_co2_v2_set_response_expected(TF_CO2V2 *co2_v2, uint8_t function_id, bool 
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_co2_v2_set_response_expected_all(TF_CO2V2 *co2_v2, bool response_expected);
+int tf_co2_v2_set_response_expected_all(TF_CO2V2 *co2_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_CO2V2
@@ -417,7 +417,7 @@ void tf_co2_v2_set_response_expected_all(TF_CO2V2 *co2_v2, bool response_expecte
  *  The sensor is able to messure up to 120 °C. However it is only specified up to 70 °C.
  *  Exposing the Bricklet to higher temperatures might result in permanent damage.
  */
-int tf_co2_v2_register_all_values_callback(TF_CO2V2 *co2_v2, TF_CO2V2AllValuesHandler handler, void *user_data);
+int tf_co2_v2_register_all_values_callback(TF_CO2V2 *co2_v2, TF_CO2V2_AllValuesHandler handler, void *user_data);
 
 
 /**
@@ -433,7 +433,7 @@ int tf_co2_v2_register_all_values_callback(TF_CO2V2 *co2_v2, TF_CO2V2AllValuesHa
  * 
  * The parameter is the same as {@link tf_co2_v2_get_co2_concentration}.
  */
-int tf_co2_v2_register_co2_concentration_callback(TF_CO2V2 *co2_v2, TF_CO2V2CO2ConcentrationHandler handler, void *user_data);
+int tf_co2_v2_register_co2_concentration_callback(TF_CO2V2 *co2_v2, TF_CO2V2_CO2ConcentrationHandler handler, void *user_data);
 
 
 /**
@@ -449,7 +449,7 @@ int tf_co2_v2_register_co2_concentration_callback(TF_CO2V2 *co2_v2, TF_CO2V2CO2C
  * 
  * The parameter is the same as {@link tf_co2_v2_get_temperature}.
  */
-int tf_co2_v2_register_temperature_callback(TF_CO2V2 *co2_v2, TF_CO2V2TemperatureHandler handler, void *user_data);
+int tf_co2_v2_register_temperature_callback(TF_CO2V2 *co2_v2, TF_CO2V2_TemperatureHandler handler, void *user_data);
 
 
 /**
@@ -465,7 +465,7 @@ int tf_co2_v2_register_temperature_callback(TF_CO2V2 *co2_v2, TF_CO2V2Temperatur
  * 
  * The parameter is the same as {@link tf_co2_v2_get_humidity}.
  */
-int tf_co2_v2_register_humidity_callback(TF_CO2V2 *co2_v2, TF_CO2V2HumidityHandler handler, void *user_data);
+int tf_co2_v2_register_humidity_callback(TF_CO2V2 *co2_v2, TF_CO2V2_HumidityHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

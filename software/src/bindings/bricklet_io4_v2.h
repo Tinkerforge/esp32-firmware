@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,9 +27,9 @@ extern "C" {
 struct TF_IO4V2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_IO4V2InputValueHandler)(struct TF_IO4V2 *device, uint8_t channel, bool changed, bool value, void *user_data);
-typedef void (*TF_IO4V2AllInputValueHandler)(struct TF_IO4V2 *device, bool changed[4], bool value[4], void *user_data);
-typedef void (*TF_IO4V2MonoflopDoneHandler)(struct TF_IO4V2 *device, uint8_t channel, bool value, void *user_data);
+typedef void (*TF_IO4V2_InputValueHandler)(struct TF_IO4V2 *device, uint8_t channel, bool changed, bool value, void *user_data);
+typedef void (*TF_IO4V2_AllInputValueHandler)(struct TF_IO4V2 *device, bool changed[4], bool value[4], void *user_data);
+typedef void (*TF_IO4V2_MonoflopDoneHandler)(struct TF_IO4V2 *device, uint8_t channel, bool value, void *user_data);
 
 #endif
 /**
@@ -40,13 +40,13 @@ typedef void (*TF_IO4V2MonoflopDoneHandler)(struct TF_IO4V2 *device, uint8_t cha
 typedef struct TF_IO4V2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_IO4V2InputValueHandler input_value_handler;
+    TF_IO4V2_InputValueHandler input_value_handler;
     void *input_value_user_data;
 
-    TF_IO4V2AllInputValueHandler all_input_value_handler;
+    TF_IO4V2_AllInputValueHandler all_input_value_handler;
     void *all_input_value_user_data;
 
-    TF_IO4V2MonoflopDoneHandler monoflop_done_handler;
+    TF_IO4V2_MonoflopDoneHandler monoflop_done_handler;
     void *monoflop_done_user_data;
 
 #endif
@@ -389,7 +389,7 @@ int tf_io4_v2_set_response_expected(TF_IO4V2 *io4_v2, uint8_t function_id, bool 
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_io4_v2_set_response_expected_all(TF_IO4V2 *io4_v2, bool response_expected);
+int tf_io4_v2_set_response_expected_all(TF_IO4V2 *io4_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_IO4V2
@@ -406,7 +406,7 @@ void tf_io4_v2_set_response_expected_all(TF_IO4V2 *io4_v2, bool response_expecte
  * for the channel. The `changed` parameter is true if the value has changed since
  * the last callback.
  */
-int tf_io4_v2_register_input_value_callback(TF_IO4V2 *io4_v2, TF_IO4V2InputValueHandler handler, void *user_data);
+int tf_io4_v2_register_input_value_callback(TF_IO4V2 *io4_v2, TF_IO4V2_InputValueHandler handler, void *user_data);
 
 
 /**
@@ -424,7 +424,7 @@ int tf_io4_v2_register_input_value_callback(TF_IO4V2 *io4_v2, TF_IO4V2InputValue
  * `changed` parameter is true if the value has changed since
  * the last callback.
  */
-int tf_io4_v2_register_all_input_value_callback(TF_IO4V2 *io4_v2, TF_IO4V2AllInputValueHandler handler, void *user_data);
+int tf_io4_v2_register_all_input_value_callback(TF_IO4V2 *io4_v2, TF_IO4V2_AllInputValueHandler handler, void *user_data);
 
 
 /**
@@ -439,7 +439,7 @@ int tf_io4_v2_register_all_input_value_callback(TF_IO4V2 *io4_v2, TF_IO4V2AllInp
  * parameters contain the channel and the current value of the channel
  * (the value after the monoflop).
  */
-int tf_io4_v2_register_monoflop_done_callback(TF_IO4V2 *io4_v2, TF_IO4V2MonoflopDoneHandler handler, void *user_data);
+int tf_io4_v2_register_monoflop_done_callback(TF_IO4V2 *io4_v2, TF_IO4V2_MonoflopDoneHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

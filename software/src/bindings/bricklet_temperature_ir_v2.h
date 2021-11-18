@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,8 +27,8 @@ extern "C" {
 struct TF_TemperatureIRV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_TemperatureIRV2AmbientTemperatureHandler)(struct TF_TemperatureIRV2 *device, int16_t temperature, void *user_data);
-typedef void (*TF_TemperatureIRV2ObjectTemperatureHandler)(struct TF_TemperatureIRV2 *device, int16_t temperature, void *user_data);
+typedef void (*TF_TemperatureIRV2_AmbientTemperatureHandler)(struct TF_TemperatureIRV2 *device, int16_t temperature, void *user_data);
+typedef void (*TF_TemperatureIRV2_ObjectTemperatureHandler)(struct TF_TemperatureIRV2 *device, int16_t temperature, void *user_data);
 
 #endif
 /**
@@ -39,10 +39,10 @@ typedef void (*TF_TemperatureIRV2ObjectTemperatureHandler)(struct TF_Temperature
 typedef struct TF_TemperatureIRV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_TemperatureIRV2AmbientTemperatureHandler ambient_temperature_handler;
+    TF_TemperatureIRV2_AmbientTemperatureHandler ambient_temperature_handler;
     void *ambient_temperature_user_data;
 
-    TF_TemperatureIRV2ObjectTemperatureHandler object_temperature_handler;
+    TF_TemperatureIRV2_ObjectTemperatureHandler object_temperature_handler;
     void *object_temperature_user_data;
 
 #endif
@@ -340,7 +340,7 @@ int tf_temperature_ir_v2_set_response_expected(TF_TemperatureIRV2 *temperature_i
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_temperature_ir_v2_set_response_expected_all(TF_TemperatureIRV2 *temperature_ir_v2, bool response_expected);
+int tf_temperature_ir_v2_set_response_expected_all(TF_TemperatureIRV2 *temperature_ir_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_TemperatureIRV2
@@ -355,7 +355,7 @@ void tf_temperature_ir_v2_set_response_expected_all(TF_TemperatureIRV2 *temperat
  * 
  * The parameter is the same as {@link tf_temperature_ir_v2_get_ambient_temperature}.
  */
-int tf_temperature_ir_v2_register_ambient_temperature_callback(TF_TemperatureIRV2 *temperature_ir_v2, TF_TemperatureIRV2AmbientTemperatureHandler handler, void *user_data);
+int tf_temperature_ir_v2_register_ambient_temperature_callback(TF_TemperatureIRV2 *temperature_ir_v2, TF_TemperatureIRV2_AmbientTemperatureHandler handler, void *user_data);
 
 
 /**
@@ -371,7 +371,7 @@ int tf_temperature_ir_v2_register_ambient_temperature_callback(TF_TemperatureIRV
  * 
  * The parameter is the same as {@link tf_temperature_ir_v2_get_object_temperature}.
  */
-int tf_temperature_ir_v2_register_object_temperature_callback(TF_TemperatureIRV2 *temperature_ir_v2, TF_TemperatureIRV2ObjectTemperatureHandler handler, void *user_data);
+int tf_temperature_ir_v2_register_object_temperature_callback(TF_TemperatureIRV2 *temperature_ir_v2, TF_TemperatureIRV2_ObjectTemperatureHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

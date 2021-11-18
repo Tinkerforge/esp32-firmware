@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,7 +27,7 @@ extern "C" {
 struct TF_EnergyMonitor;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_EnergyMonitorEnergyDataHandler)(struct TF_EnergyMonitor *device, int32_t voltage, int32_t current, int32_t energy, int32_t real_power, int32_t apparent_power, int32_t reactive_power, uint16_t power_factor, uint16_t frequency, void *user_data);
+typedef void (*TF_EnergyMonitor_EnergyDataHandler)(struct TF_EnergyMonitor *device, int32_t voltage, int32_t current, int32_t energy, int32_t real_power, int32_t apparent_power, int32_t reactive_power, uint16_t power_factor, uint16_t frequency, void *user_data);
 
 #endif
 /**
@@ -38,7 +38,7 @@ typedef void (*TF_EnergyMonitorEnergyDataHandler)(struct TF_EnergyMonitor *devic
 typedef struct TF_EnergyMonitor {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_EnergyMonitorEnergyDataHandler energy_data_handler;
+    TF_EnergyMonitor_EnergyDataHandler energy_data_handler;
     void *energy_data_user_data;
 
 #endif
@@ -311,7 +311,7 @@ int tf_energy_monitor_set_response_expected(TF_EnergyMonitor *energy_monitor, ui
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_energy_monitor_set_response_expected_all(TF_EnergyMonitor *energy_monitor, bool response_expected);
+int tf_energy_monitor_set_response_expected_all(TF_EnergyMonitor *energy_monitor, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_EnergyMonitor
@@ -326,7 +326,7 @@ void tf_energy_monitor_set_response_expected_all(TF_EnergyMonitor *energy_monito
  * 
  * The parameters are the same as {@link tf_energy_monitor_get_energy_data}.
  */
-int tf_energy_monitor_register_energy_data_callback(TF_EnergyMonitor *energy_monitor, TF_EnergyMonitorEnergyDataHandler handler, void *user_data);
+int tf_energy_monitor_register_energy_data_callback(TF_EnergyMonitor *energy_monitor, TF_EnergyMonitor_EnergyDataHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

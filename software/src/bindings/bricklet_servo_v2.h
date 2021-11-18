@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,7 +27,7 @@ extern "C" {
 struct TF_ServoV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_ServoV2PositionReachedHandler)(struct TF_ServoV2 *device, uint16_t servo_channel, int16_t position, void *user_data);
+typedef void (*TF_ServoV2_PositionReachedHandler)(struct TF_ServoV2 *device, uint16_t servo_channel, int16_t position, void *user_data);
 
 #endif
 /**
@@ -38,7 +38,7 @@ typedef void (*TF_ServoV2PositionReachedHandler)(struct TF_ServoV2 *device, uint
 typedef struct TF_ServoV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_ServoV2PositionReachedHandler position_reached_handler;
+    TF_ServoV2_PositionReachedHandler position_reached_handler;
     void *position_reached_user_data;
 
 #endif
@@ -396,7 +396,7 @@ int tf_servo_v2_set_response_expected(TF_ServoV2 *servo_v2, uint8_t function_id,
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_servo_v2_set_response_expected_all(TF_ServoV2 *servo_v2, bool response_expected);
+int tf_servo_v2_set_response_expected_all(TF_ServoV2 *servo_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_ServoV2
@@ -419,7 +419,7 @@ void tf_servo_v2_set_response_expected_all(TF_ServoV2 *servo_v2, bool response_e
  *  maximum velocity of the servo. Otherwise the servo will lag behind the
  *  control value and the callback will be triggered too early.
  */
-int tf_servo_v2_register_position_reached_callback(TF_ServoV2 *servo_v2, TF_ServoV2PositionReachedHandler handler, void *user_data);
+int tf_servo_v2_register_position_reached_callback(TF_ServoV2 *servo_v2, TF_ServoV2_PositionReachedHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

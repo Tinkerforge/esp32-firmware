@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,9 +27,9 @@ extern "C" {
 struct TF_PTCV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_PTCV2TemperatureHandler)(struct TF_PTCV2 *device, int32_t temperature, void *user_data);
-typedef void (*TF_PTCV2ResistanceHandler)(struct TF_PTCV2 *device, int32_t resistance, void *user_data);
-typedef void (*TF_PTCV2SensorConnectedHandler)(struct TF_PTCV2 *device, bool connected, void *user_data);
+typedef void (*TF_PTCV2_TemperatureHandler)(struct TF_PTCV2 *device, int32_t temperature, void *user_data);
+typedef void (*TF_PTCV2_ResistanceHandler)(struct TF_PTCV2 *device, int32_t resistance, void *user_data);
+typedef void (*TF_PTCV2_SensorConnectedHandler)(struct TF_PTCV2 *device, bool connected, void *user_data);
 
 #endif
 /**
@@ -40,13 +40,13 @@ typedef void (*TF_PTCV2SensorConnectedHandler)(struct TF_PTCV2 *device, bool con
 typedef struct TF_PTCV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_PTCV2TemperatureHandler temperature_handler;
+    TF_PTCV2_TemperatureHandler temperature_handler;
     void *temperature_user_data;
 
-    TF_PTCV2ResistanceHandler resistance_handler;
+    TF_PTCV2_ResistanceHandler resistance_handler;
     void *resistance_user_data;
 
-    TF_PTCV2SensorConnectedHandler sensor_connected_handler;
+    TF_PTCV2_SensorConnectedHandler sensor_connected_handler;
     void *sensor_connected_user_data;
 
 #endif
@@ -409,7 +409,7 @@ int tf_ptc_v2_set_response_expected(TF_PTCV2 *ptc_v2, uint8_t function_id, bool 
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_ptc_v2_set_response_expected_all(TF_PTCV2 *ptc_v2, bool response_expected);
+int tf_ptc_v2_set_response_expected_all(TF_PTCV2 *ptc_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_PTCV2
@@ -424,7 +424,7 @@ void tf_ptc_v2_set_response_expected_all(TF_PTCV2 *ptc_v2, bool response_expecte
  * 
  * The parameter is the same as {@link tf_ptc_v2_get_temperature}.
  */
-int tf_ptc_v2_register_temperature_callback(TF_PTCV2 *ptc_v2, TF_PTCV2TemperatureHandler handler, void *user_data);
+int tf_ptc_v2_register_temperature_callback(TF_PTCV2 *ptc_v2, TF_PTCV2_TemperatureHandler handler, void *user_data);
 
 
 /**
@@ -440,7 +440,7 @@ int tf_ptc_v2_register_temperature_callback(TF_PTCV2 *ptc_v2, TF_PTCV2Temperatur
  * 
  * The parameter is the same as {@link tf_ptc_v2_get_resistance}.
  */
-int tf_ptc_v2_register_resistance_callback(TF_PTCV2 *ptc_v2, TF_PTCV2ResistanceHandler handler, void *user_data);
+int tf_ptc_v2_register_resistance_callback(TF_PTCV2 *ptc_v2, TF_PTCV2_ResistanceHandler handler, void *user_data);
 
 
 /**
@@ -456,7 +456,7 @@ int tf_ptc_v2_register_resistance_callback(TF_PTCV2 *ptc_v2, TF_PTCV2ResistanceH
  * 
  * The parameter is the same as {@link tf_ptc_v2_is_sensor_connected}.
  */
-int tf_ptc_v2_register_sensor_connected_callback(TF_PTCV2 *ptc_v2, TF_PTCV2SensorConnectedHandler handler, void *user_data);
+int tf_ptc_v2_register_sensor_connected_callback(TF_PTCV2 *ptc_v2, TF_PTCV2_SensorConnectedHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

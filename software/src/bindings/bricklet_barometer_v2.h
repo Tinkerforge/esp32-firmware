@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,9 +27,9 @@ extern "C" {
 struct TF_BarometerV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_BarometerV2AirPressureHandler)(struct TF_BarometerV2 *device, int32_t air_pressure, void *user_data);
-typedef void (*TF_BarometerV2AltitudeHandler)(struct TF_BarometerV2 *device, int32_t altitude, void *user_data);
-typedef void (*TF_BarometerV2TemperatureHandler)(struct TF_BarometerV2 *device, int32_t temperature, void *user_data);
+typedef void (*TF_BarometerV2_AirPressureHandler)(struct TF_BarometerV2 *device, int32_t air_pressure, void *user_data);
+typedef void (*TF_BarometerV2_AltitudeHandler)(struct TF_BarometerV2 *device, int32_t altitude, void *user_data);
+typedef void (*TF_BarometerV2_TemperatureHandler)(struct TF_BarometerV2 *device, int32_t temperature, void *user_data);
 
 #endif
 /**
@@ -40,13 +40,13 @@ typedef void (*TF_BarometerV2TemperatureHandler)(struct TF_BarometerV2 *device, 
 typedef struct TF_BarometerV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_BarometerV2AirPressureHandler air_pressure_handler;
+    TF_BarometerV2_AirPressureHandler air_pressure_handler;
     void *air_pressure_user_data;
 
-    TF_BarometerV2AltitudeHandler altitude_handler;
+    TF_BarometerV2_AltitudeHandler altitude_handler;
     void *altitude_user_data;
 
-    TF_BarometerV2TemperatureHandler temperature_handler;
+    TF_BarometerV2_TemperatureHandler temperature_handler;
     void *temperature_user_data;
 
 #endif
@@ -439,7 +439,7 @@ int tf_barometer_v2_set_response_expected(TF_BarometerV2 *barometer_v2, uint8_t 
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_barometer_v2_set_response_expected_all(TF_BarometerV2 *barometer_v2, bool response_expected);
+int tf_barometer_v2_set_response_expected_all(TF_BarometerV2 *barometer_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_BarometerV2
@@ -454,7 +454,7 @@ void tf_barometer_v2_set_response_expected_all(TF_BarometerV2 *barometer_v2, boo
  * 
  * The parameter is the same as {@link tf_barometer_v2_get_air_pressure}.
  */
-int tf_barometer_v2_register_air_pressure_callback(TF_BarometerV2 *barometer_v2, TF_BarometerV2AirPressureHandler handler, void *user_data);
+int tf_barometer_v2_register_air_pressure_callback(TF_BarometerV2 *barometer_v2, TF_BarometerV2_AirPressureHandler handler, void *user_data);
 
 
 /**
@@ -470,7 +470,7 @@ int tf_barometer_v2_register_air_pressure_callback(TF_BarometerV2 *barometer_v2,
  * 
  * The parameter is the same as {@link tf_barometer_v2_get_altitude}.
  */
-int tf_barometer_v2_register_altitude_callback(TF_BarometerV2 *barometer_v2, TF_BarometerV2AltitudeHandler handler, void *user_data);
+int tf_barometer_v2_register_altitude_callback(TF_BarometerV2 *barometer_v2, TF_BarometerV2_AltitudeHandler handler, void *user_data);
 
 
 /**
@@ -486,7 +486,7 @@ int tf_barometer_v2_register_altitude_callback(TF_BarometerV2 *barometer_v2, TF_
  * 
  * The parameter is the same as {@link tf_barometer_v2_get_temperature}.
  */
-int tf_barometer_v2_register_temperature_callback(TF_BarometerV2 *barometer_v2, TF_BarometerV2TemperatureHandler handler, void *user_data);
+int tf_barometer_v2_register_temperature_callback(TF_BarometerV2 *barometer_v2, TF_BarometerV2_TemperatureHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

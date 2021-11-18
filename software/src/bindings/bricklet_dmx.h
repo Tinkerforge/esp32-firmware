@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,10 +27,10 @@ extern "C" {
 struct TF_DMX;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_DMXFrameStartedHandler)(struct TF_DMX *device, void *user_data);
-typedef void (*TF_DMXFrameAvailableHandler)(struct TF_DMX *device, uint32_t frame_number, void *user_data);
-typedef void (*TF_DMXFrameLowLevelHandler)(struct TF_DMX *device, uint16_t frame_length, uint16_t frame_chunk_offset, uint8_t frame_chunk_data[56], uint32_t frame_number, void *user_data);
-typedef void (*TF_DMXFrameErrorCountHandler)(struct TF_DMX *device, uint32_t overrun_error_count, uint32_t framing_error_count, void *user_data);
+typedef void (*TF_DMX_FrameStartedHandler)(struct TF_DMX *device, void *user_data);
+typedef void (*TF_DMX_FrameAvailableHandler)(struct TF_DMX *device, uint32_t frame_number, void *user_data);
+typedef void (*TF_DMX_FrameLowLevelHandler)(struct TF_DMX *device, uint16_t frame_length, uint16_t frame_chunk_offset, uint8_t frame_chunk_data[56], uint32_t frame_number, void *user_data);
+typedef void (*TF_DMX_FrameErrorCountHandler)(struct TF_DMX *device, uint32_t overrun_error_count, uint32_t framing_error_count, void *user_data);
 
 #endif
 /**
@@ -41,16 +41,16 @@ typedef void (*TF_DMXFrameErrorCountHandler)(struct TF_DMX *device, uint32_t ove
 typedef struct TF_DMX {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_DMXFrameStartedHandler frame_started_handler;
+    TF_DMX_FrameStartedHandler frame_started_handler;
     void *frame_started_user_data;
 
-    TF_DMXFrameAvailableHandler frame_available_handler;
+    TF_DMX_FrameAvailableHandler frame_available_handler;
     void *frame_available_user_data;
 
-    TF_DMXFrameLowLevelHandler frame_low_level_handler;
+    TF_DMX_FrameLowLevelHandler frame_low_level_handler;
     void *frame_low_level_user_data;
 
-    TF_DMXFrameErrorCountHandler frame_error_count_handler;
+    TF_DMX_FrameErrorCountHandler frame_error_count_handler;
     void *frame_error_count_user_data;
 
 #endif
@@ -408,7 +408,7 @@ int tf_dmx_set_response_expected(TF_DMX *dmx, uint8_t function_id, bool response
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_dmx_set_response_expected_all(TF_DMX *dmx, bool response_expected);
+int tf_dmx_set_response_expected_all(TF_DMX *dmx, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_DMX
@@ -428,7 +428,7 @@ void tf_dmx_set_response_expected_all(TF_DMX *dmx, bool response_expected);
  * 
  * This callback can only be triggered in master mode.
  */
-int tf_dmx_register_frame_started_callback(TF_DMX *dmx, TF_DMXFrameStartedHandler handler, void *user_data);
+int tf_dmx_register_frame_started_callback(TF_DMX *dmx, TF_DMX_FrameStartedHandler handler, void *user_data);
 
 
 /**
@@ -449,7 +449,7 @@ int tf_dmx_register_frame_started_callback(TF_DMX *dmx, TF_DMXFrameStartedHandle
  * 
  * This callback can only be triggered in slave mode.
  */
-int tf_dmx_register_frame_available_callback(TF_DMX *dmx, TF_DMXFrameAvailableHandler handler, void *user_data);
+int tf_dmx_register_frame_available_callback(TF_DMX *dmx, TF_DMX_FrameAvailableHandler handler, void *user_data);
 
 
 /**
@@ -470,7 +470,7 @@ int tf_dmx_register_frame_available_callback(TF_DMX *dmx, TF_DMXFrameAvailableHa
  * 
  * This callback can only be triggered in slave mode.
  */
-int tf_dmx_register_frame_low_level_callback(TF_DMX *dmx, TF_DMXFrameLowLevelHandler handler, void *user_data);
+int tf_dmx_register_frame_low_level_callback(TF_DMX *dmx, TF_DMX_FrameLowLevelHandler handler, void *user_data);
 
 
 /**
@@ -484,7 +484,7 @@ int tf_dmx_register_frame_low_level_callback(TF_DMX *dmx, TF_DMXFrameLowLevelHan
  * This callback is called if a new error occurs. It returns
  * the current overrun and framing error count.
  */
-int tf_dmx_register_frame_error_count_callback(TF_DMX *dmx, TF_DMXFrameErrorCountHandler handler, void *user_data);
+int tf_dmx_register_frame_error_count_callback(TF_DMX *dmx, TF_DMX_FrameErrorCountHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

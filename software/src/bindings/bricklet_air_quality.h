@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,11 +27,11 @@ extern "C" {
 struct TF_AirQuality;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_AirQualityAllValuesHandler)(struct TF_AirQuality *device, int32_t iaq_index, uint8_t iaq_index_accuracy, int32_t temperature, int32_t humidity, int32_t air_pressure, void *user_data);
-typedef void (*TF_AirQualityIAQIndexHandler)(struct TF_AirQuality *device, int32_t iaq_index, uint8_t iaq_index_accuracy, void *user_data);
-typedef void (*TF_AirQualityTemperatureHandler)(struct TF_AirQuality *device, int32_t temperature, void *user_data);
-typedef void (*TF_AirQualityHumidityHandler)(struct TF_AirQuality *device, int32_t humidity, void *user_data);
-typedef void (*TF_AirQualityAirPressureHandler)(struct TF_AirQuality *device, int32_t air_pressure, void *user_data);
+typedef void (*TF_AirQuality_AllValuesHandler)(struct TF_AirQuality *device, int32_t iaq_index, uint8_t iaq_index_accuracy, int32_t temperature, int32_t humidity, int32_t air_pressure, void *user_data);
+typedef void (*TF_AirQuality_IAQIndexHandler)(struct TF_AirQuality *device, int32_t iaq_index, uint8_t iaq_index_accuracy, void *user_data);
+typedef void (*TF_AirQuality_TemperatureHandler)(struct TF_AirQuality *device, int32_t temperature, void *user_data);
+typedef void (*TF_AirQuality_HumidityHandler)(struct TF_AirQuality *device, int32_t humidity, void *user_data);
+typedef void (*TF_AirQuality_AirPressureHandler)(struct TF_AirQuality *device, int32_t air_pressure, void *user_data);
 
 #endif
 /**
@@ -42,19 +42,19 @@ typedef void (*TF_AirQualityAirPressureHandler)(struct TF_AirQuality *device, in
 typedef struct TF_AirQuality {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_AirQualityAllValuesHandler all_values_handler;
+    TF_AirQuality_AllValuesHandler all_values_handler;
     void *all_values_user_data;
 
-    TF_AirQualityIAQIndexHandler iaq_index_handler;
+    TF_AirQuality_IAQIndexHandler iaq_index_handler;
     void *iaq_index_user_data;
 
-    TF_AirQualityTemperatureHandler temperature_handler;
+    TF_AirQuality_TemperatureHandler temperature_handler;
     void *temperature_user_data;
 
-    TF_AirQualityHumidityHandler humidity_handler;
+    TF_AirQuality_HumidityHandler humidity_handler;
     void *humidity_user_data;
 
-    TF_AirQualityAirPressureHandler air_pressure_handler;
+    TF_AirQuality_AirPressureHandler air_pressure_handler;
     void *air_pressure_user_data;
 
 #endif
@@ -457,7 +457,7 @@ int tf_air_quality_set_response_expected(TF_AirQuality *air_quality, uint8_t fun
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_air_quality_set_response_expected_all(TF_AirQuality *air_quality, bool response_expected);
+int tf_air_quality_set_response_expected_all(TF_AirQuality *air_quality, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_AirQuality
@@ -472,7 +472,7 @@ void tf_air_quality_set_response_expected_all(TF_AirQuality *air_quality, bool r
  * 
  * The parameters are the same as {@link tf_air_quality_get_all_values}.
  */
-int tf_air_quality_register_all_values_callback(TF_AirQuality *air_quality, TF_AirQualityAllValuesHandler handler, void *user_data);
+int tf_air_quality_register_all_values_callback(TF_AirQuality *air_quality, TF_AirQuality_AllValuesHandler handler, void *user_data);
 
 
 /**
@@ -488,7 +488,7 @@ int tf_air_quality_register_all_values_callback(TF_AirQuality *air_quality, TF_A
  * 
  * The parameters are the same as {@link tf_air_quality_get_iaq_index}.
  */
-int tf_air_quality_register_iaq_index_callback(TF_AirQuality *air_quality, TF_AirQualityIAQIndexHandler handler, void *user_data);
+int tf_air_quality_register_iaq_index_callback(TF_AirQuality *air_quality, TF_AirQuality_IAQIndexHandler handler, void *user_data);
 
 
 /**
@@ -504,7 +504,7 @@ int tf_air_quality_register_iaq_index_callback(TF_AirQuality *air_quality, TF_Ai
  * 
  * The parameter is the same as {@link tf_air_quality_get_temperature}.
  */
-int tf_air_quality_register_temperature_callback(TF_AirQuality *air_quality, TF_AirQualityTemperatureHandler handler, void *user_data);
+int tf_air_quality_register_temperature_callback(TF_AirQuality *air_quality, TF_AirQuality_TemperatureHandler handler, void *user_data);
 
 
 /**
@@ -520,7 +520,7 @@ int tf_air_quality_register_temperature_callback(TF_AirQuality *air_quality, TF_
  * 
  * The parameter is the same as {@link tf_air_quality_get_humidity}.
  */
-int tf_air_quality_register_humidity_callback(TF_AirQuality *air_quality, TF_AirQualityHumidityHandler handler, void *user_data);
+int tf_air_quality_register_humidity_callback(TF_AirQuality *air_quality, TF_AirQuality_HumidityHandler handler, void *user_data);
 
 
 /**
@@ -536,7 +536,7 @@ int tf_air_quality_register_humidity_callback(TF_AirQuality *air_quality, TF_Air
  * 
  * The parameter is the same as {@link tf_air_quality_get_air_pressure}.
  */
-int tf_air_quality_register_air_pressure_callback(TF_AirQuality *air_quality, TF_AirQualityAirPressureHandler handler, void *user_data);
+int tf_air_quality_register_air_pressure_callback(TF_AirQuality *air_quality, TF_AirQuality_AirPressureHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

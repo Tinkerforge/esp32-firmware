@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,16 +27,15 @@ static bool tf_industrial_counter_callback_handler(void *dev, uint8_t fid, TF_Pa
     (void)payload;
 
     switch (fid) {
-
         case TF_INDUSTRIAL_COUNTER_CALLBACK_ALL_COUNTER: {
-            TF_IndustrialCounterAllCounterHandler fn = industrial_counter->all_counter_handler;
+            TF_IndustrialCounter_AllCounterHandler fn = industrial_counter->all_counter_handler;
             void *user_data = industrial_counter->all_counter_user_data;
             if (fn == NULL) {
                 return false;
             }
             size_t i;
             int64_t counter[4]; for (i = 0; i < 4; ++i) counter[i] = tf_packet_buffer_read_int64_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal);
             hal_common->locked = true;
             fn(industrial_counter, counter, user_data);
             hal_common->locked = false;
@@ -44,7 +43,7 @@ static bool tf_industrial_counter_callback_handler(void *dev, uint8_t fid, TF_Pa
         }
 
         case TF_INDUSTRIAL_COUNTER_CALLBACK_ALL_SIGNAL_DATA: {
-            TF_IndustrialCounterAllSignalDataHandler fn = industrial_counter->all_signal_data_handler;
+            TF_IndustrialCounter_AllSignalDataHandler fn = industrial_counter->all_signal_data_handler;
             void *user_data = industrial_counter->all_signal_data_user_data;
             if (fn == NULL) {
                 return false;
@@ -54,12 +53,13 @@ static bool tf_industrial_counter_callback_handler(void *dev, uint8_t fid, TF_Pa
             uint64_t period[4]; for (i = 0; i < 4; ++i) period[i] = tf_packet_buffer_read_uint64_t(payload);
             uint32_t frequency[4]; for (i = 0; i < 4; ++i) frequency[i] = tf_packet_buffer_read_uint32_t(payload);
             bool value[4]; tf_packet_buffer_read_bool_array(payload, value, 4);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal);
             hal_common->locked = true;
             fn(industrial_counter, duty_cycle, period, frequency, value, user_data);
             hal_common->locked = false;
             break;
         }
+
         default:
             return false;
     }
@@ -289,8 +289,14 @@ int tf_industrial_counter_set_response_expected(TF_IndustrialCounter *industrial
     return TF_E_OK;
 }
 
-void tf_industrial_counter_set_response_expected_all(TF_IndustrialCounter *industrial_counter, bool response_expected) {
+int tf_industrial_counter_set_response_expected_all(TF_IndustrialCounter *industrial_counter, bool response_expected) {
+    if (industrial_counter == NULL) {
+        return TF_E_NULL;
+    }
+
     memset(industrial_counter->response_expected, response_expected ? 0xFF : 0, 2);
+
+    return TF_E_OK;
 }
 
 int tf_industrial_counter_get_counter(TF_IndustrialCounter *industrial_counter, uint8_t channel, int64_t *ret_counter) {
@@ -298,7 +304,7 @@ int tf_industrial_counter_get_counter(TF_IndustrialCounter *industrial_counter, 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -309,7 +315,7 @@ int tf_industrial_counter_get_counter(TF_IndustrialCounter *industrial_counter, 
 
     buf[0] = (uint8_t)channel;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -341,7 +347,7 @@ int tf_industrial_counter_get_all_counter(TF_IndustrialCounter *industrial_count
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -349,7 +355,7 @@ int tf_industrial_counter_get_all_counter(TF_IndustrialCounter *industrial_count
     tf_tfp_prepare_send(industrial_counter->tfp, TF_INDUSTRIAL_COUNTER_FUNCTION_GET_ALL_COUNTER, 0, 32, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -381,7 +387,7 @@ int tf_industrial_counter_set_counter(TF_IndustrialCounter *industrial_counter, 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -394,7 +400,7 @@ int tf_industrial_counter_set_counter(TF_IndustrialCounter *industrial_counter, 
     buf[0] = (uint8_t)channel;
     counter = tf_leconvert_int64_to(counter); memcpy(buf + 1, &counter, 8);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -421,7 +427,7 @@ int tf_industrial_counter_set_all_counter(TF_IndustrialCounter *industrial_count
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -434,7 +440,7 @@ int tf_industrial_counter_set_all_counter(TF_IndustrialCounter *industrial_count
 
     for (i = 0; i < 4; i++) { int64_t tmp_counter = tf_leconvert_int64_to(counter[i]); memcpy(buf + 0 + (i * sizeof(int64_t)), &tmp_counter, sizeof(int64_t)); }
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -461,7 +467,7 @@ int tf_industrial_counter_get_signal_data(TF_IndustrialCounter *industrial_count
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -472,7 +478,7 @@ int tf_industrial_counter_get_signal_data(TF_IndustrialCounter *industrial_count
 
     buf[0] = (uint8_t)channel;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -507,7 +513,7 @@ int tf_industrial_counter_get_all_signal_data(TF_IndustrialCounter *industrial_c
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -515,7 +521,7 @@ int tf_industrial_counter_get_all_signal_data(TF_IndustrialCounter *industrial_c
     tf_tfp_prepare_send(industrial_counter->tfp, TF_INDUSTRIAL_COUNTER_FUNCTION_GET_ALL_SIGNAL_DATA, 0, 57, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -550,7 +556,7 @@ int tf_industrial_counter_set_counter_active(TF_IndustrialCounter *industrial_co
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -563,7 +569,7 @@ int tf_industrial_counter_set_counter_active(TF_IndustrialCounter *industrial_co
     buf[0] = (uint8_t)channel;
     buf[1] = active ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -590,7 +596,7 @@ int tf_industrial_counter_set_all_counter_active(TF_IndustrialCounter *industria
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -603,7 +609,7 @@ int tf_industrial_counter_set_all_counter_active(TF_IndustrialCounter *industria
 
     memset(buf + 0, 0, 1); for (i = 0; i < 4; ++i) buf[0 + (i / 8)] |= (active[i] ? 1 : 0) << (i % 8);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -630,7 +636,7 @@ int tf_industrial_counter_get_counter_active(TF_IndustrialCounter *industrial_co
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -641,7 +647,7 @@ int tf_industrial_counter_get_counter_active(TF_IndustrialCounter *industrial_co
 
     buf[0] = (uint8_t)channel;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -673,14 +679,14 @@ int tf_industrial_counter_get_all_counter_active(TF_IndustrialCounter *industria
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(industrial_counter->tfp, TF_INDUSTRIAL_COUNTER_FUNCTION_GET_ALL_COUNTER_ACTIVE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -712,7 +718,7 @@ int tf_industrial_counter_set_counter_configuration(TF_IndustrialCounter *indust
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -728,7 +734,7 @@ int tf_industrial_counter_set_counter_configuration(TF_IndustrialCounter *indust
     buf[3] = (uint8_t)duty_cycle_prescaler;
     buf[4] = (uint8_t)frequency_integration_time;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -755,7 +761,7 @@ int tf_industrial_counter_get_counter_configuration(TF_IndustrialCounter *indust
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -766,7 +772,7 @@ int tf_industrial_counter_get_counter_configuration(TF_IndustrialCounter *indust
 
     buf[0] = (uint8_t)channel;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -801,7 +807,7 @@ int tf_industrial_counter_set_all_counter_callback_configuration(TF_IndustrialCo
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -814,7 +820,7 @@ int tf_industrial_counter_set_all_counter_callback_configuration(TF_IndustrialCo
     period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
     buf[4] = value_has_to_change ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -841,14 +847,14 @@ int tf_industrial_counter_get_all_counter_callback_configuration(TF_IndustrialCo
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(industrial_counter->tfp, TF_INDUSTRIAL_COUNTER_FUNCTION_GET_ALL_COUNTER_CALLBACK_CONFIGURATION, 0, 5, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -881,7 +887,7 @@ int tf_industrial_counter_set_all_signal_data_callback_configuration(TF_Industri
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -894,7 +900,7 @@ int tf_industrial_counter_set_all_signal_data_callback_configuration(TF_Industri
     period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
     buf[4] = value_has_to_change ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -921,14 +927,14 @@ int tf_industrial_counter_get_all_signal_data_callback_configuration(TF_Industri
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(industrial_counter->tfp, TF_INDUSTRIAL_COUNTER_FUNCTION_GET_ALL_SIGNAL_DATA_CALLBACK_CONFIGURATION, 0, 5, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -961,7 +967,7 @@ int tf_industrial_counter_set_channel_led_config(TF_IndustrialCounter *industria
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -974,7 +980,7 @@ int tf_industrial_counter_set_channel_led_config(TF_IndustrialCounter *industria
     buf[0] = (uint8_t)channel;
     buf[1] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -1001,7 +1007,7 @@ int tf_industrial_counter_get_channel_led_config(TF_IndustrialCounter *industria
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1012,7 +1018,7 @@ int tf_industrial_counter_get_channel_led_config(TF_IndustrialCounter *industria
 
     buf[0] = (uint8_t)channel;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -1044,14 +1050,14 @@ int tf_industrial_counter_get_spitfp_error_count(TF_IndustrialCounter *industria
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(industrial_counter->tfp, TF_INDUSTRIAL_COUNTER_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -1086,7 +1092,7 @@ int tf_industrial_counter_set_bootloader_mode(TF_IndustrialCounter *industrial_c
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1097,7 +1103,7 @@ int tf_industrial_counter_set_bootloader_mode(TF_IndustrialCounter *industrial_c
 
     buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -1129,14 +1135,14 @@ int tf_industrial_counter_get_bootloader_mode(TF_IndustrialCounter *industrial_c
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(industrial_counter->tfp, TF_INDUSTRIAL_COUNTER_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -1168,7 +1174,7 @@ int tf_industrial_counter_set_write_firmware_pointer(TF_IndustrialCounter *indus
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1180,7 +1186,7 @@ int tf_industrial_counter_set_write_firmware_pointer(TF_IndustrialCounter *indus
 
     pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -1207,7 +1213,7 @@ int tf_industrial_counter_write_firmware(TF_IndustrialCounter *industrial_counte
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1218,7 +1224,7 @@ int tf_industrial_counter_write_firmware(TF_IndustrialCounter *industrial_counte
 
     memcpy(buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -1250,7 +1256,7 @@ int tf_industrial_counter_set_status_led_config(TF_IndustrialCounter *industrial
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1262,7 +1268,7 @@ int tf_industrial_counter_set_status_led_config(TF_IndustrialCounter *industrial
 
     buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -1289,14 +1295,14 @@ int tf_industrial_counter_get_status_led_config(TF_IndustrialCounter *industrial
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(industrial_counter->tfp, TF_INDUSTRIAL_COUNTER_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -1328,14 +1334,14 @@ int tf_industrial_counter_get_chip_temperature(TF_IndustrialCounter *industrial_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(industrial_counter->tfp, TF_INDUSTRIAL_COUNTER_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -1367,7 +1373,7 @@ int tf_industrial_counter_reset(TF_IndustrialCounter *industrial_counter) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1375,7 +1381,7 @@ int tf_industrial_counter_reset(TF_IndustrialCounter *industrial_counter) {
     tf_industrial_counter_get_response_expected(industrial_counter, TF_INDUSTRIAL_COUNTER_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(industrial_counter->tfp, TF_INDUSTRIAL_COUNTER_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -1402,7 +1408,7 @@ int tf_industrial_counter_write_uid(TF_IndustrialCounter *industrial_counter, ui
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1414,7 +1420,7 @@ int tf_industrial_counter_write_uid(TF_IndustrialCounter *industrial_counter, ui
 
     uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -1441,14 +1447,14 @@ int tf_industrial_counter_read_uid(TF_IndustrialCounter *industrial_counter, uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(industrial_counter->tfp, TF_INDUSTRIAL_COUNTER_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -1480,7 +1486,7 @@ int tf_industrial_counter_get_identity(TF_IndustrialCounter *industrial_counter,
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1488,7 +1494,7 @@ int tf_industrial_counter_get_identity(TF_IndustrialCounter *industrial_counter,
     tf_tfp_prepare_send(industrial_counter->tfp, TF_INDUSTRIAL_COUNTER_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL*)industrial_counter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + tf_hal_get_common((TF_HAL *)industrial_counter->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(industrial_counter->tfp, response_expected, deadline, &error_code);
@@ -1510,7 +1516,7 @@ int tf_industrial_counter_get_identity(TF_IndustrialCounter *industrial_counter,
         if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&industrial_counter->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&industrial_counter->tfp->spitfp->recv_buf, 3); }
         if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&industrial_counter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&industrial_counter->tfp->spitfp->recv_buf, 2); }
         if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL*)industrial_counter->tfp->hal, industrial_counter->tfp->spitfp->port_id);
+            *ret_position = tf_hal_get_port_name((TF_HAL *)industrial_counter->tfp->hal, industrial_counter->tfp->spitfp->port_id);
         }
         if (ret_connected_uid != NULL) {
             memcpy(ret_connected_uid, tmp_connected_uid, 8);
@@ -1527,7 +1533,7 @@ int tf_industrial_counter_get_identity(TF_IndustrialCounter *industrial_counter,
     return tf_tfp_get_error(error_code);
 }
 #if TF_IMPLEMENT_CALLBACKS != 0
-int tf_industrial_counter_register_all_counter_callback(TF_IndustrialCounter *industrial_counter, TF_IndustrialCounterAllCounterHandler handler, void *user_data) {
+int tf_industrial_counter_register_all_counter_callback(TF_IndustrialCounter *industrial_counter, TF_IndustrialCounter_AllCounterHandler handler, void *user_data) {
     if (industrial_counter == NULL) {
         return TF_E_NULL;
     }
@@ -1546,7 +1552,7 @@ int tf_industrial_counter_register_all_counter_callback(TF_IndustrialCounter *in
 }
 
 
-int tf_industrial_counter_register_all_signal_data_callback(TF_IndustrialCounter *industrial_counter, TF_IndustrialCounterAllSignalDataHandler handler, void *user_data) {
+int tf_industrial_counter_register_all_signal_data_callback(TF_IndustrialCounter *industrial_counter, TF_IndustrialCounter_AllSignalDataHandler handler, void *user_data) {
     if (industrial_counter == NULL) {
         return TF_E_NULL;
     }
@@ -1569,7 +1575,7 @@ int tf_industrial_counter_callback_tick(TF_IndustrialCounter *industrial_counter
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(industrial_counter->tfp, tf_hal_current_time_us((TF_HAL*)industrial_counter->tfp->hal) + timeout_us);
+    return tf_tfp_callback_tick(industrial_counter->tfp, tf_hal_current_time_us((TF_HAL *)industrial_counter->tfp->hal) + timeout_us);
 }
 
 #ifdef __cplusplus

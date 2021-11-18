@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,8 +27,8 @@ extern "C" {
 struct TF_RealTimeClockV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_RealTimeClockV2DateTimeHandler)(struct TF_RealTimeClockV2 *device, uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second, uint8_t centisecond, uint8_t weekday, int64_t timestamp, void *user_data);
-typedef void (*TF_RealTimeClockV2AlarmHandler)(struct TF_RealTimeClockV2 *device, uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second, uint8_t centisecond, uint8_t weekday, int64_t timestamp, void *user_data);
+typedef void (*TF_RealTimeClockV2_DateTimeHandler)(struct TF_RealTimeClockV2 *device, uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second, uint8_t centisecond, uint8_t weekday, int64_t timestamp, void *user_data);
+typedef void (*TF_RealTimeClockV2_AlarmHandler)(struct TF_RealTimeClockV2 *device, uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second, uint8_t centisecond, uint8_t weekday, int64_t timestamp, void *user_data);
 
 #endif
 /**
@@ -39,10 +39,10 @@ typedef void (*TF_RealTimeClockV2AlarmHandler)(struct TF_RealTimeClockV2 *device
 typedef struct TF_RealTimeClockV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_RealTimeClockV2DateTimeHandler date_time_handler;
+    TF_RealTimeClockV2_DateTimeHandler date_time_handler;
     void *date_time_user_data;
 
-    TF_RealTimeClockV2AlarmHandler alarm_handler;
+    TF_RealTimeClockV2_AlarmHandler alarm_handler;
     void *alarm_user_data;
 
 #endif
@@ -365,7 +365,7 @@ int tf_real_time_clock_v2_set_response_expected(TF_RealTimeClockV2 *real_time_cl
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_real_time_clock_v2_set_response_expected_all(TF_RealTimeClockV2 *real_time_clock_v2, bool response_expected);
+int tf_real_time_clock_v2_set_response_expected_all(TF_RealTimeClockV2 *real_time_clock_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_RealTimeClockV2
@@ -379,7 +379,7 @@ void tf_real_time_clock_v2_set_response_expected_all(TF_RealTimeClockV2 *real_ti
  * {@link tf_real_time_clock_v2_set_date_time_callback_configuration}. The parameters are the
  * same as for {@link tf_real_time_clock_v2_get_date_time}.
  */
-int tf_real_time_clock_v2_register_date_time_callback(TF_RealTimeClockV2 *real_time_clock_v2, TF_RealTimeClockV2DateTimeHandler handler, void *user_data);
+int tf_real_time_clock_v2_register_date_time_callback(TF_RealTimeClockV2 *real_time_clock_v2, TF_RealTimeClockV2_DateTimeHandler handler, void *user_data);
 
 
 /**
@@ -394,7 +394,7 @@ int tf_real_time_clock_v2_register_date_time_callback(TF_RealTimeClockV2 *real_t
  * configured alarm (see {@link tf_real_time_clock_v2_set_alarm}). The parameters are the same
  * as for {@link tf_real_time_clock_v2_get_date_time}.
  */
-int tf_real_time_clock_v2_register_alarm_callback(TF_RealTimeClockV2 *real_time_clock_v2, TF_RealTimeClockV2AlarmHandler handler, void *user_data);
+int tf_real_time_clock_v2_register_alarm_callback(TF_RealTimeClockV2 *real_time_clock_v2, TF_RealTimeClockV2_AlarmHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

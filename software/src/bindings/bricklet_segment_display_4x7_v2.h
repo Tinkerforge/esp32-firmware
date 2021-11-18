@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,7 +27,7 @@ extern "C" {
 struct TF_SegmentDisplay4x7V2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_SegmentDisplay4x7V2CounterFinishedHandler)(struct TF_SegmentDisplay4x7V2 *device, void *user_data);
+typedef void (*TF_SegmentDisplay4x7V2_CounterFinishedHandler)(struct TF_SegmentDisplay4x7V2 *device, void *user_data);
 
 #endif
 /**
@@ -38,7 +38,7 @@ typedef void (*TF_SegmentDisplay4x7V2CounterFinishedHandler)(struct TF_SegmentDi
 typedef struct TF_SegmentDisplay4x7V2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_SegmentDisplay4x7V2CounterFinishedHandler counter_finished_handler;
+    TF_SegmentDisplay4x7V2_CounterFinishedHandler counter_finished_handler;
     void *counter_finished_user_data;
 
 #endif
@@ -311,7 +311,7 @@ int tf_segment_display_4x7_v2_set_response_expected(TF_SegmentDisplay4x7V2 *segm
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_segment_display_4x7_v2_set_response_expected_all(TF_SegmentDisplay4x7V2 *segment_display_4x7_v2, bool response_expected);
+int tf_segment_display_4x7_v2_set_response_expected_all(TF_SegmentDisplay4x7V2 *segment_display_4x7_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_SegmentDisplay4x7V2
@@ -324,7 +324,7 @@ void tf_segment_display_4x7_v2_set_response_expected_all(TF_SegmentDisplay4x7V2 
  * This callback is triggered when the counter (see {@link tf_segment_display_4x7_v2_start_counter}) is
  * finished.
  */
-int tf_segment_display_4x7_v2_register_counter_finished_callback(TF_SegmentDisplay4x7V2 *segment_display_4x7_v2, TF_SegmentDisplay4x7V2CounterFinishedHandler handler, void *user_data);
+int tf_segment_display_4x7_v2_register_counter_finished_callback(TF_SegmentDisplay4x7V2 *segment_display_4x7_v2, TF_SegmentDisplay4x7V2_CounterFinishedHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

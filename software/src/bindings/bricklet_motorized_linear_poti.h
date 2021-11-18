@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,8 +27,8 @@ extern "C" {
 struct TF_MotorizedLinearPoti;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_MotorizedLinearPotiPositionHandler)(struct TF_MotorizedLinearPoti *device, uint16_t position, void *user_data);
-typedef void (*TF_MotorizedLinearPotiPositionReachedHandler)(struct TF_MotorizedLinearPoti *device, uint16_t position, void *user_data);
+typedef void (*TF_MotorizedLinearPoti_PositionHandler)(struct TF_MotorizedLinearPoti *device, uint16_t position, void *user_data);
+typedef void (*TF_MotorizedLinearPoti_PositionReachedHandler)(struct TF_MotorizedLinearPoti *device, uint16_t position, void *user_data);
 
 #endif
 /**
@@ -39,10 +39,10 @@ typedef void (*TF_MotorizedLinearPotiPositionReachedHandler)(struct TF_Motorized
 typedef struct TF_MotorizedLinearPoti {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_MotorizedLinearPotiPositionHandler position_handler;
+    TF_MotorizedLinearPoti_PositionHandler position_handler;
     void *position_user_data;
 
-    TF_MotorizedLinearPotiPositionReachedHandler position_reached_handler;
+    TF_MotorizedLinearPoti_PositionReachedHandler position_reached_handler;
     void *position_reached_user_data;
 
 #endif
@@ -350,7 +350,7 @@ int tf_motorized_linear_poti_set_response_expected(TF_MotorizedLinearPoti *motor
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_motorized_linear_poti_set_response_expected_all(TF_MotorizedLinearPoti *motorized_linear_poti, bool response_expected);
+int tf_motorized_linear_poti_set_response_expected_all(TF_MotorizedLinearPoti *motorized_linear_poti, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_MotorizedLinearPoti
@@ -365,7 +365,7 @@ void tf_motorized_linear_poti_set_response_expected_all(TF_MotorizedLinearPoti *
  * 
  * The parameter is the same as {@link tf_motorized_linear_poti_get_position}.
  */
-int tf_motorized_linear_poti_register_position_callback(TF_MotorizedLinearPoti *motorized_linear_poti, TF_MotorizedLinearPotiPositionHandler handler, void *user_data);
+int tf_motorized_linear_poti_register_position_callback(TF_MotorizedLinearPoti *motorized_linear_poti, TF_MotorizedLinearPoti_PositionHandler handler, void *user_data);
 
 
 /**
@@ -381,7 +381,7 @@ int tf_motorized_linear_poti_register_position_callback(TF_MotorizedLinearPoti *
  * 
  * The parameter is the current position.
  */
-int tf_motorized_linear_poti_register_position_reached_callback(TF_MotorizedLinearPoti *motorized_linear_poti, TF_MotorizedLinearPotiPositionReachedHandler handler, void *user_data);
+int tf_motorized_linear_poti_register_position_reached_callback(TF_MotorizedLinearPoti *motorized_linear_poti, TF_MotorizedLinearPoti_PositionReachedHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

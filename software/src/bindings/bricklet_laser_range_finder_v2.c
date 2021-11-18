@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,16 +27,15 @@ static bool tf_laser_range_finder_v2_callback_handler(void *dev, uint8_t fid, TF
     (void)payload;
 
     switch (fid) {
-
         case TF_LASER_RANGE_FINDER_V2_CALLBACK_DISTANCE: {
-            TF_LaserRangeFinderV2DistanceHandler fn = laser_range_finder_v2->distance_handler;
+            TF_LaserRangeFinderV2_DistanceHandler fn = laser_range_finder_v2->distance_handler;
             void *user_data = laser_range_finder_v2->distance_user_data;
             if (fn == NULL) {
                 return false;
             }
 
             int16_t distance = tf_packet_buffer_read_int16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal);
             hal_common->locked = true;
             fn(laser_range_finder_v2, distance, user_data);
             hal_common->locked = false;
@@ -44,19 +43,20 @@ static bool tf_laser_range_finder_v2_callback_handler(void *dev, uint8_t fid, TF
         }
 
         case TF_LASER_RANGE_FINDER_V2_CALLBACK_VELOCITY: {
-            TF_LaserRangeFinderV2VelocityHandler fn = laser_range_finder_v2->velocity_handler;
+            TF_LaserRangeFinderV2_VelocityHandler fn = laser_range_finder_v2->velocity_handler;
             void *user_data = laser_range_finder_v2->velocity_user_data;
             if (fn == NULL) {
                 return false;
             }
 
             int16_t velocity = tf_packet_buffer_read_int16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal);
             hal_common->locked = true;
             fn(laser_range_finder_v2, velocity, user_data);
             hal_common->locked = false;
             break;
         }
+
         default:
             return false;
     }
@@ -274,8 +274,14 @@ int tf_laser_range_finder_v2_set_response_expected(TF_LaserRangeFinderV2 *laser_
     return TF_E_OK;
 }
 
-void tf_laser_range_finder_v2_set_response_expected_all(TF_LaserRangeFinderV2 *laser_range_finder_v2, bool response_expected) {
+int tf_laser_range_finder_v2_set_response_expected_all(TF_LaserRangeFinderV2 *laser_range_finder_v2, bool response_expected) {
+    if (laser_range_finder_v2 == NULL) {
+        return TF_E_NULL;
+    }
+
     memset(laser_range_finder_v2->response_expected, response_expected ? 0xFF : 0, 2);
+
+    return TF_E_OK;
 }
 
 int tf_laser_range_finder_v2_get_distance(TF_LaserRangeFinderV2 *laser_range_finder_v2, int16_t *ret_distance) {
@@ -283,14 +289,14 @@ int tf_laser_range_finder_v2_get_distance(TF_LaserRangeFinderV2 *laser_range_fin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(laser_range_finder_v2->tfp, TF_LASER_RANGE_FINDER_V2_FUNCTION_GET_DISTANCE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -322,7 +328,7 @@ int tf_laser_range_finder_v2_set_distance_callback_configuration(TF_LaserRangeFi
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -338,7 +344,7 @@ int tf_laser_range_finder_v2_set_distance_callback_configuration(TF_LaserRangeFi
     min = tf_leconvert_int16_to(min); memcpy(buf + 6, &min, 2);
     max = tf_leconvert_int16_to(max); memcpy(buf + 8, &max, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -365,14 +371,14 @@ int tf_laser_range_finder_v2_get_distance_callback_configuration(TF_LaserRangeFi
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(laser_range_finder_v2->tfp, TF_LASER_RANGE_FINDER_V2_FUNCTION_GET_DISTANCE_CALLBACK_CONFIGURATION, 0, 10, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -408,14 +414,14 @@ int tf_laser_range_finder_v2_get_velocity(TF_LaserRangeFinderV2 *laser_range_fin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(laser_range_finder_v2->tfp, TF_LASER_RANGE_FINDER_V2_FUNCTION_GET_VELOCITY, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -447,7 +453,7 @@ int tf_laser_range_finder_v2_set_velocity_callback_configuration(TF_LaserRangeFi
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -463,7 +469,7 @@ int tf_laser_range_finder_v2_set_velocity_callback_configuration(TF_LaserRangeFi
     min = tf_leconvert_int16_to(min); memcpy(buf + 6, &min, 2);
     max = tf_leconvert_int16_to(max); memcpy(buf + 8, &max, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -490,14 +496,14 @@ int tf_laser_range_finder_v2_get_velocity_callback_configuration(TF_LaserRangeFi
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(laser_range_finder_v2->tfp, TF_LASER_RANGE_FINDER_V2_FUNCTION_GET_VELOCITY_CALLBACK_CONFIGURATION, 0, 10, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -533,7 +539,7 @@ int tf_laser_range_finder_v2_set_enable(TF_LaserRangeFinderV2 *laser_range_finde
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -545,7 +551,7 @@ int tf_laser_range_finder_v2_set_enable(TF_LaserRangeFinderV2 *laser_range_finde
 
     buf[0] = enable ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -572,14 +578,14 @@ int tf_laser_range_finder_v2_get_enable(TF_LaserRangeFinderV2 *laser_range_finde
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(laser_range_finder_v2->tfp, TF_LASER_RANGE_FINDER_V2_FUNCTION_GET_ENABLE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -611,7 +617,7 @@ int tf_laser_range_finder_v2_set_configuration(TF_LaserRangeFinderV2 *laser_rang
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -626,7 +632,7 @@ int tf_laser_range_finder_v2_set_configuration(TF_LaserRangeFinderV2 *laser_rang
     buf[2] = (uint8_t)threshold_value;
     measurement_frequency = tf_leconvert_uint16_to(measurement_frequency); memcpy(buf + 3, &measurement_frequency, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -653,14 +659,14 @@ int tf_laser_range_finder_v2_get_configuration(TF_LaserRangeFinderV2 *laser_rang
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(laser_range_finder_v2->tfp, TF_LASER_RANGE_FINDER_V2_FUNCTION_GET_CONFIGURATION, 0, 5, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -695,7 +701,7 @@ int tf_laser_range_finder_v2_set_moving_average(TF_LaserRangeFinderV2 *laser_ran
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -708,7 +714,7 @@ int tf_laser_range_finder_v2_set_moving_average(TF_LaserRangeFinderV2 *laser_ran
     buf[0] = (uint8_t)distance_average_length;
     buf[1] = (uint8_t)velocity_average_length;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -735,14 +741,14 @@ int tf_laser_range_finder_v2_get_moving_average(TF_LaserRangeFinderV2 *laser_ran
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(laser_range_finder_v2->tfp, TF_LASER_RANGE_FINDER_V2_FUNCTION_GET_MOVING_AVERAGE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -775,7 +781,7 @@ int tf_laser_range_finder_v2_set_offset_calibration(TF_LaserRangeFinderV2 *laser
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -787,7 +793,7 @@ int tf_laser_range_finder_v2_set_offset_calibration(TF_LaserRangeFinderV2 *laser
 
     offset = tf_leconvert_int16_to(offset); memcpy(buf + 0, &offset, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -814,14 +820,14 @@ int tf_laser_range_finder_v2_get_offset_calibration(TF_LaserRangeFinderV2 *laser
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(laser_range_finder_v2->tfp, TF_LASER_RANGE_FINDER_V2_FUNCTION_GET_OFFSET_CALIBRATION, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -853,7 +859,7 @@ int tf_laser_range_finder_v2_set_distance_led_config(TF_LaserRangeFinderV2 *lase
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -865,7 +871,7 @@ int tf_laser_range_finder_v2_set_distance_led_config(TF_LaserRangeFinderV2 *lase
 
     buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -892,14 +898,14 @@ int tf_laser_range_finder_v2_get_distance_led_config(TF_LaserRangeFinderV2 *lase
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(laser_range_finder_v2->tfp, TF_LASER_RANGE_FINDER_V2_FUNCTION_GET_DISTANCE_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -931,14 +937,14 @@ int tf_laser_range_finder_v2_get_spitfp_error_count(TF_LaserRangeFinderV2 *laser
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(laser_range_finder_v2->tfp, TF_LASER_RANGE_FINDER_V2_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -973,7 +979,7 @@ int tf_laser_range_finder_v2_set_bootloader_mode(TF_LaserRangeFinderV2 *laser_ra
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -984,7 +990,7 @@ int tf_laser_range_finder_v2_set_bootloader_mode(TF_LaserRangeFinderV2 *laser_ra
 
     buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -1016,14 +1022,14 @@ int tf_laser_range_finder_v2_get_bootloader_mode(TF_LaserRangeFinderV2 *laser_ra
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(laser_range_finder_v2->tfp, TF_LASER_RANGE_FINDER_V2_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -1055,7 +1061,7 @@ int tf_laser_range_finder_v2_set_write_firmware_pointer(TF_LaserRangeFinderV2 *l
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1067,7 +1073,7 @@ int tf_laser_range_finder_v2_set_write_firmware_pointer(TF_LaserRangeFinderV2 *l
 
     pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -1094,7 +1100,7 @@ int tf_laser_range_finder_v2_write_firmware(TF_LaserRangeFinderV2 *laser_range_f
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1105,7 +1111,7 @@ int tf_laser_range_finder_v2_write_firmware(TF_LaserRangeFinderV2 *laser_range_f
 
     memcpy(buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -1137,7 +1143,7 @@ int tf_laser_range_finder_v2_set_status_led_config(TF_LaserRangeFinderV2 *laser_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1149,7 +1155,7 @@ int tf_laser_range_finder_v2_set_status_led_config(TF_LaserRangeFinderV2 *laser_
 
     buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -1176,14 +1182,14 @@ int tf_laser_range_finder_v2_get_status_led_config(TF_LaserRangeFinderV2 *laser_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(laser_range_finder_v2->tfp, TF_LASER_RANGE_FINDER_V2_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -1215,14 +1221,14 @@ int tf_laser_range_finder_v2_get_chip_temperature(TF_LaserRangeFinderV2 *laser_r
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(laser_range_finder_v2->tfp, TF_LASER_RANGE_FINDER_V2_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -1254,7 +1260,7 @@ int tf_laser_range_finder_v2_reset(TF_LaserRangeFinderV2 *laser_range_finder_v2)
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1262,7 +1268,7 @@ int tf_laser_range_finder_v2_reset(TF_LaserRangeFinderV2 *laser_range_finder_v2)
     tf_laser_range_finder_v2_get_response_expected(laser_range_finder_v2, TF_LASER_RANGE_FINDER_V2_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(laser_range_finder_v2->tfp, TF_LASER_RANGE_FINDER_V2_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -1289,7 +1295,7 @@ int tf_laser_range_finder_v2_write_uid(TF_LaserRangeFinderV2 *laser_range_finder
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1301,7 +1307,7 @@ int tf_laser_range_finder_v2_write_uid(TF_LaserRangeFinderV2 *laser_range_finder
 
     uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -1328,14 +1334,14 @@ int tf_laser_range_finder_v2_read_uid(TF_LaserRangeFinderV2 *laser_range_finder_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(laser_range_finder_v2->tfp, TF_LASER_RANGE_FINDER_V2_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -1367,7 +1373,7 @@ int tf_laser_range_finder_v2_get_identity(TF_LaserRangeFinderV2 *laser_range_fin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1375,7 +1381,7 @@ int tf_laser_range_finder_v2_get_identity(TF_LaserRangeFinderV2 *laser_range_fin
     tf_tfp_prepare_send(laser_range_finder_v2->tfp, TF_LASER_RANGE_FINDER_V2_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)laser_range_finder_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)laser_range_finder_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(laser_range_finder_v2->tfp, response_expected, deadline, &error_code);
@@ -1397,7 +1403,7 @@ int tf_laser_range_finder_v2_get_identity(TF_LaserRangeFinderV2 *laser_range_fin
         if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&laser_range_finder_v2->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&laser_range_finder_v2->tfp->spitfp->recv_buf, 3); }
         if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&laser_range_finder_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&laser_range_finder_v2->tfp->spitfp->recv_buf, 2); }
         if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL*)laser_range_finder_v2->tfp->hal, laser_range_finder_v2->tfp->spitfp->port_id);
+            *ret_position = tf_hal_get_port_name((TF_HAL *)laser_range_finder_v2->tfp->hal, laser_range_finder_v2->tfp->spitfp->port_id);
         }
         if (ret_connected_uid != NULL) {
             memcpy(ret_connected_uid, tmp_connected_uid, 8);
@@ -1414,7 +1420,7 @@ int tf_laser_range_finder_v2_get_identity(TF_LaserRangeFinderV2 *laser_range_fin
     return tf_tfp_get_error(error_code);
 }
 #if TF_IMPLEMENT_CALLBACKS != 0
-int tf_laser_range_finder_v2_register_distance_callback(TF_LaserRangeFinderV2 *laser_range_finder_v2, TF_LaserRangeFinderV2DistanceHandler handler, void *user_data) {
+int tf_laser_range_finder_v2_register_distance_callback(TF_LaserRangeFinderV2 *laser_range_finder_v2, TF_LaserRangeFinderV2_DistanceHandler handler, void *user_data) {
     if (laser_range_finder_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -1433,7 +1439,7 @@ int tf_laser_range_finder_v2_register_distance_callback(TF_LaserRangeFinderV2 *l
 }
 
 
-int tf_laser_range_finder_v2_register_velocity_callback(TF_LaserRangeFinderV2 *laser_range_finder_v2, TF_LaserRangeFinderV2VelocityHandler handler, void *user_data) {
+int tf_laser_range_finder_v2_register_velocity_callback(TF_LaserRangeFinderV2 *laser_range_finder_v2, TF_LaserRangeFinderV2_VelocityHandler handler, void *user_data) {
     if (laser_range_finder_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -1456,7 +1462,7 @@ int tf_laser_range_finder_v2_callback_tick(TF_LaserRangeFinderV2 *laser_range_fi
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(laser_range_finder_v2->tfp, tf_hal_current_time_us((TF_HAL*)laser_range_finder_v2->tfp->hal) + timeout_us);
+    return tf_tfp_callback_tick(laser_range_finder_v2->tfp, tf_hal_current_time_us((TF_HAL *)laser_range_finder_v2->tfp->hal) + timeout_us);
 }
 
 #ifdef __cplusplus

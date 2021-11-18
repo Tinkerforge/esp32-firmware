@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,8 +27,8 @@ extern "C" {
 struct TF_IndustrialDualAnalogInV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_IndustrialDualAnalogInV2VoltageHandler)(struct TF_IndustrialDualAnalogInV2 *device, uint8_t channel, int32_t voltage, void *user_data);
-typedef void (*TF_IndustrialDualAnalogInV2AllVoltagesHandler)(struct TF_IndustrialDualAnalogInV2 *device, int32_t voltages[2], void *user_data);
+typedef void (*TF_IndustrialDualAnalogInV2_VoltageHandler)(struct TF_IndustrialDualAnalogInV2 *device, uint8_t channel, int32_t voltage, void *user_data);
+typedef void (*TF_IndustrialDualAnalogInV2_AllVoltagesHandler)(struct TF_IndustrialDualAnalogInV2 *device, int32_t voltages[2], void *user_data);
 
 #endif
 /**
@@ -39,10 +39,10 @@ typedef void (*TF_IndustrialDualAnalogInV2AllVoltagesHandler)(struct TF_Industri
 typedef struct TF_IndustrialDualAnalogInV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_IndustrialDualAnalogInV2VoltageHandler voltage_handler;
+    TF_IndustrialDualAnalogInV2_VoltageHandler voltage_handler;
     void *voltage_user_data;
 
-    TF_IndustrialDualAnalogInV2AllVoltagesHandler all_voltages_handler;
+    TF_IndustrialDualAnalogInV2_AllVoltagesHandler all_voltages_handler;
     void *all_voltages_user_data;
 
 #endif
@@ -445,7 +445,7 @@ int tf_industrial_dual_analog_in_v2_set_response_expected(TF_IndustrialDualAnalo
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_industrial_dual_analog_in_v2_set_response_expected_all(TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, bool response_expected);
+int tf_industrial_dual_analog_in_v2_set_response_expected_all(TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_IndustrialDualAnalogInV2
@@ -460,7 +460,7 @@ void tf_industrial_dual_analog_in_v2_set_response_expected_all(TF_IndustrialDual
  * 
  * The parameter is the same as {@link tf_industrial_dual_analog_in_v2_get_voltage}.
  */
-int tf_industrial_dual_analog_in_v2_register_voltage_callback(TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, TF_IndustrialDualAnalogInV2VoltageHandler handler, void *user_data);
+int tf_industrial_dual_analog_in_v2_register_voltage_callback(TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, TF_IndustrialDualAnalogInV2_VoltageHandler handler, void *user_data);
 
 
 /**
@@ -478,7 +478,7 @@ int tf_industrial_dual_analog_in_v2_register_voltage_callback(TF_IndustrialDualA
  * 
  * .. versionadded:: 2.0.6$nbsp;(Plugin)
  */
-int tf_industrial_dual_analog_in_v2_register_all_voltages_callback(TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, TF_IndustrialDualAnalogInV2AllVoltagesHandler handler, void *user_data);
+int tf_industrial_dual_analog_in_v2_register_all_voltages_callback(TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, TF_IndustrialDualAnalogInV2_AllVoltagesHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

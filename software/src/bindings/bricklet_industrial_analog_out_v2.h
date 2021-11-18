@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -373,7 +373,7 @@ int tf_industrial_analog_out_v2_set_response_expected(TF_IndustrialAnalogOutV2 *
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_industrial_analog_out_v2_set_response_expected_all(TF_IndustrialAnalogOutV2 *industrial_analog_out_v2, bool response_expected);
+int tf_industrial_analog_out_v2_set_response_expected_all(TF_IndustrialAnalogOutV2 *industrial_analog_out_v2, bool response_expected);
 
 
 #if TF_IMPLEMENT_CALLBACKS != 0

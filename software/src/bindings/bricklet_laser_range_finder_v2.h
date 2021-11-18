@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,8 +27,8 @@ extern "C" {
 struct TF_LaserRangeFinderV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_LaserRangeFinderV2DistanceHandler)(struct TF_LaserRangeFinderV2 *device, int16_t distance, void *user_data);
-typedef void (*TF_LaserRangeFinderV2VelocityHandler)(struct TF_LaserRangeFinderV2 *device, int16_t velocity, void *user_data);
+typedef void (*TF_LaserRangeFinderV2_DistanceHandler)(struct TF_LaserRangeFinderV2 *device, int16_t distance, void *user_data);
+typedef void (*TF_LaserRangeFinderV2_VelocityHandler)(struct TF_LaserRangeFinderV2 *device, int16_t velocity, void *user_data);
 
 #endif
 /**
@@ -39,10 +39,10 @@ typedef void (*TF_LaserRangeFinderV2VelocityHandler)(struct TF_LaserRangeFinderV
 typedef struct TF_LaserRangeFinderV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_LaserRangeFinderV2DistanceHandler distance_handler;
+    TF_LaserRangeFinderV2_DistanceHandler distance_handler;
     void *distance_user_data;
 
-    TF_LaserRangeFinderV2VelocityHandler velocity_handler;
+    TF_LaserRangeFinderV2_VelocityHandler velocity_handler;
     void *velocity_user_data;
 
 #endif
@@ -400,7 +400,7 @@ int tf_laser_range_finder_v2_set_response_expected(TF_LaserRangeFinderV2 *laser_
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_laser_range_finder_v2_set_response_expected_all(TF_LaserRangeFinderV2 *laser_range_finder_v2, bool response_expected);
+int tf_laser_range_finder_v2_set_response_expected_all(TF_LaserRangeFinderV2 *laser_range_finder_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_LaserRangeFinderV2
@@ -415,7 +415,7 @@ void tf_laser_range_finder_v2_set_response_expected_all(TF_LaserRangeFinderV2 *l
  * 
  * The parameter is the same as {@link tf_laser_range_finder_v2_get_distance}.
  */
-int tf_laser_range_finder_v2_register_distance_callback(TF_LaserRangeFinderV2 *laser_range_finder_v2, TF_LaserRangeFinderV2DistanceHandler handler, void *user_data);
+int tf_laser_range_finder_v2_register_distance_callback(TF_LaserRangeFinderV2 *laser_range_finder_v2, TF_LaserRangeFinderV2_DistanceHandler handler, void *user_data);
 
 
 /**
@@ -431,7 +431,7 @@ int tf_laser_range_finder_v2_register_distance_callback(TF_LaserRangeFinderV2 *l
  * 
  * The parameter is the same as {@link tf_laser_range_finder_v2_get_velocity}.
  */
-int tf_laser_range_finder_v2_register_velocity_callback(TF_LaserRangeFinderV2 *laser_range_finder_v2, TF_LaserRangeFinderV2VelocityHandler handler, void *user_data);
+int tf_laser_range_finder_v2_register_velocity_callback(TF_LaserRangeFinderV2 *laser_range_finder_v2, TF_LaserRangeFinderV2_VelocityHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

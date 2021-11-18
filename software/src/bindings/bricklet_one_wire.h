@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -338,7 +338,7 @@ int tf_one_wire_set_response_expected(TF_OneWire *one_wire, uint8_t function_id,
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_one_wire_set_response_expected_all(TF_OneWire *one_wire, bool response_expected);
+int tf_one_wire_set_response_expected_all(TF_OneWire *one_wire, bool response_expected);
 
 
 #if TF_IMPLEMENT_CALLBACKS != 0

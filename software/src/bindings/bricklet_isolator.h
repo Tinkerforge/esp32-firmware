@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,7 +27,7 @@ extern "C" {
 struct TF_Isolator;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_IsolatorStatisticsHandler)(struct TF_Isolator *device, uint32_t messages_from_brick, uint32_t messages_from_bricklet, uint16_t connected_bricklet_device_identifier, char connected_bricklet_uid[8], void *user_data);
+typedef void (*TF_Isolator_StatisticsHandler)(struct TF_Isolator *device, uint32_t messages_from_brick, uint32_t messages_from_bricklet, uint16_t connected_bricklet_device_identifier, char connected_bricklet_uid[8], void *user_data);
 
 #endif
 /**
@@ -38,7 +38,7 @@ typedef void (*TF_IsolatorStatisticsHandler)(struct TF_Isolator *device, uint32_
 typedef struct TF_Isolator {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_IsolatorStatisticsHandler statistics_handler;
+    TF_Isolator_StatisticsHandler statistics_handler;
     void *statistics_user_data;
 
 #endif
@@ -306,7 +306,7 @@ int tf_isolator_set_response_expected(TF_Isolator *isolator, uint8_t function_id
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_isolator_set_response_expected_all(TF_Isolator *isolator, bool response_expected);
+int tf_isolator_set_response_expected_all(TF_Isolator *isolator, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_Isolator
@@ -323,7 +323,7 @@ void tf_isolator_set_response_expected_all(TF_Isolator *isolator, bool response_
  * 
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
-int tf_isolator_register_statistics_callback(TF_Isolator *isolator, TF_IsolatorStatisticsHandler handler, void *user_data);
+int tf_isolator_register_statistics_callback(TF_Isolator *isolator, TF_Isolator_StatisticsHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

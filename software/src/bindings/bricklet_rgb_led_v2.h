@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -268,7 +268,7 @@ int tf_rgb_led_v2_set_response_expected(TF_RGBLEDV2 *rgb_led_v2, uint8_t functio
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_rgb_led_v2_set_response_expected_all(TF_RGBLEDV2 *rgb_led_v2, bool response_expected);
+int tf_rgb_led_v2_set_response_expected_all(TF_RGBLEDV2 *rgb_led_v2, bool response_expected);
 
 
 #if TF_IMPLEMENT_CALLBACKS != 0

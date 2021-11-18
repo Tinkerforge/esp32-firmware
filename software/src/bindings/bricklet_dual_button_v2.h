@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,7 +27,7 @@ extern "C" {
 struct TF_DualButtonV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_DualButtonV2StateChangedHandler)(struct TF_DualButtonV2 *device, uint8_t button_l, uint8_t button_r, uint8_t led_l, uint8_t led_r, void *user_data);
+typedef void (*TF_DualButtonV2_StateChangedHandler)(struct TF_DualButtonV2 *device, uint8_t button_l, uint8_t button_r, uint8_t led_l, uint8_t led_r, void *user_data);
 
 #endif
 /**
@@ -38,7 +38,7 @@ typedef void (*TF_DualButtonV2StateChangedHandler)(struct TF_DualButtonV2 *devic
 typedef struct TF_DualButtonV2 {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
-    TF_DualButtonV2StateChangedHandler state_changed_handler;
+    TF_DualButtonV2_StateChangedHandler state_changed_handler;
     void *state_changed_user_data;
 
 #endif
@@ -336,7 +336,7 @@ int tf_dual_button_v2_set_response_expected(TF_DualButtonV2 *dual_button_v2, uin
  * Changes the response expected flag for all setter and callback configuration
  * functions of this device at once.
  */
-void tf_dual_button_v2_set_response_expected_all(TF_DualButtonV2 *dual_button_v2, bool response_expected);
+int tf_dual_button_v2_set_response_expected_all(TF_DualButtonV2 *dual_button_v2, bool response_expected);
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_DualButtonV2
@@ -362,7 +362,7 @@ void tf_dual_button_v2_set_response_expected_all(TF_DualButtonV2 *dual_button_v2
  * 
  * This callback can be enabled with {@link tf_dual_button_v2_set_state_changed_callback_configuration}.
  */
-int tf_dual_button_v2_register_state_changed_callback(TF_DualButtonV2 *dual_button_v2, TF_DualButtonV2StateChangedHandler handler, void *user_data);
+int tf_dual_button_v2_register_state_changed_callback(TF_DualButtonV2 *dual_button_v2, TF_DualButtonV2_StateChangedHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

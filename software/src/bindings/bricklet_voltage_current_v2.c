@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-16.      *
+ * This file was automatically generated on 2021-11-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -27,16 +27,15 @@ static bool tf_voltage_current_v2_callback_handler(void *dev, uint8_t fid, TF_Pa
     (void)payload;
 
     switch (fid) {
-
         case TF_VOLTAGE_CURRENT_V2_CALLBACK_CURRENT: {
-            TF_VoltageCurrentV2CurrentHandler fn = voltage_current_v2->current_handler;
+            TF_VoltageCurrentV2_CurrentHandler fn = voltage_current_v2->current_handler;
             void *user_data = voltage_current_v2->current_user_data;
             if (fn == NULL) {
                 return false;
             }
 
             int32_t current = tf_packet_buffer_read_int32_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal);
             hal_common->locked = true;
             fn(voltage_current_v2, current, user_data);
             hal_common->locked = false;
@@ -44,14 +43,14 @@ static bool tf_voltage_current_v2_callback_handler(void *dev, uint8_t fid, TF_Pa
         }
 
         case TF_VOLTAGE_CURRENT_V2_CALLBACK_VOLTAGE: {
-            TF_VoltageCurrentV2VoltageHandler fn = voltage_current_v2->voltage_handler;
+            TF_VoltageCurrentV2_VoltageHandler fn = voltage_current_v2->voltage_handler;
             void *user_data = voltage_current_v2->voltage_user_data;
             if (fn == NULL) {
                 return false;
             }
 
             int32_t voltage = tf_packet_buffer_read_int32_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal);
             hal_common->locked = true;
             fn(voltage_current_v2, voltage, user_data);
             hal_common->locked = false;
@@ -59,19 +58,20 @@ static bool tf_voltage_current_v2_callback_handler(void *dev, uint8_t fid, TF_Pa
         }
 
         case TF_VOLTAGE_CURRENT_V2_CALLBACK_POWER: {
-            TF_VoltageCurrentV2PowerHandler fn = voltage_current_v2->power_handler;
+            TF_VoltageCurrentV2_PowerHandler fn = voltage_current_v2->power_handler;
             void *user_data = voltage_current_v2->power_user_data;
             if (fn == NULL) {
                 return false;
             }
 
             int32_t power = tf_packet_buffer_read_int32_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal);
+            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal);
             hal_common->locked = true;
             fn(voltage_current_v2, power, user_data);
             hal_common->locked = false;
             break;
         }
+
         default:
             return false;
     }
@@ -265,8 +265,14 @@ int tf_voltage_current_v2_set_response_expected(TF_VoltageCurrentV2 *voltage_cur
     return TF_E_OK;
 }
 
-void tf_voltage_current_v2_set_response_expected_all(TF_VoltageCurrentV2 *voltage_current_v2, bool response_expected) {
+int tf_voltage_current_v2_set_response_expected_all(TF_VoltageCurrentV2 *voltage_current_v2, bool response_expected) {
+    if (voltage_current_v2 == NULL) {
+        return TF_E_NULL;
+    }
+
     memset(voltage_current_v2->response_expected, response_expected ? 0xFF : 0, 2);
+
+    return TF_E_OK;
 }
 
 int tf_voltage_current_v2_get_current(TF_VoltageCurrentV2 *voltage_current_v2, int32_t *ret_current) {
@@ -274,14 +280,14 @@ int tf_voltage_current_v2_get_current(TF_VoltageCurrentV2 *voltage_current_v2, i
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(voltage_current_v2->tfp, TF_VOLTAGE_CURRENT_V2_FUNCTION_GET_CURRENT, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(voltage_current_v2->tfp, response_expected, deadline, &error_code);
@@ -313,7 +319,7 @@ int tf_voltage_current_v2_set_current_callback_configuration(TF_VoltageCurrentV2
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -329,7 +335,7 @@ int tf_voltage_current_v2_set_current_callback_configuration(TF_VoltageCurrentV2
     min = tf_leconvert_int32_to(min); memcpy(buf + 6, &min, 4);
     max = tf_leconvert_int32_to(max); memcpy(buf + 10, &max, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(voltage_current_v2->tfp, response_expected, deadline, &error_code);
@@ -356,14 +362,14 @@ int tf_voltage_current_v2_get_current_callback_configuration(TF_VoltageCurrentV2
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(voltage_current_v2->tfp, TF_VOLTAGE_CURRENT_V2_FUNCTION_GET_CURRENT_CALLBACK_CONFIGURATION, 0, 14, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(voltage_current_v2->tfp, response_expected, deadline, &error_code);
@@ -399,14 +405,14 @@ int tf_voltage_current_v2_get_voltage(TF_VoltageCurrentV2 *voltage_current_v2, i
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(voltage_current_v2->tfp, TF_VOLTAGE_CURRENT_V2_FUNCTION_GET_VOLTAGE, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(voltage_current_v2->tfp, response_expected, deadline, &error_code);
@@ -438,7 +444,7 @@ int tf_voltage_current_v2_set_voltage_callback_configuration(TF_VoltageCurrentV2
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -454,7 +460,7 @@ int tf_voltage_current_v2_set_voltage_callback_configuration(TF_VoltageCurrentV2
     min = tf_leconvert_int32_to(min); memcpy(buf + 6, &min, 4);
     max = tf_leconvert_int32_to(max); memcpy(buf + 10, &max, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(voltage_current_v2->tfp, response_expected, deadline, &error_code);
@@ -481,14 +487,14 @@ int tf_voltage_current_v2_get_voltage_callback_configuration(TF_VoltageCurrentV2
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(voltage_current_v2->tfp, TF_VOLTAGE_CURRENT_V2_FUNCTION_GET_VOLTAGE_CALLBACK_CONFIGURATION, 0, 14, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(voltage_current_v2->tfp, response_expected, deadline, &error_code);
@@ -524,14 +530,14 @@ int tf_voltage_current_v2_get_power(TF_VoltageCurrentV2 *voltage_current_v2, int
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(voltage_current_v2->tfp, TF_VOLTAGE_CURRENT_V2_FUNCTION_GET_POWER, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(voltage_current_v2->tfp, response_expected, deadline, &error_code);
@@ -563,7 +569,7 @@ int tf_voltage_current_v2_set_power_callback_configuration(TF_VoltageCurrentV2 *
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -579,7 +585,7 @@ int tf_voltage_current_v2_set_power_callback_configuration(TF_VoltageCurrentV2 *
     min = tf_leconvert_int32_to(min); memcpy(buf + 6, &min, 4);
     max = tf_leconvert_int32_to(max); memcpy(buf + 10, &max, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(voltage_current_v2->tfp, response_expected, deadline, &error_code);
@@ -606,14 +612,14 @@ int tf_voltage_current_v2_get_power_callback_configuration(TF_VoltageCurrentV2 *
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(voltage_current_v2->tfp, TF_VOLTAGE_CURRENT_V2_FUNCTION_GET_POWER_CALLBACK_CONFIGURATION, 0, 14, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(voltage_current_v2->tfp, response_expected, deadline, &error_code);
@@ -649,7 +655,7 @@ int tf_voltage_current_v2_set_configuration(TF_VoltageCurrentV2 *voltage_current
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -663,7 +669,7 @@ int tf_voltage_current_v2_set_configuration(TF_VoltageCurrentV2 *voltage_current
     buf[1] = (uint8_t)voltage_conversion_time;
     buf[2] = (uint8_t)current_conversion_time;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(voltage_current_v2->tfp, response_expected, deadline, &error_code);
@@ -690,14 +696,14 @@ int tf_voltage_current_v2_get_configuration(TF_VoltageCurrentV2 *voltage_current
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(voltage_current_v2->tfp, TF_VOLTAGE_CURRENT_V2_FUNCTION_GET_CONFIGURATION, 0, 3, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(voltage_current_v2->tfp, response_expected, deadline, &error_code);
@@ -731,7 +737,7 @@ int tf_voltage_current_v2_set_calibration(TF_VoltageCurrentV2 *voltage_current_v
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -746,7 +752,7 @@ int tf_voltage_current_v2_set_calibration(TF_VoltageCurrentV2 *voltage_current_v
     current_multiplier = tf_leconvert_uint16_to(current_multiplier); memcpy(buf + 4, &current_multiplier, 2);
     current_divisor = tf_leconvert_uint16_to(current_divisor); memcpy(buf + 6, &current_divisor, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(voltage_current_v2->tfp, response_expected, deadline, &error_code);
@@ -773,14 +779,14 @@ int tf_voltage_current_v2_get_calibration(TF_VoltageCurrentV2 *voltage_current_v
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(voltage_current_v2->tfp, TF_VOLTAGE_CURRENT_V2_FUNCTION_GET_CALIBRATION, 0, 8, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(voltage_current_v2->tfp, response_expected, deadline, &error_code);
@@ -815,14 +821,14 @@ int tf_voltage_current_v2_get_spitfp_error_count(TF_VoltageCurrentV2 *voltage_cu
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(voltage_current_v2->tfp, TF_VOLTAGE_CURRENT_V2_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(voltage_current_v2->tfp, response_expected, deadline, &error_code);
@@ -857,7 +863,7 @@ int tf_voltage_current_v2_set_bootloader_mode(TF_VoltageCurrentV2 *voltage_curre
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -868,7 +874,7 @@ int tf_voltage_current_v2_set_bootloader_mode(TF_VoltageCurrentV2 *voltage_curre
 
     buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(voltage_current_v2->tfp, response_expected, deadline, &error_code);
@@ -900,14 +906,14 @@ int tf_voltage_current_v2_get_bootloader_mode(TF_VoltageCurrentV2 *voltage_curre
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(voltage_current_v2->tfp, TF_VOLTAGE_CURRENT_V2_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(voltage_current_v2->tfp, response_expected, deadline, &error_code);
@@ -939,7 +945,7 @@ int tf_voltage_current_v2_set_write_firmware_pointer(TF_VoltageCurrentV2 *voltag
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -951,7 +957,7 @@ int tf_voltage_current_v2_set_write_firmware_pointer(TF_VoltageCurrentV2 *voltag
 
     pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(voltage_current_v2->tfp, response_expected, deadline, &error_code);
@@ -978,7 +984,7 @@ int tf_voltage_current_v2_write_firmware(TF_VoltageCurrentV2 *voltage_current_v2
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -989,7 +995,7 @@ int tf_voltage_current_v2_write_firmware(TF_VoltageCurrentV2 *voltage_current_v2
 
     memcpy(buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(voltage_current_v2->tfp, response_expected, deadline, &error_code);
@@ -1021,7 +1027,7 @@ int tf_voltage_current_v2_set_status_led_config(TF_VoltageCurrentV2 *voltage_cur
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1033,7 +1039,7 @@ int tf_voltage_current_v2_set_status_led_config(TF_VoltageCurrentV2 *voltage_cur
 
     buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(voltage_current_v2->tfp, response_expected, deadline, &error_code);
@@ -1060,14 +1066,14 @@ int tf_voltage_current_v2_get_status_led_config(TF_VoltageCurrentV2 *voltage_cur
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(voltage_current_v2->tfp, TF_VOLTAGE_CURRENT_V2_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(voltage_current_v2->tfp, response_expected, deadline, &error_code);
@@ -1099,14 +1105,14 @@ int tf_voltage_current_v2_get_chip_temperature(TF_VoltageCurrentV2 *voltage_curr
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(voltage_current_v2->tfp, TF_VOLTAGE_CURRENT_V2_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(voltage_current_v2->tfp, response_expected, deadline, &error_code);
@@ -1138,7 +1144,7 @@ int tf_voltage_current_v2_reset(TF_VoltageCurrentV2 *voltage_current_v2) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1146,7 +1152,7 @@ int tf_voltage_current_v2_reset(TF_VoltageCurrentV2 *voltage_current_v2) {
     tf_voltage_current_v2_get_response_expected(voltage_current_v2, TF_VOLTAGE_CURRENT_V2_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(voltage_current_v2->tfp, TF_VOLTAGE_CURRENT_V2_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(voltage_current_v2->tfp, response_expected, deadline, &error_code);
@@ -1173,7 +1179,7 @@ int tf_voltage_current_v2_write_uid(TF_VoltageCurrentV2 *voltage_current_v2, uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1185,7 +1191,7 @@ int tf_voltage_current_v2_write_uid(TF_VoltageCurrentV2 *voltage_current_v2, uin
 
     uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(voltage_current_v2->tfp, response_expected, deadline, &error_code);
@@ -1212,14 +1218,14 @@ int tf_voltage_current_v2_read_uid(TF_VoltageCurrentV2 *voltage_current_v2, uint
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(voltage_current_v2->tfp, TF_VOLTAGE_CURRENT_V2_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(voltage_current_v2->tfp, response_expected, deadline, &error_code);
@@ -1251,7 +1257,7 @@ int tf_voltage_current_v2_get_identity(TF_VoltageCurrentV2 *voltage_current_v2, 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->locked) {
+    if (tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1259,7 +1265,7 @@ int tf_voltage_current_v2_get_identity(TF_VoltageCurrentV2 *voltage_current_v2, 
     tf_tfp_prepare_send(voltage_current_v2->tfp, TF_VOLTAGE_CURRENT_V2_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL*)voltage_current_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)voltage_current_v2->tfp->hal)->timeout;
 
     uint8_t error_code = 0;
     int result = tf_tfp_transmit_packet(voltage_current_v2->tfp, response_expected, deadline, &error_code);
@@ -1281,7 +1287,7 @@ int tf_voltage_current_v2_get_identity(TF_VoltageCurrentV2 *voltage_current_v2, 
         if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&voltage_current_v2->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&voltage_current_v2->tfp->spitfp->recv_buf, 3); }
         if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&voltage_current_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&voltage_current_v2->tfp->spitfp->recv_buf, 2); }
         if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL*)voltage_current_v2->tfp->hal, voltage_current_v2->tfp->spitfp->port_id);
+            *ret_position = tf_hal_get_port_name((TF_HAL *)voltage_current_v2->tfp->hal, voltage_current_v2->tfp->spitfp->port_id);
         }
         if (ret_connected_uid != NULL) {
             memcpy(ret_connected_uid, tmp_connected_uid, 8);
@@ -1298,7 +1304,7 @@ int tf_voltage_current_v2_get_identity(TF_VoltageCurrentV2 *voltage_current_v2, 
     return tf_tfp_get_error(error_code);
 }
 #if TF_IMPLEMENT_CALLBACKS != 0
-int tf_voltage_current_v2_register_current_callback(TF_VoltageCurrentV2 *voltage_current_v2, TF_VoltageCurrentV2CurrentHandler handler, void *user_data) {
+int tf_voltage_current_v2_register_current_callback(TF_VoltageCurrentV2 *voltage_current_v2, TF_VoltageCurrentV2_CurrentHandler handler, void *user_data) {
     if (voltage_current_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -1318,7 +1324,7 @@ int tf_voltage_current_v2_register_current_callback(TF_VoltageCurrentV2 *voltage
 }
 
 
-int tf_voltage_current_v2_register_voltage_callback(TF_VoltageCurrentV2 *voltage_current_v2, TF_VoltageCurrentV2VoltageHandler handler, void *user_data) {
+int tf_voltage_current_v2_register_voltage_callback(TF_VoltageCurrentV2 *voltage_current_v2, TF_VoltageCurrentV2_VoltageHandler handler, void *user_data) {
     if (voltage_current_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -1338,7 +1344,7 @@ int tf_voltage_current_v2_register_voltage_callback(TF_VoltageCurrentV2 *voltage
 }
 
 
-int tf_voltage_current_v2_register_power_callback(TF_VoltageCurrentV2 *voltage_current_v2, TF_VoltageCurrentV2PowerHandler handler, void *user_data) {
+int tf_voltage_current_v2_register_power_callback(TF_VoltageCurrentV2 *voltage_current_v2, TF_VoltageCurrentV2_PowerHandler handler, void *user_data) {
     if (voltage_current_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -1362,7 +1368,7 @@ int tf_voltage_current_v2_callback_tick(TF_VoltageCurrentV2 *voltage_current_v2,
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(voltage_current_v2->tfp, tf_hal_current_time_us((TF_HAL*)voltage_current_v2->tfp->hal) + timeout_us);
+    return tf_tfp_callback_tick(voltage_current_v2->tfp, tf_hal_current_time_us((TF_HAL *)voltage_current_v2->tfp->hal) + timeout_us);
 }
 
 #ifdef __cplusplus
