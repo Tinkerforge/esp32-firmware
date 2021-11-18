@@ -11,6 +11,7 @@ src/index.html.h
 src/main.cpp
 src/modules.h
 src/modules
+src/build.h
 web/src/main.ts
 web/src/index.html
 web/src/ts/modules

@@ -31,6 +31,7 @@
 #include "event_log.h"
 #include "task_scheduler.h"
 #include "web_server.h"
+#include "build.h"
 
 const char* DISPLAY_NAME = "{{{display_name}}}";
 
@@ -74,7 +75,7 @@ void register_default_urls() {
     */
     main_page_handler = server.on("/", HTTP_GET, [](WebServerRequest req) {
         req.addResponseHeader("Content-Encoding", "gzip");
-        req.addResponseHeader("ETag", String((uint32_t)(_BUILD_TIME_), 16).c_str());
+        req.addResponseHeader("ETag", BUILD_TIMESTAMP_HEX_STR);
         req.send(200, "text/html", index_html_gz, index_html_gz_len);
     });
 
@@ -106,21 +107,20 @@ void register_default_urls() {
 void setup(void) {
     Serial.begin(115200);
 
-    String firmware_version = String((uint32_t)_MAJOR_, 10) + "." +  String((uint32_t)_MINOR_, 10) + "." +  String((uint32_t)_PATCH_, 10) + "-" +  String((uint32_t)(_BUILD_TIME_), 16);
-    logger.printfln("    **** TINKERFORGE {{{display_name_upper}}} V%s ****",firmware_version.c_str());
-    logger.printfln("         %dK RAM SYSTEM   %d HEAP BYTES FREE", ESP.getHeapSize()/1024, ESP.getFreeHeap());
+    logger.printfln("    **** TINKERFORGE {{{display_name_upper}}} V" BUILD_VERSION_FULL_STR " ****");
+    logger.printfln("         %dK RAM SYSTEM   %d HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());
     logger.printfln("READY.");
 
     if(!mount_or_format_spiffs()) {
         logger.printfln("Failed to mount SPIFFS.");
     }
 
-    String spiffs_version = read_or_write_config_version(firmware_version);
+    String spiffs_version = read_or_write_config_version(BUILD_VERSION_FULL_STR);
 
     logger.printfln("{{{display_name}}} SPIFFS version %s", spiffs_version.c_str());
 
     version = Config::Object({
-        {"firmware", Config::Str(firmware_version)},
+        {"firmware", Config::Str(BUILD_VERSION_FULL_STR)},
         {"spiffs", Config::Str(spiffs_version)},
     });
 

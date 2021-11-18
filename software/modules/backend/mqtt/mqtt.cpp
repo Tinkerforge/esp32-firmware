@@ -25,6 +25,7 @@
 #include "tools.h"
 #include "api.h"
 #include "event_log.h"
+#include "build.h"
 
 extern EventLog logger;
 
@@ -43,8 +44,8 @@ Mqtt::Mqtt() {
         {"broker_port", Config::Uint16(1883)},
         {"broker_username", Config::Str("", 64)},
         {"broker_password", Config::Str("", 64)},
-        {"global_topic_prefix", Config::Str(String(__HOST_PREFIX__) + String("/") + String("ABC"), 64)},
-        {"client_name", Config::Str(String(__HOST_PREFIX__) + String("-") + String("ABC"), 64)}
+        {"global_topic_prefix", Config::Str(String(BUILD_HOST_PREFIX) + String("/") + String("ABC"), 64)},
+        {"client_name", Config::Str(String(BUILD_HOST_PREFIX) + String("-") + String("ABC"), 64)}
     });
 
     mqtt_state = Config::Object({
@@ -240,8 +241,8 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 void Mqtt::setup()
 {
     if(!api.restorePersistentConfig("mqtt/config", &mqtt_config)) {
-        mqtt_config.get("global_topic_prefix")->updateString(String(__HOST_PREFIX__) + String("/") + String(uid));
-        mqtt_config.get("client_name")->updateString(String(__HOST_PREFIX__) + String("-") + String(uid));
+        mqtt_config.get("global_topic_prefix")->updateString(String(BUILD_HOST_PREFIX) + String("/") + String(uid));
+        mqtt_config.get("client_name")->updateString(String(BUILD_HOST_PREFIX) + String("-") + String(uid));
     }
 
     if (!mqtt_config.get("enable_mqtt")->asBool()) {

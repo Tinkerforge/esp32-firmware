@@ -154,7 +154,7 @@ int check(int rc, const char *msg) {
     return rc;
 }
 
-bool mount_or_format_spiffs() {
+bool mount_or_format_spiffs(void) {
     esp_vfs_spiffs_conf_t conf = {
       .base_path = "/spiffs",
       .partition_label = NULL,
@@ -173,9 +173,7 @@ bool mount_or_format_spiffs() {
     return SPIFFS.begin(false);
 }
 
-String read_or_write_config_version(String &firmware_version) {
-    String spiffs_version = firmware_version;
-
+String read_or_write_config_version(const char *firmware_version) {
     if (SPIFFS.exists("/spiffs.json")) {
         const size_t capacity = JSON_OBJECT_SIZE(1) + 60;
         StaticJsonDocument<capacity> doc;
@@ -184,14 +182,14 @@ String read_or_write_config_version(String &firmware_version) {
         deserializeJson(doc, file);
         file.close();
 
-        spiffs_version = doc["spiffs"].as<const char *>();
+        return doc["spiffs"].as<const char *>();
     } else {
         File file = SPIFFS.open("/spiffs.json", "w");
-        file.printf("{\"spiffs\": \"%s\"}", firmware_version.c_str());
+        file.printf("{\"spiffs\": \"%s\"}", firmware_version);
         file.close();
-    }
 
-    return spiffs_version;
+        return firmware_version;
+    }
 }
 
 static bool wait_for_bootloader_mode(TF_Unknown *bricklet, int target_mode) {

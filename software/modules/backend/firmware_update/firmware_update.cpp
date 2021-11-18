@@ -27,6 +27,7 @@
 #include "event_log.h"
 #include "task_scheduler.h"
 #include "tools.h"
+#include "build.h"
 
 #include "./crc32.h"
 
@@ -171,7 +172,7 @@ bool FirmwareUpdate::handle_update_chunk(int command, WebServerRequest request, 
     }
 
     if (chunk_index + chunk_length >= FW_INFO_OFFSET + FW_INFO_LENGTH) {
-        if (!fw_info_found && __REQUIRE_FW_INFO__) {
+        if (!fw_info_found && BUILD_REQUIRE_FW_INFO) {
             logger.printfln("Failed to update: Firmware update has no info page!");
             request.send(400, "text/plain", "firmware_update.script.no_info_page");
             Update.abort();

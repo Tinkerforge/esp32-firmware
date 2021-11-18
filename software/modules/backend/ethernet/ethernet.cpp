@@ -27,6 +27,7 @@
 
 #include "api.h"
 #include "task_scheduler.h"
+#include "build.h"
 
 extern API api;
 extern TaskScheduler task_scheduler;
@@ -153,7 +154,7 @@ void WiFiEvent(WiFiEvent_t event)
 
 void Ethernet::setup()
 {
-    String default_hostname = String(__HOST_PREFIX__) + String("-") + String(uid);
+    String default_hostname = String(BUILD_HOST_PREFIX) + String("-") + String(uid);
 
     if(!api.restorePersistentConfig("ethernet/config", &ethernet_config)) {
         ethernet_config.get("hostname")->updateString(default_hostname);

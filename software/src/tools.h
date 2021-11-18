@@ -36,8 +36,8 @@ void read_efuses(uint32_t *ret_uid_numeric, char *ret_uid_string, char *ret_pass
 
 int check(int rc, const char *msg);
 
-bool mount_or_format_spiffs();
+bool mount_or_format_spiffs(void);
 
-String read_or_write_config_version(String &firmware_version);
+String read_or_write_config_version(const char *firmware_version);
 
 int ensure_matching_firmware(TF_HAL *hal, const char *uid, const char* name, const char *purpose, const uint8_t *firmware, size_t firmware_len, EventLog *logger, bool force = false);

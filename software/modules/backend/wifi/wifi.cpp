@@ -31,6 +31,7 @@
 #include "WiFi.h"
 
 #include "modules.h"
+#include "build.h"
 
 extern EventLog logger;
 
@@ -285,7 +286,7 @@ const char *reason2str(uint8_t reason) {
 
 void Wifi::setup()
 {
-    String default_hostname = String(__HOST_PREFIX__) + String("-") + String(uid);
+    String default_hostname = String(BUILD_HOST_PREFIX) + String("-") + String(uid);
     String default_passphrase = String(passphrase);
 
     if(!api.restorePersistentConfig("wifi/sta_config", &wifi_sta_config)) {

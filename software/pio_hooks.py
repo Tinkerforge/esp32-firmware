@@ -161,39 +161,28 @@ def write_firmware_info(display_name, major, minor, patch, build_time):
 
 def main():
     # Add build flags
-    t = time.time()
-    build_time_flag = '-D_BUILD_TIME_=0x{:x}'.format(int(t))
-
+    timestamp = int(time.time())
     name = env.GetProjectOption("name")
     host_prefix = env.GetProjectOption("host_prefix")
     display_name = env.GetProjectOption("display_name")
     require_fw_info = env.GetProjectOption("require_fw_info")
-
     version = get_changelog_version(name)
-    major_flag = '-D_MAJOR_={}'.format(version[0])
-    minor_flag = '-D_MINOR_={}'.format(version[1])
-    patch_flag = '-D_PATCH_={}'.format(version[2])
 
     if not os.path.isdir("build"):
         os.makedirs("build")
 
-    write_firmware_info(display_name, *version, int(t))
+    write_firmware_info(display_name, *version, timestamp)
 
-    host_prefix_flag = "-D__HOST_PREFIX__=\\\"{}\\\"".format(host_prefix)
-
-    firmware_name_flag = "-D_FIRMWARE_NAME_={}_firmware_{}_{:x}".format(name, '_'.join(version), int(t))
-
-    env.Append(
-        BUILD_FLAGS=[
-            build_time_flag,
-            host_prefix_flag,
-            firmware_name_flag,
-            major_flag,
-            minor_flag,
-            patch_flag,
-            '-D__REQUIRE_FW_INFO__={}'.format(require_fw_info)
-        ]
-    )
+    with open(os.path.join('src', 'build.h'), 'w') as f:
+        f.write('#pragma once\n')
+        f.write('#define BUILD_TIMESTAMP {}\n'.format(timestamp))
+        f.write('#define BUILD_TIMESTAMP_HEX_STR "{:x}"\n'.format(timestamp))
+        f.write('#define BUILD_VERSION_MAJOR {}\n'.format(version[0]))
+        f.write('#define BUILD_VERSION_MINOR {}\n'.format(version[1]))
+        f.write('#define BUILD_VERSION_PATCH {}\n'.format(version[2]))
+        f.write('#define BUILD_VERSION_FULL_STR "{}.{}.{}-{:x}"\n'.format(*version, timestamp))
+        f.write('#define BUILD_HOST_PREFIX "{}"\n'.format(host_prefix))
+        f.write('#define BUILD_REQUIRE_FW_INFO {}\n'.format(require_fw_info))
 
     # Embed backend modules
     recreate_dir(os.path.join("src", "modules"))

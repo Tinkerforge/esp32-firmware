@@ -24,6 +24,7 @@
 #include "api.h"
 #include "event_log.h"
 #include "web_server.h"
+#include "build.h"
 
 #include "login.html.h"
 
@@ -83,7 +84,7 @@ void Authentication::register_urls()
             }
 
             request.addResponseHeader("Content-Encoding", "gzip");
-            request.addResponseHeader("ETag", String((uint32_t)(_BUILD_TIME_), 16).c_str());
+            request.addResponseHeader("ETag", BUILD_TIMESTAMP_HEX_STR);
             request.send(200, "text/html", login_html_gz, login_html_gz_len);
         } else if (request.uri() == "/login_state") {
             // Same reasoning as above. If we don't force Safari, it does not send credentials, which breaks the login_state check.

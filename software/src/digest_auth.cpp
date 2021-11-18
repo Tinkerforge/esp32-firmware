@@ -26,6 +26,7 @@
 
 #include "mbedtls/md5.h"
 #include "event_log.h"
+#include "build.h"
 
 extern EventLog logger;
 
@@ -52,13 +53,8 @@ static String genRandomString(){
   uint8_t data[16] = {0};
   uint32_t t = micros();
   memcpy(data, &t, sizeof(t));
-#ifdef _BUILD_TIME_
-  t = _BUILD_TIME_;
+  t = BUILD_TIMESTAMP;
   memcpy(data + 4, &t, sizeof(t));
-#else
-  t = millis();
-  memcpy(data + 4, &t, sizeof(t));
-#endif
   uint32_t r = rand();
   memcpy(data + 8, &r, sizeof(r));
   r = rand();
