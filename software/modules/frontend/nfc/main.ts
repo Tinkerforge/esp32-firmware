@@ -283,7 +283,7 @@ export function init() {
         save_nfc_config();
     }, false);
 
-    $('#nfc_save_tag').on("click", (event) => {
+    $('#nfc_add_tag_form').on("submit", (event: Event) => {
         let btns = $('#nfc_seen_tags > button');
         if ($('#nfc_config_tag_new_tag_id').val().toString() === "" && btns.length == 1) {
             btns.first().trigger("click");

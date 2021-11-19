@@ -297,8 +297,12 @@ export function init() {
         save_charge_manager_config();
     }, false);
 
-    $('#charge_manager_save_charger').on("click", () => {
+    $('#charge_manager_add_charger_form').on("submit", (event: Event) => {
         let form = <HTMLFormElement>$('#charge_manager_add_charger_form')[0];
+
+        form.classList.add('was-validated');
+        event.preventDefault();
+        event.stopPropagation();
 
         if (form.checkValidity() === false) {
             return;
