@@ -1,0 +1,36 @@
+{
+    "firmware_update": {
+        "status": {
+
+        },
+        "navbar": {
+            "flash": "Firmware Update"
+        },
+        "content": {
+            "current_firmware": "Firmware version",
+            "firmware_update": "Firmware Update",
+            "browse": "Browse",
+            "select_file": "Firmware file",
+            "update": "Upload",
+            "uploading": "Uploading firmware...",
+            "current_spiffs": "Configuration version",
+            "factory_reset_desc": "Restores all configuration to factory defaults",
+            "factory_reset": "Factory reset",
+            "factory_reset_modal_text": null,
+            "abort_reset": "Abort",
+            "confirm_reset": "Restore",
+            "reboot": "Reboot",
+            "reboot_desc": null
+        },
+        "script": {
+            "flash_success": "Successfully updated; restarting...",
+            "flash_fail": "Failed to update",
+            "factory_reset_init": "Formating configuration partition and restarting...",
+            "factory_reset_error": "Initiating factory reset failed",
+            "vehicle_connected": "Can't update the firmware while a vehicle is connected.",
+            "no_info_page": null,
+            "info_page_corrupted": "Firmware file corrupted (checksum error)",
+            "wrong_firmware_type": null
+        }
+    }
+}

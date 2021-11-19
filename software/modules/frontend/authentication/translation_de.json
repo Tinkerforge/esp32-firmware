@@ -1,0 +1,27 @@
+{
+    "authentication": {
+        "status": {
+
+        },
+        "navbar": {
+            "authentication": "Zugangsdaten"
+        },
+        "content": {
+            "authentication": "Zugangsdaten",
+            "enable_authentication": "Anmeldung aktiviert",
+            "enable_authentication_desc": "Wenn aktiviert, muss beim Aufrufen des Webinterfaces oder bei Verwendung der HTTP-API eine Anmeldung mit den konfigurierten Zugangsdaten durchgeführt werden.",
+            "username": "Benutzername",
+            "password": "Passwort",
+            "save": "Speichern",
+            "reboot_title": "Neu starten um Konfiguration anzuwenden",
+            "reboot_content": "Die geänderten Zugangsdaten werden nur nach einem Neustart angewendet. Jetzt neu starten?",
+            "abort": "Abbrechen",
+            "reboot": "Neu starten",
+            "username_invalid": "Der Benutzername darf nicht leer sein.",
+            "password_invalid": "Das Passwort darf nicht leer sein."
+        },
+        "script": {
+            "save_failed": "Speichern der Zugangsdaten fehlgeschlagen."
+        }
+    }
+}

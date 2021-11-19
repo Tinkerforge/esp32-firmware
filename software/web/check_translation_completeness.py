@@ -59,6 +59,10 @@ def main():
 
             used_placeholders += [x[1:-1] for x in placeholders]
 
+            if not name.startswith("translation_") or not name.endswith(".ts"):
+                continue
+
+            language = name[len('translation_'):-len('.ts')]
             start = content.find(START_PATTERN)
             while start >= 0:
                 content = content[start+len(START_PATTERN):]
@@ -67,7 +71,7 @@ def main():
                 json_dict = re.sub(",\s*\}", "}", json_dict)
                 json_dict = json_dict.replace("{{{empty_text}}}", '""')
                 try:
-                    merge(translation, json.loads(json_dict))
+                    merge(translation, {language: json.loads(json_dict)})
                 except Exception as e:
                     print("error:", e, json_dict)
 
@@ -93,13 +97,13 @@ def main():
 
     if len(used_but_missing):
         print("Missing placeholders:")
-        for x in used_but_missing:
+        for x in sorted(used_but_missing):
             print("\t" + x)
 
     unused = get_nested_keys(translation)
     if len(unused) > 0:
         print("Unused placeholders:")
-        for x in unused:
+        for x in sorted(unused):
             print("\t" + x)
 
 if __name__ == "__main__":

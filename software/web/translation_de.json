@@ -1,0 +1,16 @@
+{
+    "main": {
+        "navbar_status": "Status",
+        "content_status": "Status"
+    },
+    "util": {
+        "reboot_title": "Starte neu...",
+        "reboot_text": "Das Webinterface wird nach dem Neustart automatisch neu geladen.",
+        "event_connection_lost_title": null,
+        "event_connection_lost": "Verbindung wird wiederhergestellt...",
+        "to_be_cleared": "Wird beim Speichern geleert",
+        "unchanged": "unverändert"
+    },
+    "days": "Tage",
+    "day": "Tag"
+}

@@ -1,0 +1,51 @@
+{
+    "nfc": {
+        "status": {
+            "nfc": "NFC"
+        },
+        "navbar": {
+            "nfc": "NFC"
+        },
+        "content": {
+            "nfc": "NFC Unlock",
+
+            "require_tag_to_start": "Start with tag",
+            "require_tag_to_start_desc": "If enabled, an authorized tag is required to start charging. The web interface can still be used to charge without tag.",
+            "require_tag_to_stop": "Stop with tag",
+            "require_tag_to_stop_desc": "If enabled, an authorized tag is required to stop charging. The web interface cann still be used to stop charging. <b>Warning: The stop function of the front panel button will be deactivated!</b>",
+            "warp1_require_tag_to_stop_desc": "If enabled, an authorized tag is required to stop charging. The web interface cann still be used to stop charging. <b>Warning: The stop function of the front panel button can not be deactivated for WARP 1 chargers!</b>",
+            "save": "Save",
+            "authorized_tags": "Authorized tags",
+
+            "add_tag_modal_title": "Add authorized tag",
+            "add_tag_modal_seen_tags": "Last seen tags",
+            "add_tag_modal_name": "Tag name",
+            "add_tag_modal_tag_id": "Tag ID",
+            "add_tag_modal_tag_type": "Tag type",
+            "add_tag_modal_abort": "Discard",
+            "add_tag_modal_save": "Add",
+            "last_seen": "Seen ",
+            "last_seen_suffix": " ago",
+            "select_type": "Select tag type...",
+            "type_0": "Mifare Classic",
+            "type_1": "NFC Forum Type 1",
+            "type_2": "NFC Forum Type 2",
+            "type_3": "NFC Forum Type 3",
+            "type_4": "NFC Forum Type 4",
+            "add_tag_description": "Hold the new tag to the right side of the charger. Tag ID and type can also be typed in manually.",
+
+            "reboot_title": "Restart to apply configuration",
+            "reboot_content": "The modified NFC configuration will only be applied after a restart. Reboot now?",
+            "abort": "Abort",
+            "reboot": "Reboot"
+        },
+        "script": {
+            "add_tag": "Add tag",
+            "add_tag_disabled": "Only up to 8 tags are supported.",
+            "tag_name": "Tag name",
+            "tag_type": "Tag type",
+            "last_seen_unknown": "placeholder",
+            "save_failed": "Failed to update the NFC configuration"
+        }
+    }
+}

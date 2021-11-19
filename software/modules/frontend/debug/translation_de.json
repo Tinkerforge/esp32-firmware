@@ -1,0 +1,18 @@
+{
+    "debug": {
+        "status": {
+            "debug": "Debug"
+        },
+        "navbar": {
+            "debug": "Debug"
+        },
+        "content": {
+            "debug": "Debug",
+            "uptime": "Zeit seit Neustart",
+            "heap_free": "Freie Heap-Bytes",
+            "heap_block": "Größter freier Heap-Block",
+        },
+        "script": {
+        }
+    }
+}

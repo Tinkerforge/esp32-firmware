@@ -1,0 +1,30 @@
+{
+    "event_log": {
+        "content": {
+            "debug_report_desc_muted": "A complete report of all status information of this charger except passwords"
+        }
+    },
+    "firmware_update": {
+        "content": {
+            "factory_reset_modal_text": "A factory reset will reset all configuration to their default values. <b>This action cannot be undone!</b> The charger will re-open the WiFi access point with the default SSID and passphrase. Are you sure?",
+            "reboot_desc": "Restarts the web interface. Charging will not be interrupted."
+        },
+        "script": {
+            "no_info_page": "Firmware file corrupted or for WARP 1 (info page missing)",
+            "wrong_firmware_type": "Firmware file does not match the type of this charger"
+        }
+    },
+    "mqtt": {
+        "content": {
+            "enable_mqtt_desc": "This allows controlling the charger over the configured MQTT broker. <a href=\"https://warp-charger.com/api.html\">MQTT API documentation (german only)</a>"
+        }
+    },
+    "util": {
+        "event_connection_lost_title": "Charger connection lost!"
+    },
+    "wifi": {
+        "content": {
+            "ap_hide_ssid_desc_pre": "Hides the network name. The charger is reachable under the BSSID "
+        }
+    }
+}

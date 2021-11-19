@@ -10,6 +10,8 @@ import * as util from "./ts/util";
 
 {{{module_imports}}}
 
+{{{translation_imports}}}
+
 interface Module {
     init(): void;
     addEventListeners(source: EventTarget): void;
@@ -21,7 +23,6 @@ let modules: Module[] = [{{{modules}}}];
 $('.navbar-collapse a').on("click", function () {
     $(".navbar-collapse").collapse('hide');
 });
-
 
 interface Modules {
     {{{module_interface}}}
@@ -67,11 +68,9 @@ $(window).on('pageshow', (ev) => {
         timeout: 5000
     });
 
-    let translation: {[index: string]:any} = {{{translation}}};
-
     var translator = new Translator();
 
-    translator.add('de', translation["de"]).add('en', translation["en"])
+{{{translation_adds}}}
 
     translator.config.defaultLanguage = 'en';
     for (let l of navigator.languages) {

@@ -16,3 +16,4 @@ src/build.h
 web/src/main.ts
 web/src/index.html
 web/src/ts/modules
+web/src/ts/translation_*.ts

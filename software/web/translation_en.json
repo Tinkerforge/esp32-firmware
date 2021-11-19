@@ -1,0 +1,16 @@
+{
+    "main": {
+        "navbar_status": "Status",
+        "content_status": "Status"
+    },
+    "util": {
+        "reboot_title": "Rebooting...",
+        "reboot_text": "The web interface will be reloaded automatically after the restart.",
+        "event_connection_lost_title": null,
+        "event_connection_lost": "Connection will be reestablished...",
+        "to_be_cleared": "Will be cleared on save.",
+        "unchanged": "unchanged"
+    },
+    "days": "days",
+    "day": "day"
+}

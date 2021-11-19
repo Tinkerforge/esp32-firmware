@@ -12,6 +12,7 @@ import time
 import re
 import hashlib
 import json
+import glob
 from zlib import crc32
 
 NameFlavors = namedtuple('NameFlavors', 'space lower camel headless under upper dash camel_abbrv lower_no_space camel_constant_safe')
@@ -176,6 +177,23 @@ def update_translation(translation, update, parent_key=None):
         else:
             update_translation(translation[key], value, parent_key=parent_key + [key])
 
+def collect_translation(path):
+    translation = {}
+
+    for translation_path in glob.glob(os.path.join(path, 'translation_*.json')):
+        language = os.path.split(translation_path)[-1][len('translation_'):-len('.json')]
+
+        with open(translation_path, 'r') as f:
+            try:
+                update = json.loads(f.read())
+            except:
+                print('JSON error in', translation_path)
+                raise
+
+        update_translation(translation, {language: update})
+
+    return translation
+
 def check_translation(translation, parent_key=None):
     if parent_key == None:
         parent_key = []
@@ -251,9 +269,7 @@ def main():
     status_entries = []
     main_ts_entries = []
     frontend_modules = [FlavoredName(x).get() for x in env.GetProjectOption("frontend_modules").splitlines()]
-
-    with open(os.path.join('web', 'translation.json')) as f:
-        translation = json.loads(f.read())
+    translation = collect_translation('web')
 
     recreate_dir(os.path.join("web", "src", "ts", "modules"))
     for frontend_module in frontend_modules:
@@ -279,20 +295,20 @@ def main():
             main_ts_entries.append(frontend_module)
             shutil.copy(os.path.join(mod_path, 'main.ts'), os.path.join("web", "src", "ts", "modules", frontend_module.under + ".ts"))
 
-        if os.path.exists(os.path.join(mod_path, 'translation.json')):
-            with open(os.path.join(mod_path, 'translation.json')) as f:
-                try:
-                    update = json.loads(f.read())
-                except:
-                    print('error in file translation.json at', mod_path)
-                    raise
-
-                update_translation(translation, update)
+        update_translation(translation, collect_translation(mod_path))
 
     check_translation(translation)
 
-    translation_str = json.dumps(translation, indent=4).replace('\n', '\n    ')
-    translation_str = translation_str.replace('{{{empty_text}}}', '\u200b') # Zero Width Space to work around a bug in the translation library: empty strings are replaced with "null"
+    for path in glob.glob(os.path.join('web', 'src', 'ts', 'translation_*.ts')):
+        os.remove(path)
+
+    for language in sorted(translation):
+        with open(os.path.join('web', 'src', 'ts', 'translation_{0}.ts'.format(language)), 'w') as f:
+            data = json.dumps(translation[language], indent=4)
+            data = data.replace('{{{empty_text}}}', '\u200b') # Zero Width Space to work around a bug in the translation library: empty strings are replaced with "null"
+
+            f.write('export const translation_{0}: {{[index: string]:any}} = '.format(language))
+            f.write(data + ';\n')
 
     specialize_template(os.path.join("web", "index.html.template"), os.path.join("web", "src", "index.html"), {
         '{{{navbar}}}': '\n                        '.join(navbar_entries),
@@ -305,7 +321,8 @@ def main():
         '{{{module_imports}}}': '\n'.join(['import * as {0} from "./ts/modules/{0}";'.format(x.under) for x in main_ts_entries]),
         '{{{module_interface}}}': ',\n    '.join('{}: boolean'.format(x.under) for x in backend_modules),
         '{{{modules}}}': ', '.join([x.under for x in main_ts_entries]),
-        '{{{translation}}}': translation_str,
+        '{{{translation_imports}}}': '\n'.join(['import {{translation_{0}}} from "./ts/translation_{0}";'.format(x) for x in sorted(translation)]),
+        '{{{translation_adds}}}': '\n'.join(["    translator.add('{0}', translation_{0});".format(x) for x in sorted(translation)])
     })
 
     # Check translation completeness

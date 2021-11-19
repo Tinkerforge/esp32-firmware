@@ -1,0 +1,24 @@
+{
+    "proxy": {
+        "status": {
+
+        },
+        "navbar": {
+            "bricklets": "Bricklets"
+        },
+        "content": {
+            "bricklets": "Bricklets",
+            "port": "Port",
+            "UID": "UID",
+            "device_type": "Gerätetyp",
+            "error_counters": "Fehlerzähler",
+            "spitfp_checksum": "SPI-TFP-Prüfsumme",
+            "spitfp_frame": "SPI-TFP-Frame",
+            "tfp_frame": "TFP-Frame",
+            "tfp_unexpected": "TFP unerwartet"
+        },
+        "script": {
+            "unknown_device": "unbekanntes Gerät"
+        }
+    }
+}
