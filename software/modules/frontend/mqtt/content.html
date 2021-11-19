@@ -24,7 +24,7 @@
             <label for="mqtt_broker_host"
                 class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="mqtt.content.broker_host"></label>
             <div class="col-lg-9 col-xl-6">
-                <input id="mqtt_broker_host" class="form-control" type="text" required>
+                <input id="mqtt_broker_host" class="form-control" type="text" required maxlength="128">
             </div>
         </div>
 
@@ -40,7 +40,7 @@
             <label for="mqtt_broker_username"
                 class="col-lg-3 col-xl-2 col-form-label" data-i18n="mqtt.content.username"></label>
             <div class="col-lg-9 col-xl-6">
-                <input id="mqtt_broker_username" class="form-control" type="text">
+                <input id="mqtt_broker_username" class="form-control" type="text" maxlength="64">
             </div>
         </div>
 
@@ -48,7 +48,7 @@
             <label for="mqtt_broker_password" class="col-lg-3 col-xl-2 col-form-label" data-i18n="mqtt.content.password"></label>
             <div class="col-lg-9 col-xl-6">
                 <div class="input-group">
-                    <input type="password" id="mqtt_broker_password" class="form-control" value=""/>
+                    <input type="password" id="mqtt_broker_password" class="form-control" value="" maxlength="64"/>
                     <div class="input-group-append">
                         <div class="input-group-text custom-control custom-switch" style="padding-left: 2.5rem;">
                             <input id="mqtt_show_password" type="checkbox" class="custom-control-input" aria-label="Show password">
@@ -66,7 +66,7 @@
         <div class="form-group row">
             <label for="mqtt_topic_prefix" class="col-lg-3 col-xl-2 col-form-label" data-i18n="mqtt.content.topic_prefix"></label>
             <div class="col-lg-9 col-xl-6">
-                <input id="mqtt_topic_prefix" class="form-control" type="text" pattern="^[^#+$][^#+]*">
+                <input id="mqtt_topic_prefix" class="form-control" type="text" pattern="^[^#+$][^#+]*" maxlength="64">
                 <div class="invalid-feedback"  data-i18n="mqtt.content.topic_prefix_invalid"></div>
             </div>
         </div>
@@ -74,7 +74,7 @@
         <div class="form-group row">
             <label for="mqtt_client_name" class="col-lg-3 col-xl-2 col-form-label" data-i18n="mqtt.content.client_name"></label>
             <div class="col-lg-9 col-xl-6">
-                <input id="mqtt_client_name" class="form-control" type="text">
+                <input id="mqtt_client_name" class="form-control" type="text" maxlength="64">
             </div>
         </div>
 
