@@ -75,6 +75,7 @@ void register_default_urls() {
     main_page_handler = server.on("/", HTTP_GET, [](WebServerRequest req) {
         req.addResponseHeader("Content-Encoding", "gzip");
         req.addResponseHeader("ETag", BUILD_TIMESTAMP_HEX_STR);
+        req.addResponseHeader("X-Clacks-Overhead", "GNU Terry Pratchett");
         req.send(200, "text/html", index_html_gz, index_html_gz_len);
     });
 
