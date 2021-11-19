@@ -139,6 +139,9 @@ bool checkDigestAuthentication(const char * header, const char * method, const c
       if(realm != NULL && !avLine.equals(realm)){
         logger.printfln("AUTH FAIL: realm");
         return false;
+      } else if (realm == NULL && !avLine.equals("esp32-lib") && !avLine.equals("asyncesp")) {
+        logger.printfln("AUTH FAIL: realm");
+        return false;
       }
       myRealm = avLine;
     } else if(varName.equals("nonce")){

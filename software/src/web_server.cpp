@@ -69,7 +69,7 @@ bool authenticate(WebServerRequest req, const char *username, const char *passwo
     }
 
     auth = auth.substring(7);
-    return checkDigestAuthentication(auth.c_str(), req.methodString(), username, password, "esp32-lib", false, nullptr, nullptr, nullptr);
+    return checkDigestAuthentication(auth.c_str(), req.methodString(), username, password, nullptr, false, nullptr, nullptr, nullptr);
 }
 
 static esp_err_t low_level_handler(httpd_req_t *req) {
