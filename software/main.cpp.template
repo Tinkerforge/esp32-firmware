@@ -64,14 +64,6 @@ bool firmware_update_allowed = true;
 WebServerHandler *main_page_handler;
 
 void register_default_urls() {
-    /*
-    server.onNotFound([](AsyncWebServerRequest *request) {
-        if (request->method() == HTTP_OPTIONS)
-            request->send(200);
-        else
-            request->send(404, "text/html", "404");
-    });
-    */
     main_page_handler = server.on("/", HTTP_GET, [](WebServerRequest req) {
         req.addResponseHeader("Content-Encoding", "gzip");
         req.addResponseHeader("ETag", BUILD_TIMESTAMP_HEX_STR);
