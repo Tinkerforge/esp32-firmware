@@ -81,7 +81,6 @@ void ledBlink(int8_t led_pin, int interval, int blinks_per_interval, int off_tim
 /*
 The ESP Ethernet Brick can not trigger a factory reset itself,
 as the ethernet phy clock disturbs any IO0 button reading.
-For WARP 2 we use the Wallbox button (checked in the EVSE V2 module).
 */
 void ESP32EthernetBrick::loop()
 {
