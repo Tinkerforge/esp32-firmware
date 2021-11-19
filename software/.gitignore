@@ -17,5 +17,7 @@ web/assets/
 web/dist/
 web/src/main.ts
 web/src/index.html
+web/src/img/modules/
+web/src/scss/modules/
 web/src/ts/modules/
 web/src/ts/translation_*.ts

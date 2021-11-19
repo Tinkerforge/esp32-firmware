@@ -13,6 +13,7 @@ import re
 import hashlib
 import json
 import glob
+from base64 import b64encode
 from zlib import crc32
 
 NameFlavors = namedtuple('NameFlavors', 'space lower camel headless under upper dash camel_abbrv lower_no_space camel_constant_safe')
@@ -271,13 +272,34 @@ def main():
     frontend_modules = [FlavoredName(x).get() for x in env.GetProjectOption("frontend_modules").splitlines()]
     translation = collect_translation('web')
 
-    recreate_dir(os.path.join("web", "src", "ts", "modules"))
+    recreate_dir(os.path.join('web', 'src', 'ts', 'modules'))
+    recreate_dir(os.path.join('web', 'src', 'img', 'modules'))
+    recreate_dir(os.path.join('web', 'src', 'scss', 'modules'))
+
     for frontend_module in frontend_modules:
         mod_path = os.path.join("modules", "frontend", frontend_module.under)
 
         if not os.path.exists(mod_path) or not os.path.isdir(mod_path):
             print("Frontend module {} not found.".format(frontend_module.space, mod_path))
             sys.exit(1)
+
+        if os.path.exists(os.path.join(mod_path, 'img')):
+            for img_name in os.listdir(os.path.join(mod_path, 'img')):
+                img_source_path = os.path.join(mod_path, 'img', img_name)
+                img_target_path = os.path.join('web', 'src', 'img', 'modules', img_name)
+
+                assert not os.path.exists(img_target_path), 'img collision ' + img_source_path + ' -> ' + img_target_path
+
+                shutil.copy(img_source_path, img_target_path)
+
+        if os.path.exists(os.path.join(mod_path, 'scss')):
+            for scss_name in os.listdir(os.path.join(mod_path, 'scss')):
+                scss_source_path = os.path.join(mod_path, 'scss', scss_name)
+                scss_target_path = os.path.join('web', 'src', 'scss', 'modules', scss_name)
+
+                assert not os.path.exists(scss_target_path), 'scss collision ' + scss_source_path + ' -> ' + scss_target_path
+
+                shutil.copy(scss_source_path, scss_target_path)
 
         if os.path.exists(os.path.join(mod_path, 'navbar.html')):
             with open(os.path.join(mod_path, 'navbar.html')) as f:
@@ -310,7 +332,11 @@ def main():
             f.write('export const translation_{0}: {{[index: string]:any}} = '.format(language))
             f.write(data + ';\n')
 
+    with open(os.path.join('web', 'src', 'img', 'modules', 'favicon.png'), 'rb') as f:
+        favicon = b64encode(f.read()).decode('ascii')
+
     specialize_template(os.path.join("web", "index.html.template"), os.path.join("web", "src", "index.html"), {
+        '{{{favicon}}}': favicon,
         '{{{navbar}}}': '\n                        '.join(navbar_entries),
         '{{{content}}}': '\n                    '.join(content_entries),
         '{{{status}}}': '\n                            '.join(status_entries),

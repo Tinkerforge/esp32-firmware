@@ -28,6 +28,8 @@ $container-max-widths: (
         xl: 1230px
 );
 
+@import "modules/branding";
+
 @import "../../node_modules/bootstrap/scss/mixins";
 @import "../../node_modules/bootstrap/scss/root";
 @import "../../node_modules/bootstrap/scss/reboot";
@@ -123,20 +125,19 @@ body {
   bottom: 0;
   left: 0;
   z-index: 100; /* Behind the navbar */
-  padding: 66px 0 0; /* Height of navbar */
+  padding: $navbar-height 0 0; /* Height of navbar */
   box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1);
 }
 
 @media (max-width: 767.98px) {
   .sidebar {
-    top: 66px; //TODO: don't hardcode this
+    top: $navbar-height;
     padding-top: 0;
   }
 }
 
-//TODO: don't hardcode top
 .alert_placeholder {
-    position: fixed; top: 66px; left: 0px; right: 0px; z-index: 9999;
+    position: fixed; top: $navbar-height; left: 0px; right: 0px; z-index: 9999;
 }
 
 .custom-alert {
@@ -146,7 +147,7 @@ body {
 .sidebar-sticky {
   position: relative;
   top: 0;
-  height: calc(100vh - 66px);
+  height: calc(100vh - #{$navbar-height});
   padding-top: 0.5rem;
   overflow-x: hidden;
   overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
@@ -219,13 +220,14 @@ body {
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
   font-size: 1rem;
-  background-color: #555;
+  background-color: $navbar-color;
   /*box-shadow: inset -1px 0 0 rgba(0, 0, 0, .25);*/
 }
 
 .navbar {
-  background-color: #555;
+  background-color: $navbar-color;
   box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15) !important;
+  height: $navbar-height;
 }
 
 .navbar .navbar-toggler {
