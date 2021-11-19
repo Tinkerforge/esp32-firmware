@@ -76,7 +76,7 @@ ChargeManager::ChargeManager()
             {
                 Config::Object({
                     {"host", Config::Str("127.0.0.1", 64)},
-                    {"name", Config::Str("Lokale Wallbox", 32)}
+                    {"name", Config::Str("Lokale Wallbox", 32)} // FIXME: needs to be translated
                 })
             },
             Config::Object({

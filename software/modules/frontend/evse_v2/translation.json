@@ -107,7 +107,7 @@
                 "charge_management_enable": "Erlaubt anderen Wallboxen diese zu steuern",
 
                 "dc_fault_current_state": "DC-Fehlerstrom&shy;zustand",
-                "dc_fault_current_state_desc": "",
+                "dc_fault_current_state_desc": "{{{empty_text}}}",
                 "dc_fault_current_ok": "OK",
                 "dc_fault_current_6_ma": "Gleichstromfehler",
                 "dc_fault_current_system": "Systemfehler",
@@ -142,7 +142,7 @@
                 "button_configuration_start_and_stop_charging": "Ladestart bzw. Ladestop",
 
                 "reset_description": "EVSE neustarten / neuflashen",
-                "reset_description_muted": "",
+                "reset_description_muted": "{{{empty_text}}}",
                 "reset_evse": "Neustart",
                 "reflash_evse": "Neu flashen",
                 "charging_time": "Lade seit",
@@ -295,7 +295,7 @@
                 "charge_management_enable": "Enables other chargers to control this one",
 
                 "dc_fault_current_state": "DC fault protector state",
-                "dc_fault_current_state_desc": "",
+                "dc_fault_current_state_desc": "{{{empty_text}}}",
                 "dc_fault_current_ok": "OK",
                 "dc_fault_current_6_ma": "DC fault",
                 "dc_fault_current_system": "System error",
@@ -330,7 +330,7 @@
                 "button_configuration_start_and_stop_charging": "Start or stop charging",
 
                 "reset_description": "Restart or reflash EVSE",
-                "reset_description_muted": "",
+                "reset_description_muted": "{{{empty_text}}}",
                 "reset_evse": "Restart",
                 "reflash_evse": "Reflash",
                 "charging_time": "Charging for"

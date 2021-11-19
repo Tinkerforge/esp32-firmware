@@ -46,14 +46,14 @@ Wifi::Wifi() {
     wifi_ap_config = Config::Object({
         {"enable_ap", Config::Bool(true)},
         {"ap_fallback_only", Config::Bool(false)},
-        {"ssid",  Config::Str("esp-brick", 32)},
+        {"ssid", Config::Str("", 32)},
         {"hide_ssid", Config::Bool(false)},
-        {"passphrase", Config::Str("0123456789", 64, [](Config::ConfString &s) {
+        {"passphrase", Config::Str("this-will-be-replaced-in-setup", 64, [](Config::ConfString &s) {
                 return (s.value.length() >= 8 && s.value.length() <= 63) || //FIXME: check if there are only ASCII characters here.
                     (s.value.length() == 64) ? String("") : String("passphrase must be of length 8 to 63, or 64 if PSK."); //FIXME: check if there are only hex digits here.
             })
         },
-        {"hostname", Config::Str("esp-brick", 32)},
+        {"hostname", Config::Str("", 32)},
         {"channel", Config::Uint(1, 1, 13)},
         {"ip", Config::Array({
                 Config::Uint8(10),
@@ -113,7 +113,7 @@ Wifi::Wifi() {
                     (s.value.length() == 64) ? String("") : String("passphrase must be of length zero, or 8 to 63, or 64 if PSK."); //FIXME: check if there are only hex digits here.
             })
         },
-        {"hostname", Config::Str("wallbox", 32)},
+        {"hostname", Config::Str("", 32)},
         {"ip", Config::Array({
                 Config::Uint8(0),
                 Config::Uint8(0),
@@ -207,7 +207,7 @@ void Wifi::apply_soft_ap_config_and_start() {
         WiFi.softAPConfig(ip, gateway, subnet);
         ++counter;
     }
-    logger.printfln("Had to configure softAP ip %d times.", counter);
+    logger.printfln("Had to configure softAP IP address %d times.", counter);
     delay(2000);
 
     logger.printfln("Soft AP started.");

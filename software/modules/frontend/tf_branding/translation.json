@@ -17,7 +17,7 @@
             },
             "script": {
                 "no_info_page": "Firmware-Datei ist beschädigt (Firmware-Info-Seite fehlt)",
-                "wrong_firmware_type": "Firmware-Datei ist für anderen Geräte-Typ"
+                "wrong_firmware_type": "Firmware-Datei passt nicht zu diesem Brick-Typ"
             }
         },
         "mqtt": {
@@ -45,7 +45,7 @@
             },
             "script": {
                 "no_info_page": "Firmware file corrupted (info page missing)",
-                "wrong_firmware_type": "Firmware file is for another type of device"
+                "wrong_firmware_type": "Firmware file does not match the type of this Brick"
             }
         },
         "mqtt": {

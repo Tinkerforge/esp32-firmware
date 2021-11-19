@@ -197,7 +197,7 @@ function update_charge_manager_config(config: ChargeManagerConfig, force: boolea
         charger_configs += `<div class="col mb-4">
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <span class="h5" style="margin-bottom: 0">${__("charge_manager.script.add_wallbox")}</span>
+                <span class="h5" style="margin-bottom: 0">${__("charge_manager.script.add_charger")}</span>
                 <button type="button" class="btn btn-sm btn-outline-secondary" style="visibility: hidden;">
                         <span data-feather="trash-2"></span>
                 </button>

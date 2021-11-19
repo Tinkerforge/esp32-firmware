@@ -229,7 +229,7 @@ function update_status_chart() {
         // We have to assume three phases even if only one or two are connected,
         // because the other phases could be disconnected only temporarily.
         // The only case where scaling to one phase would be useful is when
-        // the wallbox is always connected with one phase only, however
+        // the charger is always connected with one phase only, however
         // we can't reliably detect this case.
         // Maybe in the future (as in "as soon as the first customer complains about this" ;) )
         // we could add a configuration for this.

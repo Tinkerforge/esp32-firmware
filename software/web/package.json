@@ -1,7 +1,7 @@
 {
   "name": "tinkerforge-warp-web-interface",
   "version": "1.0.0",
-  "description": "Web interface for the Tinkerforge WARP wallbox.",
+  "description": "Web interface for the Tinkerforge WARP Charger.",
   "homepage": "https://tinkerforge.com",
   "scripts": {},
   "author": "Erik Fleckstein",

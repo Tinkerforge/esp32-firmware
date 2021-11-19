@@ -25,7 +25,7 @@
                 "default_available_current": "<span class=\"form-label pr-2\">Voreingestellt verfügbarer Strom</span><span class=\"text-muted\">wird nach Neustart des Lastmanagers verwendet</span>",
                 "default_available_current_invalid": "Der voreingestellt verfügbare Strom darf maximal so groß sein wie der maximale verfügbare Strom!",
                 "maximum_available_current": "<span class=\"form-label pr-2\">Maximal verfügbarer Strom</span><span class=\"text-muted\">verfügbarer Strom kann über Webinterface und API nur bis zu diesem Wert eingestellt werden</span>",
-                "minimum_current": "<span class=\"form-label pr-2\">Minimaler Ladestrom</span><span class=\"text-muted\">muss mindestens verfügbar sein, damit eine Wallbox lädt</span>",
+                "minimum_current": "<span class=\"form-label pr-2\">Minimaler Ladestrom</span><span class=\"text-muted\">muss mindestens verfügbar sein, damit eine Ladung beginnt</span>",
                 "save": "Speichern",
                 "managed_boxes": "Kontrollierte Wallboxen",
 
@@ -75,7 +75,7 @@
                 "last_update_suffix": "{{{empty_text}}}",
                 "save_failed": "Speichern der Lastmanager-Konfiguration fehlgeschlagen",
                 "set_available_current_failed": "Setzen des verfügbaren Stroms fehlgeschlagen",
-                "add_wallbox": "Wallbox hinzufügen",
+                "add_charger": "Wallbox hinzufügen",
                 "add_charger_disabled": "Es werden nur bis zu 10 Wallboxen unterstützt."
             }
         }
@@ -106,11 +106,11 @@
                 "default_available_current": "<span class=\"form-label pr-2\">Default available current</span><span class=\"text-muted\">will be used after charge manager reboot</span>",
                 "default_available_current_invalid": "The default available current can at most be as much as the maximum available current!",
                 "maximum_available_current": "<span class=\"form-label pr-2\">Maximum available current</span><span class=\"text-muted\">available current can only be set to at most this value using the API and web interface</span>",
-                "minimum_current": "<span class=\"form-label pr-2\">Minimal charge current</span><span class=\"text-muted\">must be available to start a charger</span>",
+                "minimum_current": "<span class=\"form-label pr-2\">Minimal charge current</span><span class=\"text-muted\">must be available to start a charge</span>",
 
                 "add_charger_modal_title": "Add charger",
                 "add_charger_modal_name": "Display name",
-                "add_charger_modal_host": "IP Address (Hostnames are not supported yet)",
+                "add_charger_modal_host": "IP address (Hostnames are not supported yet)",
                 "add_charger_modal_abort": "Discard",
                 "add_charger_modal_save": "Save",
 
@@ -139,7 +139,7 @@
                 "charge_error_2": "Firmware incompatible",
                 "charge_error_3": "Charge management deactivated",
                 "charge_error_128": "Charger unreachable",
-                "charge_error_129": "EVSE unreachable ",
+                "charge_error_129": "EVSE unreachable",
                 "charge_error_130": "EVSE does not react",
 
                 "charge_error_192": "OK",
@@ -155,10 +155,10 @@
                 "ampere_supported": "A supported",
 
                 "last_update_prefix": "Unavailable since",
-                "last_update_suffix": "",
+                "last_update_suffix": "{{{empty_text}}}",
                 "save_failed": "Failed to save the charge manager configuration",
                 "set_available_current_failed": "Failed to set the available current",
-                "add_wallbox": "Add charger",
+                "add_charger": "Add charger",
                 "add_charger_disabled": "Only up to 10 chargers are supported."
             }
         }

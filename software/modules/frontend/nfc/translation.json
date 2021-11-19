@@ -13,8 +13,8 @@
                 "require_tag_to_start": "Start mit Tag",
                 "require_tag_to_start_desc": "Wenn aktiviert, wird ein berechtigtes Tag zum Starten einer Ladung benötigt. Über das Webinterface kann weiterhin ohne Tag geladen werden.",
                 "require_tag_to_stop": "Stop mit Tag",
-                "require_tag_to_stop_desc": "Wenn aktiviert wird ein berechtigtes Tag zum Stoppen einer Ladung benötigt. Über das Webinterface kann eine Ladung weiterhin ohne Tag abgebrochen werden. <b>Achtung: Die Stop-Funktion des Tasters an der Wallbox wird damit deaktiviert!</b>",
-                "warp1_require_tag_to_stop_desc": "Wenn aktiviert kann mit einem berechtigten Tag eine Ladung gestoppt werden. Über das Webinterface kann eine Ladung weiterhin ohne Tag abgebrochen werden. <b>Achtung: Die Stop-Funktion des Tasters an der Wallbox ist bei WARP 1 nicht deaktivierbar!</b>",
+                "require_tag_to_stop_desc": "Wenn aktiviert wird ein berechtigtes Tag zum Stoppen einer Ladung benötigt. Über das Webinterface kann eine Ladung weiterhin ohne Tag abgebrochen werden. <b>Achtung: Die Stop-Funktion des Tasters an der Frontplatte wird damit deaktiviert!</b>",
+                "warp1_require_tag_to_stop_desc": "Wenn aktiviert kann mit einem berechtigten Tag eine Ladung gestoppt werden. Über das Webinterface kann eine Ladung weiterhin ohne Tag abgebrochen werden. <b>Achtung: Die Stop-Funktion des Tasters an der Frontplatte ist bei WARP 1 nicht deaktivierbar!</b>",
                 "save": "Speichern",
                 "authorized_tags": "Berechtigte Tags",
 
@@ -33,7 +33,7 @@
                 "type_2": "NFC Forum Typ 2",
                 "type_3": "NFC Forum Typ 3",
                 "type_4": "NFC Forum Typ 4",
-                "add_tag_description": "Das neue Tag kann zum Anlernen an die Wallbox gehalten werden. Alternativ können Tag-ID und Tag-Typ manuell angegeben werden.",
+                "add_tag_description": "Das neue Tag kann zum Anlernen an die rechte Seite der Wallbox gehalten werden. Alternativ können Tag-ID und Tag-Typ manuell angegeben werden.",
 
                 "reboot_title": "Neu starten um Konfiguration anzuwenden",
                 "reboot_content": "Die geänderten NFC-Einstellungen werden nur nach einem Neustart angewendet. Jetzt neu starten?",
@@ -63,8 +63,8 @@
                 "require_tag_to_start": "Start with tag",
                 "require_tag_to_start_desc": "If enabled, an authorized tag is required to start charging. The web interface can still be used to charge without tag.",
                 "require_tag_to_stop": "Stop with tag",
-                "require_tag_to_stop_desc": "If enabled, an authorized tag is required to stop charging. The web interface cann still be used to stop charging. <b>Warning: The stop function of the wallbox button will be deactivated!</b>",
-                "warp1_require_tag_to_stop_desc": "If enabled, an authorized tag is required to stop charging. The web interface cann still be used to stop charging. <b>Warning: The stop function of the wallbox button can not be deactivated for WARP 1 chargers!</b>",
+                "require_tag_to_stop_desc": "If enabled, an authorized tag is required to stop charging. The web interface cann still be used to stop charging. <b>Warning: The stop function of the front panel button will be deactivated!</b>",
+                "warp1_require_tag_to_stop_desc": "If enabled, an authorized tag is required to stop charging. The web interface cann still be used to stop charging. <b>Warning: The stop function of the front panel button can not be deactivated for WARP 1 chargers!</b>",
                 "save": "Save",
                 "authorized_tags": "Authorized tags",
 
@@ -83,7 +83,7 @@
                 "type_2": "NFC Forum Type 2",
                 "type_3": "NFC Forum Type 3",
                 "type_4": "NFC Forum Type 4",
-                "add_tag_description": "Hold the new tag at the wallbox. Tag ID and type can also be typed in manually.",
+                "add_tag_description": "Hold the new tag to the right side of the charger. Tag ID and type can also be typed in manually.",
 
                 "reboot_title": "Restart to apply configuration",
                 "reboot_content": "The modified NFC configuration will only be applied after a restart. Reboot now?",
