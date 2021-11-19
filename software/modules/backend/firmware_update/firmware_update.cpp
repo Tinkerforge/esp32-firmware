@@ -22,7 +22,7 @@
 #include <Arduino.h>
 
 #include <Update.h>
-#include <SPIFFS.h>
+#include <LittleFS.h>
 
 #include "event_log.h"
 #include "task_scheduler.h"
@@ -77,8 +77,8 @@ void factory_reset()
             tskIDLE_PRIORITY,
             &xTaskBuffer);
 
-    SPIFFS.end();
-    SPIFFS.format();
+    LittleFS.end();
+    LittleFS.format();
     ESP.restart();
 }
 
@@ -147,7 +147,7 @@ bool FirmwareUpdate::handle_update_chunk(int command, WebServerRequest request, 
     // The bootloader starts at offset 0x1000, which is the first byte in the firmware file.
     // The first firmware slot (i.e. the one that is flashed over USB) starts at 0x10000.
     // So we have to skip the first 0x10000 - 0x1000 bytes, after them the actual firmware starts.
-    // Don't skip anything if we flash the SPIFFS.
+    // Don't skip anything if we flash the LittleFS.
     const size_t firmware_offset = command == U_FLASH ? 0x10000 - 0x1000 : 0;
 
     static bool fw_info_found = false;

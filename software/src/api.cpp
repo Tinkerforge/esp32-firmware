@@ -19,7 +19,7 @@
 
 #include "api.h"
 
-#include "SPIFFS.h"
+#include "LittleFS.h"
 #include "bindings/hal_common.h"
 #include "bindings/errors.h"
 
@@ -90,17 +90,17 @@ bool API::addPersistentConfig(String path, Config *config, std::initializer_list
         String cfg_path = String("/") + path_copy;
         String tmp_path = String("/.") + path_copy; //max len is 31 - len("/.") = 29
 
-        if (SPIFFS.exists(tmp_path))
-            SPIFFS.remove(tmp_path);
+        if (LittleFS.exists(tmp_path))
+            LittleFS.remove(tmp_path);
 
-        File file = SPIFFS.open(tmp_path, "w");
+        File file = LittleFS.open(tmp_path, "w");
         config->save_to_file(file);
         file.close();
 
-        if (SPIFFS.exists(cfg_path))
-            SPIFFS.remove(cfg_path);
+        if (LittleFS.exists(cfg_path))
+            LittleFS.remove(cfg_path);
 
-        SPIFFS.rename(tmp_path, cfg_path);
+        LittleFS.rename(tmp_path, cfg_path);
     }, false);
 
     return true;
@@ -143,22 +143,22 @@ bool API::restorePersistentConfig(String path, Config *config)
     path.replace('/', '_');
     String filename = String("/") + path;
 
-    if (!SPIFFS.exists(filename)) {
+    if (!LittleFS.exists(filename)) {
         // We have to migrate from the old naming schema here
         // /xyz.json.tmp is now /.xyz
         // /xyz.json is now /xyz
 
-        if (SPIFFS.exists(filename + ".json.tmp"))
-            SPIFFS.remove(filename + ".json.tmp");
+        if (LittleFS.exists(filename + ".json.tmp"))
+            LittleFS.remove(filename + ".json.tmp");
 
-        if (!SPIFFS.exists(filename + ".json"))
+        if (!LittleFS.exists(filename + ".json"))
             return false;
 
         logger.printfln("Migrating config file %s to %s.", (filename + ".json").c_str(), filename.c_str());
-        SPIFFS.rename(filename + ".json", filename);
+        LittleFS.rename(filename + ".json", filename);
     }
 
-    File file = SPIFFS.open(filename);
+    File file = LittleFS.open(filename);
     String error = config->update_from_file(file);
     file.close();
     if (error != "")

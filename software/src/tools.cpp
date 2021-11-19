@@ -25,11 +25,15 @@
 
 #include "SPIFFS.h"
 #include "esp_spiffs.h"
+#include "LittleFS.h"
+#include "esp_littlefs.h"
 
 #include <soc/efuse_reg.h>
 #include "bindings/base58.h"
 #include "bindings/bricklet_unknown.h"
 #include "event_log.h"
+#include "esp_log.h"
+
 
 extern EventLog logger;
 
@@ -154,37 +158,177 @@ int check(int rc, const char *msg) {
     return rc;
 }
 
-bool mount_or_format_spiffs(void) {
+bool is_spiffs_available(const char *part_label, const char *base_path) {
+    Serial.printf("Checking if %s is mountable as SPIFFS. Please ignore following SPIFFS errors\n", part_label);
     esp_vfs_spiffs_conf_t conf = {
-      .base_path = "/spiffs",
-      .partition_label = NULL,
+      .base_path = base_path,
+      .partition_label = part_label,
       .max_files = 10,
       .format_if_mount_failed = false
     };
 
     esp_err_t err = esp_vfs_spiffs_register(&conf);
-    if (err == ESP_FAIL) {
-        logger.printfln("SPIFFS is not formatted. Formatting now. This will take about 30 seconds.");
-        SPIFFS.format();
-    } else {
-        esp_vfs_spiffs_unregister(NULL);
+    esp_vfs_spiffs_unregister(part_label);
+
+    if (err == ESP_FAIL || err == ESP_ERR_NOT_FOUND) {
+        return false;
+    } else if (err == ESP_OK || err == ESP_ERR_INVALID_STATE) {
+        return true;
     }
 
-    return SPIFFS.begin(false);
+    // Should only be ESP_NO_MEM
+    return false;
+}
+
+bool is_littlefs_available(const char *part_label, const char *base_path) {
+    Serial.printf("Checking if %s is mountable as LittleFS. Please ignore following LittleFS errors\n", part_label);
+    esp_vfs_littlefs_conf_t conf = {
+        .base_path = base_path,
+        .partition_label = part_label,
+        .format_if_mount_failed = false,
+        .dont_mount = false
+    };
+
+    esp_err_t err = esp_vfs_littlefs_register(&conf);
+    esp_vfs_littlefs_unregister(part_label);
+
+    if (err == ESP_FAIL || err == ESP_ERR_NOT_FOUND) {
+        return false;
+    } else if (err == ESP_OK || err == ESP_ERR_INVALID_STATE) {
+        return true;
+    }
+
+    // Should only be ESP_NO_MEM
+    return false;
+}
+
+// Adapted from https://github.com/espressif/arduino-esp32/blob/master/libraries/LittleFS/examples/LITTLEFS_PlatformIO/src/main.cpp
+bool mirror_filesystem(fs::FS &fromFS, fs::FS &toFS, String root_name, int levels) {
+    uint8_t buf[4096] = {0};
+
+    // File works RAII style, no need to close.
+    File root = fromFS.open(root_name);
+    if (!root) {
+        logger.printfln("Failed to open source directory %s!", root_name.c_str());
+        return false;
+    }
+
+    if(!root.isDirectory()){
+        logger.printfln("Source file %s is not a directory!", root_name.c_str());
+        return false;
+    }
+
+    File source;
+    while (source = root.openNextFile()) {
+        if (source.isDirectory()) {
+            if (levels <= 0) {
+                logger.printfln("Skipping over directory %s. Depth limit exceeded.", root_name.c_str());
+                continue;
+            }
+
+            logger.printfln("Recursing in directory %s. Depth left %d.", root_name.c_str(), levels - 1);
+            toFS.mkdir(source.name());
+            if (!mirror_filesystem(fromFS, toFS, String(source.name()) + "/", levels - 1))
+                return false;
+            continue;
+        }
+
+        File target = toFS.open(root_name + source.name(), FILE_WRITE);
+        while (source.available()) {
+            size_t read = source.read(buf, sizeof(buf)/sizeof(buf[0]));
+            size_t written = target.write(buf, read);
+            if (written != read) {
+                logger.printfln("Failed to write file %s: written %u read %u", target.name(), written, read);
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool mount_or_format_spiffs(void) {
+    /*
+    tl;dr:
+    - Config partition mountable as SPIFFS?
+    - Format core dump partition
+    - Copy configuration from config to core dump partition
+    - Core dump partition mountable as LittleFS?
+    - Format config partition
+    - Copy configuration from core dump to config partition
+    - Erase core dump partition
+    - Mount config partition, format on fail -> Done
+    */
+
+    // If we still have an SPIFFS, copy the configuration into the "backup" slot, i.e. the core dump partition
+    // Format the core dump partition in any case, maybe we where interrupted while copying the last time.
+    if (is_spiffs_available("spiffs", "/spiffs")) {
+        logger.printfln("Configuration partition is mountable as SPIFFS. Migrating to LittleFS.");
+
+        logger.printfln("Formatting core dump partition as LittleFS.");
+        LittleFS.begin(false, "/conf_backup", 10, "coredump");
+        LittleFS.format();
+        LittleFS.begin(false, "/conf_backup", 10, "coredump");
+
+        logger.printfln("Mirroring configuration to core dump partition.");
+        SPIFFS.begin(false);
+        mirror_filesystem(SPIFFS, LittleFS, "/", 4);
+        SPIFFS.end();
+        LittleFS.end();
+    }
+
+    // If we have a configuration backup in the core dump partition, we either are currently migrating, or
+    // where interrupted while doing so. Format the configuration partition in any case
+    // (maybe we copied only half the config last time). Then copy over the configuration backup files
+    // and erase the backup completely.
+    if (is_littlefs_available("coredump", "/conf_backup")) {
+        logger.printfln("Core dump partition is mountable as LittleFS, configuration backup found. Continuing migration.");
+
+        logger.printfln("Formatting configuration partition as LittleFS.");
+        LittleFS.begin(false, "/spiffs", 10, "spiffs");
+        LittleFS.format();
+        LittleFS.begin(false, "/spiffs", 10, "spiffs");
+
+        logger.printfln("Mirroring configuration backup to configuration partition.");
+        fs::LittleFSFS configFS;
+        configFS.begin(false, "/conf_backup", 10, "coredump");
+        mirror_filesystem(configFS, LittleFS, "/", 4);
+        configFS.end();
+        LittleFS.end();
+
+        logger.printfln("Erasing core dump partition.");
+        auto _partition = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_COREDUMP, "coredump");
+        ESP.partitionEraseRange(_partition, 0, 0x10000);
+        logger.printfln("Migration done!");
+    }
+
+    if (!is_littlefs_available("spiffs", "/spiffs")) {
+        logger.printfln("Configuration partition is not mountable as LittleFS. Formatting now.");
+        LittleFS.begin(false, "/spiffs", 10, "spiffs");
+        LittleFS.format();
+    }
+
+    if (!LittleFS.begin(false, "/spiffs", 10, "spiffs"))
+        return false;
+
+    size_t part_size = LittleFS.totalBytes();
+    size_t part_used = LittleFS.usedBytes();
+    logger.printfln("Mounted configuration partition. %u of %u bytes (%3.1f %%) used", part_used, part_size, ((float)part_used / (float)part_size) * 100.0f);
+
+    return true;
 }
 
 String read_or_write_config_version(const char *firmware_version) {
-    if (SPIFFS.exists("/spiffs.json")) {
+    if (LittleFS.exists("/spiffs.json")) {
         const size_t capacity = JSON_OBJECT_SIZE(1) + 60;
         StaticJsonDocument<capacity> doc;
 
-        File file = SPIFFS.open("/spiffs.json", "r");
+        File file = LittleFS.open("/spiffs.json", "r");
         deserializeJson(doc, file);
         file.close();
 
         return doc["spiffs"].as<const char *>();
     } else {
-        File file = SPIFFS.open("/spiffs.json", "w");
+        File file = LittleFS.open("/spiffs.json", "w");
         file.printf("{\"spiffs\": \"%s\"}", firmware_version);
         file.close();
 
