@@ -54,12 +54,12 @@ function init() {
     }
 
     util.setupEventSource(true, false,  (ws: WebSocket, eventTarget: EventTarget) => registerEvents(eventTarget));
-
-    window.setTimeout(() => $('#nav-list').removeAttr("style"), 200);
-    window.setTimeout(() => $('#main').removeAttr("style"), 200);
 }
 
 $(window).on('pageshow', (ev) => {
+    window.setTimeout(() => $('#nav-list').removeAttr("style"), 200);
+    window.setTimeout(() => $('#main').removeAttr("style"), 200);
+
     util.ifLoggedInElseReload(init);
 
     feather.replace();
