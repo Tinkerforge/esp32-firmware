@@ -487,7 +487,7 @@ void EVSEV2::register_urls()
     api.addCommand("evse/start_charging", &evse_start_charging, {}, [this](){is_in_bootloader(tf_evse_v2_start_charging(&device));}, true);
 
     api.addCommand("evse/managed_current_update", &evse_managed_current, {}, [this](){
-        is_in_bootloader(tf_evse_v2_set_managed_current(&device, evse_managed_current.get("current")->asUint()));
+        this->set_managed_current(evse_managed_current.get("current")->asUint());
     }, true);
 
     api.addState("evse/managed", &evse_managed, {}, 1000);
