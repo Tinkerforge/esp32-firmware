@@ -8,14 +8,15 @@
         },
         "content": {
             "bricklets": "Bricklets",
+            "bricklet_table": "Angeschlossene Bricklets",
             "port": "Port",
             "UID": "UID",
             "device_type": "Gerätetyp",
             "error_counters": "Fehlerzähler",
-            "spitfp_checksum": "SPI-TFP-Prüfsumme",
+            "spitfp_checksum": "SPI-TFP-Prüf&shy;summe",
             "spitfp_frame": "SPI-TFP-Frame",
             "tfp_frame": "TFP-Frame",
-            "tfp_unexpected": "TFP unerwartet"
+            "tfp_unexpected": "TFP un&shy;erwartet"
         },
         "script": {
             "unknown_device": "unbekanntes Gerät"
