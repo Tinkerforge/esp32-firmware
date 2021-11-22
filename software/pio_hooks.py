@@ -163,7 +163,7 @@ def write_firmware_info(display_name, major, minor, patch, build_time):
     with open(os.path.join("build", "fw_info.bin"), "wb") as f:
         f.write(buf)
 
-def update_translation(translation, update, parent_key=None):
+def update_translation(translation, update, override=False, parent_key=None):
     if parent_key == None:
         parent_key = []
 
@@ -172,26 +172,37 @@ def update_translation(translation, update, parent_key=None):
 
     for key, value in update.items():
         if not isinstance(value, dict) or key not in translation:
-            assert translation.get(key) == None, '.'.join(parent_key + [key]) + ' cannot override non-null value'
+            if override:
+                try:
+                    if translation[key] != None:
+                        raise Exception('.'.join(parent_key + [key]) + ' cannot override non-null translation')
+                except KeyError:
+                    print('Ignoring unused translation override', '.'.join(parent_key + [key]))
+                    continue
+            elif key in translation:
+                raise Exception('.'.join(parent_key + [key]) + ' cannot replace existing translation')
 
             translation[key] = value
         else:
-            update_translation(translation[key], value, parent_key=parent_key + [key])
+            update_translation(translation[key], value, override=override, parent_key=parent_key + [key])
 
-def collect_translation(path):
+def collect_translation(path, override=False):
     translation = {}
 
     for translation_path in glob.glob(os.path.join(path, 'translation_*.json')):
-        language = os.path.split(translation_path)[-1][len('translation_'):-len('.json')]
+        m = re.match(r'translation_([a-z]+){0}\.json'.format('_override' if override else ''), os.path.split(translation_path)[-1])
+
+        if m == None:
+            continue
+
+        language = m.group(1)
 
         with open(translation_path, 'r') as f:
             try:
-                update = json.loads(f.read())
+                translation[language] = json.loads(f.read())
             except:
                 print('JSON error in', translation_path)
                 raise
-
-        update_translation(translation, {language: update})
 
     return translation
 
@@ -321,11 +332,14 @@ def main():
             shutil.copy(os.path.join(mod_path, 'main.ts'), os.path.join("web", "src", "ts", "modules", frontend_module.under + ".ts"))
 
         update_translation(translation, collect_translation(mod_path))
+        update_translation(translation, collect_translation(mod_path, override=True), override=True)
 
     check_translation(translation)
 
     for path in glob.glob(os.path.join('web', 'src', 'ts', 'translation_*.ts')):
         os.remove(path)
+
+    assert len(translation) > 0
 
     for language in sorted(translation):
         with open(os.path.join('web', 'src', 'ts', 'translation_{0}.ts'.format(language)), 'w') as f:
