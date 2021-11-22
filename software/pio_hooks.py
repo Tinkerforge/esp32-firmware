@@ -328,6 +328,7 @@ def main():
         with open(os.path.join('web', 'src', 'ts', 'translation_{0}.ts'.format(language)), 'w') as f:
             data = json.dumps(translation[language], indent=4)
             data = data.replace('{{{empty_text}}}', '\u200b') # Zero Width Space to work around a bug in the translation library: empty strings are replaced with "null"
+            data = data.replace('{{{display_name}}}', display_name)
 
             f.write('export const translation_{0}: {{[index: string]:any}} = '.format(language))
             f.write(data + ';\n')
@@ -339,8 +340,7 @@ def main():
         '{{{favicon}}}': favicon,
         '{{{navbar}}}': '\n                        '.join(navbar_entries),
         '{{{content}}}': '\n                    '.join(content_entries),
-        '{{{status}}}': '\n                            '.join(status_entries),
-        '{{{display_name}}}': display_name
+        '{{{status}}}': '\n                            '.join(status_entries)
     })
 
     specialize_template(os.path.join("web", "main.ts.template"), os.path.join("web", "src", "main.ts"), {

@@ -1,5 +1,6 @@
 {
     "main": {
+        "title": "{{{display_name}}} Webinterface",
         "navbar_status": "Status",
         "content_status": "Status"
     },
