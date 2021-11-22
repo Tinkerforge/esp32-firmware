@@ -24,13 +24,13 @@ typedef struct TF_Port {
 #define TF_PORT(chip_select_pin, spi, port_name) {chip_select_pin, spi, port_name,  {._to_init = 0}}
 
 static TF_Port ports[6] = {
-    TF_PORT(27, HSPI, 'F'),
-    TF_PORT(26, HSPI, 'E'),
-    TF_PORT(25, HSPI, 'D'),
-
-    TF_PORT(17, VSPI, 'C'),
+    TF_PORT(16, VSPI, 'A'),
     TF_PORT(13, VSPI, 'B'),
-    TF_PORT(16, VSPI, 'A')
+    TF_PORT(17, VSPI, 'C'),
+
+    TF_PORT(25, HSPI, 'D'),
+    TF_PORT(26, HSPI, 'E'),
+    TF_PORT(27, HSPI, 'F')
 };
 
 #define PORT_COUNT (sizeof(ports) / sizeof(ports[0]))
