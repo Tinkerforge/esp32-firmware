@@ -12,6 +12,7 @@ src/main.cpp
 src/modules.h
 src/modules
 src/build.h
+src/firmware_basename
 web/node_modules/
 web/assets/
 web/dist/

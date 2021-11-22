@@ -232,6 +232,9 @@ def main():
         f.write('#define BUILD_HOST_PREFIX "{}"\n'.format(host_prefix))
         f.write('#define BUILD_REQUIRE_FW_INFO {}\n'.format(require_fw_info))
 
+    with open(os.path.join('src', 'firmware_basename'), 'w') as f:
+        f.write('{}_firmware_{}_{:x}'.format(name, '_'.join(version), timestamp))
+
     # Embed backend modules
     recreate_dir(os.path.join("src", "modules"))
     backend_modules = [FlavoredName(x).get() for x in env.GetProjectOption("backend_modules").splitlines()]
