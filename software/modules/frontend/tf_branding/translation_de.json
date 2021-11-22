@@ -11,7 +11,7 @@
     },
     "firmware_update": {
         "content": {
-            "factory_reset_modal_text": "Hiermit wird die gesamte Konfiguration auf den Auslieferungszustand zurückgesetzt. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Der Brick öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus dem Handbuch. Fortfahren?",
+            "factory_reset_modal_text": "Hiermit wird die gesamte Konfiguration auf den Auslieferungszustand zurückgesetzt. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Der Brick öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus dem Etikett auf der Rückseite des Bricks. Fortfahren?",
             "reboot_desc": "Startet das Webinterface neu"
         },
         "script": {

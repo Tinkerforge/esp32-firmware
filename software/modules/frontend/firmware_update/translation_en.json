@@ -14,11 +14,11 @@
             "update": "Upload",
             "uploading": "Uploading firmware...",
             "current_spiffs": "Configuration version",
-            "factory_reset_desc": "Restores all configuration to factory defaults",
+            "factory_reset_desc": "Resets all configuration to factory defaults",
             "factory_reset": "Factory reset",
             "factory_reset_modal_text": null,
             "abort_reset": "Abort",
-            "confirm_reset": "Restore",
+            "confirm_reset": "Reset to factory defaults",
             "reboot": "Reboot",
             "reboot_desc": null
         },
