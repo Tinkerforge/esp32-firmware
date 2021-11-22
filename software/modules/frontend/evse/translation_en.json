@@ -114,11 +114,11 @@
             "charge_management_description": "Charge management",
             "charge_management_description_muted": "<a href=\"https://www.warp-charger.com/#documents\">see manual for details</a>",
             "charge_management_enable": "Enables other chargers to control this one",
-            "charging_time": "Charging for"
+            "charging_time": "Charging for",
             "reset_description": "Restart or reflash EVSE",
             "reset_description_muted": "{{{empty_text}}}",
             "reset_evse": "Restart",
-            "reflash_evse": "Reflash",
+            "reflash_evse": "Reflash"
         },
         "script": {
             "error_code": "Error code",
