@@ -58,7 +58,7 @@
             "ap_fallback_only": "nur als Fallback",
             "ap_disabled": "deaktiviert",
             "ap_ssid": "Netzwerkname (SSID)",
-            "ap_hide_ssid": "Netzwerknamen versteckt",
+            "ap_hide_ssid": "Netzwerkname versteckt",
             "ap_hide_ssid_desc_pre": null,
             "ap_hide_ssid_desc_post": " erreichbar.",
             "ap_passphrase": "Passphrase",
