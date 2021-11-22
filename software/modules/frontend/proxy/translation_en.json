@@ -8,6 +8,7 @@
         },
         "content": {
             "bricklets": "Bricklets",
+            "bricklet_table": "Connected Bricklets",
             "port": "Port",
             "UID": "UID",
             "device_type": "Device Type",
