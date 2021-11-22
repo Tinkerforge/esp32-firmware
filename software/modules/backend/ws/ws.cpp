@@ -41,9 +41,9 @@ void WS::setup()
 
 void WS::register_urls()
 {
-    web_sockets.onConnect([this](WebSocketsClient client){
+    web_sockets.onConnect([this](WebSocketsClient client) {
         String to_send = "";
-        for(auto &reg : api.states) {
+        for (auto &reg : api.states) {
             to_send += String("{\"topic\":\"") + reg.path + String("\",\"payload\":") + reg.config->to_string_except(reg.keys_to_censor) + String("}\n");
         }
         client.send(to_send.c_str(), to_send.length());
@@ -88,7 +88,7 @@ void WS::pushStateUpdate(String payload, String path)
     size_t payload_len = payload.length();
 
     size_t to_send_len = prefix_len + path_len + infix_len + payload_len + suffix_len;
-    char *to_send = (char*)malloc(to_send_len);
+    char *to_send = (char *)malloc(to_send_len);
     if (to_send == nullptr)
         return;
 

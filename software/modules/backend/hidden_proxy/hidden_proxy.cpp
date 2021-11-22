@@ -37,10 +37,11 @@ const int freq = 5000;
 const int ledChannel = 0;
 const int resolution = 8;
 
-static void blinky(void *arg) {
+static void blinky(void *arg)
+{
     ledcSetup(ledChannel, freq, resolution);
     ledcAttachPin(green_led_pin, ledChannel);
-    for(;;) {
+    for (;;) {
         digitalWrite(green_led_pin, true);
         delay(200);
         digitalWrite(green_led_pin, false);
@@ -52,7 +53,7 @@ static bool blinky_running = false;
 
 void HiddenProxy::start_proxy()
 {
-    if(blinky_running)
+    if (blinky_running)
         return;
     blinky_running = true;
 
@@ -69,8 +70,9 @@ void HiddenProxy::start_proxy()
     tf_hal_set_net(&hal, &net);
 }
 
-void HiddenProxy::stop_proxy() {
-    if(!blinky_running)
+void HiddenProxy::stop_proxy()
+{
+    if (!blinky_running)
         return;
     blinky_running = false;
 

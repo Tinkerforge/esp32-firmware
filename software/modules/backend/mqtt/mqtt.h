@@ -51,7 +51,7 @@ public:
     void publish(String topic_suffix, String payload);
     void subscribe(String topic_suffix, uint32_t max_payload_length, std::function<void(char *, size_t)> callback, bool forbid_retained);
 
-    //IAPIBackend implementation
+    // IAPIBackend implementation
     void addCommand(const CommandRegistration &reg);
     void addState(const StateRegistration &reg);
     void pushStateUpdate(String payload, String path);

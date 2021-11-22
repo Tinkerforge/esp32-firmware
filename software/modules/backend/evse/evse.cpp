@@ -155,7 +155,7 @@ EVSE::EVSE() : DeviceModule("evse", "EVSE", "EVSE", std::bind(&EVSE::setup_evse,
 void EVSE::setup()
 {
     setup_evse();
-    if(!device_found)
+    if (!device_found)
         return;
 
     task_scheduler.scheduleWithFixedDelay("update_all_data", [this](){
@@ -194,12 +194,14 @@ void EVSE::setup()
 #endif
 }
 
-String EVSE::get_evse_debug_header() {
+String EVSE::get_evse_debug_header()
+{
     return "\"millis,iec,vehicle,contactor,_error,charge_release,allowed_current,error,lock,t_state_change,uptime,low_level_mode_enabled,led,cp_pwm,adc_pe_cp,adc_pe_pp,voltage_pe_cp,voltage_pe_pp,voltage_pe_cp_max,resistance_pe_cp,resistance_pe_pp,gpio_in,gpio_out,gpio_motor_in,gpio_relay,gpio_motor_error,hardware_version,charging_time\"";
 }
 
-String EVSE::get_evse_debug_line() {
-    if(!initialized)
+String EVSE::get_evse_debug_line()
+{
+    if (!initialized)
         return "EVSE is not initialized!";
 
     uint8_t iec61851_state, vehicle_state, contactor_state, contactor_error, charge_release, error_state, lock_state;
@@ -244,7 +246,7 @@ String EVSE::get_evse_debug_line() {
         &hardware_version,
         &charging_time);
 
-    if(rc != TF_E_OK) {
+    if (rc != TF_E_OK) {
         return String("evse_get_low_level_state failed: rc: ") + String(rc);
     }
 
@@ -274,7 +276,8 @@ String EVSE::get_evse_debug_line() {
     return String(line);
 }
 
-void EVSE::set_managed_current(uint16_t current) {
+void EVSE::set_managed_current(uint16_t current)
+{
     is_in_bootloader(tf_evse_set_managed_current(&device, current));
     this->last_current_update = millis();
     this->shutdown_logged = false;
@@ -355,7 +358,7 @@ void EVSE::loop()
 
 #ifdef MODULE_WS_AVAILABLE
     static uint32_t last_debug = 0;
-    if(debug && deadline_elapsed(last_debug + 50)) {
+    if (debug && deadline_elapsed(last_debug + 50)) {
         last_debug = millis();
         ws.pushStateUpdate(this->get_evse_debug_line(), "evse/debug");
     }
@@ -373,7 +376,7 @@ void EVSE::setup_evse()
     int result = tf_evse_get_hardware_configuration(&device, &jumper_configuration, &has_lock_switch);
 
     if (result != TF_E_OK) {
-        if(!is_in_bootloader(result)) {
+        if (!is_in_bootloader(result)) {
             logger.printfln("EVSE hardware config query failed (rc %d). Disabling EVSE support.", result);
         }
         return;
@@ -385,7 +388,8 @@ void EVSE::setup_evse()
     initialized = true;
 }
 
-void EVSE::update_all_data() {
+void EVSE::update_all_data()
+{
     if (!initialized)
         return;
 
@@ -460,7 +464,7 @@ void EVSE::update_all_data() {
         &autostart,
         &managed);
 
-    if(rc != TF_E_OK) {
+    if (rc != TF_E_OK) {
         is_in_bootloader(rc);
         return;
     }
@@ -478,7 +482,7 @@ void EVSE::update_all_data() {
         &button_release_time,
         &button_pressed);
 
-    if(rc != TF_E_OK) {
+    if (rc != TF_E_OK) {
         is_in_bootloader(rc);
         return;
     }
@@ -518,16 +522,16 @@ void EVSE::update_all_data() {
     evse_low_level_state.get("led_state")->updateUint(led_state);
     evse_low_level_state.get("cp_pwm_duty_cycle")->updateUint(cp_pwm_duty_cycle);
 
-    for(int i = 0; i < sizeof(adc_values)/sizeof(adc_values[0]); ++i)
+    for (int i = 0; i < sizeof(adc_values) / sizeof(adc_values[0]); ++i)
         evse_low_level_state.get("adc_values")->get(i)->updateUint(adc_values[i]);
 
-    for(int i = 0; i < sizeof(voltages)/sizeof(voltages[0]); ++i)
+    for (int i = 0; i < sizeof(voltages) / sizeof(voltages[0]); ++i)
         evse_low_level_state.get("voltages")->get(i)->updateInt(voltages[i]);
 
-    for(int i = 0; i < sizeof(resistances)/sizeof(resistances[0]); ++i)
+    for (int i = 0; i < sizeof(resistances) / sizeof(resistances[0]); ++i)
         evse_low_level_state.get("resistances")->get(i)->updateUint(resistances[i]);
 
-    for(int i = 0; i < sizeof(gpio)/sizeof(gpio[0]); ++i)
+    for (int i = 0; i < sizeof(gpio) / sizeof(gpio[0]); ++i)
         evse_low_level_state.get("gpio")->get(i)->updateBool(gpio[i]);
 
     evse_low_level_state.get("hardware_version")->updateUint(hardware_version);
@@ -552,7 +556,7 @@ void EVSE::update_all_data() {
     evse_user_calibration.get("voltage_div")->updateInt(voltage_div);
     evse_user_calibration.get("resistance_2700")->updateInt(resistance_2700);
 
-    for(int i = 0; i < sizeof(resistance_880)/sizeof(resistance_880[0]); ++i)
+    for (int i = 0; i < sizeof(resistance_880) / sizeof(resistance_880[0]); ++i)
         evse_user_calibration.get("resistance_880")->get(i)->updateInt(resistance_880[i]);
 
     // get_button_state

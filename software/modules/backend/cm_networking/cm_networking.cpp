@@ -66,10 +66,10 @@ int CMNetworking::create_socket(uint16_t port) {
     }
 
     int flags = fcntl(sock, F_GETFL, 0);
-	if (flags < 0) {
-		logger.printfln("Failed to get flags from socket: errno %d", errno);
+    if (flags < 0) {
+        logger.printfln("Failed to get flags from socket: errno %d", errno);
         return -1;
-	}
+    }
 
     err = fcntl(sock, F_SETFL, flags | O_NONBLOCK);
     if (err < 0) {
@@ -94,7 +94,7 @@ void CMNetworking::register_manager(const std::vector<String> &hosts,
                                                         )> manager_callback,
                                     std::function<void(uint8_t, uint8_t)> manager_error_callback) {
 
-    for(int i = 0; i < names.size(); ++i) {
+    for (int i = 0; i < names.size(); ++i) {
         dest_addrs[i].sin_addr.s_addr = inet_addr(hosts[i].c_str());
         dest_addrs[i].sin_family = AF_INET;
         dest_addrs[i].sin_port = htons(CHARGE_MANAGEMENT_PORT);
@@ -187,7 +187,8 @@ void CMNetworking::register_manager(const std::vector<String> &hosts,
         }, 100, 100);
 }
 
-bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_current) {
+bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_current)
+{
     static uint8_t next_seq_num = 1;
 
     if (manager_sock < 0)
@@ -202,7 +203,7 @@ bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_cur
 
     int err = sendto(manager_sock, &request, sizeof(request), 0, (sockaddr *)&dest_addrs[client_id], sizeof(dest_addrs[client_id]));
 
-    if(err < 0) {
+    if (err < 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
             // Intentionally don't increment here, we want to resend to this charger next.
             return false;
@@ -225,7 +226,7 @@ void CMNetworking::register_client(std::function<void(uint16_t)> client_callback
 {
     client_sock = create_socket(CHARGE_MANAGEMENT_PORT);
 
-    if(client_sock < 0)
+    if (client_sock < 0)
         return;
 
     memset(&source_addr, 0, sizeof(source_addr));
@@ -315,11 +316,10 @@ bool CMNetworking::send_client_update(uint8_t iec61851_state,
             logger.printfln("sendto failed: errno %d", errno);
         return false;
     }
-    if (err != sizeof(response)){
+    if (err != sizeof(response)) {
         logger.printfln("sendto truncated the response (of size %u bytes) to %d bytes.", sizeof(response), err);
         return false;
     }
 
     return true;
 }
-

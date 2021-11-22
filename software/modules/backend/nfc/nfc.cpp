@@ -51,7 +51,8 @@ extern TaskScheduler task_scheduler;
 
 extern API api;
 
-NFC::NFC() : DeviceModule("nfc", "NFC", "NFC", std::bind(&NFC::setup_nfc, this)) {
+NFC::NFC() : DeviceModule("nfc", "NFC", "NFC", std::bind(&NFC::setup_nfc, this))
+{
     seen_tags = Config::Array(
         {},
         Config::Object({
@@ -79,14 +80,15 @@ NFC::NFC() : DeviceModule("nfc", "NFC", "NFC", std::bind(&NFC::setup_nfc, this))
     });
 }
 
-void NFC::setup_nfc() {
+void NFC::setup_nfc()
+{
     if (!this->DeviceModule::setup_device()) {
         return;
     }
 
     int result = tf_nfc_set_mode(&device, TF_NFC_MODE_SIMPLE);
     if (result != TF_E_OK) {
-        if(!is_in_bootloader(result)) {
+        if (!is_in_bootloader(result)) {
             logger.printfln("NFC set mode failed (rc %d). Disabling NFC support.", result);
         }
         return;
@@ -97,7 +99,7 @@ void NFC::setup_nfc() {
     // clear tag list; tag_id and len can't currently be nullptr, the generator has a bug so that it assumes those are writable.
     result = tf_nfc_simple_get_tag_id(&device, 255, nullptr, tag_id, &tag_id_len, nullptr);
     if (result != TF_E_OK) {
-        if(!is_in_bootloader(result)) {
+        if (!is_in_bootloader(result)) {
             logger.printfln("Clearing NFC tag list failed (rc %d). Disabling NFC support.", result);
         }
         return;
@@ -106,11 +108,12 @@ void NFC::setup_nfc() {
     initialized = true;
 }
 
-void NFC::check_nfc_state() {
+void NFC::check_nfc_state()
+{
     uint8_t mode = 0;
     int result = tf_nfc_get_mode(&device, &mode);
-    if(result != TF_E_OK) {
-        if(!is_in_bootloader(result)) {
+    if (result != TF_E_OK) {
+        if (!is_in_bootloader(result)) {
             logger.printfln("Failed to get NFC mode, rc: %d", result);
         }
         return;
@@ -121,7 +124,8 @@ void NFC::check_nfc_state() {
     }
 }
 
-bool NFC::is_tag_equal(uint8_t tag_type, uint8_t *tag_id, uint8_t tag_id_len, uint32_t last_seen, Config *other_tag) {
+bool NFC::is_tag_equal(uint8_t tag_type, uint8_t *tag_id, uint8_t tag_id_len, uint32_t last_seen, Config *other_tag)
+{
     if (other_tag->get("tag_type")->asUint() != tag_type)
         return false;
     if (other_tag->get("tag_id")->count() != tag_id_len)
@@ -134,13 +138,13 @@ bool NFC::is_tag_equal(uint8_t tag_type, uint8_t *tag_id, uint8_t tag_id_len, ui
     return true;
 }
 
-
-bool NFC::is_tag_authorized(uint8_t tag_type, uint8_t *tag_id, uint8_t tag_id_len, uint32_t last_seen, uint8_t *tag_idx) {
+bool NFC::is_tag_authorized(uint8_t tag_type, uint8_t *tag_id, uint8_t tag_id_len, uint32_t last_seen, uint8_t *tag_idx)
+{
     if (last_seen >= TOKEN_LIFETIME_MS)
         return false;
 
     Config *auth_tags = config_in_use.get("authorized_tags");
-    for(uint8_t auth_tag_idx = 0; auth_tag_idx < auth_tags->count(); ++auth_tag_idx) {
+    for (uint8_t auth_tag_idx = 0; auth_tag_idx < auth_tags->count(); ++auth_tag_idx) {
         Config *auth_tag = auth_tags->get(auth_tag_idx);
         if (is_tag_equal(tag_type, tag_id, tag_id_len, last_seen, auth_tag)) {
             *tag_idx = auth_tag_idx;
@@ -150,8 +154,8 @@ bool NFC::is_tag_authorized(uint8_t tag_type, uint8_t *tag_id, uint8_t tag_id_le
     return false;
 }
 
-
-void set_led(int16_t mode) {
+void set_led(int16_t mode)
+{
 
     static int16_t last_mode = -1;
     static uint32_t last_set = 0;
@@ -159,7 +163,7 @@ void set_led(int16_t mode) {
     if (last_mode == mode && !deadline_elapsed(last_set + 2500))
         return;
 
-    //sorted by priority
+    // sorted by priority
     switch (mode) {
         case IND_ACK:
             break;
@@ -188,7 +192,8 @@ void set_led(int16_t mode) {
     last_set = millis();
 }
 
-void NFC::handle_event(tag_info_t *tag, bool found) {
+void NFC::handle_event(tag_info_t *tag, bool found)
+{
     uint8_t idx = 0;
     bool authorized = is_tag_authorized(tag->tag_type, tag->tag_id, tag->tag_id_len, tag->last_seen, &idx);
 
@@ -210,7 +215,8 @@ void NFC::handle_event(tag_info_t *tag, bool found) {
     }
 }
 
-void NFC::handle_evse() {
+void NFC::handle_evse()
+{
     static Config *evse_state = api.getState("evse/state", false);
 
     static bool block_api_call = false;
@@ -261,12 +267,12 @@ void NFC::handle_evse() {
     }
 }
 
-
-void NFC::update_seen_tags() {
-    for(int i = 0; i < TAG_LIST_LENGTH; ++i) {
+void NFC::update_seen_tags()
+{
+    for (int i = 0; i < TAG_LIST_LENGTH; ++i) {
         int result = tf_nfc_simple_get_tag_id(&device, i, &new_tags[i].tag_type, new_tags[i].tag_id, &new_tags[i].tag_id_len, &new_tags[i].last_seen);
-        if(result != TF_E_OK) {
-            if(!is_in_bootloader(result)) {
+        if (result != TF_E_OK) {
+            if (!is_in_bootloader(result)) {
                 logger.printfln("Failed to get tag id %d, rc: %d", i, result);
             }
             continue;
@@ -279,7 +285,7 @@ void NFC::update_seen_tags() {
         while (seen_tags.get(i)->get("tag_id")->count() > new_tags[i].tag_id_len)
             seen_tags.get(i)->get("tag_id")->removeLast();
 
-        for(int j = 0; j < new_tags[i].tag_id_len; ++j) {
+        for (int j = 0; j < new_tags[i].tag_id_len; ++j) {
             seen_tags.get(i)->get("tag_id")->get(j)->updateUint(new_tags[i].tag_id[j]);
         }
         seen_tags.get(i)->get("last_seen")->updateUint(new_tags[i].last_seen);
@@ -288,13 +294,13 @@ void NFC::update_seen_tags() {
     // compare new list with old
     // tags that are not seen anymore are lost
     // tags that are seen again or are not in the old list are found
-    for(int new_idx = 0; new_idx < TAG_LIST_LENGTH; ++new_idx) {
+    for (int new_idx = 0; new_idx < TAG_LIST_LENGTH; ++new_idx) {
         if (new_tags[new_idx].last_seen == 0)
             continue;
 
         bool found = false;
         int old_idx;
-        for(old_idx = 0; old_idx < TAG_LIST_LENGTH; ++old_idx) {
+        for (old_idx = 0; old_idx < TAG_LIST_LENGTH; ++old_idx) {
             if (old_tags[old_idx].last_seen == 0)
                 continue;
             if (old_tags[old_idx].tag_id_len != new_tags[new_idx].tag_id_len)
@@ -334,7 +340,7 @@ void NFC::update_seen_tags() {
 
     // tags that are also in the new list are marked with last_seen = 0
     // all other tags are displaced i.e. gone
-    for(int old_idx = 0; old_idx < TAG_LIST_LENGTH; ++old_idx) {
+    for (int old_idx = 0; old_idx < TAG_LIST_LENGTH; ++old_idx) {
         if (old_tags[old_idx].last_seen == 0)
             continue;
 
@@ -346,7 +352,8 @@ void NFC::update_seen_tags() {
     new_tags = tmp;
 }
 
-void NFC::setup() {
+void NFC::setup()
+{
     setup_nfc();
     if (!device_found)
         return;
@@ -354,7 +361,7 @@ void NFC::setup() {
     api.restorePersistentConfig("nfc/config", &config);
     config_in_use = config;
 
-    for(int i = 0; i < TAG_LIST_LENGTH; ++i) {
+    for (int i = 0; i < TAG_LIST_LENGTH; ++i) {
         seen_tags.add();
     }
 
@@ -372,7 +379,8 @@ void NFC::setup() {
     }, 10, 10);
 }
 
-void NFC::register_urls() {
+void NFC::register_urls()
+{
     if (!device_found)
         return;
 

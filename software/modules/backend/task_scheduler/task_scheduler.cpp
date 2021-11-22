@@ -53,15 +53,16 @@ void TaskScheduler::register_urls()
     });
 }
 
-void TaskScheduler::loop() {
+void TaskScheduler::loop()
+{
     current_scheduler_state = "checking for empty queue";
-    if(tasks.empty()) {
+    if (tasks.empty()) {
         return;
     }
     current_scheduler_state = "top";
     auto &task_ref = tasks.top();
     current_scheduler_task = task_ref.task_name;
-    if(!deadline_elapsed(task_ref.next_deadline_ms)) {
+    if (!deadline_elapsed(task_ref.next_deadline_ms)) {
         current_scheduler_state = "not elapsed";
         return;
     }
@@ -75,7 +76,7 @@ void TaskScheduler::loop() {
 
     current_scheduler_state = "done running task";
 
-    if(task.once) {
+    if (task.once) {
         current_scheduler_state = "task ran once";
         return;
     }
@@ -87,12 +88,12 @@ void TaskScheduler::loop() {
     current_scheduler_state = "end loop";
 }
 
-
-void TaskScheduler::scheduleOnce(const char *taskName, std::function<void(void)> &&fn, uint32_t delay){
+void TaskScheduler::scheduleOnce(const char *taskName, std::function<void(void)> &&fn, uint32_t delay)
+{
     tasks.emplace(taskName, fn, delay, 0, true);
 }
 
-void TaskScheduler::scheduleWithFixedDelay(const char *taskName, std::function<void(void)> &&fn, uint32_t first_delay, uint32_t delay) {
+void TaskScheduler::scheduleWithFixedDelay(const char *taskName, std::function<void(void)> &&fn, uint32_t first_delay, uint32_t delay)
+{
     tasks.emplace(taskName, fn, first_delay, delay, false);
 }
-

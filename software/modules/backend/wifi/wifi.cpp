@@ -42,7 +42,8 @@ extern char passphrase[20];
 
 extern API api;
 
-Wifi::Wifi() {
+Wifi::Wifi()
+{
     wifi_ap_config = Config::Object({
         {"enable_ap", Config::Bool(true)},
         {"ap_fallback_only", Config::Bool(false)},
@@ -193,7 +194,8 @@ Wifi::Wifi() {
     wifi_scan_config = Config::Null();
 }
 
-void Wifi::apply_soft_ap_config_and_start() {
+void Wifi::apply_soft_ap_config_and_start()
+{
     uint8_t ip[4];
     uint8_t gateway[4];
     uint8_t subnet[4];
@@ -227,7 +229,8 @@ void Wifi::apply_soft_ap_config_and_start() {
     logger.printfln("    IP: %u.%u.%u.%u", myIP[0], myIP[1], myIP[2], myIP[3]);
 }
 
-void Wifi::apply_sta_config_and_connect() {
+void Wifi::apply_sta_config_and_connect()
+{
     if (get_connection_state() == WifiState::CONNECTED) {
         return;
     }
@@ -251,10 +254,9 @@ void Wifi::apply_sta_config_and_connect() {
     wifi_sta_config_in_use.get("dns")->fillUint8Array(dns, 4);
     wifi_sta_config_in_use.get("dns2")->fillUint8Array(dns2, 4);
 
-
     WiFi.begin(ssid.c_str(), passphrase.c_str(), 0, bssid_lock ? bssid : nullptr, false);
 
-    if(ip != 0) {
+    if (ip != 0) {
         WiFi.config(ip, gateway, subnet, dns, dns2);
     } else {
         WiFi.config((uint32_t)0, (uint32_t)0, (uint32_t)0);
@@ -268,8 +270,9 @@ void Wifi::apply_sta_config_and_connect() {
     WiFi.setSleep(false);
 }
 
-const char *reason2str(uint8_t reason) {
-    switch(reason) {
+const char *reason2str(uint8_t reason)
+{
+    switch (reason) {
         case WIFI_REASON_NO_AP_FOUND:
             return "Access Point not found. Is the reception too poor or the SSID incorrect?";
         case WIFI_REASON_AUTH_FAIL:
@@ -289,11 +292,11 @@ void Wifi::setup()
     String default_hostname = String(BUILD_HOST_PREFIX) + String("-") + String(uid);
     String default_passphrase = String(passphrase);
 
-    if(!api.restorePersistentConfig("wifi/sta_config", &wifi_sta_config)) {
+    if (!api.restorePersistentConfig("wifi/sta_config", &wifi_sta_config)) {
         wifi_sta_config.get("hostname")->updateString(default_hostname);
     }
 
-    if(!api.restorePersistentConfig("wifi/ap_config", &wifi_ap_config)) {
+    if (!api.restorePersistentConfig("wifi/ap_config", &wifi_ap_config)) {
         wifi_ap_config.get("hostname")->updateString(default_hostname);
         wifi_ap_config.get("ssid")->updateString(default_hostname);
         wifi_ap_config.get("passphrase")->updateString(default_passphrase);
@@ -307,7 +310,7 @@ void Wifi::setup()
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
             uint8_t reason_code = info.wifi_sta_disconnected.reason;
             const char *reason = reason2str(reason_code);
-            if(!this->was_connected) {
+            if (!this->was_connected) {
                 logger.printfln("Failed to connect to %s: %s (%u)", wifi_sta_config_in_use.get("ssid")->asString().c_str(), reason, reason_code);
             } else {
                 logger.printfln("Disconnected from %s: %s (%u)", wifi_sta_config_in_use.get("ssid")->asString().c_str(), reason, reason_code);
@@ -413,7 +416,8 @@ void Wifi::setup()
     initialized = true;
 }
 
-String Wifi::get_scan_results() {
+String Wifi::get_scan_results()
+{
     int network_count = WiFi.scanComplete();
 
     if (network_count == WIFI_SCAN_RUNNING) {
@@ -428,8 +432,8 @@ String Wifi::get_scan_results() {
         return "[]";
     }
 
-    //result line: {"ssid": "%s", "bssid": "%s", "rssi": %d, "channel": %d, "encryption": %d}
-    //worst case length ~ 140
+    // result line: {"ssid": "%s", "bssid": "%s", "rssi": %d, "channel": %d, "encryption": %d}
+    // worst case length ~ 140
     String result;
     result.reserve(145 * network_count);
     logger.printfln("%d networks found", network_count);
@@ -448,14 +452,15 @@ String Wifi::get_scan_results() {
         result += ", \"encryption\": ";
         result += WiFi.encryptionType(i);
         result += "}";
-        if(i != network_count - 1)
+        if (i != network_count - 1)
             result += ",";
     }
     result += "]";
     return result;
 }
 
-void Wifi::check_for_scan_completion() {
+void Wifi::check_for_scan_completion()
+{
     String result = this->get_scan_results();
 
     if (result == "scan in progress") {
@@ -535,7 +540,8 @@ void Wifi::loop()
     }
 }
 
-WifiState Wifi::get_connection_state() {
+WifiState Wifi::get_connection_state()
+{
     if (!wifi_sta_config_in_use.get("enable_sta")->asBool())
         return WifiState::NOT_CONFIGURED;
 
@@ -557,14 +563,15 @@ WifiState Wifi::get_connection_state() {
     }
 }
 
-int Wifi::get_ap_state() {
+int Wifi::get_ap_state()
+{
     bool enable_ap = wifi_ap_config_in_use.get("enable_ap")->asBool();
     bool ap_fallback = wifi_ap_config_in_use.get("ap_fallback_only")->asBool();
-    if(!enable_ap)
+    if (!enable_ap)
         return 0;
-    if(!ap_fallback)
+    if (!ap_fallback)
         return 1;
-    if(!soft_ap_running)
+    if (!soft_ap_running)
         return 2;
 
     return 3;

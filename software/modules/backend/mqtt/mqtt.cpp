@@ -36,7 +36,8 @@ extern API api;
 #define MQTT_RECV_BUFFER_SIZE 4096
 #define MQTT_RECV_BUFFER_HEADROOM (MQTT_RECV_BUFFER_SIZE / 4)
 
-Mqtt::Mqtt() {
+Mqtt::Mqtt()
+{
     // The real UID will be patched in later
     mqtt_config = Config::Object({
         {"enable_mqtt", Config::Bool(false)},
@@ -99,7 +100,8 @@ void Mqtt::addState(const StateRegistration &reg)
 
 }
 
-void Mqtt::publish(String payload, String path) {
+void Mqtt::publish(String payload, String path)
+{
     String prefix = mqtt_config_in_use.get("global_topic_prefix")->asString();
     String topic = prefix + "/" + path;
     esp_mqtt_client_publish(this->client, topic.c_str(), payload.c_str(), payload.length(), 0, true/*, false*/);
@@ -113,37 +115,40 @@ void Mqtt::pushStateUpdate(String payload, String path)
 void Mqtt::wifiAvailable()
 {
     static bool started = false;
-    if(!started)
+    if (!started)
         esp_mqtt_client_start(client);
     started = true;
 }
 
-void Mqtt::onMqttConnect() {
+void Mqtt::onMqttConnect()
+{
     logger.printfln("MQTT: Connected to broker.");
     this->mqtt_state.get("connection_state")->updateInt((int)MqttConnectionState::CONNECTED);
 
     this->commands.clear();
-    for(auto &reg : api.commands) {
+    for (auto &reg : api.commands) {
         this->addCommand(reg);
     }
-    for(auto &reg : api.states) {
+    for (auto &reg : api.states) {
         publish(reg.config->to_string_except(reg.keys_to_censor), reg.path);
     }
 }
 
-void Mqtt::onMqttDisconnect() {
+void Mqtt::onMqttDisconnect()
+{
     this->mqtt_state.get("connection_state")->updateInt((int)MqttConnectionState::NOT_CONNECTED);
     logger.printfln("MQTT: Disconnected from broker.");
 }
 
-void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain) {
-    for(auto &c : commands) {
+void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain)
+{
+    for (auto &c : commands) {
         if (c.topic.length() != topic_len)
             continue;
-        if(memcmp(c.topic.c_str(), topic, topic_len) != 0)
+        if (memcmp(c.topic.c_str(), topic, topic_len) != 0)
             continue;
 
-        if(data_len > c.max_len) {
+        if (data_len > c.max_len) {
             logger.printfln("MQTT: Ignoring message with payload length %u for topic %s. Maximum length allowed is %u.", data_len, c.topic.c_str(), c.max_len);
             return;
         }
@@ -159,8 +164,9 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
 
 static char err_buf[64] = {0};
 
-static const char *get_mqtt_error(esp_mqtt_connect_return_code_t rc) {
-    switch(rc) {
+static const char *get_mqtt_error(esp_mqtt_connect_return_code_t rc)
+{
+    switch (rc) {
         case MQTT_CONNECTION_ACCEPTED:
             return "Connection accepted";
         case MQTT_CONNECTION_REFUSE_PROTOCOL:
@@ -183,8 +189,8 @@ static const char *get_mqtt_error(esp_mqtt_connect_return_code_t rc) {
 
 static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
-    Mqtt *mqtt = (Mqtt*) handler_args;
-    esp_mqtt_event_handle_t event = (esp_mqtt_event_handle_t) event_data;
+    Mqtt *mqtt = (Mqtt *)handler_args;
+    esp_mqtt_event_handle_t event = (esp_mqtt_event_handle_t)event_data;
 
     switch ((esp_mqtt_event_id_t)event_id) {
         case MQTT_EVENT_CONNECTED:
@@ -240,7 +246,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 
 void Mqtt::setup()
 {
-    if(!api.restorePersistentConfig("mqtt/config", &mqtt_config)) {
+    if (!api.restorePersistentConfig("mqtt/config", &mqtt_config)) {
         mqtt_config.get("global_topic_prefix")->updateString(String(BUILD_HOST_PREFIX) + String("/") + String(uid));
         mqtt_config.get("client_name")->updateString(String(BUILD_HOST_PREFIX) + String("-") + String(uid));
     }
@@ -280,7 +286,6 @@ void Mqtt::register_urls()
     api.addPersistentConfig("mqtt/config", &mqtt_config, {"broker_password"}, 1000);
     api.addState("mqtt/state", &mqtt_state, {}, 1000);
 }
-
 
 void Mqtt::loop()
 {

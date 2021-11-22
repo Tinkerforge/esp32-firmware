@@ -166,9 +166,9 @@ bool API::restorePersistentConfig(String path, Config *config)
     return error == "";
 }
 
-void API::registerDebugUrl(WebServer *server) {
+void API::registerDebugUrl(WebServer *server)
+{
     server->on("/debug_report", HTTP_GET, [this](WebServerRequest request) {
-
         String result = "{\"uptime\": ";
         result += String(millis());
         result += ",\n \"free_heap_bytes\":";
@@ -246,7 +246,7 @@ String API::callCommand(String path, Config::ConfUpdate payload)
     return String("Unknown command ") + path;
 }
 
-Config* API::getState(String path, bool log_if_not_found)
+Config *API::getState(String path, bool log_if_not_found)
 {
     for (auto &reg : states) {
         if (reg.path != path)

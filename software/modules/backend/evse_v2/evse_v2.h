@@ -80,6 +80,4 @@ private:
 
     uint32_t last_current_update = 0;
     bool shutdown_logged = false;
-
-
 };

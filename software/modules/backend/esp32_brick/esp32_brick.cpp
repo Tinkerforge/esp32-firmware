@@ -81,13 +81,13 @@ void ESP32Brick::loop()
     if (!factory_reset_requested)
         digitalWrite(GREEN_LED, btn);
 
-    if(btn != last_btn_value) {
+    if (btn != last_btn_value) {
         last_btn_change = millis();
     }
 
     last_btn_value = btn;
 
-    if(!btn && deadline_elapsed(last_btn_change + 10000)) {
+    if (!btn && deadline_elapsed(last_btn_change + 10000)) {
         logger.printfln("IO0 button was pressed for 10 seconds. Resetting to factory defaults.");
         last_btn_change = millis();
         factory_reset_requested = true;

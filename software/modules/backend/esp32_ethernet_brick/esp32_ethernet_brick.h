@@ -27,6 +27,6 @@ public:
     void loop();
 
     bool initialized = false;
-private:
 
+private:
 };

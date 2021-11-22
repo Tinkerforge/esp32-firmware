@@ -35,7 +35,8 @@ extern TaskScheduler task_scheduler;
 
 extern API api;
 
-SDM72DM::SDM72DM() : DeviceModule("rs485", "RS485", "energy meter", std::bind(&SDM72DM::setupRS485, this)) {
+SDM72DM::SDM72DM() : DeviceModule("rs485", "RS485", "energy meter", std::bind(&SDM72DM::setupRS485, this))
+{
     state = Config::Object({
         {"power", Config::Float(0.0)},
         {"energy_rel", Config::Float(0.0)},
@@ -60,25 +61,25 @@ SDM72DM::SDM72DM() : DeviceModule("rs485", "RS485", "energy meter", std::bind(&S
 void read_input_registers_handler(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t input_registers_length, uint16_t input_registers_chunk_offset, uint16_t input_registers_chunk_data[29], void *user_data) {
     SDM72DM::UserData *ud = (SDM72DM::UserData *) user_data;
 
-    if(request_id != ud->expected_request_id || ud->expected_request_id == 0) {
+    if (request_id != ud->expected_request_id || ud->expected_request_id == 0) {
         logger.printfln("Unexpected request id %u, expected %u", request_id, ud->expected_request_id);
         ud->done = SDM72DM::UserDataDone::ERROR;
         return;
     }
 
-    if(exception_code != 0) {
+    if (exception_code != 0) {
         logger.printfln("Request %u: Exception code %d", request_id, exception_code);
         ud->done = SDM72DM::UserDataDone::ERROR;
         return;
     }
 
-    if(input_registers_length != 2) {
+    if (input_registers_length != 2) {
         logger.printfln("Request %u: Unexpected response length %I16u", request_id, input_registers_length);
         ud->done = SDM72DM::UserDataDone::ERROR;
         return;
     }
 
-    if(ud->value_to_write == nullptr) {
+    if (ud->value_to_write == nullptr) {
         logger.printfln("value to write was nullptr");
         ud->done = SDM72DM::UserDataDone::ERROR;
         return;
@@ -101,16 +102,17 @@ void read_input_registers_handler(struct TF_RS485 *device, uint8_t request_id, i
     ud->done = SDM72DM::UserDataDone::DONE;
 }
 
-void write_multiple_registers_handler(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, void *user_data) {
-    SDM72DM::UserData *ud = (SDM72DM::UserData *) user_data;
+void write_multiple_registers_handler(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, void *user_data)
+{
+    SDM72DM::UserData *ud = (SDM72DM::UserData *)user_data;
 
-    if(request_id != ud->expected_request_id || ud->expected_request_id == 0) {
+    if (request_id != ud->expected_request_id || ud->expected_request_id == 0) {
         logger.printfln("Unexpected request id %u, expected %u", request_id, ud->expected_request_id);
         ud->done = SDM72DM::UserDataDone::ERROR;
         return;
     }
 
-    if(exception_code != 0) {
+    if (exception_code != 0) {
         logger.printfln("Exception code %d", exception_code);
         ud->done = SDM72DM::UserDataDone::ERROR;
         return;
@@ -119,14 +121,15 @@ void write_multiple_registers_handler(struct TF_RS485 *device, uint8_t request_i
     ud->done = SDM72DM::UserDataDone::DONE;
 }
 
-void SDM72DM::setupRS485() {
+void SDM72DM::setupRS485()
+{
     if (!this->DeviceModule::setup_device()) {
         return;
     }
 
     int result = tf_rs485_set_mode(&device, TF_RS485_MODE_MODBUS_MASTER_RTU);
     if (result != TF_E_OK) {
-        if(!is_in_bootloader(result)) {
+        if (!is_in_bootloader(result)) {
             logger.printfln("RS485 set mode failed (rc %d). Disabling energy meter support.", result);
         }
         return;
@@ -134,7 +137,7 @@ void SDM72DM::setupRS485() {
 
     result = tf_rs485_set_rs485_configuration(&device, 9600, TF_RS485_PARITY_NONE, TF_RS485_STOPBITS_1, TF_RS485_WORDLENGTH_8, TF_RS485_DUPLEX_HALF);
     if (result != TF_E_OK) {
-        if(!is_in_bootloader(result)) {
+        if (!is_in_bootloader(result)) {
             logger.printfln("RS485 set config failed (rc %d). Disabling energy meter support.", result);
         }
         return;
@@ -142,7 +145,7 @@ void SDM72DM::setupRS485() {
 
     result = tf_rs485_set_modbus_configuration(&device, 1, 1000);
     if (result != TF_E_OK) {
-        if(!is_in_bootloader(result)) {
+        if (!is_in_bootloader(result)) {
             logger.printfln("RS485 set modbus config failed (rc %d). Disabling energy meter support.", result);
         }
         return;
@@ -154,11 +157,12 @@ void SDM72DM::setupRS485() {
     initialized = true;
 }
 
-void SDM72DM::checkRS485State() {
+void SDM72DM::checkRS485State()
+{
     uint8_t mode = 0;
     int result = tf_rs485_get_mode(&device, &mode);
-    if(result != TF_E_OK) {
-        if(!is_in_bootloader(result)) {
+    if (result != TF_E_OK) {
+        if (!is_in_bootloader(result)) {
             logger.printfln("Failed to get RS485 mode, rc: %d", result);
             error_counters.get("bricklet")->updateUint(error_counters.get("bricklet")->asUint() + 1);
         }
@@ -171,8 +175,9 @@ void SDM72DM::checkRS485State() {
     }
 }
 
-void SDM72DM::setup() {
-    for(int i = 0; i < power_history.size(); ++i) {
+void SDM72DM::setup()
+{
+    for (int i = 0; i < power_history.size(); ++i) {
         //float f = 5000.0 * sin(PI/120.0 * i) + 5000.0;
         // Use negative values to mark that these are pre-filled.
         power_history.push(-1);
@@ -187,7 +192,8 @@ void SDM72DM::setup() {
     }, 5 * 60 * 1000, 5 * 60 * 1000);
 }
 
-void SDM72DM::register_urls() {
+void SDM72DM::register_urls()
+{
     if (!device_found)
         return;
 
@@ -199,7 +205,7 @@ void SDM72DM::register_urls() {
     }, true);
 
     server.on("/meter/history", HTTP_GET, [this](WebServerRequest request) {
-        if(!initialized) {
+        if (!initialized) {
             request.send(400, "text/html", "not initialized");
             return;
         }
@@ -211,14 +217,14 @@ void SDM72DM::register_urls() {
         int16_t val;
         power_history.peek(&val);
         // Negative values are prefilled, because the ESP was booted less than 48 hours ago.
-        if(val < 0)
+        if (val < 0)
             buf_written += snprintf(buf + buf_written, buf_size - buf_written, "%s", "[null");
         else
             buf_written += snprintf(buf + buf_written, buf_size - buf_written, "[%d", (int)val);
 
-        for(int i = 1; i < power_history.used() && power_history.peek_offset(&val, i) && buf_written < buf_size; ++i) {
+        for (int i = 1; i < power_history.used() && power_history.peek_offset(&val, i) && buf_written < buf_size; ++i) {
             // Negative values are prefilled, because the ESP was booted less than 48 hours ago.
-            if(val < 0)
+            if (val < 0)
                 buf_written += snprintf(buf + buf_written, buf_size - buf_written, "%s", ",null");
             else
                 buf_written += snprintf(buf + buf_written, buf_size - buf_written, ",%d", (int)val);
@@ -231,7 +237,7 @@ void SDM72DM::register_urls() {
     });
 
     server.on("/meter/live", HTTP_GET, [this](WebServerRequest request) {
-        if(!initialized) {
+        if (!initialized) {
             request.send(400, "text/html", "not initialized");
             return;
         }
@@ -243,14 +249,14 @@ void SDM72DM::register_urls() {
         int16_t val;
         interval_samples.peek(&val);
         float samples_per_second = 0;
-        if(this->samples_per_interval > 0) {
+        if (this->samples_per_interval > 0) {
             samples_per_second = ((float)this->samples_per_interval) / (60 * HISTORY_MINUTE_INTERVAL);
         } else {
             samples_per_second = (float)this->samples_last_interval / millis() * 1000;
         }
         buf_written += snprintf(buf + buf_written, buf_size - buf_written, "{\"samples_per_second\":%f,\"samples\":[%d", samples_per_second, val);
 
-        for(int i = 1; (i < interval_samples.used() - 1) && interval_samples.peek_offset(&val, i) && buf_written < buf_size; ++i) {
+        for (int i = 1; (i < interval_samples.used() - 1) && interval_samples.peek_offset(&val, i) && buf_written < buf_size; ++i) {
             buf_written += snprintf(buf + buf_written, buf_size - buf_written, ",%d", val);
         }
         if (buf_written < buf_size)
@@ -264,21 +270,21 @@ void SDM72DM::register_urls() {
 void SDM72DM::loop()
 {
     this->DeviceModule::loop();
-    if(!initialized)
+    if (!initialized)
         return;
 
-    if(user_data.done == UserDataDone::NOT_DONE && !deadline_elapsed(callback_deadline_ms))
+    if (user_data.done == UserDataDone::NOT_DONE && !deadline_elapsed(callback_deadline_ms))
         return;
 
-    if(user_data.done == UserDataDone::NOT_DONE) {
+    if (user_data.done == UserDataDone::NOT_DONE) {
         logger.printfln("rs485 deadline reached!");
         this->checkRS485State();
     }
 
-    if(user_data.done != UserDataDone::NOT_DONE && !deadline_elapsed(next_read_deadline_ms))
+    if (user_data.done != UserDataDone::NOT_DONE && !deadline_elapsed(next_read_deadline_ms))
         return;
 
-    if(energy_meter_reset_requested) {
+    if (energy_meter_reset_requested) {
         energy_meter_reset_requested = false;
 
         user_data.done = UserDataDone::NOT_DONE;
@@ -357,12 +363,12 @@ void SDM72DM::loop()
     user_data.done = UserDataDone::NOT_DONE;
     user_data.expected_request_id = 0;
     is_in_bootloader(tf_rs485_modbus_master_read_input_registers(&device, 1, start_address, 2, &user_data.expected_request_id));
-    if(user_data.expected_request_id == 0) {
+    if (user_data.expected_request_id == 0) {
         logger.printfln("Failed to read energy meter registers starting at %u: request_id: %u", start_address, user_data.expected_request_id);
         this->checkRS485State();
     }
 
-    if(modbus_read_state < 2)
+    if (modbus_read_state < 2)
         ++modbus_read_state;
     else {
         modbus_read_state = 0;
@@ -385,10 +391,10 @@ void SDM72DM::loop()
             error_counters.get("bricklet")->updateUint(error_counters.get("bricklet")->asUint() + 1);
         }
 
-        if(deadline_elapsed(interval_end_ms)) {
+        if (deadline_elapsed(interval_end_ms)) {
             float interval_sum = 0;
             int16_t val;
-            for(int i = 0; i < samples_last_interval; ++i) {
+            for (int i = 0; i < samples_last_interval; ++i) {
                 interval_samples.peek_offset(&val, interval_samples.used() - 1 - i);
                 interval_sum += val;
             }

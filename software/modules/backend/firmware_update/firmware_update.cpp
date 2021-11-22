@@ -34,7 +34,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
-extern const char* DISPLAY_NAME;
+extern const char *DISPLAY_NAME;
 
 extern EventLog logger;
 
@@ -45,15 +45,15 @@ extern bool firmware_update_allowed;
 extern bool factory_reset_requested;
 extern int8_t green_led_pin;
 
-
 // Newer firmwares contain a firmware info page.
 #define FW_INFO_OFFSET 0xd000 - 0x1000
 #define FW_INFO_LENGTH 0x1000
 
 TaskHandle_t xTaskBuffer;
 
-void blinky(void *arg) {
-    for(;;) {
+void blinky(void *arg)
+{
+    for (;;) {
         digitalWrite(green_led_pin, true);
         delay(200);
         digitalWrite(green_led_pin, false);
@@ -65,7 +65,7 @@ static bool factory_reset_running = false;
 
 void factory_reset()
 {
-    if(factory_reset_running)
+    if (factory_reset_running)
         return;
     factory_reset_running = true;
 
@@ -99,7 +99,8 @@ void FirmwareUpdate::reset_fw_info() {
     update_aborted = false;
 }
 
-bool FirmwareUpdate::handle_fw_info_chunk(size_t chunk_index, uint8_t *data, size_t chunk_length) {
+bool FirmwareUpdate::handle_fw_info_chunk(size_t chunk_index, uint8_t *data, size_t chunk_length)
+{
     uint8_t *start = data;
     size_t length = chunk_length;
 
@@ -120,7 +121,7 @@ bool FirmwareUpdate::handle_fw_info_chunk(size_t chunk_index, uint8_t *data, siz
     logger.printfln("chunk index %u data %p len %u", chunk_index, data, chunk_length);
     crc32_ieee_802_3_recalculate(start, length, &calculated_checksum);
 
-    const size_t checksum_start =  FW_INFO_OFFSET + FW_INFO_LENGTH - 4;
+    const size_t checksum_start = FW_INFO_OFFSET + FW_INFO_LENGTH - 4;
 
     if (chunk_index + chunk_length < checksum_start)
         return false;
@@ -152,7 +153,7 @@ bool FirmwareUpdate::handle_update_chunk(int command, WebServerRequest request, 
 
     static bool fw_info_found = false;
 
-    if(chunk_index == 0 && !Update.begin(complete_length - firmware_offset, command)) {
+    if (chunk_index == 0 && !Update.begin(complete_length - firmware_offset, command)) {
         logger.printfln("Failed to start update: %s", Update.errorString());
         request.send(400, "text/plain", Update.errorString());
         Update.abort();
@@ -212,7 +213,7 @@ bool FirmwareUpdate::handle_update_chunk(int command, WebServerRequest request, 
     }
 
     auto written = Update.write(start, length);
-    if(written != length) {
+    if (written != length) {
         logger.printfln("Failed to write update chunk with length %d; written %d, error: %s", length, written, Update.errorString());
         request.send(400, "text/plain", (String("Failed to write update: ") + Update.errorString()).c_str());
         this->firmware_update_running = false;
@@ -220,7 +221,7 @@ bool FirmwareUpdate::handle_update_chunk(int command, WebServerRequest request, 
         return false;
     }
 
-    if(final && !Update.end(true)) {
+    if (final && !Update.end(true)) {
         logger.printfln("Failed to apply update: %s", Update.errorString());
         request.send(400, "text/plain", (String("Failed to apply update: ") + Update.errorString()).c_str());
         this->firmware_update_running = false;
@@ -285,13 +286,13 @@ void FirmwareUpdate::register_urls()
             return;
         }
 
-        if(!doc["do_i_know_what_i_am_doing"].is<bool>()) {
+        if (!doc["do_i_know_what_i_am_doing"].is<bool>()) {
             request.send(400, "text/html", "you don't seem to know what you are doing");
             free(payload);
             return;
         }
 
-        if(doc["do_i_know_what_i_am_doing"].as<bool>()) {
+        if (doc["do_i_know_what_i_am_doing"].as<bool>()) {
             task_scheduler.scheduleOnce("factory_reset", [](){
                 logger.printfln("Factory reset requested");
                 factory_reset();
@@ -303,7 +304,6 @@ void FirmwareUpdate::register_urls()
 
         free(payload);
     });
-
 }
 
 void FirmwareUpdate::loop()

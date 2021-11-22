@@ -102,7 +102,7 @@ struct Config {
     // a get<std::nullptr_t>() that returned nullptr because the variant
     // had another type and the same call that returned nullptr because
     // the variant has the std::nullptr_type and thus contains a nullptr.
-    static bool containsNull(ConfUpdate *update) { return update->which() == 0;}
+    static bool containsNull(ConfUpdate *update) { return update->which() == 0; }
 
     struct ConfUpdateArray {
         std::vector<ConfUpdate> elements;
@@ -238,7 +238,7 @@ struct Config {
     template<typename T, typename ConfigT>
     bool set(String s, T val) {
         Config *toChange = get(s);
-        if(!toChange->is<ConfigT>()) {
+        if (!toChange->is<ConfigT>()) {
             logger.printfln("Config key %s not found! Can't set to [see serial console]", s.c_str());
             Serial.println(val);
             delay(100);
@@ -251,7 +251,7 @@ struct Config {
     template<typename T, typename ConfigT>
     bool set(size_t idx, T val) {
         Config *toChange = get(idx);
-        if(!toChange->is<ConfigT>()) {
+        if (!toChange->is<ConfigT>()) {
             logger.printfln("Config idx %u not found! Can't set to [see serial console]", idx);
             Serial.println(val);
             delay(100);
@@ -261,8 +261,9 @@ struct Config {
         return isValid();
     }
 
-    bool add() {
-        if (!this->is<Config::ConfArray>()){
+    bool add()
+    {
+        if (!this->is<Config::ConfArray>()) {
             logger.printfln("Tried to add to a node that is not an array!");
             delay(100);
             return false;
@@ -272,8 +273,9 @@ struct Config {
         return true;
     }
 
-    bool removeLast() {
-        if (!this->is<Config::ConfArray>()){
+    bool removeLast()
+    {
+        if (!this->is<Config::ConfArray>()) {
             logger.printfln("Tried to add to a node that is not an array!");
             delay(100);
             return false;
@@ -286,8 +288,9 @@ struct Config {
         return true;
     }
 
-    ssize_t count() {
-        if (!this->is<Config::ConfArray>()){
+    ssize_t count()
+    {
+        if (!this->is<Config::ConfArray>()) {
             logger.printfln("Tried to get count of a node that is not an array!");
             delay(100);
             return -1;
@@ -341,7 +344,7 @@ struct Config {
         T old_value = *target;
         *target = value;
 
-        if(old_value != value)
+        if (old_value != value)
             this->updated = true;
 
         return old_value != value;
@@ -378,7 +381,7 @@ struct Config {
         ConfArray *confArr = strict_variant::get<ConfArray>(&value);
         size_t toWrite = std::min(confArr->value.size(), elements);
 
-        for(size_t i = 0; i < toWrite; ++i) {
+        for (size_t i = 0; i < toWrite; ++i) {
             Config &entry = confArr->value[i];
             if (!entry.is<ConfigT>()) {
                 logger.printfln("Config entry has wrong type.");

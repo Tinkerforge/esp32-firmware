@@ -29,7 +29,7 @@ public:
     void register_urls();
     void loop();
 
-    //IAPIBackend implementation
+    // IAPIBackend implementation
     void addCommand(const CommandRegistration &reg);
     void addState(const StateRegistration &reg);
     void pushStateUpdate(String payload, String path);

@@ -46,13 +46,13 @@ struct packet_header {
     uint8_t seq_num;
     uint8_t version;
     uint16_t padding;
-} __attribute__ ((packed));
+} __attribute__((packed));
 
 struct request_packet {
     packet_header header;
 
     uint16_t allocated_current;
-} __attribute__ ((packed));
+} __attribute__((packed));
 
 struct response_packet {
     packet_header header;
@@ -66,7 +66,7 @@ struct response_packet {
     uint16_t allowed_charging_current;
     uint16_t supported_current;
     bool managed;
-} __attribute__ ((packed));
+} __attribute__((packed));
 
 class CMNetworking {
 public:

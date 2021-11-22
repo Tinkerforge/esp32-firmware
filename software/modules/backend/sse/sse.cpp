@@ -32,13 +32,14 @@ Sse::Sse() : events("/events") {
     api.registerBackend(this);
 }
 
-void Sse::setup() {
-    events.onConnect([](AsyncEventSourceClient *client){
-        if(client->lastId()){
+void Sse::setup()
+{
+    events.onConnect([](AsyncEventSourceClient *client) {
+        if (client->lastId()) {
             logger.printfln("Client reconnected! Last message ID that it got is: %u\n", client->lastId());
         }
 
-        for(auto &reg : api.states) {
+        for (auto &reg : api.states) {
             client->send(reg.config->to_string_except(reg.keys_to_censor).c_str(), reg.path.c_str(), millis(), 1000);
         }
     });

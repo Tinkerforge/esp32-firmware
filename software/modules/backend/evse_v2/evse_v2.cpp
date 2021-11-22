@@ -195,7 +195,7 @@ EVSEV2::EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE 2.0", std::bind(&EVSEV
 void EVSEV2::setup()
 {
     setup_evse();
-    if(!device_found)
+    if (!device_found)
         return;
 
     task_scheduler.scheduleWithFixedDelay("update_all_data", [this](){
@@ -203,12 +203,14 @@ void EVSEV2::setup()
     }, 0, 250);
 }
 
-String EVSEV2::get_evse_debug_header() {
+String EVSEV2::get_evse_debug_header()
+{
     return "millis,iec61851_state,vehicle_state,contactor_state,contactor_error,charge_release,allowed_charging_current,error_state,lock_state,time_since_state_change,uptime,led_state,cp_pwm_duty_cycle,adc_values_0,adc_values_1,adc_values_2,adc_values_3,adc_values_4,,adc_values_5,adc_values_6,voltages_0,voltages_1,voltages_2,voltages_3,voltages_4,voltages_5,voltages_6,resistances_0,resistances_1,gpio_0,gpio_1,gpio_2,gpio_3,gpio_4,gpio_5,gpio_6,gpio_7,gpio_8,gpio_9,gpio_10,gpio_11,gpio_12,gpio_13,gpio_14,gpio_15,gpio_16,gpio_17,gpio_18,gpio_19,gpio_20,gpio_21,gpio_22,gpio_23,charging_time\n";
 }
 
-String EVSEV2::get_evse_debug_line() {
-    if(!initialized)
+String EVSEV2::get_evse_debug_line()
+{
+    if (!initialized)
         return "EVSE is not initialized!";
 
     uint8_t iec61851_state, vehicle_state, contactor_state, contactor_error, charge_release, error_state, lock_state;
@@ -227,7 +229,7 @@ String EVSEV2::get_evse_debug_line() {
         &time_since_state_change,
         &uptime);
 
-    if(rc != TF_E_OK) {
+    if (rc != TF_E_OK) {
         return String("evse_get_state failed: rc: ") + String(rc);
     }
 
@@ -249,7 +251,7 @@ String EVSEV2::get_evse_debug_line() {
         gpio,
         &charging_time);
 
-    if(rc != TF_E_OK) {
+    if (rc != TF_E_OK) {
         return String("evse_get_low_level_state failed: rc: ") + String(rc);
     }
 
@@ -294,8 +296,8 @@ String EVSEV2::get_evse_debug_line() {
     return String(line);
 }
 
-
-String EVSEV2::get_evse_monitor_header() {
+String EVSEV2::get_evse_monitor_header()
+{
     return "millis,"
             "state,iec,vehicle,contactor,_error,charge_release,allowed_current,error,lock,t_state_change,uptime,"
             "low_level_state,led,cp_pwm,adc_0,adc_1,adc_2,adc_3,adc_4,adc_5,adc_6,voltage_0,voltage_1,voltage_2,voltage_3,voltage_4,voltage_5,voltage_6,resistances_0,resistances_1,charging_time"
@@ -308,8 +310,9 @@ String EVSEV2::get_evse_monitor_header() {
             "gpios,gpio_0,gpio_1,gpio_2,gpio_3,gpio_4,gpio_5,gpio_6,gpio_7,gpio_8,gpio_9,gpio_10,gpio_11,gpio_12,gpio_13,gpio_14,gpio_15,gpio_16,gpio_17,gpio_18,gpio_19,gpio_20,gpio_21,gpio_22,gpio_23\n";
 }
 
-String EVSEV2::get_evse_monitor_line() {
-    if(!initialized)
+String EVSEV2::get_evse_monitor_line()
+{
+    if (!initialized)
         return "EVSE is not initialized!";
 
     // millis returns an unsigned long, confusing the compiler, as unsigned long == unsigned int on the ESP32.
@@ -400,8 +403,8 @@ String EVSEV2::get_evse_monitor_line() {
     return String(line);
 }
 
-
-void EVSEV2::set_managed_current(uint16_t current) {
+void EVSEV2::set_managed_current(uint16_t current)
+{
     is_in_bootloader(tf_evse_v2_set_managed_current(&device, current));
     this->last_current_update = millis();
     this->shutdown_logged = false;
@@ -411,7 +414,6 @@ void EVSEV2::register_urls()
 {
     if (!device_found)
         return;
-
 
 #ifdef MODULE_CM_NETWORKING_AVAILABLE
     cm_networking.register_client([this](uint16_t current){
@@ -539,7 +541,7 @@ void EVSEV2::loop()
 
 #ifdef MODULE_WS_AVAILABLE
     static uint32_t last_debug = 0;
-    if(debug && deadline_elapsed(last_debug + 50)) {
+    if (debug && deadline_elapsed(last_debug + 50)) {
         last_debug = millis();
         ws.pushStateUpdate(this->get_evse_debug_line(), "evse/debug");
     }
@@ -558,7 +560,7 @@ void EVSEV2::setup_evse()
     int result = tf_evse_v2_get_hardware_configuration(&device, &jumper_configuration, &has_lock_switch);
 
     if (result != TF_E_OK) {
-        if(!is_in_bootloader(result)) {
+        if (!is_in_bootloader(result)) {
             logger.printfln("EVSE 2.0 hardware config query failed (rc %d). Disabling EVSE 2.0 support.", result);
         }
         return;
@@ -570,9 +572,9 @@ void EVSEV2::setup_evse()
     initialized = true;
 }
 
-
-void EVSEV2::update_all_data() {
-    if(!initialized)
+void EVSEV2::update_all_data()
+{
+    if (!initialized)
         return;
 
     // get_all_data_1
@@ -638,7 +640,7 @@ void EVSEV2::update_all_data() {
         &jumper_configuration,
         &has_lock_switch);
 
-    if(rc != TF_E_OK) {
+    if (rc != TF_E_OK) {
         is_in_bootloader(rc);
         return;
     }
@@ -657,7 +659,7 @@ void EVSEV2::update_all_data() {
         &max_current_managed,
         &autostart);
 
-    if(rc != TF_E_OK) {
+    if (rc != TF_E_OK) {
         is_in_bootloader(rc);
         return;
     }
@@ -683,7 +685,7 @@ void EVSEV2::update_all_data() {
         &button_pressed,
         &control_pilot);
 
-    if(rc != TF_E_OK) {
+    if (rc != TF_E_OK) {
         is_in_bootloader(rc);
         return;
     }
@@ -723,16 +725,16 @@ void EVSEV2::update_all_data() {
     evse_low_level_state.get("cp_pwm_duty_cycle")->updateUint(cp_pwm_duty_cycle);
     evse_low_level_state.get("charging_time")->updateUint(charging_time);
 
-    for(int i = 0; i < sizeof(adc_values)/sizeof(adc_values[0]); ++i)
+    for (int i = 0; i < sizeof(adc_values) / sizeof(adc_values[0]); ++i)
         evse_low_level_state.get("adc_values")->get(i)->updateUint(adc_values[i]);
 
-    for(int i = 0; i < sizeof(voltages)/sizeof(voltages[0]); ++i)
+    for (int i = 0; i < sizeof(voltages) / sizeof(voltages[0]); ++i)
         evse_low_level_state.get("voltages")->get(i)->updateInt(voltages[i]);
 
-    for(int i = 0; i < sizeof(resistances)/sizeof(resistances[0]); ++i)
+    for (int i = 0; i < sizeof(resistances) / sizeof(resistances[0]); ++i)
         evse_low_level_state.get("resistances")->get(i)->updateUint(resistances[i]);
 
-    for(int i = 0; i < sizeof(gpio)/sizeof(gpio[0]); ++i)
+    for (int i = 0; i < sizeof(gpio) / sizeof(gpio[0]); ++i)
         evse_low_level_state.get("gpio")->get(i)->updateBool(gpio[i]);
 
     // get_max_charging_current
@@ -752,15 +754,15 @@ void EVSEV2::update_all_data() {
     evse_energy_meter_values.get("energy_rel")->updateFloat(energy_relative);
     evse_energy_meter_values.get("energy_abs")->updateFloat(energy_absolute);
 
-    for(int i = 0; i < 3; ++i)
+    for (int i = 0; i < 3; ++i)
         evse_energy_meter_values.get("phases_active")->get(i)->updateBool(phases_active[i]);
 
-    for(int i = 0; i < 3; ++i)
+    for (int i = 0; i < 3; ++i)
         evse_energy_meter_values.get("phases_connected")->get(i)->updateBool(phases_connected[i]);
 
     // get_energy_meter_state
     evse_energy_meter_state.get("available")->updateBool(available);
-    for(int i = 0; i < sizeof(error_count)/sizeof(error_count[0]); ++i)
+    for (int i = 0; i < sizeof(error_count) / sizeof(error_count[0]); ++i)
         evse_energy_meter_state.get("error_count")->get(i)->updateUint(error_count[i]);
 
     // get_dc_fault_current_state

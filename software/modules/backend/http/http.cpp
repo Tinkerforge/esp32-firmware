@@ -19,7 +19,6 @@
 
 #include "http.h"
 
-
 #include "api.h"
 #include "task_scheduler.h"
 #include "web_server.h"
@@ -60,10 +59,10 @@ void Http::addCommand(const CommandRegistration &reg)
             return;
         }
 
-        //TODO: Use streamed parsing
+        // TODO: Use streamed parsing
         int bytes_written = request.receive(recv_buf, 4096);
         if (bytes_written == -1) {
-            //buffer was not large enough
+            // buffer was not large enough
             request.send(413);
             return;
         } else if (bytes_written <= 0) {
@@ -73,7 +72,7 @@ void Http::addCommand(const CommandRegistration &reg)
 
         //json_buf.clear(); // happens implicitly in deserializeJson
         DeserializationError error = deserializeJson(json_buf, recv_buf, bytes_written);
-        if(error) {
+        if (error) {
             logger.printfln("Failed to parse command payload: %s", error.c_str());
             request.send(400);
             return;

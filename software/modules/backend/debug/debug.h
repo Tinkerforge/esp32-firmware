@@ -31,6 +31,7 @@ public:
     void loop();
 
     bool initialized = false;
+
 private:
     Config debug_state;
 };

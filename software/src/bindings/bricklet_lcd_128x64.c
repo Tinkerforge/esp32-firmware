@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-18.      *
+ * This file was automatically generated on 2021-11-22.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -23,7 +23,7 @@ extern "C" {
 
 #if TF_IMPLEMENT_CALLBACKS != 0
 static bool tf_lcd_128x64_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *payload) {
-    TF_LCD128x64 *lcd_128x64 = (TF_LCD128x64 *) dev;
+    TF_LCD128x64 *lcd_128x64 = (TF_LCD128x64 *)dev;
     (void)payload;
 
     switch (fid) {

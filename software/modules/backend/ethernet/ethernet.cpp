@@ -156,7 +156,7 @@ void Ethernet::setup()
 {
     String default_hostname = String(BUILD_HOST_PREFIX) + String("-") + String(uid);
 
-    if(!api.restorePersistentConfig("ethernet/config", &ethernet_config)) {
+    if (!api.restorePersistentConfig("ethernet/config", &ethernet_config)) {
         ethernet_config.get("hostname")->updateString(default_hostname);
     }
 
@@ -226,7 +226,7 @@ void Ethernet::setup()
 
     ETH.begin(ETH_ADDR, ETH_POWER_PIN, ETH_PHY_MDC, ETH_PHY_MDIO, ETH_TYPE);
 
-    if(ip != 0) {
+    if (ip != 0) {
         ETH.config(ip, gateway, subnet, dns, dns2);
     } else {
         ETH.config((uint32_t)0, (uint32_t)0, (uint32_t)0);
@@ -246,7 +246,7 @@ void Ethernet::loop()
 
 EthernetState Ethernet::get_connection_state()
 {
-    if(!initialized)
+    if (!initialized)
         return EthernetState::NOT_CONFIGURED;
-    return (EthernetState) ethernet_state.get("connection_state")->asUint();
+    return (EthernetState)ethernet_state.get("connection_state")->asUint();
 }

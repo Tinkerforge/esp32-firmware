@@ -37,13 +37,15 @@
 
 extern EventLog logger;
 
-bool deadline_elapsed(uint32_t deadline_ms) {
+bool deadline_elapsed(uint32_t deadline_ms)
+{
     uint32_t now = millis();
 
     return ((uint32_t)(now - deadline_ms)) < (UINT32_MAX / 2);
 }
 
-bool find_uid_by_did(TF_HAL *hal, uint16_t device_id, char uid[7]) {
+bool find_uid_by_did(TF_HAL *hal, uint16_t device_id, char uid[7])
+{
     char pos;
     uint16_t did;
     for (size_t i = 0; tf_hal_get_device_info(hal, i, uid, &pos, &did) == TF_E_OK; ++i) {
@@ -54,7 +56,8 @@ bool find_uid_by_did(TF_HAL *hal, uint16_t device_id, char uid[7]) {
     return false;
 }
 
-bool find_uid_by_did_at_port(TF_HAL *hal, uint16_t device_id, char port, char uid[7]) {
+bool find_uid_by_did_at_port(TF_HAL *hal, uint16_t device_id, char port, char uid[7])
+{
     char pos;
     uint16_t did;
     for (size_t i = 0; tf_hal_get_device_info(hal, i, uid, &pos, &did) == TF_E_OK; ++i) {
@@ -65,7 +68,8 @@ bool find_uid_by_did_at_port(TF_HAL *hal, uint16_t device_id, char port, char ui
     return false;
 }
 
-String update_config(Config &cfg, String config_name, JsonVariant &json) {
+String update_config(Config &cfg, String config_name, JsonVariant &json)
+{
     String error = cfg.update_from_json(json);
 
     String tmp_path = String("/") + config_name + ".json.tmp";
@@ -89,7 +93,8 @@ String update_config(Config &cfg, String config_name, JsonVariant &json) {
     return error;
 }
 
-void read_efuses(uint32_t *ret_uid_numeric, char *ret_uid_string, char *ret_passphrase_string) {
+void read_efuses(uint32_t *ret_uid_numeric, char *ret_uid_string, char *ret_passphrase_string)
+{
     uint32_t blocks[8] = {0};
 
     for (int32_t block3Address = EFUSE_BLK3_RDATA0_REG, i = 0; block3Address <= EFUSE_BLK3_RDATA7_REG; block3Address += 4, ++i) {
@@ -150,7 +155,8 @@ void read_efuses(uint32_t *ret_uid_numeric, char *ret_uid_string, char *ret_pass
     tf_base58_encode(uid, ret_uid_string);
 }
 
-int check(int rc, const char *msg) {
+int check(int rc, const char *msg)
+{
     if (rc >= 0)
         return rc;
     logger.printfln("%lu Failed to %s rc: %s", millis(), msg, tf_hal_strerror(rc));
@@ -158,7 +164,8 @@ int check(int rc, const char *msg) {
     return rc;
 }
 
-bool is_spiffs_available(const char *part_label, const char *base_path) {
+bool is_spiffs_available(const char *part_label, const char *base_path)
+{
     Serial.printf("Checking if %s is mountable as SPIFFS. Please ignore following SPIFFS errors\n", part_label);
     esp_vfs_spiffs_conf_t conf = {
       .base_path = base_path,
@@ -180,7 +187,8 @@ bool is_spiffs_available(const char *part_label, const char *base_path) {
     return false;
 }
 
-bool is_littlefs_available(const char *part_label, const char *base_path) {
+bool is_littlefs_available(const char *part_label, const char *base_path)
+{
     Serial.printf("Checking if %s is mountable as LittleFS. Please ignore following LittleFS errors\n", part_label);
     esp_vfs_littlefs_conf_t conf = {
         .base_path = base_path,
@@ -203,7 +211,8 @@ bool is_littlefs_available(const char *part_label, const char *base_path) {
 }
 
 // Adapted from https://github.com/espressif/arduino-esp32/blob/master/libraries/LittleFS/examples/LITTLEFS_PlatformIO/src/main.cpp
-bool mirror_filesystem(fs::FS &fromFS, fs::FS &toFS, String root_name, int levels) {
+bool mirror_filesystem(fs::FS &fromFS, fs::FS &toFS, String root_name, int levels)
+{
     uint8_t buf[4096] = {0};
 
     // File works RAII style, no need to close.
@@ -213,7 +222,7 @@ bool mirror_filesystem(fs::FS &fromFS, fs::FS &toFS, String root_name, int level
         return false;
     }
 
-    if(!root.isDirectory()){
+    if (!root.isDirectory()) {
         logger.printfln("Source file %s is not a directory!", root_name.c_str());
         return false;
     }
@@ -235,7 +244,7 @@ bool mirror_filesystem(fs::FS &fromFS, fs::FS &toFS, String root_name, int level
 
         File target = toFS.open(root_name + source.name(), FILE_WRITE);
         while (source.available()) {
-            size_t read = source.read(buf, sizeof(buf)/sizeof(buf[0]));
+            size_t read = source.read(buf, sizeof(buf) / sizeof(buf[0]));
             size_t written = target.write(buf, read);
             if (written != read) {
                 logger.printfln("Failed to write file %s: written %u read %u", target.name(), written, read);
@@ -246,7 +255,8 @@ bool mirror_filesystem(fs::FS &fromFS, fs::FS &toFS, String root_name, int level
     return true;
 }
 
-bool mount_or_format_spiffs(void) {
+bool mount_or_format_spiffs(void)
+{
     /*
     tl;dr:
     - Config partition mountable as SPIFFS?
@@ -317,7 +327,8 @@ bool mount_or_format_spiffs(void) {
     return true;
 }
 
-String read_or_write_config_version(const char *firmware_version) {
+String read_or_write_config_version(const char *firmware_version)
+{
     if (LittleFS.exists("/spiffs.json")) {
         const size_t capacity = JSON_OBJECT_SIZE(1) + 60;
         StaticJsonDocument<capacity> doc;
@@ -336,7 +347,8 @@ String read_or_write_config_version(const char *firmware_version) {
     }
 }
 
-static bool wait_for_bootloader_mode(TF_Unknown *bricklet, int target_mode) {
+static bool wait_for_bootloader_mode(TF_Unknown *bricklet, int target_mode)
+{
     uint8_t mode = 255;
     for (int i = 0; i < 10; ++i) {
         if (tf_unknown_get_bootloader_mode(bricklet, &mode) != TF_E_OK) {
@@ -351,7 +363,8 @@ static bool wait_for_bootloader_mode(TF_Unknown *bricklet, int target_mode) {
     return mode == target_mode;
 }
 
-static bool flash_plugin(TF_Unknown *bricklet, const uint8_t *firmware, size_t firmware_len, int regular_plugin_upto, EventLog *logger) {
+static bool flash_plugin(TF_Unknown *bricklet, const uint8_t *firmware, size_t firmware_len, int regular_plugin_upto, EventLog *logger)
+{
     logger->printfln("    Setting bootloader mode to bootloader.");
     tf_unknown_set_bootloader_mode(bricklet, 0, nullptr);
     logger->printfln("    Waiting for bootloader...");
@@ -411,7 +424,8 @@ static bool flash_plugin(TF_Unknown *bricklet, const uint8_t *firmware, size_t f
     return true;
 }
 
-static bool flash_firmware(TF_Unknown *bricklet, const uint8_t *firmware, size_t firmware_len, EventLog *logger) {
+static bool flash_firmware(TF_Unknown *bricklet, const uint8_t *firmware, size_t firmware_len, EventLog *logger)
+{
     int regular_plugin_upto = -1;
     for(int i = firmware_len - 13; i >= 4; --i) {
         if (firmware[i] == 0x12

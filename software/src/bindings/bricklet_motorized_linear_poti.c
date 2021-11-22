@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-18.      *
+ * This file was automatically generated on 2021-11-22.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -23,7 +23,7 @@ extern "C" {
 
 #if TF_IMPLEMENT_CALLBACKS != 0
 static bool tf_motorized_linear_poti_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *payload) {
-    TF_MotorizedLinearPoti *motorized_linear_poti = (TF_MotorizedLinearPoti *) dev;
+    TF_MotorizedLinearPoti *motorized_linear_poti = (TF_MotorizedLinearPoti *)dev;
     (void)payload;
 
     switch (fid) {

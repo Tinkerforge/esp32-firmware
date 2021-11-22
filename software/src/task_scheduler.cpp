@@ -55,7 +55,8 @@ void TaskScheduler::register_urls()
     });
 }
 
-void TaskScheduler::loop() {
+void TaskScheduler::loop()
+{
     this->task_mutex.lock();
         current_scheduler_state = "checking for empty queue";
         if(tasks.empty()) {
@@ -102,13 +103,14 @@ void TaskScheduler::loop() {
     current_scheduler_state = "end loop";
 }
 
-void TaskScheduler::scheduleOnce(const char *taskName, std::function<void(void)> &&fn, uint32_t delay) {
+void TaskScheduler::scheduleOnce(const char *taskName, std::function<void(void)> &&fn, uint32_t delay)
+{
     std::lock_guard<std::mutex> l{this->task_mutex};
     tasks.emplace(taskName, fn, delay, 0, true);
 }
 
-void TaskScheduler::scheduleWithFixedDelay(const char *taskName, std::function<void(void)> &&fn, uint32_t first_delay, uint32_t delay) {
+void TaskScheduler::scheduleWithFixedDelay(const char *taskName, std::function<void(void)> &&fn, uint32_t first_delay, uint32_t delay)
+{
     std::lock_guard<std::mutex> l{this->task_mutex};
     tasks.emplace(taskName, fn, first_delay, delay, false);
 }
-

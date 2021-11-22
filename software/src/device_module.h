@@ -64,7 +64,8 @@ public:
         return firmware[firmware_len - FIRMWARE_DEVICE_IDENTIFIER_OFFSET] | (firmware[firmware_len - FIRMWARE_DEVICE_IDENTIFIER_OFFSET + 1] << 8);
     }
 
-    bool setup_device() {
+    bool setup_device()
+    {
         char uid[7] = {0};
         if (!find_uid_by_did(&hal, get_did(), uid)) {
             logger.printfln("No %s bricklet found. Disabling %s support.", device_name, module_name);
@@ -100,7 +101,8 @@ public:
         }, true);
     }
 
-    void loop() {
+    void loop()
+    {
         if (device_found && !initialized && deadline_elapsed(last_check + 10000)) {
             last_check = millis();
             if (!is_in_bootloader(TF_E_TIMEOUT))
@@ -109,7 +111,8 @@ public:
         }
     }
 
-    bool is_in_bootloader(int rc) {
+    bool is_in_bootloader(int rc)
+    {
         if (rc != TF_E_TIMEOUT && rc != TF_E_NOT_SUPPORTED)
             return false;
 

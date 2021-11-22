@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-18.      *
+ * This file was automatically generated on 2021-11-22.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -23,7 +23,7 @@ extern "C" {
 
 #if TF_IMPLEMENT_CALLBACKS != 0
 static bool tf_e_paper_296x128_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *payload) {
-    TF_EPaper296x128 *e_paper_296x128 = (TF_EPaper296x128 *) dev;
+    TF_EPaper296x128 *e_paper_296x128 = (TF_EPaper296x128 *)dev;
     (void)payload;
 
     switch (fid) {

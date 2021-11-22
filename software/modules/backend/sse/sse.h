@@ -31,7 +31,7 @@ public:
     void register_urls();
     void loop();
 
-    //IAPIBackend implementation
+    // IAPIBackend implementation
     void addCommand(CommandRegistration reg);
     void addState(StateRegistration reg);
     void pushStateUpdate(String payload, String path);

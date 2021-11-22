@@ -32,7 +32,8 @@ class TF_Ringbuffer {
     static_assert(std::is_unsigned<AlignedT>::value, "TF_Ringbuffer: Aligned type must be unsigned");
 
 public:
-    TF_Ringbuffer() : start(0), end(0) {
+    TF_Ringbuffer() : start(0), end(0)
+    {
         auto buf_size = sizeof(T) * SIZE;
         if (buf_size % sizeof(AlignedT) != 0) {
             // Allocate up to one AlignedT more, as we need to store at least one T in it.
@@ -41,7 +42,8 @@ public:
         buffer = (AlignedT *)malloc_fn(buf_size);
     }
 
-    void clear() {
+    void clear()
+    {
         start = 0;
         end = 0;
     }
@@ -50,7 +52,8 @@ public:
         return SIZE - 1;
     }
 
-    size_t used() {
+    size_t used()
+    {
         if (end < start) {
             return SIZE + end - start;
         }
@@ -62,7 +65,8 @@ public:
         return size() - used();
     }
 
-    void write_aligned(size_t idx, T val) {
+    void write_aligned(size_t idx, T val)
+    {
         if (sizeof(T) == sizeof(AlignedT)) {
             buffer[idx] = val;
             return;
@@ -79,7 +83,8 @@ public:
         buffer[buffer_idx] = (buffer[buffer_idx] & keep_mask) | (((AlignedT)val) << (buffer_offset * 8 * sizeof(T)));
     }
 
-    T read_aligned(size_t idx) {
+    T read_aligned(size_t idx)
+    {
         if (sizeof(T) == sizeof(AlignedT)) {
             return buffer[idx];
         }
@@ -93,7 +98,8 @@ public:
         return (buffer[buffer_idx] >> (buffer_offset * 8 * sizeof(T))) & bits;
     }
 
-    void push(T val) {
+    void push(T val)
+    {
         write_aligned(end, val);
         end++;
         if (end >= SIZE) {
@@ -108,7 +114,8 @@ public:
             }
         }
     }
-    bool pop(T *val) {
+    bool pop(T *val)
+    {
         // Silence Wmaybe-uninitialized in the _read_[type] functions.
         *val = 0;
 
@@ -125,7 +132,8 @@ public:
         return true;
     }
 
-    bool peek(T *val) {
+    bool peek(T *val)
+    {
         // Silence Wmaybe-uninitialized in the _read_[type] functions.
         *val = 0;
 
@@ -137,7 +145,8 @@ public:
         return true;
     }
 
-    bool peek_offset(T *val, size_t offset) {
+    bool peek_offset(T *val, size_t offset)
+    {
         // Silence Wmaybe-uninitialized in the _read_[type] functions.
         *val = 0;
 

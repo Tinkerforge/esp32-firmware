@@ -31,7 +31,8 @@ extern TaskScheduler task_scheduler;
 
 #define MAX_URI_HANDLERS 128
 
-void WebServer::start() {
+void WebServer::start()
+{
     if (this->httpd != nullptr) {
         return;
     }
@@ -58,7 +59,8 @@ struct UserCtx {
     WebServerHandler *handler;
 };
 
-bool authenticate(WebServerRequest req, const char *username, const char *password) {
+bool authenticate(WebServerRequest req, const char *username, const char *password)
+{
     String auth = req.header("Authorization");
     if (auth == "") {
         return false;
@@ -72,7 +74,8 @@ bool authenticate(WebServerRequest req, const char *username, const char *passwo
     return checkDigestAuthentication(auth.c_str(), req.methodString(), username, password, nullptr, false, nullptr, nullptr, nullptr);
 }
 
-static esp_err_t low_level_handler(httpd_req_t *req) {
+static esp_err_t low_level_handler(httpd_req_t *req)
+{
     auto ctx = (UserCtx *)req->user_ctx;
     auto request = WebServerRequest{req};
     if (ctx->server->username != "" && ctx->server->password != "" && !authenticate(request, ctx->server->username.c_str(), ctx->server->password.c_str())) {
@@ -88,7 +91,7 @@ static esp_err_t low_level_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
-WebServerHandler* WebServer::on(const char *uri, httpd_method_t method, wshCallback callback)
+WebServerHandler *WebServer::on(const char *uri, httpd_method_t method, wshCallback callback)
 {
     if (handler_count >= MAX_URI_HANDLERS) {
         logger.printfln("Can't add WebServer handler for %s: %d handlers already registered. Please increase MAX_URI_HANDLERS.", uri, handler_count);
@@ -116,7 +119,8 @@ WebServerHandler* WebServer::on(const char *uri, httpd_method_t method, wshCallb
 static const size_t SCRATCH_BUFSIZE = 4096;
 static uint8_t scratch_buf[SCRATCH_BUFSIZE] = {0};
 
-static esp_err_t low_level_upload_handler(httpd_req_t *req) {
+static esp_err_t low_level_upload_handler(httpd_req_t *req)
+{
     auto ctx = (UserCtx *)req->user_ctx;
     auto request = WebServerRequest{req};
     if (ctx->server->username != "" && ctx->server->password != "" && !authenticate(request, ctx->server->username.c_str(), ctx->server->password.c_str())) {
@@ -157,7 +161,7 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
-WebServerHandler* WebServer::on(const char *uri, httpd_method_t method, wshCallback callback, wshUploadCallback uploadCallback)
+WebServerHandler *WebServer::on(const char *uri, httpd_method_t method, wshCallback callback, wshUploadCallback uploadCallback)
 {
     if (handler_count >= MAX_URI_HANDLERS) {
         logger.printfln("Can't add WebServer handler for %s: %d handlers already registered. Please increase MAX_URI_HANDLERS.", uri, handler_count);
@@ -187,8 +191,9 @@ void WebServer::onNotAuthorized(wshCallback callback)
     this->on_not_authorized = callback;
 }
 
-//From: https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
-const char *httpStatusCodeToString(int code) {
+// From: https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
+const char *httpStatusCodeToString(int code)
+{
     switch (code) {
         case 100: return "100 Continue";                        //[RFC7231, Section 6.2.1]
         case 101: return "101 Switching Protocols";             //[RFC7231, Section 6.2.2]
@@ -329,7 +334,7 @@ void WebServerRequest::send(uint16_t code, const char *content_type, const char 
 }
 
 void WebServerRequest::beginChunkedResponse(uint16_t code, const char *content_type)
- {
+{
     auto result = httpd_resp_set_type(req, content_type);
     if (result != ESP_OK) {
         printf("Failed to set response type: %d\n", result);
@@ -353,7 +358,7 @@ void WebServerRequest::sendChunk(const char *chunk, size_t chunk_len)
 }
 
 void WebServerRequest::endChunkedResponse()
- {
+{
     auto result = httpd_resp_send_chunk(req, nullptr, 0);
     if (result != ESP_OK) {
         printf("Failed to end chunked response: %d\n", result);
@@ -362,7 +367,7 @@ void WebServerRequest::endChunkedResponse()
 }
 
 void WebServerRequest::addResponseHeader(const char *field, const char *value)
- {
+{
     auto result = httpd_resp_set_hdr(req, field, value);
     if (result != ESP_OK) {
         printf("Failed to set response header: %d\n", result);
@@ -370,7 +375,8 @@ void WebServerRequest::addResponseHeader(const char *field, const char *value)
     }
 }
 
-void WebServerRequest::requestAuthentication() {
+void WebServerRequest::requestAuthentication()
+{
     String payload = "Digest ";
     payload.concat(requestDigestAuthentication("esp32-lib"));
     addResponseHeader("WWW-Authenticate", payload.c_str());
@@ -405,9 +411,9 @@ size_t WebServerRequest::contentLength() {
     return req->content_len;
 }
 
-char* WebServerRequest::receive()
+char *WebServerRequest::receive()
 {
-    char *result = (char*)malloc(sizeof(char) * contentLength());
+    char *result = (char *)malloc(sizeof(char) * contentLength());
     httpd_req_recv(req, result, contentLength());
     return result;
 }
@@ -419,7 +425,8 @@ int WebServerRequest::receive(char *buf, size_t buf_len)
     return httpd_req_recv(req, buf, contentLength());
 }
 
-WebServerRequest::WebServerRequest(httpd_req_t *req, bool keep_alive) : req(req) {
+WebServerRequest::WebServerRequest(httpd_req_t *req, bool keep_alive) : req(req)
+{
     if (!keep_alive)
         this->addResponseHeader("Connection", "close");
 }

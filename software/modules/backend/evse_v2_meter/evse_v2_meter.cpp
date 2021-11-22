@@ -39,7 +39,8 @@ extern API api;
 
 #define DETAILED_VALUES_COUNT 85
 
-EVSEV2Meter::EVSEV2Meter() {
+EVSEV2Meter::EVSEV2Meter()
+{
     state = Config::Object({
         {"power", Config::Float(0.0)},
         {"energy_rel", Config::Float(0.0)},
@@ -65,10 +66,11 @@ EVSEV2Meter::EVSEV2Meter() {
     energy_meter_reset = Config::Null();
 }
 
-void EVSEV2Meter::setupEVSE(bool update_module_initialized) {
+void EVSEV2Meter::setupEVSE(bool update_module_initialized)
+{
     evse_v2.update_all_data();
 
-    if(!evse_v2.evse_energy_meter_state.get("available")->asBool()) {
+    if (!evse_v2.evse_energy_meter_state.get("available")->asBool()) {
         task_scheduler.scheduleOnce("setup_evsev2_meter", [this](){
             this->setupEVSE(true);
         }, 3000);
@@ -77,13 +79,13 @@ void EVSEV2Meter::setupEVSE(bool update_module_initialized) {
 
     hardware_available = true;
 
-    for(int i = 0; i < power_history.size(); ++i) {
+    for (int i = 0; i < power_history.size(); ++i) {
         //float f = 5000.0 * sin(PI/120.0 * i) + 5000.0;
         // Use negative state to mark that these are pre-filled.
         power_history.push(-1);
     }
 
-    for(int i = 0; i < DETAILED_VALUES_COUNT; ++i) {
+    for (int i = 0; i < DETAILED_VALUES_COUNT; ++i) {
         detailed_values.add();
     }
 
@@ -134,11 +136,12 @@ void EVSEV2Meter::setupEVSE(bool update_module_initialized) {
 
     initialized = true;
 
-    if(update_module_initialized)
+    if (update_module_initialized)
         modules.get("evse_v2_meter")->updateBool(true);
 }
 
-void EVSEV2Meter::setup() {
+void EVSEV2Meter::setup()
+{
     initialized = false;
     hardware_available = false;
 
@@ -150,7 +153,8 @@ void EVSEV2Meter::setup() {
     setupEVSE(false);
 }
 
-void EVSEV2Meter::register_urls() {
+void EVSEV2Meter::register_urls()
+{
     api.addState("meter/state", &state, {}, 1000);
     api.addState("meter/detailed_values", &detailed_values, {}, 1000);
     //api.addState("meter/error_counters", &error_counters, {}, 1000); TODO: use api.getstate
@@ -164,7 +168,7 @@ void EVSEV2Meter::register_urls() {
     }, true);
 
     server.on("/meter/history", HTTP_GET, [this](WebServerRequest request) {
-        if(!initialized) {
+        if (!initialized) {
             request.send(400, "text/html", "not initialized");
             return;
         }
@@ -176,14 +180,14 @@ void EVSEV2Meter::register_urls() {
         int16_t val;
         power_history.peek(&val);
         // Negative values are prefilled, because the ESP was booted less than 48 hours ago.
-        if(val < 0)
+        if (val < 0)
             buf_written += snprintf(buf + buf_written, buf_size - buf_written, "%s", "[null");
         else
             buf_written += snprintf(buf + buf_written, buf_size - buf_written, "[%d", (int)val);
 
-        for(int i = 1; i < power_history.used() && power_history.peek_offset(&val, i) && buf_written < buf_size; ++i) {
+        for (int i = 1; i < power_history.used() && power_history.peek_offset(&val, i) && buf_written < buf_size; ++i) {
             // Negative values are prefilled, because the ESP was booted less than 48 hours ago.
-            if(val < 0)
+            if (val < 0)
                 buf_written += snprintf(buf + buf_written, buf_size - buf_written, "%s", ",null");
             else
                 buf_written += snprintf(buf + buf_written, buf_size - buf_written, ",%d", (int)val);
@@ -196,7 +200,7 @@ void EVSEV2Meter::register_urls() {
     });
 
     server.on("/meter/live", HTTP_GET, [this](WebServerRequest request) {
-        if(!initialized) {
+        if (!initialized) {
             request.send(400, "text/html", "not initialized");
             return;
         }
@@ -208,7 +212,7 @@ void EVSEV2Meter::register_urls() {
         int16_t val;
         interval_samples.peek(&val);
         float samples_per_second = 0;
-        if(this->samples_per_interval > 0) {
+        if (this->samples_per_interval > 0) {
             samples_per_second = ((float)this->samples_per_interval) / (60 * HISTORY_MINUTE_INTERVAL);
         } else {
             samples_per_second = (float)this->samples_last_interval / millis() * 1000;

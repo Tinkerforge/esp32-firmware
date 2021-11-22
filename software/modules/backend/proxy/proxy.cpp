@@ -103,7 +103,7 @@ void Proxy::setup()
     char uid[7] = {0};
     char port_name;
     uint16_t device_id;
-    while(tf_hal_get_device_info(&hal, i, uid, &port_name, &device_id) == TF_E_OK) {
+    while (tf_hal_get_device_info(&hal, i, uid, &port_name, &device_id) == TF_E_OK) {
         devices.add();
 
         devices.get(devices.count() - 1)->get("uid")->updateString(String(uid));

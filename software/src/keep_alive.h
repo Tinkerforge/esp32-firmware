@@ -23,7 +23,7 @@ extern "C"
 }
 
 struct wss_keep_alive_storage;
-typedef struct wss_keep_alive_storage* wss_keep_alive_t;
+typedef struct wss_keep_alive_storage *wss_keep_alive_t;
 typedef bool (*wss_check_client_alive_cb_t)(wss_keep_alive_t h, int fd);
 typedef bool (*wss_client_not_alive_cb_t)(wss_keep_alive_t h, int fd);
 
@@ -98,7 +98,7 @@ void wss_keep_alive_set_user_ctx(wss_keep_alive_t h, void *ctx);
  * @param h keep-alive handle
  * @return ctx user context
  */
-void* wss_keep_alive_get_user_ctx(wss_keep_alive_t h);
+void *wss_keep_alive_get_user_ctx(wss_keep_alive_t h);
 
 #ifdef __cplusplus
 }

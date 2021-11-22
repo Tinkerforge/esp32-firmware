@@ -100,15 +100,15 @@ int tf_base58_decode(const char *str, uint32_t *ret_value) {
             return TF_E_INVALID_CHAR_IN_UID; // invalid char
         }
 
-        if (!uint32_multiply(k, base, &next))  {
+        if (!uint32_multiply(k, base, &next)) {
             return TF_E_UID_OVERFLOW; // overflow
         }
 
-        if (!uint32_add(value, next, &value))  {
+        if (!uint32_add(value, next, &value)) {
             return TF_E_UID_OVERFLOW; // overflow
         }
 
-        if (i > 0 && !uint32_multiply(base, 58, &base))  {
+        if (i > 0 && !uint32_multiply(base, 58, &base)) {
             return TF_E_UID_OVERFLOW; // overflow
         }
     }

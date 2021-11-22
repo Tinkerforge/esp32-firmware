@@ -50,7 +50,8 @@ struct ws_work_item {
                     hd(hd), fd(fd), payload(payload), payload_len(payload_len), payload_ref_counter(payload_ref_counter)
     {}
 
-    void clear() {
+    void clear()
+    {
         if (this->payload_ref_counter == nullptr)
             return;
 
@@ -187,7 +188,8 @@ bool client_not_alive_cb(wss_keep_alive_t h, int fd)
     return true;
 }
 
-static void work(void *arg) {
+static void work(void *arg)
+{
     while (!work_queue.empty()) {
         ws_work_item wi = work_queue.front();
         {
@@ -231,7 +233,8 @@ void WebSocketsClient::send(const char* payload, size_t payload_len)
     ws->sendToClient(payload, payload_len, fd);
 }
 
-void WebSockets::sendToClient(const char *payload, size_t payload_len, int sock) {
+void WebSockets::sendToClient(const char *payload, size_t payload_len, int sock)
+{
     httpd_handle_t httpd = server.httpd;
     int *payload_ref_counter = (int *)malloc(sizeof(int));
     if (payload_ref_counter == nullptr)
@@ -259,7 +262,8 @@ void WebSockets::sendToClient(const char *payload, size_t payload_len, int sock)
     }
 }
 
-bool WebSockets::haveActiveClient() {
+bool WebSockets::haveActiveClient()
+{
     httpd_handle_t httpd = server.httpd;
     size_t clients = 7;
     int client_fds[7];
@@ -289,7 +293,8 @@ bool WebSockets::haveActiveClient() {
     return active_clients != 0;
 }
 
-void WebSockets::sendToAllOwned(char *payload, size_t payload_len) {
+void WebSockets::sendToAllOwned(char *payload, size_t payload_len)
+{
     httpd_handle_t httpd = server.httpd;
     size_t clients = 7;
     int client_fds[7];
@@ -346,7 +351,8 @@ void WebSockets::sendToAllOwned(char *payload, size_t payload_len) {
     }
 }
 
-void WebSockets::sendToAll(const char *payload, size_t payload_len) {
+void WebSockets::sendToAll(const char *payload, size_t payload_len)
+{
     httpd_handle_t httpd = server.httpd;
     size_t clients = 7;
     int client_fds[7];
@@ -414,7 +420,7 @@ void WebSockets::sendToAll(const char *payload, size_t payload_len) {
 void WebSockets::start(const char *uri)
 {
     wss_keep_alive_config_t keep_alive_config = {};
-    //As defined in KEEP_ALIVE_CONFIG_DEFAULT()
+    // As defined in KEEP_ALIVE_CONFIG_DEFAULT()
     keep_alive_config.task_stack_size = 2048;
     keep_alive_config.task_prio = tskIDLE_PRIORITY + 1;
     keep_alive_config.keep_alive_period_ms = 5000;

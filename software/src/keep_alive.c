@@ -68,7 +68,6 @@ static uint64_t get_max_delay(wss_keep_alive_t h)
     return check_after_ms;
 }
 
-
 static bool update_client(wss_keep_alive_t h, int sockfd, uint64_t timestamp)
 {
     for (int i = 0; i < h->max_clients; ++i) {
@@ -91,9 +90,9 @@ static bool remove_client(wss_keep_alive_t h, int sockfd)
     }
     return false;
 }
-static bool add_new_client(wss_keep_alive_t h,int sockfd)
+static bool add_new_client(wss_keep_alive_t h, int sockfd)
 {
-    for (int i=0; i<h->max_clients; ++i) {
+    for (int i = 0; i < h->max_clients; ++i) {
         if (h->clients[i].type == NO_CLIENT) {
             h->clients[i].type = CLIENT_ACTIVE;
             h->clients[i].fd = sockfd;
@@ -104,7 +103,7 @@ static bool add_new_client(wss_keep_alive_t h,int sockfd)
     return false;
 }
 
-static void keep_alive_task(void* arg)
+static void keep_alive_task(void *arg)
 {
     wss_keep_alive_storage_t *keep_alive_storage = (wss_keep_alive_storage_t *)arg;
     bool run_task = true;
@@ -160,7 +159,7 @@ static void keep_alive_task(void* arg)
 
 wss_keep_alive_t wss_keep_alive_start(wss_keep_alive_config_t *config)
 {
-    size_t queue_size = config->max_clients/2;
+    size_t queue_size = config->max_clients / 2;
     size_t client_list_size = config->max_clients + queue_size;
     wss_keep_alive_t keep_alive_storage = (wss_keep_alive_t)calloc(1,
             sizeof(wss_keep_alive_storage_t) + client_list_size* sizeof(client_fd_action_t));
@@ -215,7 +214,6 @@ esp_err_t wss_keep_alive_client_is_active(wss_keep_alive_t h, int fd)
         return ESP_OK;
     }
     return ESP_FAIL;
-
 }
 
 void wss_keep_alive_set_user_ctx(wss_keep_alive_t h, void *ctx)

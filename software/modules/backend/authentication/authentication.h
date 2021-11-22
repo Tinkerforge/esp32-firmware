@@ -29,6 +29,7 @@ public:
     void loop();
 
     bool initialized = false;
+
 private:
     Config authentication_config;
 };

@@ -53,7 +53,6 @@ public:
     virtual void wifiAvailable() = 0;
 };
 
-
 class API {
 public:
     API() {}

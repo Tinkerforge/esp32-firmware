@@ -54,7 +54,6 @@ private:
     void check_for_scan_completion();
     String get_scan_results();
 
-
     Config wifi_ap_config;
     Config wifi_sta_config;
     Config wifi_state;

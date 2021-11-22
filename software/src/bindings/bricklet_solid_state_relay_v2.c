@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-18.      *
+ * This file was automatically generated on 2021-11-22.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -23,7 +23,7 @@ extern "C" {
 
 #if TF_IMPLEMENT_CALLBACKS != 0
 static bool tf_solid_state_relay_v2_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *payload) {
-    TF_SolidStateRelayV2 *solid_state_relay_v2 = (TF_SolidStateRelayV2 *) dev;
+    TF_SolidStateRelayV2 *solid_state_relay_v2 = (TF_SolidStateRelayV2 *)dev;
     (void)payload;
 
     switch (fid) {

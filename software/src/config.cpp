@@ -43,7 +43,8 @@ struct recursive_validator {
     bool operator()(Config::ConfUint &x) { return x.validator(x); }
     bool operator()(Config::ConfBool &x) { return x.validator(x); }
     bool operator()(std::nullptr_t x) { return true; }
-    bool operator()(Config::ConfArray &x) {
+    bool operator()(Config::ConfArray &x)
+    {
         // Intentionally do the recursive validation first.
         // This ensures, that the array's validator may assume, that its
         // entries itself are valid. Then only dependencies between (valid) entries
@@ -57,7 +58,8 @@ struct recursive_validator {
 
         return true;
     }
-    bool operator()(Config::ConfObject &x) {
+    bool operator()(Config::ConfObject &x)
+    {
         // Intentionally do the recursive validation first.
         // This ensures, that the object's validator may assume, that its
         // entries itself are valid. Then only dependencies between (valid) entries
@@ -108,7 +110,8 @@ struct to_json {
             strict_variant::apply_visitor(to_json{arr[i], keys_to_censor}, x.value[i].value);
         }
     }
-    void operator()(Config::ConfObject &x) {
+    void operator()(Config::ConfObject &x)
+    {
         JsonObject obj = insertHere.as<JsonObject>();
         for (size_t i = 0; i < x.value.size(); ++i) {
             String &key = x.value[i].first;
@@ -153,10 +156,12 @@ struct json_length_visitor {
     size_t operator()(std::nullptr_t x) {
         return 10; // TODO: is this still necessary?
     }
-    size_t operator()(Config::ConfArray &x) {
+    size_t operator()(Config::ConfArray &x)
+    {
         return strict_variant::apply_visitor(json_length_visitor{}, x.prototype[0].value) * x.maxElements + JSON_ARRAY_SIZE(x.maxElements);
     }
-    size_t operator()(Config::ConfObject &x) {
+    size_t operator()(Config::ConfObject &x)
+    {
         size_t sum = 0;
         for (size_t i = 0; i < x.value.size(); ++i) {
             sum += x.value[i].first.length() + 1;
@@ -171,7 +176,8 @@ struct json_length_visitor {
 };
 
 struct from_json {
-    String operator()(Config::ConfString &x) {
+    String operator()(Config::ConfString &x)
+    {
         if (json_node.isNull())
             return x.validator(x);
 
@@ -180,7 +186,8 @@ struct from_json {
         x.value = json_node.as<String>();
         return x.validator(x);
     }
-    String operator()(Config::ConfFloat &x) {
+    String operator()(Config::ConfFloat &x)
+    {
         if (json_node.isNull())
             return x.validator(x);
 
@@ -196,7 +203,8 @@ struct from_json {
         x.value = json_node.as<float>();
         return x.validator(x);
     }
-    String operator()(Config::ConfInt &x) {
+    String operator()(Config::ConfInt &x)
+    {
         if (json_node.isNull())
             return x.validator(x);
 
@@ -205,7 +213,8 @@ struct from_json {
         x.value = json_node.as<int32_t>();
         return x.validator(x);
     }
-    String operator()(Config::ConfUint &x) {
+    String operator()(Config::ConfUint &x)
+    {
         if (json_node.isNull())
             return x.validator(x);
 
@@ -214,7 +223,8 @@ struct from_json {
         x.value = json_node.as<uint32_t>();
         return x.validator(x);
     }
-    String operator()(Config::ConfBool &x) {
+    String operator()(Config::ConfBool &x)
+    {
         if (json_node.isNull())
             return x.validator(x);
 
@@ -245,7 +255,8 @@ struct from_json {
 
         return x.validator(x);
     }
-    String operator()(Config::ConfObject &x) {
+    String operator()(Config::ConfObject &x)
+    {
         if (json_node.isNull())
             return x.validator(x);
 
@@ -274,7 +285,8 @@ struct from_json {
 };
 
 struct from_update {
-    String operator()(Config::ConfString &x) {
+    String operator()(Config::ConfString &x)
+    {
         if (Config::containsNull(update))
             return x.validator(x);
 
@@ -283,7 +295,8 @@ struct from_update {
         x.value = *(update->get<String>());
         return x.validator(x);
     }
-    String operator()(Config::ConfFloat &x) {
+    String operator()(Config::ConfFloat &x)
+    {
         if (Config::containsNull(update))
             return x.validator(x);
 
@@ -299,7 +312,8 @@ struct from_update {
         x.value = *(update->get<float>());
         return x.validator(x);
     }
-    String operator()(Config::ConfInt &x) {
+    String operator()(Config::ConfInt &x)
+    {
         if (Config::containsNull(update))
             return x.validator(x);
 
@@ -308,7 +322,8 @@ struct from_update {
         x.value = *(update->get<int32_t>());
         return x.validator(x);
     }
-    String operator()(Config::ConfUint &x) {
+    String operator()(Config::ConfUint &x)
+    {
         if (Config::containsNull(update))
             return x.validator(x);
 
@@ -324,7 +339,8 @@ struct from_update {
         x.value = new_val;
         return x.validator(x);
     }
-    String operator()(Config::ConfBool &x) {
+    String operator()(Config::ConfBool &x)
+    {
         if (Config::containsNull(update))
             return x.validator(x);
 
@@ -355,7 +371,8 @@ struct from_update {
 
         return x.validator(x);
     }
-    String operator()(Config::ConfObject &x) {
+    String operator()(Config::ConfObject &x)
+    {
         if (Config::containsNull(update))
             return x.validator(x);
 
@@ -417,7 +434,8 @@ struct is_updated {
         }
         return false;
     }
-    bool operator()(const Config::ConfObject &x) const {
+    bool operator()(const Config::ConfObject &x) const
+    {
         for (const std::pair<String, Config> &c : x.value) {
             if (c.second.updated || strict_variant::apply_visitor(is_updated{}, c.second.value))
                 return true;
@@ -433,13 +451,15 @@ struct set_updated_false {
     void operator()(Config::ConfUint &x) {}
     void operator()(Config::ConfBool &x) {}
     void operator()(std::nullptr_t x) {}
-    void operator()(Config::ConfArray &x) {
+    void operator()(Config::ConfArray &x)
+    {
         for (Config &c : x.value) {
             c.updated = false;
             strict_variant::apply_visitor(set_updated_false{}, c.value);
         }
     }
-    void operator()(Config::ConfObject &x) {
+    void operator()(Config::ConfObject &x)
+    {
         for (std::pair<String, Config> &c : x.value) {
             c.second.updated = false;
             strict_variant::apply_visitor(set_updated_false{}, c.second.value);
@@ -519,7 +539,8 @@ Config Config::Int32(int32_t i) {
     return Config::Int(i, std::numeric_limits<int32_t>::lowest(), std::numeric_limits<int32_t>::max());
 }
 
-Config *Config::get(String s) {
+Config *Config::get(String s)
+{
     if (!this->is<Config::ConfObject>()) {
         logger.printfln("Config key %s not in this node: is not an object!", s.c_str());
         delay(100);
@@ -529,7 +550,8 @@ Config *Config::get(String s) {
     return strict_variant::get<Config::ConfObject>(&value)->get(s);
 }
 
-Config *Config::get(size_t i) {
+Config *Config::get(size_t i)
+{
     if (!this->is<Config::ConfArray>()) {
         logger.printfln("Config index %u not in this node: is not an array!", i);
         delay(100);
@@ -539,7 +561,8 @@ Config *Config::get(size_t i) {
     return strict_variant::get<Config::ConfArray>(&value)->get(i);
 }
 
-const Config *Config::get(String s) const {
+const Config *Config::get(String s) const
+{
     if (!this->is<Config::ConfObject>()) {
         logger.printfln("Config key %s not in this node: is not an object!", s.c_str());
         delay(100);
@@ -549,7 +572,8 @@ const Config *Config::get(String s) const {
     return strict_variant::get<Config::ConfObject>(&value)->get(s);
 }
 
-const Config *Config::get(size_t i) const {
+const Config *Config::get(size_t i) const
+{
     if (!this->is<Config::ConfArray>()) {
         logger.printfln("Config index %u not in this node: is not an array!", i);
         delay(100);
@@ -631,7 +655,8 @@ size_t Config::json_size() {
     return strict_variant::apply_visitor(json_length_visitor{}, value);
 }
 
-String Config::update_from_file(File file) {
+String Config::update_from_file(File file)
+{
     ConfVariant copy = value;
     DynamicJsonDocument doc(json_size());
     DeserializationError error = deserializeJson(doc, file);
@@ -648,7 +673,8 @@ String Config::update_from_file(File file) {
     return err;
 }
 
-String Config::update_from_cstr(char *c, size_t len) {
+String Config::update_from_cstr(char *c, size_t len)
+{
     ConfVariant copy = value;
     DynamicJsonDocument doc(json_size());
     DeserializationError error = deserializeJson(doc, c, len);
@@ -667,7 +693,8 @@ String Config::update_from_cstr(char *c, size_t len) {
     return err;
 }
 
-String Config::update_from_string(String s) {
+String Config::update_from_string(String s)
+{
     ConfVariant copy = value;
     DynamicJsonDocument doc(json_size());
     DeserializationError error = deserializeJson(doc, s);
@@ -686,7 +713,8 @@ String Config::update_from_string(String s) {
     return err;
 }
 
-String Config::update_from_json(JsonVariant root) {
+String Config::update_from_json(JsonVariant root)
+{
     ConfVariant copy = value;
     String err = strict_variant::apply_visitor(from_json{root, true}, copy);
     if (err == "") {
@@ -746,7 +774,8 @@ String Config::to_string() {
     return this->to_string_except({});
 }
 
-String Config::to_string_except(std::initializer_list<String> keys_to_censor) {
+String Config::to_string_except(std::initializer_list<String> keys_to_censor)
+{
     DynamicJsonDocument doc(json_size());
 
     JsonVariant var;
@@ -764,7 +793,8 @@ String Config::to_string_except(std::initializer_list<String> keys_to_censor) {
     return result;
 }
 
-String Config::to_string_except(const std::vector<String> &keys_to_censor) {
+String Config::to_string_except(const std::vector<String> &keys_to_censor)
+{
     DynamicJsonDocument doc(json_size());
 
     JsonVariant var;
@@ -824,12 +854,14 @@ bool Config::was_updated() {
     return updated || strict_variant::apply_visitor(is_updated{}, value);
 }
 
-void Config::set_update_handled() {
+void Config::set_update_handled()
+{
     updated = false;
     strict_variant::apply_visitor(set_updated_false{}, value);
 }
 
-Config *Config::ConfObject::get(String s) {
+Config *Config::ConfObject::get(String s)
+{
     for (size_t i = 0; i < this->value.size(); ++i) {
         if (this->value[i].first == s)
             return &this->value[i].second;
@@ -840,7 +872,7 @@ Config *Config::ConfObject::get(String s) {
     return nullptr;
 }
 
-Config* Config::ConfArray::get(size_t i)
+Config *Config::ConfArray::get(size_t i)
 {
     if (i >= this->value.size()) {
         logger.printfln("Config index %u out of range!", i);
@@ -850,7 +882,8 @@ Config* Config::ConfArray::get(size_t i)
     return &this->value[i];
 }
 
-const Config *Config::ConfObject::get(String s) const {
+const Config *Config::ConfObject::get(String s) const
+{
     for (size_t i = 0; i < this->value.size(); ++i) {
         if (this->value[i].first == s)
             return &this->value[i].second;
@@ -861,7 +894,8 @@ const Config *Config::ConfObject::get(String s) const {
     return nullptr;
 }
 
-const Config *Config::ConfArray::get(size_t i) const {
+const Config *Config::ConfArray::get(size_t i) const
+{
     if (i >= this->value.size()) {
         logger.printfln("Config index %u out of range!", i);
         delay(100);
