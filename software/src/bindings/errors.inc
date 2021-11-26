@@ -42,3 +42,6 @@ case TF_E_PORT_NOT_FOUND:
 
 case TF_E_NULL:
     return "NULL was passed as device pointer or as one of the _create parameters";
+
+case TF_E_DEVICE_ALREADY_IN_USE:
+    return "device in already in use by another device object";

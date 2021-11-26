@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-22.      *
+ * This file was automatically generated on 2021-11-26.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -15,6 +15,7 @@
 #include "tfp.h"
 #include "hal_common.h"
 #include "macros.h"
+#include "streaming.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,6 +29,7 @@ struct TF_CANV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 typedef void (*TF_CANV2_FrameReadLowLevelHandler)(struct TF_CANV2 *device, uint8_t frame_type, uint32_t identifier, uint8_t data_length, uint8_t data_data[15], void *user_data);
+typedef void (*TF_CANV2_FrameReadHandler)(struct TF_CANV2 *device, uint8_t frame_type, uint32_t identifier, uint8_t *data, uint8_t data_length, void *user_data);
 typedef void (*TF_CANV2_FrameReadableHandler)(struct TF_CANV2 *device, void *user_data);
 typedef void (*TF_CANV2_ErrorOccurredHandler)(struct TF_CANV2 *device, void *user_data);
 
@@ -48,6 +50,9 @@ typedef struct TF_CANV2 {
 
     TF_CANV2_ErrorOccurredHandler error_occurred_handler;
     void *error_occurred_user_data;
+
+    TF_CANV2_FrameReadHandler frame_read_handler;
+    TF_HighLevelCallback frame_read_hlc;
 
 #endif
     uint8_t response_expected[2];
@@ -519,6 +524,31 @@ int tf_can_v2_set_response_expected_all(TF_CANV2 *can_v2, bool response_expected
  * To enable this callback, use {@link tf_can_v2_set_frame_read_callback_configuration}.
  */
 int tf_can_v2_register_frame_read_low_level_callback(TF_CANV2 *can_v2, TF_CANV2_FrameReadLowLevelHandler handler, void *user_data);
+
+
+/**
+ * \ingroup TF_CANV2
+ *
+ * Registers the given \c handler to the Frame Read callback. The
+ * \c user_data will be passed as the last parameter to the \c handler.
+ *
+ * Signature: \code void callback(uint8_t frame_type, uint32_t identifier, uint8_t data_length, uint8_t data_data[15], void *user_data) \endcode
+ * 
+ * This callback is triggered if a data or remote frame was received by the CAN
+ * transceiver.
+ * 
+ * The ``identifier`` return value follows the identifier format described for
+ * {@link tf_can_v2_write_frame}.
+ * 
+ * For details on the ``data`` return value see {@link tf_can_v2_read_frame}.
+ * 
+ * A configurable read filter can be used to define which frames should be
+ * received by the CAN transceiver and put into the read queue (see
+ * {@link tf_can_v2_set_read_filter_configuration}).
+ * 
+ * To enable this callback, use {@link tf_can_v2_set_frame_read_callback_configuration}.
+ */
+int tf_can_v2_register_frame_read_callback(TF_CANV2 *can_v2, TF_CANV2_FrameReadHandler handler, uint8_t *data, void *user_data);
 
 
 /**

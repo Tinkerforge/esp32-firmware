@@ -21,7 +21,7 @@ typedef struct TF_Port {
     TF_PortCommon port_common;
 } TF_Port;
 
-#define TF_PORT(chip_select_pin, spi, port_name) {chip_select_pin, spi, port_name,  {._to_init = 0}}
+#define TF_PORT(chip_select_pin, spi, port_name) {chip_select_pin, spi, port_name, {._to_init = 0}}
 
 static TF_Port ports[6] = {
     TF_PORT(16, VSPI, 'A'),
@@ -145,17 +145,9 @@ const char *tf_hal_strerror(int e_code) {
 #endif
 
 char tf_hal_get_port_name(TF_HAL *hal, uint8_t port_id) {
-    if (port_id > PORT_COUNT) {
-        return '?';
-    }
-
     return ports[port_id].port_name;
 }
 
 TF_PortCommon *tf_hal_get_port_common(TF_HAL *hal, uint8_t port_id) {
-    if (port_id > PORT_COUNT) {
-        return NULL;
-    }
-
     return &ports[port_id].port_common;
 }

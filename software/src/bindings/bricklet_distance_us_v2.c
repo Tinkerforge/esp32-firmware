@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-22.      *
+ * This file was automatically generated on 2021-11-26.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -22,8 +22,9 @@ extern "C" {
 
 
 #if TF_IMPLEMENT_CALLBACKS != 0
-static bool tf_distance_us_v2_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *payload) {
-    TF_DistanceUSV2 *distance_us_v2 = (TF_DistanceUSV2 *)dev;
+static bool tf_distance_us_v2_callback_handler(void *device, uint8_t fid, TF_PacketBuffer *payload) {
+    TF_DistanceUSV2 *distance_us_v2 = (TF_DistanceUSV2 *)device;
+    TF_HALCommon *hal_common = tf_hal_get_common(distance_us_v2->tfp->spitfp->hal);
     (void)payload;
 
     switch (fid) {
@@ -35,7 +36,6 @@ static bool tf_distance_us_v2_callback_handler(void *dev, uint8_t fid, TF_Packet
             }
 
             uint16_t distance = tf_packet_buffer_read_uint16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal);
             hal_common->locked = true;
             fn(distance_us_v2, distance, user_data);
             hal_common->locked = false;
@@ -49,40 +49,54 @@ static bool tf_distance_us_v2_callback_handler(void *dev, uint8_t fid, TF_Packet
     return true;
 }
 #else
-static bool tf_distance_us_v2_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *payload) {
+static bool tf_distance_us_v2_callback_handler(void *device, uint8_t fid, TF_PacketBuffer *payload) {
     return false;
 }
 #endif
 int tf_distance_us_v2_create(TF_DistanceUSV2 *distance_us_v2, const char *uid, TF_HAL *hal) {
-    if (distance_us_v2 == NULL || uid == NULL || hal == NULL) {
+    if (distance_us_v2 == NULL || hal == NULL) {
         return TF_E_NULL;
     }
 
+    static uint16_t next_tfp_index = 0;
+
     memset(distance_us_v2, 0, sizeof(TF_DistanceUSV2));
 
-    uint32_t numeric_uid;
-    int rc = tf_base58_decode(uid, &numeric_uid);
+    TF_TFP *tfp;
 
-    if (rc != TF_E_OK) {
-        return rc;
+    if (uid != NULL && *uid != '\0') {
+        uint32_t uid_num = 0;
+        int rc = tf_base58_decode(uid, &uid_num);
+
+        if (rc != TF_E_OK) {
+            return rc;
+        }
+
+        tfp = tf_hal_get_tfp(hal, &next_tfp_index, &uid_num, NULL, NULL);
+
+        if (tfp == NULL) {
+            return TF_E_DEVICE_NOT_FOUND;
+        }
+
+        if (tfp->device_id != TF_DISTANCE_US_V2_DEVICE_IDENTIFIER) {
+            return TF_E_WRONG_DEVICE_TYPE;
+        }
+    } else {
+        uint16_t device_id = TF_DISTANCE_US_V2_DEVICE_IDENTIFIER;
+
+        tfp = tf_hal_get_tfp(hal, &next_tfp_index, NULL, NULL, &device_id);
+
+        if (tfp == NULL) {
+            return TF_E_DEVICE_NOT_FOUND;
+        }
     }
 
-    uint8_t port_id;
-    uint8_t inventory_index;
-    rc = tf_hal_get_port_id(hal, numeric_uid, &port_id, &inventory_index);
-
-    if (rc < 0) {
-        return rc;
+    if (tfp->device != NULL) {
+        return TF_E_DEVICE_ALREADY_IN_USE;
     }
 
-    rc = tf_hal_get_tfp(hal, &distance_us_v2->tfp, TF_DISTANCE_US_V2_DEVICE_IDENTIFIER, inventory_index);
-
-    if (rc != TF_E_OK) {
-        return rc;
-    }
-
+    distance_us_v2->tfp = tfp;
     distance_us_v2->tfp->device = distance_us_v2;
-    distance_us_v2->tfp->uid = numeric_uid;
     distance_us_v2->tfp->cb_handler = tf_distance_us_v2_callback_handler;
     distance_us_v2->response_expected[0] = 0x01;
 
@@ -90,14 +104,15 @@ int tf_distance_us_v2_create(TF_DistanceUSV2 *distance_us_v2, const char *uid, T
 }
 
 int tf_distance_us_v2_destroy(TF_DistanceUSV2 *distance_us_v2) {
-    if (distance_us_v2 == NULL) {
+    if (distance_us_v2 == NULL || distance_us_v2->tfp == NULL) {
         return TF_E_NULL;
     }
 
-    int result = tf_tfp_destroy(distance_us_v2->tfp);
+    distance_us_v2->tfp->cb_handler = NULL;
+    distance_us_v2->tfp->device = NULL;
     distance_us_v2->tfp = NULL;
 
-    return result;
+    return TF_E_OK;
 }
 
 int tf_distance_us_v2_get_response_expected(TF_DistanceUSV2 *distance_us_v2, uint8_t function_id, bool *ret_response_expected) {
@@ -225,17 +240,19 @@ int tf_distance_us_v2_get_distance(TF_DistanceUSV2 *distance_us_v2, uint16_t *re
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->locked) {
+    TF_HAL *hal = distance_us_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(distance_us_v2->tfp, TF_DISTANCE_US_V2_FUNCTION_GET_DISTANCE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)distance_us_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -246,7 +263,8 @@ int tf_distance_us_v2_get_distance(TF_DistanceUSV2 *distance_us_v2, uint16_t *re
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_distance != NULL) { *ret_distance = tf_packet_buffer_read_uint16_t(&distance_us_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&distance_us_v2->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(distance_us_v2->tfp);
+        if (ret_distance != NULL) { *ret_distance = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(distance_us_v2->tfp);
     }
 
@@ -264,7 +282,9 @@ int tf_distance_us_v2_set_distance_callback_configuration(TF_DistanceUSV2 *dista
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->locked) {
+    TF_HAL *hal = distance_us_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -272,18 +292,18 @@ int tf_distance_us_v2_set_distance_callback_configuration(TF_DistanceUSV2 *dista
     tf_distance_us_v2_get_response_expected(distance_us_v2, TF_DISTANCE_US_V2_FUNCTION_SET_DISTANCE_CALLBACK_CONFIGURATION, &response_expected);
     tf_tfp_prepare_send(distance_us_v2->tfp, TF_DISTANCE_US_V2_FUNCTION_SET_DISTANCE_CALLBACK_CONFIGURATION, 10, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(distance_us_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(distance_us_v2->tfp);
 
-    period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
-    buf[4] = value_has_to_change ? 1 : 0;
-    buf[5] = (uint8_t)option;
-    min = tf_leconvert_uint16_to(min); memcpy(buf + 6, &min, 2);
-    max = tf_leconvert_uint16_to(max); memcpy(buf + 8, &max, 2);
+    period = tf_leconvert_uint32_to(period); memcpy(send_buf + 0, &period, 4);
+    send_buf[4] = value_has_to_change ? 1 : 0;
+    send_buf[5] = (uint8_t)option;
+    min = tf_leconvert_uint16_to(min); memcpy(send_buf + 6, &min, 2);
+    max = tf_leconvert_uint16_to(max); memcpy(send_buf + 8, &max, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)distance_us_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -307,17 +327,19 @@ int tf_distance_us_v2_get_distance_callback_configuration(TF_DistanceUSV2 *dista
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->locked) {
+    TF_HAL *hal = distance_us_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(distance_us_v2->tfp, TF_DISTANCE_US_V2_FUNCTION_GET_DISTANCE_CALLBACK_CONFIGURATION, 0, 10, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)distance_us_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -328,11 +350,12 @@ int tf_distance_us_v2_get_distance_callback_configuration(TF_DistanceUSV2 *dista
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(&distance_us_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&distance_us_v2->tfp->spitfp->recv_buf, 4); }
-        if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(&distance_us_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&distance_us_v2->tfp->spitfp->recv_buf, 1); }
-        if (ret_option != NULL) { *ret_option = tf_packet_buffer_read_char(&distance_us_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&distance_us_v2->tfp->spitfp->recv_buf, 1); }
-        if (ret_min != NULL) { *ret_min = tf_packet_buffer_read_uint16_t(&distance_us_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&distance_us_v2->tfp->spitfp->recv_buf, 2); }
-        if (ret_max != NULL) { *ret_max = tf_packet_buffer_read_uint16_t(&distance_us_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&distance_us_v2->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(distance_us_v2->tfp);
+        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_option != NULL) { *ret_option = tf_packet_buffer_read_char(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_min != NULL) { *ret_min = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+        if (ret_max != NULL) { *ret_max = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(distance_us_v2->tfp);
     }
 
@@ -350,7 +373,9 @@ int tf_distance_us_v2_set_update_rate(TF_DistanceUSV2 *distance_us_v2, uint8_t u
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->locked) {
+    TF_HAL *hal = distance_us_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -358,14 +383,14 @@ int tf_distance_us_v2_set_update_rate(TF_DistanceUSV2 *distance_us_v2, uint8_t u
     tf_distance_us_v2_get_response_expected(distance_us_v2, TF_DISTANCE_US_V2_FUNCTION_SET_UPDATE_RATE, &response_expected);
     tf_tfp_prepare_send(distance_us_v2->tfp, TF_DISTANCE_US_V2_FUNCTION_SET_UPDATE_RATE, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(distance_us_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(distance_us_v2->tfp);
 
-    buf[0] = (uint8_t)update_rate;
+    send_buf[0] = (uint8_t)update_rate;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)distance_us_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -389,17 +414,19 @@ int tf_distance_us_v2_get_update_rate(TF_DistanceUSV2 *distance_us_v2, uint8_t *
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->locked) {
+    TF_HAL *hal = distance_us_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(distance_us_v2->tfp, TF_DISTANCE_US_V2_FUNCTION_GET_UPDATE_RATE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)distance_us_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -410,7 +437,8 @@ int tf_distance_us_v2_get_update_rate(TF_DistanceUSV2 *distance_us_v2, uint8_t *
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_update_rate != NULL) { *ret_update_rate = tf_packet_buffer_read_uint8_t(&distance_us_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&distance_us_v2->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(distance_us_v2->tfp);
+        if (ret_update_rate != NULL) { *ret_update_rate = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(distance_us_v2->tfp);
     }
 
@@ -428,7 +456,9 @@ int tf_distance_us_v2_set_distance_led_config(TF_DistanceUSV2 *distance_us_v2, u
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->locked) {
+    TF_HAL *hal = distance_us_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -436,14 +466,14 @@ int tf_distance_us_v2_set_distance_led_config(TF_DistanceUSV2 *distance_us_v2, u
     tf_distance_us_v2_get_response_expected(distance_us_v2, TF_DISTANCE_US_V2_FUNCTION_SET_DISTANCE_LED_CONFIG, &response_expected);
     tf_tfp_prepare_send(distance_us_v2->tfp, TF_DISTANCE_US_V2_FUNCTION_SET_DISTANCE_LED_CONFIG, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(distance_us_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(distance_us_v2->tfp);
 
-    buf[0] = (uint8_t)config;
+    send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)distance_us_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -467,17 +497,19 @@ int tf_distance_us_v2_get_distance_led_config(TF_DistanceUSV2 *distance_us_v2, u
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->locked) {
+    TF_HAL *hal = distance_us_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(distance_us_v2->tfp, TF_DISTANCE_US_V2_FUNCTION_GET_DISTANCE_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)distance_us_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -488,7 +520,8 @@ int tf_distance_us_v2_get_distance_led_config(TF_DistanceUSV2 *distance_us_v2, u
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(&distance_us_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&distance_us_v2->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(distance_us_v2->tfp);
+        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(distance_us_v2->tfp);
     }
 
@@ -506,17 +539,19 @@ int tf_distance_us_v2_get_spitfp_error_count(TF_DistanceUSV2 *distance_us_v2, ui
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->locked) {
+    TF_HAL *hal = distance_us_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(distance_us_v2->tfp, TF_DISTANCE_US_V2_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)distance_us_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -527,10 +562,11 @@ int tf_distance_us_v2_get_spitfp_error_count(TF_DistanceUSV2 *distance_us_v2, ui
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(&distance_us_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&distance_us_v2->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(&distance_us_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&distance_us_v2->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(&distance_us_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&distance_us_v2->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(&distance_us_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&distance_us_v2->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(distance_us_v2->tfp);
+        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(distance_us_v2->tfp);
     }
 
@@ -548,21 +584,23 @@ int tf_distance_us_v2_set_bootloader_mode(TF_DistanceUSV2 *distance_us_v2, uint8
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->locked) {
+    TF_HAL *hal = distance_us_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(distance_us_v2->tfp, TF_DISTANCE_US_V2_FUNCTION_SET_BOOTLOADER_MODE, 1, 1, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(distance_us_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(distance_us_v2->tfp);
 
-    buf[0] = (uint8_t)mode;
+    send_buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)distance_us_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -573,7 +611,8 @@ int tf_distance_us_v2_set_bootloader_mode(TF_DistanceUSV2 *distance_us_v2, uint8
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(&distance_us_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&distance_us_v2->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(distance_us_v2->tfp);
+        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(distance_us_v2->tfp);
     }
 
@@ -591,17 +630,19 @@ int tf_distance_us_v2_get_bootloader_mode(TF_DistanceUSV2 *distance_us_v2, uint8
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->locked) {
+    TF_HAL *hal = distance_us_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(distance_us_v2->tfp, TF_DISTANCE_US_V2_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)distance_us_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -612,7 +653,8 @@ int tf_distance_us_v2_get_bootloader_mode(TF_DistanceUSV2 *distance_us_v2, uint8
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(&distance_us_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&distance_us_v2->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(distance_us_v2->tfp);
+        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(distance_us_v2->tfp);
     }
 
@@ -630,7 +672,9 @@ int tf_distance_us_v2_set_write_firmware_pointer(TF_DistanceUSV2 *distance_us_v2
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->locked) {
+    TF_HAL *hal = distance_us_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -638,14 +682,14 @@ int tf_distance_us_v2_set_write_firmware_pointer(TF_DistanceUSV2 *distance_us_v2
     tf_distance_us_v2_get_response_expected(distance_us_v2, TF_DISTANCE_US_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER, &response_expected);
     tf_tfp_prepare_send(distance_us_v2->tfp, TF_DISTANCE_US_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(distance_us_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(distance_us_v2->tfp);
 
-    pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
+    pointer = tf_leconvert_uint32_to(pointer); memcpy(send_buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)distance_us_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -669,21 +713,23 @@ int tf_distance_us_v2_write_firmware(TF_DistanceUSV2 *distance_us_v2, const uint
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->locked) {
+    TF_HAL *hal = distance_us_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(distance_us_v2->tfp, TF_DISTANCE_US_V2_FUNCTION_WRITE_FIRMWARE, 64, 1, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(distance_us_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(distance_us_v2->tfp);
 
-    memcpy(buf + 0, data, 64);
+    memcpy(send_buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)distance_us_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -694,7 +740,8 @@ int tf_distance_us_v2_write_firmware(TF_DistanceUSV2 *distance_us_v2, const uint
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(&distance_us_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&distance_us_v2->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(distance_us_v2->tfp);
+        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(distance_us_v2->tfp);
     }
 
@@ -712,7 +759,9 @@ int tf_distance_us_v2_set_status_led_config(TF_DistanceUSV2 *distance_us_v2, uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->locked) {
+    TF_HAL *hal = distance_us_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -720,14 +769,14 @@ int tf_distance_us_v2_set_status_led_config(TF_DistanceUSV2 *distance_us_v2, uin
     tf_distance_us_v2_get_response_expected(distance_us_v2, TF_DISTANCE_US_V2_FUNCTION_SET_STATUS_LED_CONFIG, &response_expected);
     tf_tfp_prepare_send(distance_us_v2->tfp, TF_DISTANCE_US_V2_FUNCTION_SET_STATUS_LED_CONFIG, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(distance_us_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(distance_us_v2->tfp);
 
-    buf[0] = (uint8_t)config;
+    send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)distance_us_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -751,17 +800,19 @@ int tf_distance_us_v2_get_status_led_config(TF_DistanceUSV2 *distance_us_v2, uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->locked) {
+    TF_HAL *hal = distance_us_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(distance_us_v2->tfp, TF_DISTANCE_US_V2_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)distance_us_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -772,7 +823,8 @@ int tf_distance_us_v2_get_status_led_config(TF_DistanceUSV2 *distance_us_v2, uin
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(&distance_us_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&distance_us_v2->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(distance_us_v2->tfp);
+        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(distance_us_v2->tfp);
     }
 
@@ -790,17 +842,19 @@ int tf_distance_us_v2_get_chip_temperature(TF_DistanceUSV2 *distance_us_v2, int1
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->locked) {
+    TF_HAL *hal = distance_us_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(distance_us_v2->tfp, TF_DISTANCE_US_V2_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)distance_us_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -811,7 +865,8 @@ int tf_distance_us_v2_get_chip_temperature(TF_DistanceUSV2 *distance_us_v2, int1
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(&distance_us_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&distance_us_v2->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(distance_us_v2->tfp);
+        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(distance_us_v2->tfp);
     }
 
@@ -829,7 +884,9 @@ int tf_distance_us_v2_reset(TF_DistanceUSV2 *distance_us_v2) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->locked) {
+    TF_HAL *hal = distance_us_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -837,10 +894,10 @@ int tf_distance_us_v2_reset(TF_DistanceUSV2 *distance_us_v2) {
     tf_distance_us_v2_get_response_expected(distance_us_v2, TF_DISTANCE_US_V2_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(distance_us_v2->tfp, TF_DISTANCE_US_V2_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)distance_us_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -864,7 +921,9 @@ int tf_distance_us_v2_write_uid(TF_DistanceUSV2 *distance_us_v2, uint32_t uid) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->locked) {
+    TF_HAL *hal = distance_us_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -872,14 +931,14 @@ int tf_distance_us_v2_write_uid(TF_DistanceUSV2 *distance_us_v2, uint32_t uid) {
     tf_distance_us_v2_get_response_expected(distance_us_v2, TF_DISTANCE_US_V2_FUNCTION_WRITE_UID, &response_expected);
     tf_tfp_prepare_send(distance_us_v2->tfp, TF_DISTANCE_US_V2_FUNCTION_WRITE_UID, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(distance_us_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(distance_us_v2->tfp);
 
-    uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
+    uid = tf_leconvert_uint32_to(uid); memcpy(send_buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)distance_us_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -903,17 +962,19 @@ int tf_distance_us_v2_read_uid(TF_DistanceUSV2 *distance_us_v2, uint32_t *ret_ui
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->locked) {
+    TF_HAL *hal = distance_us_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(distance_us_v2->tfp, TF_DISTANCE_US_V2_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)distance_us_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -924,7 +985,8 @@ int tf_distance_us_v2_read_uid(TF_DistanceUSV2 *distance_us_v2, uint32_t *ret_ui
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(&distance_us_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&distance_us_v2->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(distance_us_v2->tfp);
+        if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(distance_us_v2->tfp);
     }
 
@@ -942,7 +1004,9 @@ int tf_distance_us_v2_get_identity(TF_DistanceUSV2 *distance_us_v2, char ret_uid
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->locked) {
+    TF_HAL *hal = distance_us_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -950,10 +1014,10 @@ int tf_distance_us_v2_get_identity(TF_DistanceUSV2 *distance_us_v2, char ret_uid
     tf_tfp_prepare_send(distance_us_v2->tfp, TF_DISTANCE_US_V2_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)distance_us_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)distance_us_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(distance_us_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -964,19 +1028,13 @@ int tf_distance_us_v2_get_identity(TF_DistanceUSV2 *distance_us_v2, char ret_uid
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        char tmp_connected_uid[8] = {0};
-        if (ret_uid != NULL) { tf_packet_buffer_pop_n(&distance_us_v2->tfp->spitfp->recv_buf, (uint8_t*)ret_uid, 8);} else { tf_packet_buffer_remove(&distance_us_v2->tfp->spitfp->recv_buf, 8); }
-        tf_packet_buffer_pop_n(&distance_us_v2->tfp->spitfp->recv_buf, (uint8_t*)tmp_connected_uid, 8);
-        if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(&distance_us_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&distance_us_v2->tfp->spitfp->recv_buf, 1); }
-        if (ret_hardware_version != NULL) { for (i = 0; i < 3; ++i) ret_hardware_version[i] = tf_packet_buffer_read_uint8_t(&distance_us_v2->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&distance_us_v2->tfp->spitfp->recv_buf, 3); }
-        if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&distance_us_v2->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&distance_us_v2->tfp->spitfp->recv_buf, 3); }
-        if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&distance_us_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&distance_us_v2->tfp->spitfp->recv_buf, 2); }
-        if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL *)distance_us_v2->tfp->hal, distance_us_v2->tfp->spitfp->port_id);
-        }
-        if (ret_connected_uid != NULL) {
-            memcpy(ret_connected_uid, tmp_connected_uid, 8);
-        }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(distance_us_v2->tfp);
+        if (ret_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
+        if (ret_connected_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_connected_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
+        if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_hardware_version != NULL) { for (i = 0; i < 3; ++i) ret_hardware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
+        if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
+        if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(distance_us_v2->tfp);
     }
 
@@ -1011,7 +1069,9 @@ int tf_distance_us_v2_callback_tick(TF_DistanceUSV2 *distance_us_v2, uint32_t ti
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(distance_us_v2->tfp, tf_hal_current_time_us((TF_HAL *)distance_us_v2->tfp->hal) + timeout_us);
+    TF_HAL *hal = distance_us_v2->tfp->spitfp->hal;
+
+    return tf_tfp_callback_tick(distance_us_v2->tfp, tf_hal_current_time_us(hal) + timeout_us);
 }
 
 #ifdef __cplusplus

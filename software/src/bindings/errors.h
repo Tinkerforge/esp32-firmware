@@ -28,6 +28,10 @@ extern "C" {
 #define TF_E_LOCKED -12
 #define TF_E_PORT_NOT_FOUND -13
 #define TF_E_NULL -14
+#define TF_E_DEVICE_ALREADY_IN_USE -15
+
+// For internal use only! Will never be returned by user visible functions.
+#define TF_E_INTERNAL_STREAM_HAS_NO_DATA -128
 
 #ifdef __cplusplus
 }

@@ -99,10 +99,11 @@ void Proxy::setup()
     tf_net_create(&net, NULL, 0, NULL);
     tf_hal_set_net(&hal, &net);
 
-    int i = 0;
+    uint16_t i = 0;
     char uid[7] = {0};
     char port_name;
     uint16_t device_id;
+
     while (tf_hal_get_device_info(&hal, i, uid, &port_name, &device_id) == TF_E_OK) {
         devices.add();
 

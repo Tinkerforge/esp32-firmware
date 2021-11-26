@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-22.      *
+ * This file was automatically generated on 2021-11-26.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -22,8 +22,9 @@ extern "C" {
 
 
 #if TF_IMPLEMENT_CALLBACKS != 0
-static bool tf_sound_pressure_level_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *payload) {
-    TF_SoundPressureLevel *sound_pressure_level = (TF_SoundPressureLevel *)dev;
+static bool tf_sound_pressure_level_callback_handler(void *device, uint8_t fid, TF_PacketBuffer *payload) {
+    TF_SoundPressureLevel *sound_pressure_level = (TF_SoundPressureLevel *)device;
+    TF_HALCommon *hal_common = tf_hal_get_common(sound_pressure_level->tfp->spitfp->hal);
     (void)payload;
 
     switch (fid) {
@@ -35,7 +36,6 @@ static bool tf_sound_pressure_level_callback_handler(void *dev, uint8_t fid, TF_
             }
 
             uint16_t decibel = tf_packet_buffer_read_uint16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal);
             hal_common->locked = true;
             fn(sound_pressure_level, decibel, user_data);
             hal_common->locked = false;
@@ -52,7 +52,6 @@ static bool tf_sound_pressure_level_callback_handler(void *dev, uint8_t fid, TF_
             uint16_t spectrum_length = tf_packet_buffer_read_uint16_t(payload);
             uint16_t spectrum_chunk_offset = tf_packet_buffer_read_uint16_t(payload);
             uint16_t spectrum_chunk_data[30]; for (i = 0; i < 30; ++i) spectrum_chunk_data[i] = tf_packet_buffer_read_uint16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal);
             hal_common->locked = true;
             fn(sound_pressure_level, spectrum_length, spectrum_chunk_offset, spectrum_chunk_data, user_data);
             hal_common->locked = false;
@@ -66,40 +65,54 @@ static bool tf_sound_pressure_level_callback_handler(void *dev, uint8_t fid, TF_
     return true;
 }
 #else
-static bool tf_sound_pressure_level_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *payload) {
+static bool tf_sound_pressure_level_callback_handler(void *device, uint8_t fid, TF_PacketBuffer *payload) {
     return false;
 }
 #endif
 int tf_sound_pressure_level_create(TF_SoundPressureLevel *sound_pressure_level, const char *uid, TF_HAL *hal) {
-    if (sound_pressure_level == NULL || uid == NULL || hal == NULL) {
+    if (sound_pressure_level == NULL || hal == NULL) {
         return TF_E_NULL;
     }
 
+    static uint16_t next_tfp_index = 0;
+
     memset(sound_pressure_level, 0, sizeof(TF_SoundPressureLevel));
 
-    uint32_t numeric_uid;
-    int rc = tf_base58_decode(uid, &numeric_uid);
+    TF_TFP *tfp;
 
-    if (rc != TF_E_OK) {
-        return rc;
+    if (uid != NULL && *uid != '\0') {
+        uint32_t uid_num = 0;
+        int rc = tf_base58_decode(uid, &uid_num);
+
+        if (rc != TF_E_OK) {
+            return rc;
+        }
+
+        tfp = tf_hal_get_tfp(hal, &next_tfp_index, &uid_num, NULL, NULL);
+
+        if (tfp == NULL) {
+            return TF_E_DEVICE_NOT_FOUND;
+        }
+
+        if (tfp->device_id != TF_SOUND_PRESSURE_LEVEL_DEVICE_IDENTIFIER) {
+            return TF_E_WRONG_DEVICE_TYPE;
+        }
+    } else {
+        uint16_t device_id = TF_SOUND_PRESSURE_LEVEL_DEVICE_IDENTIFIER;
+
+        tfp = tf_hal_get_tfp(hal, &next_tfp_index, NULL, NULL, &device_id);
+
+        if (tfp == NULL) {
+            return TF_E_DEVICE_NOT_FOUND;
+        }
     }
 
-    uint8_t port_id;
-    uint8_t inventory_index;
-    rc = tf_hal_get_port_id(hal, numeric_uid, &port_id, &inventory_index);
-
-    if (rc < 0) {
-        return rc;
+    if (tfp->device != NULL) {
+        return TF_E_DEVICE_ALREADY_IN_USE;
     }
 
-    rc = tf_hal_get_tfp(hal, &sound_pressure_level->tfp, TF_SOUND_PRESSURE_LEVEL_DEVICE_IDENTIFIER, inventory_index);
-
-    if (rc != TF_E_OK) {
-        return rc;
-    }
-
+    sound_pressure_level->tfp = tfp;
     sound_pressure_level->tfp->device = sound_pressure_level;
-    sound_pressure_level->tfp->uid = numeric_uid;
     sound_pressure_level->tfp->cb_handler = tf_sound_pressure_level_callback_handler;
     sound_pressure_level->response_expected[0] = 0x03;
 
@@ -107,14 +120,15 @@ int tf_sound_pressure_level_create(TF_SoundPressureLevel *sound_pressure_level, 
 }
 
 int tf_sound_pressure_level_destroy(TF_SoundPressureLevel *sound_pressure_level) {
-    if (sound_pressure_level == NULL) {
+    if (sound_pressure_level == NULL || sound_pressure_level->tfp == NULL) {
         return TF_E_NULL;
     }
 
-    int result = tf_tfp_destroy(sound_pressure_level->tfp);
+    sound_pressure_level->tfp->cb_handler = NULL;
+    sound_pressure_level->tfp->device = NULL;
     sound_pressure_level->tfp = NULL;
 
-    return result;
+    return TF_E_OK;
 }
 
 int tf_sound_pressure_level_get_response_expected(TF_SoundPressureLevel *sound_pressure_level, uint8_t function_id, bool *ret_response_expected) {
@@ -242,17 +256,19 @@ int tf_sound_pressure_level_get_decibel(TF_SoundPressureLevel *sound_pressure_le
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->locked) {
+    TF_HAL *hal = sound_pressure_level->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(sound_pressure_level->tfp, TF_SOUND_PRESSURE_LEVEL_FUNCTION_GET_DECIBEL, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)sound_pressure_level->tfp->hal) + tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -263,7 +279,8 @@ int tf_sound_pressure_level_get_decibel(TF_SoundPressureLevel *sound_pressure_le
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_decibel != NULL) { *ret_decibel = tf_packet_buffer_read_uint16_t(&sound_pressure_level->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(sound_pressure_level->tfp);
+        if (ret_decibel != NULL) { *ret_decibel = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(sound_pressure_level->tfp);
     }
 
@@ -281,7 +298,9 @@ int tf_sound_pressure_level_set_decibel_callback_configuration(TF_SoundPressureL
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->locked) {
+    TF_HAL *hal = sound_pressure_level->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -289,18 +308,18 @@ int tf_sound_pressure_level_set_decibel_callback_configuration(TF_SoundPressureL
     tf_sound_pressure_level_get_response_expected(sound_pressure_level, TF_SOUND_PRESSURE_LEVEL_FUNCTION_SET_DECIBEL_CALLBACK_CONFIGURATION, &response_expected);
     tf_tfp_prepare_send(sound_pressure_level->tfp, TF_SOUND_PRESSURE_LEVEL_FUNCTION_SET_DECIBEL_CALLBACK_CONFIGURATION, 10, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(sound_pressure_level->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(sound_pressure_level->tfp);
 
-    period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
-    buf[4] = value_has_to_change ? 1 : 0;
-    buf[5] = (uint8_t)option;
-    min = tf_leconvert_uint16_to(min); memcpy(buf + 6, &min, 2);
-    max = tf_leconvert_uint16_to(max); memcpy(buf + 8, &max, 2);
+    period = tf_leconvert_uint32_to(period); memcpy(send_buf + 0, &period, 4);
+    send_buf[4] = value_has_to_change ? 1 : 0;
+    send_buf[5] = (uint8_t)option;
+    min = tf_leconvert_uint16_to(min); memcpy(send_buf + 6, &min, 2);
+    max = tf_leconvert_uint16_to(max); memcpy(send_buf + 8, &max, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)sound_pressure_level->tfp->hal) + tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -324,17 +343,19 @@ int tf_sound_pressure_level_get_decibel_callback_configuration(TF_SoundPressureL
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->locked) {
+    TF_HAL *hal = sound_pressure_level->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(sound_pressure_level->tfp, TF_SOUND_PRESSURE_LEVEL_FUNCTION_GET_DECIBEL_CALLBACK_CONFIGURATION, 0, 10, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)sound_pressure_level->tfp->hal) + tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -345,11 +366,12 @@ int tf_sound_pressure_level_get_decibel_callback_configuration(TF_SoundPressureL
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(&sound_pressure_level->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 4); }
-        if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(&sound_pressure_level->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 1); }
-        if (ret_option != NULL) { *ret_option = tf_packet_buffer_read_char(&sound_pressure_level->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 1); }
-        if (ret_min != NULL) { *ret_min = tf_packet_buffer_read_uint16_t(&sound_pressure_level->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 2); }
-        if (ret_max != NULL) { *ret_max = tf_packet_buffer_read_uint16_t(&sound_pressure_level->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(sound_pressure_level->tfp);
+        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_option != NULL) { *ret_option = tf_packet_buffer_read_char(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_min != NULL) { *ret_min = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+        if (ret_max != NULL) { *ret_max = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(sound_pressure_level->tfp);
     }
 
@@ -367,7 +389,9 @@ int tf_sound_pressure_level_get_spectrum_low_level(TF_SoundPressureLevel *sound_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->locked) {
+    TF_HAL *hal = sound_pressure_level->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -375,10 +399,10 @@ int tf_sound_pressure_level_get_spectrum_low_level(TF_SoundPressureLevel *sound_
     tf_tfp_prepare_send(sound_pressure_level->tfp, TF_SOUND_PRESSURE_LEVEL_FUNCTION_GET_SPECTRUM_LOW_LEVEL, 0, 64, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)sound_pressure_level->tfp->hal) + tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -389,9 +413,10 @@ int tf_sound_pressure_level_get_spectrum_low_level(TF_SoundPressureLevel *sound_
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_spectrum_length != NULL) { *ret_spectrum_length = tf_packet_buffer_read_uint16_t(&sound_pressure_level->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 2); }
-        if (ret_spectrum_chunk_offset != NULL) { *ret_spectrum_chunk_offset = tf_packet_buffer_read_uint16_t(&sound_pressure_level->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 2); }
-        if (ret_spectrum_chunk_data != NULL) { for (i = 0; i < 30; ++i) ret_spectrum_chunk_data[i] = tf_packet_buffer_read_uint16_t(&sound_pressure_level->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 60); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(sound_pressure_level->tfp);
+        if (ret_spectrum_length != NULL) { *ret_spectrum_length = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+        if (ret_spectrum_chunk_offset != NULL) { *ret_spectrum_chunk_offset = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+        if (ret_spectrum_chunk_data != NULL) { for (i = 0; i < 30; ++i) ret_spectrum_chunk_data[i] = tf_packet_buffer_read_uint16_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 60); }
         tf_tfp_packet_processed(sound_pressure_level->tfp);
     }
 
@@ -409,7 +434,9 @@ int tf_sound_pressure_level_set_spectrum_callback_configuration(TF_SoundPressure
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->locked) {
+    TF_HAL *hal = sound_pressure_level->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -417,14 +444,14 @@ int tf_sound_pressure_level_set_spectrum_callback_configuration(TF_SoundPressure
     tf_sound_pressure_level_get_response_expected(sound_pressure_level, TF_SOUND_PRESSURE_LEVEL_FUNCTION_SET_SPECTRUM_CALLBACK_CONFIGURATION, &response_expected);
     tf_tfp_prepare_send(sound_pressure_level->tfp, TF_SOUND_PRESSURE_LEVEL_FUNCTION_SET_SPECTRUM_CALLBACK_CONFIGURATION, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(sound_pressure_level->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(sound_pressure_level->tfp);
 
-    period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
+    period = tf_leconvert_uint32_to(period); memcpy(send_buf + 0, &period, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)sound_pressure_level->tfp->hal) + tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -448,17 +475,19 @@ int tf_sound_pressure_level_get_spectrum_callback_configuration(TF_SoundPressure
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->locked) {
+    TF_HAL *hal = sound_pressure_level->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(sound_pressure_level->tfp, TF_SOUND_PRESSURE_LEVEL_FUNCTION_GET_SPECTRUM_CALLBACK_CONFIGURATION, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)sound_pressure_level->tfp->hal) + tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -469,7 +498,8 @@ int tf_sound_pressure_level_get_spectrum_callback_configuration(TF_SoundPressure
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(&sound_pressure_level->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(sound_pressure_level->tfp);
+        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(sound_pressure_level->tfp);
     }
 
@@ -487,7 +517,9 @@ int tf_sound_pressure_level_set_configuration(TF_SoundPressureLevel *sound_press
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->locked) {
+    TF_HAL *hal = sound_pressure_level->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -495,15 +527,15 @@ int tf_sound_pressure_level_set_configuration(TF_SoundPressureLevel *sound_press
     tf_sound_pressure_level_get_response_expected(sound_pressure_level, TF_SOUND_PRESSURE_LEVEL_FUNCTION_SET_CONFIGURATION, &response_expected);
     tf_tfp_prepare_send(sound_pressure_level->tfp, TF_SOUND_PRESSURE_LEVEL_FUNCTION_SET_CONFIGURATION, 2, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(sound_pressure_level->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(sound_pressure_level->tfp);
 
-    buf[0] = (uint8_t)fft_size;
-    buf[1] = (uint8_t)weighting;
+    send_buf[0] = (uint8_t)fft_size;
+    send_buf[1] = (uint8_t)weighting;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)sound_pressure_level->tfp->hal) + tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -527,17 +559,19 @@ int tf_sound_pressure_level_get_configuration(TF_SoundPressureLevel *sound_press
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->locked) {
+    TF_HAL *hal = sound_pressure_level->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(sound_pressure_level->tfp, TF_SOUND_PRESSURE_LEVEL_FUNCTION_GET_CONFIGURATION, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)sound_pressure_level->tfp->hal) + tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -548,8 +582,9 @@ int tf_sound_pressure_level_get_configuration(TF_SoundPressureLevel *sound_press
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_fft_size != NULL) { *ret_fft_size = tf_packet_buffer_read_uint8_t(&sound_pressure_level->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 1); }
-        if (ret_weighting != NULL) { *ret_weighting = tf_packet_buffer_read_uint8_t(&sound_pressure_level->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(sound_pressure_level->tfp);
+        if (ret_fft_size != NULL) { *ret_fft_size = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_weighting != NULL) { *ret_weighting = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(sound_pressure_level->tfp);
     }
 
@@ -567,17 +602,19 @@ int tf_sound_pressure_level_get_spitfp_error_count(TF_SoundPressureLevel *sound_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->locked) {
+    TF_HAL *hal = sound_pressure_level->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(sound_pressure_level->tfp, TF_SOUND_PRESSURE_LEVEL_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)sound_pressure_level->tfp->hal) + tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -588,10 +625,11 @@ int tf_sound_pressure_level_get_spitfp_error_count(TF_SoundPressureLevel *sound_
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(&sound_pressure_level->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(&sound_pressure_level->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(&sound_pressure_level->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(&sound_pressure_level->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(sound_pressure_level->tfp);
+        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(sound_pressure_level->tfp);
     }
 
@@ -609,21 +647,23 @@ int tf_sound_pressure_level_set_bootloader_mode(TF_SoundPressureLevel *sound_pre
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->locked) {
+    TF_HAL *hal = sound_pressure_level->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(sound_pressure_level->tfp, TF_SOUND_PRESSURE_LEVEL_FUNCTION_SET_BOOTLOADER_MODE, 1, 1, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(sound_pressure_level->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(sound_pressure_level->tfp);
 
-    buf[0] = (uint8_t)mode;
+    send_buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)sound_pressure_level->tfp->hal) + tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -634,7 +674,8 @@ int tf_sound_pressure_level_set_bootloader_mode(TF_SoundPressureLevel *sound_pre
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(&sound_pressure_level->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(sound_pressure_level->tfp);
+        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(sound_pressure_level->tfp);
     }
 
@@ -652,17 +693,19 @@ int tf_sound_pressure_level_get_bootloader_mode(TF_SoundPressureLevel *sound_pre
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->locked) {
+    TF_HAL *hal = sound_pressure_level->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(sound_pressure_level->tfp, TF_SOUND_PRESSURE_LEVEL_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)sound_pressure_level->tfp->hal) + tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -673,7 +716,8 @@ int tf_sound_pressure_level_get_bootloader_mode(TF_SoundPressureLevel *sound_pre
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(&sound_pressure_level->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(sound_pressure_level->tfp);
+        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(sound_pressure_level->tfp);
     }
 
@@ -691,7 +735,9 @@ int tf_sound_pressure_level_set_write_firmware_pointer(TF_SoundPressureLevel *so
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->locked) {
+    TF_HAL *hal = sound_pressure_level->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -699,14 +745,14 @@ int tf_sound_pressure_level_set_write_firmware_pointer(TF_SoundPressureLevel *so
     tf_sound_pressure_level_get_response_expected(sound_pressure_level, TF_SOUND_PRESSURE_LEVEL_FUNCTION_SET_WRITE_FIRMWARE_POINTER, &response_expected);
     tf_tfp_prepare_send(sound_pressure_level->tfp, TF_SOUND_PRESSURE_LEVEL_FUNCTION_SET_WRITE_FIRMWARE_POINTER, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(sound_pressure_level->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(sound_pressure_level->tfp);
 
-    pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
+    pointer = tf_leconvert_uint32_to(pointer); memcpy(send_buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)sound_pressure_level->tfp->hal) + tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -730,21 +776,23 @@ int tf_sound_pressure_level_write_firmware(TF_SoundPressureLevel *sound_pressure
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->locked) {
+    TF_HAL *hal = sound_pressure_level->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(sound_pressure_level->tfp, TF_SOUND_PRESSURE_LEVEL_FUNCTION_WRITE_FIRMWARE, 64, 1, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(sound_pressure_level->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(sound_pressure_level->tfp);
 
-    memcpy(buf + 0, data, 64);
+    memcpy(send_buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)sound_pressure_level->tfp->hal) + tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -755,7 +803,8 @@ int tf_sound_pressure_level_write_firmware(TF_SoundPressureLevel *sound_pressure
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(&sound_pressure_level->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(sound_pressure_level->tfp);
+        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(sound_pressure_level->tfp);
     }
 
@@ -773,7 +822,9 @@ int tf_sound_pressure_level_set_status_led_config(TF_SoundPressureLevel *sound_p
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->locked) {
+    TF_HAL *hal = sound_pressure_level->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -781,14 +832,14 @@ int tf_sound_pressure_level_set_status_led_config(TF_SoundPressureLevel *sound_p
     tf_sound_pressure_level_get_response_expected(sound_pressure_level, TF_SOUND_PRESSURE_LEVEL_FUNCTION_SET_STATUS_LED_CONFIG, &response_expected);
     tf_tfp_prepare_send(sound_pressure_level->tfp, TF_SOUND_PRESSURE_LEVEL_FUNCTION_SET_STATUS_LED_CONFIG, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(sound_pressure_level->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(sound_pressure_level->tfp);
 
-    buf[0] = (uint8_t)config;
+    send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)sound_pressure_level->tfp->hal) + tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -812,17 +863,19 @@ int tf_sound_pressure_level_get_status_led_config(TF_SoundPressureLevel *sound_p
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->locked) {
+    TF_HAL *hal = sound_pressure_level->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(sound_pressure_level->tfp, TF_SOUND_PRESSURE_LEVEL_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)sound_pressure_level->tfp->hal) + tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -833,7 +886,8 @@ int tf_sound_pressure_level_get_status_led_config(TF_SoundPressureLevel *sound_p
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(&sound_pressure_level->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(sound_pressure_level->tfp);
+        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(sound_pressure_level->tfp);
     }
 
@@ -851,17 +905,19 @@ int tf_sound_pressure_level_get_chip_temperature(TF_SoundPressureLevel *sound_pr
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->locked) {
+    TF_HAL *hal = sound_pressure_level->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(sound_pressure_level->tfp, TF_SOUND_PRESSURE_LEVEL_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)sound_pressure_level->tfp->hal) + tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -872,7 +928,8 @@ int tf_sound_pressure_level_get_chip_temperature(TF_SoundPressureLevel *sound_pr
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(&sound_pressure_level->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(sound_pressure_level->tfp);
+        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(sound_pressure_level->tfp);
     }
 
@@ -890,7 +947,9 @@ int tf_sound_pressure_level_reset(TF_SoundPressureLevel *sound_pressure_level) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->locked) {
+    TF_HAL *hal = sound_pressure_level->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -898,10 +957,10 @@ int tf_sound_pressure_level_reset(TF_SoundPressureLevel *sound_pressure_level) {
     tf_sound_pressure_level_get_response_expected(sound_pressure_level, TF_SOUND_PRESSURE_LEVEL_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(sound_pressure_level->tfp, TF_SOUND_PRESSURE_LEVEL_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)sound_pressure_level->tfp->hal) + tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -925,7 +984,9 @@ int tf_sound_pressure_level_write_uid(TF_SoundPressureLevel *sound_pressure_leve
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->locked) {
+    TF_HAL *hal = sound_pressure_level->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -933,14 +994,14 @@ int tf_sound_pressure_level_write_uid(TF_SoundPressureLevel *sound_pressure_leve
     tf_sound_pressure_level_get_response_expected(sound_pressure_level, TF_SOUND_PRESSURE_LEVEL_FUNCTION_WRITE_UID, &response_expected);
     tf_tfp_prepare_send(sound_pressure_level->tfp, TF_SOUND_PRESSURE_LEVEL_FUNCTION_WRITE_UID, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(sound_pressure_level->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(sound_pressure_level->tfp);
 
-    uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
+    uid = tf_leconvert_uint32_to(uid); memcpy(send_buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)sound_pressure_level->tfp->hal) + tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -964,17 +1025,19 @@ int tf_sound_pressure_level_read_uid(TF_SoundPressureLevel *sound_pressure_level
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->locked) {
+    TF_HAL *hal = sound_pressure_level->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(sound_pressure_level->tfp, TF_SOUND_PRESSURE_LEVEL_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)sound_pressure_level->tfp->hal) + tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -985,7 +1048,8 @@ int tf_sound_pressure_level_read_uid(TF_SoundPressureLevel *sound_pressure_level
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(&sound_pressure_level->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(sound_pressure_level->tfp);
+        if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(sound_pressure_level->tfp);
     }
 
@@ -1003,7 +1067,9 @@ int tf_sound_pressure_level_get_identity(TF_SoundPressureLevel *sound_pressure_l
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->locked) {
+    TF_HAL *hal = sound_pressure_level->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1011,10 +1077,10 @@ int tf_sound_pressure_level_get_identity(TF_SoundPressureLevel *sound_pressure_l
     tf_tfp_prepare_send(sound_pressure_level->tfp, TF_SOUND_PRESSURE_LEVEL_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)sound_pressure_level->tfp->hal) + tf_hal_get_common((TF_HAL *)sound_pressure_level->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(sound_pressure_level->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1025,19 +1091,13 @@ int tf_sound_pressure_level_get_identity(TF_SoundPressureLevel *sound_pressure_l
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        char tmp_connected_uid[8] = {0};
-        if (ret_uid != NULL) { tf_packet_buffer_pop_n(&sound_pressure_level->tfp->spitfp->recv_buf, (uint8_t*)ret_uid, 8);} else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 8); }
-        tf_packet_buffer_pop_n(&sound_pressure_level->tfp->spitfp->recv_buf, (uint8_t*)tmp_connected_uid, 8);
-        if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(&sound_pressure_level->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 1); }
-        if (ret_hardware_version != NULL) { for (i = 0; i < 3; ++i) ret_hardware_version[i] = tf_packet_buffer_read_uint8_t(&sound_pressure_level->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 3); }
-        if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&sound_pressure_level->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 3); }
-        if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&sound_pressure_level->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&sound_pressure_level->tfp->spitfp->recv_buf, 2); }
-        if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL *)sound_pressure_level->tfp->hal, sound_pressure_level->tfp->spitfp->port_id);
-        }
-        if (ret_connected_uid != NULL) {
-            memcpy(ret_connected_uid, tmp_connected_uid, 8);
-        }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(sound_pressure_level->tfp);
+        if (ret_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
+        if (ret_connected_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_connected_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
+        if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_hardware_version != NULL) { for (i = 0; i < 3; ++i) ret_hardware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
+        if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
+        if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(sound_pressure_level->tfp);
     }
 
@@ -1050,92 +1110,31 @@ int tf_sound_pressure_level_get_identity(TF_SoundPressureLevel *sound_pressure_l
     return tf_tfp_get_error(error_code);
 }
 
+static int tf_sound_pressure_level_get_spectrum_ll_wrapper(void *device, void *wrapper_data, uint32_t *ret_stream_length, uint32_t *ret_chunk_offset, void *chunk_data) {
+    (void)wrapper_data;
+    uint16_t spectrum_length = 0;
+    uint16_t spectrum_chunk_offset = 0;
+    uint16_t *spectrum_chunk_data = (uint16_t *) chunk_data;
+    int ret = tf_sound_pressure_level_get_spectrum_low_level((TF_SoundPressureLevel *)device, &spectrum_length, &spectrum_chunk_offset, spectrum_chunk_data);
+
+    *ret_stream_length = (uint32_t)spectrum_length;
+    *ret_chunk_offset = (uint32_t)spectrum_chunk_offset;
+    return ret;
+}
+
 int tf_sound_pressure_level_get_spectrum(TF_SoundPressureLevel *sound_pressure_level, uint16_t *ret_spectrum, uint16_t *ret_spectrum_length) {
     if (sound_pressure_level == NULL) {
         return TF_E_NULL;
     }
-
-    int ret = TF_E_OK;
-    uint16_t max_spectrum_length = 0;
-    uint16_t spectrum_length = 0;
-    uint16_t spectrum_chunk_offset = 0;
+    
+    uint32_t spectrum_length = 0;
     uint16_t spectrum_chunk_data[30];
-    bool spectrum_out_of_sync;
-    uint16_t spectrum_chunk_length = 0;
 
-    ret = tf_sound_pressure_level_get_spectrum_low_level(sound_pressure_level, &spectrum_length, &spectrum_chunk_offset, spectrum_chunk_data);
+    int ret = tf_stream_out(sound_pressure_level, tf_sound_pressure_level_get_spectrum_ll_wrapper, NULL, ret_spectrum, &spectrum_length, spectrum_chunk_data, 30, tf_copy_items_uint16_t);
 
-    if (ret != TF_E_OK) {
-        if (ret_spectrum_length != NULL) {
-            *ret_spectrum_length = spectrum_length;
-        }
-
-        return ret;
+    if (ret_spectrum_length != NULL) {
+        *ret_spectrum_length = (uint16_t)spectrum_length;
     }
-
-    spectrum_out_of_sync = spectrum_chunk_offset != 0;
-
-    if (!spectrum_out_of_sync) {
-        spectrum_chunk_length = max_spectrum_length - spectrum_chunk_offset;
-
-        if (spectrum_chunk_length > 30) {
-            spectrum_chunk_length = 30;
-        }
-
-        if (ret_spectrum != NULL) {
-            memcpy(ret_spectrum, spectrum_chunk_data, sizeof(uint16_t) * spectrum_chunk_length);
-        }
-
-        spectrum_length = spectrum_chunk_length;
-
-        while (spectrum_length < max_spectrum_length) {
-            ret = tf_sound_pressure_level_get_spectrum_low_level(sound_pressure_level, &spectrum_length, &spectrum_chunk_offset, spectrum_chunk_data);
-
-            if (ret != TF_E_OK) {
-                if (ret_spectrum_length != NULL) {
-                    *ret_spectrum_length = spectrum_length;
-                }
-
-                return ret;
-            }
-
-            spectrum_out_of_sync = spectrum_chunk_offset != spectrum_length;
-
-            if (spectrum_out_of_sync) {
-                break;
-            }
-
-            spectrum_chunk_length = max_spectrum_length - spectrum_chunk_offset;
-
-            if (spectrum_chunk_length > 30) {
-                spectrum_chunk_length = 30;
-            }
-
-            if (ret_spectrum != NULL) {
-                memcpy(&ret_spectrum[spectrum_length], spectrum_chunk_data, sizeof(uint16_t) * spectrum_chunk_length);
-            }
-
-            spectrum_length += spectrum_chunk_length;
-        }
-    }
-
-    if (spectrum_out_of_sync) {
-        if (ret_spectrum_length != NULL) {
-            *ret_spectrum_length = 0; // return empty array
-        }
-
-        // discard remaining stream to bring it back in-sync
-        while (spectrum_chunk_offset + 30 < max_spectrum_length) {
-            ret = tf_sound_pressure_level_get_spectrum_low_level(sound_pressure_level, &spectrum_length, &spectrum_chunk_offset, spectrum_chunk_data);
-
-            if (ret != TF_E_OK) {
-                return ret;
-            }
-        }
-
-        ret = TF_E_STREAM_OUT_OF_SYNC;
-    }
-
     return ret;
 }
 #if TF_IMPLEMENT_CALLBACKS != 0
@@ -1175,13 +1174,45 @@ int tf_sound_pressure_level_register_spectrum_low_level_callback(TF_SoundPressur
 
     return TF_E_OK;
 }
+
+
+static void tf_sound_pressure_level_spectrum_wrapper(TF_SoundPressureLevel *sound_pressure_level, uint16_t spectrum_length, uint16_t spectrum_chunk_offset, uint16_t spectrum_chunk_data[30], void *user_data) {
+    uint32_t stream_length = (uint32_t) spectrum_length;
+    uint32_t chunk_offset = (uint32_t) spectrum_chunk_offset;
+    if (!tf_stream_out_callback(&sound_pressure_level->spectrum_hlc, stream_length, chunk_offset, spectrum_chunk_data, 30, tf_copy_items_uint16_t)) {
+        return;
+    }
+
+    // Stream is either complete or out of sync
+    uint16_t *spectrum = (uint16_t *) (sound_pressure_level->spectrum_hlc.length == 0 ? NULL : sound_pressure_level->spectrum_hlc.data);
+    sound_pressure_level->spectrum_handler(sound_pressure_level, spectrum, spectrum_length, user_data);
+
+    sound_pressure_level->spectrum_hlc.stream_in_progress = false;
+    sound_pressure_level->spectrum_hlc.length = 0;
+}
+
+int tf_sound_pressure_level_register_spectrum_callback(TF_SoundPressureLevel *sound_pressure_level, TF_SoundPressureLevel_SpectrumHandler handler, uint16_t *spectrum_buffer, void *user_data) {
+    if (sound_pressure_level == NULL) {
+        return TF_E_NULL;
+    }
+
+    sound_pressure_level->spectrum_handler = handler;
+
+    sound_pressure_level->spectrum_hlc.data = spectrum_buffer;
+    sound_pressure_level->spectrum_hlc.length = 0;
+    sound_pressure_level->spectrum_hlc.stream_in_progress = false;
+
+    return tf_sound_pressure_level_register_spectrum_low_level_callback(sound_pressure_level, handler == NULL ? NULL : tf_sound_pressure_level_spectrum_wrapper, user_data);
+}
 #endif
 int tf_sound_pressure_level_callback_tick(TF_SoundPressureLevel *sound_pressure_level, uint32_t timeout_us) {
     if (sound_pressure_level == NULL) {
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(sound_pressure_level->tfp, tf_hal_current_time_us((TF_HAL *)sound_pressure_level->tfp->hal) + timeout_us);
+    TF_HAL *hal = sound_pressure_level->tfp->spitfp->hal;
+
+    return tf_tfp_callback_tick(sound_pressure_level->tfp, tf_hal_current_time_us(hal) + timeout_us);
 }
 
 #ifdef __cplusplus

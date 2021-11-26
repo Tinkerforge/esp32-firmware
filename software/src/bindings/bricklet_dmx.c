@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-22.      *
+ * This file was automatically generated on 2021-11-26.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -22,8 +22,9 @@ extern "C" {
 
 
 #if TF_IMPLEMENT_CALLBACKS != 0
-static bool tf_dmx_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *payload) {
-    TF_DMX *dmx = (TF_DMX *)dev;
+static bool tf_dmx_callback_handler(void *device, uint8_t fid, TF_PacketBuffer *payload) {
+    TF_DMX *dmx = (TF_DMX *)device;
+    TF_HALCommon *hal_common = tf_hal_get_common(dmx->tfp->spitfp->hal);
     (void)payload;
 
     switch (fid) {
@@ -35,7 +36,6 @@ static bool tf_dmx_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *pay
             }
 
 
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)dmx->tfp->hal);
             hal_common->locked = true;
             fn(dmx, user_data);
             hal_common->locked = false;
@@ -50,7 +50,6 @@ static bool tf_dmx_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *pay
             }
 
             uint32_t frame_number = tf_packet_buffer_read_uint32_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)dmx->tfp->hal);
             hal_common->locked = true;
             fn(dmx, frame_number, user_data);
             hal_common->locked = false;
@@ -68,7 +67,6 @@ static bool tf_dmx_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *pay
             uint16_t frame_chunk_offset = tf_packet_buffer_read_uint16_t(payload);
             uint8_t frame_chunk_data[56]; for (i = 0; i < 56; ++i) frame_chunk_data[i] = tf_packet_buffer_read_uint8_t(payload);
             uint32_t frame_number = tf_packet_buffer_read_uint32_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)dmx->tfp->hal);
             hal_common->locked = true;
             fn(dmx, frame_length, frame_chunk_offset, frame_chunk_data, frame_number, user_data);
             hal_common->locked = false;
@@ -84,7 +82,6 @@ static bool tf_dmx_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *pay
 
             uint32_t overrun_error_count = tf_packet_buffer_read_uint32_t(payload);
             uint32_t framing_error_count = tf_packet_buffer_read_uint32_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)dmx->tfp->hal);
             hal_common->locked = true;
             fn(dmx, overrun_error_count, framing_error_count, user_data);
             hal_common->locked = false;
@@ -98,40 +95,54 @@ static bool tf_dmx_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *pay
     return true;
 }
 #else
-static bool tf_dmx_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *payload) {
+static bool tf_dmx_callback_handler(void *device, uint8_t fid, TF_PacketBuffer *payload) {
     return false;
 }
 #endif
 int tf_dmx_create(TF_DMX *dmx, const char *uid, TF_HAL *hal) {
-    if (dmx == NULL || uid == NULL || hal == NULL) {
+    if (dmx == NULL || hal == NULL) {
         return TF_E_NULL;
     }
 
+    static uint16_t next_tfp_index = 0;
+
     memset(dmx, 0, sizeof(TF_DMX));
 
-    uint32_t numeric_uid;
-    int rc = tf_base58_decode(uid, &numeric_uid);
+    TF_TFP *tfp;
 
-    if (rc != TF_E_OK) {
-        return rc;
+    if (uid != NULL && *uid != '\0') {
+        uint32_t uid_num = 0;
+        int rc = tf_base58_decode(uid, &uid_num);
+
+        if (rc != TF_E_OK) {
+            return rc;
+        }
+
+        tfp = tf_hal_get_tfp(hal, &next_tfp_index, &uid_num, NULL, NULL);
+
+        if (tfp == NULL) {
+            return TF_E_DEVICE_NOT_FOUND;
+        }
+
+        if (tfp->device_id != TF_DMX_DEVICE_IDENTIFIER) {
+            return TF_E_WRONG_DEVICE_TYPE;
+        }
+    } else {
+        uint16_t device_id = TF_DMX_DEVICE_IDENTIFIER;
+
+        tfp = tf_hal_get_tfp(hal, &next_tfp_index, NULL, NULL, &device_id);
+
+        if (tfp == NULL) {
+            return TF_E_DEVICE_NOT_FOUND;
+        }
     }
 
-    uint8_t port_id;
-    uint8_t inventory_index;
-    rc = tf_hal_get_port_id(hal, numeric_uid, &port_id, &inventory_index);
-
-    if (rc < 0) {
-        return rc;
+    if (tfp->device != NULL) {
+        return TF_E_DEVICE_ALREADY_IN_USE;
     }
 
-    rc = tf_hal_get_tfp(hal, &dmx->tfp, TF_DMX_DEVICE_IDENTIFIER, inventory_index);
-
-    if (rc != TF_E_OK) {
-        return rc;
-    }
-
+    dmx->tfp = tfp;
     dmx->tfp->device = dmx;
-    dmx->tfp->uid = numeric_uid;
     dmx->tfp->cb_handler = tf_dmx_callback_handler;
     dmx->response_expected[0] = 0x22;
     dmx->response_expected[1] = 0x00;
@@ -140,14 +151,15 @@ int tf_dmx_create(TF_DMX *dmx, const char *uid, TF_HAL *hal) {
 }
 
 int tf_dmx_destroy(TF_DMX *dmx) {
-    if (dmx == NULL) {
+    if (dmx == NULL || dmx->tfp == NULL) {
         return TF_E_NULL;
     }
 
-    int result = tf_tfp_destroy(dmx->tfp);
+    dmx->tfp->cb_handler = NULL;
+    dmx->tfp->device = NULL;
     dmx->tfp = NULL;
 
-    return result;
+    return TF_E_OK;
 }
 
 int tf_dmx_get_response_expected(TF_DMX *dmx, uint8_t function_id, bool *ret_response_expected) {
@@ -311,7 +323,9 @@ int tf_dmx_set_dmx_mode(TF_DMX *dmx, uint8_t dmx_mode) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->locked) {
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -319,14 +333,14 @@ int tf_dmx_set_dmx_mode(TF_DMX *dmx, uint8_t dmx_mode) {
     tf_dmx_get_response_expected(dmx, TF_DMX_FUNCTION_SET_DMX_MODE, &response_expected);
     tf_tfp_prepare_send(dmx->tfp, TF_DMX_FUNCTION_SET_DMX_MODE, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(dmx->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(dmx->tfp);
 
-    buf[0] = (uint8_t)dmx_mode;
+    send_buf[0] = (uint8_t)dmx_mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(dmx->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(dmx->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -350,17 +364,19 @@ int tf_dmx_get_dmx_mode(TF_DMX *dmx, uint8_t *ret_dmx_mode) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->locked) {
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(dmx->tfp, TF_DMX_FUNCTION_GET_DMX_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(dmx->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(dmx->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -371,7 +387,8 @@ int tf_dmx_get_dmx_mode(TF_DMX *dmx, uint8_t *ret_dmx_mode) {
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_dmx_mode != NULL) { *ret_dmx_mode = tf_packet_buffer_read_uint8_t(&dmx->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(dmx->tfp);
+        if (ret_dmx_mode != NULL) { *ret_dmx_mode = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(dmx->tfp);
     }
 
@@ -389,7 +406,9 @@ int tf_dmx_write_frame_low_level(TF_DMX *dmx, uint16_t frame_length, uint16_t fr
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->locked) {
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -397,16 +416,16 @@ int tf_dmx_write_frame_low_level(TF_DMX *dmx, uint16_t frame_length, uint16_t fr
     tf_dmx_get_response_expected(dmx, TF_DMX_FUNCTION_WRITE_FRAME_LOW_LEVEL, &response_expected);
     tf_tfp_prepare_send(dmx->tfp, TF_DMX_FUNCTION_WRITE_FRAME_LOW_LEVEL, 64, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(dmx->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(dmx->tfp);
 
-    frame_length = tf_leconvert_uint16_to(frame_length); memcpy(buf + 0, &frame_length, 2);
-    frame_chunk_offset = tf_leconvert_uint16_to(frame_chunk_offset); memcpy(buf + 2, &frame_chunk_offset, 2);
-    memcpy(buf + 4, frame_chunk_data, 60);
+    frame_length = tf_leconvert_uint16_to(frame_length); memcpy(send_buf + 0, &frame_length, 2);
+    frame_chunk_offset = tf_leconvert_uint16_to(frame_chunk_offset); memcpy(send_buf + 2, &frame_chunk_offset, 2);
+    memcpy(send_buf + 4, frame_chunk_data, 60);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(dmx->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(dmx->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -430,7 +449,9 @@ int tf_dmx_read_frame_low_level(TF_DMX *dmx, uint16_t *ret_frame_length, uint16_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->locked) {
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -438,10 +459,10 @@ int tf_dmx_read_frame_low_level(TF_DMX *dmx, uint16_t *ret_frame_length, uint16_
     tf_tfp_prepare_send(dmx->tfp, TF_DMX_FUNCTION_READ_FRAME_LOW_LEVEL, 0, 64, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(dmx->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(dmx->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -452,10 +473,11 @@ int tf_dmx_read_frame_low_level(TF_DMX *dmx, uint16_t *ret_frame_length, uint16_
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_frame_length != NULL) { *ret_frame_length = tf_packet_buffer_read_uint16_t(&dmx->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 2); }
-        if (ret_frame_chunk_offset != NULL) { *ret_frame_chunk_offset = tf_packet_buffer_read_uint16_t(&dmx->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 2); }
-        if (ret_frame_chunk_data != NULL) { for (i = 0; i < 56; ++i) ret_frame_chunk_data[i] = tf_packet_buffer_read_uint8_t(&dmx->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 56); }
-        if (ret_frame_number != NULL) { *ret_frame_number = tf_packet_buffer_read_uint32_t(&dmx->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(dmx->tfp);
+        if (ret_frame_length != NULL) { *ret_frame_length = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+        if (ret_frame_chunk_offset != NULL) { *ret_frame_chunk_offset = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+        if (ret_frame_chunk_data != NULL) { for (i = 0; i < 56; ++i) ret_frame_chunk_data[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 56); }
+        if (ret_frame_number != NULL) { *ret_frame_number = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(dmx->tfp);
     }
 
@@ -473,7 +495,9 @@ int tf_dmx_set_frame_duration(TF_DMX *dmx, uint16_t frame_duration) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->locked) {
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -481,14 +505,14 @@ int tf_dmx_set_frame_duration(TF_DMX *dmx, uint16_t frame_duration) {
     tf_dmx_get_response_expected(dmx, TF_DMX_FUNCTION_SET_FRAME_DURATION, &response_expected);
     tf_tfp_prepare_send(dmx->tfp, TF_DMX_FUNCTION_SET_FRAME_DURATION, 2, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(dmx->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(dmx->tfp);
 
-    frame_duration = tf_leconvert_uint16_to(frame_duration); memcpy(buf + 0, &frame_duration, 2);
+    frame_duration = tf_leconvert_uint16_to(frame_duration); memcpy(send_buf + 0, &frame_duration, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(dmx->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(dmx->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -512,17 +536,19 @@ int tf_dmx_get_frame_duration(TF_DMX *dmx, uint16_t *ret_frame_duration) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->locked) {
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(dmx->tfp, TF_DMX_FUNCTION_GET_FRAME_DURATION, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(dmx->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(dmx->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -533,7 +559,8 @@ int tf_dmx_get_frame_duration(TF_DMX *dmx, uint16_t *ret_frame_duration) {
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_frame_duration != NULL) { *ret_frame_duration = tf_packet_buffer_read_uint16_t(&dmx->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(dmx->tfp);
+        if (ret_frame_duration != NULL) { *ret_frame_duration = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(dmx->tfp);
     }
 
@@ -551,17 +578,19 @@ int tf_dmx_get_frame_error_count(TF_DMX *dmx, uint32_t *ret_overrun_error_count,
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->locked) {
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(dmx->tfp, TF_DMX_FUNCTION_GET_FRAME_ERROR_COUNT, 0, 8, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(dmx->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(dmx->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -572,8 +601,9 @@ int tf_dmx_get_frame_error_count(TF_DMX *dmx, uint32_t *ret_overrun_error_count,
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_overrun_error_count != NULL) { *ret_overrun_error_count = tf_packet_buffer_read_uint32_t(&dmx->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 4); }
-        if (ret_framing_error_count != NULL) { *ret_framing_error_count = tf_packet_buffer_read_uint32_t(&dmx->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(dmx->tfp);
+        if (ret_overrun_error_count != NULL) { *ret_overrun_error_count = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_framing_error_count != NULL) { *ret_framing_error_count = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(dmx->tfp);
     }
 
@@ -591,7 +621,9 @@ int tf_dmx_set_communication_led_config(TF_DMX *dmx, uint8_t config) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->locked) {
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -599,14 +631,14 @@ int tf_dmx_set_communication_led_config(TF_DMX *dmx, uint8_t config) {
     tf_dmx_get_response_expected(dmx, TF_DMX_FUNCTION_SET_COMMUNICATION_LED_CONFIG, &response_expected);
     tf_tfp_prepare_send(dmx->tfp, TF_DMX_FUNCTION_SET_COMMUNICATION_LED_CONFIG, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(dmx->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(dmx->tfp);
 
-    buf[0] = (uint8_t)config;
+    send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(dmx->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(dmx->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -630,17 +662,19 @@ int tf_dmx_get_communication_led_config(TF_DMX *dmx, uint8_t *ret_config) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->locked) {
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(dmx->tfp, TF_DMX_FUNCTION_GET_COMMUNICATION_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(dmx->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(dmx->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -651,7 +685,8 @@ int tf_dmx_get_communication_led_config(TF_DMX *dmx, uint8_t *ret_config) {
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(&dmx->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(dmx->tfp);
+        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(dmx->tfp);
     }
 
@@ -669,7 +704,9 @@ int tf_dmx_set_error_led_config(TF_DMX *dmx, uint8_t config) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->locked) {
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -677,14 +714,14 @@ int tf_dmx_set_error_led_config(TF_DMX *dmx, uint8_t config) {
     tf_dmx_get_response_expected(dmx, TF_DMX_FUNCTION_SET_ERROR_LED_CONFIG, &response_expected);
     tf_tfp_prepare_send(dmx->tfp, TF_DMX_FUNCTION_SET_ERROR_LED_CONFIG, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(dmx->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(dmx->tfp);
 
-    buf[0] = (uint8_t)config;
+    send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(dmx->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(dmx->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -708,17 +745,19 @@ int tf_dmx_get_error_led_config(TF_DMX *dmx, uint8_t *ret_config) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->locked) {
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(dmx->tfp, TF_DMX_FUNCTION_GET_ERROR_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(dmx->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(dmx->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -729,7 +768,8 @@ int tf_dmx_get_error_led_config(TF_DMX *dmx, uint8_t *ret_config) {
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(&dmx->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(dmx->tfp);
+        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(dmx->tfp);
     }
 
@@ -747,7 +787,9 @@ int tf_dmx_set_frame_callback_config(TF_DMX *dmx, bool frame_started_callback_en
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->locked) {
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -755,17 +797,17 @@ int tf_dmx_set_frame_callback_config(TF_DMX *dmx, bool frame_started_callback_en
     tf_dmx_get_response_expected(dmx, TF_DMX_FUNCTION_SET_FRAME_CALLBACK_CONFIG, &response_expected);
     tf_tfp_prepare_send(dmx->tfp, TF_DMX_FUNCTION_SET_FRAME_CALLBACK_CONFIG, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(dmx->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(dmx->tfp);
 
-    buf[0] = frame_started_callback_enabled ? 1 : 0;
-    buf[1] = frame_available_callback_enabled ? 1 : 0;
-    buf[2] = frame_callback_enabled ? 1 : 0;
-    buf[3] = frame_error_count_callback_enabled ? 1 : 0;
+    send_buf[0] = frame_started_callback_enabled ? 1 : 0;
+    send_buf[1] = frame_available_callback_enabled ? 1 : 0;
+    send_buf[2] = frame_callback_enabled ? 1 : 0;
+    send_buf[3] = frame_error_count_callback_enabled ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(dmx->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(dmx->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -789,17 +831,19 @@ int tf_dmx_get_frame_callback_config(TF_DMX *dmx, bool *ret_frame_started_callba
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->locked) {
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(dmx->tfp, TF_DMX_FUNCTION_GET_FRAME_CALLBACK_CONFIG, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(dmx->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(dmx->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -810,10 +854,11 @@ int tf_dmx_get_frame_callback_config(TF_DMX *dmx, bool *ret_frame_started_callba
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_frame_started_callback_enabled != NULL) { *ret_frame_started_callback_enabled = tf_packet_buffer_read_bool(&dmx->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 1); }
-        if (ret_frame_available_callback_enabled != NULL) { *ret_frame_available_callback_enabled = tf_packet_buffer_read_bool(&dmx->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 1); }
-        if (ret_frame_callback_enabled != NULL) { *ret_frame_callback_enabled = tf_packet_buffer_read_bool(&dmx->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 1); }
-        if (ret_frame_error_count_callback_enabled != NULL) { *ret_frame_error_count_callback_enabled = tf_packet_buffer_read_bool(&dmx->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(dmx->tfp);
+        if (ret_frame_started_callback_enabled != NULL) { *ret_frame_started_callback_enabled = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_frame_available_callback_enabled != NULL) { *ret_frame_available_callback_enabled = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_frame_callback_enabled != NULL) { *ret_frame_callback_enabled = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_frame_error_count_callback_enabled != NULL) { *ret_frame_error_count_callback_enabled = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(dmx->tfp);
     }
 
@@ -831,17 +876,19 @@ int tf_dmx_get_spitfp_error_count(TF_DMX *dmx, uint32_t *ret_error_count_ack_che
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->locked) {
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(dmx->tfp, TF_DMX_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(dmx->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(dmx->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -852,10 +899,11 @@ int tf_dmx_get_spitfp_error_count(TF_DMX *dmx, uint32_t *ret_error_count_ack_che
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(&dmx->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(&dmx->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(&dmx->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(&dmx->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(dmx->tfp);
+        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(dmx->tfp);
     }
 
@@ -873,21 +921,23 @@ int tf_dmx_set_bootloader_mode(TF_DMX *dmx, uint8_t mode, uint8_t *ret_status) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->locked) {
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(dmx->tfp, TF_DMX_FUNCTION_SET_BOOTLOADER_MODE, 1, 1, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(dmx->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(dmx->tfp);
 
-    buf[0] = (uint8_t)mode;
+    send_buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(dmx->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(dmx->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -898,7 +948,8 @@ int tf_dmx_set_bootloader_mode(TF_DMX *dmx, uint8_t mode, uint8_t *ret_status) {
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(&dmx->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(dmx->tfp);
+        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(dmx->tfp);
     }
 
@@ -916,17 +967,19 @@ int tf_dmx_get_bootloader_mode(TF_DMX *dmx, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->locked) {
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(dmx->tfp, TF_DMX_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(dmx->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(dmx->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -937,7 +990,8 @@ int tf_dmx_get_bootloader_mode(TF_DMX *dmx, uint8_t *ret_mode) {
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(&dmx->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(dmx->tfp);
+        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(dmx->tfp);
     }
 
@@ -955,7 +1009,9 @@ int tf_dmx_set_write_firmware_pointer(TF_DMX *dmx, uint32_t pointer) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->locked) {
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -963,14 +1019,14 @@ int tf_dmx_set_write_firmware_pointer(TF_DMX *dmx, uint32_t pointer) {
     tf_dmx_get_response_expected(dmx, TF_DMX_FUNCTION_SET_WRITE_FIRMWARE_POINTER, &response_expected);
     tf_tfp_prepare_send(dmx->tfp, TF_DMX_FUNCTION_SET_WRITE_FIRMWARE_POINTER, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(dmx->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(dmx->tfp);
 
-    pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
+    pointer = tf_leconvert_uint32_to(pointer); memcpy(send_buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(dmx->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(dmx->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -994,21 +1050,23 @@ int tf_dmx_write_firmware(TF_DMX *dmx, const uint8_t data[64], uint8_t *ret_stat
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->locked) {
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(dmx->tfp, TF_DMX_FUNCTION_WRITE_FIRMWARE, 64, 1, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(dmx->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(dmx->tfp);
 
-    memcpy(buf + 0, data, 64);
+    memcpy(send_buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(dmx->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(dmx->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1019,7 +1077,8 @@ int tf_dmx_write_firmware(TF_DMX *dmx, const uint8_t data[64], uint8_t *ret_stat
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(&dmx->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(dmx->tfp);
+        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(dmx->tfp);
     }
 
@@ -1037,7 +1096,9 @@ int tf_dmx_set_status_led_config(TF_DMX *dmx, uint8_t config) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->locked) {
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1045,14 +1106,14 @@ int tf_dmx_set_status_led_config(TF_DMX *dmx, uint8_t config) {
     tf_dmx_get_response_expected(dmx, TF_DMX_FUNCTION_SET_STATUS_LED_CONFIG, &response_expected);
     tf_tfp_prepare_send(dmx->tfp, TF_DMX_FUNCTION_SET_STATUS_LED_CONFIG, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(dmx->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(dmx->tfp);
 
-    buf[0] = (uint8_t)config;
+    send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(dmx->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(dmx->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1076,17 +1137,19 @@ int tf_dmx_get_status_led_config(TF_DMX *dmx, uint8_t *ret_config) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->locked) {
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(dmx->tfp, TF_DMX_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(dmx->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(dmx->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1097,7 +1160,8 @@ int tf_dmx_get_status_led_config(TF_DMX *dmx, uint8_t *ret_config) {
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(&dmx->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(dmx->tfp);
+        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(dmx->tfp);
     }
 
@@ -1115,17 +1179,19 @@ int tf_dmx_get_chip_temperature(TF_DMX *dmx, int16_t *ret_temperature) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->locked) {
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(dmx->tfp, TF_DMX_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(dmx->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(dmx->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1136,7 +1202,8 @@ int tf_dmx_get_chip_temperature(TF_DMX *dmx, int16_t *ret_temperature) {
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(&dmx->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(dmx->tfp);
+        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(dmx->tfp);
     }
 
@@ -1154,7 +1221,9 @@ int tf_dmx_reset(TF_DMX *dmx) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->locked) {
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1162,10 +1231,10 @@ int tf_dmx_reset(TF_DMX *dmx) {
     tf_dmx_get_response_expected(dmx, TF_DMX_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(dmx->tfp, TF_DMX_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(dmx->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(dmx->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1189,7 +1258,9 @@ int tf_dmx_write_uid(TF_DMX *dmx, uint32_t uid) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->locked) {
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1197,14 +1268,14 @@ int tf_dmx_write_uid(TF_DMX *dmx, uint32_t uid) {
     tf_dmx_get_response_expected(dmx, TF_DMX_FUNCTION_WRITE_UID, &response_expected);
     tf_tfp_prepare_send(dmx->tfp, TF_DMX_FUNCTION_WRITE_UID, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(dmx->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(dmx->tfp);
 
-    uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
+    uid = tf_leconvert_uint32_to(uid); memcpy(send_buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(dmx->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(dmx->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1228,17 +1299,19 @@ int tf_dmx_read_uid(TF_DMX *dmx, uint32_t *ret_uid) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->locked) {
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(dmx->tfp, TF_DMX_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(dmx->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(dmx->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1249,7 +1322,8 @@ int tf_dmx_read_uid(TF_DMX *dmx, uint32_t *ret_uid) {
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(&dmx->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(dmx->tfp);
+        if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(dmx->tfp);
     }
 
@@ -1267,7 +1341,9 @@ int tf_dmx_get_identity(TF_DMX *dmx, char ret_uid[8], char ret_connected_uid[8],
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->locked) {
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1275,10 +1351,10 @@ int tf_dmx_get_identity(TF_DMX *dmx, char ret_uid[8], char ret_connected_uid[8],
     tf_tfp_prepare_send(dmx->tfp, TF_DMX_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + tf_hal_get_common((TF_HAL *)dmx->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(dmx->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(dmx->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1289,19 +1365,13 @@ int tf_dmx_get_identity(TF_DMX *dmx, char ret_uid[8], char ret_connected_uid[8],
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        char tmp_connected_uid[8] = {0};
-        if (ret_uid != NULL) { tf_packet_buffer_pop_n(&dmx->tfp->spitfp->recv_buf, (uint8_t*)ret_uid, 8);} else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 8); }
-        tf_packet_buffer_pop_n(&dmx->tfp->spitfp->recv_buf, (uint8_t*)tmp_connected_uid, 8);
-        if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(&dmx->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 1); }
-        if (ret_hardware_version != NULL) { for (i = 0; i < 3; ++i) ret_hardware_version[i] = tf_packet_buffer_read_uint8_t(&dmx->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 3); }
-        if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&dmx->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 3); }
-        if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&dmx->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&dmx->tfp->spitfp->recv_buf, 2); }
-        if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL *)dmx->tfp->hal, dmx->tfp->spitfp->port_id);
-        }
-        if (ret_connected_uid != NULL) {
-            memcpy(ret_connected_uid, tmp_connected_uid, 8);
-        }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(dmx->tfp);
+        if (ret_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
+        if (ret_connected_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_connected_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
+        if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_hardware_version != NULL) { for (i = 0; i < 3; ++i) ret_hardware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
+        if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
+        if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(dmx->tfp);
     }
 
@@ -1314,42 +1384,51 @@ int tf_dmx_get_identity(TF_DMX *dmx, char ret_uid[8], char ret_connected_uid[8],
     return tf_tfp_get_error(error_code);
 }
 
+static int tf_dmx_write_frame_ll_wrapper(void *device, void *wrapper_data, uint32_t stream_length, uint32_t chunk_offset, void *chunk_data, uint32_t *ret_chunk_written) {
+    (void)wrapper_data;
+    uint16_t frame_chunk_offset = (uint16_t)chunk_offset;
+    uint16_t frame_length = (uint16_t)stream_length;
+    uint32_t frame_chunk_written = 60;
+
+    uint8_t *frame_chunk_data = (uint8_t *) chunk_data;
+    int ret = tf_dmx_write_frame_low_level((TF_DMX *)device, frame_length, frame_chunk_offset, frame_chunk_data);
+
+    *ret_chunk_written = (uint32_t) frame_chunk_written;
+    return ret;
+}
+
 int tf_dmx_write_frame(TF_DMX *dmx, const uint8_t *frame, uint16_t frame_length) {
     if (dmx == NULL) {
         return TF_E_NULL;
     }
+    
 
-    int ret = TF_E_OK;
+    uint32_t stream_length = frame_length;
+    uint32_t frame_written = 0;
+    uint8_t chunk_data[60];
+
+    int ret = tf_stream_in(dmx, tf_dmx_write_frame_ll_wrapper, NULL, frame, stream_length, chunk_data, &frame_written, 60, tf_copy_items_uint8_t);
+
+
+
+    return ret;
+}
+
+
+typedef struct TF_DMX_ReadFrameLLWrapperData {
+    uint32_t *ret_frame_number;
+} TF_DMX_ReadFrameLLWrapperData;
+
+
+static int tf_dmx_read_frame_ll_wrapper(void *device, void *wrapper_data, uint32_t *ret_stream_length, uint32_t *ret_chunk_offset, void *chunk_data) {
+    TF_DMX_ReadFrameLLWrapperData *data = (TF_DMX_ReadFrameLLWrapperData *) wrapper_data;
+    uint16_t frame_length = 0;
     uint16_t frame_chunk_offset = 0;
-    uint8_t frame_chunk_data[60];
-    uint16_t frame_chunk_length = 0;
+    uint8_t *frame_chunk_data = (uint8_t *) chunk_data;
+    int ret = tf_dmx_read_frame_low_level((TF_DMX *)device, &frame_length, &frame_chunk_offset, frame_chunk_data, data->ret_frame_number);
 
-    if (frame_length == 0) {
-        memset(&frame_chunk_data, 0, sizeof(uint8_t) * 60);
-
-        ret = tf_dmx_write_frame_low_level(dmx, frame_length, frame_chunk_offset, frame_chunk_data);
-    } else {
-        while (frame_chunk_offset < frame_length) {
-            frame_chunk_length = frame_length - frame_chunk_offset;
-
-            if (frame_chunk_length > 60) {
-                frame_chunk_length = 60;
-            }
-
-            memcpy(frame_chunk_data, &frame[frame_chunk_offset], sizeof(uint8_t) * frame_chunk_length);
-            memset(&frame_chunk_data[frame_chunk_length], 0, sizeof(uint8_t) * (60 - frame_chunk_length));
-
-            ret = tf_dmx_write_frame_low_level(dmx, frame_length, frame_chunk_offset, frame_chunk_data);
-
-            if (ret != TF_E_OK) {
-                break;
-            }
-
-            frame_chunk_offset += 60;
-        }
-
-    }
-
+    *ret_stream_length = (uint32_t)frame_length;
+    *ret_chunk_offset = (uint32_t)frame_chunk_offset;
     return ret;
 }
 
@@ -1357,88 +1436,18 @@ int tf_dmx_read_frame(TF_DMX *dmx, uint8_t *ret_frame, uint16_t *ret_frame_lengt
     if (dmx == NULL) {
         return TF_E_NULL;
     }
-
-    int ret = TF_E_OK;
-    uint16_t max_frame_length = 0;
-    uint16_t frame_length = 0;
-    uint16_t frame_chunk_offset = 0;
+    
+    TF_DMX_ReadFrameLLWrapperData wrapper_data;
+    memset(&wrapper_data, 0, sizeof(wrapper_data));
+    wrapper_data.ret_frame_number = ret_frame_number;
+    uint32_t frame_length = 0;
     uint8_t frame_chunk_data[56];
-    bool frame_out_of_sync;
-    uint16_t frame_chunk_length = 0;
 
-    ret = tf_dmx_read_frame_low_level(dmx, &frame_length, &frame_chunk_offset, frame_chunk_data, ret_frame_number);
+    int ret = tf_stream_out(dmx, tf_dmx_read_frame_ll_wrapper, &wrapper_data, ret_frame, &frame_length, frame_chunk_data, 56, tf_copy_items_uint8_t);
 
-    if (ret != TF_E_OK) {
-        if (ret_frame_length != NULL) {
-            *ret_frame_length = frame_length;
-        }
-
-        return ret;
+    if (ret_frame_length != NULL) {
+        *ret_frame_length = (uint16_t)frame_length;
     }
-
-    frame_out_of_sync = frame_chunk_offset != 0;
-
-    if (!frame_out_of_sync) {
-        frame_chunk_length = max_frame_length - frame_chunk_offset;
-
-        if (frame_chunk_length > 56) {
-            frame_chunk_length = 56;
-        }
-
-        if (ret_frame != NULL) {
-            memcpy(ret_frame, frame_chunk_data, sizeof(uint8_t) * frame_chunk_length);
-        }
-
-        frame_length = frame_chunk_length;
-
-        while (frame_length < max_frame_length) {
-            ret = tf_dmx_read_frame_low_level(dmx, &frame_length, &frame_chunk_offset, frame_chunk_data, ret_frame_number);
-
-            if (ret != TF_E_OK) {
-                if (ret_frame_length != NULL) {
-                    *ret_frame_length = frame_length;
-                }
-
-                return ret;
-            }
-
-            frame_out_of_sync = frame_chunk_offset != frame_length;
-
-            if (frame_out_of_sync) {
-                break;
-            }
-
-            frame_chunk_length = max_frame_length - frame_chunk_offset;
-
-            if (frame_chunk_length > 56) {
-                frame_chunk_length = 56;
-            }
-
-            if (ret_frame != NULL) {
-                memcpy(&ret_frame[frame_length], frame_chunk_data, sizeof(uint8_t) * frame_chunk_length);
-            }
-
-            frame_length += frame_chunk_length;
-        }
-    }
-
-    if (frame_out_of_sync) {
-        if (ret_frame_length != NULL) {
-            *ret_frame_length = 0; // return empty array
-        }
-
-        // discard remaining stream to bring it back in-sync
-        while (frame_chunk_offset + 56 < max_frame_length) {
-            ret = tf_dmx_read_frame_low_level(dmx, &frame_length, &frame_chunk_offset, frame_chunk_data, ret_frame_number);
-
-            if (ret != TF_E_OK) {
-                return ret;
-            }
-        }
-
-        ret = TF_E_STREAM_OUT_OF_SYNC;
-    }
-
     return ret;
 }
 #if TF_IMPLEMENT_CALLBACKS != 0
@@ -1505,6 +1514,36 @@ int tf_dmx_register_frame_low_level_callback(TF_DMX *dmx, TF_DMX_FrameLowLevelHa
 }
 
 
+static void tf_dmx_frame_wrapper(TF_DMX *dmx, uint16_t frame_length, uint16_t frame_chunk_offset, uint8_t frame_chunk_data[56], uint32_t frame_number, void *user_data) {
+    uint32_t stream_length = (uint32_t) frame_length;
+    uint32_t chunk_offset = (uint32_t) frame_chunk_offset;
+    if (!tf_stream_out_callback(&dmx->frame_hlc, stream_length, chunk_offset, frame_chunk_data, 56, tf_copy_items_uint8_t)) {
+        return;
+    }
+
+    // Stream is either complete or out of sync
+    uint8_t *frame = (uint8_t *) (dmx->frame_hlc.length == 0 ? NULL : dmx->frame_hlc.data);
+    dmx->frame_handler(dmx, frame, frame_length, frame_number, user_data);
+
+    dmx->frame_hlc.stream_in_progress = false;
+    dmx->frame_hlc.length = 0;
+}
+
+int tf_dmx_register_frame_callback(TF_DMX *dmx, TF_DMX_FrameHandler handler, uint8_t *frame_buffer, void *user_data) {
+    if (dmx == NULL) {
+        return TF_E_NULL;
+    }
+
+    dmx->frame_handler = handler;
+
+    dmx->frame_hlc.data = frame_buffer;
+    dmx->frame_hlc.length = 0;
+    dmx->frame_hlc.stream_in_progress = false;
+
+    return tf_dmx_register_frame_low_level_callback(dmx, handler == NULL ? NULL : tf_dmx_frame_wrapper, user_data);
+}
+
+
 int tf_dmx_register_frame_error_count_callback(TF_DMX *dmx, TF_DMX_FrameErrorCountHandler handler, void *user_data) {
     if (dmx == NULL) {
         return TF_E_NULL;
@@ -1530,7 +1569,9 @@ int tf_dmx_callback_tick(TF_DMX *dmx, uint32_t timeout_us) {
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(dmx->tfp, tf_hal_current_time_us((TF_HAL *)dmx->tfp->hal) + timeout_us);
+    TF_HAL *hal = dmx->tfp->spitfp->hal;
+
+    return tf_tfp_callback_tick(dmx->tfp, tf_hal_current_time_us(hal) + timeout_us);
 }
 
 #ifdef __cplusplus

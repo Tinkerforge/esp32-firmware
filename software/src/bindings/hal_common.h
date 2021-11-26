@@ -35,21 +35,15 @@ typedef union TF_PortCommon {
 } TF_PortCommon;
 
 typedef struct TF_HALCommon {
-    // TF_INVENTORY_SIZE + 1 for the unknown bricklet used for device discovery
-    uint32_t uids[TF_INVENTORY_SIZE + 1];
-    uint8_t port_ids[TF_INVENTORY_SIZE + 1];
-    TF_TFP tfps[TF_INVENTORY_SIZE + 1];
-    uint16_t dids[TF_INVENTORY_SIZE + 1];
-    bool send_enumerate_request[TF_INVENTORY_SIZE + 1];
+    TF_TFP tfps[TF_INVENTORY_SIZE];
+    uint16_t tfps_used;
 
-    uint16_t used;
-    uint8_t device_overflow_count;
-
+    uint16_t device_overflow_count;
     uint32_t timeout;
 
     bool locked;
     uint8_t port_count;
-    size_t callback_tick_index;
+    uint16_t callback_tick_index;
 
     uint8_t empty_buf[TF_SPITFP_MAX_MESSAGE_LENGTH];
 
@@ -60,13 +54,13 @@ typedef struct TF_HAL TF_HAL;
 
 void tf_hal_set_timeout(TF_HAL *hal, uint32_t timeout_us) TF_ATTRIBUTE_NONNULL_ALL;
 uint32_t tf_hal_get_timeout(TF_HAL *hal) TF_ATTRIBUTE_NONNULL_ALL;
-int tf_hal_get_device_info(TF_HAL *hal, size_t index, char ret_uid[7], char *ret_port_name, uint16_t *ret_device_id) TF_ATTRIBUTE_NONNULL(1);
+int tf_hal_get_device_info(TF_HAL *hal, uint16_t index, char ret_uid[7], char *ret_port_name, uint16_t *ret_device_id) TF_ATTRIBUTE_NONNULL(1);
 int tf_hal_callback_tick(TF_HAL *hal, uint32_t timeout_us) TF_ATTRIBUTE_NONNULL_ALL;
 int tf_hal_tick(TF_HAL *hal, uint32_t timeout_us) TF_ATTRIBUTE_NONNULL_ALL;
 
 bool tf_hal_deadline_elapsed(TF_HAL *hal, uint32_t deadline_us) TF_ATTRIBUTE_NONNULL_ALL;
 int tf_hal_get_error_counters(TF_HAL *hal, char port_name, uint32_t *ret_spitfp_error_count_checksum, uint32_t *ret_spitfp_error_count_frame, uint32_t *ret_tfp_error_count_frame, uint32_t *ret_tfp_error_count_unexpected) TF_ATTRIBUTE_NONNULL(1);
-int tf_hal_get_tfp(TF_HAL *hal, TF_TFP **tfp_ptr, uint16_t device_id, uint8_t inventory_index);
+TF_TFP *tf_hal_get_tfp(TF_HAL *hal, uint16_t *index_ptr, const uint32_t *uid, const uint8_t *port_id, const uint16_t *device_id);
 
 #define TF_LOG_LEVEL_NONE 0
 #define TF_LOG_LEVEL_ERROR 1
@@ -103,8 +97,7 @@ void tf_hal_printf(const char *format, ...) TF_ATTRIBUTE_NONNULL_ALL;
 // To be used by HAL implementations
 int tf_hal_common_create(TF_HAL *hal) TF_ATTRIBUTE_NONNULL_ALL TF_ATTRIBUTE_WARN_UNUSED_RESULT;
 int tf_hal_common_prepare(TF_HAL *hal, uint8_t port_count, uint32_t port_discovery_timeout_us) TF_ATTRIBUTE_NONNULL_ALL TF_ATTRIBUTE_WARN_UNUSED_RESULT;
-int tf_hal_get_port_id(TF_HAL *hal, uint32_t uid, uint8_t *port_id, uint8_t *inventory_index) TF_ATTRIBUTE_NONNULL_ALL TF_ATTRIBUTE_WARN_UNUSED_RESULT;
-bool tf_hal_enumerate_handler(TF_HAL *hal, uint8_t port_id, TF_PacketBuffer *payload) TF_ATTRIBUTE_NONNULL_ALL TF_ATTRIBUTE_WARN_UNUSED_RESULT;
+void tf_hal_enumerate_handler(TF_HAL *hal, uint8_t port_id, TF_PacketBuffer *payload) TF_ATTRIBUTE_NONNULL_ALL;
 void tf_hal_set_net(TF_HAL *hal, TF_Net *net);
 
 // BEGIN - To be implemented by the specific HAL

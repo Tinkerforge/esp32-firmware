@@ -37,12 +37,14 @@ void tf_packet_buffer_remove(TF_PacketBuffer *pb, const uint8_t num) TF_ATTRIBUT
 bool tf_packet_buffer_pop(TF_PacketBuffer *pb, uint8_t *data) TF_ATTRIBUTE_NONNULL_ALL;
 bool tf_packet_buffer_peek(TF_PacketBuffer *pb, uint8_t *data) TF_ATTRIBUTE_NONNULL_ALL;
 bool tf_packet_buffer_peek_offset(TF_PacketBuffer *pb, uint8_t *data, uint8_t offset) TF_ATTRIBUTE_NONNULL_ALL;
+bool tf_packet_buffer_poke(TF_PacketBuffer *pb, uint8_t data) TF_ATTRIBUTE_NONNULL_ALL;
+bool tf_packet_buffer_poke_offset(TF_PacketBuffer *pb, uint8_t data, uint8_t offset) TF_ATTRIBUTE_NONNULL_ALL;
 void tf_packet_buffer_create(TF_PacketBuffer *pb) TF_ATTRIBUTE_NONNULL_ALL;
 void tf_packet_buffer_print(TF_PacketBuffer *pb) TF_ATTRIBUTE_NONNULL_ALL;
 bool tf_packet_buffer_free_array_view(TF_PacketBuffer *pb, uint8_t length, uint8_t **first_chunk, uint8_t *first_len, uint8_t **second_chunk, uint8_t *second_len) TF_ATTRIBUTE_NONNULL_ALL;
 
-void tf_packet_buffer_pop_n(TF_PacketBuffer *pb, uint8_t* dest, uint8_t count) TF_ATTRIBUTE_NONNULL_ALL;
-void tf_packet_buffer_peek_offset_n(TF_PacketBuffer *pb, uint8_t* dest, uint8_t count, uint8_t offset) TF_ATTRIBUTE_NONNULL_ALL;
+void tf_packet_buffer_pop_n(TF_PacketBuffer *pb, uint8_t *dest, uint8_t count) TF_ATTRIBUTE_NONNULL_ALL;
+void tf_packet_buffer_peek_offset_n(TF_PacketBuffer *pb, uint8_t *dest, uint8_t count, uint8_t offset) TF_ATTRIBUTE_NONNULL_ALL;
 
 int8_t tf_packet_buffer_read_int8_t(TF_PacketBuffer *pb) TF_ATTRIBUTE_NONNULL_ALL;
 uint8_t tf_packet_buffer_read_uint8_t(TF_PacketBuffer *pb) TF_ATTRIBUTE_NONNULL_ALL;

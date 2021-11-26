@@ -20,8 +20,9 @@
 #pragma once
 
 #include "config.h"
-#include "bindings/hal_common.h"
 
+#include "bindings/base58.h"
+#include "bindings/hal_common.h"
 #include "bindings/errors.h"
 
 #include "api.h"
@@ -43,7 +44,7 @@ extern API api;
 template <typename DeviceT,
           const uint8_t *firmware,
           const size_t firmware_len,
-          int (*init_function)(DeviceT *, const char*, TF_HAL *),
+          int (*init_function)(DeviceT *, const char *, TF_HAL *),
           int (*get_bootloader_mode_function)(DeviceT *, uint8_t *),
           int (*reset_function)(DeviceT *)>
 class DeviceModule {
@@ -62,24 +63,33 @@ public:
 
     }
 
-    uint16_t get_did() {
+    uint16_t get_device_id()
+    {
         return firmware[firmware_len - FIRMWARE_DEVICE_IDENTIFIER_OFFSET] | (firmware[firmware_len - FIRMWARE_DEVICE_IDENTIFIER_OFFSET + 1] << 8);
     }
 
     bool setup_device()
     {
-        char uid[7] = {0};
-        if (!find_uid_by_did(&hal, get_did(), uid)) {
+        uint16_t device_id = get_device_id();
+        TF_TFP *tfp = tf_hal_get_tfp(&hal, nullptr, nullptr, nullptr, &device_id);
+
+        if (tfp == nullptr) {
             logger.printfln("No %s Bricklet found. Disabling %s support.", device_name, module_name);
             return false;
         }
-        this->device_found = true;
 
-        int result = ensure_matching_firmware(&hal, uid, device_name, module_name, firmware, firmware_len, &logger);
+        device_found = true;
+
+        int result = ensure_matching_firmware(tfp, device_name, module_name, firmware, firmware_len, &logger, false);
+
         if (result != 0) {
             logger.printfln("Flashing %s Bricklet failed (%d)", device_name, result);
             return false;
         }
+
+        char uid[7] = {0};
+
+        tf_base58_encode(tfp->uid, uid);
 
         result = init_function(&device, uid, &hal);
 
@@ -94,9 +104,12 @@ public:
     void register_urls()
     {
         api.addCommand(url_prefix + "/reflash", &device_reflash, {}, [this]() {
-            char uid[7] = {0};
-            find_uid_by_did(&hal, get_did(), uid);
-            ensure_matching_firmware(&hal, uid, device_name, module_name, firmware, firmware_len, &logger, true);
+            uint16_t device_id = get_device_id();
+            TF_TFP *tfp = tf_hal_get_tfp(&hal, nullptr, nullptr, nullptr, &device_id);
+
+            if (tfp != nullptr) {
+                ensure_matching_firmware(tfp, device_name, module_name, firmware, firmware_len, &logger, true);
+            }
         }, true);
 
         api.addCommand(url_prefix + "/reset", &device_reset, {}, [this]() {
@@ -110,15 +123,18 @@ public:
     {
         if (device_found && !initialized && deadline_elapsed(last_check + 10000)) {
             last_check = millis();
-            if (!is_in_bootloader(TF_E_TIMEOUT))
+
+            if (!is_in_bootloader(TF_E_TIMEOUT)) {
                 setup_function();
+            }
         }
     }
 
     bool is_in_bootloader(int rc)
     {
-        if (rc != TF_E_TIMEOUT && rc != TF_E_NOT_SUPPORTED)
+        if (rc != TF_E_TIMEOUT && rc != TF_E_NOT_SUPPORTED) {
             return false;
+        }
 
         uint8_t mode;
         int bootloader_rc = get_bootloader_mode_function(&device, &mode);

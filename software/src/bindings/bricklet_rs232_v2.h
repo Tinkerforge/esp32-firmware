@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-22.      *
+ * This file was automatically generated on 2021-11-26.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -15,6 +15,7 @@
 #include "tfp.h"
 #include "hal_common.h"
 #include "macros.h"
+#include "streaming.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,6 +29,7 @@ struct TF_RS232V2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 typedef void (*TF_RS232V2_ReadLowLevelHandler)(struct TF_RS232V2 *device, uint16_t message_length, uint16_t message_chunk_offset, char message_chunk_data[60], void *user_data);
+typedef void (*TF_RS232V2_ReadHandler)(struct TF_RS232V2 *device, char *message, uint16_t message_length, void *user_data);
 typedef void (*TF_RS232V2_ErrorCountHandler)(struct TF_RS232V2 *device, uint32_t error_count_overrun, uint32_t error_count_parity, void *user_data);
 typedef void (*TF_RS232V2_FrameReadableHandler)(struct TF_RS232V2 *device, uint16_t frame_count, void *user_data);
 
@@ -48,6 +50,9 @@ typedef struct TF_RS232V2 {
 
     TF_RS232V2_FrameReadableHandler frame_readable_handler;
     void *frame_readable_user_data;
+
+    TF_RS232V2_ReadHandler read_handler;
+    TF_HighLevelCallback read_hlc;
 
 #endif
     uint8_t response_expected[2];
@@ -424,6 +429,21 @@ int tf_rs232_v2_set_response_expected_all(TF_RS232V2 *rs232_v2, bool response_ex
  * To enable this callback, use {@link tf_rs232_v2_enable_read_callback}.
  */
 int tf_rs232_v2_register_read_low_level_callback(TF_RS232V2 *rs232_v2, TF_RS232V2_ReadLowLevelHandler handler, void *user_data);
+
+
+/**
+ * \ingroup TF_RS232V2
+ *
+ * Registers the given \c handler to the Read callback. The
+ * \c user_data will be passed as the last parameter to the \c handler.
+ *
+ * Signature: \code void callback(uint16_t message_length, uint16_t message_chunk_offset, char message_chunk_data[60], void *user_data) \endcode
+ * 
+ * This callback is called if new data is available.
+ * 
+ * To enable this callback, use {@link tf_rs232_v2_enable_read_callback}.
+ */
+int tf_rs232_v2_register_read_callback(TF_RS232V2 *rs232_v2, TF_RS232V2_ReadHandler handler, char *message, void *user_data);
 
 
 /**

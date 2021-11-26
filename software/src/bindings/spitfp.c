@@ -522,31 +522,21 @@ int tf_spitfp_tick(TF_SPITFP *spitfp, uint32_t deadline_us) {
     return 0;
 }
 
-uint8_t *tf_spitfp_get_payload_buffer(TF_SPITFP *spitfp) {
+uint8_t *tf_spitfp_get_send_payload_buffer(TF_SPITFP *spitfp) {
     // Leave space for spitfp protocol header
     return spitfp->send_buf + TF_SPITFP_HEADER_LENGTH;
 }
 
-int tf_spitfp_create(TF_SPITFP *spitfp, struct TF_HAL *hal, uint8_t port_id) {
-    spitfp->hal = hal;
-    spitfp->port_id = port_id;
-    spitfp->last_sequence_number_seen = 0;
-    spitfp->last_sequence_number_acked = 0;
-    spitfp->last_sequence_number_sent = 0;
-    spitfp->last_sequence_number_given_to_tfp = 0;
-    spitfp->state.deadline_us = 0;
-    spitfp->state.state = STATE_IDLE;
-    spitfp->error_count_checksum = 0;
-    spitfp->error_count_frame = 0;
-
-    memset(spitfp->send_buf, 0, sizeof(spitfp->send_buf));
-    tf_packet_buffer_create(&spitfp->recv_buf);
-
-    return TF_E_OK;
+TF_PacketBuffer *tf_spitfp_get_receive_buffer(TF_SPITFP *spitfp) {
+    return &spitfp->recv_buf;
 }
 
-int tf_spitfp_destroy(TF_SPITFP *spitfp) {
-    (void)spitfp;
+void tf_spitfp_create(TF_SPITFP *spitfp, struct TF_HAL *hal, uint8_t port_id) {
+    memset(spitfp, 0, sizeof(TF_SPITFP));
 
-    return TF_E_OK;
+    spitfp->hal = hal;
+    spitfp->port_id = port_id;
+    spitfp->state.state = STATE_IDLE;
+
+    tf_packet_buffer_create(&spitfp->recv_buf);
 }

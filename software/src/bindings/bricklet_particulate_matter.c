@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-22.      *
+ * This file was automatically generated on 2021-11-26.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -22,8 +22,9 @@ extern "C" {
 
 
 #if TF_IMPLEMENT_CALLBACKS != 0
-static bool tf_particulate_matter_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *payload) {
-    TF_ParticulateMatter *particulate_matter = (TF_ParticulateMatter *)dev;
+static bool tf_particulate_matter_callback_handler(void *device, uint8_t fid, TF_PacketBuffer *payload) {
+    TF_ParticulateMatter *particulate_matter = (TF_ParticulateMatter *)device;
+    TF_HALCommon *hal_common = tf_hal_get_common(particulate_matter->tfp->spitfp->hal);
     (void)payload;
 
     switch (fid) {
@@ -37,7 +38,6 @@ static bool tf_particulate_matter_callback_handler(void *dev, uint8_t fid, TF_Pa
             uint16_t pm10 = tf_packet_buffer_read_uint16_t(payload);
             uint16_t pm25 = tf_packet_buffer_read_uint16_t(payload);
             uint16_t pm100 = tf_packet_buffer_read_uint16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal);
             hal_common->locked = true;
             fn(particulate_matter, pm10, pm25, pm100, user_data);
             hal_common->locked = false;
@@ -57,7 +57,6 @@ static bool tf_particulate_matter_callback_handler(void *dev, uint8_t fid, TF_Pa
             uint16_t greater25um = tf_packet_buffer_read_uint16_t(payload);
             uint16_t greater50um = tf_packet_buffer_read_uint16_t(payload);
             uint16_t greater100um = tf_packet_buffer_read_uint16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal);
             hal_common->locked = true;
             fn(particulate_matter, greater03um, greater05um, greater10um, greater25um, greater50um, greater100um, user_data);
             hal_common->locked = false;
@@ -71,40 +70,54 @@ static bool tf_particulate_matter_callback_handler(void *dev, uint8_t fid, TF_Pa
     return true;
 }
 #else
-static bool tf_particulate_matter_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *payload) {
+static bool tf_particulate_matter_callback_handler(void *device, uint8_t fid, TF_PacketBuffer *payload) {
     return false;
 }
 #endif
 int tf_particulate_matter_create(TF_ParticulateMatter *particulate_matter, const char *uid, TF_HAL *hal) {
-    if (particulate_matter == NULL || uid == NULL || hal == NULL) {
+    if (particulate_matter == NULL || hal == NULL) {
         return TF_E_NULL;
     }
 
+    static uint16_t next_tfp_index = 0;
+
     memset(particulate_matter, 0, sizeof(TF_ParticulateMatter));
 
-    uint32_t numeric_uid;
-    int rc = tf_base58_decode(uid, &numeric_uid);
+    TF_TFP *tfp;
 
-    if (rc != TF_E_OK) {
-        return rc;
+    if (uid != NULL && *uid != '\0') {
+        uint32_t uid_num = 0;
+        int rc = tf_base58_decode(uid, &uid_num);
+
+        if (rc != TF_E_OK) {
+            return rc;
+        }
+
+        tfp = tf_hal_get_tfp(hal, &next_tfp_index, &uid_num, NULL, NULL);
+
+        if (tfp == NULL) {
+            return TF_E_DEVICE_NOT_FOUND;
+        }
+
+        if (tfp->device_id != TF_PARTICULATE_MATTER_DEVICE_IDENTIFIER) {
+            return TF_E_WRONG_DEVICE_TYPE;
+        }
+    } else {
+        uint16_t device_id = TF_PARTICULATE_MATTER_DEVICE_IDENTIFIER;
+
+        tfp = tf_hal_get_tfp(hal, &next_tfp_index, NULL, NULL, &device_id);
+
+        if (tfp == NULL) {
+            return TF_E_DEVICE_NOT_FOUND;
+        }
     }
 
-    uint8_t port_id;
-    uint8_t inventory_index;
-    rc = tf_hal_get_port_id(hal, numeric_uid, &port_id, &inventory_index);
-
-    if (rc < 0) {
-        return rc;
+    if (tfp->device != NULL) {
+        return TF_E_DEVICE_ALREADY_IN_USE;
     }
 
-    rc = tf_hal_get_tfp(hal, &particulate_matter->tfp, TF_PARTICULATE_MATTER_DEVICE_IDENTIFIER, inventory_index);
-
-    if (rc != TF_E_OK) {
-        return rc;
-    }
-
+    particulate_matter->tfp = tfp;
     particulate_matter->tfp->device = particulate_matter;
-    particulate_matter->tfp->uid = numeric_uid;
     particulate_matter->tfp->cb_handler = tf_particulate_matter_callback_handler;
     particulate_matter->response_expected[0] = 0x06;
 
@@ -112,14 +125,15 @@ int tf_particulate_matter_create(TF_ParticulateMatter *particulate_matter, const
 }
 
 int tf_particulate_matter_destroy(TF_ParticulateMatter *particulate_matter) {
-    if (particulate_matter == NULL) {
+    if (particulate_matter == NULL || particulate_matter->tfp == NULL) {
         return TF_E_NULL;
     }
 
-    int result = tf_tfp_destroy(particulate_matter->tfp);
+    particulate_matter->tfp->cb_handler = NULL;
+    particulate_matter->tfp->device = NULL;
     particulate_matter->tfp = NULL;
 
-    return result;
+    return TF_E_OK;
 }
 
 int tf_particulate_matter_get_response_expected(TF_ParticulateMatter *particulate_matter, uint8_t function_id, bool *ret_response_expected) {
@@ -247,17 +261,19 @@ int tf_particulate_matter_get_pm_concentration(TF_ParticulateMatter *particulate
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->locked) {
+    TF_HAL *hal = particulate_matter->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(particulate_matter->tfp, TF_PARTICULATE_MATTER_FUNCTION_GET_PM_CONCENTRATION, 0, 6, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)particulate_matter->tfp->hal) + tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -268,9 +284,10 @@ int tf_particulate_matter_get_pm_concentration(TF_ParticulateMatter *particulate
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_pm10 != NULL) { *ret_pm10 = tf_packet_buffer_read_uint16_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 2); }
-        if (ret_pm25 != NULL) { *ret_pm25 = tf_packet_buffer_read_uint16_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 2); }
-        if (ret_pm100 != NULL) { *ret_pm100 = tf_packet_buffer_read_uint16_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(particulate_matter->tfp);
+        if (ret_pm10 != NULL) { *ret_pm10 = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+        if (ret_pm25 != NULL) { *ret_pm25 = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+        if (ret_pm100 != NULL) { *ret_pm100 = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(particulate_matter->tfp);
     }
 
@@ -288,17 +305,19 @@ int tf_particulate_matter_get_pm_count(TF_ParticulateMatter *particulate_matter,
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->locked) {
+    TF_HAL *hal = particulate_matter->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(particulate_matter->tfp, TF_PARTICULATE_MATTER_FUNCTION_GET_PM_COUNT, 0, 12, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)particulate_matter->tfp->hal) + tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -309,12 +328,13 @@ int tf_particulate_matter_get_pm_count(TF_ParticulateMatter *particulate_matter,
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_greater03um != NULL) { *ret_greater03um = tf_packet_buffer_read_uint16_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 2); }
-        if (ret_greater05um != NULL) { *ret_greater05um = tf_packet_buffer_read_uint16_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 2); }
-        if (ret_greater10um != NULL) { *ret_greater10um = tf_packet_buffer_read_uint16_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 2); }
-        if (ret_greater25um != NULL) { *ret_greater25um = tf_packet_buffer_read_uint16_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 2); }
-        if (ret_greater50um != NULL) { *ret_greater50um = tf_packet_buffer_read_uint16_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 2); }
-        if (ret_greater100um != NULL) { *ret_greater100um = tf_packet_buffer_read_uint16_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(particulate_matter->tfp);
+        if (ret_greater03um != NULL) { *ret_greater03um = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+        if (ret_greater05um != NULL) { *ret_greater05um = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+        if (ret_greater10um != NULL) { *ret_greater10um = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+        if (ret_greater25um != NULL) { *ret_greater25um = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+        if (ret_greater50um != NULL) { *ret_greater50um = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+        if (ret_greater100um != NULL) { *ret_greater100um = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(particulate_matter->tfp);
     }
 
@@ -332,7 +352,9 @@ int tf_particulate_matter_set_enable(TF_ParticulateMatter *particulate_matter, b
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->locked) {
+    TF_HAL *hal = particulate_matter->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -340,14 +362,14 @@ int tf_particulate_matter_set_enable(TF_ParticulateMatter *particulate_matter, b
     tf_particulate_matter_get_response_expected(particulate_matter, TF_PARTICULATE_MATTER_FUNCTION_SET_ENABLE, &response_expected);
     tf_tfp_prepare_send(particulate_matter->tfp, TF_PARTICULATE_MATTER_FUNCTION_SET_ENABLE, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(particulate_matter->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(particulate_matter->tfp);
 
-    buf[0] = enable ? 1 : 0;
+    send_buf[0] = enable ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)particulate_matter->tfp->hal) + tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -371,17 +393,19 @@ int tf_particulate_matter_get_enable(TF_ParticulateMatter *particulate_matter, b
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->locked) {
+    TF_HAL *hal = particulate_matter->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(particulate_matter->tfp, TF_PARTICULATE_MATTER_FUNCTION_GET_ENABLE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)particulate_matter->tfp->hal) + tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -392,7 +416,8 @@ int tf_particulate_matter_get_enable(TF_ParticulateMatter *particulate_matter, b
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_enable != NULL) { *ret_enable = tf_packet_buffer_read_bool(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(particulate_matter->tfp);
+        if (ret_enable != NULL) { *ret_enable = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(particulate_matter->tfp);
     }
 
@@ -410,17 +435,19 @@ int tf_particulate_matter_get_sensor_info(TF_ParticulateMatter *particulate_matt
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->locked) {
+    TF_HAL *hal = particulate_matter->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(particulate_matter->tfp, TF_PARTICULATE_MATTER_FUNCTION_GET_SENSOR_INFO, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)particulate_matter->tfp->hal) + tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -431,10 +458,11 @@ int tf_particulate_matter_get_sensor_info(TF_ParticulateMatter *particulate_matt
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_sensor_version != NULL) { *ret_sensor_version = tf_packet_buffer_read_uint8_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 1); }
-        if (ret_last_error_code != NULL) { *ret_last_error_code = tf_packet_buffer_read_uint8_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 1); }
-        if (ret_framing_error_count != NULL) { *ret_framing_error_count = tf_packet_buffer_read_uint8_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 1); }
-        if (ret_checksum_error_count != NULL) { *ret_checksum_error_count = tf_packet_buffer_read_uint8_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(particulate_matter->tfp);
+        if (ret_sensor_version != NULL) { *ret_sensor_version = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_last_error_code != NULL) { *ret_last_error_code = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_framing_error_count != NULL) { *ret_framing_error_count = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_checksum_error_count != NULL) { *ret_checksum_error_count = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(particulate_matter->tfp);
     }
 
@@ -452,7 +480,9 @@ int tf_particulate_matter_set_pm_concentration_callback_configuration(TF_Particu
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->locked) {
+    TF_HAL *hal = particulate_matter->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -460,15 +490,15 @@ int tf_particulate_matter_set_pm_concentration_callback_configuration(TF_Particu
     tf_particulate_matter_get_response_expected(particulate_matter, TF_PARTICULATE_MATTER_FUNCTION_SET_PM_CONCENTRATION_CALLBACK_CONFIGURATION, &response_expected);
     tf_tfp_prepare_send(particulate_matter->tfp, TF_PARTICULATE_MATTER_FUNCTION_SET_PM_CONCENTRATION_CALLBACK_CONFIGURATION, 5, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(particulate_matter->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(particulate_matter->tfp);
 
-    period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
-    buf[4] = value_has_to_change ? 1 : 0;
+    period = tf_leconvert_uint32_to(period); memcpy(send_buf + 0, &period, 4);
+    send_buf[4] = value_has_to_change ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)particulate_matter->tfp->hal) + tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -492,17 +522,19 @@ int tf_particulate_matter_get_pm_concentration_callback_configuration(TF_Particu
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->locked) {
+    TF_HAL *hal = particulate_matter->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(particulate_matter->tfp, TF_PARTICULATE_MATTER_FUNCTION_GET_PM_CONCENTRATION_CALLBACK_CONFIGURATION, 0, 5, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)particulate_matter->tfp->hal) + tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -513,8 +545,9 @@ int tf_particulate_matter_get_pm_concentration_callback_configuration(TF_Particu
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 4); }
-        if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(particulate_matter->tfp);
+        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(particulate_matter->tfp);
     }
 
@@ -532,7 +565,9 @@ int tf_particulate_matter_set_pm_count_callback_configuration(TF_ParticulateMatt
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->locked) {
+    TF_HAL *hal = particulate_matter->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -540,15 +575,15 @@ int tf_particulate_matter_set_pm_count_callback_configuration(TF_ParticulateMatt
     tf_particulate_matter_get_response_expected(particulate_matter, TF_PARTICULATE_MATTER_FUNCTION_SET_PM_COUNT_CALLBACK_CONFIGURATION, &response_expected);
     tf_tfp_prepare_send(particulate_matter->tfp, TF_PARTICULATE_MATTER_FUNCTION_SET_PM_COUNT_CALLBACK_CONFIGURATION, 5, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(particulate_matter->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(particulate_matter->tfp);
 
-    period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
-    buf[4] = value_has_to_change ? 1 : 0;
+    period = tf_leconvert_uint32_to(period); memcpy(send_buf + 0, &period, 4);
+    send_buf[4] = value_has_to_change ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)particulate_matter->tfp->hal) + tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -572,17 +607,19 @@ int tf_particulate_matter_get_pm_count_callback_configuration(TF_ParticulateMatt
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->locked) {
+    TF_HAL *hal = particulate_matter->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(particulate_matter->tfp, TF_PARTICULATE_MATTER_FUNCTION_GET_PM_COUNT_CALLBACK_CONFIGURATION, 0, 5, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)particulate_matter->tfp->hal) + tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -593,8 +630,9 @@ int tf_particulate_matter_get_pm_count_callback_configuration(TF_ParticulateMatt
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 4); }
-        if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(particulate_matter->tfp);
+        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(particulate_matter->tfp);
     }
 
@@ -612,17 +650,19 @@ int tf_particulate_matter_get_spitfp_error_count(TF_ParticulateMatter *particula
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->locked) {
+    TF_HAL *hal = particulate_matter->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(particulate_matter->tfp, TF_PARTICULATE_MATTER_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)particulate_matter->tfp->hal) + tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -633,10 +673,11 @@ int tf_particulate_matter_get_spitfp_error_count(TF_ParticulateMatter *particula
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(particulate_matter->tfp);
+        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(particulate_matter->tfp);
     }
 
@@ -654,21 +695,23 @@ int tf_particulate_matter_set_bootloader_mode(TF_ParticulateMatter *particulate_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->locked) {
+    TF_HAL *hal = particulate_matter->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(particulate_matter->tfp, TF_PARTICULATE_MATTER_FUNCTION_SET_BOOTLOADER_MODE, 1, 1, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(particulate_matter->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(particulate_matter->tfp);
 
-    buf[0] = (uint8_t)mode;
+    send_buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)particulate_matter->tfp->hal) + tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -679,7 +722,8 @@ int tf_particulate_matter_set_bootloader_mode(TF_ParticulateMatter *particulate_
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(particulate_matter->tfp);
+        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(particulate_matter->tfp);
     }
 
@@ -697,17 +741,19 @@ int tf_particulate_matter_get_bootloader_mode(TF_ParticulateMatter *particulate_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->locked) {
+    TF_HAL *hal = particulate_matter->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(particulate_matter->tfp, TF_PARTICULATE_MATTER_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)particulate_matter->tfp->hal) + tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -718,7 +764,8 @@ int tf_particulate_matter_get_bootloader_mode(TF_ParticulateMatter *particulate_
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(particulate_matter->tfp);
+        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(particulate_matter->tfp);
     }
 
@@ -736,7 +783,9 @@ int tf_particulate_matter_set_write_firmware_pointer(TF_ParticulateMatter *parti
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->locked) {
+    TF_HAL *hal = particulate_matter->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -744,14 +793,14 @@ int tf_particulate_matter_set_write_firmware_pointer(TF_ParticulateMatter *parti
     tf_particulate_matter_get_response_expected(particulate_matter, TF_PARTICULATE_MATTER_FUNCTION_SET_WRITE_FIRMWARE_POINTER, &response_expected);
     tf_tfp_prepare_send(particulate_matter->tfp, TF_PARTICULATE_MATTER_FUNCTION_SET_WRITE_FIRMWARE_POINTER, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(particulate_matter->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(particulate_matter->tfp);
 
-    pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
+    pointer = tf_leconvert_uint32_to(pointer); memcpy(send_buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)particulate_matter->tfp->hal) + tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -775,21 +824,23 @@ int tf_particulate_matter_write_firmware(TF_ParticulateMatter *particulate_matte
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->locked) {
+    TF_HAL *hal = particulate_matter->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(particulate_matter->tfp, TF_PARTICULATE_MATTER_FUNCTION_WRITE_FIRMWARE, 64, 1, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(particulate_matter->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(particulate_matter->tfp);
 
-    memcpy(buf + 0, data, 64);
+    memcpy(send_buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)particulate_matter->tfp->hal) + tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -800,7 +851,8 @@ int tf_particulate_matter_write_firmware(TF_ParticulateMatter *particulate_matte
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(particulate_matter->tfp);
+        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(particulate_matter->tfp);
     }
 
@@ -818,7 +870,9 @@ int tf_particulate_matter_set_status_led_config(TF_ParticulateMatter *particulat
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->locked) {
+    TF_HAL *hal = particulate_matter->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -826,14 +880,14 @@ int tf_particulate_matter_set_status_led_config(TF_ParticulateMatter *particulat
     tf_particulate_matter_get_response_expected(particulate_matter, TF_PARTICULATE_MATTER_FUNCTION_SET_STATUS_LED_CONFIG, &response_expected);
     tf_tfp_prepare_send(particulate_matter->tfp, TF_PARTICULATE_MATTER_FUNCTION_SET_STATUS_LED_CONFIG, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(particulate_matter->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(particulate_matter->tfp);
 
-    buf[0] = (uint8_t)config;
+    send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)particulate_matter->tfp->hal) + tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -857,17 +911,19 @@ int tf_particulate_matter_get_status_led_config(TF_ParticulateMatter *particulat
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->locked) {
+    TF_HAL *hal = particulate_matter->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(particulate_matter->tfp, TF_PARTICULATE_MATTER_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)particulate_matter->tfp->hal) + tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -878,7 +934,8 @@ int tf_particulate_matter_get_status_led_config(TF_ParticulateMatter *particulat
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(particulate_matter->tfp);
+        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(particulate_matter->tfp);
     }
 
@@ -896,17 +953,19 @@ int tf_particulate_matter_get_chip_temperature(TF_ParticulateMatter *particulate
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->locked) {
+    TF_HAL *hal = particulate_matter->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(particulate_matter->tfp, TF_PARTICULATE_MATTER_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)particulate_matter->tfp->hal) + tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -917,7 +976,8 @@ int tf_particulate_matter_get_chip_temperature(TF_ParticulateMatter *particulate
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(particulate_matter->tfp);
+        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(particulate_matter->tfp);
     }
 
@@ -935,7 +995,9 @@ int tf_particulate_matter_reset(TF_ParticulateMatter *particulate_matter) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->locked) {
+    TF_HAL *hal = particulate_matter->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -943,10 +1005,10 @@ int tf_particulate_matter_reset(TF_ParticulateMatter *particulate_matter) {
     tf_particulate_matter_get_response_expected(particulate_matter, TF_PARTICULATE_MATTER_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(particulate_matter->tfp, TF_PARTICULATE_MATTER_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)particulate_matter->tfp->hal) + tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -970,7 +1032,9 @@ int tf_particulate_matter_write_uid(TF_ParticulateMatter *particulate_matter, ui
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->locked) {
+    TF_HAL *hal = particulate_matter->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -978,14 +1042,14 @@ int tf_particulate_matter_write_uid(TF_ParticulateMatter *particulate_matter, ui
     tf_particulate_matter_get_response_expected(particulate_matter, TF_PARTICULATE_MATTER_FUNCTION_WRITE_UID, &response_expected);
     tf_tfp_prepare_send(particulate_matter->tfp, TF_PARTICULATE_MATTER_FUNCTION_WRITE_UID, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(particulate_matter->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(particulate_matter->tfp);
 
-    uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
+    uid = tf_leconvert_uint32_to(uid); memcpy(send_buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)particulate_matter->tfp->hal) + tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1009,17 +1073,19 @@ int tf_particulate_matter_read_uid(TF_ParticulateMatter *particulate_matter, uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->locked) {
+    TF_HAL *hal = particulate_matter->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(particulate_matter->tfp, TF_PARTICULATE_MATTER_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)particulate_matter->tfp->hal) + tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1030,7 +1096,8 @@ int tf_particulate_matter_read_uid(TF_ParticulateMatter *particulate_matter, uin
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(particulate_matter->tfp);
+        if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(particulate_matter->tfp);
     }
 
@@ -1048,7 +1115,9 @@ int tf_particulate_matter_get_identity(TF_ParticulateMatter *particulate_matter,
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->locked) {
+    TF_HAL *hal = particulate_matter->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1056,10 +1125,10 @@ int tf_particulate_matter_get_identity(TF_ParticulateMatter *particulate_matter,
     tf_tfp_prepare_send(particulate_matter->tfp, TF_PARTICULATE_MATTER_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)particulate_matter->tfp->hal) + tf_hal_get_common((TF_HAL *)particulate_matter->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(particulate_matter->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1070,19 +1139,13 @@ int tf_particulate_matter_get_identity(TF_ParticulateMatter *particulate_matter,
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        char tmp_connected_uid[8] = {0};
-        if (ret_uid != NULL) { tf_packet_buffer_pop_n(&particulate_matter->tfp->spitfp->recv_buf, (uint8_t*)ret_uid, 8);} else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 8); }
-        tf_packet_buffer_pop_n(&particulate_matter->tfp->spitfp->recv_buf, (uint8_t*)tmp_connected_uid, 8);
-        if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 1); }
-        if (ret_hardware_version != NULL) { for (i = 0; i < 3; ++i) ret_hardware_version[i] = tf_packet_buffer_read_uint8_t(&particulate_matter->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 3); }
-        if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&particulate_matter->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 3); }
-        if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&particulate_matter->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&particulate_matter->tfp->spitfp->recv_buf, 2); }
-        if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL *)particulate_matter->tfp->hal, particulate_matter->tfp->spitfp->port_id);
-        }
-        if (ret_connected_uid != NULL) {
-            memcpy(ret_connected_uid, tmp_connected_uid, 8);
-        }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(particulate_matter->tfp);
+        if (ret_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
+        if (ret_connected_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_connected_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
+        if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_hardware_version != NULL) { for (i = 0; i < 3; ++i) ret_hardware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
+        if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
+        if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(particulate_matter->tfp);
     }
 
@@ -1137,7 +1200,9 @@ int tf_particulate_matter_callback_tick(TF_ParticulateMatter *particulate_matter
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(particulate_matter->tfp, tf_hal_current_time_us((TF_HAL *)particulate_matter->tfp->hal) + timeout_us);
+    TF_HAL *hal = particulate_matter->tfp->spitfp->hal;
+
+    return tf_tfp_callback_tick(particulate_matter->tfp, tf_hal_current_time_us(hal) + timeout_us);
 }
 
 #ifdef __cplusplus

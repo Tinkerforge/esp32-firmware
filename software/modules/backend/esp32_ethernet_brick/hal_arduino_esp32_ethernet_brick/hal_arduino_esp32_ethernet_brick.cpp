@@ -121,7 +121,7 @@ void tf_hal_log_newline(void) {
     Serial.println("");
 }
 
-#ifdef TF_IMPLEMENT_STRERROR
+#if TF_IMPLEMENT_STRERROR != 0
 const char *tf_hal_strerror(int e_code) {
     switch (e_code) {
         #include "bindings/errors.inc"
@@ -133,17 +133,9 @@ const char *tf_hal_strerror(int e_code) {
 #endif
 
 char tf_hal_get_port_name(TF_HAL *hal, uint8_t port_id) {
-    if (port_id > PORT_COUNT) {
-        return '?';
-    }
-
     return ports[port_id].port_name;
 }
 
 TF_PortCommon *tf_hal_get_port_common(TF_HAL *hal, uint8_t port_id) {
-    if (port_id > PORT_COUNT) {
-        return NULL;
-    }
-
     return &ports[port_id].port_common;
 }

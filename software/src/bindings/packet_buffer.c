@@ -117,6 +117,30 @@ bool tf_packet_buffer_peek_offset(TF_PacketBuffer *pb, uint8_t *data, uint8_t of
     return true;
 }
 
+bool tf_packet_buffer_poke(TF_PacketBuffer *pb, uint8_t data) {
+    if (tf_packet_buffer_is_empty(pb)) {
+        return false;
+    }
+
+    pb->buffer[pb->start] = data;
+
+    return true;
+}
+
+bool tf_packet_buffer_poke_offset(TF_PacketBuffer *pb, uint8_t data, uint8_t offset) {
+    if (tf_packet_buffer_get_used(pb) <= offset) {
+        return false;
+    }
+
+    if (pb->start + offset >= TF_PACKET_BUFFER_SIZE) {
+        pb->buffer[pb->start + offset - TF_PACKET_BUFFER_SIZE] = data;
+    } else {
+        pb->buffer[pb->start + offset] = data;
+    }
+
+    return true;
+}
+
 void tf_packet_buffer_create(TF_PacketBuffer *pb) {
     memset(pb->buffer, 0, TF_PACKET_BUFFER_SIZE);
 

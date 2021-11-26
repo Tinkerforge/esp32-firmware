@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-22.      *
+ * This file was automatically generated on 2021-11-26.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -22,8 +22,9 @@ extern "C" {
 
 
 #if TF_IMPLEMENT_CALLBACKS != 0
-static bool tf_isolator_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *payload) {
-    TF_Isolator *isolator = (TF_Isolator *)dev;
+static bool tf_isolator_callback_handler(void *device, uint8_t fid, TF_PacketBuffer *payload) {
+    TF_Isolator *isolator = (TF_Isolator *)device;
+    TF_HALCommon *hal_common = tf_hal_get_common(isolator->tfp->spitfp->hal);
     (void)payload;
 
     switch (fid) {
@@ -37,8 +38,7 @@ static bool tf_isolator_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer
             uint32_t messages_from_brick = tf_packet_buffer_read_uint32_t(payload);
             uint32_t messages_from_bricklet = tf_packet_buffer_read_uint32_t(payload);
             uint16_t connected_bricklet_device_identifier = tf_packet_buffer_read_uint16_t(payload);
-            char connected_bricklet_uid[8]; tf_packet_buffer_pop_n(payload, (uint8_t*)connected_bricklet_uid, 8);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)isolator->tfp->hal);
+            char connected_bricklet_uid[8]; tf_packet_buffer_pop_n(payload, (uint8_t *)connected_bricklet_uid, 8);
             hal_common->locked = true;
             fn(isolator, messages_from_brick, messages_from_bricklet, connected_bricklet_device_identifier, connected_bricklet_uid, user_data);
             hal_common->locked = false;
@@ -52,40 +52,54 @@ static bool tf_isolator_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer
     return true;
 }
 #else
-static bool tf_isolator_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *payload) {
+static bool tf_isolator_callback_handler(void *device, uint8_t fid, TF_PacketBuffer *payload) {
     return false;
 }
 #endif
 int tf_isolator_create(TF_Isolator *isolator, const char *uid, TF_HAL *hal) {
-    if (isolator == NULL || uid == NULL || hal == NULL) {
+    if (isolator == NULL || hal == NULL) {
         return TF_E_NULL;
     }
 
+    static uint16_t next_tfp_index = 0;
+
     memset(isolator, 0, sizeof(TF_Isolator));
 
-    uint32_t numeric_uid;
-    int rc = tf_base58_decode(uid, &numeric_uid);
+    TF_TFP *tfp;
 
-    if (rc != TF_E_OK) {
-        return rc;
+    if (uid != NULL && *uid != '\0') {
+        uint32_t uid_num = 0;
+        int rc = tf_base58_decode(uid, &uid_num);
+
+        if (rc != TF_E_OK) {
+            return rc;
+        }
+
+        tfp = tf_hal_get_tfp(hal, &next_tfp_index, &uid_num, NULL, NULL);
+
+        if (tfp == NULL) {
+            return TF_E_DEVICE_NOT_FOUND;
+        }
+
+        if (tfp->device_id != TF_ISOLATOR_DEVICE_IDENTIFIER) {
+            return TF_E_WRONG_DEVICE_TYPE;
+        }
+    } else {
+        uint16_t device_id = TF_ISOLATOR_DEVICE_IDENTIFIER;
+
+        tfp = tf_hal_get_tfp(hal, &next_tfp_index, NULL, NULL, &device_id);
+
+        if (tfp == NULL) {
+            return TF_E_DEVICE_NOT_FOUND;
+        }
     }
 
-    uint8_t port_id;
-    uint8_t inventory_index;
-    rc = tf_hal_get_port_id(hal, numeric_uid, &port_id, &inventory_index);
-
-    if (rc < 0) {
-        return rc;
+    if (tfp->device != NULL) {
+        return TF_E_DEVICE_ALREADY_IN_USE;
     }
 
-    rc = tf_hal_get_tfp(hal, &isolator->tfp, TF_ISOLATOR_DEVICE_IDENTIFIER, inventory_index);
-
-    if (rc != TF_E_OK) {
-        return rc;
-    }
-
+    isolator->tfp = tfp;
     isolator->tfp->device = isolator;
-    isolator->tfp->uid = numeric_uid;
     isolator->tfp->cb_handler = tf_isolator_callback_handler;
     isolator->response_expected[0] = 0x04;
 
@@ -93,14 +107,15 @@ int tf_isolator_create(TF_Isolator *isolator, const char *uid, TF_HAL *hal) {
 }
 
 int tf_isolator_destroy(TF_Isolator *isolator) {
-    if (isolator == NULL) {
+    if (isolator == NULL || isolator->tfp == NULL) {
         return TF_E_NULL;
     }
 
-    int result = tf_tfp_destroy(isolator->tfp);
+    isolator->tfp->cb_handler = NULL;
+    isolator->tfp->device = NULL;
     isolator->tfp = NULL;
 
-    return result;
+    return TF_E_OK;
 }
 
 int tf_isolator_get_response_expected(TF_Isolator *isolator, uint8_t function_id, bool *ret_response_expected) {
@@ -228,17 +243,19 @@ int tf_isolator_get_statistics(TF_Isolator *isolator, uint32_t *ret_messages_fro
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->locked) {
+    TF_HAL *hal = isolator->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(isolator->tfp, TF_ISOLATOR_FUNCTION_GET_STATISTICS, 0, 18, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)isolator->tfp->hal) + tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(isolator->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(isolator->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -249,10 +266,11 @@ int tf_isolator_get_statistics(TF_Isolator *isolator, uint32_t *ret_messages_fro
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_messages_from_brick != NULL) { *ret_messages_from_brick = tf_packet_buffer_read_uint32_t(&isolator->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 4); }
-        if (ret_messages_from_bricklet != NULL) { *ret_messages_from_bricklet = tf_packet_buffer_read_uint32_t(&isolator->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 4); }
-        if (ret_connected_bricklet_device_identifier != NULL) { *ret_connected_bricklet_device_identifier = tf_packet_buffer_read_uint16_t(&isolator->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 2); }
-        if (ret_connected_bricklet_uid != NULL) { tf_packet_buffer_pop_n(&isolator->tfp->spitfp->recv_buf, (uint8_t*)ret_connected_bricklet_uid, 8);} else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 8); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(isolator->tfp);
+        if (ret_messages_from_brick != NULL) { *ret_messages_from_brick = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_messages_from_bricklet != NULL) { *ret_messages_from_bricklet = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_connected_bricklet_device_identifier != NULL) { *ret_connected_bricklet_device_identifier = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+        if (ret_connected_bricklet_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_connected_bricklet_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
         tf_tfp_packet_processed(isolator->tfp);
     }
 
@@ -270,7 +288,9 @@ int tf_isolator_set_spitfp_baudrate_config(TF_Isolator *isolator, bool enable_dy
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->locked) {
+    TF_HAL *hal = isolator->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -278,15 +298,15 @@ int tf_isolator_set_spitfp_baudrate_config(TF_Isolator *isolator, bool enable_dy
     tf_isolator_get_response_expected(isolator, TF_ISOLATOR_FUNCTION_SET_SPITFP_BAUDRATE_CONFIG, &response_expected);
     tf_tfp_prepare_send(isolator->tfp, TF_ISOLATOR_FUNCTION_SET_SPITFP_BAUDRATE_CONFIG, 5, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(isolator->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(isolator->tfp);
 
-    buf[0] = enable_dynamic_baudrate ? 1 : 0;
-    minimum_dynamic_baudrate = tf_leconvert_uint32_to(minimum_dynamic_baudrate); memcpy(buf + 1, &minimum_dynamic_baudrate, 4);
+    send_buf[0] = enable_dynamic_baudrate ? 1 : 0;
+    minimum_dynamic_baudrate = tf_leconvert_uint32_to(minimum_dynamic_baudrate); memcpy(send_buf + 1, &minimum_dynamic_baudrate, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)isolator->tfp->hal) + tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(isolator->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(isolator->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -310,17 +330,19 @@ int tf_isolator_get_spitfp_baudrate_config(TF_Isolator *isolator, bool *ret_enab
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->locked) {
+    TF_HAL *hal = isolator->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(isolator->tfp, TF_ISOLATOR_FUNCTION_GET_SPITFP_BAUDRATE_CONFIG, 0, 5, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)isolator->tfp->hal) + tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(isolator->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(isolator->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -331,8 +353,9 @@ int tf_isolator_get_spitfp_baudrate_config(TF_Isolator *isolator, bool *ret_enab
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_enable_dynamic_baudrate != NULL) { *ret_enable_dynamic_baudrate = tf_packet_buffer_read_bool(&isolator->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 1); }
-        if (ret_minimum_dynamic_baudrate != NULL) { *ret_minimum_dynamic_baudrate = tf_packet_buffer_read_uint32_t(&isolator->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(isolator->tfp);
+        if (ret_enable_dynamic_baudrate != NULL) { *ret_enable_dynamic_baudrate = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_minimum_dynamic_baudrate != NULL) { *ret_minimum_dynamic_baudrate = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(isolator->tfp);
     }
 
@@ -350,7 +373,9 @@ int tf_isolator_set_spitfp_baudrate(TF_Isolator *isolator, uint32_t baudrate) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->locked) {
+    TF_HAL *hal = isolator->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -358,14 +383,14 @@ int tf_isolator_set_spitfp_baudrate(TF_Isolator *isolator, uint32_t baudrate) {
     tf_isolator_get_response_expected(isolator, TF_ISOLATOR_FUNCTION_SET_SPITFP_BAUDRATE, &response_expected);
     tf_tfp_prepare_send(isolator->tfp, TF_ISOLATOR_FUNCTION_SET_SPITFP_BAUDRATE, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(isolator->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(isolator->tfp);
 
-    baudrate = tf_leconvert_uint32_to(baudrate); memcpy(buf + 0, &baudrate, 4);
+    baudrate = tf_leconvert_uint32_to(baudrate); memcpy(send_buf + 0, &baudrate, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)isolator->tfp->hal) + tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(isolator->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(isolator->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -389,17 +414,19 @@ int tf_isolator_get_spitfp_baudrate(TF_Isolator *isolator, uint32_t *ret_baudrat
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->locked) {
+    TF_HAL *hal = isolator->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(isolator->tfp, TF_ISOLATOR_FUNCTION_GET_SPITFP_BAUDRATE, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)isolator->tfp->hal) + tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(isolator->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(isolator->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -410,7 +437,8 @@ int tf_isolator_get_spitfp_baudrate(TF_Isolator *isolator, uint32_t *ret_baudrat
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_baudrate != NULL) { *ret_baudrate = tf_packet_buffer_read_uint32_t(&isolator->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(isolator->tfp);
+        if (ret_baudrate != NULL) { *ret_baudrate = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(isolator->tfp);
     }
 
@@ -428,17 +456,19 @@ int tf_isolator_get_isolator_spitfp_error_count(TF_Isolator *isolator, uint32_t 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->locked) {
+    TF_HAL *hal = isolator->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(isolator->tfp, TF_ISOLATOR_FUNCTION_GET_ISOLATOR_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)isolator->tfp->hal) + tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(isolator->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(isolator->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -449,10 +479,11 @@ int tf_isolator_get_isolator_spitfp_error_count(TF_Isolator *isolator, uint32_t 
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(&isolator->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(&isolator->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(&isolator->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(&isolator->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(isolator->tfp);
+        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(isolator->tfp);
     }
 
@@ -470,7 +501,9 @@ int tf_isolator_set_statistics_callback_configuration(TF_Isolator *isolator, uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->locked) {
+    TF_HAL *hal = isolator->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -478,15 +511,15 @@ int tf_isolator_set_statistics_callback_configuration(TF_Isolator *isolator, uin
     tf_isolator_get_response_expected(isolator, TF_ISOLATOR_FUNCTION_SET_STATISTICS_CALLBACK_CONFIGURATION, &response_expected);
     tf_tfp_prepare_send(isolator->tfp, TF_ISOLATOR_FUNCTION_SET_STATISTICS_CALLBACK_CONFIGURATION, 5, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(isolator->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(isolator->tfp);
 
-    period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
-    buf[4] = value_has_to_change ? 1 : 0;
+    period = tf_leconvert_uint32_to(period); memcpy(send_buf + 0, &period, 4);
+    send_buf[4] = value_has_to_change ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)isolator->tfp->hal) + tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(isolator->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(isolator->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -510,17 +543,19 @@ int tf_isolator_get_statistics_callback_configuration(TF_Isolator *isolator, uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->locked) {
+    TF_HAL *hal = isolator->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(isolator->tfp, TF_ISOLATOR_FUNCTION_GET_STATISTICS_CALLBACK_CONFIGURATION, 0, 5, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)isolator->tfp->hal) + tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(isolator->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(isolator->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -531,8 +566,9 @@ int tf_isolator_get_statistics_callback_configuration(TF_Isolator *isolator, uin
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(&isolator->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 4); }
-        if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(&isolator->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(isolator->tfp);
+        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(isolator->tfp);
     }
 
@@ -550,17 +586,19 @@ int tf_isolator_get_spitfp_error_count(TF_Isolator *isolator, uint32_t *ret_erro
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->locked) {
+    TF_HAL *hal = isolator->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(isolator->tfp, TF_ISOLATOR_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)isolator->tfp->hal) + tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(isolator->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(isolator->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -571,10 +609,11 @@ int tf_isolator_get_spitfp_error_count(TF_Isolator *isolator, uint32_t *ret_erro
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(&isolator->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(&isolator->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(&isolator->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(&isolator->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(isolator->tfp);
+        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(isolator->tfp);
     }
 
@@ -592,21 +631,23 @@ int tf_isolator_set_bootloader_mode(TF_Isolator *isolator, uint8_t mode, uint8_t
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->locked) {
+    TF_HAL *hal = isolator->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(isolator->tfp, TF_ISOLATOR_FUNCTION_SET_BOOTLOADER_MODE, 1, 1, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(isolator->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(isolator->tfp);
 
-    buf[0] = (uint8_t)mode;
+    send_buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)isolator->tfp->hal) + tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(isolator->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(isolator->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -617,7 +658,8 @@ int tf_isolator_set_bootloader_mode(TF_Isolator *isolator, uint8_t mode, uint8_t
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(&isolator->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(isolator->tfp);
+        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(isolator->tfp);
     }
 
@@ -635,17 +677,19 @@ int tf_isolator_get_bootloader_mode(TF_Isolator *isolator, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->locked) {
+    TF_HAL *hal = isolator->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(isolator->tfp, TF_ISOLATOR_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)isolator->tfp->hal) + tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(isolator->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(isolator->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -656,7 +700,8 @@ int tf_isolator_get_bootloader_mode(TF_Isolator *isolator, uint8_t *ret_mode) {
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(&isolator->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(isolator->tfp);
+        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(isolator->tfp);
     }
 
@@ -674,7 +719,9 @@ int tf_isolator_set_write_firmware_pointer(TF_Isolator *isolator, uint32_t point
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->locked) {
+    TF_HAL *hal = isolator->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -682,14 +729,14 @@ int tf_isolator_set_write_firmware_pointer(TF_Isolator *isolator, uint32_t point
     tf_isolator_get_response_expected(isolator, TF_ISOLATOR_FUNCTION_SET_WRITE_FIRMWARE_POINTER, &response_expected);
     tf_tfp_prepare_send(isolator->tfp, TF_ISOLATOR_FUNCTION_SET_WRITE_FIRMWARE_POINTER, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(isolator->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(isolator->tfp);
 
-    pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
+    pointer = tf_leconvert_uint32_to(pointer); memcpy(send_buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)isolator->tfp->hal) + tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(isolator->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(isolator->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -713,21 +760,23 @@ int tf_isolator_write_firmware(TF_Isolator *isolator, const uint8_t data[64], ui
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->locked) {
+    TF_HAL *hal = isolator->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(isolator->tfp, TF_ISOLATOR_FUNCTION_WRITE_FIRMWARE, 64, 1, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(isolator->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(isolator->tfp);
 
-    memcpy(buf + 0, data, 64);
+    memcpy(send_buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)isolator->tfp->hal) + tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(isolator->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(isolator->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -738,7 +787,8 @@ int tf_isolator_write_firmware(TF_Isolator *isolator, const uint8_t data[64], ui
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(&isolator->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(isolator->tfp);
+        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(isolator->tfp);
     }
 
@@ -756,7 +806,9 @@ int tf_isolator_set_status_led_config(TF_Isolator *isolator, uint8_t config) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->locked) {
+    TF_HAL *hal = isolator->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -764,14 +816,14 @@ int tf_isolator_set_status_led_config(TF_Isolator *isolator, uint8_t config) {
     tf_isolator_get_response_expected(isolator, TF_ISOLATOR_FUNCTION_SET_STATUS_LED_CONFIG, &response_expected);
     tf_tfp_prepare_send(isolator->tfp, TF_ISOLATOR_FUNCTION_SET_STATUS_LED_CONFIG, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(isolator->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(isolator->tfp);
 
-    buf[0] = (uint8_t)config;
+    send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)isolator->tfp->hal) + tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(isolator->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(isolator->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -795,17 +847,19 @@ int tf_isolator_get_status_led_config(TF_Isolator *isolator, uint8_t *ret_config
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->locked) {
+    TF_HAL *hal = isolator->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(isolator->tfp, TF_ISOLATOR_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)isolator->tfp->hal) + tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(isolator->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(isolator->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -816,7 +870,8 @@ int tf_isolator_get_status_led_config(TF_Isolator *isolator, uint8_t *ret_config
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(&isolator->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(isolator->tfp);
+        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(isolator->tfp);
     }
 
@@ -834,17 +889,19 @@ int tf_isolator_get_chip_temperature(TF_Isolator *isolator, int16_t *ret_tempera
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->locked) {
+    TF_HAL *hal = isolator->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(isolator->tfp, TF_ISOLATOR_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)isolator->tfp->hal) + tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(isolator->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(isolator->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -855,7 +912,8 @@ int tf_isolator_get_chip_temperature(TF_Isolator *isolator, int16_t *ret_tempera
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(&isolator->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(isolator->tfp);
+        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(isolator->tfp);
     }
 
@@ -873,7 +931,9 @@ int tf_isolator_reset(TF_Isolator *isolator) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->locked) {
+    TF_HAL *hal = isolator->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -881,10 +941,10 @@ int tf_isolator_reset(TF_Isolator *isolator) {
     tf_isolator_get_response_expected(isolator, TF_ISOLATOR_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(isolator->tfp, TF_ISOLATOR_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)isolator->tfp->hal) + tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(isolator->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(isolator->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -908,7 +968,9 @@ int tf_isolator_write_uid(TF_Isolator *isolator, uint32_t uid) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->locked) {
+    TF_HAL *hal = isolator->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -916,14 +978,14 @@ int tf_isolator_write_uid(TF_Isolator *isolator, uint32_t uid) {
     tf_isolator_get_response_expected(isolator, TF_ISOLATOR_FUNCTION_WRITE_UID, &response_expected);
     tf_tfp_prepare_send(isolator->tfp, TF_ISOLATOR_FUNCTION_WRITE_UID, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(isolator->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(isolator->tfp);
 
-    uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
+    uid = tf_leconvert_uint32_to(uid); memcpy(send_buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)isolator->tfp->hal) + tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(isolator->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(isolator->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -947,17 +1009,19 @@ int tf_isolator_read_uid(TF_Isolator *isolator, uint32_t *ret_uid) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->locked) {
+    TF_HAL *hal = isolator->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(isolator->tfp, TF_ISOLATOR_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)isolator->tfp->hal) + tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(isolator->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(isolator->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -968,7 +1032,8 @@ int tf_isolator_read_uid(TF_Isolator *isolator, uint32_t *ret_uid) {
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(&isolator->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(isolator->tfp);
+        if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(isolator->tfp);
     }
 
@@ -986,7 +1051,9 @@ int tf_isolator_get_identity(TF_Isolator *isolator, char ret_uid[8], char ret_co
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->locked) {
+    TF_HAL *hal = isolator->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -994,10 +1061,10 @@ int tf_isolator_get_identity(TF_Isolator *isolator, char ret_uid[8], char ret_co
     tf_tfp_prepare_send(isolator->tfp, TF_ISOLATOR_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)isolator->tfp->hal) + tf_hal_get_common((TF_HAL *)isolator->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(isolator->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(isolator->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1008,19 +1075,13 @@ int tf_isolator_get_identity(TF_Isolator *isolator, char ret_uid[8], char ret_co
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        char tmp_connected_uid[8] = {0};
-        if (ret_uid != NULL) { tf_packet_buffer_pop_n(&isolator->tfp->spitfp->recv_buf, (uint8_t*)ret_uid, 8);} else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 8); }
-        tf_packet_buffer_pop_n(&isolator->tfp->spitfp->recv_buf, (uint8_t*)tmp_connected_uid, 8);
-        if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(&isolator->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 1); }
-        if (ret_hardware_version != NULL) { for (i = 0; i < 3; ++i) ret_hardware_version[i] = tf_packet_buffer_read_uint8_t(&isolator->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 3); }
-        if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&isolator->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 3); }
-        if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&isolator->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&isolator->tfp->spitfp->recv_buf, 2); }
-        if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL *)isolator->tfp->hal, isolator->tfp->spitfp->port_id);
-        }
-        if (ret_connected_uid != NULL) {
-            memcpy(ret_connected_uid, tmp_connected_uid, 8);
-        }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(isolator->tfp);
+        if (ret_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
+        if (ret_connected_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_connected_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
+        if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_hardware_version != NULL) { for (i = 0; i < 3; ++i) ret_hardware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
+        if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
+        if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(isolator->tfp);
     }
 
@@ -1055,7 +1116,9 @@ int tf_isolator_callback_tick(TF_Isolator *isolator, uint32_t timeout_us) {
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(isolator->tfp, tf_hal_current_time_us((TF_HAL *)isolator->tfp->hal) + timeout_us);
+    TF_HAL *hal = isolator->tfp->spitfp->hal;
+
+    return tf_tfp_callback_tick(isolator->tfp, tf_hal_current_time_us(hal) + timeout_us);
 }
 
 #ifdef __cplusplus

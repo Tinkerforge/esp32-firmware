@@ -43,32 +43,6 @@ bool deadline_elapsed(uint32_t deadline_ms)
     return ((uint32_t)(now - deadline_ms)) < (UINT32_MAX / 2);
 }
 
-bool find_uid_by_did(TF_HAL *hal, uint16_t device_id, char uid[7])
-{
-    char pos;
-    uint16_t did;
-    for (size_t i = 0; tf_hal_get_device_info(hal, i, uid, &pos, &did) == TF_E_OK; ++i) {
-        if (did == device_id) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-bool find_uid_by_did_at_port(TF_HAL *hal, uint16_t device_id, char port, char uid[7])
-{
-    char pos;
-    uint16_t did;
-    for (size_t i = 0; tf_hal_get_device_info(hal, i, uid, &pos, &did) == TF_E_OK; ++i) {
-        if (did == device_id && port == pos) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 String update_config(Config &cfg, String config_name, JsonVariant &json)
 {
     String error = cfg.update_from_json(json);
@@ -77,15 +51,17 @@ String update_config(Config &cfg, String config_name, JsonVariant &json)
     String path = String("/") + config_name + ".json";
 
     if (error == "") {
-        if (SPIFFS.exists(tmp_path))
+        if (SPIFFS.exists(tmp_path)) {
             SPIFFS.remove(tmp_path);
+        }
 
         File file = SPIFFS.open(tmp_path, "w");
         cfg.save_to_file(file);
         file.close();
 
-        if (SPIFFS.exists(path))
+        if (SPIFFS.exists(path)) {
             SPIFFS.remove(path);
+        }
 
         SPIFFS.rename(tmp_path, path);
     } else {
@@ -145,7 +121,7 @@ void read_efuses(uint32_t *ret_uid_numeric, char *ret_uid_string, char *ret_pass
     char buf[7] = {0};
 
     for (int i = 0; i < 4; ++i) {
-        if (i != 0)
+        if (i != 0) {
             ret_passphrase_string[i * 5 - 1] = '-';
         }
 
@@ -163,8 +139,10 @@ void read_efuses(uint32_t *ret_uid_numeric, char *ret_uid_string, char *ret_pass
 
 int check(int rc, const char *msg)
 {
-    if (rc >= 0)
+    if (rc >= 0) {
         return rc;
+    }
+
     logger.printfln("%lu Failed to %s rc: %s", millis(), msg, tf_hal_strerror(rc));
     delay(10);
 
@@ -249,8 +227,10 @@ bool mirror_filesystem(fs::FS &fromFS, fs::FS &toFS, String root_name, int level
             logger.printfln("Recursing in directory %s. Depth left %d.", root_name.c_str(), levels - 1);
             toFS.mkdir(source.name());
 
-            if (!mirror_filesystem(fromFS, toFS, String(source.name()) + "/", levels - 1))
+            if (!mirror_filesystem(fromFS, toFS, String(source.name()) + "/", levels - 1)) {
                 return false;
+            }
+
             continue;
         }
 
@@ -332,8 +312,9 @@ bool mount_or_format_spiffs(void)
         LittleFS.format();
     }
 
-    if (!LittleFS.begin(false, "/spiffs", 10, "spiffs"))
+    if (!LittleFS.begin(false, "/spiffs", 10, "spiffs")) {
         return false;
+    }
 
     size_t part_size = LittleFS.totalBytes();
     size_t part_used = LittleFS.usedBytes();
@@ -518,34 +499,48 @@ static bool flash_firmware(TF_Unknown *bricklet, const uint8_t *firmware, size_t
 #define FIRMWARE_MINOR_OFFSET 11
 #define FIRMWARE_PATCH_OFFSET 12
 
-int ensure_matching_firmware(TF_HAL *hal, const char *uid, const char* name, const char *purpose, const uint8_t *firmware, size_t firmware_len, EventLog *logger, bool force) {
+
+class TFPSwap {
+public:
+    TFPSwap(TF_TFP *tfp) :
+        tfp(tfp),
+        device(tfp->device),
+        cb_handler(tfp->cb_handler)
+    {
+        tfp->device = nullptr;
+        tfp->cb_handler = nullptr;
+    }
+
+    ~TFPSwap()
+    {
+        tfp->device = device;
+        tfp->cb_handler = cb_handler;
+    }
+
+private:
+    TF_TFP *tfp;
+    void *device;
+    TF_CallbackHandler cb_handler;
+};
+
+int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose, const uint8_t *firmware, size_t firmware_len, EventLog *logger, bool force)
+{
+    TFPSwap tfp_swap(tfp);
     TF_Unknown bricklet;
 
-    uint32_t numeric_uid;
-    int rc = tf_base58_decode(uid, &numeric_uid);
+    int rc = tf_unknown_create(&bricklet, tfp);
+
     if (rc != TF_E_OK) {
-        return rc;
-    }
-
-    uint8_t port_id;
-    uint8_t inventory_index;
-    rc = tf_hal_get_port_id(hal, numeric_uid, &port_id, &inventory_index);
-    if (rc < 0) {
-        return rc;
-    }
-
-    auto result = tf_unknown_create(&bricklet, uid, hal, port_id, inventory_index);
-    if (result != TF_E_OK) {
-        logger->printfln("%s init failed (rc %d). Disabling %s support.", name, result, purpose);
+        logger->printfln("%s init failed (rc %d). Disabling %s support.", name, rc, purpose);
         return -1;
     }
 
     uint8_t firmware_version[3] = {0};
 
-    result = tf_unknown_get_identity(&bricklet, nullptr, nullptr, nullptr, nullptr, firmware_version, nullptr);
+    rc = tf_unknown_get_identity(&bricklet, nullptr, nullptr, nullptr, nullptr, firmware_version, nullptr);
 
-    if (result != TF_E_OK) {
-        logger->printfln("%s get identity failed (rc %d). Disabling %s support.", name, result, purpose);
+    if (rc != TF_E_OK) {
+        logger->printfln("%s get identity failed (rc %d). Disabling %s support.", name, rc, purpose);
         return -1;
     }
 
@@ -564,10 +559,16 @@ int ensure_matching_firmware(TF_HAL *hal, const char *uid, const char* name, con
     }
 
     if (flash_required) {
-        logger->printfln("%s firmware is %d.%d.%d not the expected %d.%d.%d. Flashing firmware...",
-                         name,
-                         firmware_version[0], firmware_version[1], firmware_version[2],
-                         embedded_firmware_version[0], embedded_firmware_version[1], embedded_firmware_version[2]);
+        if (force) {
+            logger->printfln("Forcing %s firmware update to %d.%d.%d. Flashing firmware...",
+                             name,
+                             embedded_firmware_version[0], embedded_firmware_version[1], embedded_firmware_version[2]);
+        } else {
+            logger->printfln("%s firmware is %d.%d.%d not the expected %d.%d.%d. Flashing firmware...",
+                             name,
+                             firmware_version[0], firmware_version[1], firmware_version[2],
+                             embedded_firmware_version[0], embedded_firmware_version[1], embedded_firmware_version[2]);
+        }
 
         if (!flash_firmware(&bricklet, firmware, firmware_len, logger)) {
             logger->printfln("%s flashing failed. Disabling %s support.", name, purpose);

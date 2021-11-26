@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-22.      *
+ * This file was automatically generated on 2021-11-26.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -15,6 +15,7 @@
 #include "tfp.h"
 #include "hal_common.h"
 #include "macros.h"
+#include "streaming.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -238,7 +239,7 @@ typedef struct TF_Unknown {
  * Creates the device object \c unknown with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_unknown_create(TF_Unknown *unknown, const char *uid, TF_HAL *hal, uint8_t port_id, uint8_t inventory_index);
+int tf_unknown_create(TF_Unknown *unknown, TF_TFP *tfp);
 
 /**
  * \ingroup TF_Unknown

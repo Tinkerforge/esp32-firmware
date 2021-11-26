@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-22.      *
+ * This file was automatically generated on 2021-11-26.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -15,6 +15,7 @@
 #include "tfp.h"
 #include "hal_common.h"
 #include "macros.h"
+#include "streaming.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,23 +29,30 @@ struct TF_RS485;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 typedef void (*TF_RS485_ReadLowLevelHandler)(struct TF_RS485 *device, uint16_t message_length, uint16_t message_chunk_offset, char message_chunk_data[60], void *user_data);
+typedef void (*TF_RS485_ReadHandler)(struct TF_RS485 *device, char *message, uint16_t message_length, void *user_data);
 typedef void (*TF_RS485_ErrorCountHandler)(struct TF_RS485 *device, uint32_t overrun_error_count, uint32_t parity_error_count, void *user_data);
 typedef void (*TF_RS485_ModbusSlaveReadCoilsRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t count, void *user_data);
 typedef void (*TF_RS485_ModbusMasterReadCoilsResponseLowLevelHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t coils_length, uint16_t coils_chunk_offset, bool coils_chunk_data[464], void *user_data);
+typedef void (*TF_RS485_ModbusMasterReadCoilsResponseHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, bool *coils, uint16_t coils_length, void *user_data);
 typedef void (*TF_RS485_ModbusSlaveReadHoldingRegistersRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t count, void *user_data);
 typedef void (*TF_RS485_ModbusMasterReadHoldingRegistersResponseLowLevelHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t holding_registers_length, uint16_t holding_registers_chunk_offset, uint16_t holding_registers_chunk_data[29], void *user_data);
+typedef void (*TF_RS485_ModbusMasterReadHoldingRegistersResponseHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t *holding_registers, uint16_t holding_registers_length, void *user_data);
 typedef void (*TF_RS485_ModbusSlaveWriteSingleCoilRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t coil_address, bool coil_value, void *user_data);
 typedef void (*TF_RS485_ModbusMasterWriteSingleCoilResponseHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, void *user_data);
 typedef void (*TF_RS485_ModbusSlaveWriteSingleRegisterRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t register_address, uint16_t register_value, void *user_data);
 typedef void (*TF_RS485_ModbusMasterWriteSingleRegisterResponseHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, void *user_data);
 typedef void (*TF_RS485_ModbusSlaveWriteMultipleCoilsRequestLowLevelHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t coils_length, uint16_t coils_chunk_offset, bool coils_chunk_data[440], void *user_data);
+typedef void (*TF_RS485_ModbusSlaveWriteMultipleCoilsRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, bool *coils, uint16_t coils_length, void *user_data);
 typedef void (*TF_RS485_ModbusMasterWriteMultipleCoilsResponseHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, void *user_data);
 typedef void (*TF_RS485_ModbusSlaveWriteMultipleRegistersRequestLowLevelHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t registers_length, uint16_t registers_chunk_offset, uint16_t registers_chunk_data[27], void *user_data);
+typedef void (*TF_RS485_ModbusSlaveWriteMultipleRegistersRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t *registers, uint16_t registers_length, void *user_data);
 typedef void (*TF_RS485_ModbusMasterWriteMultipleRegistersResponseHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, void *user_data);
 typedef void (*TF_RS485_ModbusSlaveReadDiscreteInputsRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t count, void *user_data);
 typedef void (*TF_RS485_ModbusMasterReadDiscreteInputsResponseLowLevelHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t discrete_inputs_length, uint16_t discrete_inputs_chunk_offset, bool discrete_inputs_chunk_data[464], void *user_data);
+typedef void (*TF_RS485_ModbusMasterReadDiscreteInputsResponseHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, bool *discrete_inputs, uint16_t discrete_inputs_length, void *user_data);
 typedef void (*TF_RS485_ModbusSlaveReadInputRegistersRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t count, void *user_data);
 typedef void (*TF_RS485_ModbusMasterReadInputRegistersResponseLowLevelHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t input_registers_length, uint16_t input_registers_chunk_offset, uint16_t input_registers_chunk_data[29], void *user_data);
+typedef void (*TF_RS485_ModbusMasterReadInputRegistersResponseHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t *input_registers, uint16_t input_registers_length, void *user_data);
 typedef void (*TF_RS485_FrameReadableHandler)(struct TF_RS485 *device, uint16_t frame_count, void *user_data);
 
 #endif
@@ -112,6 +120,27 @@ typedef struct TF_RS485 {
 
     TF_RS485_FrameReadableHandler frame_readable_handler;
     void *frame_readable_user_data;
+
+    TF_RS485_ReadHandler read_handler;
+    TF_HighLevelCallback read_hlc;
+
+    TF_RS485_ModbusMasterReadCoilsResponseHandler modbus_master_read_coils_response_handler;
+    TF_HighLevelCallback modbus_master_read_coils_response_hlc;
+
+    TF_RS485_ModbusMasterReadHoldingRegistersResponseHandler modbus_master_read_holding_registers_response_handler;
+    TF_HighLevelCallback modbus_master_read_holding_registers_response_hlc;
+
+    TF_RS485_ModbusSlaveWriteMultipleCoilsRequestHandler modbus_slave_write_multiple_coils_request_handler;
+    TF_HighLevelCallback modbus_slave_write_multiple_coils_request_hlc;
+
+    TF_RS485_ModbusSlaveWriteMultipleRegistersRequestHandler modbus_slave_write_multiple_registers_request_handler;
+    TF_HighLevelCallback modbus_slave_write_multiple_registers_request_hlc;
+
+    TF_RS485_ModbusMasterReadDiscreteInputsResponseHandler modbus_master_read_discrete_inputs_response_handler;
+    TF_HighLevelCallback modbus_master_read_discrete_inputs_response_hlc;
+
+    TF_RS485_ModbusMasterReadInputRegistersResponseHandler modbus_master_read_input_registers_response_handler;
+    TF_HighLevelCallback modbus_master_read_input_registers_response_hlc;
 
 #endif
     uint8_t response_expected[3];
@@ -823,6 +852,21 @@ int tf_rs485_register_read_low_level_callback(TF_RS485 *rs485, TF_RS485_ReadLowL
 /**
  * \ingroup TF_RS485
  *
+ * Registers the given \c handler to the Read callback. The
+ * \c user_data will be passed as the last parameter to the \c handler.
+ *
+ * Signature: \code void callback(uint16_t message_length, uint16_t message_chunk_offset, char message_chunk_data[60], void *user_data) \endcode
+ * 
+ * This callback is called if new data is available.
+ * 
+ * To enable this callback, use {@link tf_rs485_enable_read_callback}.
+ */
+int tf_rs485_register_read_callback(TF_RS485 *rs485, TF_RS485_ReadHandler handler, char *message, void *user_data);
+
+
+/**
+ * \ingroup TF_RS485
+ *
  * Registers the given \c handler to the Error Count callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
  *
@@ -881,6 +925,31 @@ int tf_rs485_register_modbus_master_read_coils_response_low_level_callback(TF_RS
 /**
  * \ingroup TF_RS485
  *
+ * Registers the given \c handler to the Modbus Master Read Coils Response callback. The
+ * \c user_data will be passed as the last parameter to the \c handler.
+ *
+ * Signature: \code void callback(uint8_t request_id, int8_t exception_code, uint16_t coils_length, uint16_t coils_chunk_offset, bool coils_chunk_data[464], void *user_data) \endcode
+ * 
+ * This callback is called only in Modbus master mode when the master receives a
+ * valid response of a request to read coils.
+ * 
+ * The parameters are request ID
+ * of the request, exception code of the response and the data as received by the
+ * response.
+ * 
+ * Any non-zero exception code indicates a problem. If the exception code
+ * is greater than 0 then the number represents a Modbus exception code. If it is
+ * less than 0 then it represents other errors. For example, -1 indicates that
+ * the request timed out or that the master did not receive any valid response of the
+ * request within the master request timeout period as set by
+ * {@link tf_rs485_set_modbus_configuration}.
+ */
+int tf_rs485_register_modbus_master_read_coils_response_callback(TF_RS485 *rs485, TF_RS485_ModbusMasterReadCoilsResponseHandler handler, bool *coils, void *user_data);
+
+
+/**
+ * \ingroup TF_RS485
+ *
  * Registers the given \c handler to the Modbus Slave Read Holding Registers Request callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
  *
@@ -920,6 +989,31 @@ int tf_rs485_register_modbus_slave_read_holding_registers_request_callback(TF_RS
  * {@link tf_rs485_set_modbus_configuration}.
  */
 int tf_rs485_register_modbus_master_read_holding_registers_response_low_level_callback(TF_RS485 *rs485, TF_RS485_ModbusMasterReadHoldingRegistersResponseLowLevelHandler handler, void *user_data);
+
+
+/**
+ * \ingroup TF_RS485
+ *
+ * Registers the given \c handler to the Modbus Master Read Holding Registers Response callback. The
+ * \c user_data will be passed as the last parameter to the \c handler.
+ *
+ * Signature: \code void callback(uint8_t request_id, int8_t exception_code, uint16_t holding_registers_length, uint16_t holding_registers_chunk_offset, uint16_t holding_registers_chunk_data[29], void *user_data) \endcode
+ * 
+ * This callback is called only in Modbus master mode when the master receives a
+ * valid response of a request to read holding registers.
+ * 
+ * The parameters are
+ * request ID of the request, exception code of the response and the data as received
+ * by the response.
+ * 
+ * Any non-zero exception code indicates a problem. If the exception
+ * code is greater than 0 then the number represents a Modbus exception code. If
+ * it is less than 0 then it represents other errors. For example, -1 indicates that
+ * the request timed out or that the master did not receive any valid response of the
+ * request within the master request timeout period as set by
+ * {@link tf_rs485_set_modbus_configuration}.
+ */
+int tf_rs485_register_modbus_master_read_holding_registers_response_callback(TF_RS485 *rs485, TF_RS485_ModbusMasterReadHoldingRegistersResponseHandler handler, uint16_t *holding_registers, void *user_data);
 
 
 /**
@@ -1030,6 +1124,25 @@ int tf_rs485_register_modbus_slave_write_multiple_coils_request_low_level_callba
 /**
  * \ingroup TF_RS485
  *
+ * Registers the given \c handler to the Modbus Slave Write Multiple Coils Request callback. The
+ * \c user_data will be passed as the last parameter to the \c handler.
+ *
+ * Signature: \code void callback(uint8_t request_id, uint32_t starting_address, uint16_t coils_length, uint16_t coils_chunk_offset, bool coils_chunk_data[440], void *user_data) \endcode
+ * 
+ * This callback is called only in Modbus slave mode when the slave receives a
+ * valid request from a Modbus master to write multiple coils. The parameters
+ * are request ID of the request, the number of the first coil and the data to be written as
+ * received by the request. The number of the first coil is called starting address for backwards compatibility reasons.
+ * It is not an address, but instead a coil number in the range of 1 to 65536.
+ * 
+ * To send a response of this request use {@link tf_rs485_modbus_slave_answer_write_multiple_coils_request}.
+ */
+int tf_rs485_register_modbus_slave_write_multiple_coils_request_callback(TF_RS485 *rs485, TF_RS485_ModbusSlaveWriteMultipleCoilsRequestHandler handler, bool *coils, void *user_data);
+
+
+/**
+ * \ingroup TF_RS485
+ *
  * Registers the given \c handler to the Modbus Master Write Multiple Coils Response callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
  *
@@ -1068,6 +1181,25 @@ int tf_rs485_register_modbus_master_write_multiple_coils_response_callback(TF_RS
  * To send a response of this request use {@link tf_rs485_modbus_slave_answer_write_multiple_registers_request}.
  */
 int tf_rs485_register_modbus_slave_write_multiple_registers_request_low_level_callback(TF_RS485 *rs485, TF_RS485_ModbusSlaveWriteMultipleRegistersRequestLowLevelHandler handler, void *user_data);
+
+
+/**
+ * \ingroup TF_RS485
+ *
+ * Registers the given \c handler to the Modbus Slave Write Multiple Registers Request callback. The
+ * \c user_data will be passed as the last parameter to the \c handler.
+ *
+ * Signature: \code void callback(uint8_t request_id, uint32_t starting_address, uint16_t registers_length, uint16_t registers_chunk_offset, uint16_t registers_chunk_data[27], void *user_data) \endcode
+ * 
+ * This callback is called only in Modbus slave mode when the slave receives a
+ * valid request from a Modbus master to write multiple holding registers. The parameters
+ * are request ID of the request, the number of the first holding register and the data to be written as
+ * received by the request. The number of the first holding register is called starting address for backwards compatibility reasons.
+ * It is not an address, but instead a holding register number in the range of 1 to 65536. The prefix digit 4 (for holding register) is omitted.
+ * 
+ * To send a response of this request use {@link tf_rs485_modbus_slave_answer_write_multiple_registers_request}.
+ */
+int tf_rs485_register_modbus_slave_write_multiple_registers_request_callback(TF_RS485 *rs485, TF_RS485_ModbusSlaveWriteMultipleRegistersRequestHandler handler, uint16_t *registers, void *user_data);
 
 
 /**
@@ -1141,6 +1273,31 @@ int tf_rs485_register_modbus_master_read_discrete_inputs_response_low_level_call
 /**
  * \ingroup TF_RS485
  *
+ * Registers the given \c handler to the Modbus Master Read Discrete Inputs Response callback. The
+ * \c user_data will be passed as the last parameter to the \c handler.
+ *
+ * Signature: \code void callback(uint8_t request_id, int8_t exception_code, uint16_t discrete_inputs_length, uint16_t discrete_inputs_chunk_offset, bool discrete_inputs_chunk_data[464], void *user_data) \endcode
+ * 
+ * This callback is called only in Modbus master mode when the master receives a
+ * valid response of a request to read discrete inputs.
+ * 
+ * The parameters are
+ * request ID of the request, exception code of the response and the data as received
+ * by the response.
+ * 
+ * Any non-zero exception code indicates a problem. If the exception
+ * code is greater than 0 then the number represents a Modbus exception code. If
+ * it is less than 0 then it represents other errors. For example, -1 indicates that
+ * the request timedout or that the master did not receive any valid response of the
+ * request within the master request timeout period as set by
+ * {@link tf_rs485_set_modbus_configuration}.
+ */
+int tf_rs485_register_modbus_master_read_discrete_inputs_response_callback(TF_RS485 *rs485, TF_RS485_ModbusMasterReadDiscreteInputsResponseHandler handler, bool *discrete_inputs, void *user_data);
+
+
+/**
+ * \ingroup TF_RS485
+ *
  * Registers the given \c handler to the Modbus Slave Read Input Registers Request callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
  *
@@ -1180,6 +1337,31 @@ int tf_rs485_register_modbus_slave_read_input_registers_request_callback(TF_RS48
  * {@link tf_rs485_set_modbus_configuration}.
  */
 int tf_rs485_register_modbus_master_read_input_registers_response_low_level_callback(TF_RS485 *rs485, TF_RS485_ModbusMasterReadInputRegistersResponseLowLevelHandler handler, void *user_data);
+
+
+/**
+ * \ingroup TF_RS485
+ *
+ * Registers the given \c handler to the Modbus Master Read Input Registers Response callback. The
+ * \c user_data will be passed as the last parameter to the \c handler.
+ *
+ * Signature: \code void callback(uint8_t request_id, int8_t exception_code, uint16_t input_registers_length, uint16_t input_registers_chunk_offset, uint16_t input_registers_chunk_data[29], void *user_data) \endcode
+ * 
+ * This callback is called only in Modbus master mode when the master receives a
+ * valid response of a request to read input registers.
+ * 
+ * The parameters are
+ * request ID of the request, exception code of the response and the data as received
+ * by the response.
+ * 
+ * Any non-zero exception code indicates a problem. If the exception
+ * code is greater than 0 then the number represents a Modbus exception code. If
+ * it is less than 0 then it represents other errors. For example, -1 indicates that
+ * the request timedout or that the master did not receive any valid response of the
+ * request within the master request timeout period as set by
+ * {@link tf_rs485_set_modbus_configuration}.
+ */
+int tf_rs485_register_modbus_master_read_input_registers_response_callback(TF_RS485 *rs485, TF_RS485_ModbusMasterReadInputRegistersResponseHandler handler, uint16_t *input_registers, void *user_data);
 
 
 /**

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-22.      *
+ * This file was automatically generated on 2021-11-26.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -21,43 +21,57 @@ extern "C" {
 #endif
 
 
-static bool tf_oled_128x64_v2_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *payload) {
-    (void)dev;
+static bool tf_oled_128x64_v2_callback_handler(void *device, uint8_t fid, TF_PacketBuffer *payload) {
+    (void)device;
     (void)fid;
     (void)payload;
 
     return false;
 }
 int tf_oled_128x64_v2_create(TF_OLED128x64V2 *oled_128x64_v2, const char *uid, TF_HAL *hal) {
-    if (oled_128x64_v2 == NULL || uid == NULL || hal == NULL) {
+    if (oled_128x64_v2 == NULL || hal == NULL) {
         return TF_E_NULL;
     }
 
+    static uint16_t next_tfp_index = 0;
+
     memset(oled_128x64_v2, 0, sizeof(TF_OLED128x64V2));
 
-    uint32_t numeric_uid;
-    int rc = tf_base58_decode(uid, &numeric_uid);
+    TF_TFP *tfp;
 
-    if (rc != TF_E_OK) {
-        return rc;
+    if (uid != NULL && *uid != '\0') {
+        uint32_t uid_num = 0;
+        int rc = tf_base58_decode(uid, &uid_num);
+
+        if (rc != TF_E_OK) {
+            return rc;
+        }
+
+        tfp = tf_hal_get_tfp(hal, &next_tfp_index, &uid_num, NULL, NULL);
+
+        if (tfp == NULL) {
+            return TF_E_DEVICE_NOT_FOUND;
+        }
+
+        if (tfp->device_id != TF_OLED_128X64_V2_DEVICE_IDENTIFIER) {
+            return TF_E_WRONG_DEVICE_TYPE;
+        }
+    } else {
+        uint16_t device_id = TF_OLED_128X64_V2_DEVICE_IDENTIFIER;
+
+        tfp = tf_hal_get_tfp(hal, &next_tfp_index, NULL, NULL, &device_id);
+
+        if (tfp == NULL) {
+            return TF_E_DEVICE_NOT_FOUND;
+        }
     }
 
-    uint8_t port_id;
-    uint8_t inventory_index;
-    rc = tf_hal_get_port_id(hal, numeric_uid, &port_id, &inventory_index);
-
-    if (rc < 0) {
-        return rc;
+    if (tfp->device != NULL) {
+        return TF_E_DEVICE_ALREADY_IN_USE;
     }
 
-    rc = tf_hal_get_tfp(hal, &oled_128x64_v2->tfp, TF_OLED_128X64_V2_DEVICE_IDENTIFIER, inventory_index);
-
-    if (rc != TF_E_OK) {
-        return rc;
-    }
-
+    oled_128x64_v2->tfp = tfp;
     oled_128x64_v2->tfp->device = oled_128x64_v2;
-    oled_128x64_v2->tfp->uid = numeric_uid;
     oled_128x64_v2->tfp->cb_handler = tf_oled_128x64_v2_callback_handler;
     oled_128x64_v2->response_expected[0] = 0x01;
     oled_128x64_v2->response_expected[1] = 0x00;
@@ -66,14 +80,15 @@ int tf_oled_128x64_v2_create(TF_OLED128x64V2 *oled_128x64_v2, const char *uid, T
 }
 
 int tf_oled_128x64_v2_destroy(TF_OLED128x64V2 *oled_128x64_v2) {
-    if (oled_128x64_v2 == NULL) {
+    if (oled_128x64_v2 == NULL || oled_128x64_v2->tfp == NULL) {
         return TF_E_NULL;
     }
 
-    int result = tf_tfp_destroy(oled_128x64_v2->tfp);
+    oled_128x64_v2->tfp->cb_handler = NULL;
+    oled_128x64_v2->tfp->device = NULL;
     oled_128x64_v2->tfp = NULL;
 
-    return result;
+    return TF_E_OK;
 }
 
 int tf_oled_128x64_v2_get_response_expected(TF_OLED128x64V2 *oled_128x64_v2, uint8_t function_id, bool *ret_response_expected) {
@@ -225,7 +240,9 @@ int tf_oled_128x64_v2_write_pixels_low_level(TF_OLED128x64V2 *oled_128x64_v2, ui
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->locked) {
+    TF_HAL *hal = oled_128x64_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -234,20 +251,20 @@ int tf_oled_128x64_v2_write_pixels_low_level(TF_OLED128x64V2 *oled_128x64_v2, ui
     tf_tfp_prepare_send(oled_128x64_v2->tfp, TF_OLED_128X64_V2_FUNCTION_WRITE_PIXELS_LOW_LEVEL, 64, 0, response_expected);
 
     size_t i;
-    uint8_t *buf = tf_tfp_get_payload_buffer(oled_128x64_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(oled_128x64_v2->tfp);
 
-    buf[0] = (uint8_t)x_start;
-    buf[1] = (uint8_t)y_start;
-    buf[2] = (uint8_t)x_end;
-    buf[3] = (uint8_t)y_end;
-    pixels_length = tf_leconvert_uint16_to(pixels_length); memcpy(buf + 4, &pixels_length, 2);
-    pixels_chunk_offset = tf_leconvert_uint16_to(pixels_chunk_offset); memcpy(buf + 6, &pixels_chunk_offset, 2);
-    memset(buf + 8, 0, 56); for (i = 0; i < 448; ++i) buf[8 + (i / 8)] |= (pixels_chunk_data[i] ? 1 : 0) << (i % 8);
+    send_buf[0] = (uint8_t)x_start;
+    send_buf[1] = (uint8_t)y_start;
+    send_buf[2] = (uint8_t)x_end;
+    send_buf[3] = (uint8_t)y_end;
+    pixels_length = tf_leconvert_uint16_to(pixels_length); memcpy(send_buf + 4, &pixels_length, 2);
+    pixels_chunk_offset = tf_leconvert_uint16_to(pixels_chunk_offset); memcpy(send_buf + 6, &pixels_chunk_offset, 2);
+    memset(send_buf + 8, 0, 56); for (i = 0; i < 448; ++i) send_buf[8 + (i / 8)] |= (pixels_chunk_data[i] ? 1 : 0) << (i % 8);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)oled_128x64_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -271,24 +288,26 @@ int tf_oled_128x64_v2_read_pixels_low_level(TF_OLED128x64V2 *oled_128x64_v2, uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->locked) {
+    TF_HAL *hal = oled_128x64_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(oled_128x64_v2->tfp, TF_OLED_128X64_V2_FUNCTION_READ_PIXELS_LOW_LEVEL, 4, 64, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(oled_128x64_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(oled_128x64_v2->tfp);
 
-    buf[0] = (uint8_t)x_start;
-    buf[1] = (uint8_t)y_start;
-    buf[2] = (uint8_t)x_end;
-    buf[3] = (uint8_t)y_end;
+    send_buf[0] = (uint8_t)x_start;
+    send_buf[1] = (uint8_t)y_start;
+    send_buf[2] = (uint8_t)x_end;
+    send_buf[3] = (uint8_t)y_end;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)oled_128x64_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -299,9 +318,10 @@ int tf_oled_128x64_v2_read_pixels_low_level(TF_OLED128x64V2 *oled_128x64_v2, uin
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_pixels_length != NULL) { *ret_pixels_length = tf_packet_buffer_read_uint16_t(&oled_128x64_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&oled_128x64_v2->tfp->spitfp->recv_buf, 2); }
-        if (ret_pixels_chunk_offset != NULL) { *ret_pixels_chunk_offset = tf_packet_buffer_read_uint16_t(&oled_128x64_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&oled_128x64_v2->tfp->spitfp->recv_buf, 2); }
-        if (ret_pixels_chunk_data != NULL) { tf_packet_buffer_read_bool_array(&oled_128x64_v2->tfp->spitfp->recv_buf, ret_pixels_chunk_data, 480);} else { tf_packet_buffer_remove(&oled_128x64_v2->tfp->spitfp->recv_buf, 60); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(oled_128x64_v2->tfp);
+        if (ret_pixels_length != NULL) { *ret_pixels_length = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+        if (ret_pixels_chunk_offset != NULL) { *ret_pixels_chunk_offset = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+        if (ret_pixels_chunk_data != NULL) { tf_packet_buffer_read_bool_array(recv_buf, ret_pixels_chunk_data, 480);} else { tf_packet_buffer_remove(recv_buf, 60); }
         tf_tfp_packet_processed(oled_128x64_v2->tfp);
     }
 
@@ -319,7 +339,9 @@ int tf_oled_128x64_v2_clear_display(TF_OLED128x64V2 *oled_128x64_v2) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->locked) {
+    TF_HAL *hal = oled_128x64_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -327,10 +349,10 @@ int tf_oled_128x64_v2_clear_display(TF_OLED128x64V2 *oled_128x64_v2) {
     tf_oled_128x64_v2_get_response_expected(oled_128x64_v2, TF_OLED_128X64_V2_FUNCTION_CLEAR_DISPLAY, &response_expected);
     tf_tfp_prepare_send(oled_128x64_v2->tfp, TF_OLED_128X64_V2_FUNCTION_CLEAR_DISPLAY, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)oled_128x64_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -354,7 +376,9 @@ int tf_oled_128x64_v2_set_display_configuration(TF_OLED128x64V2 *oled_128x64_v2,
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->locked) {
+    TF_HAL *hal = oled_128x64_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -362,16 +386,16 @@ int tf_oled_128x64_v2_set_display_configuration(TF_OLED128x64V2 *oled_128x64_v2,
     tf_oled_128x64_v2_get_response_expected(oled_128x64_v2, TF_OLED_128X64_V2_FUNCTION_SET_DISPLAY_CONFIGURATION, &response_expected);
     tf_tfp_prepare_send(oled_128x64_v2->tfp, TF_OLED_128X64_V2_FUNCTION_SET_DISPLAY_CONFIGURATION, 3, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(oled_128x64_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(oled_128x64_v2->tfp);
 
-    buf[0] = (uint8_t)contrast;
-    buf[1] = invert ? 1 : 0;
-    buf[2] = automatic_draw ? 1 : 0;
+    send_buf[0] = (uint8_t)contrast;
+    send_buf[1] = invert ? 1 : 0;
+    send_buf[2] = automatic_draw ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)oled_128x64_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -395,17 +419,19 @@ int tf_oled_128x64_v2_get_display_configuration(TF_OLED128x64V2 *oled_128x64_v2,
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->locked) {
+    TF_HAL *hal = oled_128x64_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(oled_128x64_v2->tfp, TF_OLED_128X64_V2_FUNCTION_GET_DISPLAY_CONFIGURATION, 0, 3, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)oled_128x64_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -416,9 +442,10 @@ int tf_oled_128x64_v2_get_display_configuration(TF_OLED128x64V2 *oled_128x64_v2,
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_contrast != NULL) { *ret_contrast = tf_packet_buffer_read_uint8_t(&oled_128x64_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&oled_128x64_v2->tfp->spitfp->recv_buf, 1); }
-        if (ret_invert != NULL) { *ret_invert = tf_packet_buffer_read_bool(&oled_128x64_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&oled_128x64_v2->tfp->spitfp->recv_buf, 1); }
-        if (ret_automatic_draw != NULL) { *ret_automatic_draw = tf_packet_buffer_read_bool(&oled_128x64_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&oled_128x64_v2->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(oled_128x64_v2->tfp);
+        if (ret_contrast != NULL) { *ret_contrast = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_invert != NULL) { *ret_invert = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_automatic_draw != NULL) { *ret_automatic_draw = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(oled_128x64_v2->tfp);
     }
 
@@ -436,7 +463,9 @@ int tf_oled_128x64_v2_write_line(TF_OLED128x64V2 *oled_128x64_v2, uint8_t line, 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->locked) {
+    TF_HAL *hal = oled_128x64_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -444,17 +473,17 @@ int tf_oled_128x64_v2_write_line(TF_OLED128x64V2 *oled_128x64_v2, uint8_t line, 
     tf_oled_128x64_v2_get_response_expected(oled_128x64_v2, TF_OLED_128X64_V2_FUNCTION_WRITE_LINE, &response_expected);
     tf_tfp_prepare_send(oled_128x64_v2->tfp, TF_OLED_128X64_V2_FUNCTION_WRITE_LINE, 24, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(oled_128x64_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(oled_128x64_v2->tfp);
 
-    buf[0] = (uint8_t)line;
-    buf[1] = (uint8_t)position;
-    strncpy((char *)(buf + 2), text, 22);
+    send_buf[0] = (uint8_t)line;
+    send_buf[1] = (uint8_t)position;
+    strncpy((char *)(send_buf + 2), text, 22);
 
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)oled_128x64_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -478,7 +507,9 @@ int tf_oled_128x64_v2_draw_buffered_frame(TF_OLED128x64V2 *oled_128x64_v2, bool 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->locked) {
+    TF_HAL *hal = oled_128x64_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -486,14 +517,14 @@ int tf_oled_128x64_v2_draw_buffered_frame(TF_OLED128x64V2 *oled_128x64_v2, bool 
     tf_oled_128x64_v2_get_response_expected(oled_128x64_v2, TF_OLED_128X64_V2_FUNCTION_DRAW_BUFFERED_FRAME, &response_expected);
     tf_tfp_prepare_send(oled_128x64_v2->tfp, TF_OLED_128X64_V2_FUNCTION_DRAW_BUFFERED_FRAME, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(oled_128x64_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(oled_128x64_v2->tfp);
 
-    buf[0] = force_complete_redraw ? 1 : 0;
+    send_buf[0] = force_complete_redraw ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)oled_128x64_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -517,17 +548,19 @@ int tf_oled_128x64_v2_get_spitfp_error_count(TF_OLED128x64V2 *oled_128x64_v2, ui
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->locked) {
+    TF_HAL *hal = oled_128x64_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(oled_128x64_v2->tfp, TF_OLED_128X64_V2_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)oled_128x64_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -538,10 +571,11 @@ int tf_oled_128x64_v2_get_spitfp_error_count(TF_OLED128x64V2 *oled_128x64_v2, ui
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(&oled_128x64_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&oled_128x64_v2->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(&oled_128x64_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&oled_128x64_v2->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(&oled_128x64_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&oled_128x64_v2->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(&oled_128x64_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&oled_128x64_v2->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(oled_128x64_v2->tfp);
+        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(oled_128x64_v2->tfp);
     }
 
@@ -559,21 +593,23 @@ int tf_oled_128x64_v2_set_bootloader_mode(TF_OLED128x64V2 *oled_128x64_v2, uint8
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->locked) {
+    TF_HAL *hal = oled_128x64_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(oled_128x64_v2->tfp, TF_OLED_128X64_V2_FUNCTION_SET_BOOTLOADER_MODE, 1, 1, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(oled_128x64_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(oled_128x64_v2->tfp);
 
-    buf[0] = (uint8_t)mode;
+    send_buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)oled_128x64_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -584,7 +620,8 @@ int tf_oled_128x64_v2_set_bootloader_mode(TF_OLED128x64V2 *oled_128x64_v2, uint8
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(&oled_128x64_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&oled_128x64_v2->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(oled_128x64_v2->tfp);
+        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(oled_128x64_v2->tfp);
     }
 
@@ -602,17 +639,19 @@ int tf_oled_128x64_v2_get_bootloader_mode(TF_OLED128x64V2 *oled_128x64_v2, uint8
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->locked) {
+    TF_HAL *hal = oled_128x64_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(oled_128x64_v2->tfp, TF_OLED_128X64_V2_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)oled_128x64_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -623,7 +662,8 @@ int tf_oled_128x64_v2_get_bootloader_mode(TF_OLED128x64V2 *oled_128x64_v2, uint8
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(&oled_128x64_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&oled_128x64_v2->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(oled_128x64_v2->tfp);
+        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(oled_128x64_v2->tfp);
     }
 
@@ -641,7 +681,9 @@ int tf_oled_128x64_v2_set_write_firmware_pointer(TF_OLED128x64V2 *oled_128x64_v2
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->locked) {
+    TF_HAL *hal = oled_128x64_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -649,14 +691,14 @@ int tf_oled_128x64_v2_set_write_firmware_pointer(TF_OLED128x64V2 *oled_128x64_v2
     tf_oled_128x64_v2_get_response_expected(oled_128x64_v2, TF_OLED_128X64_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER, &response_expected);
     tf_tfp_prepare_send(oled_128x64_v2->tfp, TF_OLED_128X64_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(oled_128x64_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(oled_128x64_v2->tfp);
 
-    pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
+    pointer = tf_leconvert_uint32_to(pointer); memcpy(send_buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)oled_128x64_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -680,21 +722,23 @@ int tf_oled_128x64_v2_write_firmware(TF_OLED128x64V2 *oled_128x64_v2, const uint
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->locked) {
+    TF_HAL *hal = oled_128x64_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(oled_128x64_v2->tfp, TF_OLED_128X64_V2_FUNCTION_WRITE_FIRMWARE, 64, 1, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(oled_128x64_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(oled_128x64_v2->tfp);
 
-    memcpy(buf + 0, data, 64);
+    memcpy(send_buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)oled_128x64_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -705,7 +749,8 @@ int tf_oled_128x64_v2_write_firmware(TF_OLED128x64V2 *oled_128x64_v2, const uint
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(&oled_128x64_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&oled_128x64_v2->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(oled_128x64_v2->tfp);
+        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(oled_128x64_v2->tfp);
     }
 
@@ -723,7 +768,9 @@ int tf_oled_128x64_v2_set_status_led_config(TF_OLED128x64V2 *oled_128x64_v2, uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->locked) {
+    TF_HAL *hal = oled_128x64_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -731,14 +778,14 @@ int tf_oled_128x64_v2_set_status_led_config(TF_OLED128x64V2 *oled_128x64_v2, uin
     tf_oled_128x64_v2_get_response_expected(oled_128x64_v2, TF_OLED_128X64_V2_FUNCTION_SET_STATUS_LED_CONFIG, &response_expected);
     tf_tfp_prepare_send(oled_128x64_v2->tfp, TF_OLED_128X64_V2_FUNCTION_SET_STATUS_LED_CONFIG, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(oled_128x64_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(oled_128x64_v2->tfp);
 
-    buf[0] = (uint8_t)config;
+    send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)oled_128x64_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -762,17 +809,19 @@ int tf_oled_128x64_v2_get_status_led_config(TF_OLED128x64V2 *oled_128x64_v2, uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->locked) {
+    TF_HAL *hal = oled_128x64_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(oled_128x64_v2->tfp, TF_OLED_128X64_V2_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)oled_128x64_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -783,7 +832,8 @@ int tf_oled_128x64_v2_get_status_led_config(TF_OLED128x64V2 *oled_128x64_v2, uin
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(&oled_128x64_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&oled_128x64_v2->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(oled_128x64_v2->tfp);
+        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(oled_128x64_v2->tfp);
     }
 
@@ -801,17 +851,19 @@ int tf_oled_128x64_v2_get_chip_temperature(TF_OLED128x64V2 *oled_128x64_v2, int1
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->locked) {
+    TF_HAL *hal = oled_128x64_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(oled_128x64_v2->tfp, TF_OLED_128X64_V2_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)oled_128x64_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -822,7 +874,8 @@ int tf_oled_128x64_v2_get_chip_temperature(TF_OLED128x64V2 *oled_128x64_v2, int1
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(&oled_128x64_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&oled_128x64_v2->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(oled_128x64_v2->tfp);
+        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(oled_128x64_v2->tfp);
     }
 
@@ -840,7 +893,9 @@ int tf_oled_128x64_v2_reset(TF_OLED128x64V2 *oled_128x64_v2) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->locked) {
+    TF_HAL *hal = oled_128x64_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -848,10 +903,10 @@ int tf_oled_128x64_v2_reset(TF_OLED128x64V2 *oled_128x64_v2) {
     tf_oled_128x64_v2_get_response_expected(oled_128x64_v2, TF_OLED_128X64_V2_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(oled_128x64_v2->tfp, TF_OLED_128X64_V2_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)oled_128x64_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -875,7 +930,9 @@ int tf_oled_128x64_v2_write_uid(TF_OLED128x64V2 *oled_128x64_v2, uint32_t uid) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->locked) {
+    TF_HAL *hal = oled_128x64_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -883,14 +940,14 @@ int tf_oled_128x64_v2_write_uid(TF_OLED128x64V2 *oled_128x64_v2, uint32_t uid) {
     tf_oled_128x64_v2_get_response_expected(oled_128x64_v2, TF_OLED_128X64_V2_FUNCTION_WRITE_UID, &response_expected);
     tf_tfp_prepare_send(oled_128x64_v2->tfp, TF_OLED_128X64_V2_FUNCTION_WRITE_UID, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(oled_128x64_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(oled_128x64_v2->tfp);
 
-    uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
+    uid = tf_leconvert_uint32_to(uid); memcpy(send_buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)oled_128x64_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -914,17 +971,19 @@ int tf_oled_128x64_v2_read_uid(TF_OLED128x64V2 *oled_128x64_v2, uint32_t *ret_ui
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->locked) {
+    TF_HAL *hal = oled_128x64_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(oled_128x64_v2->tfp, TF_OLED_128X64_V2_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)oled_128x64_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -935,7 +994,8 @@ int tf_oled_128x64_v2_read_uid(TF_OLED128x64V2 *oled_128x64_v2, uint32_t *ret_ui
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(&oled_128x64_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&oled_128x64_v2->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(oled_128x64_v2->tfp);
+        if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(oled_128x64_v2->tfp);
     }
 
@@ -953,7 +1013,9 @@ int tf_oled_128x64_v2_get_identity(TF_OLED128x64V2 *oled_128x64_v2, char ret_uid
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->locked) {
+    TF_HAL *hal = oled_128x64_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -961,10 +1023,10 @@ int tf_oled_128x64_v2_get_identity(TF_OLED128x64V2 *oled_128x64_v2, char ret_uid
     tf_tfp_prepare_send(oled_128x64_v2->tfp, TF_OLED_128X64_V2_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)oled_128x64_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)oled_128x64_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(oled_128x64_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -975,19 +1037,13 @@ int tf_oled_128x64_v2_get_identity(TF_OLED128x64V2 *oled_128x64_v2, char ret_uid
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        char tmp_connected_uid[8] = {0};
-        if (ret_uid != NULL) { tf_packet_buffer_pop_n(&oled_128x64_v2->tfp->spitfp->recv_buf, (uint8_t*)ret_uid, 8);} else { tf_packet_buffer_remove(&oled_128x64_v2->tfp->spitfp->recv_buf, 8); }
-        tf_packet_buffer_pop_n(&oled_128x64_v2->tfp->spitfp->recv_buf, (uint8_t*)tmp_connected_uid, 8);
-        if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(&oled_128x64_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&oled_128x64_v2->tfp->spitfp->recv_buf, 1); }
-        if (ret_hardware_version != NULL) { for (i = 0; i < 3; ++i) ret_hardware_version[i] = tf_packet_buffer_read_uint8_t(&oled_128x64_v2->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&oled_128x64_v2->tfp->spitfp->recv_buf, 3); }
-        if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&oled_128x64_v2->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&oled_128x64_v2->tfp->spitfp->recv_buf, 3); }
-        if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&oled_128x64_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&oled_128x64_v2->tfp->spitfp->recv_buf, 2); }
-        if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL *)oled_128x64_v2->tfp->hal, oled_128x64_v2->tfp->spitfp->port_id);
-        }
-        if (ret_connected_uid != NULL) {
-            memcpy(ret_connected_uid, tmp_connected_uid, 8);
-        }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(oled_128x64_v2->tfp);
+        if (ret_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
+        if (ret_connected_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_connected_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
+        if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_hardware_version != NULL) { for (i = 0; i < 3; ++i) ret_hardware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
+        if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
+        if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(oled_128x64_v2->tfp);
     }
 
@@ -1000,42 +1056,68 @@ int tf_oled_128x64_v2_get_identity(TF_OLED128x64V2 *oled_128x64_v2, char ret_uid
     return tf_tfp_get_error(error_code);
 }
 
+typedef struct TF_OLED128x64V2_WritePixelsLLWrapperData {
+    uint8_t x_start;
+    uint8_t y_start;
+    uint8_t x_end;
+    uint8_t y_end;
+} TF_OLED128x64V2_WritePixelsLLWrapperData;
+
+
+static int tf_oled_128x64_v2_write_pixels_ll_wrapper(void *device, void *wrapper_data, uint32_t stream_length, uint32_t chunk_offset, void *chunk_data, uint32_t *ret_chunk_written) {
+    TF_OLED128x64V2_WritePixelsLLWrapperData *data = (TF_OLED128x64V2_WritePixelsLLWrapperData *) wrapper_data;
+    uint16_t pixels_chunk_offset = (uint16_t)chunk_offset;
+    uint16_t pixels_length = (uint16_t)stream_length;
+    uint32_t pixels_chunk_written = 448;
+
+    bool *pixels_chunk_data = (bool *) chunk_data;
+    int ret = tf_oled_128x64_v2_write_pixels_low_level((TF_OLED128x64V2 *)device, data->x_start, data->y_start, data->x_end, data->y_end, pixels_length, pixels_chunk_offset, pixels_chunk_data);
+
+    *ret_chunk_written = (uint32_t) pixels_chunk_written;
+    return ret;
+}
+
 int tf_oled_128x64_v2_write_pixels(TF_OLED128x64V2 *oled_128x64_v2, uint8_t x_start, uint8_t y_start, uint8_t x_end, uint8_t y_end, const bool *pixels, uint16_t pixels_length) {
     if (oled_128x64_v2 == NULL) {
         return TF_E_NULL;
     }
+    
+    TF_OLED128x64V2_WritePixelsLLWrapperData wrapper_data;
+    memset(&wrapper_data, 0, sizeof(wrapper_data));
+    wrapper_data.x_start = x_start;
+    wrapper_data.y_start = y_start;
+    wrapper_data.x_end = x_end;
+    wrapper_data.y_end = y_end;
 
-    int ret = TF_E_OK;
+    uint32_t stream_length = pixels_length;
+    uint32_t pixels_written = 0;
+    bool chunk_data[448];
+
+    int ret = tf_stream_in(oled_128x64_v2, tf_oled_128x64_v2_write_pixels_ll_wrapper, &wrapper_data, pixels, stream_length, chunk_data, &pixels_written, 448, tf_copy_items_bool);
+
+
+
+    return ret;
+}
+
+
+typedef struct TF_OLED128x64V2_ReadPixelsLLWrapperData {
+    uint8_t x_start;
+    uint8_t y_start;
+    uint8_t x_end;
+    uint8_t y_end;
+} TF_OLED128x64V2_ReadPixelsLLWrapperData;
+
+
+static int tf_oled_128x64_v2_read_pixels_ll_wrapper(void *device, void *wrapper_data, uint32_t *ret_stream_length, uint32_t *ret_chunk_offset, void *chunk_data) {
+    TF_OLED128x64V2_ReadPixelsLLWrapperData *data = (TF_OLED128x64V2_ReadPixelsLLWrapperData *) wrapper_data;
+    uint16_t pixels_length = 0;
     uint16_t pixels_chunk_offset = 0;
-    bool pixels_chunk_data[448];
-    uint16_t pixels_chunk_length = 0;
+    bool *pixels_chunk_data = (bool *) chunk_data;
+    int ret = tf_oled_128x64_v2_read_pixels_low_level((TF_OLED128x64V2 *)device, data->x_start, data->y_start, data->x_end, data->y_end, &pixels_length, &pixels_chunk_offset, pixels_chunk_data);
 
-    if (pixels_length == 0) {
-        memset(&pixels_chunk_data, 0, sizeof(bool) * 448);
-
-        ret = tf_oled_128x64_v2_write_pixels_low_level(oled_128x64_v2, x_start, y_start, x_end, y_end, pixels_length, pixels_chunk_offset, pixels_chunk_data);
-    } else {
-        while (pixels_chunk_offset < pixels_length) {
-            pixels_chunk_length = pixels_length - pixels_chunk_offset;
-
-            if (pixels_chunk_length > 448) {
-                pixels_chunk_length = 448;
-            }
-
-            memcpy(pixels_chunk_data, &pixels[pixels_chunk_offset], sizeof(bool) * pixels_chunk_length);
-            memset(&pixels_chunk_data[pixels_chunk_length], 0, sizeof(bool) * (448 - pixels_chunk_length));
-
-            ret = tf_oled_128x64_v2_write_pixels_low_level(oled_128x64_v2, x_start, y_start, x_end, y_end, pixels_length, pixels_chunk_offset, pixels_chunk_data);
-
-            if (ret != TF_E_OK) {
-                break;
-            }
-
-            pixels_chunk_offset += 448;
-        }
-
-    }
-
+    *ret_stream_length = (uint32_t)pixels_length;
+    *ret_chunk_offset = (uint32_t)pixels_chunk_offset;
     return ret;
 }
 
@@ -1043,88 +1125,21 @@ int tf_oled_128x64_v2_read_pixels(TF_OLED128x64V2 *oled_128x64_v2, uint8_t x_sta
     if (oled_128x64_v2 == NULL) {
         return TF_E_NULL;
     }
-
-    int ret = TF_E_OK;
-    uint16_t max_pixels_length = 0;
-    uint16_t pixels_length = 0;
-    uint16_t pixels_chunk_offset = 0;
+    
+    TF_OLED128x64V2_ReadPixelsLLWrapperData wrapper_data;
+    memset(&wrapper_data, 0, sizeof(wrapper_data));
+    wrapper_data.x_start = x_start;
+    wrapper_data.y_start = y_start;
+    wrapper_data.x_end = x_end;
+    wrapper_data.y_end = y_end;
+    uint32_t pixels_length = 0;
     bool pixels_chunk_data[480];
-    bool pixels_out_of_sync;
-    uint16_t pixels_chunk_length = 0;
 
-    ret = tf_oled_128x64_v2_read_pixels_low_level(oled_128x64_v2, x_start, y_start, x_end, y_end, &pixels_length, &pixels_chunk_offset, pixels_chunk_data);
+    int ret = tf_stream_out(oled_128x64_v2, tf_oled_128x64_v2_read_pixels_ll_wrapper, &wrapper_data, ret_pixels, &pixels_length, pixels_chunk_data, 480, tf_copy_items_bool);
 
-    if (ret != TF_E_OK) {
-        if (ret_pixels_length != NULL) {
-            *ret_pixels_length = pixels_length;
-        }
-
-        return ret;
+    if (ret_pixels_length != NULL) {
+        *ret_pixels_length = (uint16_t)pixels_length;
     }
-
-    pixels_out_of_sync = pixels_chunk_offset != 0;
-
-    if (!pixels_out_of_sync) {
-        pixels_chunk_length = max_pixels_length - pixels_chunk_offset;
-
-        if (pixels_chunk_length > 480) {
-            pixels_chunk_length = 480;
-        }
-
-        if (ret_pixels != NULL) {
-            memcpy(ret_pixels, pixels_chunk_data, sizeof(bool) * pixels_chunk_length);
-        }
-
-        pixels_length = pixels_chunk_length;
-
-        while (pixels_length < max_pixels_length) {
-            ret = tf_oled_128x64_v2_read_pixels_low_level(oled_128x64_v2, x_start, y_start, x_end, y_end, &pixels_length, &pixels_chunk_offset, pixels_chunk_data);
-
-            if (ret != TF_E_OK) {
-                if (ret_pixels_length != NULL) {
-                    *ret_pixels_length = pixels_length;
-                }
-
-                return ret;
-            }
-
-            pixels_out_of_sync = pixels_chunk_offset != pixels_length;
-
-            if (pixels_out_of_sync) {
-                break;
-            }
-
-            pixels_chunk_length = max_pixels_length - pixels_chunk_offset;
-
-            if (pixels_chunk_length > 480) {
-                pixels_chunk_length = 480;
-            }
-
-            if (ret_pixels != NULL) {
-                memcpy(&ret_pixels[pixels_length], pixels_chunk_data, sizeof(bool) * pixels_chunk_length);
-            }
-
-            pixels_length += pixels_chunk_length;
-        }
-    }
-
-    if (pixels_out_of_sync) {
-        if (ret_pixels_length != NULL) {
-            *ret_pixels_length = 0; // return empty array
-        }
-
-        // discard remaining stream to bring it back in-sync
-        while (pixels_chunk_offset + 480 < max_pixels_length) {
-            ret = tf_oled_128x64_v2_read_pixels_low_level(oled_128x64_v2, x_start, y_start, x_end, y_end, &pixels_length, &pixels_chunk_offset, pixels_chunk_data);
-
-            if (ret != TF_E_OK) {
-                return ret;
-            }
-        }
-
-        ret = TF_E_STREAM_OUT_OF_SYNC;
-    }
-
     return ret;
 }
 
@@ -1134,7 +1149,9 @@ int tf_oled_128x64_v2_callback_tick(TF_OLED128x64V2 *oled_128x64_v2, uint32_t ti
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(oled_128x64_v2->tfp, tf_hal_current_time_us((TF_HAL *)oled_128x64_v2->tfp->hal) + timeout_us);
+    TF_HAL *hal = oled_128x64_v2->tfp->spitfp->hal;
+
+    return tf_tfp_callback_tick(oled_128x64_v2->tfp, tf_hal_current_time_us(hal) + timeout_us);
 }
 
 #ifdef __cplusplus

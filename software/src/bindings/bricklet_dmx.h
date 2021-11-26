@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-22.      *
+ * This file was automatically generated on 2021-11-26.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -15,6 +15,7 @@
 #include "tfp.h"
 #include "hal_common.h"
 #include "macros.h"
+#include "streaming.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,6 +31,7 @@ struct TF_DMX;
 typedef void (*TF_DMX_FrameStartedHandler)(struct TF_DMX *device, void *user_data);
 typedef void (*TF_DMX_FrameAvailableHandler)(struct TF_DMX *device, uint32_t frame_number, void *user_data);
 typedef void (*TF_DMX_FrameLowLevelHandler)(struct TF_DMX *device, uint16_t frame_length, uint16_t frame_chunk_offset, uint8_t frame_chunk_data[56], uint32_t frame_number, void *user_data);
+typedef void (*TF_DMX_FrameHandler)(struct TF_DMX *device, uint8_t *frame, uint16_t frame_length, uint32_t frame_number, void *user_data);
 typedef void (*TF_DMX_FrameErrorCountHandler)(struct TF_DMX *device, uint32_t overrun_error_count, uint32_t framing_error_count, void *user_data);
 
 #endif
@@ -52,6 +54,9 @@ typedef struct TF_DMX {
 
     TF_DMX_FrameErrorCountHandler frame_error_count_handler;
     void *frame_error_count_user_data;
+
+    TF_DMX_FrameHandler frame_handler;
+    TF_HighLevelCallback frame_hlc;
 
 #endif
     uint8_t response_expected[2];
@@ -476,6 +481,27 @@ int tf_dmx_register_frame_low_level_callback(TF_DMX *dmx, TF_DMX_FrameLowLevelHa
 /**
  * \ingroup TF_DMX
  *
+ * Registers the given \c handler to the Frame callback. The
+ * \c user_data will be passed as the last parameter to the \c handler.
+ *
+ * Signature: \code void callback(uint16_t frame_length, uint16_t frame_chunk_offset, uint8_t frame_chunk_data[56], uint32_t frame_number, void *user_data) \endcode
+ * 
+ * This callback is called as soon as a new frame is available
+ * (written by the DMX master).
+ * 
+ * The size of the array is equivalent to the number of channels in
+ * the frame. Each byte represents one channel.
+ * 
+ * This callback can be enabled via {@link tf_dmx_set_frame_callback_config}.
+ * 
+ * This callback can only be triggered in slave mode.
+ */
+int tf_dmx_register_frame_callback(TF_DMX *dmx, TF_DMX_FrameHandler handler, uint8_t *frame, void *user_data);
+
+
+/**
+ * \ingroup TF_DMX
+ *
  * Registers the given \c handler to the Frame Error Count callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
  *
@@ -642,7 +668,7 @@ int tf_dmx_get_error_led_config(TF_DMX *dmx, uint8_t *ret_config);
  * the {@link tf_dmx_register_frame_callback} callback and {@link tf_dmx_register_frame_error_count_callback} callback are disabled.
  * 
  * If you want to use the {@link tf_dmx_register_frame_callback} callback you can enable it and disable
- * the cb:`Frame Available` callback at the same time. It becomes redundant in
+ * the {@link tf_dmx_register_frame_available_callback} callback at the same time. It becomes redundant in
  * this case.
  */
 int tf_dmx_set_frame_callback_config(TF_DMX *dmx, bool frame_started_callback_enabled, bool frame_available_callback_enabled, bool frame_callback_enabled, bool frame_error_count_callback_enabled);

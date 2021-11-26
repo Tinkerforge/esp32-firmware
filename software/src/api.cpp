@@ -193,14 +193,15 @@ void API::registerDebugUrl(WebServer *server)
         result += ESP.getMaxAllocHeap();
         result += ",\n \"devices\": [";
 
-        size_t i = 0;
+        uint16_t i = 0;
         char uid[7] = {0};
-        char pos = 0;
-        uint16_t did = 0;
-        while (tf_hal_get_device_info(&hal, i, uid, &pos, &did) == TF_E_OK) {
+        char port_name;
+        uint16_t device_id;
+
+        while (tf_hal_get_device_info(&hal, i, uid, &port_name, &device_id) == TF_E_OK) {
             char buf[100] = {0};
 
-            snprintf(buf, sizeof(buf), "%c{\"UID\":\"%s\", \"DID\":%u, \"port\":\"%c\"}", i == 0 ? ' ' : ',', uid, did, pos);
+            snprintf(buf, sizeof(buf), "%c{\"UID\":\"%s\", \"DID\":%u, \"port\":\"%c\"}", i == 0 ? ' ' : ',', uid, device_id, port_name);
             result += buf;
             ++i;
         }
@@ -210,9 +211,9 @@ void API::registerDebugUrl(WebServer *server)
 
         for (char c = 'A'; c <= 'F'; ++c) {
             uint32_t spitfp_checksum, spitfp_frame, tfp_frame, tfp_unexpected;
+            char buf[100] = {0};
 
             tf_hal_get_error_counters(&hal, c, &spitfp_checksum, &spitfp_frame, &tfp_frame, &tfp_unexpected);
-            char buf[100] = {0};
             snprintf(buf, sizeof(buf), "%c{\"port\": \"%c\", \"SpiTfpChecksum\": %u, \"SpiTfpFrame\": %u, \"TfpFrame\": %u, \"TfpUnexpected\": %u}", c == 'A' ? ' ': ',', c,
                      spitfp_checksum,
                      spitfp_frame,

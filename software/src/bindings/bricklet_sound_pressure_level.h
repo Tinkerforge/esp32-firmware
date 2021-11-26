@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-22.      *
+ * This file was automatically generated on 2021-11-26.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -15,6 +15,7 @@
 #include "tfp.h"
 #include "hal_common.h"
 #include "macros.h"
+#include "streaming.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,6 +30,7 @@ struct TF_SoundPressureLevel;
 
 typedef void (*TF_SoundPressureLevel_DecibelHandler)(struct TF_SoundPressureLevel *device, uint16_t decibel, void *user_data);
 typedef void (*TF_SoundPressureLevel_SpectrumLowLevelHandler)(struct TF_SoundPressureLevel *device, uint16_t spectrum_length, uint16_t spectrum_chunk_offset, uint16_t spectrum_chunk_data[30], void *user_data);
+typedef void (*TF_SoundPressureLevel_SpectrumHandler)(struct TF_SoundPressureLevel *device, uint16_t *spectrum, uint16_t spectrum_length, void *user_data);
 
 #endif
 /**
@@ -44,6 +46,9 @@ typedef struct TF_SoundPressureLevel {
 
     TF_SoundPressureLevel_SpectrumLowLevelHandler spectrum_low_level_handler;
     void *spectrum_low_level_user_data;
+
+    TF_SoundPressureLevel_SpectrumHandler spectrum_handler;
+    TF_HighLevelCallback spectrum_hlc;
 
 #endif
     uint8_t response_expected[1];
@@ -422,6 +427,22 @@ int tf_sound_pressure_level_register_decibel_callback(TF_SoundPressureLevel *sou
  * The parameter is the same as {@link tf_sound_pressure_level_get_spectrum}.
  */
 int tf_sound_pressure_level_register_spectrum_low_level_callback(TF_SoundPressureLevel *sound_pressure_level, TF_SoundPressureLevel_SpectrumLowLevelHandler handler, void *user_data);
+
+
+/**
+ * \ingroup TF_SoundPressureLevel
+ *
+ * Registers the given \c handler to the Spectrum callback. The
+ * \c user_data will be passed as the last parameter to the \c handler.
+ *
+ * Signature: \code void callback(uint16_t spectrum_length, uint16_t spectrum_chunk_offset, uint16_t spectrum_chunk_data[30], void *user_data) \endcode
+ * 
+ * This callback is triggered periodically according to the configuration set by
+ * {@link tf_sound_pressure_level_set_spectrum_callback_configuration}.
+ * 
+ * The parameter is the same as {@link tf_sound_pressure_level_get_spectrum}.
+ */
+int tf_sound_pressure_level_register_spectrum_callback(TF_SoundPressureLevel *sound_pressure_level, TF_SoundPressureLevel_SpectrumHandler handler, uint16_t *spectrum, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

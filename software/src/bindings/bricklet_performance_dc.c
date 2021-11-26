@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-22.      *
+ * This file was automatically generated on 2021-11-26.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -22,8 +22,9 @@ extern "C" {
 
 
 #if TF_IMPLEMENT_CALLBACKS != 0
-static bool tf_performance_dc_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *payload) {
-    TF_PerformanceDC *performance_dc = (TF_PerformanceDC *)dev;
+static bool tf_performance_dc_callback_handler(void *device, uint8_t fid, TF_PacketBuffer *payload) {
+    TF_PerformanceDC *performance_dc = (TF_PerformanceDC *)device;
+    TF_HALCommon *hal_common = tf_hal_get_common(performance_dc->tfp->spitfp->hal);
     (void)payload;
 
     switch (fid) {
@@ -35,7 +36,6 @@ static bool tf_performance_dc_callback_handler(void *dev, uint8_t fid, TF_Packet
             }
 
 
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal);
             hal_common->locked = true;
             fn(performance_dc, user_data);
             hal_common->locked = false;
@@ -50,7 +50,6 @@ static bool tf_performance_dc_callback_handler(void *dev, uint8_t fid, TF_Packet
             }
 
             int16_t velocity = tf_packet_buffer_read_int16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal);
             hal_common->locked = true;
             fn(performance_dc, velocity, user_data);
             hal_common->locked = false;
@@ -65,7 +64,6 @@ static bool tf_performance_dc_callback_handler(void *dev, uint8_t fid, TF_Packet
             }
 
             int16_t velocity = tf_packet_buffer_read_int16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal);
             hal_common->locked = true;
             fn(performance_dc, velocity, user_data);
             hal_common->locked = false;
@@ -80,7 +78,6 @@ static bool tf_performance_dc_callback_handler(void *dev, uint8_t fid, TF_Packet
             }
 
             bool gpio_state[2]; tf_packet_buffer_read_bool_array(payload, gpio_state, 2);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal);
             hal_common->locked = true;
             fn(performance_dc, gpio_state, user_data);
             hal_common->locked = false;
@@ -94,40 +91,54 @@ static bool tf_performance_dc_callback_handler(void *dev, uint8_t fid, TF_Packet
     return true;
 }
 #else
-static bool tf_performance_dc_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *payload) {
+static bool tf_performance_dc_callback_handler(void *device, uint8_t fid, TF_PacketBuffer *payload) {
     return false;
 }
 #endif
 int tf_performance_dc_create(TF_PerformanceDC *performance_dc, const char *uid, TF_HAL *hal) {
-    if (performance_dc == NULL || uid == NULL || hal == NULL) {
+    if (performance_dc == NULL || hal == NULL) {
         return TF_E_NULL;
     }
 
+    static uint16_t next_tfp_index = 0;
+
     memset(performance_dc, 0, sizeof(TF_PerformanceDC));
 
-    uint32_t numeric_uid;
-    int rc = tf_base58_decode(uid, &numeric_uid);
+    TF_TFP *tfp;
 
-    if (rc != TF_E_OK) {
-        return rc;
+    if (uid != NULL && *uid != '\0') {
+        uint32_t uid_num = 0;
+        int rc = tf_base58_decode(uid, &uid_num);
+
+        if (rc != TF_E_OK) {
+            return rc;
+        }
+
+        tfp = tf_hal_get_tfp(hal, &next_tfp_index, &uid_num, NULL, NULL);
+
+        if (tfp == NULL) {
+            return TF_E_DEVICE_NOT_FOUND;
+        }
+
+        if (tfp->device_id != TF_PERFORMANCE_DC_DEVICE_IDENTIFIER) {
+            return TF_E_WRONG_DEVICE_TYPE;
+        }
+    } else {
+        uint16_t device_id = TF_PERFORMANCE_DC_DEVICE_IDENTIFIER;
+
+        tfp = tf_hal_get_tfp(hal, &next_tfp_index, NULL, NULL, &device_id);
+
+        if (tfp == NULL) {
+            return TF_E_DEVICE_NOT_FOUND;
+        }
     }
 
-    uint8_t port_id;
-    uint8_t inventory_index;
-    rc = tf_hal_get_port_id(hal, numeric_uid, &port_id, &inventory_index);
-
-    if (rc < 0) {
-        return rc;
+    if (tfp->device != NULL) {
+        return TF_E_DEVICE_ALREADY_IN_USE;
     }
 
-    rc = tf_hal_get_tfp(hal, &performance_dc->tfp, TF_PERFORMANCE_DC_DEVICE_IDENTIFIER, inventory_index);
-
-    if (rc != TF_E_OK) {
-        return rc;
-    }
-
+    performance_dc->tfp = tfp;
     performance_dc->tfp->device = performance_dc;
-    performance_dc->tfp->uid = numeric_uid;
     performance_dc->tfp->cb_handler = tf_performance_dc_callback_handler;
     performance_dc->response_expected[0] = 0x00;
     performance_dc->response_expected[1] = 0xE0;
@@ -137,14 +148,15 @@ int tf_performance_dc_create(TF_PerformanceDC *performance_dc, const char *uid, 
 }
 
 int tf_performance_dc_destroy(TF_PerformanceDC *performance_dc) {
-    if (performance_dc == NULL) {
+    if (performance_dc == NULL || performance_dc->tfp == NULL) {
         return TF_E_NULL;
     }
 
-    int result = tf_tfp_destroy(performance_dc->tfp);
+    performance_dc->tfp->cb_handler = NULL;
+    performance_dc->tfp->device = NULL;
     performance_dc->tfp = NULL;
 
-    return result;
+    return TF_E_OK;
 }
 
 int tf_performance_dc_get_response_expected(TF_PerformanceDC *performance_dc, uint8_t function_id, bool *ret_response_expected) {
@@ -428,7 +440,9 @@ int tf_performance_dc_set_enabled(TF_PerformanceDC *performance_dc, bool enabled
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -436,14 +450,14 @@ int tf_performance_dc_set_enabled(TF_PerformanceDC *performance_dc, bool enabled
     tf_performance_dc_get_response_expected(performance_dc, TF_PERFORMANCE_DC_FUNCTION_SET_ENABLED, &response_expected);
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_SET_ENABLED, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(performance_dc->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(performance_dc->tfp);
 
-    buf[0] = enabled ? 1 : 0;
+    send_buf[0] = enabled ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -467,17 +481,19 @@ int tf_performance_dc_get_enabled(TF_PerformanceDC *performance_dc, bool *ret_en
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_GET_ENABLED, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -488,7 +504,8 @@ int tf_performance_dc_get_enabled(TF_PerformanceDC *performance_dc, bool *ret_en
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_enabled != NULL) { *ret_enabled = tf_packet_buffer_read_bool(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_enabled != NULL) { *ret_enabled = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -506,7 +523,9 @@ int tf_performance_dc_set_velocity(TF_PerformanceDC *performance_dc, int16_t vel
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -514,14 +533,14 @@ int tf_performance_dc_set_velocity(TF_PerformanceDC *performance_dc, int16_t vel
     tf_performance_dc_get_response_expected(performance_dc, TF_PERFORMANCE_DC_FUNCTION_SET_VELOCITY, &response_expected);
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_SET_VELOCITY, 2, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(performance_dc->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(performance_dc->tfp);
 
-    velocity = tf_leconvert_int16_to(velocity); memcpy(buf + 0, &velocity, 2);
+    velocity = tf_leconvert_int16_to(velocity); memcpy(send_buf + 0, &velocity, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -545,17 +564,19 @@ int tf_performance_dc_get_velocity(TF_PerformanceDC *performance_dc, int16_t *re
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_GET_VELOCITY, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -566,7 +587,8 @@ int tf_performance_dc_get_velocity(TF_PerformanceDC *performance_dc, int16_t *re
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_velocity != NULL) { *ret_velocity = tf_packet_buffer_read_int16_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_velocity != NULL) { *ret_velocity = tf_packet_buffer_read_int16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -584,17 +606,19 @@ int tf_performance_dc_get_current_velocity(TF_PerformanceDC *performance_dc, int
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_GET_CURRENT_VELOCITY, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -605,7 +629,8 @@ int tf_performance_dc_get_current_velocity(TF_PerformanceDC *performance_dc, int
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_velocity != NULL) { *ret_velocity = tf_packet_buffer_read_int16_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_velocity != NULL) { *ret_velocity = tf_packet_buffer_read_int16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -623,7 +648,9 @@ int tf_performance_dc_set_motion(TF_PerformanceDC *performance_dc, uint16_t acce
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -631,15 +658,15 @@ int tf_performance_dc_set_motion(TF_PerformanceDC *performance_dc, uint16_t acce
     tf_performance_dc_get_response_expected(performance_dc, TF_PERFORMANCE_DC_FUNCTION_SET_MOTION, &response_expected);
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_SET_MOTION, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(performance_dc->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(performance_dc->tfp);
 
-    acceleration = tf_leconvert_uint16_to(acceleration); memcpy(buf + 0, &acceleration, 2);
-    deceleration = tf_leconvert_uint16_to(deceleration); memcpy(buf + 2, &deceleration, 2);
+    acceleration = tf_leconvert_uint16_to(acceleration); memcpy(send_buf + 0, &acceleration, 2);
+    deceleration = tf_leconvert_uint16_to(deceleration); memcpy(send_buf + 2, &deceleration, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -663,17 +690,19 @@ int tf_performance_dc_get_motion(TF_PerformanceDC *performance_dc, uint16_t *ret
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_GET_MOTION, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -684,8 +713,9 @@ int tf_performance_dc_get_motion(TF_PerformanceDC *performance_dc, uint16_t *ret
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_acceleration != NULL) { *ret_acceleration = tf_packet_buffer_read_uint16_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 2); }
-        if (ret_deceleration != NULL) { *ret_deceleration = tf_packet_buffer_read_uint16_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_acceleration != NULL) { *ret_acceleration = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+        if (ret_deceleration != NULL) { *ret_deceleration = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -703,7 +733,9 @@ int tf_performance_dc_full_brake(TF_PerformanceDC *performance_dc) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -711,10 +743,10 @@ int tf_performance_dc_full_brake(TF_PerformanceDC *performance_dc) {
     tf_performance_dc_get_response_expected(performance_dc, TF_PERFORMANCE_DC_FUNCTION_FULL_BRAKE, &response_expected);
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_FULL_BRAKE, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -738,7 +770,9 @@ int tf_performance_dc_set_drive_mode(TF_PerformanceDC *performance_dc, uint8_t m
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -746,14 +780,14 @@ int tf_performance_dc_set_drive_mode(TF_PerformanceDC *performance_dc, uint8_t m
     tf_performance_dc_get_response_expected(performance_dc, TF_PERFORMANCE_DC_FUNCTION_SET_DRIVE_MODE, &response_expected);
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_SET_DRIVE_MODE, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(performance_dc->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(performance_dc->tfp);
 
-    buf[0] = (uint8_t)mode;
+    send_buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -777,17 +811,19 @@ int tf_performance_dc_get_drive_mode(TF_PerformanceDC *performance_dc, uint8_t *
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_GET_DRIVE_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -798,7 +834,8 @@ int tf_performance_dc_get_drive_mode(TF_PerformanceDC *performance_dc, uint8_t *
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -816,7 +853,9 @@ int tf_performance_dc_set_pwm_frequency(TF_PerformanceDC *performance_dc, uint16
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -824,14 +863,14 @@ int tf_performance_dc_set_pwm_frequency(TF_PerformanceDC *performance_dc, uint16
     tf_performance_dc_get_response_expected(performance_dc, TF_PERFORMANCE_DC_FUNCTION_SET_PWM_FREQUENCY, &response_expected);
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_SET_PWM_FREQUENCY, 2, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(performance_dc->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(performance_dc->tfp);
 
-    frequency = tf_leconvert_uint16_to(frequency); memcpy(buf + 0, &frequency, 2);
+    frequency = tf_leconvert_uint16_to(frequency); memcpy(send_buf + 0, &frequency, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -855,17 +894,19 @@ int tf_performance_dc_get_pwm_frequency(TF_PerformanceDC *performance_dc, uint16
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_GET_PWM_FREQUENCY, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -876,7 +917,8 @@ int tf_performance_dc_get_pwm_frequency(TF_PerformanceDC *performance_dc, uint16
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_frequency != NULL) { *ret_frequency = tf_packet_buffer_read_uint16_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_frequency != NULL) { *ret_frequency = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -894,17 +936,19 @@ int tf_performance_dc_get_power_statistics(TF_PerformanceDC *performance_dc, uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_GET_POWER_STATISTICS, 0, 6, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -915,9 +959,10 @@ int tf_performance_dc_get_power_statistics(TF_PerformanceDC *performance_dc, uin
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_voltage != NULL) { *ret_voltage = tf_packet_buffer_read_uint16_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 2); }
-        if (ret_current != NULL) { *ret_current = tf_packet_buffer_read_uint16_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 2); }
-        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_voltage != NULL) { *ret_voltage = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+        if (ret_current != NULL) { *ret_current = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -935,7 +980,9 @@ int tf_performance_dc_set_thermal_shutdown(TF_PerformanceDC *performance_dc, uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -943,14 +990,14 @@ int tf_performance_dc_set_thermal_shutdown(TF_PerformanceDC *performance_dc, uin
     tf_performance_dc_get_response_expected(performance_dc, TF_PERFORMANCE_DC_FUNCTION_SET_THERMAL_SHUTDOWN, &response_expected);
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_SET_THERMAL_SHUTDOWN, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(performance_dc->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(performance_dc->tfp);
 
-    buf[0] = (uint8_t)temperature;
+    send_buf[0] = (uint8_t)temperature;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -974,17 +1021,19 @@ int tf_performance_dc_get_thermal_shutdown(TF_PerformanceDC *performance_dc, uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_GET_THERMAL_SHUTDOWN, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -995,7 +1044,8 @@ int tf_performance_dc_get_thermal_shutdown(TF_PerformanceDC *performance_dc, uin
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_uint8_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -1013,7 +1063,9 @@ int tf_performance_dc_set_gpio_configuration(TF_PerformanceDC *performance_dc, u
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1021,16 +1073,16 @@ int tf_performance_dc_set_gpio_configuration(TF_PerformanceDC *performance_dc, u
     tf_performance_dc_get_response_expected(performance_dc, TF_PERFORMANCE_DC_FUNCTION_SET_GPIO_CONFIGURATION, &response_expected);
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_SET_GPIO_CONFIGURATION, 5, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(performance_dc->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(performance_dc->tfp);
 
-    buf[0] = (uint8_t)channel;
-    debounce = tf_leconvert_uint16_to(debounce); memcpy(buf + 1, &debounce, 2);
-    stop_deceleration = tf_leconvert_uint16_to(stop_deceleration); memcpy(buf + 3, &stop_deceleration, 2);
+    send_buf[0] = (uint8_t)channel;
+    debounce = tf_leconvert_uint16_to(debounce); memcpy(send_buf + 1, &debounce, 2);
+    stop_deceleration = tf_leconvert_uint16_to(stop_deceleration); memcpy(send_buf + 3, &stop_deceleration, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1054,21 +1106,23 @@ int tf_performance_dc_get_gpio_configuration(TF_PerformanceDC *performance_dc, u
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_GET_GPIO_CONFIGURATION, 1, 4, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(performance_dc->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(performance_dc->tfp);
 
-    buf[0] = (uint8_t)channel;
+    send_buf[0] = (uint8_t)channel;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1079,8 +1133,9 @@ int tf_performance_dc_get_gpio_configuration(TF_PerformanceDC *performance_dc, u
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_debounce != NULL) { *ret_debounce = tf_packet_buffer_read_uint16_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 2); }
-        if (ret_stop_deceleration != NULL) { *ret_stop_deceleration = tf_packet_buffer_read_uint16_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_debounce != NULL) { *ret_debounce = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+        if (ret_stop_deceleration != NULL) { *ret_stop_deceleration = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -1098,7 +1153,9 @@ int tf_performance_dc_set_gpio_action(TF_PerformanceDC *performance_dc, uint8_t 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1106,15 +1163,15 @@ int tf_performance_dc_set_gpio_action(TF_PerformanceDC *performance_dc, uint8_t 
     tf_performance_dc_get_response_expected(performance_dc, TF_PERFORMANCE_DC_FUNCTION_SET_GPIO_ACTION, &response_expected);
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_SET_GPIO_ACTION, 5, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(performance_dc->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(performance_dc->tfp);
 
-    buf[0] = (uint8_t)channel;
-    action = tf_leconvert_uint32_to(action); memcpy(buf + 1, &action, 4);
+    send_buf[0] = (uint8_t)channel;
+    action = tf_leconvert_uint32_to(action); memcpy(send_buf + 1, &action, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1138,21 +1195,23 @@ int tf_performance_dc_get_gpio_action(TF_PerformanceDC *performance_dc, uint8_t 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_GET_GPIO_ACTION, 1, 4, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(performance_dc->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(performance_dc->tfp);
 
-    buf[0] = (uint8_t)channel;
+    send_buf[0] = (uint8_t)channel;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1163,7 +1222,8 @@ int tf_performance_dc_get_gpio_action(TF_PerformanceDC *performance_dc, uint8_t 
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_action != NULL) { *ret_action = tf_packet_buffer_read_uint32_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_action != NULL) { *ret_action = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -1181,17 +1241,19 @@ int tf_performance_dc_get_gpio_state(TF_PerformanceDC *performance_dc, bool ret_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_GET_GPIO_STATE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1202,7 +1264,8 @@ int tf_performance_dc_get_gpio_state(TF_PerformanceDC *performance_dc, bool ret_
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_gpio_state != NULL) { tf_packet_buffer_read_bool_array(&performance_dc->tfp->spitfp->recv_buf, ret_gpio_state, 2);} else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_gpio_state != NULL) { tf_packet_buffer_read_bool_array(recv_buf, ret_gpio_state, 2);} else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -1220,7 +1283,9 @@ int tf_performance_dc_set_error_led_config(TF_PerformanceDC *performance_dc, uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1228,14 +1293,14 @@ int tf_performance_dc_set_error_led_config(TF_PerformanceDC *performance_dc, uin
     tf_performance_dc_get_response_expected(performance_dc, TF_PERFORMANCE_DC_FUNCTION_SET_ERROR_LED_CONFIG, &response_expected);
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_SET_ERROR_LED_CONFIG, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(performance_dc->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(performance_dc->tfp);
 
-    buf[0] = (uint8_t)config;
+    send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1259,17 +1324,19 @@ int tf_performance_dc_get_error_led_config(TF_PerformanceDC *performance_dc, uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_GET_ERROR_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1280,7 +1347,8 @@ int tf_performance_dc_get_error_led_config(TF_PerformanceDC *performance_dc, uin
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -1298,7 +1366,9 @@ int tf_performance_dc_set_cw_led_config(TF_PerformanceDC *performance_dc, uint8_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1306,14 +1376,14 @@ int tf_performance_dc_set_cw_led_config(TF_PerformanceDC *performance_dc, uint8_
     tf_performance_dc_get_response_expected(performance_dc, TF_PERFORMANCE_DC_FUNCTION_SET_CW_LED_CONFIG, &response_expected);
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_SET_CW_LED_CONFIG, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(performance_dc->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(performance_dc->tfp);
 
-    buf[0] = (uint8_t)config;
+    send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1337,17 +1407,19 @@ int tf_performance_dc_get_cw_led_config(TF_PerformanceDC *performance_dc, uint8_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_GET_CW_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1358,7 +1430,8 @@ int tf_performance_dc_get_cw_led_config(TF_PerformanceDC *performance_dc, uint8_
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -1376,7 +1449,9 @@ int tf_performance_dc_set_ccw_led_config(TF_PerformanceDC *performance_dc, uint8
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1384,14 +1459,14 @@ int tf_performance_dc_set_ccw_led_config(TF_PerformanceDC *performance_dc, uint8
     tf_performance_dc_get_response_expected(performance_dc, TF_PERFORMANCE_DC_FUNCTION_SET_CCW_LED_CONFIG, &response_expected);
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_SET_CCW_LED_CONFIG, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(performance_dc->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(performance_dc->tfp);
 
-    buf[0] = (uint8_t)config;
+    send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1415,17 +1490,19 @@ int tf_performance_dc_get_ccw_led_config(TF_PerformanceDC *performance_dc, uint8
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_GET_CCW_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1436,7 +1513,8 @@ int tf_performance_dc_get_ccw_led_config(TF_PerformanceDC *performance_dc, uint8
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -1454,7 +1532,9 @@ int tf_performance_dc_set_gpio_led_config(TF_PerformanceDC *performance_dc, uint
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1462,15 +1542,15 @@ int tf_performance_dc_set_gpio_led_config(TF_PerformanceDC *performance_dc, uint
     tf_performance_dc_get_response_expected(performance_dc, TF_PERFORMANCE_DC_FUNCTION_SET_GPIO_LED_CONFIG, &response_expected);
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_SET_GPIO_LED_CONFIG, 2, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(performance_dc->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(performance_dc->tfp);
 
-    buf[0] = (uint8_t)channel;
-    buf[1] = (uint8_t)config;
+    send_buf[0] = (uint8_t)channel;
+    send_buf[1] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1494,21 +1574,23 @@ int tf_performance_dc_get_gpio_led_config(TF_PerformanceDC *performance_dc, uint
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_GET_GPIO_LED_CONFIG, 1, 1, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(performance_dc->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(performance_dc->tfp);
 
-    buf[0] = (uint8_t)channel;
+    send_buf[0] = (uint8_t)channel;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1519,7 +1601,8 @@ int tf_performance_dc_get_gpio_led_config(TF_PerformanceDC *performance_dc, uint
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -1537,7 +1620,9 @@ int tf_performance_dc_set_emergency_shutdown_callback_configuration(TF_Performan
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1545,14 +1630,14 @@ int tf_performance_dc_set_emergency_shutdown_callback_configuration(TF_Performan
     tf_performance_dc_get_response_expected(performance_dc, TF_PERFORMANCE_DC_FUNCTION_SET_EMERGENCY_SHUTDOWN_CALLBACK_CONFIGURATION, &response_expected);
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_SET_EMERGENCY_SHUTDOWN_CALLBACK_CONFIGURATION, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(performance_dc->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(performance_dc->tfp);
 
-    buf[0] = enabled ? 1 : 0;
+    send_buf[0] = enabled ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1576,17 +1661,19 @@ int tf_performance_dc_get_emergency_shutdown_callback_configuration(TF_Performan
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_GET_EMERGENCY_SHUTDOWN_CALLBACK_CONFIGURATION, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1597,7 +1684,8 @@ int tf_performance_dc_get_emergency_shutdown_callback_configuration(TF_Performan
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_enabled != NULL) { *ret_enabled = tf_packet_buffer_read_bool(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_enabled != NULL) { *ret_enabled = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -1615,7 +1703,9 @@ int tf_performance_dc_set_velocity_reached_callback_configuration(TF_Performance
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1623,14 +1713,14 @@ int tf_performance_dc_set_velocity_reached_callback_configuration(TF_Performance
     tf_performance_dc_get_response_expected(performance_dc, TF_PERFORMANCE_DC_FUNCTION_SET_VELOCITY_REACHED_CALLBACK_CONFIGURATION, &response_expected);
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_SET_VELOCITY_REACHED_CALLBACK_CONFIGURATION, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(performance_dc->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(performance_dc->tfp);
 
-    buf[0] = enabled ? 1 : 0;
+    send_buf[0] = enabled ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1654,17 +1744,19 @@ int tf_performance_dc_get_velocity_reached_callback_configuration(TF_Performance
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_GET_VELOCITY_REACHED_CALLBACK_CONFIGURATION, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1675,7 +1767,8 @@ int tf_performance_dc_get_velocity_reached_callback_configuration(TF_Performance
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_enabled != NULL) { *ret_enabled = tf_packet_buffer_read_bool(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_enabled != NULL) { *ret_enabled = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -1693,7 +1786,9 @@ int tf_performance_dc_set_current_velocity_callback_configuration(TF_Performance
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1701,15 +1796,15 @@ int tf_performance_dc_set_current_velocity_callback_configuration(TF_Performance
     tf_performance_dc_get_response_expected(performance_dc, TF_PERFORMANCE_DC_FUNCTION_SET_CURRENT_VELOCITY_CALLBACK_CONFIGURATION, &response_expected);
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_SET_CURRENT_VELOCITY_CALLBACK_CONFIGURATION, 5, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(performance_dc->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(performance_dc->tfp);
 
-    period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
-    buf[4] = value_has_to_change ? 1 : 0;
+    period = tf_leconvert_uint32_to(period); memcpy(send_buf + 0, &period, 4);
+    send_buf[4] = value_has_to_change ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1733,17 +1828,19 @@ int tf_performance_dc_get_current_velocity_callback_configuration(TF_Performance
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_GET_CURRENT_VELOCITY_CALLBACK_CONFIGURATION, 0, 5, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1754,8 +1851,9 @@ int tf_performance_dc_get_current_velocity_callback_configuration(TF_Performance
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 4); }
-        if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -1773,17 +1871,19 @@ int tf_performance_dc_get_spitfp_error_count(TF_PerformanceDC *performance_dc, u
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1794,10 +1894,11 @@ int tf_performance_dc_get_spitfp_error_count(TF_PerformanceDC *performance_dc, u
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -1815,21 +1916,23 @@ int tf_performance_dc_set_bootloader_mode(TF_PerformanceDC *performance_dc, uint
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_SET_BOOTLOADER_MODE, 1, 1, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(performance_dc->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(performance_dc->tfp);
 
-    buf[0] = (uint8_t)mode;
+    send_buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1840,7 +1943,8 @@ int tf_performance_dc_set_bootloader_mode(TF_PerformanceDC *performance_dc, uint
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -1858,17 +1962,19 @@ int tf_performance_dc_get_bootloader_mode(TF_PerformanceDC *performance_dc, uint
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1879,7 +1985,8 @@ int tf_performance_dc_get_bootloader_mode(TF_PerformanceDC *performance_dc, uint
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -1897,7 +2004,9 @@ int tf_performance_dc_set_write_firmware_pointer(TF_PerformanceDC *performance_d
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1905,14 +2014,14 @@ int tf_performance_dc_set_write_firmware_pointer(TF_PerformanceDC *performance_d
     tf_performance_dc_get_response_expected(performance_dc, TF_PERFORMANCE_DC_FUNCTION_SET_WRITE_FIRMWARE_POINTER, &response_expected);
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_SET_WRITE_FIRMWARE_POINTER, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(performance_dc->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(performance_dc->tfp);
 
-    pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
+    pointer = tf_leconvert_uint32_to(pointer); memcpy(send_buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1936,21 +2045,23 @@ int tf_performance_dc_write_firmware(TF_PerformanceDC *performance_dc, const uin
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_WRITE_FIRMWARE, 64, 1, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(performance_dc->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(performance_dc->tfp);
 
-    memcpy(buf + 0, data, 64);
+    memcpy(send_buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1961,7 +2072,8 @@ int tf_performance_dc_write_firmware(TF_PerformanceDC *performance_dc, const uin
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -1979,7 +2091,9 @@ int tf_performance_dc_set_status_led_config(TF_PerformanceDC *performance_dc, ui
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1987,14 +2101,14 @@ int tf_performance_dc_set_status_led_config(TF_PerformanceDC *performance_dc, ui
     tf_performance_dc_get_response_expected(performance_dc, TF_PERFORMANCE_DC_FUNCTION_SET_STATUS_LED_CONFIG, &response_expected);
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_SET_STATUS_LED_CONFIG, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(performance_dc->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(performance_dc->tfp);
 
-    buf[0] = (uint8_t)config;
+    send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -2018,17 +2132,19 @@ int tf_performance_dc_get_status_led_config(TF_PerformanceDC *performance_dc, ui
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -2039,7 +2155,8 @@ int tf_performance_dc_get_status_led_config(TF_PerformanceDC *performance_dc, ui
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -2057,17 +2174,19 @@ int tf_performance_dc_get_chip_temperature(TF_PerformanceDC *performance_dc, int
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -2078,7 +2197,8 @@ int tf_performance_dc_get_chip_temperature(TF_PerformanceDC *performance_dc, int
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -2096,7 +2216,9 @@ int tf_performance_dc_reset(TF_PerformanceDC *performance_dc) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2104,10 +2226,10 @@ int tf_performance_dc_reset(TF_PerformanceDC *performance_dc) {
     tf_performance_dc_get_response_expected(performance_dc, TF_PERFORMANCE_DC_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -2131,7 +2253,9 @@ int tf_performance_dc_write_uid(TF_PerformanceDC *performance_dc, uint32_t uid) 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2139,14 +2263,14 @@ int tf_performance_dc_write_uid(TF_PerformanceDC *performance_dc, uint32_t uid) 
     tf_performance_dc_get_response_expected(performance_dc, TF_PERFORMANCE_DC_FUNCTION_WRITE_UID, &response_expected);
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_WRITE_UID, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(performance_dc->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(performance_dc->tfp);
 
-    uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
+    uid = tf_leconvert_uint32_to(uid); memcpy(send_buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -2170,17 +2294,19 @@ int tf_performance_dc_read_uid(TF_PerformanceDC *performance_dc, uint32_t *ret_u
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -2191,7 +2317,8 @@ int tf_performance_dc_read_uid(TF_PerformanceDC *performance_dc, uint32_t *ret_u
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -2209,7 +2336,9 @@ int tf_performance_dc_get_identity(TF_PerformanceDC *performance_dc, char ret_ui
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->locked) {
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -2217,10 +2346,10 @@ int tf_performance_dc_get_identity(TF_PerformanceDC *performance_dc, char ret_ui
     tf_tfp_prepare_send(performance_dc->tfp, TF_PERFORMANCE_DC_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + tf_hal_get_common((TF_HAL *)performance_dc->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(performance_dc->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(performance_dc->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -2231,19 +2360,13 @@ int tf_performance_dc_get_identity(TF_PerformanceDC *performance_dc, char ret_ui
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        char tmp_connected_uid[8] = {0};
-        if (ret_uid != NULL) { tf_packet_buffer_pop_n(&performance_dc->tfp->spitfp->recv_buf, (uint8_t*)ret_uid, 8);} else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 8); }
-        tf_packet_buffer_pop_n(&performance_dc->tfp->spitfp->recv_buf, (uint8_t*)tmp_connected_uid, 8);
-        if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 1); }
-        if (ret_hardware_version != NULL) { for (i = 0; i < 3; ++i) ret_hardware_version[i] = tf_packet_buffer_read_uint8_t(&performance_dc->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 3); }
-        if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&performance_dc->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 3); }
-        if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&performance_dc->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&performance_dc->tfp->spitfp->recv_buf, 2); }
-        if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL *)performance_dc->tfp->hal, performance_dc->tfp->spitfp->port_id);
-        }
-        if (ret_connected_uid != NULL) {
-            memcpy(ret_connected_uid, tmp_connected_uid, 8);
-        }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(performance_dc->tfp);
+        if (ret_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
+        if (ret_connected_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_connected_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
+        if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_hardware_version != NULL) { for (i = 0; i < 3; ++i) ret_hardware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
+        if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
+        if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(performance_dc->tfp);
     }
 
@@ -2344,7 +2467,9 @@ int tf_performance_dc_callback_tick(TF_PerformanceDC *performance_dc, uint32_t t
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(performance_dc->tfp, tf_hal_current_time_us((TF_HAL *)performance_dc->tfp->hal) + timeout_us);
+    TF_HAL *hal = performance_dc->tfp->spitfp->hal;
+
+    return tf_tfp_callback_tick(performance_dc->tfp, tf_hal_current_time_us(hal) + timeout_us);
 }
 
 #ifdef __cplusplus

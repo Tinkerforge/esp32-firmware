@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-22.      *
+ * This file was automatically generated on 2021-11-26.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -15,6 +15,7 @@
 #include "tfp.h"
 #include "hal_common.h"
 #include "macros.h"
+#include "streaming.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,7 +29,9 @@ struct TF_ThermalImaging;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 typedef void (*TF_ThermalImaging_HighContrastImageLowLevelHandler)(struct TF_ThermalImaging *device, uint16_t image_chunk_offset, uint8_t image_chunk_data[62], void *user_data);
+typedef void (*TF_ThermalImaging_HighContrastImageHandler)(struct TF_ThermalImaging *device, uint8_t *image, uint16_t image_length, void *user_data);
 typedef void (*TF_ThermalImaging_TemperatureImageLowLevelHandler)(struct TF_ThermalImaging *device, uint16_t image_chunk_offset, uint16_t image_chunk_data[31], void *user_data);
+typedef void (*TF_ThermalImaging_TemperatureImageHandler)(struct TF_ThermalImaging *device, uint16_t *image, uint16_t image_length, void *user_data);
 
 #endif
 /**
@@ -44,6 +47,12 @@ typedef struct TF_ThermalImaging {
 
     TF_ThermalImaging_TemperatureImageLowLevelHandler temperature_image_low_level_handler;
     void *temperature_image_low_level_user_data;
+
+    TF_ThermalImaging_HighContrastImageHandler high_contrast_image_handler;
+    TF_HighLevelCallback high_contrast_image_hlc;
+
+    TF_ThermalImaging_TemperatureImageHandler temperature_image_handler;
+    TF_HighLevelCallback temperature_image_hlc;
 
 #endif
     uint8_t response_expected[2];
@@ -416,6 +425,27 @@ int tf_thermal_imaging_register_high_contrast_image_low_level_callback(TF_Therma
 /**
  * \ingroup TF_ThermalImaging
  *
+ * Registers the given \c handler to the High Contrast Image callback. The
+ * \c user_data will be passed as the last parameter to the \c handler.
+ *
+ * Signature: \code void callback(uint16_t image_chunk_offset, uint8_t image_chunk_data[62], void *user_data) \endcode
+ * 
+ * This callback is triggered with every new high contrast image if the transfer image
+ * config is configured for high contrast callback (see {@link tf_thermal_imaging_set_image_transfer_config}).
+ * 
+ * The data is organized as a 8-bit value 80x60 pixel matrix linearized in
+ * a one-dimensional array. The data is arranged line by line from top left to
+ * bottom right.
+ * 
+ * Each 8-bit value represents one gray-scale image pixel that can directly be
+ * shown to a user on a display.
+ */
+int tf_thermal_imaging_register_high_contrast_image_callback(TF_ThermalImaging *thermal_imaging, TF_ThermalImaging_HighContrastImageHandler handler, uint8_t *image, void *user_data);
+
+
+/**
+ * \ingroup TF_ThermalImaging
+ *
  * Registers the given \c handler to the Temperature Image Low Level callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
  *
@@ -432,6 +462,27 @@ int tf_thermal_imaging_register_high_contrast_image_low_level_callback(TF_Therma
  * Kelvin/10 or Kelvin/100 (depending on the resolution set with {@link tf_thermal_imaging_set_resolution}).
  */
 int tf_thermal_imaging_register_temperature_image_low_level_callback(TF_ThermalImaging *thermal_imaging, TF_ThermalImaging_TemperatureImageLowLevelHandler handler, void *user_data);
+
+
+/**
+ * \ingroup TF_ThermalImaging
+ *
+ * Registers the given \c handler to the Temperature Image callback. The
+ * \c user_data will be passed as the last parameter to the \c handler.
+ *
+ * Signature: \code void callback(uint16_t image_chunk_offset, uint16_t image_chunk_data[31], void *user_data) \endcode
+ * 
+ * This callback is triggered with every new temperature image if the transfer image
+ * config is configured for temperature callback (see {@link tf_thermal_imaging_set_image_transfer_config}).
+ * 
+ * The data is organized as a 16-bit value 80x60 pixel matrix linearized in
+ * a one-dimensional array. The data is arranged line by line from top left to
+ * bottom right.
+ * 
+ * Each 16-bit value represents one temperature measurement in either
+ * Kelvin/10 or Kelvin/100 (depending on the resolution set with {@link tf_thermal_imaging_set_resolution}).
+ */
+int tf_thermal_imaging_register_temperature_image_callback(TF_ThermalImaging *thermal_imaging, TF_ThermalImaging_TemperatureImageHandler handler, uint16_t *image, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-22.      *
+ * This file was automatically generated on 2021-11-26.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -22,8 +22,9 @@ extern "C" {
 
 
 #if TF_IMPLEMENT_CALLBACKS != 0
-static bool tf_compass_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *payload) {
-    TF_Compass *compass = (TF_Compass *)dev;
+static bool tf_compass_callback_handler(void *device, uint8_t fid, TF_PacketBuffer *payload) {
+    TF_Compass *compass = (TF_Compass *)device;
+    TF_HALCommon *hal_common = tf_hal_get_common(compass->tfp->spitfp->hal);
     (void)payload;
 
     switch (fid) {
@@ -35,7 +36,6 @@ static bool tf_compass_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer 
             }
 
             int16_t heading = tf_packet_buffer_read_int16_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)compass->tfp->hal);
             hal_common->locked = true;
             fn(compass, heading, user_data);
             hal_common->locked = false;
@@ -52,7 +52,6 @@ static bool tf_compass_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer 
             int32_t x = tf_packet_buffer_read_int32_t(payload);
             int32_t y = tf_packet_buffer_read_int32_t(payload);
             int32_t z = tf_packet_buffer_read_int32_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)compass->tfp->hal);
             hal_common->locked = true;
             fn(compass, x, y, z, user_data);
             hal_common->locked = false;
@@ -66,40 +65,54 @@ static bool tf_compass_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer 
     return true;
 }
 #else
-static bool tf_compass_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *payload) {
+static bool tf_compass_callback_handler(void *device, uint8_t fid, TF_PacketBuffer *payload) {
     return false;
 }
 #endif
 int tf_compass_create(TF_Compass *compass, const char *uid, TF_HAL *hal) {
-    if (compass == NULL || uid == NULL || hal == NULL) {
+    if (compass == NULL || hal == NULL) {
         return TF_E_NULL;
     }
 
+    static uint16_t next_tfp_index = 0;
+
     memset(compass, 0, sizeof(TF_Compass));
 
-    uint32_t numeric_uid;
-    int rc = tf_base58_decode(uid, &numeric_uid);
+    TF_TFP *tfp;
 
-    if (rc != TF_E_OK) {
-        return rc;
+    if (uid != NULL && *uid != '\0') {
+        uint32_t uid_num = 0;
+        int rc = tf_base58_decode(uid, &uid_num);
+
+        if (rc != TF_E_OK) {
+            return rc;
+        }
+
+        tfp = tf_hal_get_tfp(hal, &next_tfp_index, &uid_num, NULL, NULL);
+
+        if (tfp == NULL) {
+            return TF_E_DEVICE_NOT_FOUND;
+        }
+
+        if (tfp->device_id != TF_COMPASS_DEVICE_IDENTIFIER) {
+            return TF_E_WRONG_DEVICE_TYPE;
+        }
+    } else {
+        uint16_t device_id = TF_COMPASS_DEVICE_IDENTIFIER;
+
+        tfp = tf_hal_get_tfp(hal, &next_tfp_index, NULL, NULL, &device_id);
+
+        if (tfp == NULL) {
+            return TF_E_DEVICE_NOT_FOUND;
+        }
     }
 
-    uint8_t port_id;
-    uint8_t inventory_index;
-    rc = tf_hal_get_port_id(hal, numeric_uid, &port_id, &inventory_index);
-
-    if (rc < 0) {
-        return rc;
+    if (tfp->device != NULL) {
+        return TF_E_DEVICE_ALREADY_IN_USE;
     }
 
-    rc = tf_hal_get_tfp(hal, &compass->tfp, TF_COMPASS_DEVICE_IDENTIFIER, inventory_index);
-
-    if (rc != TF_E_OK) {
-        return rc;
-    }
-
+    compass->tfp = tfp;
     compass->tfp->device = compass;
-    compass->tfp->uid = numeric_uid;
     compass->tfp->cb_handler = tf_compass_callback_handler;
     compass->response_expected[0] = 0x03;
 
@@ -107,14 +120,15 @@ int tf_compass_create(TF_Compass *compass, const char *uid, TF_HAL *hal) {
 }
 
 int tf_compass_destroy(TF_Compass *compass) {
-    if (compass == NULL) {
+    if (compass == NULL || compass->tfp == NULL) {
         return TF_E_NULL;
     }
 
-    int result = tf_tfp_destroy(compass->tfp);
+    compass->tfp->cb_handler = NULL;
+    compass->tfp->device = NULL;
     compass->tfp = NULL;
 
-    return result;
+    return TF_E_OK;
 }
 
 int tf_compass_get_response_expected(TF_Compass *compass, uint8_t function_id, bool *ret_response_expected) {
@@ -254,17 +268,19 @@ int tf_compass_get_heading(TF_Compass *compass, int16_t *ret_heading) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)compass->tfp->hal)->locked) {
+    TF_HAL *hal = compass->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(compass->tfp, TF_COMPASS_FUNCTION_GET_HEADING, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)compass->tfp->hal) + tf_hal_get_common((TF_HAL *)compass->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(compass->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(compass->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -275,7 +291,8 @@ int tf_compass_get_heading(TF_Compass *compass, int16_t *ret_heading) {
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_heading != NULL) { *ret_heading = tf_packet_buffer_read_int16_t(&compass->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(compass->tfp);
+        if (ret_heading != NULL) { *ret_heading = tf_packet_buffer_read_int16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(compass->tfp);
     }
 
@@ -293,7 +310,9 @@ int tf_compass_set_heading_callback_configuration(TF_Compass *compass, uint32_t 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)compass->tfp->hal)->locked) {
+    TF_HAL *hal = compass->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -301,18 +320,18 @@ int tf_compass_set_heading_callback_configuration(TF_Compass *compass, uint32_t 
     tf_compass_get_response_expected(compass, TF_COMPASS_FUNCTION_SET_HEADING_CALLBACK_CONFIGURATION, &response_expected);
     tf_tfp_prepare_send(compass->tfp, TF_COMPASS_FUNCTION_SET_HEADING_CALLBACK_CONFIGURATION, 10, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(compass->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(compass->tfp);
 
-    period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
-    buf[4] = value_has_to_change ? 1 : 0;
-    buf[5] = (uint8_t)option;
-    min = tf_leconvert_int16_to(min); memcpy(buf + 6, &min, 2);
-    max = tf_leconvert_int16_to(max); memcpy(buf + 8, &max, 2);
+    period = tf_leconvert_uint32_to(period); memcpy(send_buf + 0, &period, 4);
+    send_buf[4] = value_has_to_change ? 1 : 0;
+    send_buf[5] = (uint8_t)option;
+    min = tf_leconvert_int16_to(min); memcpy(send_buf + 6, &min, 2);
+    max = tf_leconvert_int16_to(max); memcpy(send_buf + 8, &max, 2);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)compass->tfp->hal) + tf_hal_get_common((TF_HAL *)compass->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(compass->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(compass->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -336,17 +355,19 @@ int tf_compass_get_heading_callback_configuration(TF_Compass *compass, uint32_t 
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)compass->tfp->hal)->locked) {
+    TF_HAL *hal = compass->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(compass->tfp, TF_COMPASS_FUNCTION_GET_HEADING_CALLBACK_CONFIGURATION, 0, 10, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)compass->tfp->hal) + tf_hal_get_common((TF_HAL *)compass->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(compass->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(compass->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -357,11 +378,12 @@ int tf_compass_get_heading_callback_configuration(TF_Compass *compass, uint32_t 
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(&compass->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 4); }
-        if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(&compass->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 1); }
-        if (ret_option != NULL) { *ret_option = tf_packet_buffer_read_char(&compass->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 1); }
-        if (ret_min != NULL) { *ret_min = tf_packet_buffer_read_int16_t(&compass->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 2); }
-        if (ret_max != NULL) { *ret_max = tf_packet_buffer_read_int16_t(&compass->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(compass->tfp);
+        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_option != NULL) { *ret_option = tf_packet_buffer_read_char(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_min != NULL) { *ret_min = tf_packet_buffer_read_int16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+        if (ret_max != NULL) { *ret_max = tf_packet_buffer_read_int16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(compass->tfp);
     }
 
@@ -379,17 +401,19 @@ int tf_compass_get_magnetic_flux_density(TF_Compass *compass, int32_t *ret_x, in
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)compass->tfp->hal)->locked) {
+    TF_HAL *hal = compass->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(compass->tfp, TF_COMPASS_FUNCTION_GET_MAGNETIC_FLUX_DENSITY, 0, 12, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)compass->tfp->hal) + tf_hal_get_common((TF_HAL *)compass->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(compass->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(compass->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -400,9 +424,10 @@ int tf_compass_get_magnetic_flux_density(TF_Compass *compass, int32_t *ret_x, in
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_x != NULL) { *ret_x = tf_packet_buffer_read_int32_t(&compass->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 4); }
-        if (ret_y != NULL) { *ret_y = tf_packet_buffer_read_int32_t(&compass->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 4); }
-        if (ret_z != NULL) { *ret_z = tf_packet_buffer_read_int32_t(&compass->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(compass->tfp);
+        if (ret_x != NULL) { *ret_x = tf_packet_buffer_read_int32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_y != NULL) { *ret_y = tf_packet_buffer_read_int32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_z != NULL) { *ret_z = tf_packet_buffer_read_int32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(compass->tfp);
     }
 
@@ -420,7 +445,9 @@ int tf_compass_set_magnetic_flux_density_callback_configuration(TF_Compass *comp
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)compass->tfp->hal)->locked) {
+    TF_HAL *hal = compass->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -428,15 +455,15 @@ int tf_compass_set_magnetic_flux_density_callback_configuration(TF_Compass *comp
     tf_compass_get_response_expected(compass, TF_COMPASS_FUNCTION_SET_MAGNETIC_FLUX_DENSITY_CALLBACK_CONFIGURATION, &response_expected);
     tf_tfp_prepare_send(compass->tfp, TF_COMPASS_FUNCTION_SET_MAGNETIC_FLUX_DENSITY_CALLBACK_CONFIGURATION, 5, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(compass->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(compass->tfp);
 
-    period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
-    buf[4] = value_has_to_change ? 1 : 0;
+    period = tf_leconvert_uint32_to(period); memcpy(send_buf + 0, &period, 4);
+    send_buf[4] = value_has_to_change ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)compass->tfp->hal) + tf_hal_get_common((TF_HAL *)compass->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(compass->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(compass->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -460,17 +487,19 @@ int tf_compass_get_magnetic_flux_density_callback_configuration(TF_Compass *comp
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)compass->tfp->hal)->locked) {
+    TF_HAL *hal = compass->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(compass->tfp, TF_COMPASS_FUNCTION_GET_MAGNETIC_FLUX_DENSITY_CALLBACK_CONFIGURATION, 0, 5, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)compass->tfp->hal) + tf_hal_get_common((TF_HAL *)compass->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(compass->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(compass->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -481,8 +510,9 @@ int tf_compass_get_magnetic_flux_density_callback_configuration(TF_Compass *comp
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(&compass->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 4); }
-        if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(&compass->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(compass->tfp);
+        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(compass->tfp);
     }
 
@@ -500,7 +530,9 @@ int tf_compass_set_configuration(TF_Compass *compass, uint8_t data_rate, bool ba
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)compass->tfp->hal)->locked) {
+    TF_HAL *hal = compass->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -508,15 +540,15 @@ int tf_compass_set_configuration(TF_Compass *compass, uint8_t data_rate, bool ba
     tf_compass_get_response_expected(compass, TF_COMPASS_FUNCTION_SET_CONFIGURATION, &response_expected);
     tf_tfp_prepare_send(compass->tfp, TF_COMPASS_FUNCTION_SET_CONFIGURATION, 2, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(compass->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(compass->tfp);
 
-    buf[0] = (uint8_t)data_rate;
-    buf[1] = background_calibration ? 1 : 0;
+    send_buf[0] = (uint8_t)data_rate;
+    send_buf[1] = background_calibration ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)compass->tfp->hal) + tf_hal_get_common((TF_HAL *)compass->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(compass->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(compass->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -540,17 +572,19 @@ int tf_compass_get_configuration(TF_Compass *compass, uint8_t *ret_data_rate, bo
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)compass->tfp->hal)->locked) {
+    TF_HAL *hal = compass->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(compass->tfp, TF_COMPASS_FUNCTION_GET_CONFIGURATION, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)compass->tfp->hal) + tf_hal_get_common((TF_HAL *)compass->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(compass->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(compass->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -561,8 +595,9 @@ int tf_compass_get_configuration(TF_Compass *compass, uint8_t *ret_data_rate, bo
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_data_rate != NULL) { *ret_data_rate = tf_packet_buffer_read_uint8_t(&compass->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 1); }
-        if (ret_background_calibration != NULL) { *ret_background_calibration = tf_packet_buffer_read_bool(&compass->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(compass->tfp);
+        if (ret_data_rate != NULL) { *ret_data_rate = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_background_calibration != NULL) { *ret_background_calibration = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(compass->tfp);
     }
 
@@ -580,7 +615,9 @@ int tf_compass_set_calibration(TF_Compass *compass, const int16_t offset[3], con
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)compass->tfp->hal)->locked) {
+    TF_HAL *hal = compass->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -589,15 +626,15 @@ int tf_compass_set_calibration(TF_Compass *compass, const int16_t offset[3], con
     tf_tfp_prepare_send(compass->tfp, TF_COMPASS_FUNCTION_SET_CALIBRATION, 12, 0, response_expected);
 
     size_t i;
-    uint8_t *buf = tf_tfp_get_payload_buffer(compass->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(compass->tfp);
 
-    for (i = 0; i < 3; i++) { int16_t tmp_offset = tf_leconvert_int16_to(offset[i]); memcpy(buf + 0 + (i * sizeof(int16_t)), &tmp_offset, sizeof(int16_t)); }
-    for (i = 0; i < 3; i++) { int16_t tmp_gain = tf_leconvert_int16_to(gain[i]); memcpy(buf + 6 + (i * sizeof(int16_t)), &tmp_gain, sizeof(int16_t)); }
+    for (i = 0; i < 3; i++) { int16_t tmp_offset = tf_leconvert_int16_to(offset[i]); memcpy(send_buf + 0 + (i * sizeof(int16_t)), &tmp_offset, sizeof(int16_t)); }
+    for (i = 0; i < 3; i++) { int16_t tmp_gain = tf_leconvert_int16_to(gain[i]); memcpy(send_buf + 6 + (i * sizeof(int16_t)), &tmp_gain, sizeof(int16_t)); }
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)compass->tfp->hal) + tf_hal_get_common((TF_HAL *)compass->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(compass->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(compass->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -621,7 +658,9 @@ int tf_compass_get_calibration(TF_Compass *compass, int16_t ret_offset[3], int16
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)compass->tfp->hal)->locked) {
+    TF_HAL *hal = compass->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -629,10 +668,10 @@ int tf_compass_get_calibration(TF_Compass *compass, int16_t ret_offset[3], int16
     tf_tfp_prepare_send(compass->tfp, TF_COMPASS_FUNCTION_GET_CALIBRATION, 0, 12, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)compass->tfp->hal) + tf_hal_get_common((TF_HAL *)compass->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(compass->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(compass->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -643,8 +682,9 @@ int tf_compass_get_calibration(TF_Compass *compass, int16_t ret_offset[3], int16
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_offset != NULL) { for (i = 0; i < 3; ++i) ret_offset[i] = tf_packet_buffer_read_int16_t(&compass->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 6); }
-        if (ret_gain != NULL) { for (i = 0; i < 3; ++i) ret_gain[i] = tf_packet_buffer_read_int16_t(&compass->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 6); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(compass->tfp);
+        if (ret_offset != NULL) { for (i = 0; i < 3; ++i) ret_offset[i] = tf_packet_buffer_read_int16_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 6); }
+        if (ret_gain != NULL) { for (i = 0; i < 3; ++i) ret_gain[i] = tf_packet_buffer_read_int16_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 6); }
         tf_tfp_packet_processed(compass->tfp);
     }
 
@@ -662,17 +702,19 @@ int tf_compass_get_spitfp_error_count(TF_Compass *compass, uint32_t *ret_error_c
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)compass->tfp->hal)->locked) {
+    TF_HAL *hal = compass->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(compass->tfp, TF_COMPASS_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)compass->tfp->hal) + tf_hal_get_common((TF_HAL *)compass->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(compass->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(compass->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -683,10 +725,11 @@ int tf_compass_get_spitfp_error_count(TF_Compass *compass, uint32_t *ret_error_c
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(&compass->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(&compass->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(&compass->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(&compass->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(compass->tfp);
+        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(compass->tfp);
     }
 
@@ -704,21 +747,23 @@ int tf_compass_set_bootloader_mode(TF_Compass *compass, uint8_t mode, uint8_t *r
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)compass->tfp->hal)->locked) {
+    TF_HAL *hal = compass->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(compass->tfp, TF_COMPASS_FUNCTION_SET_BOOTLOADER_MODE, 1, 1, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(compass->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(compass->tfp);
 
-    buf[0] = (uint8_t)mode;
+    send_buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)compass->tfp->hal) + tf_hal_get_common((TF_HAL *)compass->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(compass->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(compass->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -729,7 +774,8 @@ int tf_compass_set_bootloader_mode(TF_Compass *compass, uint8_t mode, uint8_t *r
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(&compass->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(compass->tfp);
+        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(compass->tfp);
     }
 
@@ -747,17 +793,19 @@ int tf_compass_get_bootloader_mode(TF_Compass *compass, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)compass->tfp->hal)->locked) {
+    TF_HAL *hal = compass->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(compass->tfp, TF_COMPASS_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)compass->tfp->hal) + tf_hal_get_common((TF_HAL *)compass->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(compass->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(compass->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -768,7 +816,8 @@ int tf_compass_get_bootloader_mode(TF_Compass *compass, uint8_t *ret_mode) {
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(&compass->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(compass->tfp);
+        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(compass->tfp);
     }
 
@@ -786,7 +835,9 @@ int tf_compass_set_write_firmware_pointer(TF_Compass *compass, uint32_t pointer)
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)compass->tfp->hal)->locked) {
+    TF_HAL *hal = compass->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -794,14 +845,14 @@ int tf_compass_set_write_firmware_pointer(TF_Compass *compass, uint32_t pointer)
     tf_compass_get_response_expected(compass, TF_COMPASS_FUNCTION_SET_WRITE_FIRMWARE_POINTER, &response_expected);
     tf_tfp_prepare_send(compass->tfp, TF_COMPASS_FUNCTION_SET_WRITE_FIRMWARE_POINTER, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(compass->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(compass->tfp);
 
-    pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
+    pointer = tf_leconvert_uint32_to(pointer); memcpy(send_buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)compass->tfp->hal) + tf_hal_get_common((TF_HAL *)compass->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(compass->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(compass->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -825,21 +876,23 @@ int tf_compass_write_firmware(TF_Compass *compass, const uint8_t data[64], uint8
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)compass->tfp->hal)->locked) {
+    TF_HAL *hal = compass->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(compass->tfp, TF_COMPASS_FUNCTION_WRITE_FIRMWARE, 64, 1, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(compass->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(compass->tfp);
 
-    memcpy(buf + 0, data, 64);
+    memcpy(send_buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)compass->tfp->hal) + tf_hal_get_common((TF_HAL *)compass->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(compass->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(compass->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -850,7 +903,8 @@ int tf_compass_write_firmware(TF_Compass *compass, const uint8_t data[64], uint8
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(&compass->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(compass->tfp);
+        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(compass->tfp);
     }
 
@@ -868,7 +922,9 @@ int tf_compass_set_status_led_config(TF_Compass *compass, uint8_t config) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)compass->tfp->hal)->locked) {
+    TF_HAL *hal = compass->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -876,14 +932,14 @@ int tf_compass_set_status_led_config(TF_Compass *compass, uint8_t config) {
     tf_compass_get_response_expected(compass, TF_COMPASS_FUNCTION_SET_STATUS_LED_CONFIG, &response_expected);
     tf_tfp_prepare_send(compass->tfp, TF_COMPASS_FUNCTION_SET_STATUS_LED_CONFIG, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(compass->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(compass->tfp);
 
-    buf[0] = (uint8_t)config;
+    send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)compass->tfp->hal) + tf_hal_get_common((TF_HAL *)compass->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(compass->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(compass->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -907,17 +963,19 @@ int tf_compass_get_status_led_config(TF_Compass *compass, uint8_t *ret_config) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)compass->tfp->hal)->locked) {
+    TF_HAL *hal = compass->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(compass->tfp, TF_COMPASS_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)compass->tfp->hal) + tf_hal_get_common((TF_HAL *)compass->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(compass->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(compass->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -928,7 +986,8 @@ int tf_compass_get_status_led_config(TF_Compass *compass, uint8_t *ret_config) {
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(&compass->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(compass->tfp);
+        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(compass->tfp);
     }
 
@@ -946,17 +1005,19 @@ int tf_compass_get_chip_temperature(TF_Compass *compass, int16_t *ret_temperatur
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)compass->tfp->hal)->locked) {
+    TF_HAL *hal = compass->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(compass->tfp, TF_COMPASS_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)compass->tfp->hal) + tf_hal_get_common((TF_HAL *)compass->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(compass->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(compass->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -967,7 +1028,8 @@ int tf_compass_get_chip_temperature(TF_Compass *compass, int16_t *ret_temperatur
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(&compass->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(compass->tfp);
+        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(compass->tfp);
     }
 
@@ -985,7 +1047,9 @@ int tf_compass_reset(TF_Compass *compass) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)compass->tfp->hal)->locked) {
+    TF_HAL *hal = compass->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -993,10 +1057,10 @@ int tf_compass_reset(TF_Compass *compass) {
     tf_compass_get_response_expected(compass, TF_COMPASS_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(compass->tfp, TF_COMPASS_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)compass->tfp->hal) + tf_hal_get_common((TF_HAL *)compass->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(compass->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(compass->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1020,7 +1084,9 @@ int tf_compass_write_uid(TF_Compass *compass, uint32_t uid) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)compass->tfp->hal)->locked) {
+    TF_HAL *hal = compass->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1028,14 +1094,14 @@ int tf_compass_write_uid(TF_Compass *compass, uint32_t uid) {
     tf_compass_get_response_expected(compass, TF_COMPASS_FUNCTION_WRITE_UID, &response_expected);
     tf_tfp_prepare_send(compass->tfp, TF_COMPASS_FUNCTION_WRITE_UID, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(compass->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(compass->tfp);
 
-    uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
+    uid = tf_leconvert_uint32_to(uid); memcpy(send_buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)compass->tfp->hal) + tf_hal_get_common((TF_HAL *)compass->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(compass->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(compass->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1059,17 +1125,19 @@ int tf_compass_read_uid(TF_Compass *compass, uint32_t *ret_uid) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)compass->tfp->hal)->locked) {
+    TF_HAL *hal = compass->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(compass->tfp, TF_COMPASS_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)compass->tfp->hal) + tf_hal_get_common((TF_HAL *)compass->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(compass->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(compass->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1080,7 +1148,8 @@ int tf_compass_read_uid(TF_Compass *compass, uint32_t *ret_uid) {
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(&compass->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(compass->tfp);
+        if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(compass->tfp);
     }
 
@@ -1098,7 +1167,9 @@ int tf_compass_get_identity(TF_Compass *compass, char ret_uid[8], char ret_conne
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)compass->tfp->hal)->locked) {
+    TF_HAL *hal = compass->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1106,10 +1177,10 @@ int tf_compass_get_identity(TF_Compass *compass, char ret_uid[8], char ret_conne
     tf_tfp_prepare_send(compass->tfp, TF_COMPASS_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)compass->tfp->hal) + tf_hal_get_common((TF_HAL *)compass->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(compass->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(compass->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1120,19 +1191,13 @@ int tf_compass_get_identity(TF_Compass *compass, char ret_uid[8], char ret_conne
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        char tmp_connected_uid[8] = {0};
-        if (ret_uid != NULL) { tf_packet_buffer_pop_n(&compass->tfp->spitfp->recv_buf, (uint8_t*)ret_uid, 8);} else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 8); }
-        tf_packet_buffer_pop_n(&compass->tfp->spitfp->recv_buf, (uint8_t*)tmp_connected_uid, 8);
-        if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(&compass->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 1); }
-        if (ret_hardware_version != NULL) { for (i = 0; i < 3; ++i) ret_hardware_version[i] = tf_packet_buffer_read_uint8_t(&compass->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 3); }
-        if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&compass->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 3); }
-        if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&compass->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&compass->tfp->spitfp->recv_buf, 2); }
-        if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL *)compass->tfp->hal, compass->tfp->spitfp->port_id);
-        }
-        if (ret_connected_uid != NULL) {
-            memcpy(ret_connected_uid, tmp_connected_uid, 8);
-        }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(compass->tfp);
+        if (ret_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
+        if (ret_connected_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_connected_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
+        if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_hardware_version != NULL) { for (i = 0; i < 3; ++i) ret_hardware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
+        if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
+        if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(compass->tfp);
     }
 
@@ -1187,7 +1252,9 @@ int tf_compass_callback_tick(TF_Compass *compass, uint32_t timeout_us) {
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(compass->tfp, tf_hal_current_time_us((TF_HAL *)compass->tfp->hal) + timeout_us);
+    TF_HAL *hal = compass->tfp->spitfp->hal;
+
+    return tf_tfp_callback_tick(compass->tfp, tf_hal_current_time_us(hal) + timeout_us);
 }
 
 #ifdef __cplusplus

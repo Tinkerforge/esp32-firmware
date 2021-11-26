@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-22.      *
+ * This file was automatically generated on 2021-11-26.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -22,8 +22,9 @@ extern "C" {
 
 
 #if TF_IMPLEMENT_CALLBACKS != 0
-static bool tf_gps_v2_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *payload) {
-    TF_GPSV2 *gps_v2 = (TF_GPSV2 *)dev;
+static bool tf_gps_v2_callback_handler(void *device, uint8_t fid, TF_PacketBuffer *payload) {
+    TF_GPSV2 *gps_v2 = (TF_GPSV2 *)device;
+    TF_HALCommon *hal_common = tf_hal_get_common(gps_v2->tfp->spitfp->hal);
     (void)payload;
 
     switch (fid) {
@@ -35,7 +36,6 @@ static bool tf_gps_v2_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *
             }
 
 
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal);
             hal_common->locked = true;
             fn(gps_v2, user_data);
             hal_common->locked = false;
@@ -53,7 +53,6 @@ static bool tf_gps_v2_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *
             char ns = tf_packet_buffer_read_char(payload);
             uint32_t longitude = tf_packet_buffer_read_uint32_t(payload);
             char ew = tf_packet_buffer_read_char(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal);
             hal_common->locked = true;
             fn(gps_v2, latitude, ns, longitude, ew, user_data);
             hal_common->locked = false;
@@ -69,7 +68,6 @@ static bool tf_gps_v2_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *
 
             bool has_fix = tf_packet_buffer_read_bool(payload);
             uint8_t satellites_view = tf_packet_buffer_read_uint8_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal);
             hal_common->locked = true;
             fn(gps_v2, has_fix, satellites_view, user_data);
             hal_common->locked = false;
@@ -85,7 +83,6 @@ static bool tf_gps_v2_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *
 
             int32_t altitude = tf_packet_buffer_read_int32_t(payload);
             int32_t geoidal_separation = tf_packet_buffer_read_int32_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal);
             hal_common->locked = true;
             fn(gps_v2, altitude, geoidal_separation, user_data);
             hal_common->locked = false;
@@ -101,7 +98,6 @@ static bool tf_gps_v2_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *
 
             uint32_t course = tf_packet_buffer_read_uint32_t(payload);
             uint32_t speed = tf_packet_buffer_read_uint32_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal);
             hal_common->locked = true;
             fn(gps_v2, course, speed, user_data);
             hal_common->locked = false;
@@ -117,7 +113,6 @@ static bool tf_gps_v2_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *
 
             uint32_t date = tf_packet_buffer_read_uint32_t(payload);
             uint32_t time = tf_packet_buffer_read_uint32_t(payload);
-            TF_HALCommon *hal_common = tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal);
             hal_common->locked = true;
             fn(gps_v2, date, time, user_data);
             hal_common->locked = false;
@@ -131,40 +126,54 @@ static bool tf_gps_v2_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *
     return true;
 }
 #else
-static bool tf_gps_v2_callback_handler(void *dev, uint8_t fid, TF_PacketBuffer *payload) {
+static bool tf_gps_v2_callback_handler(void *device, uint8_t fid, TF_PacketBuffer *payload) {
     return false;
 }
 #endif
 int tf_gps_v2_create(TF_GPSV2 *gps_v2, const char *uid, TF_HAL *hal) {
-    if (gps_v2 == NULL || uid == NULL || hal == NULL) {
+    if (gps_v2 == NULL || hal == NULL) {
         return TF_E_NULL;
     }
 
+    static uint16_t next_tfp_index = 0;
+
     memset(gps_v2, 0, sizeof(TF_GPSV2));
 
-    uint32_t numeric_uid;
-    int rc = tf_base58_decode(uid, &numeric_uid);
+    TF_TFP *tfp;
 
-    if (rc != TF_E_OK) {
-        return rc;
+    if (uid != NULL && *uid != '\0') {
+        uint32_t uid_num = 0;
+        int rc = tf_base58_decode(uid, &uid_num);
+
+        if (rc != TF_E_OK) {
+            return rc;
+        }
+
+        tfp = tf_hal_get_tfp(hal, &next_tfp_index, &uid_num, NULL, NULL);
+
+        if (tfp == NULL) {
+            return TF_E_DEVICE_NOT_FOUND;
+        }
+
+        if (tfp->device_id != TF_GPS_V2_DEVICE_IDENTIFIER) {
+            return TF_E_WRONG_DEVICE_TYPE;
+        }
+    } else {
+        uint16_t device_id = TF_GPS_V2_DEVICE_IDENTIFIER;
+
+        tfp = tf_hal_get_tfp(hal, &next_tfp_index, NULL, NULL, &device_id);
+
+        if (tfp == NULL) {
+            return TF_E_DEVICE_NOT_FOUND;
+        }
     }
 
-    uint8_t port_id;
-    uint8_t inventory_index;
-    rc = tf_hal_get_port_id(hal, numeric_uid, &port_id, &inventory_index);
-
-    if (rc < 0) {
-        return rc;
+    if (tfp->device != NULL) {
+        return TF_E_DEVICE_ALREADY_IN_USE;
     }
 
-    rc = tf_hal_get_tfp(hal, &gps_v2->tfp, TF_GPS_V2_DEVICE_IDENTIFIER, inventory_index);
-
-    if (rc != TF_E_OK) {
-        return rc;
-    }
-
+    gps_v2->tfp = tfp;
     gps_v2->tfp->device = gps_v2;
-    gps_v2->tfp->uid = numeric_uid;
     gps_v2->tfp->cb_handler = tf_gps_v2_callback_handler;
     gps_v2->response_expected[0] = 0x7C;
     gps_v2->response_expected[1] = 0x00;
@@ -173,14 +182,15 @@ int tf_gps_v2_create(TF_GPSV2 *gps_v2, const char *uid, TF_HAL *hal) {
 }
 
 int tf_gps_v2_destroy(TF_GPSV2 *gps_v2) {
-    if (gps_v2 == NULL) {
+    if (gps_v2 == NULL || gps_v2->tfp == NULL) {
         return TF_E_NULL;
     }
 
-    int result = tf_tfp_destroy(gps_v2->tfp);
+    gps_v2->tfp->cb_handler = NULL;
+    gps_v2->tfp->device = NULL;
     gps_v2->tfp = NULL;
 
-    return result;
+    return TF_E_OK;
 }
 
 int tf_gps_v2_get_response_expected(TF_GPSV2 *gps_v2, uint8_t function_id, bool *ret_response_expected) {
@@ -368,17 +378,19 @@ int tf_gps_v2_get_coordinates(TF_GPSV2 *gps_v2, uint32_t *ret_latitude, char *re
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_GET_COORDINATES, 0, 10, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -389,10 +401,11 @@ int tf_gps_v2_get_coordinates(TF_GPSV2 *gps_v2, uint32_t *ret_latitude, char *re
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_latitude != NULL) { *ret_latitude = tf_packet_buffer_read_uint32_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 4); }
-        if (ret_ns != NULL) { *ret_ns = tf_packet_buffer_read_char(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 1); }
-        if (ret_longitude != NULL) { *ret_longitude = tf_packet_buffer_read_uint32_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 4); }
-        if (ret_ew != NULL) { *ret_ew = tf_packet_buffer_read_char(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(gps_v2->tfp);
+        if (ret_latitude != NULL) { *ret_latitude = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_ns != NULL) { *ret_ns = tf_packet_buffer_read_char(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_longitude != NULL) { *ret_longitude = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_ew != NULL) { *ret_ew = tf_packet_buffer_read_char(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(gps_v2->tfp);
     }
 
@@ -410,17 +423,19 @@ int tf_gps_v2_get_status(TF_GPSV2 *gps_v2, bool *ret_has_fix, uint8_t *ret_satel
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_GET_STATUS, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -431,8 +446,9 @@ int tf_gps_v2_get_status(TF_GPSV2 *gps_v2, bool *ret_has_fix, uint8_t *ret_satel
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_has_fix != NULL) { *ret_has_fix = tf_packet_buffer_read_bool(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 1); }
-        if (ret_satellites_view != NULL) { *ret_satellites_view = tf_packet_buffer_read_uint8_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(gps_v2->tfp);
+        if (ret_has_fix != NULL) { *ret_has_fix = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_satellites_view != NULL) { *ret_satellites_view = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(gps_v2->tfp);
     }
 
@@ -450,17 +466,19 @@ int tf_gps_v2_get_altitude(TF_GPSV2 *gps_v2, int32_t *ret_altitude, int32_t *ret
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_GET_ALTITUDE, 0, 8, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -471,8 +489,9 @@ int tf_gps_v2_get_altitude(TF_GPSV2 *gps_v2, int32_t *ret_altitude, int32_t *ret
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_altitude != NULL) { *ret_altitude = tf_packet_buffer_read_int32_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 4); }
-        if (ret_geoidal_separation != NULL) { *ret_geoidal_separation = tf_packet_buffer_read_int32_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(gps_v2->tfp);
+        if (ret_altitude != NULL) { *ret_altitude = tf_packet_buffer_read_int32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_geoidal_separation != NULL) { *ret_geoidal_separation = tf_packet_buffer_read_int32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(gps_v2->tfp);
     }
 
@@ -490,17 +509,19 @@ int tf_gps_v2_get_motion(TF_GPSV2 *gps_v2, uint32_t *ret_course, uint32_t *ret_s
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_GET_MOTION, 0, 8, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -511,8 +532,9 @@ int tf_gps_v2_get_motion(TF_GPSV2 *gps_v2, uint32_t *ret_course, uint32_t *ret_s
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_course != NULL) { *ret_course = tf_packet_buffer_read_uint32_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 4); }
-        if (ret_speed != NULL) { *ret_speed = tf_packet_buffer_read_uint32_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(gps_v2->tfp);
+        if (ret_course != NULL) { *ret_course = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_speed != NULL) { *ret_speed = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(gps_v2->tfp);
     }
 
@@ -530,17 +552,19 @@ int tf_gps_v2_get_date_time(TF_GPSV2 *gps_v2, uint32_t *ret_date, uint32_t *ret_
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_GET_DATE_TIME, 0, 8, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -551,8 +575,9 @@ int tf_gps_v2_get_date_time(TF_GPSV2 *gps_v2, uint32_t *ret_date, uint32_t *ret_
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_date != NULL) { *ret_date = tf_packet_buffer_read_uint32_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 4); }
-        if (ret_time != NULL) { *ret_time = tf_packet_buffer_read_uint32_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(gps_v2->tfp);
+        if (ret_date != NULL) { *ret_date = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_time != NULL) { *ret_time = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(gps_v2->tfp);
     }
 
@@ -570,7 +595,9 @@ int tf_gps_v2_restart(TF_GPSV2 *gps_v2, uint8_t restart_type) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -578,14 +605,14 @@ int tf_gps_v2_restart(TF_GPSV2 *gps_v2, uint8_t restart_type) {
     tf_gps_v2_get_response_expected(gps_v2, TF_GPS_V2_FUNCTION_RESTART, &response_expected);
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_RESTART, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(gps_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(gps_v2->tfp);
 
-    buf[0] = (uint8_t)restart_type;
+    send_buf[0] = (uint8_t)restart_type;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -609,7 +636,9 @@ int tf_gps_v2_get_satellite_system_status_low_level(TF_GPSV2 *gps_v2, uint8_t sa
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -617,14 +646,14 @@ int tf_gps_v2_get_satellite_system_status_low_level(TF_GPSV2 *gps_v2, uint8_t sa
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_GET_SATELLITE_SYSTEM_STATUS_LOW_LEVEL, 1, 20, response_expected);
 
     size_t i;
-    uint8_t *buf = tf_tfp_get_payload_buffer(gps_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(gps_v2->tfp);
 
-    buf[0] = (uint8_t)satellite_system;
+    send_buf[0] = (uint8_t)satellite_system;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -635,12 +664,13 @@ int tf_gps_v2_get_satellite_system_status_low_level(TF_GPSV2 *gps_v2, uint8_t sa
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_satellite_numbers_length != NULL) { *ret_satellite_numbers_length = tf_packet_buffer_read_uint8_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 1); }
-        if (ret_satellite_numbers_data != NULL) { for (i = 0; i < 12; ++i) ret_satellite_numbers_data[i] = tf_packet_buffer_read_uint8_t(&gps_v2->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 12); }
-        if (ret_fix != NULL) { *ret_fix = tf_packet_buffer_read_uint8_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 1); }
-        if (ret_pdop != NULL) { *ret_pdop = tf_packet_buffer_read_uint16_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 2); }
-        if (ret_hdop != NULL) { *ret_hdop = tf_packet_buffer_read_uint16_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 2); }
-        if (ret_vdop != NULL) { *ret_vdop = tf_packet_buffer_read_uint16_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(gps_v2->tfp);
+        if (ret_satellite_numbers_length != NULL) { *ret_satellite_numbers_length = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_satellite_numbers_data != NULL) { for (i = 0; i < 12; ++i) ret_satellite_numbers_data[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 12); }
+        if (ret_fix != NULL) { *ret_fix = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_pdop != NULL) { *ret_pdop = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+        if (ret_hdop != NULL) { *ret_hdop = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+        if (ret_vdop != NULL) { *ret_vdop = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(gps_v2->tfp);
     }
 
@@ -658,22 +688,24 @@ int tf_gps_v2_get_satellite_status(TF_GPSV2 *gps_v2, uint8_t satellite_system, u
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_GET_SATELLITE_STATUS, 2, 6, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(gps_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(gps_v2->tfp);
 
-    buf[0] = (uint8_t)satellite_system;
-    buf[1] = (uint8_t)satellite_number;
+    send_buf[0] = (uint8_t)satellite_system;
+    send_buf[1] = (uint8_t)satellite_number;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -684,9 +716,10 @@ int tf_gps_v2_get_satellite_status(TF_GPSV2 *gps_v2, uint8_t satellite_system, u
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_elevation != NULL) { *ret_elevation = tf_packet_buffer_read_int16_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 2); }
-        if (ret_azimuth != NULL) { *ret_azimuth = tf_packet_buffer_read_int16_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 2); }
-        if (ret_snr != NULL) { *ret_snr = tf_packet_buffer_read_int16_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(gps_v2->tfp);
+        if (ret_elevation != NULL) { *ret_elevation = tf_packet_buffer_read_int16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+        if (ret_azimuth != NULL) { *ret_azimuth = tf_packet_buffer_read_int16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+        if (ret_snr != NULL) { *ret_snr = tf_packet_buffer_read_int16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(gps_v2->tfp);
     }
 
@@ -704,7 +737,9 @@ int tf_gps_v2_set_fix_led_config(TF_GPSV2 *gps_v2, uint8_t config) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -712,14 +747,14 @@ int tf_gps_v2_set_fix_led_config(TF_GPSV2 *gps_v2, uint8_t config) {
     tf_gps_v2_get_response_expected(gps_v2, TF_GPS_V2_FUNCTION_SET_FIX_LED_CONFIG, &response_expected);
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_SET_FIX_LED_CONFIG, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(gps_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(gps_v2->tfp);
 
-    buf[0] = (uint8_t)config;
+    send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -743,17 +778,19 @@ int tf_gps_v2_get_fix_led_config(TF_GPSV2 *gps_v2, uint8_t *ret_config) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_GET_FIX_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -764,7 +801,8 @@ int tf_gps_v2_get_fix_led_config(TF_GPSV2 *gps_v2, uint8_t *ret_config) {
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(gps_v2->tfp);
+        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(gps_v2->tfp);
     }
 
@@ -782,7 +820,9 @@ int tf_gps_v2_set_coordinates_callback_period(TF_GPSV2 *gps_v2, uint32_t period)
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -790,14 +830,14 @@ int tf_gps_v2_set_coordinates_callback_period(TF_GPSV2 *gps_v2, uint32_t period)
     tf_gps_v2_get_response_expected(gps_v2, TF_GPS_V2_FUNCTION_SET_COORDINATES_CALLBACK_PERIOD, &response_expected);
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_SET_COORDINATES_CALLBACK_PERIOD, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(gps_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(gps_v2->tfp);
 
-    period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
+    period = tf_leconvert_uint32_to(period); memcpy(send_buf + 0, &period, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -821,17 +861,19 @@ int tf_gps_v2_get_coordinates_callback_period(TF_GPSV2 *gps_v2, uint32_t *ret_pe
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_GET_COORDINATES_CALLBACK_PERIOD, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -842,7 +884,8 @@ int tf_gps_v2_get_coordinates_callback_period(TF_GPSV2 *gps_v2, uint32_t *ret_pe
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(gps_v2->tfp);
+        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(gps_v2->tfp);
     }
 
@@ -860,7 +903,9 @@ int tf_gps_v2_set_status_callback_period(TF_GPSV2 *gps_v2, uint32_t period) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -868,14 +913,14 @@ int tf_gps_v2_set_status_callback_period(TF_GPSV2 *gps_v2, uint32_t period) {
     tf_gps_v2_get_response_expected(gps_v2, TF_GPS_V2_FUNCTION_SET_STATUS_CALLBACK_PERIOD, &response_expected);
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_SET_STATUS_CALLBACK_PERIOD, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(gps_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(gps_v2->tfp);
 
-    period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
+    period = tf_leconvert_uint32_to(period); memcpy(send_buf + 0, &period, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -899,17 +944,19 @@ int tf_gps_v2_get_status_callback_period(TF_GPSV2 *gps_v2, uint32_t *ret_period)
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_GET_STATUS_CALLBACK_PERIOD, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -920,7 +967,8 @@ int tf_gps_v2_get_status_callback_period(TF_GPSV2 *gps_v2, uint32_t *ret_period)
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(gps_v2->tfp);
+        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(gps_v2->tfp);
     }
 
@@ -938,7 +986,9 @@ int tf_gps_v2_set_altitude_callback_period(TF_GPSV2 *gps_v2, uint32_t period) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -946,14 +996,14 @@ int tf_gps_v2_set_altitude_callback_period(TF_GPSV2 *gps_v2, uint32_t period) {
     tf_gps_v2_get_response_expected(gps_v2, TF_GPS_V2_FUNCTION_SET_ALTITUDE_CALLBACK_PERIOD, &response_expected);
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_SET_ALTITUDE_CALLBACK_PERIOD, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(gps_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(gps_v2->tfp);
 
-    period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
+    period = tf_leconvert_uint32_to(period); memcpy(send_buf + 0, &period, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -977,17 +1027,19 @@ int tf_gps_v2_get_altitude_callback_period(TF_GPSV2 *gps_v2, uint32_t *ret_perio
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_GET_ALTITUDE_CALLBACK_PERIOD, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -998,7 +1050,8 @@ int tf_gps_v2_get_altitude_callback_period(TF_GPSV2 *gps_v2, uint32_t *ret_perio
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(gps_v2->tfp);
+        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(gps_v2->tfp);
     }
 
@@ -1016,7 +1069,9 @@ int tf_gps_v2_set_motion_callback_period(TF_GPSV2 *gps_v2, uint32_t period) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1024,14 +1079,14 @@ int tf_gps_v2_set_motion_callback_period(TF_GPSV2 *gps_v2, uint32_t period) {
     tf_gps_v2_get_response_expected(gps_v2, TF_GPS_V2_FUNCTION_SET_MOTION_CALLBACK_PERIOD, &response_expected);
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_SET_MOTION_CALLBACK_PERIOD, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(gps_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(gps_v2->tfp);
 
-    period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
+    period = tf_leconvert_uint32_to(period); memcpy(send_buf + 0, &period, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1055,17 +1110,19 @@ int tf_gps_v2_get_motion_callback_period(TF_GPSV2 *gps_v2, uint32_t *ret_period)
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_GET_MOTION_CALLBACK_PERIOD, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1076,7 +1133,8 @@ int tf_gps_v2_get_motion_callback_period(TF_GPSV2 *gps_v2, uint32_t *ret_period)
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(gps_v2->tfp);
+        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(gps_v2->tfp);
     }
 
@@ -1094,7 +1152,9 @@ int tf_gps_v2_set_date_time_callback_period(TF_GPSV2 *gps_v2, uint32_t period) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1102,14 +1162,14 @@ int tf_gps_v2_set_date_time_callback_period(TF_GPSV2 *gps_v2, uint32_t period) {
     tf_gps_v2_get_response_expected(gps_v2, TF_GPS_V2_FUNCTION_SET_DATE_TIME_CALLBACK_PERIOD, &response_expected);
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_SET_DATE_TIME_CALLBACK_PERIOD, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(gps_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(gps_v2->tfp);
 
-    period = tf_leconvert_uint32_to(period); memcpy(buf + 0, &period, 4);
+    period = tf_leconvert_uint32_to(period); memcpy(send_buf + 0, &period, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1133,17 +1193,19 @@ int tf_gps_v2_get_date_time_callback_period(TF_GPSV2 *gps_v2, uint32_t *ret_peri
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_GET_DATE_TIME_CALLBACK_PERIOD, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1154,7 +1216,8 @@ int tf_gps_v2_get_date_time_callback_period(TF_GPSV2 *gps_v2, uint32_t *ret_peri
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(gps_v2->tfp);
+        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(gps_v2->tfp);
     }
 
@@ -1172,7 +1235,9 @@ int tf_gps_v2_set_sbas_config(TF_GPSV2 *gps_v2, uint8_t sbas_config) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1180,14 +1245,14 @@ int tf_gps_v2_set_sbas_config(TF_GPSV2 *gps_v2, uint8_t sbas_config) {
     tf_gps_v2_get_response_expected(gps_v2, TF_GPS_V2_FUNCTION_SET_SBAS_CONFIG, &response_expected);
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_SET_SBAS_CONFIG, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(gps_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(gps_v2->tfp);
 
-    buf[0] = (uint8_t)sbas_config;
+    send_buf[0] = (uint8_t)sbas_config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1211,17 +1276,19 @@ int tf_gps_v2_get_sbas_config(TF_GPSV2 *gps_v2, uint8_t *ret_sbas_config) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_GET_SBAS_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1232,7 +1299,8 @@ int tf_gps_v2_get_sbas_config(TF_GPSV2 *gps_v2, uint8_t *ret_sbas_config) {
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_sbas_config != NULL) { *ret_sbas_config = tf_packet_buffer_read_uint8_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(gps_v2->tfp);
+        if (ret_sbas_config != NULL) { *ret_sbas_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(gps_v2->tfp);
     }
 
@@ -1250,17 +1318,19 @@ int tf_gps_v2_get_spitfp_error_count(TF_GPSV2 *gps_v2, uint32_t *ret_error_count
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1271,10 +1341,11 @@ int tf_gps_v2_get_spitfp_error_count(TF_GPSV2 *gps_v2, uint32_t *ret_error_count
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 4); }
-        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(gps_v2->tfp);
+        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(gps_v2->tfp);
     }
 
@@ -1292,21 +1363,23 @@ int tf_gps_v2_set_bootloader_mode(TF_GPSV2 *gps_v2, uint8_t mode, uint8_t *ret_s
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_SET_BOOTLOADER_MODE, 1, 1, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(gps_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(gps_v2->tfp);
 
-    buf[0] = (uint8_t)mode;
+    send_buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1317,7 +1390,8 @@ int tf_gps_v2_set_bootloader_mode(TF_GPSV2 *gps_v2, uint8_t mode, uint8_t *ret_s
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(gps_v2->tfp);
+        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(gps_v2->tfp);
     }
 
@@ -1335,17 +1409,19 @@ int tf_gps_v2_get_bootloader_mode(TF_GPSV2 *gps_v2, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1356,7 +1432,8 @@ int tf_gps_v2_get_bootloader_mode(TF_GPSV2 *gps_v2, uint8_t *ret_mode) {
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(gps_v2->tfp);
+        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(gps_v2->tfp);
     }
 
@@ -1374,7 +1451,9 @@ int tf_gps_v2_set_write_firmware_pointer(TF_GPSV2 *gps_v2, uint32_t pointer) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1382,14 +1461,14 @@ int tf_gps_v2_set_write_firmware_pointer(TF_GPSV2 *gps_v2, uint32_t pointer) {
     tf_gps_v2_get_response_expected(gps_v2, TF_GPS_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER, &response_expected);
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(gps_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(gps_v2->tfp);
 
-    pointer = tf_leconvert_uint32_to(pointer); memcpy(buf + 0, &pointer, 4);
+    pointer = tf_leconvert_uint32_to(pointer); memcpy(send_buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1413,21 +1492,23 @@ int tf_gps_v2_write_firmware(TF_GPSV2 *gps_v2, const uint8_t data[64], uint8_t *
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_WRITE_FIRMWARE, 64, 1, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(gps_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(gps_v2->tfp);
 
-    memcpy(buf + 0, data, 64);
+    memcpy(send_buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1438,7 +1519,8 @@ int tf_gps_v2_write_firmware(TF_GPSV2 *gps_v2, const uint8_t data[64], uint8_t *
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(gps_v2->tfp);
+        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(gps_v2->tfp);
     }
 
@@ -1456,7 +1538,9 @@ int tf_gps_v2_set_status_led_config(TF_GPSV2 *gps_v2, uint8_t config) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1464,14 +1548,14 @@ int tf_gps_v2_set_status_led_config(TF_GPSV2 *gps_v2, uint8_t config) {
     tf_gps_v2_get_response_expected(gps_v2, TF_GPS_V2_FUNCTION_SET_STATUS_LED_CONFIG, &response_expected);
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_SET_STATUS_LED_CONFIG, 1, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(gps_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(gps_v2->tfp);
 
-    buf[0] = (uint8_t)config;
+    send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1495,17 +1579,19 @@ int tf_gps_v2_get_status_led_config(TF_GPSV2 *gps_v2, uint8_t *ret_config) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1516,7 +1602,8 @@ int tf_gps_v2_get_status_led_config(TF_GPSV2 *gps_v2, uint8_t *ret_config) {
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 1); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(gps_v2->tfp);
+        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
         tf_tfp_packet_processed(gps_v2->tfp);
     }
 
@@ -1534,17 +1621,19 @@ int tf_gps_v2_get_chip_temperature(TF_GPSV2 *gps_v2, int16_t *ret_temperature) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1555,7 +1644,8 @@ int tf_gps_v2_get_chip_temperature(TF_GPSV2 *gps_v2, int16_t *ret_temperature) {
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 2); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(gps_v2->tfp);
+        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(gps_v2->tfp);
     }
 
@@ -1573,7 +1663,9 @@ int tf_gps_v2_reset(TF_GPSV2 *gps_v2) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1581,10 +1673,10 @@ int tf_gps_v2_reset(TF_GPSV2 *gps_v2) {
     tf_gps_v2_get_response_expected(gps_v2, TF_GPS_V2_FUNCTION_RESET, &response_expected);
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_RESET, 0, 0, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1608,7 +1700,9 @@ int tf_gps_v2_write_uid(TF_GPSV2 *gps_v2, uint32_t uid) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1616,14 +1710,14 @@ int tf_gps_v2_write_uid(TF_GPSV2 *gps_v2, uint32_t uid) {
     tf_gps_v2_get_response_expected(gps_v2, TF_GPS_V2_FUNCTION_WRITE_UID, &response_expected);
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_WRITE_UID, 4, 0, response_expected);
 
-    uint8_t *buf = tf_tfp_get_payload_buffer(gps_v2->tfp);
+    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(gps_v2->tfp);
 
-    uid = tf_leconvert_uint32_to(uid); memcpy(buf + 0, &uid, 4);
+    uid = tf_leconvert_uint32_to(uid); memcpy(send_buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1647,17 +1741,19 @@ int tf_gps_v2_read_uid(TF_GPSV2 *gps_v2, uint32_t *ret_uid) {
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
     bool response_expected = true;
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_READ_UID, 0, 4, response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1668,7 +1764,8 @@ int tf_gps_v2_read_uid(TF_GPSV2 *gps_v2, uint32_t *ret_uid) {
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 4); }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(gps_v2->tfp);
+        if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
         tf_tfp_packet_processed(gps_v2->tfp);
     }
 
@@ -1686,7 +1783,9 @@ int tf_gps_v2_get_identity(TF_GPSV2 *gps_v2, char ret_uid[8], char ret_connected
         return TF_E_NULL;
     }
 
-    if (tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->locked) {
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(hal)->locked) {
         return TF_E_LOCKED;
     }
 
@@ -1694,10 +1793,10 @@ int tf_gps_v2_get_identity(TF_GPSV2 *gps_v2, char ret_uid[8], char ret_connected
     tf_tfp_prepare_send(gps_v2->tfp, TF_GPS_V2_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
 
     size_t i;
-    uint32_t deadline = tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + tf_hal_get_common((TF_HAL *)gps_v2->tfp->hal)->timeout;
+    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
 
     uint8_t error_code = 0;
-    int result = tf_tfp_transmit_packet(gps_v2->tfp, response_expected, deadline, &error_code);
+    int result = tf_tfp_send_packet(gps_v2->tfp, response_expected, deadline, &error_code);
 
     if (result < 0) {
         return result;
@@ -1708,19 +1807,13 @@ int tf_gps_v2_get_identity(TF_GPSV2 *gps_v2, char ret_uid[8], char ret_connected
     }
 
     if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        char tmp_connected_uid[8] = {0};
-        if (ret_uid != NULL) { tf_packet_buffer_pop_n(&gps_v2->tfp->spitfp->recv_buf, (uint8_t*)ret_uid, 8);} else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 8); }
-        tf_packet_buffer_pop_n(&gps_v2->tfp->spitfp->recv_buf, (uint8_t*)tmp_connected_uid, 8);
-        if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 1); }
-        if (ret_hardware_version != NULL) { for (i = 0; i < 3; ++i) ret_hardware_version[i] = tf_packet_buffer_read_uint8_t(&gps_v2->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 3); }
-        if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(&gps_v2->tfp->spitfp->recv_buf);} else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 3); }
-        if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(&gps_v2->tfp->spitfp->recv_buf); } else { tf_packet_buffer_remove(&gps_v2->tfp->spitfp->recv_buf, 2); }
-        if (tmp_connected_uid[0] == 0 && ret_position != NULL) {
-            *ret_position = tf_hal_get_port_name((TF_HAL *)gps_v2->tfp->hal, gps_v2->tfp->spitfp->port_id);
-        }
-        if (ret_connected_uid != NULL) {
-            memcpy(ret_connected_uid, tmp_connected_uid, 8);
-        }
+        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(gps_v2->tfp);
+        if (ret_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
+        if (ret_connected_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_connected_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
+        if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+        if (ret_hardware_version != NULL) { for (i = 0; i < 3; ++i) ret_hardware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
+        if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
+        if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
         tf_tfp_packet_processed(gps_v2->tfp);
     }
 
@@ -1906,7 +1999,9 @@ int tf_gps_v2_callback_tick(TF_GPSV2 *gps_v2, uint32_t timeout_us) {
         return TF_E_NULL;
     }
 
-    return tf_tfp_callback_tick(gps_v2->tfp, tf_hal_current_time_us((TF_HAL *)gps_v2->tfp->hal) + timeout_us);
+    TF_HAL *hal = gps_v2->tfp->spitfp->hal;
+
+    return tf_tfp_callback_tick(gps_v2->tfp, tf_hal_current_time_us(hal) + timeout_us);
 }
 
 #ifdef __cplusplus
