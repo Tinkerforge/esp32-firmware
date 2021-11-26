@@ -27,27 +27,27 @@
 #include "task_scheduler.h"
 
 extern TF_HAL hal;
-
 extern TaskScheduler task_scheduler;
 extern EventLog logger;
 
 void API::setup()
 {
-    task_scheduler.scheduleWithFixedDelay("API state update", [this](){
-        for (auto &reg: states) {
+    task_scheduler.scheduleWithFixedDelay("API state update", [this]() {
+        for (auto &reg : states) {
             if (!deadline_elapsed(reg.last_update + reg.interval))
                 continue;
 
             reg.last_update = millis();
 
-            if(!reg.config->was_updated())
+            if (!reg.config->was_updated()) {
                 continue;
+            }
 
             reg.config->set_update_handled();
 
             String payload = reg.config->to_string_except(reg.keys_to_censor);
 
-            for (auto* backend: this->backends) {
+            for (auto *backend: this->backends) {
                 backend->pushStateUpdate(payload, reg.path);
             }
         }
@@ -66,6 +66,7 @@ void API::addCommand(String path, Config *config, std::initializer_list<String> 
 void API::addState(String path, Config *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms)
 {
     states.push_back({path, config, keys_to_censor, interval_ms, millis()});
+
     for (auto *backend : this->backends) {
         backend->addState(states[states.size() - 1]);
     }
@@ -84,7 +85,7 @@ bool API::addPersistentConfig(String path, Config *config, std::initializer_list
     }
 
     addState(path, config, keys_to_censor, interval_ms);
-    addCommand(path + String("_update"), config, keys_to_censor, [path, config](){
+    addCommand(path + String("_update"), config, keys_to_censor, [path, config]() {
         String path_copy = path;
         path_copy.replace('/', '_');
         String cfg_path = String("/") + path_copy;
@@ -94,6 +95,7 @@ bool API::addPersistentConfig(String path, Config *config, std::initializer_list
             LittleFS.remove(tmp_path);
 
         File file = LittleFS.open(tmp_path, "w");
+
         config->save_to_file(file);
         file.close();
 
@@ -127,6 +129,7 @@ String API::getCommandBlockedReason(String path)
             continue;
         return reg.blockedReason;
     }
+
     return "";
 }
 
@@ -160,7 +163,9 @@ bool API::restorePersistentConfig(String path, Config *config)
 
     File file = LittleFS.open(filename);
     String error = config->update_from_file(file);
+
     file.close();
+
     if (error != "")
         logger.printfln("Failed to restore persistent config %s: %s", path.c_str(), error.c_str());
     return error == "";
@@ -175,33 +180,37 @@ void API::registerDebugUrl(WebServer *server)
         result += ESP.getFreeHeap();
         result += ",\n \"largest_free_heap_block\":";
         result += ESP.getMaxAllocHeap();
-
         result += ",\n \"devices\": [";
+
         size_t i = 0;
         char uid[7] = {0};
         char pos = 0;
         uint16_t did = 0;
         while (tf_hal_get_device_info(&hal, i, uid, &pos, &did) == TF_E_OK) {
             char buf[100] = {0};
+
             snprintf(buf, sizeof(buf), "%c{\"UID\":\"%s\", \"DID\":%u, \"port\":\"%c\"}", i == 0 ? ' ' : ',', uid, did, pos);
             result += buf;
             ++i;
         }
-        result += "]";
 
+        result += "]";
         result += ",\n \"error_counters\": [";
+
         for (char c = 'A'; c <= 'F'; ++c) {
             uint32_t spitfp_checksum, spitfp_frame, tfp_frame, tfp_unexpected;
 
             tf_hal_get_error_counters(&hal, c, &spitfp_checksum, &spitfp_frame, &tfp_frame, &tfp_unexpected);
             char buf[100] = {0};
             snprintf(buf, sizeof(buf), "%c{\"port\": \"%c\", \"SpiTfpChecksum\": %u, \"SpiTfpFrame\": %u, \"TfpFrame\": %u, \"TfpUnexpected\": %u}", c == 'A' ? ' ': ',', c,
-                spitfp_checksum,
-                spitfp_frame,
-                tfp_frame,
-                tfp_unexpected);
+                     spitfp_checksum,
+                     spitfp_frame,
+                     tfp_frame,
+                     tfp_unexpected);
+
             result += buf;
         }
+
         result += "]";
 
         for (auto &reg : states) {
@@ -217,7 +226,9 @@ void API::registerDebugUrl(WebServer *server)
             result += "\": ";
             result += reg.config->to_string_except(reg.keys_to_censor_in_debug_report);
         }
+
         result += "}";
+
         request.send(200, "application/json; charset=utf-8", result.c_str());
     });
 }
@@ -239,10 +250,12 @@ String API::callCommand(String path, Config::ConfUpdate payload)
             continue;
 
         String error = reg.config->update(&payload);
+
         if (error == "")
             task_scheduler.scheduleOnce((String("notify command update for ") + reg.path).c_str(), [reg]() { reg.callback(); }, 0);
         return error;
     }
+
     return String("Unknown command ") + path;
 }
 
@@ -257,17 +270,19 @@ Config *API::getState(String path, bool log_if_not_found)
 
     if (log_if_not_found) {
         logger.printfln("Key %s not found. Contents are:", path.c_str());
+
         for (auto &reg : states) {
             logger.printfln("%s,", reg.path.c_str());
         }
     }
+
     return nullptr;
 }
 
 void API::wifiAvailable()
 {
-    task_scheduler.scheduleOnce("wifi_available", [this](){
-        for (auto* backend: this->backends) {
+    task_scheduler.scheduleOnce("wifi_available", [this]() {
+        for (auto *backend: this->backends) {
             backend->wifiAvailable();
         }
     }, 0);

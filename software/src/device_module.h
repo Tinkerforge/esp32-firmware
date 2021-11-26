@@ -58,7 +58,9 @@ public:
         device_name(device_name),
         module_name(module_name),
         setup_function(setup_function)
-        {}
+    {
+
+    }
 
     uint16_t get_did() {
         return firmware[firmware_len - FIRMWARE_DEVICE_IDENTIFIER_OFFSET] | (firmware[firmware_len - FIRMWARE_DEVICE_IDENTIFIER_OFFSET + 1] << 8);
@@ -80,6 +82,7 @@ public:
         }
 
         result = init_function(&device, uid, &hal);
+
         if (result != TF_E_OK) {
             logger.printfln("Failed to initialize %s Bricklet (%d). Disabling %s support.", device_name, result, module_name);
             return false;
@@ -88,15 +91,17 @@ public:
         return true;
     }
 
-    void register_urls() {
-        api.addCommand(url_prefix + "/reflash", &device_reflash, {}, [this](){
+    void register_urls()
+    {
+        api.addCommand(url_prefix + "/reflash", &device_reflash, {}, [this]() {
             char uid[7] = {0};
             find_uid_by_did(&hal, get_did(), uid);
             ensure_matching_firmware(&hal, uid, device_name, module_name, firmware, firmware_len, &logger, true);
         }, true);
 
-        api.addCommand(url_prefix + "/reset", &device_reset, {}, [this](){
+        api.addCommand(url_prefix + "/reset", &device_reset, {}, [this]() {
             reset_function(&device);
+
             initialized = false;
         }, true);
     }
@@ -118,6 +123,7 @@ public:
 
         uint8_t mode;
         int bootloader_rc = get_bootloader_mode_function(&device, &mode);
+
         if (bootloader_rc != TF_E_OK) {
             return false;
         }

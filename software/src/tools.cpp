@@ -34,7 +34,6 @@
 #include "event_log.h"
 #include "esp_log.h"
 
-
 extern EventLog logger;
 
 bool deadline_elapsed(uint32_t deadline_ms)
@@ -53,6 +52,7 @@ bool find_uid_by_did(TF_HAL *hal, uint16_t device_id, char uid[7])
             return true;
         }
     }
+
     return false;
 }
 
@@ -65,6 +65,7 @@ bool find_uid_by_did_at_port(TF_HAL *hal, uint16_t device_id, char port, char ui
             return true;
         }
     }
+
     return false;
 }
 
@@ -90,6 +91,7 @@ String update_config(Config &cfg, String config_name, JsonVariant &json)
     } else {
         logger.printfln("Failed to update %s: %s", path.c_str(), error.c_str());
     }
+
     return error;
 }
 
@@ -141,17 +143,21 @@ void read_efuses(uint32_t *ret_uid_numeric, char *ret_uid_string, char *ret_pass
     uid = blocks[7];
 
     char buf[7] = {0};
+
     for (int i = 0; i < 4; ++i) {
         if (i != 0)
             ret_passphrase_string[i * 5 - 1] = '-';
+        }
 
         tf_base58_encode(passphrase[i], buf);
+
         if (strnlen(buf, sizeof(buf) / sizeof(buf[0])) != 4) {
             logger.printfln("efuse error: malformed passphrase!");
         } else {
             memcpy(ret_passphrase_string + i * 5, buf, 4);
         }
     }
+
     tf_base58_encode(uid, ret_uid_string);
 }
 
@@ -161,17 +167,19 @@ int check(int rc, const char *msg)
         return rc;
     logger.printfln("%lu Failed to %s rc: %s", millis(), msg, tf_hal_strerror(rc));
     delay(10);
+
     return rc;
 }
 
 bool is_spiffs_available(const char *part_label, const char *base_path)
 {
     Serial.printf("Checking if %s is mountable as SPIFFS. Please ignore following SPIFFS errors\n", part_label);
+
     esp_vfs_spiffs_conf_t conf = {
-      .base_path = base_path,
-      .partition_label = part_label,
-      .max_files = 10,
-      .format_if_mount_failed = false
+        .base_path = base_path,
+        .partition_label = part_label,
+        .max_files = 10,
+        .format_if_mount_failed = false
     };
 
     esp_err_t err = esp_vfs_spiffs_register(&conf);
@@ -190,6 +198,7 @@ bool is_spiffs_available(const char *part_label, const char *base_path)
 bool is_littlefs_available(const char *part_label, const char *base_path)
 {
     Serial.printf("Checking if %s is mountable as LittleFS. Please ignore following LittleFS errors\n", part_label);
+
     esp_vfs_littlefs_conf_t conf = {
         .base_path = base_path,
         .partition_label = part_label,
@@ -217,6 +226,7 @@ bool mirror_filesystem(fs::FS &fromFS, fs::FS &toFS, String root_name, int level
 
     // File works RAII style, no need to close.
     File root = fromFS.open(root_name);
+
     if (!root) {
         logger.printfln("Failed to open source directory %s!", root_name.c_str());
         return false;
@@ -228,6 +238,7 @@ bool mirror_filesystem(fs::FS &fromFS, fs::FS &toFS, String root_name, int level
     }
 
     File source;
+
     while (source = root.openNextFile()) {
         if (source.isDirectory()) {
             if (levels <= 0) {
@@ -237,21 +248,25 @@ bool mirror_filesystem(fs::FS &fromFS, fs::FS &toFS, String root_name, int level
 
             logger.printfln("Recursing in directory %s. Depth left %d.", root_name.c_str(), levels - 1);
             toFS.mkdir(source.name());
+
             if (!mirror_filesystem(fromFS, toFS, String(source.name()) + "/", levels - 1))
                 return false;
             continue;
         }
 
         File target = toFS.open(root_name + source.name(), FILE_WRITE);
+
         while (source.available()) {
             size_t read = source.read(buf, sizeof(buf) / sizeof(buf[0]));
             size_t written = target.write(buf, read);
+
             if (written != read) {
                 logger.printfln("Failed to write file %s: written %u read %u", target.name(), written, read);
                 return false;
             }
         }
     }
+
     return true;
 }
 
@@ -332,14 +347,15 @@ String read_or_write_config_version(const char *firmware_version)
     if (LittleFS.exists("/spiffs.json")) {
         const size_t capacity = JSON_OBJECT_SIZE(1) + 60;
         StaticJsonDocument<capacity> doc;
-
         File file = LittleFS.open("/spiffs.json", "r");
+
         deserializeJson(doc, file);
         file.close();
 
         return doc["spiffs"].as<const char *>();
     } else {
         File file = LittleFS.open("/spiffs.json", "w");
+
         file.printf("{\"spiffs\": \"%s\"}", firmware_version);
         file.close();
 
@@ -350,13 +366,16 @@ String read_or_write_config_version(const char *firmware_version)
 static bool wait_for_bootloader_mode(TF_Unknown *bricklet, int target_mode)
 {
     uint8_t mode = 255;
+
     for (int i = 0; i < 10; ++i) {
         if (tf_unknown_get_bootloader_mode(bricklet, &mode) != TF_E_OK) {
             continue;
         }
+
         if (mode == target_mode) {
             break;
         }
+
         delay(250);
     }
 
@@ -368,16 +387,18 @@ static bool flash_plugin(TF_Unknown *bricklet, const uint8_t *firmware, size_t f
     logger->printfln("    Setting bootloader mode to bootloader.");
     tf_unknown_set_bootloader_mode(bricklet, 0, nullptr);
     logger->printfln("    Waiting for bootloader...");
+
     if (!wait_for_bootloader_mode(bricklet, 0)) {
         logger->printfln("    Timed out, flashing failed");
         return false;
     }
+
     logger->printfln("    Device is in bootloader, flashing...");
 
     int num_packets = firmware_len / 64;
-
     int last_packet = 0;
     bool write_footer = false;
+
     if (regular_plugin_upto >= firmware_len - 64 * 4) {
         last_packet = num_packets;
     } else {
@@ -387,6 +408,7 @@ static bool flash_plugin(TF_Unknown *bricklet, const uint8_t *firmware, size_t f
 
     for (int position = 0; position < last_packet; ++position) {
         int start = position * 64;
+
         if (tf_unknown_set_write_firmware_pointer(bricklet, start) != TF_E_OK) {
             if (tf_unknown_set_write_firmware_pointer(bricklet, start) != TF_E_OK) {
                 logger->printfln("    Failed to set firmware pointer to %d", start);
@@ -405,6 +427,7 @@ static bool flash_plugin(TF_Unknown *bricklet, const uint8_t *firmware, size_t f
     if (write_footer) {
         for (int position = num_packets - 4; position < num_packets; ++position) {
             int start = position * 64;
+
             if (tf_unknown_set_write_firmware_pointer(bricklet, start) != TF_E_OK) {
                 if (tf_unknown_set_write_firmware_pointer(bricklet, start) != TF_E_OK) {
                     logger->printfln("    (Footer) Failed to set firmware pointer to %d", start);
@@ -420,14 +443,17 @@ static bool flash_plugin(TF_Unknown *bricklet, const uint8_t *firmware, size_t f
             }
         }
     }
+
     logger->printfln("    Device flashed successfully.");
+
     return true;
 }
 
 static bool flash_firmware(TF_Unknown *bricklet, const uint8_t *firmware, size_t firmware_len, EventLog *logger)
 {
     int regular_plugin_upto = -1;
-    for(int i = firmware_len - 13; i >= 4; --i) {
+
+    for (int i = firmware_len - 13; i >= 4; --i) {
         if (firmware[i] == 0x12
          && firmware[i - 1] == 0x34
          && firmware[i - 2] == 0x56
@@ -447,32 +473,44 @@ static bool flash_firmware(TF_Unknown *bricklet, const uint8_t *firmware, size_t
     }
 
     logger->printfln("    Setting bootloader mode to firmware.");
+
     uint8_t ret_status = 0;
+
     tf_unknown_set_bootloader_mode(bricklet, 1, &ret_status);
+
     if (ret_status != 0 && ret_status != 2) {
         logger->printfln("    Failed to set bootloader mode to firmware. status %d.", ret_status);
+
         if (ret_status != 5) {
             return false;
         }
+
         logger->printfln("    Status is 5, retrying.");
+
         if (!flash_plugin(bricklet, firmware, firmware_len, regular_plugin_upto, logger)) {
             return false;
         }
 
         ret_status = 0;
+
         logger->printfln("    Setting bootloader mode to firmware.");
         tf_unknown_set_bootloader_mode(bricklet, 1, &ret_status);
+
         if (ret_status != 0 && ret_status != 2) {
             logger->printfln("    (Second attempt) Failed to set bootloader mode to firmware. status %d.", ret_status);
             return false;
         }
     }
+
     logger->printfln("    Waiting for firmware...");
+
     if (!wait_for_bootloader_mode(bricklet, 1)) {
         logger->printfln("    Timed out, flashing failed");
         return false;
     }
+
     logger->printfln("    Firmware flashed successfully");
+
     return true;
 }
 
@@ -505,6 +543,7 @@ int ensure_matching_firmware(TF_HAL *hal, const char *uid, const char* name, con
     uint8_t firmware_version[3] = {0};
 
     result = tf_unknown_get_identity(&bricklet, nullptr, nullptr, nullptr, nullptr, firmware_version, nullptr);
+
     if (result != TF_E_OK) {
         logger->printfln("%s get identity failed (rc %d). Disabling %s support.", name, result, purpose);
         return -1;
@@ -517,6 +556,7 @@ int ensure_matching_firmware(TF_HAL *hal, const char *uid, const char* name, con
     };
 
     bool flash_required = force;
+
     for (int i = 0; i < 3; ++i) {
         // Intentionally use != here: we also want to downgrade the bricklet firmware if the ESP firmware embeds an older one.
         // This makes sure, that the interfaces fit.
@@ -525,14 +565,17 @@ int ensure_matching_firmware(TF_HAL *hal, const char *uid, const char* name, con
 
     if (flash_required) {
         logger->printfln("%s firmware is %d.%d.%d not the expected %d.%d.%d. Flashing firmware...",
-                      name,
-                      firmware_version[0], firmware_version[1], firmware_version[2],
-                      embedded_firmware_version[0], embedded_firmware_version[1], embedded_firmware_version[2]);
+                         name,
+                         firmware_version[0], firmware_version[1], firmware_version[2],
+                         embedded_firmware_version[0], embedded_firmware_version[1], embedded_firmware_version[2]);
+
         if (!flash_firmware(&bricklet, firmware, firmware_len, logger)) {
             logger->printfln("%s flashing failed. Disabling %s support.", name, purpose);
             return -1;
         }
     }
+
     tf_unknown_destroy(&bricklet);
+
     return 0;
 }
