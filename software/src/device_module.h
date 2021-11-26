@@ -68,20 +68,20 @@ public:
     {
         char uid[7] = {0};
         if (!find_uid_by_did(&hal, get_did(), uid)) {
-            logger.printfln("No %s bricklet found. Disabling %s support.", device_name, module_name);
+            logger.printfln("No %s Bricklet found. Disabling %s support.", device_name, module_name);
             return false;
         }
         this->device_found = true;
 
         int result = ensure_matching_firmware(&hal, uid, device_name, module_name, firmware, firmware_len, &logger);
         if (result != 0) {
-            logger.printfln("Flashing failed (%d)", result);
+            logger.printfln("Flashing %s Bricklet failed (%d)", device_name, result);
             return false;
         }
 
         result = init_function(&device, uid, &hal);
         if (result != TF_E_OK) {
-            logger.printfln("Failed to initialize %s bricklet (%d). Disabling %s support.", device_name, result, module_name);
+            logger.printfln("Failed to initialize %s Bricklet (%d). Disabling %s support.", device_name, result, module_name);
             return false;
         }
 
