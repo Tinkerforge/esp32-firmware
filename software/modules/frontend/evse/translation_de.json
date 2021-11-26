@@ -117,8 +117,8 @@
             "charging_time": "Lade seit",
             "reset_description": "EVSE neustarten / neuflashen",
             "reset_description_muted": "{{{empty_text}}}",
-            "reset_evse": "Neustart",
-            "reflash_evse": "Neu flashen"
+            "reset_evse": "Neustarten",
+            "reflash_evse": "Neuflashen"
         },
         "script": {
             "error_code": "Fehlercode",

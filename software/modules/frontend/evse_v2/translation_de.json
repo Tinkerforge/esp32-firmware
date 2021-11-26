@@ -143,8 +143,8 @@
 
             "reset_description": "EVSE neustarten / neuflashen",
             "reset_description_muted": "{{{empty_text}}}",
-            "reset_evse": "Neustart",
-            "reflash_evse": "Neu flashen",
+            "reset_evse": "Neustarten",
+            "reflash_evse": "Neuflashen",
             "charging_time": "Lade seit",
 
             "control_pilot": "Control Pilot",
