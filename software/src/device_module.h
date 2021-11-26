@@ -111,7 +111,6 @@ public:
         if (device_found && !initialized && deadline_elapsed(last_check + 10000)) {
             last_check = millis();
             if (!is_in_bootloader(TF_E_TIMEOUT))
-                // setup_device();
                 setup_function();
         }
     }
