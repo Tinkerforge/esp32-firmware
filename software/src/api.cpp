@@ -34,8 +34,9 @@ void API::setup()
 {
     task_scheduler.scheduleWithFixedDelay("API state update", [this]() {
         for (auto &reg : states) {
-            if (!deadline_elapsed(reg.last_update + reg.interval))
+            if (!deadline_elapsed(reg.last_update + reg.interval)) {
                 continue;
+            }
 
             reg.last_update = millis();
 
@@ -91,16 +92,18 @@ bool API::addPersistentConfig(String path, Config *config, std::initializer_list
         String cfg_path = String("/") + path_copy;
         String tmp_path = String("/.") + path_copy; //max len is 31 - len("/.") = 29
 
-        if (LittleFS.exists(tmp_path))
+        if (LittleFS.exists(tmp_path)) {
             LittleFS.remove(tmp_path);
+        }
 
         File file = LittleFS.open(tmp_path, "w");
 
         config->save_to_file(file);
         file.close();
 
-        if (LittleFS.exists(cfg_path))
+        if (LittleFS.exists(cfg_path)) {
             LittleFS.remove(cfg_path);
+        }
 
         LittleFS.rename(tmp_path, cfg_path);
     }, false);
@@ -111,8 +114,10 @@ bool API::addPersistentConfig(String path, Config *config, std::initializer_list
 void API::blockCommand(String path, String reason)
 {
     for (auto &reg : commands) {
-        if (reg.path != path)
+        if (reg.path != path) {
             continue;
+        }
+
         reg.blockedReason = reason;
     }
 }
@@ -125,8 +130,10 @@ void API::unblockCommand(String path)
 String API::getCommandBlockedReason(String path)
 {
     for (auto &reg : commands) {
-        if (reg.path != path)
+        if (reg.path != path) {
             continue;
+        }
+
         return reg.blockedReason;
     }
 
@@ -151,11 +158,13 @@ bool API::restorePersistentConfig(String path, Config *config)
         // /xyz.json.tmp is now /.xyz
         // /xyz.json is now /xyz
 
-        if (LittleFS.exists(filename + ".json.tmp"))
+        if (LittleFS.exists(filename + ".json.tmp")) {
             LittleFS.remove(filename + ".json.tmp");
+        }
 
-        if (!LittleFS.exists(filename + ".json"))
+        if (!LittleFS.exists(filename + ".json")) {
             return false;
+        }
 
         logger.printfln("Migrating config file %s to %s.", (filename + ".json").c_str(), filename.c_str());
         LittleFS.rename(filename + ".json", filename);
@@ -166,8 +175,10 @@ bool API::restorePersistentConfig(String path, Config *config)
 
     file.close();
 
-    if (error != "")
+    if (error != "") {
         logger.printfln("Failed to restore persistent config %s: %s", path.c_str(), error.c_str());
+    }
+
     return error == "";
 }
 
@@ -246,13 +257,16 @@ void API::loop()
 String API::callCommand(String path, Config::ConfUpdate payload)
 {
     for (CommandRegistration &reg : commands) {
-        if (reg.path != path)
+        if (reg.path != path) {
             continue;
+        }
 
         String error = reg.config->update(&payload);
 
-        if (error == "")
+        if (error == "") {
             task_scheduler.scheduleOnce((String("notify command update for ") + reg.path).c_str(), [reg]() { reg.callback(); }, 0);
+        }
+
         return error;
     }
 
@@ -262,8 +276,9 @@ String API::callCommand(String path, Config::ConfUpdate payload)
 Config *API::getState(String path, bool log_if_not_found)
 {
     for (auto &reg : states) {
-        if (reg.path != path)
+        if (reg.path != path) {
             continue;
+        }
 
         return reg.config;
     }
