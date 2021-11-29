@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,11 +28,11 @@ extern "C" {
 struct TF_DMX;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_DMX_FrameStartedHandler)(struct TF_DMX *device, void *user_data);
-typedef void (*TF_DMX_FrameAvailableHandler)(struct TF_DMX *device, uint32_t frame_number, void *user_data);
-typedef void (*TF_DMX_FrameLowLevelHandler)(struct TF_DMX *device, uint16_t frame_length, uint16_t frame_chunk_offset, uint8_t frame_chunk_data[56], uint32_t frame_number, void *user_data);
-typedef void (*TF_DMX_FrameHandler)(struct TF_DMX *device, uint8_t *frame, uint16_t frame_length, uint32_t frame_number, void *user_data);
-typedef void (*TF_DMX_FrameErrorCountHandler)(struct TF_DMX *device, uint32_t overrun_error_count, uint32_t framing_error_count, void *user_data);
+typedef void (*TF_DMX_FrameStartedHandler)(struct TF_DMX *dmx, void *user_data);
+typedef void (*TF_DMX_FrameAvailableHandler)(struct TF_DMX *dmx, uint32_t frame_number, void *user_data);
+typedef void (*TF_DMX_FrameLowLevelHandler)(struct TF_DMX *dmx, uint16_t frame_length, uint16_t frame_chunk_offset, uint8_t frame_chunk_data[56], uint32_t frame_number, void *user_data);
+typedef void (*TF_DMX_FrameHandler)(struct TF_DMX *dmx, uint8_t *frame, uint16_t frame_length, uint32_t frame_number, void *user_data);
+typedef void (*TF_DMX_FrameErrorCountHandler)(struct TF_DMX *dmx, uint32_t overrun_error_count, uint32_t framing_error_count, void *user_data);
 
 #endif
 /**
@@ -360,7 +360,7 @@ typedef struct TF_DMX {
  * Creates the device object \c dmx with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_dmx_create(TF_DMX *dmx, const char *uid, TF_HAL *hal);
+int tf_dmx_create(TF_DMX *dmx, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_DMX

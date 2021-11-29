@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,11 +28,11 @@ extern "C" {
 struct TF_AirQuality;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_AirQuality_AllValuesHandler)(struct TF_AirQuality *device, int32_t iaq_index, uint8_t iaq_index_accuracy, int32_t temperature, int32_t humidity, int32_t air_pressure, void *user_data);
-typedef void (*TF_AirQuality_IAQIndexHandler)(struct TF_AirQuality *device, int32_t iaq_index, uint8_t iaq_index_accuracy, void *user_data);
-typedef void (*TF_AirQuality_TemperatureHandler)(struct TF_AirQuality *device, int32_t temperature, void *user_data);
-typedef void (*TF_AirQuality_HumidityHandler)(struct TF_AirQuality *device, int32_t humidity, void *user_data);
-typedef void (*TF_AirQuality_AirPressureHandler)(struct TF_AirQuality *device, int32_t air_pressure, void *user_data);
+typedef void (*TF_AirQuality_AllValuesHandler)(struct TF_AirQuality *air_quality, int32_t iaq_index, uint8_t iaq_index_accuracy, int32_t temperature, int32_t humidity, int32_t air_pressure, void *user_data);
+typedef void (*TF_AirQuality_IAQIndexHandler)(struct TF_AirQuality *air_quality, int32_t iaq_index, uint8_t iaq_index_accuracy, void *user_data);
+typedef void (*TF_AirQuality_TemperatureHandler)(struct TF_AirQuality *air_quality, int32_t temperature, void *user_data);
+typedef void (*TF_AirQuality_HumidityHandler)(struct TF_AirQuality *air_quality, int32_t humidity, void *user_data);
+typedef void (*TF_AirQuality_AirPressureHandler)(struct TF_AirQuality *air_quality, int32_t air_pressure, void *user_data);
 
 #endif
 /**
@@ -405,7 +405,7 @@ typedef struct TF_AirQuality {
  * Creates the device object \c air_quality with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_air_quality_create(TF_AirQuality *air_quality, const char *uid, TF_HAL *hal);
+int tf_air_quality_create(TF_AirQuality *air_quality, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_AirQuality

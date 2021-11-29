@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,7 +28,7 @@ extern "C" {
 struct TF_RGBLEDButton;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_RGBLEDButton_ButtonStateChangedHandler)(struct TF_RGBLEDButton *device, uint8_t state, void *user_data);
+typedef void (*TF_RGBLEDButton_ButtonStateChangedHandler)(struct TF_RGBLEDButton *rgb_led_button, uint8_t state, void *user_data);
 
 #endif
 /**
@@ -249,7 +249,7 @@ typedef struct TF_RGBLEDButton {
  * Creates the device object \c rgb_led_button with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_rgb_led_button_create(TF_RGBLEDButton *rgb_led_button, const char *uid, TF_HAL *hal);
+int tf_rgb_led_button_create(TF_RGBLEDButton *rgb_led_button, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_RGBLEDButton

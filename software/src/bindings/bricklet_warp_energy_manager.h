@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -281,7 +281,7 @@ typedef struct TF_WARPEnergyManager {
  * Creates the device object \c warp_energy_manager with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_warp_energy_manager_create(TF_WARPEnergyManager *warp_energy_manager, const char *uid, TF_HAL *hal);
+int tf_warp_energy_manager_create(TF_WARPEnergyManager *warp_energy_manager, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_WARPEnergyManager

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,46 +28,18 @@ static bool tf_multi_io_callback_handler(void *device, uint8_t fid, TF_PacketBuf
 
     return false;
 }
-int tf_multi_io_create(TF_MultiIO *multi_io, const char *uid, TF_HAL *hal) {
+int tf_multi_io_create(TF_MultiIO *multi_io, const char *uid_or_port_name, TF_HAL *hal) {
     if (multi_io == NULL || hal == NULL) {
         return TF_E_NULL;
     }
 
-    static uint16_t next_tfp_index = 0;
-
     memset(multi_io, 0, sizeof(TF_MultiIO));
 
     TF_TFP *tfp;
+    int rc = tf_hal_get_attachable_tfp(hal, &tfp, uid_or_port_name, TF_MULTI_IO_DEVICE_IDENTIFIER);
 
-    if (uid != NULL && *uid != '\0') {
-        uint32_t uid_num = 0;
-        int rc = tf_base58_decode(uid, &uid_num);
-
-        if (rc != TF_E_OK) {
-            return rc;
-        }
-
-        tfp = tf_hal_get_tfp(hal, &next_tfp_index, &uid_num, NULL, NULL);
-
-        if (tfp == NULL) {
-            return TF_E_DEVICE_NOT_FOUND;
-        }
-
-        if (tfp->device_id != TF_MULTI_IO_DEVICE_IDENTIFIER) {
-            return TF_E_WRONG_DEVICE_TYPE;
-        }
-    } else {
-        uint16_t device_id = TF_MULTI_IO_DEVICE_IDENTIFIER;
-
-        tfp = tf_hal_get_tfp(hal, &next_tfp_index, NULL, NULL, &device_id);
-
-        if (tfp == NULL) {
-            return TF_E_DEVICE_NOT_FOUND;
-        }
-    }
-
-    if (tfp->device != NULL) {
-        return TF_E_DEVICE_ALREADY_IN_USE;
+    if (rc != TF_E_OK) {
+        return rc;
     }
 
     multi_io->tfp = tfp;
@@ -191,42 +163,51 @@ int tf_multi_io_get_inputs(TF_MultiIO *multi_io, uint8_t ret_value[16]) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = multi_io->tfp->spitfp->hal;
+    TF_HAL *_hal = multi_io->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_GET_INPUTS, 0, 16, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_GET_INPUTS, 0, _response_expected);
 
-    size_t i;
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    size_t _i;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(multi_io->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(multi_io->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(multi_io->tfp);
-        if (ret_value != NULL) { for (i = 0; i < 16; ++i) ret_value[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 16); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(multi_io->tfp);
+        if (_error_code != 0 || _length != 16) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_value != NULL) { for (_i = 0; _i < 16; ++_i) ret_value[_i] = tf_packet_buffer_read_uint8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 16); }
+        }
         tf_tfp_packet_processed(multi_io->tfp);
     }
 
-    result = tf_tfp_finish_send(multi_io->tfp, result, deadline);
+    _result = tf_tfp_finish_send(multi_io->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 16) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_multi_io_set_outputs(TF_MultiIO *multi_io, const bool value[2]) {
@@ -234,41 +215,46 @@ int tf_multi_io_set_outputs(TF_MultiIO *multi_io, const bool value[2]) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = multi_io->tfp->spitfp->hal;
+    TF_HAL *_hal = multi_io->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_multi_io_get_response_expected(multi_io, TF_MULTI_IO_FUNCTION_SET_OUTPUTS, &response_expected);
-    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_SET_OUTPUTS, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_multi_io_get_response_expected(multi_io, TF_MULTI_IO_FUNCTION_SET_OUTPUTS, &_response_expected);
+    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_SET_OUTPUTS, 1, _response_expected);
 
-    size_t i;
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(multi_io->tfp);
+    size_t _i;
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(multi_io->tfp);
 
-    memset(send_buf + 0, 0, 1); for (i = 0; i < 2; ++i) send_buf[0 + (i / 8)] |= (value[i] ? 1 : 0) << (i % 8);
+    memset(_send_buf + 0, 0, 1); for (_i = 0; _i < 2; ++_i) _send_buf[0 + (_i / 8)] |= (value[_i] ? 1 : 0) << (_i % 8);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(multi_io->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(multi_io->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(multi_io->tfp, result, deadline);
+    _result = tf_tfp_finish_send(multi_io->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_multi_io_get_outputs(TF_MultiIO *multi_io, bool ret_value[2]) {
@@ -276,41 +262,50 @@ int tf_multi_io_get_outputs(TF_MultiIO *multi_io, bool ret_value[2]) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = multi_io->tfp->spitfp->hal;
+    TF_HAL *_hal = multi_io->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_GET_OUTPUTS, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_GET_OUTPUTS, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(multi_io->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(multi_io->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(multi_io->tfp);
-        if (ret_value != NULL) { tf_packet_buffer_read_bool_array(recv_buf, ret_value, 2);} else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(multi_io->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_value != NULL) { tf_packet_buffer_read_bool_array(_recv_buf, ret_value, 2);} else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(multi_io->tfp);
     }
 
-    result = tf_tfp_finish_send(multi_io->tfp, result, deadline);
+    _result = tf_tfp_finish_send(multi_io->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_multi_io_get_spitfp_error_count(TF_MultiIO *multi_io, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
@@ -318,44 +313,53 @@ int tf_multi_io_get_spitfp_error_count(TF_MultiIO *multi_io, uint32_t *ret_error
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = multi_io->tfp->spitfp->hal;
+    TF_HAL *_hal = multi_io->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(multi_io->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(multi_io->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(multi_io->tfp);
-        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(multi_io->tfp);
+        if (_error_code != 0 || _length != 16) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
         tf_tfp_packet_processed(multi_io->tfp);
     }
 
-    result = tf_tfp_finish_send(multi_io->tfp, result, deadline);
+    _result = tf_tfp_finish_send(multi_io->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 16) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_multi_io_set_bootloader_mode(TF_MultiIO *multi_io, uint8_t mode, uint8_t *ret_status) {
@@ -363,45 +367,54 @@ int tf_multi_io_set_bootloader_mode(TF_MultiIO *multi_io, uint8_t mode, uint8_t 
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = multi_io->tfp->spitfp->hal;
+    TF_HAL *_hal = multi_io->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_SET_BOOTLOADER_MODE, 1, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_SET_BOOTLOADER_MODE, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(multi_io->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(multi_io->tfp);
 
-    send_buf[0] = (uint8_t)mode;
+    _send_buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(multi_io->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(multi_io->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(multi_io->tfp);
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(multi_io->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(multi_io->tfp);
     }
 
-    result = tf_tfp_finish_send(multi_io->tfp, result, deadline);
+    _result = tf_tfp_finish_send(multi_io->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_multi_io_get_bootloader_mode(TF_MultiIO *multi_io, uint8_t *ret_mode) {
@@ -409,41 +422,50 @@ int tf_multi_io_get_bootloader_mode(TF_MultiIO *multi_io, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = multi_io->tfp->spitfp->hal;
+    TF_HAL *_hal = multi_io->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_GET_BOOTLOADER_MODE, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(multi_io->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(multi_io->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(multi_io->tfp);
-        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(multi_io->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(multi_io->tfp);
     }
 
-    result = tf_tfp_finish_send(multi_io->tfp, result, deadline);
+    _result = tf_tfp_finish_send(multi_io->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_multi_io_set_write_firmware_pointer(TF_MultiIO *multi_io, uint32_t pointer) {
@@ -451,40 +473,45 @@ int tf_multi_io_set_write_firmware_pointer(TF_MultiIO *multi_io, uint32_t pointe
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = multi_io->tfp->spitfp->hal;
+    TF_HAL *_hal = multi_io->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_multi_io_get_response_expected(multi_io, TF_MULTI_IO_FUNCTION_SET_WRITE_FIRMWARE_POINTER, &response_expected);
-    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_SET_WRITE_FIRMWARE_POINTER, 4, 0, response_expected);
+    bool _response_expected = true;
+    tf_multi_io_get_response_expected(multi_io, TF_MULTI_IO_FUNCTION_SET_WRITE_FIRMWARE_POINTER, &_response_expected);
+    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_SET_WRITE_FIRMWARE_POINTER, 4, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(multi_io->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(multi_io->tfp);
 
-    pointer = tf_leconvert_uint32_to(pointer); memcpy(send_buf + 0, &pointer, 4);
+    pointer = tf_leconvert_uint32_to(pointer); memcpy(_send_buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(multi_io->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(multi_io->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(multi_io->tfp, result, deadline);
+    _result = tf_tfp_finish_send(multi_io->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_multi_io_write_firmware(TF_MultiIO *multi_io, const uint8_t data[64], uint8_t *ret_status) {
@@ -492,45 +519,54 @@ int tf_multi_io_write_firmware(TF_MultiIO *multi_io, const uint8_t data[64], uin
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = multi_io->tfp->spitfp->hal;
+    TF_HAL *_hal = multi_io->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_WRITE_FIRMWARE, 64, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_WRITE_FIRMWARE, 64, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(multi_io->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(multi_io->tfp);
 
-    memcpy(send_buf + 0, data, 64);
+    memcpy(_send_buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(multi_io->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(multi_io->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(multi_io->tfp);
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(multi_io->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(multi_io->tfp);
     }
 
-    result = tf_tfp_finish_send(multi_io->tfp, result, deadline);
+    _result = tf_tfp_finish_send(multi_io->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_multi_io_set_status_led_config(TF_MultiIO *multi_io, uint8_t config) {
@@ -538,40 +574,45 @@ int tf_multi_io_set_status_led_config(TF_MultiIO *multi_io, uint8_t config) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = multi_io->tfp->spitfp->hal;
+    TF_HAL *_hal = multi_io->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_multi_io_get_response_expected(multi_io, TF_MULTI_IO_FUNCTION_SET_STATUS_LED_CONFIG, &response_expected);
-    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_SET_STATUS_LED_CONFIG, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_multi_io_get_response_expected(multi_io, TF_MULTI_IO_FUNCTION_SET_STATUS_LED_CONFIG, &_response_expected);
+    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_SET_STATUS_LED_CONFIG, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(multi_io->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(multi_io->tfp);
 
-    send_buf[0] = (uint8_t)config;
+    _send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(multi_io->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(multi_io->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(multi_io->tfp, result, deadline);
+    _result = tf_tfp_finish_send(multi_io->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_multi_io_get_status_led_config(TF_MultiIO *multi_io, uint8_t *ret_config) {
@@ -579,41 +620,50 @@ int tf_multi_io_get_status_led_config(TF_MultiIO *multi_io, uint8_t *ret_config)
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = multi_io->tfp->spitfp->hal;
+    TF_HAL *_hal = multi_io->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_GET_STATUS_LED_CONFIG, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(multi_io->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(multi_io->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(multi_io->tfp);
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(multi_io->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(multi_io->tfp);
     }
 
-    result = tf_tfp_finish_send(multi_io->tfp, result, deadline);
+    _result = tf_tfp_finish_send(multi_io->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_multi_io_get_chip_temperature(TF_MultiIO *multi_io, int16_t *ret_temperature) {
@@ -621,41 +671,50 @@ int tf_multi_io_get_chip_temperature(TF_MultiIO *multi_io, int16_t *ret_temperat
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = multi_io->tfp->spitfp->hal;
+    TF_HAL *_hal = multi_io->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_GET_CHIP_TEMPERATURE, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(multi_io->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(multi_io->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(multi_io->tfp);
-        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(multi_io->tfp);
+        if (_error_code != 0 || _length != 2) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+        }
         tf_tfp_packet_processed(multi_io->tfp);
     }
 
-    result = tf_tfp_finish_send(multi_io->tfp, result, deadline);
+    _result = tf_tfp_finish_send(multi_io->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 2) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_multi_io_reset(TF_MultiIO *multi_io) {
@@ -663,36 +722,41 @@ int tf_multi_io_reset(TF_MultiIO *multi_io) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = multi_io->tfp->spitfp->hal;
+    TF_HAL *_hal = multi_io->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_multi_io_get_response_expected(multi_io, TF_MULTI_IO_FUNCTION_RESET, &response_expected);
-    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_RESET, 0, 0, response_expected);
+    bool _response_expected = true;
+    tf_multi_io_get_response_expected(multi_io, TF_MULTI_IO_FUNCTION_RESET, &_response_expected);
+    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_RESET, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(multi_io->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(multi_io->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(multi_io->tfp, result, deadline);
+    _result = tf_tfp_finish_send(multi_io->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_multi_io_write_uid(TF_MultiIO *multi_io, uint32_t uid) {
@@ -700,40 +764,45 @@ int tf_multi_io_write_uid(TF_MultiIO *multi_io, uint32_t uid) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = multi_io->tfp->spitfp->hal;
+    TF_HAL *_hal = multi_io->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_multi_io_get_response_expected(multi_io, TF_MULTI_IO_FUNCTION_WRITE_UID, &response_expected);
-    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_WRITE_UID, 4, 0, response_expected);
+    bool _response_expected = true;
+    tf_multi_io_get_response_expected(multi_io, TF_MULTI_IO_FUNCTION_WRITE_UID, &_response_expected);
+    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_WRITE_UID, 4, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(multi_io->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(multi_io->tfp);
 
-    uid = tf_leconvert_uint32_to(uid); memcpy(send_buf + 0, &uid, 4);
+    uid = tf_leconvert_uint32_to(uid); memcpy(_send_buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(multi_io->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(multi_io->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(multi_io->tfp, result, deadline);
+    _result = tf_tfp_finish_send(multi_io->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_multi_io_read_uid(TF_MultiIO *multi_io, uint32_t *ret_uid) {
@@ -741,41 +810,50 @@ int tf_multi_io_read_uid(TF_MultiIO *multi_io, uint32_t *ret_uid) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = multi_io->tfp->spitfp->hal;
+    TF_HAL *_hal = multi_io->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_READ_UID, 0, 4, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_READ_UID, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(multi_io->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(multi_io->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(multi_io->tfp);
-        if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(multi_io->tfp);
+        if (_error_code != 0 || _length != 4) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
         tf_tfp_packet_processed(multi_io->tfp);
     }
 
-    result = tf_tfp_finish_send(multi_io->tfp, result, deadline);
+    _result = tf_tfp_finish_send(multi_io->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 4) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_multi_io_get_identity(TF_MultiIO *multi_io, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
@@ -783,47 +861,56 @@ int tf_multi_io_get_identity(TF_MultiIO *multi_io, char ret_uid[8], char ret_con
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = multi_io->tfp->spitfp->hal;
+    TF_HAL *_hal = multi_io->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(multi_io->tfp, TF_MULTI_IO_FUNCTION_GET_IDENTITY, 0, _response_expected);
 
-    size_t i;
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    size_t _i;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(multi_io->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(multi_io->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(multi_io->tfp);
-        if (ret_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
-        if (ret_connected_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_connected_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
-        if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_hardware_version != NULL) { for (i = 0; i < 3; ++i) ret_hardware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
-        if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
-        if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(multi_io->tfp);
+        if (_error_code != 0 || _length != 25) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_uid != NULL) { tf_packet_buffer_pop_n(_recv_buf, (uint8_t *)ret_uid, 8);} else { tf_packet_buffer_remove(_recv_buf, 8); }
+            if (ret_connected_uid != NULL) { tf_packet_buffer_pop_n(_recv_buf, (uint8_t *)ret_connected_uid, 8);} else { tf_packet_buffer_remove(_recv_buf, 8); }
+            if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_hardware_version != NULL) { for (_i = 0; _i < 3; ++_i) ret_hardware_version[_i] = tf_packet_buffer_read_uint8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 3); }
+            if (ret_firmware_version != NULL) { for (_i = 0; _i < 3; ++_i) ret_firmware_version[_i] = tf_packet_buffer_read_uint8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 3); }
+            if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+        }
         tf_tfp_packet_processed(multi_io->tfp);
     }
 
-    result = tf_tfp_finish_send(multi_io->tfp, result, deadline);
+    _result = tf_tfp_finish_send(multi_io->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 25) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 

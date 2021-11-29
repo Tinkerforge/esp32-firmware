@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,32 +28,32 @@ extern "C" {
 struct TF_RS485;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_RS485_ReadLowLevelHandler)(struct TF_RS485 *device, uint16_t message_length, uint16_t message_chunk_offset, char message_chunk_data[60], void *user_data);
-typedef void (*TF_RS485_ReadHandler)(struct TF_RS485 *device, char *message, uint16_t message_length, void *user_data);
-typedef void (*TF_RS485_ErrorCountHandler)(struct TF_RS485 *device, uint32_t overrun_error_count, uint32_t parity_error_count, void *user_data);
-typedef void (*TF_RS485_ModbusSlaveReadCoilsRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t count, void *user_data);
-typedef void (*TF_RS485_ModbusMasterReadCoilsResponseLowLevelHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t coils_length, uint16_t coils_chunk_offset, bool coils_chunk_data[464], void *user_data);
-typedef void (*TF_RS485_ModbusMasterReadCoilsResponseHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, bool *coils, uint16_t coils_length, void *user_data);
-typedef void (*TF_RS485_ModbusSlaveReadHoldingRegistersRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t count, void *user_data);
-typedef void (*TF_RS485_ModbusMasterReadHoldingRegistersResponseLowLevelHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t holding_registers_length, uint16_t holding_registers_chunk_offset, uint16_t holding_registers_chunk_data[29], void *user_data);
-typedef void (*TF_RS485_ModbusMasterReadHoldingRegistersResponseHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t *holding_registers, uint16_t holding_registers_length, void *user_data);
-typedef void (*TF_RS485_ModbusSlaveWriteSingleCoilRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t coil_address, bool coil_value, void *user_data);
-typedef void (*TF_RS485_ModbusMasterWriteSingleCoilResponseHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, void *user_data);
-typedef void (*TF_RS485_ModbusSlaveWriteSingleRegisterRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t register_address, uint16_t register_value, void *user_data);
-typedef void (*TF_RS485_ModbusMasterWriteSingleRegisterResponseHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, void *user_data);
-typedef void (*TF_RS485_ModbusSlaveWriteMultipleCoilsRequestLowLevelHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t coils_length, uint16_t coils_chunk_offset, bool coils_chunk_data[440], void *user_data);
-typedef void (*TF_RS485_ModbusSlaveWriteMultipleCoilsRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, bool *coils, uint16_t coils_length, void *user_data);
-typedef void (*TF_RS485_ModbusMasterWriteMultipleCoilsResponseHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, void *user_data);
-typedef void (*TF_RS485_ModbusSlaveWriteMultipleRegistersRequestLowLevelHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t registers_length, uint16_t registers_chunk_offset, uint16_t registers_chunk_data[27], void *user_data);
-typedef void (*TF_RS485_ModbusSlaveWriteMultipleRegistersRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t *registers, uint16_t registers_length, void *user_data);
-typedef void (*TF_RS485_ModbusMasterWriteMultipleRegistersResponseHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, void *user_data);
-typedef void (*TF_RS485_ModbusSlaveReadDiscreteInputsRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t count, void *user_data);
-typedef void (*TF_RS485_ModbusMasterReadDiscreteInputsResponseLowLevelHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t discrete_inputs_length, uint16_t discrete_inputs_chunk_offset, bool discrete_inputs_chunk_data[464], void *user_data);
-typedef void (*TF_RS485_ModbusMasterReadDiscreteInputsResponseHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, bool *discrete_inputs, uint16_t discrete_inputs_length, void *user_data);
-typedef void (*TF_RS485_ModbusSlaveReadInputRegistersRequestHandler)(struct TF_RS485 *device, uint8_t request_id, uint32_t starting_address, uint16_t count, void *user_data);
-typedef void (*TF_RS485_ModbusMasterReadInputRegistersResponseLowLevelHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t input_registers_length, uint16_t input_registers_chunk_offset, uint16_t input_registers_chunk_data[29], void *user_data);
-typedef void (*TF_RS485_ModbusMasterReadInputRegistersResponseHandler)(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, uint16_t *input_registers, uint16_t input_registers_length, void *user_data);
-typedef void (*TF_RS485_FrameReadableHandler)(struct TF_RS485 *device, uint16_t frame_count, void *user_data);
+typedef void (*TF_RS485_ReadLowLevelHandler)(struct TF_RS485 *rs485, uint16_t message_length, uint16_t message_chunk_offset, char message_chunk_data[60], void *user_data);
+typedef void (*TF_RS485_ReadHandler)(struct TF_RS485 *rs485, char *message, uint16_t message_length, void *user_data);
+typedef void (*TF_RS485_ErrorCountHandler)(struct TF_RS485 *rs485, uint32_t overrun_error_count, uint32_t parity_error_count, void *user_data);
+typedef void (*TF_RS485_ModbusSlaveReadCoilsRequestHandler)(struct TF_RS485 *rs485, uint8_t request_id, uint32_t starting_address, uint16_t count, void *user_data);
+typedef void (*TF_RS485_ModbusMasterReadCoilsResponseLowLevelHandler)(struct TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, uint16_t coils_length, uint16_t coils_chunk_offset, bool coils_chunk_data[464], void *user_data);
+typedef void (*TF_RS485_ModbusMasterReadCoilsResponseHandler)(struct TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, bool *coils, uint16_t coils_length, void *user_data);
+typedef void (*TF_RS485_ModbusSlaveReadHoldingRegistersRequestHandler)(struct TF_RS485 *rs485, uint8_t request_id, uint32_t starting_address, uint16_t count, void *user_data);
+typedef void (*TF_RS485_ModbusMasterReadHoldingRegistersResponseLowLevelHandler)(struct TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, uint16_t holding_registers_length, uint16_t holding_registers_chunk_offset, uint16_t holding_registers_chunk_data[29], void *user_data);
+typedef void (*TF_RS485_ModbusMasterReadHoldingRegistersResponseHandler)(struct TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, uint16_t *holding_registers, uint16_t holding_registers_length, void *user_data);
+typedef void (*TF_RS485_ModbusSlaveWriteSingleCoilRequestHandler)(struct TF_RS485 *rs485, uint8_t request_id, uint32_t coil_address, bool coil_value, void *user_data);
+typedef void (*TF_RS485_ModbusMasterWriteSingleCoilResponseHandler)(struct TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, void *user_data);
+typedef void (*TF_RS485_ModbusSlaveWriteSingleRegisterRequestHandler)(struct TF_RS485 *rs485, uint8_t request_id, uint32_t register_address, uint16_t register_value, void *user_data);
+typedef void (*TF_RS485_ModbusMasterWriteSingleRegisterResponseHandler)(struct TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, void *user_data);
+typedef void (*TF_RS485_ModbusSlaveWriteMultipleCoilsRequestLowLevelHandler)(struct TF_RS485 *rs485, uint8_t request_id, uint32_t starting_address, uint16_t coils_length, uint16_t coils_chunk_offset, bool coils_chunk_data[440], void *user_data);
+typedef void (*TF_RS485_ModbusSlaveWriteMultipleCoilsRequestHandler)(struct TF_RS485 *rs485, uint8_t request_id, uint32_t starting_address, bool *coils, uint16_t coils_length, void *user_data);
+typedef void (*TF_RS485_ModbusMasterWriteMultipleCoilsResponseHandler)(struct TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, void *user_data);
+typedef void (*TF_RS485_ModbusSlaveWriteMultipleRegistersRequestLowLevelHandler)(struct TF_RS485 *rs485, uint8_t request_id, uint32_t starting_address, uint16_t registers_length, uint16_t registers_chunk_offset, uint16_t registers_chunk_data[27], void *user_data);
+typedef void (*TF_RS485_ModbusSlaveWriteMultipleRegistersRequestHandler)(struct TF_RS485 *rs485, uint8_t request_id, uint32_t starting_address, uint16_t *registers, uint16_t registers_length, void *user_data);
+typedef void (*TF_RS485_ModbusMasterWriteMultipleRegistersResponseHandler)(struct TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, void *user_data);
+typedef void (*TF_RS485_ModbusSlaveReadDiscreteInputsRequestHandler)(struct TF_RS485 *rs485, uint8_t request_id, uint32_t starting_address, uint16_t count, void *user_data);
+typedef void (*TF_RS485_ModbusMasterReadDiscreteInputsResponseLowLevelHandler)(struct TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, uint16_t discrete_inputs_length, uint16_t discrete_inputs_chunk_offset, bool discrete_inputs_chunk_data[464], void *user_data);
+typedef void (*TF_RS485_ModbusMasterReadDiscreteInputsResponseHandler)(struct TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, bool *discrete_inputs, uint16_t discrete_inputs_length, void *user_data);
+typedef void (*TF_RS485_ModbusSlaveReadInputRegistersRequestHandler)(struct TF_RS485 *rs485, uint8_t request_id, uint32_t starting_address, uint16_t count, void *user_data);
+typedef void (*TF_RS485_ModbusMasterReadInputRegistersResponseLowLevelHandler)(struct TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, uint16_t input_registers_length, uint16_t input_registers_chunk_offset, uint16_t input_registers_chunk_data[29], void *user_data);
+typedef void (*TF_RS485_ModbusMasterReadInputRegistersResponseHandler)(struct TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, uint16_t *input_registers, uint16_t input_registers_length, void *user_data);
+typedef void (*TF_RS485_FrameReadableHandler)(struct TF_RS485 *rs485, uint16_t frame_count, void *user_data);
 
 #endif
 /**
@@ -779,7 +779,7 @@ typedef struct TF_RS485 {
  * Creates the device object \c rs485 with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_rs485_create(TF_RS485 *rs485, const char *uid, TF_HAL *hal);
+int tf_rs485_create(TF_RS485 *rs485, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_RS485

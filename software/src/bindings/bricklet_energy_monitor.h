@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,7 +28,7 @@ extern "C" {
 struct TF_EnergyMonitor;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_EnergyMonitor_EnergyDataHandler)(struct TF_EnergyMonitor *device, int32_t voltage, int32_t current, int32_t energy, int32_t real_power, int32_t apparent_power, int32_t reactive_power, uint16_t power_factor, uint16_t frequency, void *user_data);
+typedef void (*TF_EnergyMonitor_EnergyDataHandler)(struct TF_EnergyMonitor *energy_monitor, int32_t voltage, int32_t current, int32_t energy, int32_t real_power, int32_t apparent_power, int32_t reactive_power, uint16_t power_factor, uint16_t frequency, void *user_data);
 
 #endif
 /**
@@ -259,7 +259,7 @@ typedef struct TF_EnergyMonitor {
  * Creates the device object \c energy_monitor with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_energy_monitor_create(TF_EnergyMonitor *energy_monitor, const char *uid, TF_HAL *hal);
+int tf_energy_monitor_create(TF_EnergyMonitor *energy_monitor, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_EnergyMonitor

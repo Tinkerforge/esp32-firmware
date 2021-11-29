@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,7 +28,7 @@ extern "C" {
 struct TF_Isolator;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_Isolator_StatisticsHandler)(struct TF_Isolator *device, uint32_t messages_from_brick, uint32_t messages_from_bricklet, uint16_t connected_bricklet_device_identifier, char connected_bricklet_uid[8], void *user_data);
+typedef void (*TF_Isolator_StatisticsHandler)(struct TF_Isolator *isolator, uint32_t messages_from_brick, uint32_t messages_from_bricklet, uint16_t connected_bricklet_device_identifier, char connected_bricklet_uid[8], void *user_data);
 
 #endif
 /**
@@ -254,7 +254,7 @@ typedef struct TF_Isolator {
  * Creates the device object \c isolator with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_isolator_create(TF_Isolator *isolator, const char *uid, TF_HAL *hal);
+int tf_isolator_create(TF_Isolator *isolator, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_Isolator

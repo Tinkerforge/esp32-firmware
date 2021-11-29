@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,10 +28,10 @@ extern "C" {
 struct TF_PerformanceDC;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_PerformanceDC_EmergencyShutdownHandler)(struct TF_PerformanceDC *device, void *user_data);
-typedef void (*TF_PerformanceDC_VelocityReachedHandler)(struct TF_PerformanceDC *device, int16_t velocity, void *user_data);
-typedef void (*TF_PerformanceDC_CurrentVelocityHandler)(struct TF_PerformanceDC *device, int16_t velocity, void *user_data);
-typedef void (*TF_PerformanceDC_GPIOStateHandler)(struct TF_PerformanceDC *device, bool gpio_state[2], void *user_data);
+typedef void (*TF_PerformanceDC_EmergencyShutdownHandler)(struct TF_PerformanceDC *performance_dc, void *user_data);
+typedef void (*TF_PerformanceDC_VelocityReachedHandler)(struct TF_PerformanceDC *performance_dc, int16_t velocity, void *user_data);
+typedef void (*TF_PerformanceDC_CurrentVelocityHandler)(struct TF_PerformanceDC *performance_dc, int16_t velocity, void *user_data);
+typedef void (*TF_PerformanceDC_GPIOStateHandler)(struct TF_PerformanceDC *performance_dc, bool gpio_state[2], void *user_data);
 
 #endif
 /**
@@ -551,7 +551,7 @@ typedef struct TF_PerformanceDC {
  * Creates the device object \c performance_dc with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_performance_dc_create(TF_PerformanceDC *performance_dc, const char *uid, TF_HAL *hal);
+int tf_performance_dc_create(TF_PerformanceDC *performance_dc, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_PerformanceDC

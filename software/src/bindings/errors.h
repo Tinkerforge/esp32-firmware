@@ -29,6 +29,7 @@ extern "C" {
 #define TF_E_PORT_NOT_FOUND -13
 #define TF_E_NULL -14
 #define TF_E_DEVICE_ALREADY_IN_USE -15
+#define TF_E_WRONG_RESPONSE_LENGTH -16
 
 // For internal use only! Will never be returned by user visible functions.
 #define TF_E_INTERNAL_STREAM_HAS_NO_DATA -128

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,8 +28,8 @@ extern "C" {
 struct TF_HumidityV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_HumidityV2_HumidityHandler)(struct TF_HumidityV2 *device, uint16_t humidity, void *user_data);
-typedef void (*TF_HumidityV2_TemperatureHandler)(struct TF_HumidityV2 *device, int16_t temperature, void *user_data);
+typedef void (*TF_HumidityV2_HumidityHandler)(struct TF_HumidityV2 *humidity_v2, uint16_t humidity, void *user_data);
+typedef void (*TF_HumidityV2_TemperatureHandler)(struct TF_HumidityV2 *humidity_v2, int16_t temperature, void *user_data);
 
 #endif
 /**
@@ -348,7 +348,7 @@ typedef struct TF_HumidityV2 {
  * Creates the device object \c humidity_v2 with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_humidity_v2_create(TF_HumidityV2 *humidity_v2, const char *uid, TF_HAL *hal);
+int tf_humidity_v2_create(TF_HumidityV2 *humidity_v2, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_HumidityV2

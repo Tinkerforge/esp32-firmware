@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,11 +28,11 @@ extern "C" {
 struct TF_LCD128x64;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_LCD128x64_TouchPositionHandler)(struct TF_LCD128x64 *device, uint16_t pressure, uint16_t x, uint16_t y, uint32_t age, void *user_data);
-typedef void (*TF_LCD128x64_TouchGestureHandler)(struct TF_LCD128x64 *device, uint8_t gesture, uint32_t duration, uint16_t pressure_max, uint16_t x_start, uint16_t y_start, uint16_t x_end, uint16_t y_end, uint32_t age, void *user_data);
-typedef void (*TF_LCD128x64_GUIButtonPressedHandler)(struct TF_LCD128x64 *device, uint8_t index, bool pressed, void *user_data);
-typedef void (*TF_LCD128x64_GUISliderValueHandler)(struct TF_LCD128x64 *device, uint8_t index, uint8_t value, void *user_data);
-typedef void (*TF_LCD128x64_GUITabSelectedHandler)(struct TF_LCD128x64 *device, int8_t index, void *user_data);
+typedef void (*TF_LCD128x64_TouchPositionHandler)(struct TF_LCD128x64 *lcd_128x64, uint16_t pressure, uint16_t x, uint16_t y, uint32_t age, void *user_data);
+typedef void (*TF_LCD128x64_TouchGestureHandler)(struct TF_LCD128x64 *lcd_128x64, uint8_t gesture, uint32_t duration, uint16_t pressure_max, uint16_t x_start, uint16_t y_start, uint16_t x_end, uint16_t y_end, uint32_t age, void *user_data);
+typedef void (*TF_LCD128x64_GUIButtonPressedHandler)(struct TF_LCD128x64 *lcd_128x64, uint8_t index, bool pressed, void *user_data);
+typedef void (*TF_LCD128x64_GUISliderValueHandler)(struct TF_LCD128x64 *lcd_128x64, uint8_t index, uint8_t value, void *user_data);
+typedef void (*TF_LCD128x64_GUITabSelectedHandler)(struct TF_LCD128x64 *lcd_128x64, int8_t index, void *user_data);
 
 #endif
 /**
@@ -625,7 +625,7 @@ typedef struct TF_LCD128x64 {
  * Creates the device object \c lcd_128x64 with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_lcd_128x64_create(TF_LCD128x64 *lcd_128x64, const char *uid, TF_HAL *hal);
+int tf_lcd_128x64_create(TF_LCD128x64 *lcd_128x64, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_LCD128x64

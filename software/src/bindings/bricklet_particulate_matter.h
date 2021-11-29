@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,8 +28,8 @@ extern "C" {
 struct TF_ParticulateMatter;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_ParticulateMatter_PMConcentrationHandler)(struct TF_ParticulateMatter *device, uint16_t pm10, uint16_t pm25, uint16_t pm100, void *user_data);
-typedef void (*TF_ParticulateMatter_PMCountHandler)(struct TF_ParticulateMatter *device, uint16_t greater03um, uint16_t greater05um, uint16_t greater10um, uint16_t greater25um, uint16_t greater50um, uint16_t greater100um, void *user_data);
+typedef void (*TF_ParticulateMatter_PMConcentrationHandler)(struct TF_ParticulateMatter *particulate_matter, uint16_t pm10, uint16_t pm25, uint16_t pm100, void *user_data);
+typedef void (*TF_ParticulateMatter_PMCountHandler)(struct TF_ParticulateMatter *particulate_matter, uint16_t greater03um, uint16_t greater05um, uint16_t greater10um, uint16_t greater25um, uint16_t greater50um, uint16_t greater100um, void *user_data);
 
 #endif
 /**
@@ -268,7 +268,7 @@ typedef struct TF_ParticulateMatter {
  * Creates the device object \c particulate_matter with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_particulate_matter_create(TF_ParticulateMatter *particulate_matter, const char *uid, TF_HAL *hal);
+int tf_particulate_matter_create(TF_ParticulateMatter *particulate_matter, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_ParticulateMatter

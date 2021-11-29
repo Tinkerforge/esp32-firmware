@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,9 +28,9 @@ extern "C" {
 struct TF_NFC;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_NFC_ReaderStateChangedHandler)(struct TF_NFC *device, uint8_t state, bool idle, void *user_data);
-typedef void (*TF_NFC_CardemuStateChangedHandler)(struct TF_NFC *device, uint8_t state, bool idle, void *user_data);
-typedef void (*TF_NFC_P2PStateChangedHandler)(struct TF_NFC *device, uint8_t state, bool idle, void *user_data);
+typedef void (*TF_NFC_ReaderStateChangedHandler)(struct TF_NFC *nfc, uint8_t state, bool idle, void *user_data);
+typedef void (*TF_NFC_CardemuStateChangedHandler)(struct TF_NFC *nfc, uint8_t state, bool idle, void *user_data);
+typedef void (*TF_NFC_P2PStateChangedHandler)(struct TF_NFC *nfc, uint8_t state, bool idle, void *user_data);
 
 #endif
 /**
@@ -682,7 +682,7 @@ typedef struct TF_NFC {
  * Creates the device object \c nfc with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_nfc_create(TF_NFC *nfc, const char *uid, TF_HAL *hal);
+int tf_nfc_create(TF_NFC *nfc, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_NFC

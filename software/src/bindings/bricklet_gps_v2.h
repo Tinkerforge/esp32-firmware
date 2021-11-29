@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,12 +28,12 @@ extern "C" {
 struct TF_GPSV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_GPSV2_PulsePerSecondHandler)(struct TF_GPSV2 *device, void *user_data);
-typedef void (*TF_GPSV2_CoordinatesHandler)(struct TF_GPSV2 *device, uint32_t latitude, char ns, uint32_t longitude, char ew, void *user_data);
-typedef void (*TF_GPSV2_StatusHandler)(struct TF_GPSV2 *device, bool has_fix, uint8_t satellites_view, void *user_data);
-typedef void (*TF_GPSV2_AltitudeHandler)(struct TF_GPSV2 *device, int32_t altitude, int32_t geoidal_separation, void *user_data);
-typedef void (*TF_GPSV2_MotionHandler)(struct TF_GPSV2 *device, uint32_t course, uint32_t speed, void *user_data);
-typedef void (*TF_GPSV2_DateTimeHandler)(struct TF_GPSV2 *device, uint32_t date, uint32_t time, void *user_data);
+typedef void (*TF_GPSV2_PulsePerSecondHandler)(struct TF_GPSV2 *gps_v2, void *user_data);
+typedef void (*TF_GPSV2_CoordinatesHandler)(struct TF_GPSV2 *gps_v2, uint32_t latitude, char ns, uint32_t longitude, char ew, void *user_data);
+typedef void (*TF_GPSV2_StatusHandler)(struct TF_GPSV2 *gps_v2, bool has_fix, uint8_t satellites_view, void *user_data);
+typedef void (*TF_GPSV2_AltitudeHandler)(struct TF_GPSV2 *gps_v2, int32_t altitude, int32_t geoidal_separation, void *user_data);
+typedef void (*TF_GPSV2_MotionHandler)(struct TF_GPSV2 *gps_v2, uint32_t course, uint32_t speed, void *user_data);
+typedef void (*TF_GPSV2_DateTimeHandler)(struct TF_GPSV2 *gps_v2, uint32_t date, uint32_t time, void *user_data);
 
 #endif
 /**
@@ -454,7 +454,7 @@ typedef struct TF_GPSV2 {
  * Creates the device object \c gps_v2 with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_gps_v2_create(TF_GPSV2 *gps_v2, const char *uid, TF_HAL *hal);
+int tf_gps_v2_create(TF_GPSV2 *gps_v2, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_GPSV2

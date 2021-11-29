@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,8 +28,8 @@ extern "C" {
 struct TF_RealTimeClockV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_RealTimeClockV2_DateTimeHandler)(struct TF_RealTimeClockV2 *device, uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second, uint8_t centisecond, uint8_t weekday, int64_t timestamp, void *user_data);
-typedef void (*TF_RealTimeClockV2_AlarmHandler)(struct TF_RealTimeClockV2 *device, uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second, uint8_t centisecond, uint8_t weekday, int64_t timestamp, void *user_data);
+typedef void (*TF_RealTimeClockV2_DateTimeHandler)(struct TF_RealTimeClockV2 *real_time_clock_v2, uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second, uint8_t centisecond, uint8_t weekday, int64_t timestamp, void *user_data);
+typedef void (*TF_RealTimeClockV2_AlarmHandler)(struct TF_RealTimeClockV2 *real_time_clock_v2, uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second, uint8_t centisecond, uint8_t weekday, int64_t timestamp, void *user_data);
 
 #endif
 /**
@@ -313,7 +313,7 @@ typedef struct TF_RealTimeClockV2 {
  * Creates the device object \c real_time_clock_v2 with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_real_time_clock_v2_create(TF_RealTimeClockV2 *real_time_clock_v2, const char *uid, TF_HAL *hal);
+int tf_real_time_clock_v2_create(TF_RealTimeClockV2 *real_time_clock_v2, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_RealTimeClockV2

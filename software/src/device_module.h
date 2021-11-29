@@ -71,7 +71,7 @@ public:
     bool setup_device()
     {
         uint16_t device_id = get_device_id();
-        TF_TFP *tfp = tf_hal_get_tfp(&hal, nullptr, nullptr, nullptr, &device_id);
+        TF_TFP *tfp = tf_hal_get_tfp(&hal, nullptr, nullptr, &device_id, false);
 
         if (tfp == nullptr) {
             logger.printfln("No %s Bricklet found. Disabling %s support.", device_name, module_name);
@@ -105,7 +105,7 @@ public:
     {
         api.addCommand(url_prefix + "/reflash", &device_reflash, {}, [this]() {
             uint16_t device_id = get_device_id();
-            TF_TFP *tfp = tf_hal_get_tfp(&hal, nullptr, nullptr, nullptr, &device_id);
+            TF_TFP *tfp = tf_hal_get_tfp(&hal, nullptr, nullptr, &device_id, false);
 
             if (tfp != nullptr) {
                 ensure_matching_firmware(tfp, device_name, module_name, firmware, firmware_len, &logger, true);

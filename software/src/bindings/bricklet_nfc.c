@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -84,46 +84,18 @@ static bool tf_nfc_callback_handler(void *device, uint8_t fid, TF_PacketBuffer *
     return false;
 }
 #endif
-int tf_nfc_create(TF_NFC *nfc, const char *uid, TF_HAL *hal) {
+int tf_nfc_create(TF_NFC *nfc, const char *uid_or_port_name, TF_HAL *hal) {
     if (nfc == NULL || hal == NULL) {
         return TF_E_NULL;
     }
 
-    static uint16_t next_tfp_index = 0;
-
     memset(nfc, 0, sizeof(TF_NFC));
 
     TF_TFP *tfp;
+    int rc = tf_hal_get_attachable_tfp(hal, &tfp, uid_or_port_name, TF_NFC_DEVICE_IDENTIFIER);
 
-    if (uid != NULL && *uid != '\0') {
-        uint32_t uid_num = 0;
-        int rc = tf_base58_decode(uid, &uid_num);
-
-        if (rc != TF_E_OK) {
-            return rc;
-        }
-
-        tfp = tf_hal_get_tfp(hal, &next_tfp_index, &uid_num, NULL, NULL);
-
-        if (tfp == NULL) {
-            return TF_E_DEVICE_NOT_FOUND;
-        }
-
-        if (tfp->device_id != TF_NFC_DEVICE_IDENTIFIER) {
-            return TF_E_WRONG_DEVICE_TYPE;
-        }
-    } else {
-        uint16_t device_id = TF_NFC_DEVICE_IDENTIFIER;
-
-        tfp = tf_hal_get_tfp(hal, &next_tfp_index, NULL, NULL, &device_id);
-
-        if (tfp == NULL) {
-            return TF_E_DEVICE_NOT_FOUND;
-        }
-    }
-
-    if (tfp->device != NULL) {
-        return TF_E_DEVICE_ALREADY_IN_USE;
+    if (rc != TF_E_OK) {
+        return rc;
     }
 
     nfc->tfp = tfp;
@@ -417,40 +389,45 @@ int tf_nfc_set_mode(TF_NFC *nfc, uint8_t mode) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_SET_MODE, &response_expected);
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_SET_MODE, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_SET_MODE, &_response_expected);
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_SET_MODE, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
 
-    send_buf[0] = (uint8_t)mode;
+    _send_buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_get_mode(TF_NFC *nfc, uint8_t *ret_mode) {
@@ -458,41 +435,50 @@ int tf_nfc_get_mode(TF_NFC *nfc, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_GET_MODE, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_GET_MODE, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
-        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(nfc->tfp);
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_reader_request_tag_id(TF_NFC *nfc) {
@@ -500,36 +486,41 @@ int tf_nfc_reader_request_tag_id(TF_NFC *nfc) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_READER_REQUEST_TAG_ID, &response_expected);
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_READER_REQUEST_TAG_ID, 0, 0, response_expected);
+    bool _response_expected = true;
+    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_READER_REQUEST_TAG_ID, &_response_expected);
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_READER_REQUEST_TAG_ID, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_reader_get_tag_id_low_level(TF_NFC *nfc, uint8_t *ret_tag_type, uint8_t *ret_tag_id_length, uint8_t ret_tag_id_data[32]) {
@@ -537,44 +528,53 @@ int tf_nfc_reader_get_tag_id_low_level(TF_NFC *nfc, uint8_t *ret_tag_type, uint8
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_READER_GET_TAG_ID_LOW_LEVEL, 0, 34, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_READER_GET_TAG_ID_LOW_LEVEL, 0, _response_expected);
 
-    size_t i;
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    size_t _i;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
-        if (ret_tag_type != NULL) { *ret_tag_type = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_tag_id_length != NULL) { *ret_tag_id_length = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_tag_id_data != NULL) { for (i = 0; i < 32; ++i) ret_tag_id_data[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 32); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
+        if (_error_code != 0 || _length != 34) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_tag_type != NULL) { *ret_tag_type = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_tag_id_length != NULL) { *ret_tag_id_length = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_tag_id_data != NULL) { for (_i = 0; _i < 32; ++_i) ret_tag_id_data[_i] = tf_packet_buffer_read_uint8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 32); }
+        }
         tf_tfp_packet_processed(nfc->tfp);
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 34) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_reader_get_state(TF_NFC *nfc, uint8_t *ret_state, bool *ret_idle) {
@@ -582,42 +582,51 @@ int tf_nfc_reader_get_state(TF_NFC *nfc, uint8_t *ret_state, bool *ret_idle) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_READER_GET_STATE, 0, 2, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_READER_GET_STATE, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
-        if (ret_state != NULL) { *ret_state = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_idle != NULL) { *ret_idle = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
+        if (_error_code != 0 || _length != 2) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_state != NULL) { *ret_state = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_idle != NULL) { *ret_idle = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(nfc->tfp);
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 2) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_reader_write_ndef_low_level(TF_NFC *nfc, uint16_t ndef_length, uint16_t ndef_chunk_offset, const uint8_t ndef_chunk_data[60]) {
@@ -625,42 +634,47 @@ int tf_nfc_reader_write_ndef_low_level(TF_NFC *nfc, uint16_t ndef_length, uint16
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_READER_WRITE_NDEF_LOW_LEVEL, &response_expected);
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_READER_WRITE_NDEF_LOW_LEVEL, 64, 0, response_expected);
+    bool _response_expected = true;
+    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_READER_WRITE_NDEF_LOW_LEVEL, &_response_expected);
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_READER_WRITE_NDEF_LOW_LEVEL, 64, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
 
-    ndef_length = tf_leconvert_uint16_to(ndef_length); memcpy(send_buf + 0, &ndef_length, 2);
-    ndef_chunk_offset = tf_leconvert_uint16_to(ndef_chunk_offset); memcpy(send_buf + 2, &ndef_chunk_offset, 2);
-    memcpy(send_buf + 4, ndef_chunk_data, 60);
+    ndef_length = tf_leconvert_uint16_to(ndef_length); memcpy(_send_buf + 0, &ndef_length, 2);
+    ndef_chunk_offset = tf_leconvert_uint16_to(ndef_chunk_offset); memcpy(_send_buf + 2, &ndef_chunk_offset, 2);
+    memcpy(_send_buf + 4, ndef_chunk_data, 60);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_reader_request_ndef(TF_NFC *nfc) {
@@ -668,36 +682,41 @@ int tf_nfc_reader_request_ndef(TF_NFC *nfc) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_READER_REQUEST_NDEF, &response_expected);
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_READER_REQUEST_NDEF, 0, 0, response_expected);
+    bool _response_expected = true;
+    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_READER_REQUEST_NDEF, &_response_expected);
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_READER_REQUEST_NDEF, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_reader_read_ndef_low_level(TF_NFC *nfc, uint16_t *ret_ndef_length, uint16_t *ret_ndef_chunk_offset, uint8_t ret_ndef_chunk_data[60]) {
@@ -705,44 +724,53 @@ int tf_nfc_reader_read_ndef_low_level(TF_NFC *nfc, uint16_t *ret_ndef_length, ui
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_READER_READ_NDEF_LOW_LEVEL, 0, 64, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_READER_READ_NDEF_LOW_LEVEL, 0, _response_expected);
 
-    size_t i;
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    size_t _i;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
-        if (ret_ndef_length != NULL) { *ret_ndef_length = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_ndef_chunk_offset != NULL) { *ret_ndef_chunk_offset = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_ndef_chunk_data != NULL) { for (i = 0; i < 60; ++i) ret_ndef_chunk_data[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 60); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
+        if (_error_code != 0 || _length != 64) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_ndef_length != NULL) { *ret_ndef_length = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_ndef_chunk_offset != NULL) { *ret_ndef_chunk_offset = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_ndef_chunk_data != NULL) { for (_i = 0; _i < 60; ++_i) ret_ndef_chunk_data[_i] = tf_packet_buffer_read_uint8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 60); }
+        }
         tf_tfp_packet_processed(nfc->tfp);
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 64) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_reader_authenticate_mifare_classic_page(TF_NFC *nfc, uint16_t page, uint8_t key_number, const uint8_t key[6]) {
@@ -750,42 +778,47 @@ int tf_nfc_reader_authenticate_mifare_classic_page(TF_NFC *nfc, uint16_t page, u
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_READER_AUTHENTICATE_MIFARE_CLASSIC_PAGE, &response_expected);
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_READER_AUTHENTICATE_MIFARE_CLASSIC_PAGE, 9, 0, response_expected);
+    bool _response_expected = true;
+    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_READER_AUTHENTICATE_MIFARE_CLASSIC_PAGE, &_response_expected);
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_READER_AUTHENTICATE_MIFARE_CLASSIC_PAGE, 9, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
 
-    page = tf_leconvert_uint16_to(page); memcpy(send_buf + 0, &page, 2);
-    send_buf[2] = (uint8_t)key_number;
-    memcpy(send_buf + 3, key, 6);
+    page = tf_leconvert_uint16_to(page); memcpy(_send_buf + 0, &page, 2);
+    _send_buf[2] = (uint8_t)key_number;
+    memcpy(_send_buf + 3, key, 6);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_reader_write_page_low_level(TF_NFC *nfc, uint16_t page, uint16_t data_length, uint16_t data_chunk_offset, const uint8_t data_chunk_data[58]) {
@@ -793,43 +826,48 @@ int tf_nfc_reader_write_page_low_level(TF_NFC *nfc, uint16_t page, uint16_t data
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_READER_WRITE_PAGE_LOW_LEVEL, &response_expected);
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_READER_WRITE_PAGE_LOW_LEVEL, 64, 0, response_expected);
+    bool _response_expected = true;
+    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_READER_WRITE_PAGE_LOW_LEVEL, &_response_expected);
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_READER_WRITE_PAGE_LOW_LEVEL, 64, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
 
-    page = tf_leconvert_uint16_to(page); memcpy(send_buf + 0, &page, 2);
-    data_length = tf_leconvert_uint16_to(data_length); memcpy(send_buf + 2, &data_length, 2);
-    data_chunk_offset = tf_leconvert_uint16_to(data_chunk_offset); memcpy(send_buf + 4, &data_chunk_offset, 2);
-    memcpy(send_buf + 6, data_chunk_data, 58);
+    page = tf_leconvert_uint16_to(page); memcpy(_send_buf + 0, &page, 2);
+    data_length = tf_leconvert_uint16_to(data_length); memcpy(_send_buf + 2, &data_length, 2);
+    data_chunk_offset = tf_leconvert_uint16_to(data_chunk_offset); memcpy(_send_buf + 4, &data_chunk_offset, 2);
+    memcpy(_send_buf + 6, data_chunk_data, 58);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_reader_request_page(TF_NFC *nfc, uint16_t page, uint16_t length) {
@@ -837,41 +875,46 @@ int tf_nfc_reader_request_page(TF_NFC *nfc, uint16_t page, uint16_t length) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_READER_REQUEST_PAGE, &response_expected);
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_READER_REQUEST_PAGE, 4, 0, response_expected);
+    bool _response_expected = true;
+    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_READER_REQUEST_PAGE, &_response_expected);
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_READER_REQUEST_PAGE, 4, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
 
-    page = tf_leconvert_uint16_to(page); memcpy(send_buf + 0, &page, 2);
-    length = tf_leconvert_uint16_to(length); memcpy(send_buf + 2, &length, 2);
+    page = tf_leconvert_uint16_to(page); memcpy(_send_buf + 0, &page, 2);
+    length = tf_leconvert_uint16_to(length); memcpy(_send_buf + 2, &length, 2);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_reader_read_page_low_level(TF_NFC *nfc, uint16_t *ret_data_length, uint16_t *ret_data_chunk_offset, uint8_t ret_data_chunk_data[60]) {
@@ -879,44 +922,53 @@ int tf_nfc_reader_read_page_low_level(TF_NFC *nfc, uint16_t *ret_data_length, ui
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_READER_READ_PAGE_LOW_LEVEL, 0, 64, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_READER_READ_PAGE_LOW_LEVEL, 0, _response_expected);
 
-    size_t i;
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    size_t _i;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
-        if (ret_data_length != NULL) { *ret_data_length = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_data_chunk_offset != NULL) { *ret_data_chunk_offset = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_data_chunk_data != NULL) { for (i = 0; i < 60; ++i) ret_data_chunk_data[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 60); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
+        if (_error_code != 0 || _length != 64) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_data_length != NULL) { *ret_data_length = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_data_chunk_offset != NULL) { *ret_data_chunk_offset = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_data_chunk_data != NULL) { for (_i = 0; _i < 60; ++_i) ret_data_chunk_data[_i] = tf_packet_buffer_read_uint8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 60); }
+        }
         tf_tfp_packet_processed(nfc->tfp);
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 64) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_cardemu_get_state(TF_NFC *nfc, uint8_t *ret_state, bool *ret_idle) {
@@ -924,42 +976,51 @@ int tf_nfc_cardemu_get_state(TF_NFC *nfc, uint8_t *ret_state, bool *ret_idle) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_CARDEMU_GET_STATE, 0, 2, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_CARDEMU_GET_STATE, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
-        if (ret_state != NULL) { *ret_state = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_idle != NULL) { *ret_idle = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
+        if (_error_code != 0 || _length != 2) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_state != NULL) { *ret_state = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_idle != NULL) { *ret_idle = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(nfc->tfp);
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 2) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_cardemu_start_discovery(TF_NFC *nfc) {
@@ -967,36 +1028,41 @@ int tf_nfc_cardemu_start_discovery(TF_NFC *nfc) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_CARDEMU_START_DISCOVERY, &response_expected);
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_CARDEMU_START_DISCOVERY, 0, 0, response_expected);
+    bool _response_expected = true;
+    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_CARDEMU_START_DISCOVERY, &_response_expected);
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_CARDEMU_START_DISCOVERY, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_cardemu_write_ndef_low_level(TF_NFC *nfc, uint16_t ndef_length, uint16_t ndef_chunk_offset, const uint8_t ndef_chunk_data[60]) {
@@ -1004,42 +1070,47 @@ int tf_nfc_cardemu_write_ndef_low_level(TF_NFC *nfc, uint16_t ndef_length, uint1
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_CARDEMU_WRITE_NDEF_LOW_LEVEL, &response_expected);
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_CARDEMU_WRITE_NDEF_LOW_LEVEL, 64, 0, response_expected);
+    bool _response_expected = true;
+    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_CARDEMU_WRITE_NDEF_LOW_LEVEL, &_response_expected);
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_CARDEMU_WRITE_NDEF_LOW_LEVEL, 64, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
 
-    ndef_length = tf_leconvert_uint16_to(ndef_length); memcpy(send_buf + 0, &ndef_length, 2);
-    ndef_chunk_offset = tf_leconvert_uint16_to(ndef_chunk_offset); memcpy(send_buf + 2, &ndef_chunk_offset, 2);
-    memcpy(send_buf + 4, ndef_chunk_data, 60);
+    ndef_length = tf_leconvert_uint16_to(ndef_length); memcpy(_send_buf + 0, &ndef_length, 2);
+    ndef_chunk_offset = tf_leconvert_uint16_to(ndef_chunk_offset); memcpy(_send_buf + 2, &ndef_chunk_offset, 2);
+    memcpy(_send_buf + 4, ndef_chunk_data, 60);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_cardemu_start_transfer(TF_NFC *nfc, uint8_t transfer) {
@@ -1047,40 +1118,45 @@ int tf_nfc_cardemu_start_transfer(TF_NFC *nfc, uint8_t transfer) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_CARDEMU_START_TRANSFER, &response_expected);
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_CARDEMU_START_TRANSFER, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_CARDEMU_START_TRANSFER, &_response_expected);
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_CARDEMU_START_TRANSFER, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
 
-    send_buf[0] = (uint8_t)transfer;
+    _send_buf[0] = (uint8_t)transfer;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_p2p_get_state(TF_NFC *nfc, uint8_t *ret_state, bool *ret_idle) {
@@ -1088,42 +1164,51 @@ int tf_nfc_p2p_get_state(TF_NFC *nfc, uint8_t *ret_state, bool *ret_idle) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_P2P_GET_STATE, 0, 2, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_P2P_GET_STATE, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
-        if (ret_state != NULL) { *ret_state = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_idle != NULL) { *ret_idle = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
+        if (_error_code != 0 || _length != 2) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_state != NULL) { *ret_state = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_idle != NULL) { *ret_idle = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(nfc->tfp);
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 2) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_p2p_start_discovery(TF_NFC *nfc) {
@@ -1131,36 +1216,41 @@ int tf_nfc_p2p_start_discovery(TF_NFC *nfc) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_P2P_START_DISCOVERY, &response_expected);
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_P2P_START_DISCOVERY, 0, 0, response_expected);
+    bool _response_expected = true;
+    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_P2P_START_DISCOVERY, &_response_expected);
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_P2P_START_DISCOVERY, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_p2p_write_ndef_low_level(TF_NFC *nfc, uint16_t ndef_length, uint16_t ndef_chunk_offset, const uint8_t ndef_chunk_data[60]) {
@@ -1168,42 +1258,47 @@ int tf_nfc_p2p_write_ndef_low_level(TF_NFC *nfc, uint16_t ndef_length, uint16_t 
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_P2P_WRITE_NDEF_LOW_LEVEL, &response_expected);
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_P2P_WRITE_NDEF_LOW_LEVEL, 64, 0, response_expected);
+    bool _response_expected = true;
+    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_P2P_WRITE_NDEF_LOW_LEVEL, &_response_expected);
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_P2P_WRITE_NDEF_LOW_LEVEL, 64, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
 
-    ndef_length = tf_leconvert_uint16_to(ndef_length); memcpy(send_buf + 0, &ndef_length, 2);
-    ndef_chunk_offset = tf_leconvert_uint16_to(ndef_chunk_offset); memcpy(send_buf + 2, &ndef_chunk_offset, 2);
-    memcpy(send_buf + 4, ndef_chunk_data, 60);
+    ndef_length = tf_leconvert_uint16_to(ndef_length); memcpy(_send_buf + 0, &ndef_length, 2);
+    ndef_chunk_offset = tf_leconvert_uint16_to(ndef_chunk_offset); memcpy(_send_buf + 2, &ndef_chunk_offset, 2);
+    memcpy(_send_buf + 4, ndef_chunk_data, 60);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_p2p_start_transfer(TF_NFC *nfc, uint8_t transfer) {
@@ -1211,40 +1306,45 @@ int tf_nfc_p2p_start_transfer(TF_NFC *nfc, uint8_t transfer) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_P2P_START_TRANSFER, &response_expected);
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_P2P_START_TRANSFER, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_P2P_START_TRANSFER, &_response_expected);
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_P2P_START_TRANSFER, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
 
-    send_buf[0] = (uint8_t)transfer;
+    _send_buf[0] = (uint8_t)transfer;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_p2p_read_ndef_low_level(TF_NFC *nfc, uint16_t *ret_ndef_length, uint16_t *ret_ndef_chunk_offset, uint8_t ret_ndef_chunk_data[60]) {
@@ -1252,44 +1352,53 @@ int tf_nfc_p2p_read_ndef_low_level(TF_NFC *nfc, uint16_t *ret_ndef_length, uint1
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_P2P_READ_NDEF_LOW_LEVEL, 0, 64, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_P2P_READ_NDEF_LOW_LEVEL, 0, _response_expected);
 
-    size_t i;
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    size_t _i;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
-        if (ret_ndef_length != NULL) { *ret_ndef_length = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_ndef_chunk_offset != NULL) { *ret_ndef_chunk_offset = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_ndef_chunk_data != NULL) { for (i = 0; i < 60; ++i) ret_ndef_chunk_data[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 60); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
+        if (_error_code != 0 || _length != 64) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_ndef_length != NULL) { *ret_ndef_length = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_ndef_chunk_offset != NULL) { *ret_ndef_chunk_offset = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_ndef_chunk_data != NULL) { for (_i = 0; _i < 60; ++_i) ret_ndef_chunk_data[_i] = tf_packet_buffer_read_uint8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 60); }
+        }
         tf_tfp_packet_processed(nfc->tfp);
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 64) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_set_detection_led_config(TF_NFC *nfc, uint8_t config) {
@@ -1297,40 +1406,45 @@ int tf_nfc_set_detection_led_config(TF_NFC *nfc, uint8_t config) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_SET_DETECTION_LED_CONFIG, &response_expected);
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_SET_DETECTION_LED_CONFIG, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_SET_DETECTION_LED_CONFIG, &_response_expected);
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_SET_DETECTION_LED_CONFIG, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
 
-    send_buf[0] = (uint8_t)config;
+    _send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_get_detection_led_config(TF_NFC *nfc, uint8_t *ret_config) {
@@ -1338,41 +1452,50 @@ int tf_nfc_get_detection_led_config(TF_NFC *nfc, uint8_t *ret_config) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_GET_DETECTION_LED_CONFIG, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_GET_DETECTION_LED_CONFIG, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(nfc->tfp);
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_set_maximum_timeout(TF_NFC *nfc, uint16_t timeout) {
@@ -1380,40 +1503,45 @@ int tf_nfc_set_maximum_timeout(TF_NFC *nfc, uint16_t timeout) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_SET_MAXIMUM_TIMEOUT, &response_expected);
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_SET_MAXIMUM_TIMEOUT, 2, 0, response_expected);
+    bool _response_expected = true;
+    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_SET_MAXIMUM_TIMEOUT, &_response_expected);
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_SET_MAXIMUM_TIMEOUT, 2, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
 
-    timeout = tf_leconvert_uint16_to(timeout); memcpy(send_buf + 0, &timeout, 2);
+    timeout = tf_leconvert_uint16_to(timeout); memcpy(_send_buf + 0, &timeout, 2);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_get_maximum_timeout(TF_NFC *nfc, uint16_t *ret_timeout) {
@@ -1421,41 +1549,50 @@ int tf_nfc_get_maximum_timeout(TF_NFC *nfc, uint16_t *ret_timeout) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_GET_MAXIMUM_TIMEOUT, 0, 2, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_GET_MAXIMUM_TIMEOUT, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
-        if (ret_timeout != NULL) { *ret_timeout = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
+        if (_error_code != 0 || _length != 2) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_timeout != NULL) { *ret_timeout = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+        }
         tf_tfp_packet_processed(nfc->tfp);
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 2) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_simple_get_tag_id_low_level(TF_NFC *nfc, uint8_t index, uint8_t *ret_tag_type, uint8_t *ret_tag_id_length, uint8_t ret_tag_id_data[10], uint32_t *ret_last_seen) {
@@ -1463,49 +1600,58 @@ int tf_nfc_simple_get_tag_id_low_level(TF_NFC *nfc, uint8_t index, uint8_t *ret_
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_SIMPLE_GET_TAG_ID_LOW_LEVEL, 1, 16, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_SIMPLE_GET_TAG_ID_LOW_LEVEL, 1, _response_expected);
 
-    size_t i;
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
+    size_t _i;
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
 
-    send_buf[0] = (uint8_t)index;
+    _send_buf[0] = (uint8_t)index;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
-        if (ret_tag_type != NULL) { *ret_tag_type = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_tag_id_length != NULL) { *ret_tag_id_length = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_tag_id_data != NULL) { for (i = 0; i < 10; ++i) ret_tag_id_data[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 10); }
-        if (ret_last_seen != NULL) { *ret_last_seen = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
+        if (_error_code != 0 || _length != 16) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_tag_type != NULL) { *ret_tag_type = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_tag_id_length != NULL) { *ret_tag_id_length = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_tag_id_data != NULL) { for (_i = 0; _i < 10; ++_i) ret_tag_id_data[_i] = tf_packet_buffer_read_uint8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 10); }
+            if (ret_last_seen != NULL) { *ret_last_seen = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
         tf_tfp_packet_processed(nfc->tfp);
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 16) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_get_spitfp_error_count(TF_NFC *nfc, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
@@ -1513,44 +1659,53 @@ int tf_nfc_get_spitfp_error_count(TF_NFC *nfc, uint32_t *ret_error_count_ack_che
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
-        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
+        if (_error_code != 0 || _length != 16) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
         tf_tfp_packet_processed(nfc->tfp);
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 16) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_set_bootloader_mode(TF_NFC *nfc, uint8_t mode, uint8_t *ret_status) {
@@ -1558,45 +1713,54 @@ int tf_nfc_set_bootloader_mode(TF_NFC *nfc, uint8_t mode, uint8_t *ret_status) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_SET_BOOTLOADER_MODE, 1, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_SET_BOOTLOADER_MODE, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
 
-    send_buf[0] = (uint8_t)mode;
+    _send_buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(nfc->tfp);
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_get_bootloader_mode(TF_NFC *nfc, uint8_t *ret_mode) {
@@ -1604,41 +1768,50 @@ int tf_nfc_get_bootloader_mode(TF_NFC *nfc, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_GET_BOOTLOADER_MODE, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
-        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(nfc->tfp);
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_set_write_firmware_pointer(TF_NFC *nfc, uint32_t pointer) {
@@ -1646,40 +1819,45 @@ int tf_nfc_set_write_firmware_pointer(TF_NFC *nfc, uint32_t pointer) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_SET_WRITE_FIRMWARE_POINTER, &response_expected);
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_SET_WRITE_FIRMWARE_POINTER, 4, 0, response_expected);
+    bool _response_expected = true;
+    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_SET_WRITE_FIRMWARE_POINTER, &_response_expected);
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_SET_WRITE_FIRMWARE_POINTER, 4, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
 
-    pointer = tf_leconvert_uint32_to(pointer); memcpy(send_buf + 0, &pointer, 4);
+    pointer = tf_leconvert_uint32_to(pointer); memcpy(_send_buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_write_firmware(TF_NFC *nfc, const uint8_t data[64], uint8_t *ret_status) {
@@ -1687,45 +1865,54 @@ int tf_nfc_write_firmware(TF_NFC *nfc, const uint8_t data[64], uint8_t *ret_stat
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_WRITE_FIRMWARE, 64, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_WRITE_FIRMWARE, 64, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
 
-    memcpy(send_buf + 0, data, 64);
+    memcpy(_send_buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(nfc->tfp);
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_set_status_led_config(TF_NFC *nfc, uint8_t config) {
@@ -1733,40 +1920,45 @@ int tf_nfc_set_status_led_config(TF_NFC *nfc, uint8_t config) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_SET_STATUS_LED_CONFIG, &response_expected);
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_SET_STATUS_LED_CONFIG, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_SET_STATUS_LED_CONFIG, &_response_expected);
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_SET_STATUS_LED_CONFIG, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
 
-    send_buf[0] = (uint8_t)config;
+    _send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_get_status_led_config(TF_NFC *nfc, uint8_t *ret_config) {
@@ -1774,41 +1966,50 @@ int tf_nfc_get_status_led_config(TF_NFC *nfc, uint8_t *ret_config) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_GET_STATUS_LED_CONFIG, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(nfc->tfp);
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_get_chip_temperature(TF_NFC *nfc, int16_t *ret_temperature) {
@@ -1816,41 +2017,50 @@ int tf_nfc_get_chip_temperature(TF_NFC *nfc, int16_t *ret_temperature) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_GET_CHIP_TEMPERATURE, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
-        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
+        if (_error_code != 0 || _length != 2) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+        }
         tf_tfp_packet_processed(nfc->tfp);
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 2) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_reset(TF_NFC *nfc) {
@@ -1858,36 +2068,41 @@ int tf_nfc_reset(TF_NFC *nfc) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_RESET, &response_expected);
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_RESET, 0, 0, response_expected);
+    bool _response_expected = true;
+    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_RESET, &_response_expected);
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_RESET, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_write_uid(TF_NFC *nfc, uint32_t uid) {
@@ -1895,40 +2110,45 @@ int tf_nfc_write_uid(TF_NFC *nfc, uint32_t uid) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_WRITE_UID, &response_expected);
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_WRITE_UID, 4, 0, response_expected);
+    bool _response_expected = true;
+    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_WRITE_UID, &_response_expected);
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_WRITE_UID, 4, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
 
-    uid = tf_leconvert_uint32_to(uid); memcpy(send_buf + 0, &uid, 4);
+    uid = tf_leconvert_uint32_to(uid); memcpy(_send_buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_read_uid(TF_NFC *nfc, uint32_t *ret_uid) {
@@ -1936,41 +2156,50 @@ int tf_nfc_read_uid(TF_NFC *nfc, uint32_t *ret_uid) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_READ_UID, 0, 4, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_READ_UID, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
-        if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
+        if (_error_code != 0 || _length != 4) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
         tf_tfp_packet_processed(nfc->tfp);
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 4) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_get_identity(TF_NFC *nfc, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
@@ -1978,47 +2207,56 @@ int tf_nfc_get_identity(TF_NFC *nfc, char ret_uid[8], char ret_connected_uid[8],
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = nfc->tfp->spitfp->hal;
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_GET_IDENTITY, 0, _response_expected);
 
-    size_t i;
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    size_t _i;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(nfc->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
-        if (ret_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
-        if (ret_connected_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_connected_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
-        if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_hardware_version != NULL) { for (i = 0; i < 3; ++i) ret_hardware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
-        if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
-        if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
+        if (_error_code != 0 || _length != 25) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_uid != NULL) { tf_packet_buffer_pop_n(_recv_buf, (uint8_t *)ret_uid, 8);} else { tf_packet_buffer_remove(_recv_buf, 8); }
+            if (ret_connected_uid != NULL) { tf_packet_buffer_pop_n(_recv_buf, (uint8_t *)ret_connected_uid, 8);} else { tf_packet_buffer_remove(_recv_buf, 8); }
+            if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_hardware_version != NULL) { for (_i = 0; _i < 3; ++_i) ret_hardware_version[_i] = tf_packet_buffer_read_uint8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 3); }
+            if (ret_firmware_version != NULL) { for (_i = 0; _i < 3; ++_i) ret_firmware_version[_i] = tf_packet_buffer_read_uint8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 3); }
+            if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+        }
         tf_tfp_packet_processed(nfc->tfp);
     }
 
-    result = tf_tfp_finish_send(nfc->tfp, result, deadline);
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 25) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_nfc_reader_get_tag_id(TF_NFC *nfc, uint8_t *ret_tag_type, uint8_t *ret_tag_id, uint8_t *ret_tag_id_length) {
@@ -2071,11 +2309,11 @@ int tf_nfc_reader_write_ndef(TF_NFC *nfc, const uint8_t *ndef, uint16_t ndef_len
     }
     
 
-    uint32_t stream_length = ndef_length;
-    uint32_t ndef_written = 0;
-    uint8_t chunk_data[60];
+    uint32_t _stream_length = ndef_length;
+    uint32_t _ndef_written = 0;
+    uint8_t _chunk_data[60];
 
-    int ret = tf_stream_in(nfc, tf_nfc_reader_write_ndef_ll_wrapper, NULL, ndef, stream_length, chunk_data, &ndef_written, 60, tf_copy_items_uint8_t);
+    int ret = tf_stream_in(nfc, tf_nfc_reader_write_ndef_ll_wrapper, NULL, ndef, _stream_length, _chunk_data, &_ndef_written, 60, tf_copy_items_uint8_t);
 
 
 
@@ -2100,13 +2338,13 @@ int tf_nfc_reader_read_ndef(TF_NFC *nfc, uint8_t *ret_ndef, uint16_t *ret_ndef_l
         return TF_E_NULL;
     }
     
-    uint32_t ndef_length = 0;
-    uint8_t ndef_chunk_data[60];
+    uint32_t _ndef_length = 0;
+    uint8_t _ndef_chunk_data[60];
 
-    int ret = tf_stream_out(nfc, tf_nfc_reader_read_ndef_ll_wrapper, NULL, ret_ndef, &ndef_length, ndef_chunk_data, 60, tf_copy_items_uint8_t);
+    int ret = tf_stream_out(nfc, tf_nfc_reader_read_ndef_ll_wrapper, NULL, ret_ndef, &_ndef_length, _ndef_chunk_data, 60, tf_copy_items_uint8_t);
 
     if (ret_ndef_length != NULL) {
-        *ret_ndef_length = (uint16_t)ndef_length;
+        *ret_ndef_length = (uint16_t)_ndef_length;
     }
     return ret;
 }
@@ -2134,15 +2372,15 @@ int tf_nfc_reader_write_page(TF_NFC *nfc, uint16_t page, const uint8_t *data, ui
         return TF_E_NULL;
     }
     
-    TF_NFC_ReaderWritePageLLWrapperData wrapper_data;
-    memset(&wrapper_data, 0, sizeof(wrapper_data));
-    wrapper_data.page = page;
+    TF_NFC_ReaderWritePageLLWrapperData _wrapper_data;
+    memset(&_wrapper_data, 0, sizeof(_wrapper_data));
+    _wrapper_data.page = page;
 
-    uint32_t stream_length = data_length;
-    uint32_t data_written = 0;
-    uint8_t chunk_data[58];
+    uint32_t _stream_length = data_length;
+    uint32_t _data_written = 0;
+    uint8_t _chunk_data[58];
 
-    int ret = tf_stream_in(nfc, tf_nfc_reader_write_page_ll_wrapper, &wrapper_data, data, stream_length, chunk_data, &data_written, 58, tf_copy_items_uint8_t);
+    int ret = tf_stream_in(nfc, tf_nfc_reader_write_page_ll_wrapper, &_wrapper_data, data, _stream_length, _chunk_data, &_data_written, 58, tf_copy_items_uint8_t);
 
 
 
@@ -2167,13 +2405,13 @@ int tf_nfc_reader_read_page(TF_NFC *nfc, uint8_t *ret_data, uint16_t *ret_data_l
         return TF_E_NULL;
     }
     
-    uint32_t data_length = 0;
-    uint8_t data_chunk_data[60];
+    uint32_t _data_length = 0;
+    uint8_t _data_chunk_data[60];
 
-    int ret = tf_stream_out(nfc, tf_nfc_reader_read_page_ll_wrapper, NULL, ret_data, &data_length, data_chunk_data, 60, tf_copy_items_uint8_t);
+    int ret = tf_stream_out(nfc, tf_nfc_reader_read_page_ll_wrapper, NULL, ret_data, &_data_length, _data_chunk_data, 60, tf_copy_items_uint8_t);
 
     if (ret_data_length != NULL) {
-        *ret_data_length = (uint16_t)data_length;
+        *ret_data_length = (uint16_t)_data_length;
     }
     return ret;
 }
@@ -2197,11 +2435,11 @@ int tf_nfc_cardemu_write_ndef(TF_NFC *nfc, const uint8_t *ndef, uint16_t ndef_le
     }
     
 
-    uint32_t stream_length = ndef_length;
-    uint32_t ndef_written = 0;
-    uint8_t chunk_data[60];
+    uint32_t _stream_length = ndef_length;
+    uint32_t _ndef_written = 0;
+    uint8_t _chunk_data[60];
 
-    int ret = tf_stream_in(nfc, tf_nfc_cardemu_write_ndef_ll_wrapper, NULL, ndef, stream_length, chunk_data, &ndef_written, 60, tf_copy_items_uint8_t);
+    int ret = tf_stream_in(nfc, tf_nfc_cardemu_write_ndef_ll_wrapper, NULL, ndef, _stream_length, _chunk_data, &_ndef_written, 60, tf_copy_items_uint8_t);
 
 
 
@@ -2228,11 +2466,11 @@ int tf_nfc_p2p_write_ndef(TF_NFC *nfc, const uint8_t *ndef, uint16_t ndef_length
     }
     
 
-    uint32_t stream_length = ndef_length;
-    uint32_t ndef_written = 0;
-    uint8_t chunk_data[60];
+    uint32_t _stream_length = ndef_length;
+    uint32_t _ndef_written = 0;
+    uint8_t _chunk_data[60];
 
-    int ret = tf_stream_in(nfc, tf_nfc_p2p_write_ndef_ll_wrapper, NULL, ndef, stream_length, chunk_data, &ndef_written, 60, tf_copy_items_uint8_t);
+    int ret = tf_stream_in(nfc, tf_nfc_p2p_write_ndef_ll_wrapper, NULL, ndef, _stream_length, _chunk_data, &_ndef_written, 60, tf_copy_items_uint8_t);
 
 
 
@@ -2257,13 +2495,13 @@ int tf_nfc_p2p_read_ndef(TF_NFC *nfc, uint8_t *ret_ndef, uint16_t *ret_ndef_leng
         return TF_E_NULL;
     }
     
-    uint32_t ndef_length = 0;
-    uint8_t ndef_chunk_data[60];
+    uint32_t _ndef_length = 0;
+    uint8_t _ndef_chunk_data[60];
 
-    int ret = tf_stream_out(nfc, tf_nfc_p2p_read_ndef_ll_wrapper, NULL, ret_ndef, &ndef_length, ndef_chunk_data, 60, tf_copy_items_uint8_t);
+    int ret = tf_stream_out(nfc, tf_nfc_p2p_read_ndef_ll_wrapper, NULL, ret_ndef, &_ndef_length, _ndef_chunk_data, 60, tf_copy_items_uint8_t);
 
     if (ret_ndef_length != NULL) {
-        *ret_ndef_length = (uint16_t)ndef_length;
+        *ret_ndef_length = (uint16_t)_ndef_length;
     }
     return ret;
 }

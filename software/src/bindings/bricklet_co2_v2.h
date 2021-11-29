@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,10 +28,10 @@ extern "C" {
 struct TF_CO2V2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_CO2V2_AllValuesHandler)(struct TF_CO2V2 *device, uint16_t co2_concentration, int16_t temperature, uint16_t humidity, void *user_data);
-typedef void (*TF_CO2V2_CO2ConcentrationHandler)(struct TF_CO2V2 *device, uint16_t co2_concentration, void *user_data);
-typedef void (*TF_CO2V2_TemperatureHandler)(struct TF_CO2V2 *device, int16_t temperature, void *user_data);
-typedef void (*TF_CO2V2_HumidityHandler)(struct TF_CO2V2 *device, uint16_t humidity, void *user_data);
+typedef void (*TF_CO2V2_AllValuesHandler)(struct TF_CO2V2 *co2_v2, uint16_t co2_concentration, int16_t temperature, uint16_t humidity, void *user_data);
+typedef void (*TF_CO2V2_CO2ConcentrationHandler)(struct TF_CO2V2 *co2_v2, uint16_t co2_concentration, void *user_data);
+typedef void (*TF_CO2V2_TemperatureHandler)(struct TF_CO2V2 *co2_v2, int16_t temperature, void *user_data);
+typedef void (*TF_CO2V2_HumidityHandler)(struct TF_CO2V2 *co2_v2, uint16_t humidity, void *user_data);
 
 #endif
 /**
@@ -346,7 +346,7 @@ typedef struct TF_CO2V2 {
  * Creates the device object \c co2_v2 with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_co2_v2_create(TF_CO2V2 *co2_v2, const char *uid, TF_HAL *hal);
+int tf_co2_v2_create(TF_CO2V2 *co2_v2, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_CO2V2

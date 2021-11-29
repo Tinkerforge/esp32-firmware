@@ -142,7 +142,6 @@ int tf_stream_in(void *device, TF_LowLevelStreamIn ll_function, void *wrapper_da
 
         ret = ll_function(device, wrapper_data, stream_length, chunk_offset, chunk_data, &chunk_written);
 
-        // TODO: is this correct here? A user will not expect to return his call with 0 bytes of payload, that one chunk, i.e. ~ 60 byte / element_size were written.
         if (ret_stream_written != NULL) {
             *ret_stream_written += chunk_written;
         }
@@ -172,6 +171,10 @@ int tf_stream_in(void *device, TF_LowLevelStreamIn ll_function, void *wrapper_da
             }
 
             break;
+        }
+
+        if (ret_stream_written != NULL) {
+            *ret_stream_written += chunk_written;
         }
 
         if (chunk_written < max_chunk_length) {

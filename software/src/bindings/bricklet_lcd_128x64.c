@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -121,46 +121,18 @@ static bool tf_lcd_128x64_callback_handler(void *device, uint8_t fid, TF_PacketB
     return false;
 }
 #endif
-int tf_lcd_128x64_create(TF_LCD128x64 *lcd_128x64, const char *uid, TF_HAL *hal) {
+int tf_lcd_128x64_create(TF_LCD128x64 *lcd_128x64, const char *uid_or_port_name, TF_HAL *hal) {
     if (lcd_128x64 == NULL || hal == NULL) {
         return TF_E_NULL;
     }
 
-    static uint16_t next_tfp_index = 0;
-
     memset(lcd_128x64, 0, sizeof(TF_LCD128x64));
 
     TF_TFP *tfp;
+    int rc = tf_hal_get_attachable_tfp(hal, &tfp, uid_or_port_name, TF_LCD_128X64_DEVICE_IDENTIFIER);
 
-    if (uid != NULL && *uid != '\0') {
-        uint32_t uid_num = 0;
-        int rc = tf_base58_decode(uid, &uid_num);
-
-        if (rc != TF_E_OK) {
-            return rc;
-        }
-
-        tfp = tf_hal_get_tfp(hal, &next_tfp_index, &uid_num, NULL, NULL);
-
-        if (tfp == NULL) {
-            return TF_E_DEVICE_NOT_FOUND;
-        }
-
-        if (tfp->device_id != TF_LCD_128X64_DEVICE_IDENTIFIER) {
-            return TF_E_WRONG_DEVICE_TYPE;
-        }
-    } else {
-        uint16_t device_id = TF_LCD_128X64_DEVICE_IDENTIFIER;
-
-        tfp = tf_hal_get_tfp(hal, &next_tfp_index, NULL, NULL, &device_id);
-
-        if (tfp == NULL) {
-            return TF_E_DEVICE_NOT_FOUND;
-        }
-    }
-
-    if (tfp->device != NULL) {
-        return TF_E_DEVICE_ALREADY_IN_USE;
+    if (rc != TF_E_OK) {
+        return rc;
     }
 
     lcd_128x64->tfp = tfp;
@@ -599,47 +571,52 @@ int tf_lcd_128x64_write_pixels_low_level(TF_LCD128x64 *lcd_128x64, uint8_t x_sta
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_WRITE_PIXELS_LOW_LEVEL, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_WRITE_PIXELS_LOW_LEVEL, 64, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_WRITE_PIXELS_LOW_LEVEL, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_WRITE_PIXELS_LOW_LEVEL, 64, _response_expected);
 
-    size_t i;
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    size_t _i;
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)x_start;
-    send_buf[1] = (uint8_t)y_start;
-    send_buf[2] = (uint8_t)x_end;
-    send_buf[3] = (uint8_t)y_end;
-    pixels_length = tf_leconvert_uint16_to(pixels_length); memcpy(send_buf + 4, &pixels_length, 2);
-    pixels_chunk_offset = tf_leconvert_uint16_to(pixels_chunk_offset); memcpy(send_buf + 6, &pixels_chunk_offset, 2);
-    memset(send_buf + 8, 0, 56); for (i = 0; i < 448; ++i) send_buf[8 + (i / 8)] |= (pixels_chunk_data[i] ? 1 : 0) << (i % 8);
+    _send_buf[0] = (uint8_t)x_start;
+    _send_buf[1] = (uint8_t)y_start;
+    _send_buf[2] = (uint8_t)x_end;
+    _send_buf[3] = (uint8_t)y_end;
+    pixels_length = tf_leconvert_uint16_to(pixels_length); memcpy(_send_buf + 4, &pixels_length, 2);
+    pixels_chunk_offset = tf_leconvert_uint16_to(pixels_chunk_offset); memcpy(_send_buf + 6, &pixels_chunk_offset, 2);
+    memset(_send_buf + 8, 0, 56); for (_i = 0; _i < 448; ++_i) _send_buf[8 + (_i / 8)] |= (pixels_chunk_data[_i] ? 1 : 0) << (_i % 8);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_read_pixels_low_level(TF_LCD128x64 *lcd_128x64, uint8_t x_start, uint8_t y_start, uint8_t x_end, uint8_t y_end, uint16_t *ret_pixels_length, uint16_t *ret_pixels_chunk_offset, bool ret_pixels_chunk_data[480]) {
@@ -647,50 +624,59 @@ int tf_lcd_128x64_read_pixels_low_level(TF_LCD128x64 *lcd_128x64, uint8_t x_star
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_READ_PIXELS_LOW_LEVEL, 4, 64, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_READ_PIXELS_LOW_LEVEL, 4, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)x_start;
-    send_buf[1] = (uint8_t)y_start;
-    send_buf[2] = (uint8_t)x_end;
-    send_buf[3] = (uint8_t)y_end;
+    _send_buf[0] = (uint8_t)x_start;
+    _send_buf[1] = (uint8_t)y_start;
+    _send_buf[2] = (uint8_t)x_end;
+    _send_buf[3] = (uint8_t)y_end;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_pixels_length != NULL) { *ret_pixels_length = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_pixels_chunk_offset != NULL) { *ret_pixels_chunk_offset = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_pixels_chunk_data != NULL) { tf_packet_buffer_read_bool_array(recv_buf, ret_pixels_chunk_data, 480);} else { tf_packet_buffer_remove(recv_buf, 60); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 64) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_pixels_length != NULL) { *ret_pixels_length = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_pixels_chunk_offset != NULL) { *ret_pixels_chunk_offset = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_pixels_chunk_data != NULL) { tf_packet_buffer_read_bool_array(_recv_buf, ret_pixels_chunk_data, 480);} else { tf_packet_buffer_remove(_recv_buf, 60); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 64) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_clear_display(TF_LCD128x64 *lcd_128x64) {
@@ -698,36 +684,41 @@ int tf_lcd_128x64_clear_display(TF_LCD128x64 *lcd_128x64) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_CLEAR_DISPLAY, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_CLEAR_DISPLAY, 0, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_CLEAR_DISPLAY, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_CLEAR_DISPLAY, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_set_display_configuration(TF_LCD128x64 *lcd_128x64, uint8_t contrast, uint8_t backlight, bool invert, bool automatic_draw) {
@@ -735,43 +726,48 @@ int tf_lcd_128x64_set_display_configuration(TF_LCD128x64 *lcd_128x64, uint8_t co
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_DISPLAY_CONFIGURATION, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_DISPLAY_CONFIGURATION, 4, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_DISPLAY_CONFIGURATION, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_DISPLAY_CONFIGURATION, 4, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)contrast;
-    send_buf[1] = (uint8_t)backlight;
-    send_buf[2] = invert ? 1 : 0;
-    send_buf[3] = automatic_draw ? 1 : 0;
+    _send_buf[0] = (uint8_t)contrast;
+    _send_buf[1] = (uint8_t)backlight;
+    _send_buf[2] = invert ? 1 : 0;
+    _send_buf[3] = automatic_draw ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_get_display_configuration(TF_LCD128x64 *lcd_128x64, uint8_t *ret_contrast, uint8_t *ret_backlight, bool *ret_invert, bool *ret_automatic_draw) {
@@ -779,44 +775,53 @@ int tf_lcd_128x64_get_display_configuration(TF_LCD128x64 *lcd_128x64, uint8_t *r
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_DISPLAY_CONFIGURATION, 0, 4, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_DISPLAY_CONFIGURATION, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_contrast != NULL) { *ret_contrast = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_backlight != NULL) { *ret_backlight = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_invert != NULL) { *ret_invert = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_automatic_draw != NULL) { *ret_automatic_draw = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 4) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_contrast != NULL) { *ret_contrast = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_backlight != NULL) { *ret_backlight = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_invert != NULL) { *ret_invert = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_automatic_draw != NULL) { *ret_automatic_draw = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 4) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_write_line(TF_LCD128x64 *lcd_128x64, uint8_t line, uint8_t position, const char *text) {
@@ -824,43 +829,48 @@ int tf_lcd_128x64_write_line(TF_LCD128x64 *lcd_128x64, uint8_t line, uint8_t pos
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_WRITE_LINE, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_WRITE_LINE, 24, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_WRITE_LINE, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_WRITE_LINE, 24, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)line;
-    send_buf[1] = (uint8_t)position;
-    strncpy((char *)(send_buf + 2), text, 22);
+    _send_buf[0] = (uint8_t)line;
+    _send_buf[1] = (uint8_t)position;
+    strncpy((char *)(_send_buf + 2), text, 22);
 
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_draw_buffered_frame(TF_LCD128x64 *lcd_128x64, bool force_complete_redraw) {
@@ -868,40 +878,45 @@ int tf_lcd_128x64_draw_buffered_frame(TF_LCD128x64 *lcd_128x64, bool force_compl
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_DRAW_BUFFERED_FRAME, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_DRAW_BUFFERED_FRAME, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_DRAW_BUFFERED_FRAME, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_DRAW_BUFFERED_FRAME, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = force_complete_redraw ? 1 : 0;
+    _send_buf[0] = force_complete_redraw ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_get_touch_position(TF_LCD128x64 *lcd_128x64, uint16_t *ret_pressure, uint16_t *ret_x, uint16_t *ret_y, uint32_t *ret_age) {
@@ -909,44 +924,53 @@ int tf_lcd_128x64_get_touch_position(TF_LCD128x64 *lcd_128x64, uint16_t *ret_pre
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_TOUCH_POSITION, 0, 10, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_TOUCH_POSITION, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_pressure != NULL) { *ret_pressure = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_x != NULL) { *ret_x = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_y != NULL) { *ret_y = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_age != NULL) { *ret_age = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 10) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_pressure != NULL) { *ret_pressure = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_x != NULL) { *ret_x = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_y != NULL) { *ret_y = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_age != NULL) { *ret_age = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 10) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_set_touch_position_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t period, bool value_has_to_change) {
@@ -954,41 +978,46 @@ int tf_lcd_128x64_set_touch_position_callback_configuration(TF_LCD128x64 *lcd_12
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_TOUCH_POSITION_CALLBACK_CONFIGURATION, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_TOUCH_POSITION_CALLBACK_CONFIGURATION, 5, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_TOUCH_POSITION_CALLBACK_CONFIGURATION, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_TOUCH_POSITION_CALLBACK_CONFIGURATION, 5, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    period = tf_leconvert_uint32_to(period); memcpy(send_buf + 0, &period, 4);
-    send_buf[4] = value_has_to_change ? 1 : 0;
+    period = tf_leconvert_uint32_to(period); memcpy(_send_buf + 0, &period, 4);
+    _send_buf[4] = value_has_to_change ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_get_touch_position_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t *ret_period, bool *ret_value_has_to_change) {
@@ -996,42 +1025,51 @@ int tf_lcd_128x64_get_touch_position_callback_configuration(TF_LCD128x64 *lcd_12
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_TOUCH_POSITION_CALLBACK_CONFIGURATION, 0, 5, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_TOUCH_POSITION_CALLBACK_CONFIGURATION, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 5) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 5) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_get_touch_gesture(TF_LCD128x64 *lcd_128x64, uint8_t *ret_gesture, uint32_t *ret_duration, uint16_t *ret_pressure_max, uint16_t *ret_x_start, uint16_t *ret_y_start, uint16_t *ret_x_end, uint16_t *ret_y_end, uint32_t *ret_age) {
@@ -1039,48 +1077,57 @@ int tf_lcd_128x64_get_touch_gesture(TF_LCD128x64 *lcd_128x64, uint8_t *ret_gestu
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_TOUCH_GESTURE, 0, 19, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_TOUCH_GESTURE, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_gesture != NULL) { *ret_gesture = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_duration != NULL) { *ret_duration = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_pressure_max != NULL) { *ret_pressure_max = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_x_start != NULL) { *ret_x_start = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_y_start != NULL) { *ret_y_start = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_x_end != NULL) { *ret_x_end = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_y_end != NULL) { *ret_y_end = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_age != NULL) { *ret_age = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 19) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_gesture != NULL) { *ret_gesture = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_duration != NULL) { *ret_duration = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_pressure_max != NULL) { *ret_pressure_max = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_x_start != NULL) { *ret_x_start = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_y_start != NULL) { *ret_y_start = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_x_end != NULL) { *ret_x_end = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_y_end != NULL) { *ret_y_end = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_age != NULL) { *ret_age = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 19) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_set_touch_gesture_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t period, bool value_has_to_change) {
@@ -1088,41 +1135,46 @@ int tf_lcd_128x64_set_touch_gesture_callback_configuration(TF_LCD128x64 *lcd_128
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_TOUCH_GESTURE_CALLBACK_CONFIGURATION, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_TOUCH_GESTURE_CALLBACK_CONFIGURATION, 5, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_TOUCH_GESTURE_CALLBACK_CONFIGURATION, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_TOUCH_GESTURE_CALLBACK_CONFIGURATION, 5, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    period = tf_leconvert_uint32_to(period); memcpy(send_buf + 0, &period, 4);
-    send_buf[4] = value_has_to_change ? 1 : 0;
+    period = tf_leconvert_uint32_to(period); memcpy(_send_buf + 0, &period, 4);
+    _send_buf[4] = value_has_to_change ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_get_touch_gesture_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t *ret_period, bool *ret_value_has_to_change) {
@@ -1130,42 +1182,51 @@ int tf_lcd_128x64_get_touch_gesture_callback_configuration(TF_LCD128x64 *lcd_128
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_TOUCH_GESTURE_CALLBACK_CONFIGURATION, 0, 5, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_TOUCH_GESTURE_CALLBACK_CONFIGURATION, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 5) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 5) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_draw_line(TF_LCD128x64 *lcd_128x64, uint8_t position_x_start, uint8_t position_y_start, uint8_t position_x_end, uint8_t position_y_end, bool color) {
@@ -1173,44 +1234,49 @@ int tf_lcd_128x64_draw_line(TF_LCD128x64 *lcd_128x64, uint8_t position_x_start, 
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_DRAW_LINE, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_DRAW_LINE, 5, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_DRAW_LINE, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_DRAW_LINE, 5, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)position_x_start;
-    send_buf[1] = (uint8_t)position_y_start;
-    send_buf[2] = (uint8_t)position_x_end;
-    send_buf[3] = (uint8_t)position_y_end;
-    send_buf[4] = color ? 1 : 0;
+    _send_buf[0] = (uint8_t)position_x_start;
+    _send_buf[1] = (uint8_t)position_y_start;
+    _send_buf[2] = (uint8_t)position_x_end;
+    _send_buf[3] = (uint8_t)position_y_end;
+    _send_buf[4] = color ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_draw_box(TF_LCD128x64 *lcd_128x64, uint8_t position_x_start, uint8_t position_y_start, uint8_t position_x_end, uint8_t position_y_end, bool fill, bool color) {
@@ -1218,45 +1284,50 @@ int tf_lcd_128x64_draw_box(TF_LCD128x64 *lcd_128x64, uint8_t position_x_start, u
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_DRAW_BOX, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_DRAW_BOX, 6, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_DRAW_BOX, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_DRAW_BOX, 6, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)position_x_start;
-    send_buf[1] = (uint8_t)position_y_start;
-    send_buf[2] = (uint8_t)position_x_end;
-    send_buf[3] = (uint8_t)position_y_end;
-    send_buf[4] = fill ? 1 : 0;
-    send_buf[5] = color ? 1 : 0;
+    _send_buf[0] = (uint8_t)position_x_start;
+    _send_buf[1] = (uint8_t)position_y_start;
+    _send_buf[2] = (uint8_t)position_x_end;
+    _send_buf[3] = (uint8_t)position_y_end;
+    _send_buf[4] = fill ? 1 : 0;
+    _send_buf[5] = color ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_draw_text(TF_LCD128x64 *lcd_128x64, uint8_t position_x, uint8_t position_y, uint8_t font, bool color, const char *text) {
@@ -1264,45 +1335,50 @@ int tf_lcd_128x64_draw_text(TF_LCD128x64 *lcd_128x64, uint8_t position_x, uint8_
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_DRAW_TEXT, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_DRAW_TEXT, 26, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_DRAW_TEXT, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_DRAW_TEXT, 26, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)position_x;
-    send_buf[1] = (uint8_t)position_y;
-    send_buf[2] = (uint8_t)font;
-    send_buf[3] = color ? 1 : 0;
-    strncpy((char *)(send_buf + 4), text, 22);
+    _send_buf[0] = (uint8_t)position_x;
+    _send_buf[1] = (uint8_t)position_y;
+    _send_buf[2] = (uint8_t)font;
+    _send_buf[3] = color ? 1 : 0;
+    strncpy((char *)(_send_buf + 4), text, 22);
 
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_set_gui_button(TF_LCD128x64 *lcd_128x64, uint8_t index, uint8_t position_x, uint8_t position_y, uint8_t width, uint8_t height, const char *text) {
@@ -1310,46 +1386,51 @@ int tf_lcd_128x64_set_gui_button(TF_LCD128x64 *lcd_128x64, uint8_t index, uint8_
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_GUI_BUTTON, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_GUI_BUTTON, 21, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_GUI_BUTTON, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_GUI_BUTTON, 21, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)index;
-    send_buf[1] = (uint8_t)position_x;
-    send_buf[2] = (uint8_t)position_y;
-    send_buf[3] = (uint8_t)width;
-    send_buf[4] = (uint8_t)height;
-    strncpy((char *)(send_buf + 5), text, 16);
+    _send_buf[0] = (uint8_t)index;
+    _send_buf[1] = (uint8_t)position_x;
+    _send_buf[2] = (uint8_t)position_y;
+    _send_buf[3] = (uint8_t)width;
+    _send_buf[4] = (uint8_t)height;
+    strncpy((char *)(_send_buf + 5), text, 16);
 
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_get_gui_button(TF_LCD128x64 *lcd_128x64, uint8_t index, bool *ret_active, uint8_t *ret_position_x, uint8_t *ret_position_y, uint8_t *ret_width, uint8_t *ret_height, char ret_text[16]) {
@@ -1357,50 +1438,59 @@ int tf_lcd_128x64_get_gui_button(TF_LCD128x64 *lcd_128x64, uint8_t index, bool *
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_BUTTON, 1, 21, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_BUTTON, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)index;
+    _send_buf[0] = (uint8_t)index;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_active != NULL) { *ret_active = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_position_x != NULL) { *ret_position_x = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_position_y != NULL) { *ret_position_y = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_width != NULL) { *ret_width = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_height != NULL) { *ret_height = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_text != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_text, 16);} else { tf_packet_buffer_remove(recv_buf, 16); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 21) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_active != NULL) { *ret_active = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_position_x != NULL) { *ret_position_x = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_position_y != NULL) { *ret_position_y = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_width != NULL) { *ret_width = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_height != NULL) { *ret_height = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_text != NULL) { tf_packet_buffer_pop_n(_recv_buf, (uint8_t *)ret_text, 16);} else { tf_packet_buffer_remove(_recv_buf, 16); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 21) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_remove_gui_button(TF_LCD128x64 *lcd_128x64, uint8_t index) {
@@ -1408,40 +1498,45 @@ int tf_lcd_128x64_remove_gui_button(TF_LCD128x64 *lcd_128x64, uint8_t index) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_REMOVE_GUI_BUTTON, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_REMOVE_GUI_BUTTON, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_REMOVE_GUI_BUTTON, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_REMOVE_GUI_BUTTON, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)index;
+    _send_buf[0] = (uint8_t)index;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_set_gui_button_pressed_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t period, bool value_has_to_change) {
@@ -1449,41 +1544,46 @@ int tf_lcd_128x64_set_gui_button_pressed_callback_configuration(TF_LCD128x64 *lc
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_GUI_BUTTON_PRESSED_CALLBACK_CONFIGURATION, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_GUI_BUTTON_PRESSED_CALLBACK_CONFIGURATION, 5, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_GUI_BUTTON_PRESSED_CALLBACK_CONFIGURATION, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_GUI_BUTTON_PRESSED_CALLBACK_CONFIGURATION, 5, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    period = tf_leconvert_uint32_to(period); memcpy(send_buf + 0, &period, 4);
-    send_buf[4] = value_has_to_change ? 1 : 0;
+    period = tf_leconvert_uint32_to(period); memcpy(_send_buf + 0, &period, 4);
+    _send_buf[4] = value_has_to_change ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_get_gui_button_pressed_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t *ret_period, bool *ret_value_has_to_change) {
@@ -1491,42 +1591,51 @@ int tf_lcd_128x64_get_gui_button_pressed_callback_configuration(TF_LCD128x64 *lc
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_BUTTON_PRESSED_CALLBACK_CONFIGURATION, 0, 5, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_BUTTON_PRESSED_CALLBACK_CONFIGURATION, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 5) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 5) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_get_gui_button_pressed(TF_LCD128x64 *lcd_128x64, uint8_t index, bool *ret_pressed) {
@@ -1534,45 +1643,54 @@ int tf_lcd_128x64_get_gui_button_pressed(TF_LCD128x64 *lcd_128x64, uint8_t index
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_BUTTON_PRESSED, 1, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_BUTTON_PRESSED, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)index;
+    _send_buf[0] = (uint8_t)index;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_pressed != NULL) { *ret_pressed = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_pressed != NULL) { *ret_pressed = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_set_gui_slider(TF_LCD128x64 *lcd_128x64, uint8_t index, uint8_t position_x, uint8_t position_y, uint8_t length, uint8_t direction, uint8_t value) {
@@ -1580,45 +1698,50 @@ int tf_lcd_128x64_set_gui_slider(TF_LCD128x64 *lcd_128x64, uint8_t index, uint8_
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_GUI_SLIDER, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_GUI_SLIDER, 6, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_GUI_SLIDER, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_GUI_SLIDER, 6, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)index;
-    send_buf[1] = (uint8_t)position_x;
-    send_buf[2] = (uint8_t)position_y;
-    send_buf[3] = (uint8_t)length;
-    send_buf[4] = (uint8_t)direction;
-    send_buf[5] = (uint8_t)value;
+    _send_buf[0] = (uint8_t)index;
+    _send_buf[1] = (uint8_t)position_x;
+    _send_buf[2] = (uint8_t)position_y;
+    _send_buf[3] = (uint8_t)length;
+    _send_buf[4] = (uint8_t)direction;
+    _send_buf[5] = (uint8_t)value;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_get_gui_slider(TF_LCD128x64 *lcd_128x64, uint8_t index, bool *ret_active, uint8_t *ret_position_x, uint8_t *ret_position_y, uint8_t *ret_length, uint8_t *ret_direction, uint8_t *ret_value) {
@@ -1626,50 +1749,59 @@ int tf_lcd_128x64_get_gui_slider(TF_LCD128x64 *lcd_128x64, uint8_t index, bool *
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_SLIDER, 1, 6, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_SLIDER, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)index;
+    _send_buf[0] = (uint8_t)index;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_active != NULL) { *ret_active = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_position_x != NULL) { *ret_position_x = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_position_y != NULL) { *ret_position_y = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_length != NULL) { *ret_length = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_direction != NULL) { *ret_direction = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_value != NULL) { *ret_value = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 6) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_active != NULL) { *ret_active = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_position_x != NULL) { *ret_position_x = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_position_y != NULL) { *ret_position_y = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_length != NULL) { *ret_length = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_direction != NULL) { *ret_direction = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_value != NULL) { *ret_value = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 6) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_remove_gui_slider(TF_LCD128x64 *lcd_128x64, uint8_t index) {
@@ -1677,40 +1809,45 @@ int tf_lcd_128x64_remove_gui_slider(TF_LCD128x64 *lcd_128x64, uint8_t index) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_REMOVE_GUI_SLIDER, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_REMOVE_GUI_SLIDER, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_REMOVE_GUI_SLIDER, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_REMOVE_GUI_SLIDER, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)index;
+    _send_buf[0] = (uint8_t)index;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_set_gui_slider_value_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t period, bool value_has_to_change) {
@@ -1718,41 +1855,46 @@ int tf_lcd_128x64_set_gui_slider_value_callback_configuration(TF_LCD128x64 *lcd_
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_GUI_SLIDER_VALUE_CALLBACK_CONFIGURATION, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_GUI_SLIDER_VALUE_CALLBACK_CONFIGURATION, 5, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_GUI_SLIDER_VALUE_CALLBACK_CONFIGURATION, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_GUI_SLIDER_VALUE_CALLBACK_CONFIGURATION, 5, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    period = tf_leconvert_uint32_to(period); memcpy(send_buf + 0, &period, 4);
-    send_buf[4] = value_has_to_change ? 1 : 0;
+    period = tf_leconvert_uint32_to(period); memcpy(_send_buf + 0, &period, 4);
+    _send_buf[4] = value_has_to_change ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_get_gui_slider_value_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t *ret_period, bool *ret_value_has_to_change) {
@@ -1760,42 +1902,51 @@ int tf_lcd_128x64_get_gui_slider_value_callback_configuration(TF_LCD128x64 *lcd_
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_SLIDER_VALUE_CALLBACK_CONFIGURATION, 0, 5, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_SLIDER_VALUE_CALLBACK_CONFIGURATION, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 5) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 5) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_get_gui_slider_value(TF_LCD128x64 *lcd_128x64, uint8_t index, uint8_t *ret_value) {
@@ -1803,45 +1954,54 @@ int tf_lcd_128x64_get_gui_slider_value(TF_LCD128x64 *lcd_128x64, uint8_t index, 
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_SLIDER_VALUE, 1, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_SLIDER_VALUE, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)index;
+    _send_buf[0] = (uint8_t)index;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_value != NULL) { *ret_value = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_value != NULL) { *ret_value = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_set_gui_tab_configuration(TF_LCD128x64 *lcd_128x64, uint8_t change_tab_config, bool clear_gui) {
@@ -1849,41 +2009,46 @@ int tf_lcd_128x64_set_gui_tab_configuration(TF_LCD128x64 *lcd_128x64, uint8_t ch
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_GUI_TAB_CONFIGURATION, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_GUI_TAB_CONFIGURATION, 2, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_GUI_TAB_CONFIGURATION, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_GUI_TAB_CONFIGURATION, 2, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)change_tab_config;
-    send_buf[1] = clear_gui ? 1 : 0;
+    _send_buf[0] = (uint8_t)change_tab_config;
+    _send_buf[1] = clear_gui ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_get_gui_tab_configuration(TF_LCD128x64 *lcd_128x64, uint8_t *ret_change_tab_config, bool *ret_clear_gui) {
@@ -1891,42 +2056,51 @@ int tf_lcd_128x64_get_gui_tab_configuration(TF_LCD128x64 *lcd_128x64, uint8_t *r
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_TAB_CONFIGURATION, 0, 2, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_TAB_CONFIGURATION, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_change_tab_config != NULL) { *ret_change_tab_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_clear_gui != NULL) { *ret_clear_gui = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 2) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_change_tab_config != NULL) { *ret_change_tab_config = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_clear_gui != NULL) { *ret_clear_gui = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 2) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_set_gui_tab_text(TF_LCD128x64 *lcd_128x64, uint8_t index, const char *text) {
@@ -1934,42 +2108,47 @@ int tf_lcd_128x64_set_gui_tab_text(TF_LCD128x64 *lcd_128x64, uint8_t index, cons
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_GUI_TAB_TEXT, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_GUI_TAB_TEXT, 6, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_GUI_TAB_TEXT, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_GUI_TAB_TEXT, 6, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)index;
-    strncpy((char *)(send_buf + 1), text, 5);
+    _send_buf[0] = (uint8_t)index;
+    strncpy((char *)(_send_buf + 1), text, 5);
 
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_get_gui_tab_text(TF_LCD128x64 *lcd_128x64, uint8_t index, bool *ret_active, char ret_text[5]) {
@@ -1977,46 +2156,55 @@ int tf_lcd_128x64_get_gui_tab_text(TF_LCD128x64 *lcd_128x64, uint8_t index, bool
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_TAB_TEXT, 1, 6, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_TAB_TEXT, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)index;
+    _send_buf[0] = (uint8_t)index;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_active != NULL) { *ret_active = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_text != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_text, 5);} else { tf_packet_buffer_remove(recv_buf, 5); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 6) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_active != NULL) { *ret_active = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_text != NULL) { tf_packet_buffer_pop_n(_recv_buf, (uint8_t *)ret_text, 5);} else { tf_packet_buffer_remove(_recv_buf, 5); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 6) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_set_gui_tab_icon(TF_LCD128x64 *lcd_128x64, uint8_t index, const bool icon[168]) {
@@ -2024,42 +2212,47 @@ int tf_lcd_128x64_set_gui_tab_icon(TF_LCD128x64 *lcd_128x64, uint8_t index, cons
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_GUI_TAB_ICON, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_GUI_TAB_ICON, 22, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_GUI_TAB_ICON, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_GUI_TAB_ICON, 22, _response_expected);
 
-    size_t i;
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    size_t _i;
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)index;
-    memset(send_buf + 1, 0, 21); for (i = 0; i < 168; ++i) send_buf[1 + (i / 8)] |= (icon[i] ? 1 : 0) << (i % 8);
+    _send_buf[0] = (uint8_t)index;
+    memset(_send_buf + 1, 0, 21); for (_i = 0; _i < 168; ++_i) _send_buf[1 + (_i / 8)] |= (icon[_i] ? 1 : 0) << (_i % 8);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_get_gui_tab_icon(TF_LCD128x64 *lcd_128x64, uint8_t index, bool *ret_active, bool ret_icon[168]) {
@@ -2067,46 +2260,55 @@ int tf_lcd_128x64_get_gui_tab_icon(TF_LCD128x64 *lcd_128x64, uint8_t index, bool
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_TAB_ICON, 1, 22, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_TAB_ICON, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)index;
+    _send_buf[0] = (uint8_t)index;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_active != NULL) { *ret_active = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_icon != NULL) { tf_packet_buffer_read_bool_array(recv_buf, ret_icon, 168);} else { tf_packet_buffer_remove(recv_buf, 21); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 22) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_active != NULL) { *ret_active = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_icon != NULL) { tf_packet_buffer_read_bool_array(_recv_buf, ret_icon, 168);} else { tf_packet_buffer_remove(_recv_buf, 21); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 22) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_remove_gui_tab(TF_LCD128x64 *lcd_128x64, uint8_t index) {
@@ -2114,40 +2316,45 @@ int tf_lcd_128x64_remove_gui_tab(TF_LCD128x64 *lcd_128x64, uint8_t index) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_REMOVE_GUI_TAB, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_REMOVE_GUI_TAB, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_REMOVE_GUI_TAB, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_REMOVE_GUI_TAB, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)index;
+    _send_buf[0] = (uint8_t)index;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_set_gui_tab_selected(TF_LCD128x64 *lcd_128x64, uint8_t index) {
@@ -2155,40 +2362,45 @@ int tf_lcd_128x64_set_gui_tab_selected(TF_LCD128x64 *lcd_128x64, uint8_t index) 
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_GUI_TAB_SELECTED, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_GUI_TAB_SELECTED, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_GUI_TAB_SELECTED, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_GUI_TAB_SELECTED, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)index;
+    _send_buf[0] = (uint8_t)index;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_set_gui_tab_selected_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t period, bool value_has_to_change) {
@@ -2196,41 +2408,46 @@ int tf_lcd_128x64_set_gui_tab_selected_callback_configuration(TF_LCD128x64 *lcd_
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_GUI_TAB_SELECTED_CALLBACK_CONFIGURATION, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_GUI_TAB_SELECTED_CALLBACK_CONFIGURATION, 5, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_GUI_TAB_SELECTED_CALLBACK_CONFIGURATION, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_GUI_TAB_SELECTED_CALLBACK_CONFIGURATION, 5, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    period = tf_leconvert_uint32_to(period); memcpy(send_buf + 0, &period, 4);
-    send_buf[4] = value_has_to_change ? 1 : 0;
+    period = tf_leconvert_uint32_to(period); memcpy(_send_buf + 0, &period, 4);
+    _send_buf[4] = value_has_to_change ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_get_gui_tab_selected_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t *ret_period, bool *ret_value_has_to_change) {
@@ -2238,42 +2455,51 @@ int tf_lcd_128x64_get_gui_tab_selected_callback_configuration(TF_LCD128x64 *lcd_
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_TAB_SELECTED_CALLBACK_CONFIGURATION, 0, 5, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_TAB_SELECTED_CALLBACK_CONFIGURATION, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 5) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 5) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_get_gui_tab_selected(TF_LCD128x64 *lcd_128x64, int8_t *ret_index) {
@@ -2281,41 +2507,50 @@ int tf_lcd_128x64_get_gui_tab_selected(TF_LCD128x64 *lcd_128x64, int8_t *ret_ind
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_TAB_SELECTED, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_TAB_SELECTED, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_index != NULL) { *ret_index = tf_packet_buffer_read_int8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_index != NULL) { *ret_index = tf_packet_buffer_read_int8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_set_gui_graph_configuration(TF_LCD128x64 *lcd_128x64, uint8_t index, uint8_t graph_type, uint8_t position_x, uint8_t position_y, uint8_t width, uint8_t height, const char *text_x, const char *text_y) {
@@ -2323,49 +2558,54 @@ int tf_lcd_128x64_set_gui_graph_configuration(TF_LCD128x64 *lcd_128x64, uint8_t 
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_GUI_GRAPH_CONFIGURATION, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_GUI_GRAPH_CONFIGURATION, 14, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_GUI_GRAPH_CONFIGURATION, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_GUI_GRAPH_CONFIGURATION, 14, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)index;
-    send_buf[1] = (uint8_t)graph_type;
-    send_buf[2] = (uint8_t)position_x;
-    send_buf[3] = (uint8_t)position_y;
-    send_buf[4] = (uint8_t)width;
-    send_buf[5] = (uint8_t)height;
-    strncpy((char *)(send_buf + 6), text_x, 4);
+    _send_buf[0] = (uint8_t)index;
+    _send_buf[1] = (uint8_t)graph_type;
+    _send_buf[2] = (uint8_t)position_x;
+    _send_buf[3] = (uint8_t)position_y;
+    _send_buf[4] = (uint8_t)width;
+    _send_buf[5] = (uint8_t)height;
+    strncpy((char *)(_send_buf + 6), text_x, 4);
 
-    strncpy((char *)(send_buf + 10), text_y, 4);
+    strncpy((char *)(_send_buf + 10), text_y, 4);
 
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_get_gui_graph_configuration(TF_LCD128x64 *lcd_128x64, uint8_t index, bool *ret_active, uint8_t *ret_graph_type, uint8_t *ret_position_x, uint8_t *ret_position_y, uint8_t *ret_width, uint8_t *ret_height, char ret_text_x[4], char ret_text_y[4]) {
@@ -2373,52 +2613,61 @@ int tf_lcd_128x64_get_gui_graph_configuration(TF_LCD128x64 *lcd_128x64, uint8_t 
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_GRAPH_CONFIGURATION, 1, 14, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_GRAPH_CONFIGURATION, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)index;
+    _send_buf[0] = (uint8_t)index;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_active != NULL) { *ret_active = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_graph_type != NULL) { *ret_graph_type = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_position_x != NULL) { *ret_position_x = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_position_y != NULL) { *ret_position_y = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_width != NULL) { *ret_width = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_height != NULL) { *ret_height = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_text_x != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_text_x, 4);} else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_text_y != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_text_y, 4);} else { tf_packet_buffer_remove(recv_buf, 4); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 14) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_active != NULL) { *ret_active = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_graph_type != NULL) { *ret_graph_type = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_position_x != NULL) { *ret_position_x = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_position_y != NULL) { *ret_position_y = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_width != NULL) { *ret_width = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_height != NULL) { *ret_height = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_text_x != NULL) { tf_packet_buffer_pop_n(_recv_buf, (uint8_t *)ret_text_x, 4);} else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_text_y != NULL) { tf_packet_buffer_pop_n(_recv_buf, (uint8_t *)ret_text_y, 4);} else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 14) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_set_gui_graph_data_low_level(TF_LCD128x64 *lcd_128x64, uint8_t index, uint16_t data_length, uint16_t data_chunk_offset, const uint8_t data_chunk_data[59]) {
@@ -2426,43 +2675,48 @@ int tf_lcd_128x64_set_gui_graph_data_low_level(TF_LCD128x64 *lcd_128x64, uint8_t
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_GUI_GRAPH_DATA_LOW_LEVEL, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_GUI_GRAPH_DATA_LOW_LEVEL, 64, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_GUI_GRAPH_DATA_LOW_LEVEL, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_GUI_GRAPH_DATA_LOW_LEVEL, 64, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)index;
-    data_length = tf_leconvert_uint16_to(data_length); memcpy(send_buf + 1, &data_length, 2);
-    data_chunk_offset = tf_leconvert_uint16_to(data_chunk_offset); memcpy(send_buf + 3, &data_chunk_offset, 2);
-    memcpy(send_buf + 5, data_chunk_data, 59);
+    _send_buf[0] = (uint8_t)index;
+    data_length = tf_leconvert_uint16_to(data_length); memcpy(_send_buf + 1, &data_length, 2);
+    data_chunk_offset = tf_leconvert_uint16_to(data_chunk_offset); memcpy(_send_buf + 3, &data_chunk_offset, 2);
+    memcpy(_send_buf + 5, data_chunk_data, 59);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_get_gui_graph_data_low_level(TF_LCD128x64 *lcd_128x64, uint8_t index, uint16_t *ret_data_length, uint16_t *ret_data_chunk_offset, uint8_t ret_data_chunk_data[59]) {
@@ -2470,48 +2724,57 @@ int tf_lcd_128x64_get_gui_graph_data_low_level(TF_LCD128x64 *lcd_128x64, uint8_t
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_GRAPH_DATA_LOW_LEVEL, 1, 63, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_GUI_GRAPH_DATA_LOW_LEVEL, 1, _response_expected);
 
-    size_t i;
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    size_t _i;
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)index;
+    _send_buf[0] = (uint8_t)index;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_data_length != NULL) { *ret_data_length = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_data_chunk_offset != NULL) { *ret_data_chunk_offset = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_data_chunk_data != NULL) { for (i = 0; i < 59; ++i) ret_data_chunk_data[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 59); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 63) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_data_length != NULL) { *ret_data_length = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_data_chunk_offset != NULL) { *ret_data_chunk_offset = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_data_chunk_data != NULL) { for (_i = 0; _i < 59; ++_i) ret_data_chunk_data[_i] = tf_packet_buffer_read_uint8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 59); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 63) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_remove_gui_graph(TF_LCD128x64 *lcd_128x64, uint8_t index) {
@@ -2519,40 +2782,45 @@ int tf_lcd_128x64_remove_gui_graph(TF_LCD128x64 *lcd_128x64, uint8_t index) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_REMOVE_GUI_GRAPH, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_REMOVE_GUI_GRAPH, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_REMOVE_GUI_GRAPH, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_REMOVE_GUI_GRAPH, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)index;
+    _send_buf[0] = (uint8_t)index;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_remove_all_gui(TF_LCD128x64 *lcd_128x64) {
@@ -2560,36 +2828,41 @@ int tf_lcd_128x64_remove_all_gui(TF_LCD128x64 *lcd_128x64) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_REMOVE_ALL_GUI, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_REMOVE_ALL_GUI, 0, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_REMOVE_ALL_GUI, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_REMOVE_ALL_GUI, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_set_touch_led_config(TF_LCD128x64 *lcd_128x64, uint8_t config) {
@@ -2597,40 +2870,45 @@ int tf_lcd_128x64_set_touch_led_config(TF_LCD128x64 *lcd_128x64, uint8_t config)
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_TOUCH_LED_CONFIG, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_TOUCH_LED_CONFIG, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_TOUCH_LED_CONFIG, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_TOUCH_LED_CONFIG, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)config;
+    _send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_get_touch_led_config(TF_LCD128x64 *lcd_128x64, uint8_t *ret_config) {
@@ -2638,41 +2916,50 @@ int tf_lcd_128x64_get_touch_led_config(TF_LCD128x64 *lcd_128x64, uint8_t *ret_co
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_TOUCH_LED_CONFIG, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_TOUCH_LED_CONFIG, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_get_spitfp_error_count(TF_LCD128x64 *lcd_128x64, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
@@ -2680,44 +2967,53 @@ int tf_lcd_128x64_get_spitfp_error_count(TF_LCD128x64 *lcd_128x64, uint32_t *ret
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 16) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 16) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_set_bootloader_mode(TF_LCD128x64 *lcd_128x64, uint8_t mode, uint8_t *ret_status) {
@@ -2725,45 +3021,54 @@ int tf_lcd_128x64_set_bootloader_mode(TF_LCD128x64 *lcd_128x64, uint8_t mode, ui
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_BOOTLOADER_MODE, 1, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_BOOTLOADER_MODE, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)mode;
+    _send_buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_get_bootloader_mode(TF_LCD128x64 *lcd_128x64, uint8_t *ret_mode) {
@@ -2771,41 +3076,50 @@ int tf_lcd_128x64_get_bootloader_mode(TF_LCD128x64 *lcd_128x64, uint8_t *ret_mod
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_BOOTLOADER_MODE, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_set_write_firmware_pointer(TF_LCD128x64 *lcd_128x64, uint32_t pointer) {
@@ -2813,40 +3127,45 @@ int tf_lcd_128x64_set_write_firmware_pointer(TF_LCD128x64 *lcd_128x64, uint32_t 
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_WRITE_FIRMWARE_POINTER, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_WRITE_FIRMWARE_POINTER, 4, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_WRITE_FIRMWARE_POINTER, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_WRITE_FIRMWARE_POINTER, 4, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    pointer = tf_leconvert_uint32_to(pointer); memcpy(send_buf + 0, &pointer, 4);
+    pointer = tf_leconvert_uint32_to(pointer); memcpy(_send_buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_write_firmware(TF_LCD128x64 *lcd_128x64, const uint8_t data[64], uint8_t *ret_status) {
@@ -2854,45 +3173,54 @@ int tf_lcd_128x64_write_firmware(TF_LCD128x64 *lcd_128x64, const uint8_t data[64
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_WRITE_FIRMWARE, 64, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_WRITE_FIRMWARE, 64, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    memcpy(send_buf + 0, data, 64);
+    memcpy(_send_buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_set_status_led_config(TF_LCD128x64 *lcd_128x64, uint8_t config) {
@@ -2900,40 +3228,45 @@ int tf_lcd_128x64_set_status_led_config(TF_LCD128x64 *lcd_128x64, uint8_t config
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_STATUS_LED_CONFIG, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_STATUS_LED_CONFIG, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_SET_STATUS_LED_CONFIG, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_SET_STATUS_LED_CONFIG, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    send_buf[0] = (uint8_t)config;
+    _send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_get_status_led_config(TF_LCD128x64 *lcd_128x64, uint8_t *ret_config) {
@@ -2941,41 +3274,50 @@ int tf_lcd_128x64_get_status_led_config(TF_LCD128x64 *lcd_128x64, uint8_t *ret_c
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_STATUS_LED_CONFIG, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_get_chip_temperature(TF_LCD128x64 *lcd_128x64, int16_t *ret_temperature) {
@@ -2983,41 +3325,50 @@ int tf_lcd_128x64_get_chip_temperature(TF_LCD128x64 *lcd_128x64, int16_t *ret_te
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_CHIP_TEMPERATURE, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 2) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 2) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_reset(TF_LCD128x64 *lcd_128x64) {
@@ -3025,36 +3376,41 @@ int tf_lcd_128x64_reset(TF_LCD128x64 *lcd_128x64) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_RESET, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_RESET, 0, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_RESET, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_RESET, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_write_uid(TF_LCD128x64 *lcd_128x64, uint32_t uid) {
@@ -3062,40 +3418,45 @@ int tf_lcd_128x64_write_uid(TF_LCD128x64 *lcd_128x64, uint32_t uid) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_WRITE_UID, &response_expected);
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_WRITE_UID, 4, 0, response_expected);
+    bool _response_expected = true;
+    tf_lcd_128x64_get_response_expected(lcd_128x64, TF_LCD_128X64_FUNCTION_WRITE_UID, &_response_expected);
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_WRITE_UID, 4, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(lcd_128x64->tfp);
 
-    uid = tf_leconvert_uint32_to(uid); memcpy(send_buf + 0, &uid, 4);
+    uid = tf_leconvert_uint32_to(uid); memcpy(_send_buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_read_uid(TF_LCD128x64 *lcd_128x64, uint32_t *ret_uid) {
@@ -3103,41 +3464,50 @@ int tf_lcd_128x64_read_uid(TF_LCD128x64 *lcd_128x64, uint32_t *ret_uid) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_READ_UID, 0, 4, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_READ_UID, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 4) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 4) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_lcd_128x64_get_identity(TF_LCD128x64 *lcd_128x64, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
@@ -3145,47 +3515,56 @@ int tf_lcd_128x64_get_identity(TF_LCD128x64 *lcd_128x64, char ret_uid[8], char r
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = lcd_128x64->tfp->spitfp->hal;
+    TF_HAL *_hal = lcd_128x64->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(lcd_128x64->tfp, TF_LCD_128X64_FUNCTION_GET_IDENTITY, 0, _response_expected);
 
-    size_t i;
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    size_t _i;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(lcd_128x64->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(lcd_128x64->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
-        if (ret_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
-        if (ret_connected_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_connected_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
-        if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_hardware_version != NULL) { for (i = 0; i < 3; ++i) ret_hardware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
-        if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
-        if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(lcd_128x64->tfp);
+        if (_error_code != 0 || _length != 25) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_uid != NULL) { tf_packet_buffer_pop_n(_recv_buf, (uint8_t *)ret_uid, 8);} else { tf_packet_buffer_remove(_recv_buf, 8); }
+            if (ret_connected_uid != NULL) { tf_packet_buffer_pop_n(_recv_buf, (uint8_t *)ret_connected_uid, 8);} else { tf_packet_buffer_remove(_recv_buf, 8); }
+            if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_hardware_version != NULL) { for (_i = 0; _i < 3; ++_i) ret_hardware_version[_i] = tf_packet_buffer_read_uint8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 3); }
+            if (ret_firmware_version != NULL) { for (_i = 0; _i < 3; ++_i) ret_firmware_version[_i] = tf_packet_buffer_read_uint8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 3); }
+            if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+        }
         tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
-    result = tf_tfp_finish_send(lcd_128x64->tfp, result, deadline);
+    _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 25) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 typedef struct TF_LCD128x64_WritePixelsLLWrapperData {
@@ -3214,18 +3593,18 @@ int tf_lcd_128x64_write_pixels(TF_LCD128x64 *lcd_128x64, uint8_t x_start, uint8_
         return TF_E_NULL;
     }
     
-    TF_LCD128x64_WritePixelsLLWrapperData wrapper_data;
-    memset(&wrapper_data, 0, sizeof(wrapper_data));
-    wrapper_data.x_start = x_start;
-    wrapper_data.y_start = y_start;
-    wrapper_data.x_end = x_end;
-    wrapper_data.y_end = y_end;
+    TF_LCD128x64_WritePixelsLLWrapperData _wrapper_data;
+    memset(&_wrapper_data, 0, sizeof(_wrapper_data));
+    _wrapper_data.x_start = x_start;
+    _wrapper_data.y_start = y_start;
+    _wrapper_data.x_end = x_end;
+    _wrapper_data.y_end = y_end;
 
-    uint32_t stream_length = pixels_length;
-    uint32_t pixels_written = 0;
-    bool chunk_data[448];
+    uint32_t _stream_length = pixels_length;
+    uint32_t _pixels_written = 0;
+    bool _chunk_data[448];
 
-    int ret = tf_stream_in(lcd_128x64, tf_lcd_128x64_write_pixels_ll_wrapper, &wrapper_data, pixels, stream_length, chunk_data, &pixels_written, 448, tf_copy_items_bool);
+    int ret = tf_stream_in(lcd_128x64, tf_lcd_128x64_write_pixels_ll_wrapper, &_wrapper_data, pixels, _stream_length, _chunk_data, &_pixels_written, 448, tf_copy_items_bool);
 
 
 
@@ -3258,19 +3637,19 @@ int tf_lcd_128x64_read_pixels(TF_LCD128x64 *lcd_128x64, uint8_t x_start, uint8_t
         return TF_E_NULL;
     }
     
-    TF_LCD128x64_ReadPixelsLLWrapperData wrapper_data;
-    memset(&wrapper_data, 0, sizeof(wrapper_data));
-    wrapper_data.x_start = x_start;
-    wrapper_data.y_start = y_start;
-    wrapper_data.x_end = x_end;
-    wrapper_data.y_end = y_end;
-    uint32_t pixels_length = 0;
-    bool pixels_chunk_data[480];
+    TF_LCD128x64_ReadPixelsLLWrapperData _wrapper_data;
+    memset(&_wrapper_data, 0, sizeof(_wrapper_data));
+    _wrapper_data.x_start = x_start;
+    _wrapper_data.y_start = y_start;
+    _wrapper_data.x_end = x_end;
+    _wrapper_data.y_end = y_end;
+    uint32_t _pixels_length = 0;
+    bool _pixels_chunk_data[480];
 
-    int ret = tf_stream_out(lcd_128x64, tf_lcd_128x64_read_pixels_ll_wrapper, &wrapper_data, ret_pixels, &pixels_length, pixels_chunk_data, 480, tf_copy_items_bool);
+    int ret = tf_stream_out(lcd_128x64, tf_lcd_128x64_read_pixels_ll_wrapper, &_wrapper_data, ret_pixels, &_pixels_length, _pixels_chunk_data, 480, tf_copy_items_bool);
 
     if (ret_pixels_length != NULL) {
-        *ret_pixels_length = (uint16_t)pixels_length;
+        *ret_pixels_length = (uint16_t)_pixels_length;
     }
     return ret;
 }
@@ -3298,15 +3677,15 @@ int tf_lcd_128x64_set_gui_graph_data(TF_LCD128x64 *lcd_128x64, uint8_t index, co
         return TF_E_NULL;
     }
     
-    TF_LCD128x64_SetGUIGraphDataLLWrapperData wrapper_data;
-    memset(&wrapper_data, 0, sizeof(wrapper_data));
-    wrapper_data.index = index;
+    TF_LCD128x64_SetGUIGraphDataLLWrapperData _wrapper_data;
+    memset(&_wrapper_data, 0, sizeof(_wrapper_data));
+    _wrapper_data.index = index;
 
-    uint32_t stream_length = data_length;
-    uint32_t data_written = 0;
-    uint8_t chunk_data[59];
+    uint32_t _stream_length = data_length;
+    uint32_t _data_written = 0;
+    uint8_t _chunk_data[59];
 
-    int ret = tf_stream_in(lcd_128x64, tf_lcd_128x64_set_gui_graph_data_ll_wrapper, &wrapper_data, data, stream_length, chunk_data, &data_written, 59, tf_copy_items_uint8_t);
+    int ret = tf_stream_in(lcd_128x64, tf_lcd_128x64_set_gui_graph_data_ll_wrapper, &_wrapper_data, data, _stream_length, _chunk_data, &_data_written, 59, tf_copy_items_uint8_t);
 
 
 
@@ -3336,16 +3715,16 @@ int tf_lcd_128x64_get_gui_graph_data(TF_LCD128x64 *lcd_128x64, uint8_t index, ui
         return TF_E_NULL;
     }
     
-    TF_LCD128x64_GetGUIGraphDataLLWrapperData wrapper_data;
-    memset(&wrapper_data, 0, sizeof(wrapper_data));
-    wrapper_data.index = index;
-    uint32_t data_length = 0;
-    uint8_t data_chunk_data[59];
+    TF_LCD128x64_GetGUIGraphDataLLWrapperData _wrapper_data;
+    memset(&_wrapper_data, 0, sizeof(_wrapper_data));
+    _wrapper_data.index = index;
+    uint32_t _data_length = 0;
+    uint8_t _data_chunk_data[59];
 
-    int ret = tf_stream_out(lcd_128x64, tf_lcd_128x64_get_gui_graph_data_ll_wrapper, &wrapper_data, ret_data, &data_length, data_chunk_data, 59, tf_copy_items_uint8_t);
+    int ret = tf_stream_out(lcd_128x64, tf_lcd_128x64_get_gui_graph_data_ll_wrapper, &_wrapper_data, ret_data, &_data_length, _data_chunk_data, 59, tf_copy_items_uint8_t);
 
     if (ret_data_length != NULL) {
-        *ret_data_length = (uint16_t)data_length;
+        *ret_data_length = (uint16_t)_data_length;
     }
     return ret;
 }

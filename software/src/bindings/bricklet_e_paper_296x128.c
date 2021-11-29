@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -53,46 +53,18 @@ static bool tf_e_paper_296x128_callback_handler(void *device, uint8_t fid, TF_Pa
     return false;
 }
 #endif
-int tf_e_paper_296x128_create(TF_EPaper296x128 *e_paper_296x128, const char *uid, TF_HAL *hal) {
+int tf_e_paper_296x128_create(TF_EPaper296x128 *e_paper_296x128, const char *uid_or_port_name, TF_HAL *hal) {
     if (e_paper_296x128 == NULL || hal == NULL) {
         return TF_E_NULL;
     }
 
-    static uint16_t next_tfp_index = 0;
-
     memset(e_paper_296x128, 0, sizeof(TF_EPaper296x128));
 
     TF_TFP *tfp;
+    int rc = tf_hal_get_attachable_tfp(hal, &tfp, uid_or_port_name, TF_E_PAPER_296X128_DEVICE_IDENTIFIER);
 
-    if (uid != NULL && *uid != '\0') {
-        uint32_t uid_num = 0;
-        int rc = tf_base58_decode(uid, &uid_num);
-
-        if (rc != TF_E_OK) {
-            return rc;
-        }
-
-        tfp = tf_hal_get_tfp(hal, &next_tfp_index, &uid_num, NULL, NULL);
-
-        if (tfp == NULL) {
-            return TF_E_DEVICE_NOT_FOUND;
-        }
-
-        if (tfp->device_id != TF_E_PAPER_296X128_DEVICE_IDENTIFIER) {
-            return TF_E_WRONG_DEVICE_TYPE;
-        }
-    } else {
-        uint16_t device_id = TF_E_PAPER_296X128_DEVICE_IDENTIFIER;
-
-        tfp = tf_hal_get_tfp(hal, &next_tfp_index, NULL, NULL, &device_id);
-
-        if (tfp == NULL) {
-            return TF_E_DEVICE_NOT_FOUND;
-        }
-    }
-
-    if (tfp->device != NULL) {
-        return TF_E_DEVICE_ALREADY_IN_USE;
+    if (rc != TF_E_OK) {
+        return rc;
     }
 
     e_paper_296x128->tfp = tfp;
@@ -325,36 +297,41 @@ int tf_e_paper_296x128_draw(TF_EPaper296x128 *e_paper_296x128) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_DRAW, &response_expected);
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_DRAW, 0, 0, response_expected);
+    bool _response_expected = true;
+    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_DRAW, &_response_expected);
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_DRAW, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_get_draw_status(TF_EPaper296x128 *e_paper_296x128, uint8_t *ret_draw_status) {
@@ -362,41 +339,50 @@ int tf_e_paper_296x128_get_draw_status(TF_EPaper296x128 *e_paper_296x128, uint8_
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_GET_DRAW_STATUS, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_GET_DRAW_STATUS, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
-        if (ret_draw_status != NULL) { *ret_draw_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_draw_status != NULL) { *ret_draw_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_write_black_white_low_level(TF_EPaper296x128 *e_paper_296x128, uint16_t x_start, uint8_t y_start, uint16_t x_end, uint8_t y_end, uint16_t pixels_length, uint16_t pixels_chunk_offset, const bool pixels_chunk_data[432]) {
@@ -404,47 +390,52 @@ int tf_e_paper_296x128_write_black_white_low_level(TF_EPaper296x128 *e_paper_296
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_WRITE_BLACK_WHITE_LOW_LEVEL, &response_expected);
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_WRITE_BLACK_WHITE_LOW_LEVEL, 64, 0, response_expected);
+    bool _response_expected = true;
+    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_WRITE_BLACK_WHITE_LOW_LEVEL, &_response_expected);
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_WRITE_BLACK_WHITE_LOW_LEVEL, 64, _response_expected);
 
-    size_t i;
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
+    size_t _i;
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
 
-    x_start = tf_leconvert_uint16_to(x_start); memcpy(send_buf + 0, &x_start, 2);
-    send_buf[2] = (uint8_t)y_start;
-    x_end = tf_leconvert_uint16_to(x_end); memcpy(send_buf + 3, &x_end, 2);
-    send_buf[5] = (uint8_t)y_end;
-    pixels_length = tf_leconvert_uint16_to(pixels_length); memcpy(send_buf + 6, &pixels_length, 2);
-    pixels_chunk_offset = tf_leconvert_uint16_to(pixels_chunk_offset); memcpy(send_buf + 8, &pixels_chunk_offset, 2);
-    memset(send_buf + 10, 0, 54); for (i = 0; i < 432; ++i) send_buf[10 + (i / 8)] |= (pixels_chunk_data[i] ? 1 : 0) << (i % 8);
+    x_start = tf_leconvert_uint16_to(x_start); memcpy(_send_buf + 0, &x_start, 2);
+    _send_buf[2] = (uint8_t)y_start;
+    x_end = tf_leconvert_uint16_to(x_end); memcpy(_send_buf + 3, &x_end, 2);
+    _send_buf[5] = (uint8_t)y_end;
+    pixels_length = tf_leconvert_uint16_to(pixels_length); memcpy(_send_buf + 6, &pixels_length, 2);
+    pixels_chunk_offset = tf_leconvert_uint16_to(pixels_chunk_offset); memcpy(_send_buf + 8, &pixels_chunk_offset, 2);
+    memset(_send_buf + 10, 0, 54); for (_i = 0; _i < 432; ++_i) _send_buf[10 + (_i / 8)] |= (pixels_chunk_data[_i] ? 1 : 0) << (_i % 8);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_read_black_white_low_level(TF_EPaper296x128 *e_paper_296x128, uint16_t x_start, uint8_t y_start, uint16_t x_end, uint8_t y_end, uint16_t *ret_pixels_length, uint16_t *ret_pixels_chunk_offset, bool ret_pixels_chunk_data[464]) {
@@ -452,50 +443,59 @@ int tf_e_paper_296x128_read_black_white_low_level(TF_EPaper296x128 *e_paper_296x
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_READ_BLACK_WHITE_LOW_LEVEL, 6, 62, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_READ_BLACK_WHITE_LOW_LEVEL, 6, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
 
-    x_start = tf_leconvert_uint16_to(x_start); memcpy(send_buf + 0, &x_start, 2);
-    send_buf[2] = (uint8_t)y_start;
-    x_end = tf_leconvert_uint16_to(x_end); memcpy(send_buf + 3, &x_end, 2);
-    send_buf[5] = (uint8_t)y_end;
+    x_start = tf_leconvert_uint16_to(x_start); memcpy(_send_buf + 0, &x_start, 2);
+    _send_buf[2] = (uint8_t)y_start;
+    x_end = tf_leconvert_uint16_to(x_end); memcpy(_send_buf + 3, &x_end, 2);
+    _send_buf[5] = (uint8_t)y_end;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
-        if (ret_pixels_length != NULL) { *ret_pixels_length = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_pixels_chunk_offset != NULL) { *ret_pixels_chunk_offset = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_pixels_chunk_data != NULL) { tf_packet_buffer_read_bool_array(recv_buf, ret_pixels_chunk_data, 464);} else { tf_packet_buffer_remove(recv_buf, 58); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
+        if (_error_code != 0 || _length != 62) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_pixels_length != NULL) { *ret_pixels_length = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_pixels_chunk_offset != NULL) { *ret_pixels_chunk_offset = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_pixels_chunk_data != NULL) { tf_packet_buffer_read_bool_array(_recv_buf, ret_pixels_chunk_data, 464);} else { tf_packet_buffer_remove(_recv_buf, 58); }
+        }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 62) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_write_color_low_level(TF_EPaper296x128 *e_paper_296x128, uint16_t x_start, uint8_t y_start, uint16_t x_end, uint8_t y_end, uint16_t pixels_length, uint16_t pixels_chunk_offset, const bool pixels_chunk_data[432]) {
@@ -503,47 +503,52 @@ int tf_e_paper_296x128_write_color_low_level(TF_EPaper296x128 *e_paper_296x128, 
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_WRITE_COLOR_LOW_LEVEL, &response_expected);
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_WRITE_COLOR_LOW_LEVEL, 64, 0, response_expected);
+    bool _response_expected = true;
+    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_WRITE_COLOR_LOW_LEVEL, &_response_expected);
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_WRITE_COLOR_LOW_LEVEL, 64, _response_expected);
 
-    size_t i;
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
+    size_t _i;
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
 
-    x_start = tf_leconvert_uint16_to(x_start); memcpy(send_buf + 0, &x_start, 2);
-    send_buf[2] = (uint8_t)y_start;
-    x_end = tf_leconvert_uint16_to(x_end); memcpy(send_buf + 3, &x_end, 2);
-    send_buf[5] = (uint8_t)y_end;
-    pixels_length = tf_leconvert_uint16_to(pixels_length); memcpy(send_buf + 6, &pixels_length, 2);
-    pixels_chunk_offset = tf_leconvert_uint16_to(pixels_chunk_offset); memcpy(send_buf + 8, &pixels_chunk_offset, 2);
-    memset(send_buf + 10, 0, 54); for (i = 0; i < 432; ++i) send_buf[10 + (i / 8)] |= (pixels_chunk_data[i] ? 1 : 0) << (i % 8);
+    x_start = tf_leconvert_uint16_to(x_start); memcpy(_send_buf + 0, &x_start, 2);
+    _send_buf[2] = (uint8_t)y_start;
+    x_end = tf_leconvert_uint16_to(x_end); memcpy(_send_buf + 3, &x_end, 2);
+    _send_buf[5] = (uint8_t)y_end;
+    pixels_length = tf_leconvert_uint16_to(pixels_length); memcpy(_send_buf + 6, &pixels_length, 2);
+    pixels_chunk_offset = tf_leconvert_uint16_to(pixels_chunk_offset); memcpy(_send_buf + 8, &pixels_chunk_offset, 2);
+    memset(_send_buf + 10, 0, 54); for (_i = 0; _i < 432; ++_i) _send_buf[10 + (_i / 8)] |= (pixels_chunk_data[_i] ? 1 : 0) << (_i % 8);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_read_color_low_level(TF_EPaper296x128 *e_paper_296x128, uint16_t x_start, uint8_t y_start, uint16_t x_end, uint8_t y_end, uint16_t *ret_pixels_length, uint16_t *ret_pixels_chunk_offset, bool ret_pixels_chunk_data[464]) {
@@ -551,50 +556,59 @@ int tf_e_paper_296x128_read_color_low_level(TF_EPaper296x128 *e_paper_296x128, u
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_READ_COLOR_LOW_LEVEL, 6, 62, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_READ_COLOR_LOW_LEVEL, 6, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
 
-    x_start = tf_leconvert_uint16_to(x_start); memcpy(send_buf + 0, &x_start, 2);
-    send_buf[2] = (uint8_t)y_start;
-    x_end = tf_leconvert_uint16_to(x_end); memcpy(send_buf + 3, &x_end, 2);
-    send_buf[5] = (uint8_t)y_end;
+    x_start = tf_leconvert_uint16_to(x_start); memcpy(_send_buf + 0, &x_start, 2);
+    _send_buf[2] = (uint8_t)y_start;
+    x_end = tf_leconvert_uint16_to(x_end); memcpy(_send_buf + 3, &x_end, 2);
+    _send_buf[5] = (uint8_t)y_end;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
-        if (ret_pixels_length != NULL) { *ret_pixels_length = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_pixels_chunk_offset != NULL) { *ret_pixels_chunk_offset = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_pixels_chunk_data != NULL) { tf_packet_buffer_read_bool_array(recv_buf, ret_pixels_chunk_data, 464);} else { tf_packet_buffer_remove(recv_buf, 58); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
+        if (_error_code != 0 || _length != 62) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_pixels_length != NULL) { *ret_pixels_length = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_pixels_chunk_offset != NULL) { *ret_pixels_chunk_offset = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_pixels_chunk_data != NULL) { tf_packet_buffer_read_bool_array(_recv_buf, ret_pixels_chunk_data, 464);} else { tf_packet_buffer_remove(_recv_buf, 58); }
+        }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 62) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_fill_display(TF_EPaper296x128 *e_paper_296x128, uint8_t color) {
@@ -602,40 +616,45 @@ int tf_e_paper_296x128_fill_display(TF_EPaper296x128 *e_paper_296x128, uint8_t c
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_FILL_DISPLAY, &response_expected);
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_FILL_DISPLAY, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_FILL_DISPLAY, &_response_expected);
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_FILL_DISPLAY, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
 
-    send_buf[0] = (uint8_t)color;
+    _send_buf[0] = (uint8_t)color;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_draw_text(TF_EPaper296x128 *e_paper_296x128, uint16_t position_x, uint8_t position_y, uint8_t font, uint8_t color, uint8_t orientation, const char *text) {
@@ -643,46 +662,51 @@ int tf_e_paper_296x128_draw_text(TF_EPaper296x128 *e_paper_296x128, uint16_t pos
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_DRAW_TEXT, &response_expected);
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_DRAW_TEXT, 56, 0, response_expected);
+    bool _response_expected = true;
+    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_DRAW_TEXT, &_response_expected);
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_DRAW_TEXT, 56, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
 
-    position_x = tf_leconvert_uint16_to(position_x); memcpy(send_buf + 0, &position_x, 2);
-    send_buf[2] = (uint8_t)position_y;
-    send_buf[3] = (uint8_t)font;
-    send_buf[4] = (uint8_t)color;
-    send_buf[5] = (uint8_t)orientation;
-    strncpy((char *)(send_buf + 6), text, 50);
+    position_x = tf_leconvert_uint16_to(position_x); memcpy(_send_buf + 0, &position_x, 2);
+    _send_buf[2] = (uint8_t)position_y;
+    _send_buf[3] = (uint8_t)font;
+    _send_buf[4] = (uint8_t)color;
+    _send_buf[5] = (uint8_t)orientation;
+    strncpy((char *)(_send_buf + 6), text, 50);
 
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_draw_line(TF_EPaper296x128 *e_paper_296x128, uint16_t position_x_start, uint8_t position_y_start, uint16_t position_x_end, uint8_t position_y_end, uint8_t color) {
@@ -690,44 +714,49 @@ int tf_e_paper_296x128_draw_line(TF_EPaper296x128 *e_paper_296x128, uint16_t pos
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_DRAW_LINE, &response_expected);
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_DRAW_LINE, 7, 0, response_expected);
+    bool _response_expected = true;
+    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_DRAW_LINE, &_response_expected);
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_DRAW_LINE, 7, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
 
-    position_x_start = tf_leconvert_uint16_to(position_x_start); memcpy(send_buf + 0, &position_x_start, 2);
-    send_buf[2] = (uint8_t)position_y_start;
-    position_x_end = tf_leconvert_uint16_to(position_x_end); memcpy(send_buf + 3, &position_x_end, 2);
-    send_buf[5] = (uint8_t)position_y_end;
-    send_buf[6] = (uint8_t)color;
+    position_x_start = tf_leconvert_uint16_to(position_x_start); memcpy(_send_buf + 0, &position_x_start, 2);
+    _send_buf[2] = (uint8_t)position_y_start;
+    position_x_end = tf_leconvert_uint16_to(position_x_end); memcpy(_send_buf + 3, &position_x_end, 2);
+    _send_buf[5] = (uint8_t)position_y_end;
+    _send_buf[6] = (uint8_t)color;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_draw_box(TF_EPaper296x128 *e_paper_296x128, uint16_t position_x_start, uint8_t position_y_start, uint16_t position_x_end, uint8_t position_y_end, bool fill, uint8_t color) {
@@ -735,45 +764,50 @@ int tf_e_paper_296x128_draw_box(TF_EPaper296x128 *e_paper_296x128, uint16_t posi
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_DRAW_BOX, &response_expected);
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_DRAW_BOX, 8, 0, response_expected);
+    bool _response_expected = true;
+    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_DRAW_BOX, &_response_expected);
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_DRAW_BOX, 8, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
 
-    position_x_start = tf_leconvert_uint16_to(position_x_start); memcpy(send_buf + 0, &position_x_start, 2);
-    send_buf[2] = (uint8_t)position_y_start;
-    position_x_end = tf_leconvert_uint16_to(position_x_end); memcpy(send_buf + 3, &position_x_end, 2);
-    send_buf[5] = (uint8_t)position_y_end;
-    send_buf[6] = fill ? 1 : 0;
-    send_buf[7] = (uint8_t)color;
+    position_x_start = tf_leconvert_uint16_to(position_x_start); memcpy(_send_buf + 0, &position_x_start, 2);
+    _send_buf[2] = (uint8_t)position_y_start;
+    position_x_end = tf_leconvert_uint16_to(position_x_end); memcpy(_send_buf + 3, &position_x_end, 2);
+    _send_buf[5] = (uint8_t)position_y_end;
+    _send_buf[6] = fill ? 1 : 0;
+    _send_buf[7] = (uint8_t)color;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_set_update_mode(TF_EPaper296x128 *e_paper_296x128, uint8_t update_mode) {
@@ -781,40 +815,45 @@ int tf_e_paper_296x128_set_update_mode(TF_EPaper296x128 *e_paper_296x128, uint8_
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_SET_UPDATE_MODE, &response_expected);
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_SET_UPDATE_MODE, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_SET_UPDATE_MODE, &_response_expected);
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_SET_UPDATE_MODE, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
 
-    send_buf[0] = (uint8_t)update_mode;
+    _send_buf[0] = (uint8_t)update_mode;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_get_update_mode(TF_EPaper296x128 *e_paper_296x128, uint8_t *ret_update_mode) {
@@ -822,41 +861,50 @@ int tf_e_paper_296x128_get_update_mode(TF_EPaper296x128 *e_paper_296x128, uint8_
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_GET_UPDATE_MODE, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_GET_UPDATE_MODE, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
-        if (ret_update_mode != NULL) { *ret_update_mode = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_update_mode != NULL) { *ret_update_mode = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_set_display_type(TF_EPaper296x128 *e_paper_296x128, uint8_t display_type) {
@@ -864,40 +912,45 @@ int tf_e_paper_296x128_set_display_type(TF_EPaper296x128 *e_paper_296x128, uint8
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_SET_DISPLAY_TYPE, &response_expected);
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_SET_DISPLAY_TYPE, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_SET_DISPLAY_TYPE, &_response_expected);
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_SET_DISPLAY_TYPE, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
 
-    send_buf[0] = (uint8_t)display_type;
+    _send_buf[0] = (uint8_t)display_type;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_get_display_type(TF_EPaper296x128 *e_paper_296x128, uint8_t *ret_display_type) {
@@ -905,41 +958,50 @@ int tf_e_paper_296x128_get_display_type(TF_EPaper296x128 *e_paper_296x128, uint8
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_GET_DISPLAY_TYPE, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_GET_DISPLAY_TYPE, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
-        if (ret_display_type != NULL) { *ret_display_type = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_display_type != NULL) { *ret_display_type = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_set_display_driver(TF_EPaper296x128 *e_paper_296x128, uint8_t display_driver) {
@@ -947,40 +1009,45 @@ int tf_e_paper_296x128_set_display_driver(TF_EPaper296x128 *e_paper_296x128, uin
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_SET_DISPLAY_DRIVER, &response_expected);
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_SET_DISPLAY_DRIVER, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_SET_DISPLAY_DRIVER, &_response_expected);
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_SET_DISPLAY_DRIVER, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
 
-    send_buf[0] = (uint8_t)display_driver;
+    _send_buf[0] = (uint8_t)display_driver;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_get_display_driver(TF_EPaper296x128 *e_paper_296x128, uint8_t *ret_display_driver) {
@@ -988,41 +1055,50 @@ int tf_e_paper_296x128_get_display_driver(TF_EPaper296x128 *e_paper_296x128, uin
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_GET_DISPLAY_DRIVER, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_GET_DISPLAY_DRIVER, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
-        if (ret_display_driver != NULL) { *ret_display_driver = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_display_driver != NULL) { *ret_display_driver = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_get_spitfp_error_count(TF_EPaper296x128 *e_paper_296x128, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
@@ -1030,44 +1106,53 @@ int tf_e_paper_296x128_get_spitfp_error_count(TF_EPaper296x128 *e_paper_296x128,
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
-        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
+        if (_error_code != 0 || _length != 16) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 16) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_set_bootloader_mode(TF_EPaper296x128 *e_paper_296x128, uint8_t mode, uint8_t *ret_status) {
@@ -1075,45 +1160,54 @@ int tf_e_paper_296x128_set_bootloader_mode(TF_EPaper296x128 *e_paper_296x128, ui
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_SET_BOOTLOADER_MODE, 1, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_SET_BOOTLOADER_MODE, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
 
-    send_buf[0] = (uint8_t)mode;
+    _send_buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_get_bootloader_mode(TF_EPaper296x128 *e_paper_296x128, uint8_t *ret_mode) {
@@ -1121,41 +1215,50 @@ int tf_e_paper_296x128_get_bootloader_mode(TF_EPaper296x128 *e_paper_296x128, ui
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_GET_BOOTLOADER_MODE, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
-        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_set_write_firmware_pointer(TF_EPaper296x128 *e_paper_296x128, uint32_t pointer) {
@@ -1163,40 +1266,45 @@ int tf_e_paper_296x128_set_write_firmware_pointer(TF_EPaper296x128 *e_paper_296x
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_SET_WRITE_FIRMWARE_POINTER, &response_expected);
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_SET_WRITE_FIRMWARE_POINTER, 4, 0, response_expected);
+    bool _response_expected = true;
+    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_SET_WRITE_FIRMWARE_POINTER, &_response_expected);
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_SET_WRITE_FIRMWARE_POINTER, 4, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
 
-    pointer = tf_leconvert_uint32_to(pointer); memcpy(send_buf + 0, &pointer, 4);
+    pointer = tf_leconvert_uint32_to(pointer); memcpy(_send_buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_write_firmware(TF_EPaper296x128 *e_paper_296x128, const uint8_t data[64], uint8_t *ret_status) {
@@ -1204,45 +1312,54 @@ int tf_e_paper_296x128_write_firmware(TF_EPaper296x128 *e_paper_296x128, const u
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_WRITE_FIRMWARE, 64, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_WRITE_FIRMWARE, 64, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
 
-    memcpy(send_buf + 0, data, 64);
+    memcpy(_send_buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_set_status_led_config(TF_EPaper296x128 *e_paper_296x128, uint8_t config) {
@@ -1250,40 +1367,45 @@ int tf_e_paper_296x128_set_status_led_config(TF_EPaper296x128 *e_paper_296x128, 
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_SET_STATUS_LED_CONFIG, &response_expected);
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_SET_STATUS_LED_CONFIG, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_SET_STATUS_LED_CONFIG, &_response_expected);
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_SET_STATUS_LED_CONFIG, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
 
-    send_buf[0] = (uint8_t)config;
+    _send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_get_status_led_config(TF_EPaper296x128 *e_paper_296x128, uint8_t *ret_config) {
@@ -1291,41 +1413,50 @@ int tf_e_paper_296x128_get_status_led_config(TF_EPaper296x128 *e_paper_296x128, 
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_GET_STATUS_LED_CONFIG, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_get_chip_temperature(TF_EPaper296x128 *e_paper_296x128, int16_t *ret_temperature) {
@@ -1333,41 +1464,50 @@ int tf_e_paper_296x128_get_chip_temperature(TF_EPaper296x128 *e_paper_296x128, i
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_GET_CHIP_TEMPERATURE, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
-        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
+        if (_error_code != 0 || _length != 2) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+        }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 2) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_reset(TF_EPaper296x128 *e_paper_296x128) {
@@ -1375,36 +1515,41 @@ int tf_e_paper_296x128_reset(TF_EPaper296x128 *e_paper_296x128) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_RESET, &response_expected);
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_RESET, 0, 0, response_expected);
+    bool _response_expected = true;
+    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_RESET, &_response_expected);
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_RESET, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_write_uid(TF_EPaper296x128 *e_paper_296x128, uint32_t uid) {
@@ -1412,40 +1557,45 @@ int tf_e_paper_296x128_write_uid(TF_EPaper296x128 *e_paper_296x128, uint32_t uid
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_WRITE_UID, &response_expected);
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_WRITE_UID, 4, 0, response_expected);
+    bool _response_expected = true;
+    tf_e_paper_296x128_get_response_expected(e_paper_296x128, TF_E_PAPER_296X128_FUNCTION_WRITE_UID, &_response_expected);
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_WRITE_UID, 4, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(e_paper_296x128->tfp);
 
-    uid = tf_leconvert_uint32_to(uid); memcpy(send_buf + 0, &uid, 4);
+    uid = tf_leconvert_uint32_to(uid); memcpy(_send_buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_read_uid(TF_EPaper296x128 *e_paper_296x128, uint32_t *ret_uid) {
@@ -1453,41 +1603,50 @@ int tf_e_paper_296x128_read_uid(TF_EPaper296x128 *e_paper_296x128, uint32_t *ret
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_READ_UID, 0, 4, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_READ_UID, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
-        if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
+        if (_error_code != 0 || _length != 4) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 4) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_e_paper_296x128_get_identity(TF_EPaper296x128 *e_paper_296x128, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
@@ -1495,47 +1654,56 @@ int tf_e_paper_296x128_get_identity(TF_EPaper296x128 *e_paper_296x128, char ret_
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;
+    TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(e_paper_296x128->tfp, TF_E_PAPER_296X128_FUNCTION_GET_IDENTITY, 0, _response_expected);
 
-    size_t i;
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    size_t _i;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(e_paper_296x128->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(e_paper_296x128->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
-        if (ret_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
-        if (ret_connected_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_connected_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
-        if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_hardware_version != NULL) { for (i = 0; i < 3; ++i) ret_hardware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
-        if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
-        if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
+        if (_error_code != 0 || _length != 25) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_uid != NULL) { tf_packet_buffer_pop_n(_recv_buf, (uint8_t *)ret_uid, 8);} else { tf_packet_buffer_remove(_recv_buf, 8); }
+            if (ret_connected_uid != NULL) { tf_packet_buffer_pop_n(_recv_buf, (uint8_t *)ret_connected_uid, 8);} else { tf_packet_buffer_remove(_recv_buf, 8); }
+            if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_hardware_version != NULL) { for (_i = 0; _i < 3; ++_i) ret_hardware_version[_i] = tf_packet_buffer_read_uint8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 3); }
+            if (ret_firmware_version != NULL) { for (_i = 0; _i < 3; ++_i) ret_firmware_version[_i] = tf_packet_buffer_read_uint8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 3); }
+            if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+        }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
     }
 
-    result = tf_tfp_finish_send(e_paper_296x128->tfp, result, deadline);
+    _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 25) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 typedef struct TF_EPaper296x128_WriteBlackWhiteLLWrapperData {
@@ -1564,18 +1732,18 @@ int tf_e_paper_296x128_write_black_white(TF_EPaper296x128 *e_paper_296x128, uint
         return TF_E_NULL;
     }
     
-    TF_EPaper296x128_WriteBlackWhiteLLWrapperData wrapper_data;
-    memset(&wrapper_data, 0, sizeof(wrapper_data));
-    wrapper_data.x_start = x_start;
-    wrapper_data.y_start = y_start;
-    wrapper_data.x_end = x_end;
-    wrapper_data.y_end = y_end;
+    TF_EPaper296x128_WriteBlackWhiteLLWrapperData _wrapper_data;
+    memset(&_wrapper_data, 0, sizeof(_wrapper_data));
+    _wrapper_data.x_start = x_start;
+    _wrapper_data.y_start = y_start;
+    _wrapper_data.x_end = x_end;
+    _wrapper_data.y_end = y_end;
 
-    uint32_t stream_length = pixels_length;
-    uint32_t pixels_written = 0;
-    bool chunk_data[432];
+    uint32_t _stream_length = pixels_length;
+    uint32_t _pixels_written = 0;
+    bool _chunk_data[432];
 
-    int ret = tf_stream_in(e_paper_296x128, tf_e_paper_296x128_write_black_white_ll_wrapper, &wrapper_data, pixels, stream_length, chunk_data, &pixels_written, 432, tf_copy_items_bool);
+    int ret = tf_stream_in(e_paper_296x128, tf_e_paper_296x128_write_black_white_ll_wrapper, &_wrapper_data, pixels, _stream_length, _chunk_data, &_pixels_written, 432, tf_copy_items_bool);
 
 
 
@@ -1608,19 +1776,19 @@ int tf_e_paper_296x128_read_black_white(TF_EPaper296x128 *e_paper_296x128, uint1
         return TF_E_NULL;
     }
     
-    TF_EPaper296x128_ReadBlackWhiteLLWrapperData wrapper_data;
-    memset(&wrapper_data, 0, sizeof(wrapper_data));
-    wrapper_data.x_start = x_start;
-    wrapper_data.y_start = y_start;
-    wrapper_data.x_end = x_end;
-    wrapper_data.y_end = y_end;
-    uint32_t pixels_length = 0;
-    bool pixels_chunk_data[464];
+    TF_EPaper296x128_ReadBlackWhiteLLWrapperData _wrapper_data;
+    memset(&_wrapper_data, 0, sizeof(_wrapper_data));
+    _wrapper_data.x_start = x_start;
+    _wrapper_data.y_start = y_start;
+    _wrapper_data.x_end = x_end;
+    _wrapper_data.y_end = y_end;
+    uint32_t _pixels_length = 0;
+    bool _pixels_chunk_data[464];
 
-    int ret = tf_stream_out(e_paper_296x128, tf_e_paper_296x128_read_black_white_ll_wrapper, &wrapper_data, ret_pixels, &pixels_length, pixels_chunk_data, 464, tf_copy_items_bool);
+    int ret = tf_stream_out(e_paper_296x128, tf_e_paper_296x128_read_black_white_ll_wrapper, &_wrapper_data, ret_pixels, &_pixels_length, _pixels_chunk_data, 464, tf_copy_items_bool);
 
     if (ret_pixels_length != NULL) {
-        *ret_pixels_length = (uint16_t)pixels_length;
+        *ret_pixels_length = (uint16_t)_pixels_length;
     }
     return ret;
 }
@@ -1651,18 +1819,18 @@ int tf_e_paper_296x128_write_color(TF_EPaper296x128 *e_paper_296x128, uint16_t x
         return TF_E_NULL;
     }
     
-    TF_EPaper296x128_WriteColorLLWrapperData wrapper_data;
-    memset(&wrapper_data, 0, sizeof(wrapper_data));
-    wrapper_data.x_start = x_start;
-    wrapper_data.y_start = y_start;
-    wrapper_data.x_end = x_end;
-    wrapper_data.y_end = y_end;
+    TF_EPaper296x128_WriteColorLLWrapperData _wrapper_data;
+    memset(&_wrapper_data, 0, sizeof(_wrapper_data));
+    _wrapper_data.x_start = x_start;
+    _wrapper_data.y_start = y_start;
+    _wrapper_data.x_end = x_end;
+    _wrapper_data.y_end = y_end;
 
-    uint32_t stream_length = pixels_length;
-    uint32_t pixels_written = 0;
-    bool chunk_data[432];
+    uint32_t _stream_length = pixels_length;
+    uint32_t _pixels_written = 0;
+    bool _chunk_data[432];
 
-    int ret = tf_stream_in(e_paper_296x128, tf_e_paper_296x128_write_color_ll_wrapper, &wrapper_data, pixels, stream_length, chunk_data, &pixels_written, 432, tf_copy_items_bool);
+    int ret = tf_stream_in(e_paper_296x128, tf_e_paper_296x128_write_color_ll_wrapper, &_wrapper_data, pixels, _stream_length, _chunk_data, &_pixels_written, 432, tf_copy_items_bool);
 
 
 
@@ -1695,19 +1863,19 @@ int tf_e_paper_296x128_read_color(TF_EPaper296x128 *e_paper_296x128, uint16_t x_
         return TF_E_NULL;
     }
     
-    TF_EPaper296x128_ReadColorLLWrapperData wrapper_data;
-    memset(&wrapper_data, 0, sizeof(wrapper_data));
-    wrapper_data.x_start = x_start;
-    wrapper_data.y_start = y_start;
-    wrapper_data.x_end = x_end;
-    wrapper_data.y_end = y_end;
-    uint32_t pixels_length = 0;
-    bool pixels_chunk_data[464];
+    TF_EPaper296x128_ReadColorLLWrapperData _wrapper_data;
+    memset(&_wrapper_data, 0, sizeof(_wrapper_data));
+    _wrapper_data.x_start = x_start;
+    _wrapper_data.y_start = y_start;
+    _wrapper_data.x_end = x_end;
+    _wrapper_data.y_end = y_end;
+    uint32_t _pixels_length = 0;
+    bool _pixels_chunk_data[464];
 
-    int ret = tf_stream_out(e_paper_296x128, tf_e_paper_296x128_read_color_ll_wrapper, &wrapper_data, ret_pixels, &pixels_length, pixels_chunk_data, 464, tf_copy_items_bool);
+    int ret = tf_stream_out(e_paper_296x128, tf_e_paper_296x128_read_color_ll_wrapper, &_wrapper_data, ret_pixels, &_pixels_length, _pixels_chunk_data, 464, tf_copy_items_bool);
 
     if (ret_pixels_length != NULL) {
-        *ret_pixels_length = (uint16_t)pixels_length;
+        *ret_pixels_length = (uint16_t)_pixels_length;
     }
     return ret;
 }

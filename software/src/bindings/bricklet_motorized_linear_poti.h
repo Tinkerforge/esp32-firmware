@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,8 +28,8 @@ extern "C" {
 struct TF_MotorizedLinearPoti;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_MotorizedLinearPoti_PositionHandler)(struct TF_MotorizedLinearPoti *device, uint16_t position, void *user_data);
-typedef void (*TF_MotorizedLinearPoti_PositionReachedHandler)(struct TF_MotorizedLinearPoti *device, uint16_t position, void *user_data);
+typedef void (*TF_MotorizedLinearPoti_PositionHandler)(struct TF_MotorizedLinearPoti *motorized_linear_poti, uint16_t position, void *user_data);
+typedef void (*TF_MotorizedLinearPoti_PositionReachedHandler)(struct TF_MotorizedLinearPoti *motorized_linear_poti, uint16_t position, void *user_data);
 
 #endif
 /**
@@ -298,7 +298,7 @@ typedef struct TF_MotorizedLinearPoti {
  * Creates the device object \c motorized_linear_poti with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_motorized_linear_poti_create(TF_MotorizedLinearPoti *motorized_linear_poti, const char *uid, TF_HAL *hal);
+int tf_motorized_linear_poti_create(TF_MotorizedLinearPoti *motorized_linear_poti, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_MotorizedLinearPoti

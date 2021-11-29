@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,8 +28,8 @@ extern "C" {
 struct TF_IndustrialDigitalIn4V2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_IndustrialDigitalIn4V2_ValueHandler)(struct TF_IndustrialDigitalIn4V2 *device, uint8_t channel, bool changed, bool value, void *user_data);
-typedef void (*TF_IndustrialDigitalIn4V2_AllValueHandler)(struct TF_IndustrialDigitalIn4V2 *device, bool changed[4], bool value[4], void *user_data);
+typedef void (*TF_IndustrialDigitalIn4V2_ValueHandler)(struct TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, uint8_t channel, bool changed, bool value, void *user_data);
+typedef void (*TF_IndustrialDigitalIn4V2_AllValueHandler)(struct TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, bool changed[4], bool value[4], void *user_data);
 
 #endif
 /**
@@ -328,7 +328,7 @@ typedef struct TF_IndustrialDigitalIn4V2 {
  * Creates the device object \c industrial_digital_in_4_v2 with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_industrial_digital_in_4_v2_create(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, const char *uid, TF_HAL *hal);
+int tf_industrial_digital_in_4_v2_create(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_IndustrialDigitalIn4V2

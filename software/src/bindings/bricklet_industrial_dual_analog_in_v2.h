@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,8 +28,8 @@ extern "C" {
 struct TF_IndustrialDualAnalogInV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_IndustrialDualAnalogInV2_VoltageHandler)(struct TF_IndustrialDualAnalogInV2 *device, uint8_t channel, int32_t voltage, void *user_data);
-typedef void (*TF_IndustrialDualAnalogInV2_AllVoltagesHandler)(struct TF_IndustrialDualAnalogInV2 *device, int32_t voltages[2], void *user_data);
+typedef void (*TF_IndustrialDualAnalogInV2_VoltageHandler)(struct TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, uint8_t channel, int32_t voltage, void *user_data);
+typedef void (*TF_IndustrialDualAnalogInV2_AllVoltagesHandler)(struct TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, int32_t voltages[2], void *user_data);
 
 #endif
 /**
@@ -393,7 +393,7 @@ typedef struct TF_IndustrialDualAnalogInV2 {
  * Creates the device object \c industrial_dual_analog_in_v2 with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_industrial_dual_analog_in_v2_create(TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, const char *uid, TF_HAL *hal);
+int tf_industrial_dual_analog_in_v2_create(TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_IndustrialDualAnalogInV2

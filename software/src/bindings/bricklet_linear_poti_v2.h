@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,7 +28,7 @@ extern "C" {
 struct TF_LinearPotiV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_LinearPotiV2_PositionHandler)(struct TF_LinearPotiV2 *device, uint8_t position, void *user_data);
+typedef void (*TF_LinearPotiV2_PositionHandler)(struct TF_LinearPotiV2 *linear_poti_v2, uint8_t position, void *user_data);
 
 #endif
 /**
@@ -254,7 +254,7 @@ typedef struct TF_LinearPotiV2 {
  * Creates the device object \c linear_poti_v2 with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_linear_poti_v2_create(TF_LinearPotiV2 *linear_poti_v2, const char *uid, TF_HAL *hal);
+int tf_linear_poti_v2_create(TF_LinearPotiV2 *linear_poti_v2, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_LinearPotiV2

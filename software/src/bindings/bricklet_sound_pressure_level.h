@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,9 +28,9 @@ extern "C" {
 struct TF_SoundPressureLevel;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_SoundPressureLevel_DecibelHandler)(struct TF_SoundPressureLevel *device, uint16_t decibel, void *user_data);
-typedef void (*TF_SoundPressureLevel_SpectrumLowLevelHandler)(struct TF_SoundPressureLevel *device, uint16_t spectrum_length, uint16_t spectrum_chunk_offset, uint16_t spectrum_chunk_data[30], void *user_data);
-typedef void (*TF_SoundPressureLevel_SpectrumHandler)(struct TF_SoundPressureLevel *device, uint16_t *spectrum, uint16_t spectrum_length, void *user_data);
+typedef void (*TF_SoundPressureLevel_DecibelHandler)(struct TF_SoundPressureLevel *sound_pressure_level, uint16_t decibel, void *user_data);
+typedef void (*TF_SoundPressureLevel_SpectrumLowLevelHandler)(struct TF_SoundPressureLevel *sound_pressure_level, uint16_t spectrum_length, uint16_t spectrum_chunk_offset, uint16_t spectrum_chunk_data[30], void *user_data);
+typedef void (*TF_SoundPressureLevel_SpectrumHandler)(struct TF_SoundPressureLevel *sound_pressure_level, uint16_t *spectrum, uint16_t spectrum_length, void *user_data);
 
 #endif
 /**
@@ -342,7 +342,7 @@ typedef struct TF_SoundPressureLevel {
  * Creates the device object \c sound_pressure_level with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_sound_pressure_level_create(TF_SoundPressureLevel *sound_pressure_level, const char *uid, TF_HAL *hal);
+int tf_sound_pressure_level_create(TF_SoundPressureLevel *sound_pressure_level, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_SoundPressureLevel

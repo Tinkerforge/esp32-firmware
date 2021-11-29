@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,8 +28,8 @@ extern "C" {
 struct TF_Compass;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_Compass_HeadingHandler)(struct TF_Compass *device, int16_t heading, void *user_data);
-typedef void (*TF_Compass_MagneticFluxDensityHandler)(struct TF_Compass *device, int32_t x, int32_t y, int32_t z, void *user_data);
+typedef void (*TF_Compass_HeadingHandler)(struct TF_Compass *compass, int16_t heading, void *user_data);
+typedef void (*TF_Compass_MagneticFluxDensityHandler)(struct TF_Compass *compass, int32_t x, int32_t y, int32_t z, void *user_data);
 
 #endif
 /**
@@ -318,7 +318,7 @@ typedef struct TF_Compass {
  * Creates the device object \c compass with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_compass_create(TF_Compass *compass, const char *uid, TF_HAL *hal);
+int tf_compass_create(TF_Compass *compass, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_Compass

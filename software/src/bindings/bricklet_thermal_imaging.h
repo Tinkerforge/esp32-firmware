@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,10 +28,10 @@ extern "C" {
 struct TF_ThermalImaging;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_ThermalImaging_HighContrastImageLowLevelHandler)(struct TF_ThermalImaging *device, uint16_t image_chunk_offset, uint8_t image_chunk_data[62], void *user_data);
-typedef void (*TF_ThermalImaging_HighContrastImageHandler)(struct TF_ThermalImaging *device, uint8_t *image, uint16_t image_length, void *user_data);
-typedef void (*TF_ThermalImaging_TemperatureImageLowLevelHandler)(struct TF_ThermalImaging *device, uint16_t image_chunk_offset, uint16_t image_chunk_data[31], void *user_data);
-typedef void (*TF_ThermalImaging_TemperatureImageHandler)(struct TF_ThermalImaging *device, uint16_t *image, uint16_t image_length, void *user_data);
+typedef void (*TF_ThermalImaging_HighContrastImageLowLevelHandler)(struct TF_ThermalImaging *thermal_imaging, uint16_t image_chunk_offset, uint8_t image_chunk_data[62], void *user_data);
+typedef void (*TF_ThermalImaging_HighContrastImageHandler)(struct TF_ThermalImaging *thermal_imaging, uint8_t *image, uint16_t image_length, void *user_data);
+typedef void (*TF_ThermalImaging_TemperatureImageLowLevelHandler)(struct TF_ThermalImaging *thermal_imaging, uint16_t image_chunk_offset, uint16_t image_chunk_data[31], void *user_data);
+typedef void (*TF_ThermalImaging_TemperatureImageHandler)(struct TF_ThermalImaging *thermal_imaging, uint16_t *image, uint16_t image_length, void *user_data);
 
 #endif
 /**
@@ -346,7 +346,7 @@ typedef struct TF_ThermalImaging {
  * Creates the device object \c thermal_imaging with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_thermal_imaging_create(TF_ThermalImaging *thermal_imaging, const char *uid, TF_HAL *hal);
+int tf_thermal_imaging_create(TF_ThermalImaging *thermal_imaging, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_ThermalImaging

@@ -45,3 +45,6 @@ case TF_E_NULL:
 
 case TF_E_DEVICE_ALREADY_IN_USE:
     return "device in already in use by another device object";
+
+case TF_E_WRONG_RESPONSE_LENGTH:
+    return "device returned a packet of unexpected length. This is a firmware bug in the device. Please report to info@tinkerforge.com";

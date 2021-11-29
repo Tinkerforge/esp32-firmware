@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,8 +28,8 @@ extern "C" {
 struct TF_XMC1400Breakout;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_XMC1400Breakout_ADCValuesHandler)(struct TF_XMC1400Breakout *device, uint16_t values[8], void *user_data);
-typedef void (*TF_XMC1400Breakout_CountHandler)(struct TF_XMC1400Breakout *device, uint32_t count, void *user_data);
+typedef void (*TF_XMC1400Breakout_ADCValuesHandler)(struct TF_XMC1400Breakout *xmc1400_breakout, uint16_t values[8], void *user_data);
+typedef void (*TF_XMC1400Breakout_CountHandler)(struct TF_XMC1400Breakout *xmc1400_breakout, uint32_t count, void *user_data);
 
 #endif
 /**
@@ -363,7 +363,7 @@ typedef struct TF_XMC1400Breakout {
  * Creates the device object \c xmc1400_breakout with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_xmc1400_breakout_create(TF_XMC1400Breakout *xmc1400_breakout, const char *uid, TF_HAL *hal);
+int tf_xmc1400_breakout_create(TF_XMC1400Breakout *xmc1400_breakout, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_XMC1400Breakout

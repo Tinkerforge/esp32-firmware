@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,46 +28,18 @@ static bool tf_warp_energy_manager_callback_handler(void *device, uint8_t fid, T
 
     return false;
 }
-int tf_warp_energy_manager_create(TF_WARPEnergyManager *warp_energy_manager, const char *uid, TF_HAL *hal) {
+int tf_warp_energy_manager_create(TF_WARPEnergyManager *warp_energy_manager, const char *uid_or_port_name, TF_HAL *hal) {
     if (warp_energy_manager == NULL || hal == NULL) {
         return TF_E_NULL;
     }
 
-    static uint16_t next_tfp_index = 0;
-
     memset(warp_energy_manager, 0, sizeof(TF_WARPEnergyManager));
 
     TF_TFP *tfp;
+    int rc = tf_hal_get_attachable_tfp(hal, &tfp, uid_or_port_name, TF_WARP_ENERGY_MANAGER_DEVICE_IDENTIFIER);
 
-    if (uid != NULL && *uid != '\0') {
-        uint32_t uid_num = 0;
-        int rc = tf_base58_decode(uid, &uid_num);
-
-        if (rc != TF_E_OK) {
-            return rc;
-        }
-
-        tfp = tf_hal_get_tfp(hal, &next_tfp_index, &uid_num, NULL, NULL);
-
-        if (tfp == NULL) {
-            return TF_E_DEVICE_NOT_FOUND;
-        }
-
-        if (tfp->device_id != TF_WARP_ENERGY_MANAGER_DEVICE_IDENTIFIER) {
-            return TF_E_WRONG_DEVICE_TYPE;
-        }
-    } else {
-        uint16_t device_id = TF_WARP_ENERGY_MANAGER_DEVICE_IDENTIFIER;
-
-        tfp = tf_hal_get_tfp(hal, &next_tfp_index, NULL, NULL, &device_id);
-
-        if (tfp == NULL) {
-            return TF_E_DEVICE_NOT_FOUND;
-        }
-    }
-
-    if (tfp->device != NULL) {
-        return TF_E_DEVICE_ALREADY_IN_USE;
+    if (rc != TF_E_OK) {
+        return rc;
     }
 
     warp_energy_manager->tfp = tfp;
@@ -240,40 +212,45 @@ int tf_warp_energy_manager_set_contactor(TF_WARPEnergyManager *warp_energy_manag
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_warp_energy_manager_get_response_expected(warp_energy_manager, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_CONTACTOR, &response_expected);
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_CONTACTOR, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_warp_energy_manager_get_response_expected(warp_energy_manager, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_CONTACTOR, &_response_expected);
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_CONTACTOR, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager->tfp);
 
-    send_buf[0] = value ? 1 : 0;
+    _send_buf[0] = value ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_get_contactor(TF_WARPEnergyManager *warp_energy_manager, bool *ret_value) {
@@ -281,41 +258,50 @@ int tf_warp_energy_manager_get_contactor(TF_WARPEnergyManager *warp_energy_manag
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_CONTACTOR, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_CONTACTOR, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
-        if (ret_value != NULL) { *ret_value = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_value != NULL) { *ret_value = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(warp_energy_manager->tfp);
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_set_rgb_value(TF_WARPEnergyManager *warp_energy_manager, uint8_t r, uint8_t g, uint8_t b) {
@@ -323,42 +309,47 @@ int tf_warp_energy_manager_set_rgb_value(TF_WARPEnergyManager *warp_energy_manag
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_warp_energy_manager_get_response_expected(warp_energy_manager, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_RGB_VALUE, &response_expected);
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_RGB_VALUE, 3, 0, response_expected);
+    bool _response_expected = true;
+    tf_warp_energy_manager_get_response_expected(warp_energy_manager, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_RGB_VALUE, &_response_expected);
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_RGB_VALUE, 3, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager->tfp);
 
-    send_buf[0] = (uint8_t)r;
-    send_buf[1] = (uint8_t)g;
-    send_buf[2] = (uint8_t)b;
+    _send_buf[0] = (uint8_t)r;
+    _send_buf[1] = (uint8_t)g;
+    _send_buf[2] = (uint8_t)b;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_get_rgb_value(TF_WARPEnergyManager *warp_energy_manager, uint8_t *ret_r, uint8_t *ret_g, uint8_t *ret_b) {
@@ -366,43 +357,52 @@ int tf_warp_energy_manager_get_rgb_value(TF_WARPEnergyManager *warp_energy_manag
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_RGB_VALUE, 0, 3, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_RGB_VALUE, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
-        if (ret_r != NULL) { *ret_r = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_g != NULL) { *ret_g = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_b != NULL) { *ret_b = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
+        if (_error_code != 0 || _length != 3) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_r != NULL) { *ret_r = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_g != NULL) { *ret_g = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_b != NULL) { *ret_b = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(warp_energy_manager->tfp);
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 3) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_get_energy_meter_values(TF_WARPEnergyManager *warp_energy_manager, float *ret_power, float *ret_energy_relative, float *ret_energy_absolute, bool ret_phases_active[3], bool ret_phases_connected[3]) {
@@ -410,45 +410,54 @@ int tf_warp_energy_manager_get_energy_meter_values(TF_WARPEnergyManager *warp_en
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_ENERGY_METER_VALUES, 0, 14, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_ENERGY_METER_VALUES, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
-        if (ret_power != NULL) { *ret_power = tf_packet_buffer_read_float(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_energy_relative != NULL) { *ret_energy_relative = tf_packet_buffer_read_float(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_energy_absolute != NULL) { *ret_energy_absolute = tf_packet_buffer_read_float(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_phases_active != NULL) { tf_packet_buffer_read_bool_array(recv_buf, ret_phases_active, 3);} else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_phases_connected != NULL) { tf_packet_buffer_read_bool_array(recv_buf, ret_phases_connected, 3);} else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
+        if (_error_code != 0 || _length != 14) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_power != NULL) { *ret_power = tf_packet_buffer_read_float(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_energy_relative != NULL) { *ret_energy_relative = tf_packet_buffer_read_float(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_energy_absolute != NULL) { *ret_energy_absolute = tf_packet_buffer_read_float(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_phases_active != NULL) { tf_packet_buffer_read_bool_array(_recv_buf, ret_phases_active, 3);} else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_phases_connected != NULL) { tf_packet_buffer_read_bool_array(_recv_buf, ret_phases_connected, 3);} else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(warp_energy_manager->tfp);
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 14) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_get_energy_meter_detailed_values_low_level(TF_WARPEnergyManager *warp_energy_manager, uint16_t *ret_values_chunk_offset, float ret_values_chunk_data[15]) {
@@ -456,43 +465,52 @@ int tf_warp_energy_manager_get_energy_meter_detailed_values_low_level(TF_WARPEne
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_ENERGY_METER_DETAILED_VALUES_LOW_LEVEL, 0, 62, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_ENERGY_METER_DETAILED_VALUES_LOW_LEVEL, 0, _response_expected);
 
-    size_t i;
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    size_t _i;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
-        if (ret_values_chunk_offset != NULL) { *ret_values_chunk_offset = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_values_chunk_data != NULL) { for (i = 0; i < 15; ++i) ret_values_chunk_data[i] = tf_packet_buffer_read_float(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 60); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
+        if (_error_code != 0 || _length != 62) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_values_chunk_offset != NULL) { *ret_values_chunk_offset = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_values_chunk_data != NULL) { for (_i = 0; _i < 15; ++_i) ret_values_chunk_data[_i] = tf_packet_buffer_read_float(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 60); }
+        }
         tf_tfp_packet_processed(warp_energy_manager->tfp);
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 62) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_get_energy_meter_state(TF_WARPEnergyManager *warp_energy_manager, bool *ret_available, uint32_t ret_error_count[6]) {
@@ -500,43 +518,52 @@ int tf_warp_energy_manager_get_energy_meter_state(TF_WARPEnergyManager *warp_ene
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_ENERGY_METER_STATE, 0, 25, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_ENERGY_METER_STATE, 0, _response_expected);
 
-    size_t i;
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    size_t _i;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
-        if (ret_available != NULL) { *ret_available = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_error_count != NULL) { for (i = 0; i < 6; ++i) ret_error_count[i] = tf_packet_buffer_read_uint32_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 24); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
+        if (_error_code != 0 || _length != 25) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_available != NULL) { *ret_available = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_error_count != NULL) { for (_i = 0; _i < 6; ++_i) ret_error_count[_i] = tf_packet_buffer_read_uint32_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 24); }
+        }
         tf_tfp_packet_processed(warp_energy_manager->tfp);
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 25) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_reset_energy_meter(TF_WARPEnergyManager *warp_energy_manager) {
@@ -544,36 +571,41 @@ int tf_warp_energy_manager_reset_energy_meter(TF_WARPEnergyManager *warp_energy_
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_warp_energy_manager_get_response_expected(warp_energy_manager, TF_WARP_ENERGY_MANAGER_FUNCTION_RESET_ENERGY_METER, &response_expected);
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_RESET_ENERGY_METER, 0, 0, response_expected);
+    bool _response_expected = true;
+    tf_warp_energy_manager_get_response_expected(warp_energy_manager, TF_WARP_ENERGY_MANAGER_FUNCTION_RESET_ENERGY_METER, &_response_expected);
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_RESET_ENERGY_METER, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_get_input(TF_WARPEnergyManager *warp_energy_manager, bool ret_input[2]) {
@@ -581,41 +613,50 @@ int tf_warp_energy_manager_get_input(TF_WARPEnergyManager *warp_energy_manager, 
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_INPUT, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_INPUT, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
-        if (ret_input != NULL) { tf_packet_buffer_read_bool_array(recv_buf, ret_input, 2);} else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_input != NULL) { tf_packet_buffer_read_bool_array(_recv_buf, ret_input, 2);} else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(warp_energy_manager->tfp);
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_set_output(TF_WARPEnergyManager *warp_energy_manager, bool output) {
@@ -623,40 +664,45 @@ int tf_warp_energy_manager_set_output(TF_WARPEnergyManager *warp_energy_manager,
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_warp_energy_manager_get_response_expected(warp_energy_manager, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_OUTPUT, &response_expected);
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_OUTPUT, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_warp_energy_manager_get_response_expected(warp_energy_manager, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_OUTPUT, &_response_expected);
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_OUTPUT, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager->tfp);
 
-    send_buf[0] = output ? 1 : 0;
+    _send_buf[0] = output ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_get_output(TF_WARPEnergyManager *warp_energy_manager, bool *ret_output) {
@@ -664,41 +710,50 @@ int tf_warp_energy_manager_get_output(TF_WARPEnergyManager *warp_energy_manager,
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_OUTPUT, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_OUTPUT, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
-        if (ret_output != NULL) { *ret_output = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_output != NULL) { *ret_output = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(warp_energy_manager->tfp);
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_set_input_configuration(TF_WARPEnergyManager *warp_energy_manager, const uint8_t input_configuration[2]) {
@@ -706,40 +761,45 @@ int tf_warp_energy_manager_set_input_configuration(TF_WARPEnergyManager *warp_en
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_warp_energy_manager_get_response_expected(warp_energy_manager, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_INPUT_CONFIGURATION, &response_expected);
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_INPUT_CONFIGURATION, 2, 0, response_expected);
+    bool _response_expected = true;
+    tf_warp_energy_manager_get_response_expected(warp_energy_manager, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_INPUT_CONFIGURATION, &_response_expected);
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_INPUT_CONFIGURATION, 2, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager->tfp);
 
-    memcpy(send_buf + 0, input_configuration, 2);
+    memcpy(_send_buf + 0, input_configuration, 2);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_get_input_configuration(TF_WARPEnergyManager *warp_energy_manager, uint8_t ret_input_configuration[2]) {
@@ -747,42 +807,51 @@ int tf_warp_energy_manager_get_input_configuration(TF_WARPEnergyManager *warp_en
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_INPUT_CONFIGURATION, 0, 2, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_INPUT_CONFIGURATION, 0, _response_expected);
 
-    size_t i;
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    size_t _i;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
-        if (ret_input_configuration != NULL) { for (i = 0; i < 2; ++i) ret_input_configuration[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 2); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
+        if (_error_code != 0 || _length != 2) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_input_configuration != NULL) { for (_i = 0; _i < 2; ++_i) ret_input_configuration[_i] = tf_packet_buffer_read_uint8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 2); }
+        }
         tf_tfp_packet_processed(warp_energy_manager->tfp);
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 2) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_get_input_voltage(TF_WARPEnergyManager *warp_energy_manager, uint16_t *ret_voltage) {
@@ -790,41 +859,50 @@ int tf_warp_energy_manager_get_input_voltage(TF_WARPEnergyManager *warp_energy_m
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_INPUT_VOLTAGE, 0, 2, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_INPUT_VOLTAGE, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
-        if (ret_voltage != NULL) { *ret_voltage = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
+        if (_error_code != 0 || _length != 2) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_voltage != NULL) { *ret_voltage = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+        }
         tf_tfp_packet_processed(warp_energy_manager->tfp);
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 2) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_get_state(TF_WARPEnergyManager *warp_energy_manager, uint8_t *ret_contactor_check_state) {
@@ -832,41 +910,50 @@ int tf_warp_energy_manager_get_state(TF_WARPEnergyManager *warp_energy_manager, 
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_STATE, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_STATE, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
-        if (ret_contactor_check_state != NULL) { *ret_contactor_check_state = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_contactor_check_state != NULL) { *ret_contactor_check_state = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(warp_energy_manager->tfp);
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_get_spitfp_error_count(TF_WARPEnergyManager *warp_energy_manager, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
@@ -874,44 +961,53 @@ int tf_warp_energy_manager_get_spitfp_error_count(TF_WARPEnergyManager *warp_ene
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
-        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
+        if (_error_code != 0 || _length != 16) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
         tf_tfp_packet_processed(warp_energy_manager->tfp);
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 16) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_set_bootloader_mode(TF_WARPEnergyManager *warp_energy_manager, uint8_t mode, uint8_t *ret_status) {
@@ -919,45 +1015,54 @@ int tf_warp_energy_manager_set_bootloader_mode(TF_WARPEnergyManager *warp_energy
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_BOOTLOADER_MODE, 1, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_BOOTLOADER_MODE, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager->tfp);
 
-    send_buf[0] = (uint8_t)mode;
+    _send_buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(warp_energy_manager->tfp);
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_get_bootloader_mode(TF_WARPEnergyManager *warp_energy_manager, uint8_t *ret_mode) {
@@ -965,41 +1070,50 @@ int tf_warp_energy_manager_get_bootloader_mode(TF_WARPEnergyManager *warp_energy
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_BOOTLOADER_MODE, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
-        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(warp_energy_manager->tfp);
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_set_write_firmware_pointer(TF_WARPEnergyManager *warp_energy_manager, uint32_t pointer) {
@@ -1007,40 +1121,45 @@ int tf_warp_energy_manager_set_write_firmware_pointer(TF_WARPEnergyManager *warp
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_warp_energy_manager_get_response_expected(warp_energy_manager, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_WRITE_FIRMWARE_POINTER, &response_expected);
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_WRITE_FIRMWARE_POINTER, 4, 0, response_expected);
+    bool _response_expected = true;
+    tf_warp_energy_manager_get_response_expected(warp_energy_manager, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_WRITE_FIRMWARE_POINTER, &_response_expected);
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_WRITE_FIRMWARE_POINTER, 4, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager->tfp);
 
-    pointer = tf_leconvert_uint32_to(pointer); memcpy(send_buf + 0, &pointer, 4);
+    pointer = tf_leconvert_uint32_to(pointer); memcpy(_send_buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_write_firmware(TF_WARPEnergyManager *warp_energy_manager, const uint8_t data[64], uint8_t *ret_status) {
@@ -1048,45 +1167,54 @@ int tf_warp_energy_manager_write_firmware(TF_WARPEnergyManager *warp_energy_mana
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_WRITE_FIRMWARE, 64, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_WRITE_FIRMWARE, 64, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager->tfp);
 
-    memcpy(send_buf + 0, data, 64);
+    memcpy(_send_buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(warp_energy_manager->tfp);
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_set_status_led_config(TF_WARPEnergyManager *warp_energy_manager, uint8_t config) {
@@ -1094,40 +1222,45 @@ int tf_warp_energy_manager_set_status_led_config(TF_WARPEnergyManager *warp_ener
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_warp_energy_manager_get_response_expected(warp_energy_manager, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_STATUS_LED_CONFIG, &response_expected);
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_STATUS_LED_CONFIG, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_warp_energy_manager_get_response_expected(warp_energy_manager, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_STATUS_LED_CONFIG, &_response_expected);
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_SET_STATUS_LED_CONFIG, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager->tfp);
 
-    send_buf[0] = (uint8_t)config;
+    _send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_get_status_led_config(TF_WARPEnergyManager *warp_energy_manager, uint8_t *ret_config) {
@@ -1135,41 +1268,50 @@ int tf_warp_energy_manager_get_status_led_config(TF_WARPEnergyManager *warp_ener
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_STATUS_LED_CONFIG, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(warp_energy_manager->tfp);
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_get_chip_temperature(TF_WARPEnergyManager *warp_energy_manager, int16_t *ret_temperature) {
@@ -1177,41 +1319,50 @@ int tf_warp_energy_manager_get_chip_temperature(TF_WARPEnergyManager *warp_energ
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_CHIP_TEMPERATURE, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
-        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
+        if (_error_code != 0 || _length != 2) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+        }
         tf_tfp_packet_processed(warp_energy_manager->tfp);
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 2) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_reset(TF_WARPEnergyManager *warp_energy_manager) {
@@ -1219,36 +1370,41 @@ int tf_warp_energy_manager_reset(TF_WARPEnergyManager *warp_energy_manager) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_warp_energy_manager_get_response_expected(warp_energy_manager, TF_WARP_ENERGY_MANAGER_FUNCTION_RESET, &response_expected);
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_RESET, 0, 0, response_expected);
+    bool _response_expected = true;
+    tf_warp_energy_manager_get_response_expected(warp_energy_manager, TF_WARP_ENERGY_MANAGER_FUNCTION_RESET, &_response_expected);
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_RESET, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_write_uid(TF_WARPEnergyManager *warp_energy_manager, uint32_t uid) {
@@ -1256,40 +1412,45 @@ int tf_warp_energy_manager_write_uid(TF_WARPEnergyManager *warp_energy_manager, 
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_warp_energy_manager_get_response_expected(warp_energy_manager, TF_WARP_ENERGY_MANAGER_FUNCTION_WRITE_UID, &response_expected);
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_WRITE_UID, 4, 0, response_expected);
+    bool _response_expected = true;
+    tf_warp_energy_manager_get_response_expected(warp_energy_manager, TF_WARP_ENERGY_MANAGER_FUNCTION_WRITE_UID, &_response_expected);
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_WRITE_UID, 4, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager->tfp);
 
-    uid = tf_leconvert_uint32_to(uid); memcpy(send_buf + 0, &uid, 4);
+    uid = tf_leconvert_uint32_to(uid); memcpy(_send_buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_read_uid(TF_WARPEnergyManager *warp_energy_manager, uint32_t *ret_uid) {
@@ -1297,41 +1458,50 @@ int tf_warp_energy_manager_read_uid(TF_WARPEnergyManager *warp_energy_manager, u
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_READ_UID, 0, 4, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_READ_UID, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
-        if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
+        if (_error_code != 0 || _length != 4) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
         tf_tfp_packet_processed(warp_energy_manager->tfp);
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 4) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_warp_energy_manager_get_identity(TF_WARPEnergyManager *warp_energy_manager, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
@@ -1339,47 +1509,56 @@ int tf_warp_energy_manager_get_identity(TF_WARPEnergyManager *warp_energy_manage
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;
+    TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(warp_energy_manager->tfp, TF_WARP_ENERGY_MANAGER_FUNCTION_GET_IDENTITY, 0, _response_expected);
 
-    size_t i;
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    size_t _i;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(warp_energy_manager->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_energy_manager->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
-        if (ret_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
-        if (ret_connected_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_connected_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
-        if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_hardware_version != NULL) { for (i = 0; i < 3; ++i) ret_hardware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
-        if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
-        if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
+        if (_error_code != 0 || _length != 25) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_uid != NULL) { tf_packet_buffer_pop_n(_recv_buf, (uint8_t *)ret_uid, 8);} else { tf_packet_buffer_remove(_recv_buf, 8); }
+            if (ret_connected_uid != NULL) { tf_packet_buffer_pop_n(_recv_buf, (uint8_t *)ret_connected_uid, 8);} else { tf_packet_buffer_remove(_recv_buf, 8); }
+            if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_hardware_version != NULL) { for (_i = 0; _i < 3; ++_i) ret_hardware_version[_i] = tf_packet_buffer_read_uint8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 3); }
+            if (ret_firmware_version != NULL) { for (_i = 0; _i < 3; ++_i) ret_firmware_version[_i] = tf_packet_buffer_read_uint8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 3); }
+            if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+        }
         tf_tfp_packet_processed(warp_energy_manager->tfp);
     }
 
-    result = tf_tfp_finish_send(warp_energy_manager->tfp, result, deadline);
+    _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 25) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 static int tf_warp_energy_manager_get_energy_meter_detailed_values_ll_wrapper(void *device, void *wrapper_data, uint32_t *ret_stream_length, uint32_t *ret_chunk_offset, void *chunk_data) {
@@ -1403,13 +1582,13 @@ int tf_warp_energy_manager_get_energy_meter_detailed_values(TF_WARPEnergyManager
         return TF_E_NULL;
     }
     
-    uint32_t values_length = 0;
-    float values_chunk_data[15];
+    uint32_t _values_length = 0;
+    float _values_chunk_data[15];
 
-    int ret = tf_stream_out(warp_energy_manager, tf_warp_energy_manager_get_energy_meter_detailed_values_ll_wrapper, NULL, ret_values, &values_length, values_chunk_data, 15, tf_copy_items_float);
+    int ret = tf_stream_out(warp_energy_manager, tf_warp_energy_manager_get_energy_meter_detailed_values_ll_wrapper, NULL, ret_values, &_values_length, _values_chunk_data, 15, tf_copy_items_float);
 
     if (ret_values_length != NULL) {
-        *ret_values_length = (uint16_t)values_length;
+        *ret_values_length = (uint16_t)_values_length;
     }
     return ret;
 }

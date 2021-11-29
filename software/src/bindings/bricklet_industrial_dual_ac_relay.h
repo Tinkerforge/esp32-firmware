@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,7 +28,7 @@ extern "C" {
 struct TF_IndustrialDualACRelay;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_IndustrialDualACRelay_MonoflopDoneHandler)(struct TF_IndustrialDualACRelay *device, uint8_t channel, bool value, void *user_data);
+typedef void (*TF_IndustrialDualACRelay_MonoflopDoneHandler)(struct TF_IndustrialDualACRelay *industrial_dual_ac_relay, uint8_t channel, bool value, void *user_data);
 
 #endif
 /**
@@ -269,7 +269,7 @@ typedef struct TF_IndustrialDualACRelay {
  * Creates the device object \c industrial_dual_ac_relay with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_industrial_dual_ac_relay_create(TF_IndustrialDualACRelay *industrial_dual_ac_relay, const char *uid, TF_HAL *hal);
+int tf_industrial_dual_ac_relay_create(TF_IndustrialDualACRelay *industrial_dual_ac_relay, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_IndustrialDualACRelay

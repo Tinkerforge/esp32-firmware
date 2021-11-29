@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,7 +28,7 @@ extern "C" {
 struct TF_RGBLEDMatrix;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_RGBLEDMatrix_FrameStartedHandler)(struct TF_RGBLEDMatrix *device, uint32_t frame_number, void *user_data);
+typedef void (*TF_RGBLEDMatrix_FrameStartedHandler)(struct TF_RGBLEDMatrix *rgb_led_matrix, uint32_t frame_number, void *user_data);
 
 #endif
 /**
@@ -264,7 +264,7 @@ typedef struct TF_RGBLEDMatrix {
  * Creates the device object \c rgb_led_matrix with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_rgb_led_matrix_create(TF_RGBLEDMatrix *rgb_led_matrix, const char *uid, TF_HAL *hal);
+int tf_rgb_led_matrix_create(TF_RGBLEDMatrix *rgb_led_matrix, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_RGBLEDMatrix

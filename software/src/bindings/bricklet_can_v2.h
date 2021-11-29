@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,10 +28,10 @@ extern "C" {
 struct TF_CANV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_CANV2_FrameReadLowLevelHandler)(struct TF_CANV2 *device, uint8_t frame_type, uint32_t identifier, uint8_t data_length, uint8_t data_data[15], void *user_data);
-typedef void (*TF_CANV2_FrameReadHandler)(struct TF_CANV2 *device, uint8_t frame_type, uint32_t identifier, uint8_t *data, uint8_t data_length, void *user_data);
-typedef void (*TF_CANV2_FrameReadableHandler)(struct TF_CANV2 *device, void *user_data);
-typedef void (*TF_CANV2_ErrorOccurredHandler)(struct TF_CANV2 *device, void *user_data);
+typedef void (*TF_CANV2_FrameReadLowLevelHandler)(struct TF_CANV2 *can_v2, uint8_t frame_type, uint32_t identifier, uint8_t data_length, uint8_t data_data[15], void *user_data);
+typedef void (*TF_CANV2_FrameReadHandler)(struct TF_CANV2 *can_v2, uint8_t frame_type, uint32_t identifier, uint8_t *data, uint8_t data_length, void *user_data);
+typedef void (*TF_CANV2_FrameReadableHandler)(struct TF_CANV2 *can_v2, void *user_data);
+typedef void (*TF_CANV2_ErrorOccurredHandler)(struct TF_CANV2 *can_v2, void *user_data);
 
 #endif
 /**
@@ -446,7 +446,7 @@ typedef struct TF_CANV2 {
  * Creates the device object \c can_v2 with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_can_v2_create(TF_CANV2 *can_v2, const char *uid, TF_HAL *hal);
+int tf_can_v2_create(TF_CANV2 *can_v2, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_CANV2

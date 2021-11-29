@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,8 +28,8 @@ extern "C" {
 struct TF_IndustrialCounter;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_IndustrialCounter_AllCounterHandler)(struct TF_IndustrialCounter *device, int64_t counter[4], void *user_data);
-typedef void (*TF_IndustrialCounter_AllSignalDataHandler)(struct TF_IndustrialCounter *device, uint16_t duty_cycle[4], uint64_t period[4], uint32_t frequency[4], bool value[4], void *user_data);
+typedef void (*TF_IndustrialCounter_AllCounterHandler)(struct TF_IndustrialCounter *industrial_counter, int64_t counter[4], void *user_data);
+typedef void (*TF_IndustrialCounter_AllSignalDataHandler)(struct TF_IndustrialCounter *industrial_counter, uint16_t duty_cycle[4], uint64_t period[4], uint32_t frequency[4], bool value[4], void *user_data);
 
 #endif
 /**
@@ -513,7 +513,7 @@ typedef struct TF_IndustrialCounter {
  * Creates the device object \c industrial_counter with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_industrial_counter_create(TF_IndustrialCounter *industrial_counter, const char *uid, TF_HAL *hal);
+int tf_industrial_counter_create(TF_IndustrialCounter *industrial_counter, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_IndustrialCounter

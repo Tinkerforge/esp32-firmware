@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,10 +28,10 @@ extern "C" {
 struct TF_RemoteSwitchV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_RemoteSwitchV2_SwitchingDoneHandler)(struct TF_RemoteSwitchV2 *device, void *user_data);
-typedef void (*TF_RemoteSwitchV2_RemoteStatusAHandler)(struct TF_RemoteSwitchV2 *device, uint8_t house_code, uint8_t receiver_code, uint8_t switch_to, uint16_t repeats, void *user_data);
-typedef void (*TF_RemoteSwitchV2_RemoteStatusBHandler)(struct TF_RemoteSwitchV2 *device, uint32_t address, uint8_t unit, uint8_t switch_to, uint8_t dim_value, uint16_t repeats, void *user_data);
-typedef void (*TF_RemoteSwitchV2_RemoteStatusCHandler)(struct TF_RemoteSwitchV2 *device, char system_code, uint8_t device_code, uint8_t switch_to, uint16_t repeats, void *user_data);
+typedef void (*TF_RemoteSwitchV2_SwitchingDoneHandler)(struct TF_RemoteSwitchV2 *remote_switch_v2, void *user_data);
+typedef void (*TF_RemoteSwitchV2_RemoteStatusAHandler)(struct TF_RemoteSwitchV2 *remote_switch_v2, uint8_t house_code, uint8_t receiver_code, uint8_t switch_to, uint16_t repeats, void *user_data);
+typedef void (*TF_RemoteSwitchV2_RemoteStatusBHandler)(struct TF_RemoteSwitchV2 *remote_switch_v2, uint32_t address, uint8_t unit, uint8_t switch_to, uint8_t dim_value, uint16_t repeats, void *user_data);
+typedef void (*TF_RemoteSwitchV2_RemoteStatusCHandler)(struct TF_RemoteSwitchV2 *remote_switch_v2, char system_code, uint8_t device_code, uint8_t switch_to, uint16_t repeats, void *user_data);
 
 #endif
 /**
@@ -336,7 +336,7 @@ typedef struct TF_RemoteSwitchV2 {
  * Creates the device object \c remote_switch_v2 with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_remote_switch_v2_create(TF_RemoteSwitchV2 *remote_switch_v2, const char *uid, TF_HAL *hal);
+int tf_remote_switch_v2_create(TF_RemoteSwitchV2 *remote_switch_v2, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_RemoteSwitchV2

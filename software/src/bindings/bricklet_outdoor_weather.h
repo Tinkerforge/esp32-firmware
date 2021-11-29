@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,8 +28,8 @@ extern "C" {
 struct TF_OutdoorWeather;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_OutdoorWeather_StationDataHandler)(struct TF_OutdoorWeather *device, uint8_t identifier, int16_t temperature, uint8_t humidity, uint32_t wind_speed, uint32_t gust_speed, uint32_t rain, uint8_t wind_direction, bool battery_low, void *user_data);
-typedef void (*TF_OutdoorWeather_SensorDataHandler)(struct TF_OutdoorWeather *device, uint8_t identifier, int16_t temperature, uint8_t humidity, void *user_data);
+typedef void (*TF_OutdoorWeather_StationDataHandler)(struct TF_OutdoorWeather *outdoor_weather, uint8_t identifier, int16_t temperature, uint8_t humidity, uint32_t wind_speed, uint32_t gust_speed, uint32_t rain, uint8_t wind_direction, bool battery_low, void *user_data);
+typedef void (*TF_OutdoorWeather_SensorDataHandler)(struct TF_OutdoorWeather *outdoor_weather, uint8_t identifier, int16_t temperature, uint8_t humidity, void *user_data);
 
 #endif
 /**
@@ -348,7 +348,7 @@ typedef struct TF_OutdoorWeather {
  * Creates the device object \c outdoor_weather with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_outdoor_weather_create(TF_OutdoorWeather *outdoor_weather, const char *uid, TF_HAL *hal);
+int tf_outdoor_weather_create(TF_OutdoorWeather *outdoor_weather, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_OutdoorWeather

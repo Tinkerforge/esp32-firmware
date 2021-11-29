@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,9 +28,9 @@ extern "C" {
 struct TF_AccelerometerV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_AccelerometerV2_AccelerationHandler)(struct TF_AccelerometerV2 *device, int32_t x, int32_t y, int32_t z, void *user_data);
-typedef void (*TF_AccelerometerV2_ContinuousAcceleration16BitHandler)(struct TF_AccelerometerV2 *device, int16_t acceleration[30], void *user_data);
-typedef void (*TF_AccelerometerV2_ContinuousAcceleration8BitHandler)(struct TF_AccelerometerV2 *device, int8_t acceleration[60], void *user_data);
+typedef void (*TF_AccelerometerV2_AccelerationHandler)(struct TF_AccelerometerV2 *accelerometer_v2, int32_t x, int32_t y, int32_t z, void *user_data);
+typedef void (*TF_AccelerometerV2_ContinuousAcceleration16BitHandler)(struct TF_AccelerometerV2 *accelerometer_v2, int16_t acceleration[30], void *user_data);
+typedef void (*TF_AccelerometerV2_ContinuousAcceleration8BitHandler)(struct TF_AccelerometerV2 *accelerometer_v2, int8_t acceleration[60], void *user_data);
 
 #endif
 /**
@@ -427,7 +427,7 @@ typedef struct TF_AccelerometerV2 {
  * Creates the device object \c accelerometer_v2 with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_accelerometer_v2_create(TF_AccelerometerV2 *accelerometer_v2, const char *uid, TF_HAL *hal);
+int tf_accelerometer_v2_create(TF_AccelerometerV2 *accelerometer_v2, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_AccelerometerV2

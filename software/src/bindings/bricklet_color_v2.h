@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,9 +28,9 @@ extern "C" {
 struct TF_ColorV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_ColorV2_ColorHandler)(struct TF_ColorV2 *device, uint16_t r, uint16_t g, uint16_t b, uint16_t c, void *user_data);
-typedef void (*TF_ColorV2_IlluminanceHandler)(struct TF_ColorV2 *device, uint32_t illuminance, void *user_data);
-typedef void (*TF_ColorV2_ColorTemperatureHandler)(struct TF_ColorV2 *device, uint16_t color_temperature, void *user_data);
+typedef void (*TF_ColorV2_ColorHandler)(struct TF_ColorV2 *color_v2, uint16_t r, uint16_t g, uint16_t b, uint16_t c, void *user_data);
+typedef void (*TF_ColorV2_IlluminanceHandler)(struct TF_ColorV2 *color_v2, uint32_t illuminance, void *user_data);
+typedef void (*TF_ColorV2_ColorTemperatureHandler)(struct TF_ColorV2 *color_v2, uint16_t color_temperature, void *user_data);
 
 #endif
 /**
@@ -367,7 +367,7 @@ typedef struct TF_ColorV2 {
  * Creates the device object \c color_v2 with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_color_v2_create(TF_ColorV2 *color_v2, const char *uid, TF_HAL *hal);
+int tf_color_v2_create(TF_ColorV2 *color_v2, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_ColorV2

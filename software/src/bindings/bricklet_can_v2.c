@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -34,11 +34,11 @@ static bool tf_can_v2_callback_handler(void *device, uint8_t fid, TF_PacketBuffe
             if (fn == NULL) {
                 return false;
             }
-            size_t i;
+            size_t _i;
             uint8_t frame_type = tf_packet_buffer_read_uint8_t(payload);
             uint32_t identifier = tf_packet_buffer_read_uint32_t(payload);
             uint8_t data_length = tf_packet_buffer_read_uint8_t(payload);
-            uint8_t data_data[15]; for (i = 0; i < 15; ++i) data_data[i] = tf_packet_buffer_read_uint8_t(payload);
+            uint8_t data_data[15]; for (_i = 0; _i < 15; ++_i) data_data[_i] = tf_packet_buffer_read_uint8_t(payload);
             hal_common->locked = true;
             fn(can_v2, frame_type, identifier, data_length, data_data, user_data);
             hal_common->locked = false;
@@ -84,46 +84,18 @@ static bool tf_can_v2_callback_handler(void *device, uint8_t fid, TF_PacketBuffe
     return false;
 }
 #endif
-int tf_can_v2_create(TF_CANV2 *can_v2, const char *uid, TF_HAL *hal) {
+int tf_can_v2_create(TF_CANV2 *can_v2, const char *uid_or_port_name, TF_HAL *hal) {
     if (can_v2 == NULL || hal == NULL) {
         return TF_E_NULL;
     }
 
-    static uint16_t next_tfp_index = 0;
-
     memset(can_v2, 0, sizeof(TF_CANV2));
 
     TF_TFP *tfp;
+    int rc = tf_hal_get_attachable_tfp(hal, &tfp, uid_or_port_name, TF_CAN_V2_DEVICE_IDENTIFIER);
 
-    if (uid != NULL && *uid != '\0') {
-        uint32_t uid_num = 0;
-        int rc = tf_base58_decode(uid, &uid_num);
-
-        if (rc != TF_E_OK) {
-            return rc;
-        }
-
-        tfp = tf_hal_get_tfp(hal, &next_tfp_index, &uid_num, NULL, NULL);
-
-        if (tfp == NULL) {
-            return TF_E_DEVICE_NOT_FOUND;
-        }
-
-        if (tfp->device_id != TF_CAN_V2_DEVICE_IDENTIFIER) {
-            return TF_E_WRONG_DEVICE_TYPE;
-        }
-    } else {
-        uint16_t device_id = TF_CAN_V2_DEVICE_IDENTIFIER;
-
-        tfp = tf_hal_get_tfp(hal, &next_tfp_index, NULL, NULL, &device_id);
-
-        if (tfp == NULL) {
-            return TF_E_DEVICE_NOT_FOUND;
-        }
-    }
-
-    if (tfp->device != NULL) {
-        return TF_E_DEVICE_ALREADY_IN_USE;
+    if (rc != TF_E_OK) {
+        return rc;
     }
 
     can_v2->tfp = tfp;
@@ -332,48 +304,57 @@ int tf_can_v2_write_frame_low_level(TF_CANV2 *can_v2, uint8_t frame_type, uint32
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_WRITE_FRAME_LOW_LEVEL, 21, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_WRITE_FRAME_LOW_LEVEL, 21, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
 
-    send_buf[0] = (uint8_t)frame_type;
-    identifier = tf_leconvert_uint32_to(identifier); memcpy(send_buf + 1, &identifier, 4);
-    send_buf[5] = (uint8_t)data_length;
-    memcpy(send_buf + 6, data_data, 15);
+    _send_buf[0] = (uint8_t)frame_type;
+    identifier = tf_leconvert_uint32_to(identifier); memcpy(_send_buf + 1, &identifier, 4);
+    _send_buf[5] = (uint8_t)data_length;
+    memcpy(_send_buf + 6, data_data, 15);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
-        if (ret_success != NULL) { *ret_success = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_success != NULL) { *ret_success = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(can_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_read_frame_low_level(TF_CANV2 *can_v2, bool *ret_success, uint8_t *ret_frame_type, uint32_t *ret_identifier, uint8_t *ret_data_length, uint8_t ret_data_data[15]) {
@@ -381,46 +362,55 @@ int tf_can_v2_read_frame_low_level(TF_CANV2 *can_v2, bool *ret_success, uint8_t 
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_READ_FRAME_LOW_LEVEL, 0, 22, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_READ_FRAME_LOW_LEVEL, 0, _response_expected);
 
-    size_t i;
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    size_t _i;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
-        if (ret_success != NULL) { *ret_success = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_frame_type != NULL) { *ret_frame_type = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_identifier != NULL) { *ret_identifier = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_data_length != NULL) { *ret_data_length = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_data_data != NULL) { for (i = 0; i < 15; ++i) ret_data_data[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 15); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
+        if (_error_code != 0 || _length != 22) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_success != NULL) { *ret_success = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_frame_type != NULL) { *ret_frame_type = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_identifier != NULL) { *ret_identifier = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_data_length != NULL) { *ret_data_length = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_data_data != NULL) { for (_i = 0; _i < 15; ++_i) ret_data_data[_i] = tf_packet_buffer_read_uint8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 15); }
+        }
         tf_tfp_packet_processed(can_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 22) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_set_frame_read_callback_configuration(TF_CANV2 *can_v2, bool enabled) {
@@ -428,40 +418,45 @@ int tf_can_v2_set_frame_read_callback_configuration(TF_CANV2 *can_v2, bool enabl
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_can_v2_get_response_expected(can_v2, TF_CAN_V2_FUNCTION_SET_FRAME_READ_CALLBACK_CONFIGURATION, &response_expected);
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_SET_FRAME_READ_CALLBACK_CONFIGURATION, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_can_v2_get_response_expected(can_v2, TF_CAN_V2_FUNCTION_SET_FRAME_READ_CALLBACK_CONFIGURATION, &_response_expected);
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_SET_FRAME_READ_CALLBACK_CONFIGURATION, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
 
-    send_buf[0] = enabled ? 1 : 0;
+    _send_buf[0] = enabled ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_get_frame_read_callback_configuration(TF_CANV2 *can_v2, bool *ret_enabled) {
@@ -469,41 +464,50 @@ int tf_can_v2_get_frame_read_callback_configuration(TF_CANV2 *can_v2, bool *ret_
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_FRAME_READ_CALLBACK_CONFIGURATION, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_FRAME_READ_CALLBACK_CONFIGURATION, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
-        if (ret_enabled != NULL) { *ret_enabled = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_enabled != NULL) { *ret_enabled = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(can_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_set_transceiver_configuration(TF_CANV2 *can_v2, uint32_t baud_rate, uint16_t sample_point, uint8_t transceiver_mode) {
@@ -511,42 +515,47 @@ int tf_can_v2_set_transceiver_configuration(TF_CANV2 *can_v2, uint32_t baud_rate
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_can_v2_get_response_expected(can_v2, TF_CAN_V2_FUNCTION_SET_TRANSCEIVER_CONFIGURATION, &response_expected);
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_SET_TRANSCEIVER_CONFIGURATION, 7, 0, response_expected);
+    bool _response_expected = true;
+    tf_can_v2_get_response_expected(can_v2, TF_CAN_V2_FUNCTION_SET_TRANSCEIVER_CONFIGURATION, &_response_expected);
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_SET_TRANSCEIVER_CONFIGURATION, 7, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
 
-    baud_rate = tf_leconvert_uint32_to(baud_rate); memcpy(send_buf + 0, &baud_rate, 4);
-    sample_point = tf_leconvert_uint16_to(sample_point); memcpy(send_buf + 4, &sample_point, 2);
-    send_buf[6] = (uint8_t)transceiver_mode;
+    baud_rate = tf_leconvert_uint32_to(baud_rate); memcpy(_send_buf + 0, &baud_rate, 4);
+    sample_point = tf_leconvert_uint16_to(sample_point); memcpy(_send_buf + 4, &sample_point, 2);
+    _send_buf[6] = (uint8_t)transceiver_mode;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_get_transceiver_configuration(TF_CANV2 *can_v2, uint32_t *ret_baud_rate, uint16_t *ret_sample_point, uint8_t *ret_transceiver_mode) {
@@ -554,43 +563,52 @@ int tf_can_v2_get_transceiver_configuration(TF_CANV2 *can_v2, uint32_t *ret_baud
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_TRANSCEIVER_CONFIGURATION, 0, 7, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_TRANSCEIVER_CONFIGURATION, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
-        if (ret_baud_rate != NULL) { *ret_baud_rate = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_sample_point != NULL) { *ret_sample_point = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_transceiver_mode != NULL) { *ret_transceiver_mode = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
+        if (_error_code != 0 || _length != 7) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_baud_rate != NULL) { *ret_baud_rate = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_sample_point != NULL) { *ret_sample_point = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_transceiver_mode != NULL) { *ret_transceiver_mode = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(can_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 7) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_set_queue_configuration_low_level(TF_CANV2 *can_v2, uint8_t write_buffer_size, int32_t write_buffer_timeout, uint16_t write_backlog_size, uint8_t read_buffer_sizes_length, const int8_t read_buffer_sizes_data[32], uint16_t read_backlog_size) {
@@ -598,45 +616,50 @@ int tf_can_v2_set_queue_configuration_low_level(TF_CANV2 *can_v2, uint8_t write_
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_can_v2_get_response_expected(can_v2, TF_CAN_V2_FUNCTION_SET_QUEUE_CONFIGURATION_LOW_LEVEL, &response_expected);
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_SET_QUEUE_CONFIGURATION_LOW_LEVEL, 42, 0, response_expected);
+    bool _response_expected = true;
+    tf_can_v2_get_response_expected(can_v2, TF_CAN_V2_FUNCTION_SET_QUEUE_CONFIGURATION_LOW_LEVEL, &_response_expected);
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_SET_QUEUE_CONFIGURATION_LOW_LEVEL, 42, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
 
-    send_buf[0] = (uint8_t)write_buffer_size;
-    write_buffer_timeout = tf_leconvert_int32_to(write_buffer_timeout); memcpy(send_buf + 1, &write_buffer_timeout, 4);
-    write_backlog_size = tf_leconvert_uint16_to(write_backlog_size); memcpy(send_buf + 5, &write_backlog_size, 2);
-    send_buf[7] = (uint8_t)read_buffer_sizes_length;
-    memcpy(send_buf + 8, read_buffer_sizes_data, 32);
-    read_backlog_size = tf_leconvert_uint16_to(read_backlog_size); memcpy(send_buf + 40, &read_backlog_size, 2);
+    _send_buf[0] = (uint8_t)write_buffer_size;
+    write_buffer_timeout = tf_leconvert_int32_to(write_buffer_timeout); memcpy(_send_buf + 1, &write_buffer_timeout, 4);
+    write_backlog_size = tf_leconvert_uint16_to(write_backlog_size); memcpy(_send_buf + 5, &write_backlog_size, 2);
+    _send_buf[7] = (uint8_t)read_buffer_sizes_length;
+    memcpy(_send_buf + 8, read_buffer_sizes_data, 32);
+    read_backlog_size = tf_leconvert_uint16_to(read_backlog_size); memcpy(_send_buf + 40, &read_backlog_size, 2);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_get_queue_configuration_low_level(TF_CANV2 *can_v2, uint8_t *ret_write_buffer_size, int32_t *ret_write_buffer_timeout, uint16_t *ret_write_backlog_size, uint8_t *ret_read_buffer_sizes_length, int8_t ret_read_buffer_sizes_data[32], uint16_t *ret_read_backlog_size) {
@@ -644,47 +667,56 @@ int tf_can_v2_get_queue_configuration_low_level(TF_CANV2 *can_v2, uint8_t *ret_w
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_QUEUE_CONFIGURATION_LOW_LEVEL, 0, 42, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_QUEUE_CONFIGURATION_LOW_LEVEL, 0, _response_expected);
 
-    size_t i;
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    size_t _i;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
-        if (ret_write_buffer_size != NULL) { *ret_write_buffer_size = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_write_buffer_timeout != NULL) { *ret_write_buffer_timeout = tf_packet_buffer_read_int32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_write_backlog_size != NULL) { *ret_write_backlog_size = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_read_buffer_sizes_length != NULL) { *ret_read_buffer_sizes_length = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_read_buffer_sizes_data != NULL) { for (i = 0; i < 32; ++i) ret_read_buffer_sizes_data[i] = tf_packet_buffer_read_int8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 32); }
-        if (ret_read_backlog_size != NULL) { *ret_read_backlog_size = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
+        if (_error_code != 0 || _length != 42) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_write_buffer_size != NULL) { *ret_write_buffer_size = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_write_buffer_timeout != NULL) { *ret_write_buffer_timeout = tf_packet_buffer_read_int32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_write_backlog_size != NULL) { *ret_write_backlog_size = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_read_buffer_sizes_length != NULL) { *ret_read_buffer_sizes_length = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_read_buffer_sizes_data != NULL) { for (_i = 0; _i < 32; ++_i) ret_read_buffer_sizes_data[_i] = tf_packet_buffer_read_int8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 32); }
+            if (ret_read_backlog_size != NULL) { *ret_read_backlog_size = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+        }
         tf_tfp_packet_processed(can_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 42) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_set_read_filter_configuration(TF_CANV2 *can_v2, uint8_t buffer_index, uint8_t filter_mode, uint32_t filter_mask, uint32_t filter_identifier) {
@@ -692,43 +724,48 @@ int tf_can_v2_set_read_filter_configuration(TF_CANV2 *can_v2, uint8_t buffer_ind
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_can_v2_get_response_expected(can_v2, TF_CAN_V2_FUNCTION_SET_READ_FILTER_CONFIGURATION, &response_expected);
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_SET_READ_FILTER_CONFIGURATION, 10, 0, response_expected);
+    bool _response_expected = true;
+    tf_can_v2_get_response_expected(can_v2, TF_CAN_V2_FUNCTION_SET_READ_FILTER_CONFIGURATION, &_response_expected);
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_SET_READ_FILTER_CONFIGURATION, 10, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
 
-    send_buf[0] = (uint8_t)buffer_index;
-    send_buf[1] = (uint8_t)filter_mode;
-    filter_mask = tf_leconvert_uint32_to(filter_mask); memcpy(send_buf + 2, &filter_mask, 4);
-    filter_identifier = tf_leconvert_uint32_to(filter_identifier); memcpy(send_buf + 6, &filter_identifier, 4);
+    _send_buf[0] = (uint8_t)buffer_index;
+    _send_buf[1] = (uint8_t)filter_mode;
+    filter_mask = tf_leconvert_uint32_to(filter_mask); memcpy(_send_buf + 2, &filter_mask, 4);
+    filter_identifier = tf_leconvert_uint32_to(filter_identifier); memcpy(_send_buf + 6, &filter_identifier, 4);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_get_read_filter_configuration(TF_CANV2 *can_v2, uint8_t buffer_index, uint8_t *ret_filter_mode, uint32_t *ret_filter_mask, uint32_t *ret_filter_identifier) {
@@ -736,47 +773,56 @@ int tf_can_v2_get_read_filter_configuration(TF_CANV2 *can_v2, uint8_t buffer_ind
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_READ_FILTER_CONFIGURATION, 1, 9, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_READ_FILTER_CONFIGURATION, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
 
-    send_buf[0] = (uint8_t)buffer_index;
+    _send_buf[0] = (uint8_t)buffer_index;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
-        if (ret_filter_mode != NULL) { *ret_filter_mode = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_filter_mask != NULL) { *ret_filter_mask = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_filter_identifier != NULL) { *ret_filter_identifier = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
+        if (_error_code != 0 || _length != 9) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_filter_mode != NULL) { *ret_filter_mode = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_filter_mask != NULL) { *ret_filter_mask = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_filter_identifier != NULL) { *ret_filter_identifier = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
         tf_tfp_packet_processed(can_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 9) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_get_error_log_low_level(TF_CANV2 *can_v2, uint8_t *ret_transceiver_state, uint8_t *ret_transceiver_write_error_level, uint8_t *ret_transceiver_read_error_level, uint32_t *ret_transceiver_stuffing_error_count, uint32_t *ret_transceiver_format_error_count, uint32_t *ret_transceiver_ack_error_count, uint32_t *ret_transceiver_bit1_error_count, uint32_t *ret_transceiver_bit0_error_count, uint32_t *ret_transceiver_crc_error_count, uint32_t *ret_write_buffer_timeout_error_count, uint32_t *ret_read_buffer_overflow_error_count, uint8_t *ret_read_buffer_overflow_error_occurred_length, bool ret_read_buffer_overflow_error_occurred_data[32], uint32_t *ret_read_backlog_overflow_error_count) {
@@ -784,54 +830,63 @@ int tf_can_v2_get_error_log_low_level(TF_CANV2 *can_v2, uint8_t *ret_transceiver
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_ERROR_LOG_LOW_LEVEL, 0, 44, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_ERROR_LOG_LOW_LEVEL, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
-        if (ret_transceiver_state != NULL) { *ret_transceiver_state = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_transceiver_write_error_level != NULL) { *ret_transceiver_write_error_level = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_transceiver_read_error_level != NULL) { *ret_transceiver_read_error_level = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_transceiver_stuffing_error_count != NULL) { *ret_transceiver_stuffing_error_count = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_transceiver_format_error_count != NULL) { *ret_transceiver_format_error_count = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_transceiver_ack_error_count != NULL) { *ret_transceiver_ack_error_count = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_transceiver_bit1_error_count != NULL) { *ret_transceiver_bit1_error_count = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_transceiver_bit0_error_count != NULL) { *ret_transceiver_bit0_error_count = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_transceiver_crc_error_count != NULL) { *ret_transceiver_crc_error_count = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_write_buffer_timeout_error_count != NULL) { *ret_write_buffer_timeout_error_count = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_read_buffer_overflow_error_count != NULL) { *ret_read_buffer_overflow_error_count = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_read_buffer_overflow_error_occurred_length != NULL) { *ret_read_buffer_overflow_error_occurred_length = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_read_buffer_overflow_error_occurred_data != NULL) { tf_packet_buffer_read_bool_array(recv_buf, ret_read_buffer_overflow_error_occurred_data, 32);} else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_read_backlog_overflow_error_count != NULL) { *ret_read_backlog_overflow_error_count = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
+        if (_error_code != 0 || _length != 44) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_transceiver_state != NULL) { *ret_transceiver_state = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_transceiver_write_error_level != NULL) { *ret_transceiver_write_error_level = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_transceiver_read_error_level != NULL) { *ret_transceiver_read_error_level = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_transceiver_stuffing_error_count != NULL) { *ret_transceiver_stuffing_error_count = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_transceiver_format_error_count != NULL) { *ret_transceiver_format_error_count = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_transceiver_ack_error_count != NULL) { *ret_transceiver_ack_error_count = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_transceiver_bit1_error_count != NULL) { *ret_transceiver_bit1_error_count = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_transceiver_bit0_error_count != NULL) { *ret_transceiver_bit0_error_count = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_transceiver_crc_error_count != NULL) { *ret_transceiver_crc_error_count = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_write_buffer_timeout_error_count != NULL) { *ret_write_buffer_timeout_error_count = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_read_buffer_overflow_error_count != NULL) { *ret_read_buffer_overflow_error_count = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_read_buffer_overflow_error_occurred_length != NULL) { *ret_read_buffer_overflow_error_occurred_length = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_read_buffer_overflow_error_occurred_data != NULL) { tf_packet_buffer_read_bool_array(_recv_buf, ret_read_buffer_overflow_error_occurred_data, 32);} else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_read_backlog_overflow_error_count != NULL) { *ret_read_backlog_overflow_error_count = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
         tf_tfp_packet_processed(can_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 44) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_set_communication_led_config(TF_CANV2 *can_v2, uint8_t config) {
@@ -839,40 +894,45 @@ int tf_can_v2_set_communication_led_config(TF_CANV2 *can_v2, uint8_t config) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_can_v2_get_response_expected(can_v2, TF_CAN_V2_FUNCTION_SET_COMMUNICATION_LED_CONFIG, &response_expected);
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_SET_COMMUNICATION_LED_CONFIG, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_can_v2_get_response_expected(can_v2, TF_CAN_V2_FUNCTION_SET_COMMUNICATION_LED_CONFIG, &_response_expected);
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_SET_COMMUNICATION_LED_CONFIG, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
 
-    send_buf[0] = (uint8_t)config;
+    _send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_get_communication_led_config(TF_CANV2 *can_v2, uint8_t *ret_config) {
@@ -880,41 +940,50 @@ int tf_can_v2_get_communication_led_config(TF_CANV2 *can_v2, uint8_t *ret_config
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_COMMUNICATION_LED_CONFIG, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_COMMUNICATION_LED_CONFIG, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(can_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_set_error_led_config(TF_CANV2 *can_v2, uint8_t config) {
@@ -922,40 +991,45 @@ int tf_can_v2_set_error_led_config(TF_CANV2 *can_v2, uint8_t config) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_can_v2_get_response_expected(can_v2, TF_CAN_V2_FUNCTION_SET_ERROR_LED_CONFIG, &response_expected);
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_SET_ERROR_LED_CONFIG, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_can_v2_get_response_expected(can_v2, TF_CAN_V2_FUNCTION_SET_ERROR_LED_CONFIG, &_response_expected);
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_SET_ERROR_LED_CONFIG, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
 
-    send_buf[0] = (uint8_t)config;
+    _send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_get_error_led_config(TF_CANV2 *can_v2, uint8_t *ret_config) {
@@ -963,41 +1037,50 @@ int tf_can_v2_get_error_led_config(TF_CANV2 *can_v2, uint8_t *ret_config) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_ERROR_LED_CONFIG, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_ERROR_LED_CONFIG, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(can_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_set_frame_readable_callback_configuration(TF_CANV2 *can_v2, bool enabled) {
@@ -1005,40 +1088,45 @@ int tf_can_v2_set_frame_readable_callback_configuration(TF_CANV2 *can_v2, bool e
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_can_v2_get_response_expected(can_v2, TF_CAN_V2_FUNCTION_SET_FRAME_READABLE_CALLBACK_CONFIGURATION, &response_expected);
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_SET_FRAME_READABLE_CALLBACK_CONFIGURATION, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_can_v2_get_response_expected(can_v2, TF_CAN_V2_FUNCTION_SET_FRAME_READABLE_CALLBACK_CONFIGURATION, &_response_expected);
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_SET_FRAME_READABLE_CALLBACK_CONFIGURATION, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
 
-    send_buf[0] = enabled ? 1 : 0;
+    _send_buf[0] = enabled ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_get_frame_readable_callback_configuration(TF_CANV2 *can_v2, bool *ret_enabled) {
@@ -1046,41 +1134,50 @@ int tf_can_v2_get_frame_readable_callback_configuration(TF_CANV2 *can_v2, bool *
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_FRAME_READABLE_CALLBACK_CONFIGURATION, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_FRAME_READABLE_CALLBACK_CONFIGURATION, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
-        if (ret_enabled != NULL) { *ret_enabled = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_enabled != NULL) { *ret_enabled = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(can_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_set_error_occurred_callback_configuration(TF_CANV2 *can_v2, bool enabled) {
@@ -1088,40 +1185,45 @@ int tf_can_v2_set_error_occurred_callback_configuration(TF_CANV2 *can_v2, bool e
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_can_v2_get_response_expected(can_v2, TF_CAN_V2_FUNCTION_SET_ERROR_OCCURRED_CALLBACK_CONFIGURATION, &response_expected);
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_SET_ERROR_OCCURRED_CALLBACK_CONFIGURATION, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_can_v2_get_response_expected(can_v2, TF_CAN_V2_FUNCTION_SET_ERROR_OCCURRED_CALLBACK_CONFIGURATION, &_response_expected);
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_SET_ERROR_OCCURRED_CALLBACK_CONFIGURATION, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
 
-    send_buf[0] = enabled ? 1 : 0;
+    _send_buf[0] = enabled ? 1 : 0;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_get_error_occurred_callback_configuration(TF_CANV2 *can_v2, bool *ret_enabled) {
@@ -1129,41 +1231,50 @@ int tf_can_v2_get_error_occurred_callback_configuration(TF_CANV2 *can_v2, bool *
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_ERROR_OCCURRED_CALLBACK_CONFIGURATION, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_ERROR_OCCURRED_CALLBACK_CONFIGURATION, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
-        if (ret_enabled != NULL) { *ret_enabled = tf_packet_buffer_read_bool(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_enabled != NULL) { *ret_enabled = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(can_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_get_spitfp_error_count(TF_CANV2 *can_v2, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
@@ -1171,44 +1282,53 @@ int tf_can_v2_get_spitfp_error_count(TF_CANV2 *can_v2, uint32_t *ret_error_count
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
-        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
+        if (_error_code != 0 || _length != 16) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
         tf_tfp_packet_processed(can_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 16) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_set_bootloader_mode(TF_CANV2 *can_v2, uint8_t mode, uint8_t *ret_status) {
@@ -1216,45 +1336,54 @@ int tf_can_v2_set_bootloader_mode(TF_CANV2 *can_v2, uint8_t mode, uint8_t *ret_s
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_SET_BOOTLOADER_MODE, 1, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_SET_BOOTLOADER_MODE, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
 
-    send_buf[0] = (uint8_t)mode;
+    _send_buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(can_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_get_bootloader_mode(TF_CANV2 *can_v2, uint8_t *ret_mode) {
@@ -1262,41 +1391,50 @@ int tf_can_v2_get_bootloader_mode(TF_CANV2 *can_v2, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_BOOTLOADER_MODE, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
-        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(can_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_set_write_firmware_pointer(TF_CANV2 *can_v2, uint32_t pointer) {
@@ -1304,40 +1442,45 @@ int tf_can_v2_set_write_firmware_pointer(TF_CANV2 *can_v2, uint32_t pointer) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_can_v2_get_response_expected(can_v2, TF_CAN_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER, &response_expected);
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER, 4, 0, response_expected);
+    bool _response_expected = true;
+    tf_can_v2_get_response_expected(can_v2, TF_CAN_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER, &_response_expected);
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER, 4, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
 
-    pointer = tf_leconvert_uint32_to(pointer); memcpy(send_buf + 0, &pointer, 4);
+    pointer = tf_leconvert_uint32_to(pointer); memcpy(_send_buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_write_firmware(TF_CANV2 *can_v2, const uint8_t data[64], uint8_t *ret_status) {
@@ -1345,45 +1488,54 @@ int tf_can_v2_write_firmware(TF_CANV2 *can_v2, const uint8_t data[64], uint8_t *
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_WRITE_FIRMWARE, 64, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_WRITE_FIRMWARE, 64, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
 
-    memcpy(send_buf + 0, data, 64);
+    memcpy(_send_buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(can_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_set_status_led_config(TF_CANV2 *can_v2, uint8_t config) {
@@ -1391,40 +1543,45 @@ int tf_can_v2_set_status_led_config(TF_CANV2 *can_v2, uint8_t config) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_can_v2_get_response_expected(can_v2, TF_CAN_V2_FUNCTION_SET_STATUS_LED_CONFIG, &response_expected);
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_SET_STATUS_LED_CONFIG, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_can_v2_get_response_expected(can_v2, TF_CAN_V2_FUNCTION_SET_STATUS_LED_CONFIG, &_response_expected);
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_SET_STATUS_LED_CONFIG, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
 
-    send_buf[0] = (uint8_t)config;
+    _send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_get_status_led_config(TF_CANV2 *can_v2, uint8_t *ret_config) {
@@ -1432,41 +1589,50 @@ int tf_can_v2_get_status_led_config(TF_CANV2 *can_v2, uint8_t *ret_config) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_STATUS_LED_CONFIG, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(can_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_get_chip_temperature(TF_CANV2 *can_v2, int16_t *ret_temperature) {
@@ -1474,41 +1640,50 @@ int tf_can_v2_get_chip_temperature(TF_CANV2 *can_v2, int16_t *ret_temperature) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_CHIP_TEMPERATURE, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
-        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
+        if (_error_code != 0 || _length != 2) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+        }
         tf_tfp_packet_processed(can_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 2) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_reset(TF_CANV2 *can_v2) {
@@ -1516,36 +1691,41 @@ int tf_can_v2_reset(TF_CANV2 *can_v2) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_can_v2_get_response_expected(can_v2, TF_CAN_V2_FUNCTION_RESET, &response_expected);
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_RESET, 0, 0, response_expected);
+    bool _response_expected = true;
+    tf_can_v2_get_response_expected(can_v2, TF_CAN_V2_FUNCTION_RESET, &_response_expected);
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_RESET, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_write_uid(TF_CANV2 *can_v2, uint32_t uid) {
@@ -1553,40 +1733,45 @@ int tf_can_v2_write_uid(TF_CANV2 *can_v2, uint32_t uid) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_can_v2_get_response_expected(can_v2, TF_CAN_V2_FUNCTION_WRITE_UID, &response_expected);
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_WRITE_UID, 4, 0, response_expected);
+    bool _response_expected = true;
+    tf_can_v2_get_response_expected(can_v2, TF_CAN_V2_FUNCTION_WRITE_UID, &_response_expected);
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_WRITE_UID, 4, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(can_v2->tfp);
 
-    uid = tf_leconvert_uint32_to(uid); memcpy(send_buf + 0, &uid, 4);
+    uid = tf_leconvert_uint32_to(uid); memcpy(_send_buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_read_uid(TF_CANV2 *can_v2, uint32_t *ret_uid) {
@@ -1594,41 +1779,50 @@ int tf_can_v2_read_uid(TF_CANV2 *can_v2, uint32_t *ret_uid) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_READ_UID, 0, 4, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_READ_UID, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
-        if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
+        if (_error_code != 0 || _length != 4) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
         tf_tfp_packet_processed(can_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 4) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_can_v2_get_identity(TF_CANV2 *can_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
@@ -1636,47 +1830,56 @@ int tf_can_v2_get_identity(TF_CANV2 *can_v2, char ret_uid[8], char ret_connected
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = can_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(can_v2->tfp, TF_CAN_V2_FUNCTION_GET_IDENTITY, 0, _response_expected);
 
-    size_t i;
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    size_t _i;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(can_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(can_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
-        if (ret_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
-        if (ret_connected_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_connected_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
-        if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_hardware_version != NULL) { for (i = 0; i < 3; ++i) ret_hardware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
-        if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
-        if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(can_v2->tfp);
+        if (_error_code != 0 || _length != 25) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_uid != NULL) { tf_packet_buffer_pop_n(_recv_buf, (uint8_t *)ret_uid, 8);} else { tf_packet_buffer_remove(_recv_buf, 8); }
+            if (ret_connected_uid != NULL) { tf_packet_buffer_pop_n(_recv_buf, (uint8_t *)ret_connected_uid, 8);} else { tf_packet_buffer_remove(_recv_buf, 8); }
+            if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_hardware_version != NULL) { for (_i = 0; _i < 3; ++_i) ret_hardware_version[_i] = tf_packet_buffer_read_uint8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 3); }
+            if (ret_firmware_version != NULL) { for (_i = 0; _i < 3; ++_i) ret_firmware_version[_i] = tf_packet_buffer_read_uint8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 3); }
+            if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+        }
         tf_tfp_packet_processed(can_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(can_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 25) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 typedef struct TF_CANV2_WriteFrameLLWrapperData {
@@ -1703,17 +1906,17 @@ int tf_can_v2_write_frame(TF_CANV2 *can_v2, uint8_t frame_type, uint32_t identif
         return TF_E_NULL;
     }
     
-    TF_CANV2_WriteFrameLLWrapperData wrapper_data;
-    memset(&wrapper_data, 0, sizeof(wrapper_data));
-    wrapper_data.frame_type = frame_type;
-    wrapper_data.identifier = identifier;
-    wrapper_data.ret_success = ret_success;
+    TF_CANV2_WriteFrameLLWrapperData _wrapper_data;
+    memset(&_wrapper_data, 0, sizeof(_wrapper_data));
+    _wrapper_data.frame_type = frame_type;
+    _wrapper_data.identifier = identifier;
+    _wrapper_data.ret_success = ret_success;
 
-    uint32_t stream_length = data_length;
-    uint32_t data_written = 0;
-    uint8_t chunk_data[15];
+    uint32_t _stream_length = data_length;
+    uint32_t _data_written = 0;
+    uint8_t _chunk_data[15];
 
-    int ret = tf_stream_in(can_v2, tf_can_v2_write_frame_ll_wrapper, &wrapper_data, data, stream_length, chunk_data, &data_written, 15, tf_copy_items_uint8_t);
+    int ret = tf_stream_in(can_v2, tf_can_v2_write_frame_ll_wrapper, &_wrapper_data, data, _stream_length, _chunk_data, &_data_written, 15, tf_copy_items_uint8_t);
 
 
 
@@ -1777,18 +1980,18 @@ int tf_can_v2_set_queue_configuration(TF_CANV2 *can_v2, uint8_t write_buffer_siz
         return TF_E_NULL;
     }
     
-    TF_CANV2_SetQueueConfigurationLLWrapperData wrapper_data;
-    memset(&wrapper_data, 0, sizeof(wrapper_data));
-    wrapper_data.write_buffer_size = write_buffer_size;
-    wrapper_data.write_buffer_timeout = write_buffer_timeout;
-    wrapper_data.write_backlog_size = write_backlog_size;
-    wrapper_data.read_backlog_size = read_backlog_size;
+    TF_CANV2_SetQueueConfigurationLLWrapperData _wrapper_data;
+    memset(&_wrapper_data, 0, sizeof(_wrapper_data));
+    _wrapper_data.write_buffer_size = write_buffer_size;
+    _wrapper_data.write_buffer_timeout = write_buffer_timeout;
+    _wrapper_data.write_backlog_size = write_backlog_size;
+    _wrapper_data.read_backlog_size = read_backlog_size;
 
-    uint32_t stream_length = read_buffer_sizes_length;
-    uint32_t read_buffer_sizes_written = 0;
-    int8_t chunk_data[32];
+    uint32_t _stream_length = read_buffer_sizes_length;
+    uint32_t _read_buffer_sizes_written = 0;
+    int8_t _chunk_data[32];
 
-    int ret = tf_stream_in(can_v2, tf_can_v2_set_queue_configuration_ll_wrapper, &wrapper_data, read_buffer_sizes, stream_length, chunk_data, &read_buffer_sizes_written, 32, tf_copy_items_int8_t);
+    int ret = tf_stream_in(can_v2, tf_can_v2_set_queue_configuration_ll_wrapper, &_wrapper_data, read_buffer_sizes, _stream_length, _chunk_data, &_read_buffer_sizes_written, 32, tf_copy_items_int8_t);
 
 
 

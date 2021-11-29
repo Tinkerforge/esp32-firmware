@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,8 +28,8 @@ extern "C" {
 struct TF_PiezoSpeakerV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_PiezoSpeakerV2_BeepFinishedHandler)(struct TF_PiezoSpeakerV2 *device, void *user_data);
-typedef void (*TF_PiezoSpeakerV2_AlarmFinishedHandler)(struct TF_PiezoSpeakerV2 *device, void *user_data);
+typedef void (*TF_PiezoSpeakerV2_BeepFinishedHandler)(struct TF_PiezoSpeakerV2 *piezo_speaker_v2, void *user_data);
+typedef void (*TF_PiezoSpeakerV2_AlarmFinishedHandler)(struct TF_PiezoSpeakerV2 *piezo_speaker_v2, void *user_data);
 
 #endif
 /**
@@ -273,7 +273,7 @@ typedef struct TF_PiezoSpeakerV2 {
  * Creates the device object \c piezo_speaker_v2 with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_piezo_speaker_v2_create(TF_PiezoSpeakerV2 *piezo_speaker_v2, const char *uid, TF_HAL *hal);
+int tf_piezo_speaker_v2_create(TF_PiezoSpeakerV2 *piezo_speaker_v2, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_PiezoSpeakerV2

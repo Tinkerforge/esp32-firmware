@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,7 +28,7 @@ extern "C" {
 struct TF_AnalogInV3;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_AnalogInV3_VoltageHandler)(struct TF_AnalogInV3 *device, uint16_t voltage, void *user_data);
+typedef void (*TF_AnalogInV3_VoltageHandler)(struct TF_AnalogInV3 *analog_in_v3, uint16_t voltage, void *user_data);
 
 #endif
 /**
@@ -324,7 +324,7 @@ typedef struct TF_AnalogInV3 {
  * Creates the device object \c analog_in_v3 with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_analog_in_v3_create(TF_AnalogInV3 *analog_in_v3, const char *uid, TF_HAL *hal);
+int tf_analog_in_v3_create(TF_AnalogInV3 *analog_in_v3, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_AnalogInV3

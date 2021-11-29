@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -83,46 +83,18 @@ static bool tf_real_time_clock_v2_callback_handler(void *device, uint8_t fid, TF
     return false;
 }
 #endif
-int tf_real_time_clock_v2_create(TF_RealTimeClockV2 *real_time_clock_v2, const char *uid, TF_HAL *hal) {
+int tf_real_time_clock_v2_create(TF_RealTimeClockV2 *real_time_clock_v2, const char *uid_or_port_name, TF_HAL *hal) {
     if (real_time_clock_v2 == NULL || hal == NULL) {
         return TF_E_NULL;
     }
 
-    static uint16_t next_tfp_index = 0;
-
     memset(real_time_clock_v2, 0, sizeof(TF_RealTimeClockV2));
 
     TF_TFP *tfp;
+    int rc = tf_hal_get_attachable_tfp(hal, &tfp, uid_or_port_name, TF_REAL_TIME_CLOCK_V2_DEVICE_IDENTIFIER);
 
-    if (uid != NULL && *uid != '\0') {
-        uint32_t uid_num = 0;
-        int rc = tf_base58_decode(uid, &uid_num);
-
-        if (rc != TF_E_OK) {
-            return rc;
-        }
-
-        tfp = tf_hal_get_tfp(hal, &next_tfp_index, &uid_num, NULL, NULL);
-
-        if (tfp == NULL) {
-            return TF_E_DEVICE_NOT_FOUND;
-        }
-
-        if (tfp->device_id != TF_REAL_TIME_CLOCK_V2_DEVICE_IDENTIFIER) {
-            return TF_E_WRONG_DEVICE_TYPE;
-        }
-    } else {
-        uint16_t device_id = TF_REAL_TIME_CLOCK_V2_DEVICE_IDENTIFIER;
-
-        tfp = tf_hal_get_tfp(hal, &next_tfp_index, NULL, NULL, &device_id);
-
-        if (tfp == NULL) {
-            return TF_E_DEVICE_NOT_FOUND;
-        }
-    }
-
-    if (tfp->device != NULL) {
-        return TF_E_DEVICE_ALREADY_IN_USE;
+    if (rc != TF_E_OK) {
+        return rc;
     }
 
     real_time_clock_v2->tfp = tfp;
@@ -282,47 +254,52 @@ int tf_real_time_clock_v2_set_date_time(TF_RealTimeClockV2 *real_time_clock_v2, 
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = real_time_clock_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_real_time_clock_v2_get_response_expected(real_time_clock_v2, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_DATE_TIME, &response_expected);
-    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_DATE_TIME, 9, 0, response_expected);
+    bool _response_expected = true;
+    tf_real_time_clock_v2_get_response_expected(real_time_clock_v2, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_DATE_TIME, &_response_expected);
+    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_DATE_TIME, 9, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(real_time_clock_v2->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(real_time_clock_v2->tfp);
 
-    year = tf_leconvert_uint16_to(year); memcpy(send_buf + 0, &year, 2);
-    send_buf[2] = (uint8_t)month;
-    send_buf[3] = (uint8_t)day;
-    send_buf[4] = (uint8_t)hour;
-    send_buf[5] = (uint8_t)minute;
-    send_buf[6] = (uint8_t)second;
-    send_buf[7] = (uint8_t)centisecond;
-    send_buf[8] = (uint8_t)weekday;
+    year = tf_leconvert_uint16_to(year); memcpy(_send_buf + 0, &year, 2);
+    _send_buf[2] = (uint8_t)month;
+    _send_buf[3] = (uint8_t)day;
+    _send_buf[4] = (uint8_t)hour;
+    _send_buf[5] = (uint8_t)minute;
+    _send_buf[6] = (uint8_t)second;
+    _send_buf[7] = (uint8_t)centisecond;
+    _send_buf[8] = (uint8_t)weekday;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(real_time_clock_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(real_time_clock_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(real_time_clock_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(real_time_clock_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_real_time_clock_v2_get_date_time(TF_RealTimeClockV2 *real_time_clock_v2, uint16_t *ret_year, uint8_t *ret_month, uint8_t *ret_day, uint8_t *ret_hour, uint8_t *ret_minute, uint8_t *ret_second, uint8_t *ret_centisecond, uint8_t *ret_weekday, int64_t *ret_timestamp) {
@@ -330,49 +307,58 @@ int tf_real_time_clock_v2_get_date_time(TF_RealTimeClockV2 *real_time_clock_v2, 
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = real_time_clock_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_GET_DATE_TIME, 0, 17, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_GET_DATE_TIME, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(real_time_clock_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(real_time_clock_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
-        if (ret_year != NULL) { *ret_year = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
-        if (ret_month != NULL) { *ret_month = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_day != NULL) { *ret_day = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_hour != NULL) { *ret_hour = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_minute != NULL) { *ret_minute = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_second != NULL) { *ret_second = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_centisecond != NULL) { *ret_centisecond = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_weekday != NULL) { *ret_weekday = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_timestamp != NULL) { *ret_timestamp = tf_packet_buffer_read_int64_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 8); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
+        if (_error_code != 0 || _length != 17) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_year != NULL) { *ret_year = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+            if (ret_month != NULL) { *ret_month = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_day != NULL) { *ret_day = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_hour != NULL) { *ret_hour = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_minute != NULL) { *ret_minute = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_second != NULL) { *ret_second = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_centisecond != NULL) { *ret_centisecond = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_weekday != NULL) { *ret_weekday = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_timestamp != NULL) { *ret_timestamp = tf_packet_buffer_read_int64_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 8); }
+        }
         tf_tfp_packet_processed(real_time_clock_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(real_time_clock_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(real_time_clock_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 17) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_real_time_clock_v2_get_timestamp(TF_RealTimeClockV2 *real_time_clock_v2, int64_t *ret_timestamp) {
@@ -380,41 +366,50 @@ int tf_real_time_clock_v2_get_timestamp(TF_RealTimeClockV2 *real_time_clock_v2, 
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = real_time_clock_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_GET_TIMESTAMP, 0, 8, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_GET_TIMESTAMP, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(real_time_clock_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(real_time_clock_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
-        if (ret_timestamp != NULL) { *ret_timestamp = tf_packet_buffer_read_int64_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 8); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
+        if (_error_code != 0 || _length != 8) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_timestamp != NULL) { *ret_timestamp = tf_packet_buffer_read_int64_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 8); }
+        }
         tf_tfp_packet_processed(real_time_clock_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(real_time_clock_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(real_time_clock_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 8) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_real_time_clock_v2_set_offset(TF_RealTimeClockV2 *real_time_clock_v2, int8_t offset) {
@@ -422,40 +417,45 @@ int tf_real_time_clock_v2_set_offset(TF_RealTimeClockV2 *real_time_clock_v2, int
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = real_time_clock_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_real_time_clock_v2_get_response_expected(real_time_clock_v2, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_OFFSET, &response_expected);
-    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_OFFSET, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_real_time_clock_v2_get_response_expected(real_time_clock_v2, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_OFFSET, &_response_expected);
+    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_OFFSET, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(real_time_clock_v2->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(real_time_clock_v2->tfp);
 
-    send_buf[0] = (uint8_t)offset;
+    _send_buf[0] = (uint8_t)offset;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(real_time_clock_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(real_time_clock_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(real_time_clock_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(real_time_clock_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_real_time_clock_v2_get_offset(TF_RealTimeClockV2 *real_time_clock_v2, int8_t *ret_offset) {
@@ -463,41 +463,50 @@ int tf_real_time_clock_v2_get_offset(TF_RealTimeClockV2 *real_time_clock_v2, int
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = real_time_clock_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_GET_OFFSET, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_GET_OFFSET, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(real_time_clock_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(real_time_clock_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
-        if (ret_offset != NULL) { *ret_offset = tf_packet_buffer_read_int8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_offset != NULL) { *ret_offset = tf_packet_buffer_read_int8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(real_time_clock_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(real_time_clock_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(real_time_clock_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_real_time_clock_v2_set_date_time_callback_configuration(TF_RealTimeClockV2 *real_time_clock_v2, uint32_t period) {
@@ -505,40 +514,45 @@ int tf_real_time_clock_v2_set_date_time_callback_configuration(TF_RealTimeClockV
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = real_time_clock_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_real_time_clock_v2_get_response_expected(real_time_clock_v2, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_DATE_TIME_CALLBACK_CONFIGURATION, &response_expected);
-    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_DATE_TIME_CALLBACK_CONFIGURATION, 4, 0, response_expected);
+    bool _response_expected = true;
+    tf_real_time_clock_v2_get_response_expected(real_time_clock_v2, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_DATE_TIME_CALLBACK_CONFIGURATION, &_response_expected);
+    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_DATE_TIME_CALLBACK_CONFIGURATION, 4, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(real_time_clock_v2->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(real_time_clock_v2->tfp);
 
-    period = tf_leconvert_uint32_to(period); memcpy(send_buf + 0, &period, 4);
+    period = tf_leconvert_uint32_to(period); memcpy(_send_buf + 0, &period, 4);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(real_time_clock_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(real_time_clock_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(real_time_clock_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(real_time_clock_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_real_time_clock_v2_get_date_time_callback_configuration(TF_RealTimeClockV2 *real_time_clock_v2, uint32_t *ret_period) {
@@ -546,41 +560,50 @@ int tf_real_time_clock_v2_get_date_time_callback_configuration(TF_RealTimeClockV
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = real_time_clock_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_GET_DATE_TIME_CALLBACK_CONFIGURATION, 0, 4, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_GET_DATE_TIME_CALLBACK_CONFIGURATION, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(real_time_clock_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(real_time_clock_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
-        if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
+        if (_error_code != 0 || _length != 4) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_period != NULL) { *ret_period = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
         tf_tfp_packet_processed(real_time_clock_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(real_time_clock_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(real_time_clock_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 4) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_real_time_clock_v2_set_alarm(TF_RealTimeClockV2 *real_time_clock_v2, int8_t month, int8_t day, int8_t hour, int8_t minute, int8_t second, int8_t weekday, int32_t interval) {
@@ -588,46 +611,51 @@ int tf_real_time_clock_v2_set_alarm(TF_RealTimeClockV2 *real_time_clock_v2, int8
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = real_time_clock_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_real_time_clock_v2_get_response_expected(real_time_clock_v2, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_ALARM, &response_expected);
-    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_ALARM, 10, 0, response_expected);
+    bool _response_expected = true;
+    tf_real_time_clock_v2_get_response_expected(real_time_clock_v2, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_ALARM, &_response_expected);
+    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_ALARM, 10, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(real_time_clock_v2->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(real_time_clock_v2->tfp);
 
-    send_buf[0] = (uint8_t)month;
-    send_buf[1] = (uint8_t)day;
-    send_buf[2] = (uint8_t)hour;
-    send_buf[3] = (uint8_t)minute;
-    send_buf[4] = (uint8_t)second;
-    send_buf[5] = (uint8_t)weekday;
-    interval = tf_leconvert_int32_to(interval); memcpy(send_buf + 6, &interval, 4);
+    _send_buf[0] = (uint8_t)month;
+    _send_buf[1] = (uint8_t)day;
+    _send_buf[2] = (uint8_t)hour;
+    _send_buf[3] = (uint8_t)minute;
+    _send_buf[4] = (uint8_t)second;
+    _send_buf[5] = (uint8_t)weekday;
+    interval = tf_leconvert_int32_to(interval); memcpy(_send_buf + 6, &interval, 4);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(real_time_clock_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(real_time_clock_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(real_time_clock_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(real_time_clock_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_real_time_clock_v2_get_alarm(TF_RealTimeClockV2 *real_time_clock_v2, int8_t *ret_month, int8_t *ret_day, int8_t *ret_hour, int8_t *ret_minute, int8_t *ret_second, int8_t *ret_weekday, int32_t *ret_interval) {
@@ -635,47 +663,56 @@ int tf_real_time_clock_v2_get_alarm(TF_RealTimeClockV2 *real_time_clock_v2, int8
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = real_time_clock_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_GET_ALARM, 0, 10, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_GET_ALARM, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(real_time_clock_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(real_time_clock_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
-        if (ret_month != NULL) { *ret_month = tf_packet_buffer_read_int8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_day != NULL) { *ret_day = tf_packet_buffer_read_int8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_hour != NULL) { *ret_hour = tf_packet_buffer_read_int8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_minute != NULL) { *ret_minute = tf_packet_buffer_read_int8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_second != NULL) { *ret_second = tf_packet_buffer_read_int8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_weekday != NULL) { *ret_weekday = tf_packet_buffer_read_int8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_interval != NULL) { *ret_interval = tf_packet_buffer_read_int32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
+        if (_error_code != 0 || _length != 10) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_month != NULL) { *ret_month = tf_packet_buffer_read_int8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_day != NULL) { *ret_day = tf_packet_buffer_read_int8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_hour != NULL) { *ret_hour = tf_packet_buffer_read_int8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_minute != NULL) { *ret_minute = tf_packet_buffer_read_int8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_second != NULL) { *ret_second = tf_packet_buffer_read_int8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_weekday != NULL) { *ret_weekday = tf_packet_buffer_read_int8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_interval != NULL) { *ret_interval = tf_packet_buffer_read_int32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
         tf_tfp_packet_processed(real_time_clock_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(real_time_clock_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(real_time_clock_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 10) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_real_time_clock_v2_get_spitfp_error_count(TF_RealTimeClockV2 *real_time_clock_v2, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
@@ -683,44 +720,53 @@ int tf_real_time_clock_v2_get_spitfp_error_count(TF_RealTimeClockV2 *real_time_c
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = real_time_clock_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, 16, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_GET_SPITFP_ERROR_COUNT, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(real_time_clock_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(real_time_clock_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
-        if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
-        if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
+        if (_error_code != 0 || _length != 16) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_error_count_ack_checksum != NULL) { *ret_error_count_ack_checksum = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_error_count_message_checksum != NULL) { *ret_error_count_message_checksum = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_error_count_frame != NULL) { *ret_error_count_frame = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
         tf_tfp_packet_processed(real_time_clock_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(real_time_clock_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(real_time_clock_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 16) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_real_time_clock_v2_set_bootloader_mode(TF_RealTimeClockV2 *real_time_clock_v2, uint8_t mode, uint8_t *ret_status) {
@@ -728,45 +774,54 @@ int tf_real_time_clock_v2_set_bootloader_mode(TF_RealTimeClockV2 *real_time_cloc
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = real_time_clock_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_BOOTLOADER_MODE, 1, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_BOOTLOADER_MODE, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(real_time_clock_v2->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(real_time_clock_v2->tfp);
 
-    send_buf[0] = (uint8_t)mode;
+    _send_buf[0] = (uint8_t)mode;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(real_time_clock_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(real_time_clock_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(real_time_clock_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(real_time_clock_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(real_time_clock_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_real_time_clock_v2_get_bootloader_mode(TF_RealTimeClockV2 *real_time_clock_v2, uint8_t *ret_mode) {
@@ -774,41 +829,50 @@ int tf_real_time_clock_v2_get_bootloader_mode(TF_RealTimeClockV2 *real_time_cloc
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = real_time_clock_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_GET_BOOTLOADER_MODE, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_GET_BOOTLOADER_MODE, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(real_time_clock_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(real_time_clock_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
-        if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(real_time_clock_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(real_time_clock_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(real_time_clock_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_real_time_clock_v2_set_write_firmware_pointer(TF_RealTimeClockV2 *real_time_clock_v2, uint32_t pointer) {
@@ -816,40 +880,45 @@ int tf_real_time_clock_v2_set_write_firmware_pointer(TF_RealTimeClockV2 *real_ti
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = real_time_clock_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_real_time_clock_v2_get_response_expected(real_time_clock_v2, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER, &response_expected);
-    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER, 4, 0, response_expected);
+    bool _response_expected = true;
+    tf_real_time_clock_v2_get_response_expected(real_time_clock_v2, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER, &_response_expected);
+    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER, 4, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(real_time_clock_v2->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(real_time_clock_v2->tfp);
 
-    pointer = tf_leconvert_uint32_to(pointer); memcpy(send_buf + 0, &pointer, 4);
+    pointer = tf_leconvert_uint32_to(pointer); memcpy(_send_buf + 0, &pointer, 4);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(real_time_clock_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(real_time_clock_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(real_time_clock_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(real_time_clock_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_real_time_clock_v2_write_firmware(TF_RealTimeClockV2 *real_time_clock_v2, const uint8_t data[64], uint8_t *ret_status) {
@@ -857,45 +926,54 @@ int tf_real_time_clock_v2_write_firmware(TF_RealTimeClockV2 *real_time_clock_v2,
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = real_time_clock_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_WRITE_FIRMWARE, 64, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_WRITE_FIRMWARE, 64, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(real_time_clock_v2->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(real_time_clock_v2->tfp);
 
-    memcpy(send_buf + 0, data, 64);
+    memcpy(_send_buf + 0, data, 64);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(real_time_clock_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(real_time_clock_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
-        if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(real_time_clock_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(real_time_clock_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(real_time_clock_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_real_time_clock_v2_set_status_led_config(TF_RealTimeClockV2 *real_time_clock_v2, uint8_t config) {
@@ -903,40 +981,45 @@ int tf_real_time_clock_v2_set_status_led_config(TF_RealTimeClockV2 *real_time_cl
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = real_time_clock_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_real_time_clock_v2_get_response_expected(real_time_clock_v2, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_STATUS_LED_CONFIG, &response_expected);
-    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_STATUS_LED_CONFIG, 1, 0, response_expected);
+    bool _response_expected = true;
+    tf_real_time_clock_v2_get_response_expected(real_time_clock_v2, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_STATUS_LED_CONFIG, &_response_expected);
+    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_SET_STATUS_LED_CONFIG, 1, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(real_time_clock_v2->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(real_time_clock_v2->tfp);
 
-    send_buf[0] = (uint8_t)config;
+    _send_buf[0] = (uint8_t)config;
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(real_time_clock_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(real_time_clock_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(real_time_clock_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(real_time_clock_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_real_time_clock_v2_get_status_led_config(TF_RealTimeClockV2 *real_time_clock_v2, uint8_t *ret_config) {
@@ -944,41 +1027,50 @@ int tf_real_time_clock_v2_get_status_led_config(TF_RealTimeClockV2 *real_time_cl
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = real_time_clock_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_GET_STATUS_LED_CONFIG, 0, 1, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_GET_STATUS_LED_CONFIG, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(real_time_clock_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(real_time_clock_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
-        if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
         tf_tfp_packet_processed(real_time_clock_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(real_time_clock_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(real_time_clock_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_real_time_clock_v2_get_chip_temperature(TF_RealTimeClockV2 *real_time_clock_v2, int16_t *ret_temperature) {
@@ -986,41 +1078,50 @@ int tf_real_time_clock_v2_get_chip_temperature(TF_RealTimeClockV2 *real_time_clo
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = real_time_clock_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_GET_CHIP_TEMPERATURE, 0, 2, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_GET_CHIP_TEMPERATURE, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(real_time_clock_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(real_time_clock_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
-        if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
+        if (_error_code != 0 || _length != 2) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+        }
         tf_tfp_packet_processed(real_time_clock_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(real_time_clock_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(real_time_clock_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 2) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_real_time_clock_v2_reset(TF_RealTimeClockV2 *real_time_clock_v2) {
@@ -1028,36 +1129,41 @@ int tf_real_time_clock_v2_reset(TF_RealTimeClockV2 *real_time_clock_v2) {
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = real_time_clock_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_real_time_clock_v2_get_response_expected(real_time_clock_v2, TF_REAL_TIME_CLOCK_V2_FUNCTION_RESET, &response_expected);
-    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_RESET, 0, 0, response_expected);
+    bool _response_expected = true;
+    tf_real_time_clock_v2_get_response_expected(real_time_clock_v2, TF_REAL_TIME_CLOCK_V2_FUNCTION_RESET, &_response_expected);
+    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_RESET, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(real_time_clock_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(real_time_clock_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(real_time_clock_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(real_time_clock_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_real_time_clock_v2_write_uid(TF_RealTimeClockV2 *real_time_clock_v2, uint32_t uid) {
@@ -1065,40 +1171,45 @@ int tf_real_time_clock_v2_write_uid(TF_RealTimeClockV2 *real_time_clock_v2, uint
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = real_time_clock_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_real_time_clock_v2_get_response_expected(real_time_clock_v2, TF_REAL_TIME_CLOCK_V2_FUNCTION_WRITE_UID, &response_expected);
-    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_WRITE_UID, 4, 0, response_expected);
+    bool _response_expected = true;
+    tf_real_time_clock_v2_get_response_expected(real_time_clock_v2, TF_REAL_TIME_CLOCK_V2_FUNCTION_WRITE_UID, &_response_expected);
+    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_WRITE_UID, 4, _response_expected);
 
-    uint8_t *send_buf = tf_tfp_get_send_payload_buffer(real_time_clock_v2->tfp);
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(real_time_clock_v2->tfp);
 
-    uid = tf_leconvert_uint32_to(uid); memcpy(send_buf + 0, &uid, 4);
+    uid = tf_leconvert_uint32_to(uid); memcpy(_send_buf + 0, &uid, 4);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(real_time_clock_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(real_time_clock_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    result = tf_tfp_finish_send(real_time_clock_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(real_time_clock_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_real_time_clock_v2_read_uid(TF_RealTimeClockV2 *real_time_clock_v2, uint32_t *ret_uid) {
@@ -1106,41 +1217,50 @@ int tf_real_time_clock_v2_read_uid(TF_RealTimeClockV2 *real_time_clock_v2, uint3
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = real_time_clock_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_READ_UID, 0, 4, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_READ_UID, 0, _response_expected);
 
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(real_time_clock_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(real_time_clock_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
-        if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 4); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
+        if (_error_code != 0 || _length != 4) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
         tf_tfp_packet_processed(real_time_clock_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(real_time_clock_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(real_time_clock_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 4) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 
 int tf_real_time_clock_v2_get_identity(TF_RealTimeClockV2 *real_time_clock_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
@@ -1148,47 +1268,56 @@ int tf_real_time_clock_v2_get_identity(TF_RealTimeClockV2 *real_time_clock_v2, c
         return TF_E_NULL;
     }
 
-    TF_HAL *hal = real_time_clock_v2->tfp->spitfp->hal;
+    TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
-    if (tf_hal_get_common(hal)->locked) {
+    if (tf_hal_get_common(_hal)->locked) {
         return TF_E_LOCKED;
     }
 
-    bool response_expected = true;
-    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_GET_IDENTITY, 0, 25, response_expected);
+    bool _response_expected = true;
+    tf_tfp_prepare_send(real_time_clock_v2->tfp, TF_REAL_TIME_CLOCK_V2_FUNCTION_GET_IDENTITY, 0, _response_expected);
 
-    size_t i;
-    uint32_t deadline = tf_hal_current_time_us(hal) + tf_hal_get_common(hal)->timeout;
+    size_t _i;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
-    uint8_t error_code = 0;
-    int result = tf_tfp_send_packet(real_time_clock_v2->tfp, response_expected, deadline, &error_code);
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(real_time_clock_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
 
-    if (result < 0) {
-        return result;
+    if (_result < 0) {
+        return _result;
     }
 
-    if (result & TF_TICK_TIMEOUT) {
+    if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
     }
 
-    if (result & TF_TICK_PACKET_RECEIVED && error_code == 0) {
-        TF_PacketBuffer *recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
-        if (ret_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
-        if (ret_connected_uid != NULL) { tf_packet_buffer_pop_n(recv_buf, (uint8_t *)ret_connected_uid, 8);} else { tf_packet_buffer_remove(recv_buf, 8); }
-        if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 1); }
-        if (ret_hardware_version != NULL) { for (i = 0; i < 3; ++i) ret_hardware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
-        if (ret_firmware_version != NULL) { for (i = 0; i < 3; ++i) ret_firmware_version[i] = tf_packet_buffer_read_uint8_t(recv_buf);} else { tf_packet_buffer_remove(recv_buf, 3); }
-        if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(recv_buf); } else { tf_packet_buffer_remove(recv_buf, 2); }
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(real_time_clock_v2->tfp);
+        if (_error_code != 0 || _length != 25) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_uid != NULL) { tf_packet_buffer_pop_n(_recv_buf, (uint8_t *)ret_uid, 8);} else { tf_packet_buffer_remove(_recv_buf, 8); }
+            if (ret_connected_uid != NULL) { tf_packet_buffer_pop_n(_recv_buf, (uint8_t *)ret_connected_uid, 8);} else { tf_packet_buffer_remove(_recv_buf, 8); }
+            if (ret_position != NULL) { *ret_position = tf_packet_buffer_read_char(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_hardware_version != NULL) { for (_i = 0; _i < 3; ++_i) ret_hardware_version[_i] = tf_packet_buffer_read_uint8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 3); }
+            if (ret_firmware_version != NULL) { for (_i = 0; _i < 3; ++_i) ret_firmware_version[_i] = tf_packet_buffer_read_uint8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 3); }
+            if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+        }
         tf_tfp_packet_processed(real_time_clock_v2->tfp);
     }
 
-    result = tf_tfp_finish_send(real_time_clock_v2->tfp, result, deadline);
+    _result = tf_tfp_finish_send(real_time_clock_v2->tfp, _result, _deadline);
 
-    if (result < 0) {
-        return result;
+    if (_error_code == 0 && _length != 25) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
-    return tf_tfp_get_error(error_code);
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
 }
 #if TF_IMPLEMENT_CALLBACKS != 0
 int tf_real_time_clock_v2_register_date_time_callback(TF_RealTimeClockV2 *real_time_clock_v2, TF_RealTimeClockV2_DateTimeHandler handler, void *user_data) {

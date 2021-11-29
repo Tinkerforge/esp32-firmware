@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,8 +28,8 @@ extern "C" {
 struct TF_HallEffectV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_HallEffectV2_MagneticFluxDensityHandler)(struct TF_HallEffectV2 *device, int16_t magnetic_flux_density, void *user_data);
-typedef void (*TF_HallEffectV2_CounterHandler)(struct TF_HallEffectV2 *device, uint32_t count, void *user_data);
+typedef void (*TF_HallEffectV2_MagneticFluxDensityHandler)(struct TF_HallEffectV2 *hall_effect_v2, int16_t magnetic_flux_density, void *user_data);
+typedef void (*TF_HallEffectV2_CounterHandler)(struct TF_HallEffectV2 *hall_effect_v2, uint32_t count, void *user_data);
 
 #endif
 /**
@@ -288,7 +288,7 @@ typedef struct TF_HallEffectV2 {
  * Creates the device object \c hall_effect_v2 with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_hall_effect_v2_create(TF_HallEffectV2 *hall_effect_v2, const char *uid, TF_HAL *hal);
+int tf_hall_effect_v2_create(TF_HallEffectV2 *hall_effect_v2, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_HallEffectV2

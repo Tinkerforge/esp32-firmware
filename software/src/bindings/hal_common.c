@@ -86,7 +86,7 @@ void tf_hal_enumerate_handler(TF_HAL *hal, uint8_t port_id, TF_PacketBuffer *pay
         return;
     }
 
-    if (tf_hal_get_tfp(hal, NULL, &uid_num, NULL, NULL) != NULL) {
+    if (tf_hal_get_tfp(hal, &uid_num, NULL, NULL, false) != NULL) {
         return; // device already known
     }
 
@@ -427,6 +427,7 @@ int tf_hal_tick(TF_HAL *hal, uint32_t timeout_us) {
     TF_HALCommon *hal_common = tf_hal_get_common(hal);
     TF_Net *net = hal_common->net;
     uint8_t ignored;
+    uint8_t ignored_2;
     int result;
 
     if (net != NULL) {
@@ -437,7 +438,7 @@ int tf_hal_tick(TF_HAL *hal, uint32_t timeout_us) {
                 if (hal_common->tfps[i].spitfp->send_buf[0] == 0) {
                     tf_tfp_inject_packet(&hal_common->tfps[i], &enumerate_request_header, enumerate_request);
                     // TODO: What timeout to use here? If decided, use return value to check for the timeout, maybe increase an error count
-                    result = tf_tfp_send_packet(&hal_common->tfps[i], false, deadline_us, &ignored);
+                    result = tf_tfp_send_packet(&hal_common->tfps[i], false, deadline_us, &ignored, &ignored_2);
                     (void)! tf_tfp_finish_send(&hal_common->tfps[i], result, deadline_us); // ignore result for now: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66425#c34
                     hal_common->tfps[i].send_enumerate_request = false;
                 }
@@ -490,7 +491,7 @@ int tf_hal_tick(TF_HAL *hal, uint32_t timeout_us) {
                 tf_tfp_inject_packet(&hal_common->tfps[i], &header, buf);
 
                 // TODO: What timeout to use here? If decided, use return value to check for the timeout, maybe increase an error count
-                result = tf_tfp_send_packet(&hal_common->tfps[i], false, deadline_us, &ignored);
+                result = tf_tfp_send_packet(&hal_common->tfps[i], false, deadline_us, &ignored, &ignored_2);
                 (void)! tf_tfp_finish_send(&hal_common->tfps[i], result, deadline_us); // ignore result for now: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66425#c34
                 dispatched = true;
             }
@@ -595,26 +596,15 @@ void tf_hal_set_net(TF_HAL *hal, TF_Net *net) {
 // FIXME: For a device_id-only lookup to produce stable results the TFP order has to be stable.
 //        The order has to be predictable as wall for the user. This means having the TFPs
 //        sorted by port_id order port_name. This is currently not the case, I think.
-TF_TFP *tf_hal_get_tfp(TF_HAL *hal, uint16_t *index_ptr, const uint32_t *uid, const uint8_t *port_id, const uint16_t *device_id) {
+TF_TFP *tf_hal_get_tfp(TF_HAL *hal, const uint32_t *uid, const uint8_t *port_id, const uint16_t *device_id, bool skip_already_in_use) {
     TF_HALCommon *hal_common = tf_hal_get_common(hal);
-    uint16_t index = 0;
 
-    if (index_ptr != NULL) {
-        index = *index_ptr;
-    }
+    for (uint16_t i = 0; i < hal_common->tfps_used; ++i) {
+        TF_TFP *tfp = &hal_common->tfps[i];
 
-    if (index >= hal_common->tfps_used) {
-        index -= hal_common->tfps_used;
-    }
-
-    for (uint16_t i = index; i < index + hal_common->tfps_used; ++i) {
-        uint16_t k = i;
-
-        if (k >= hal_common->tfps_used) {
-            k -= hal_common->tfps_used;
+        if (skip_already_in_use && tfp->device != NULL) {
+            continue;
         }
-
-        TF_TFP *tfp = &hal_common->tfps[k];
 
         if (uid != NULL && tfp->uid != *uid) {
             continue;
@@ -628,12 +618,98 @@ TF_TFP *tf_hal_get_tfp(TF_HAL *hal, uint16_t *index_ptr, const uint32_t *uid, co
             continue;
         }
 
-        if (index_ptr != NULL) {
-            *index_ptr = k + 1;
-        }
-
         return tfp;
     }
 
     return NULL;
+}
+
+int tf_hal_get_attachable_tfp(TF_HAL *hal, TF_TFP **tfp_ptr, const char *uid_or_port_name, uint16_t device_id) {
+    TF_HALCommon *hal_common = tf_hal_get_common(hal);
+
+    *tfp_ptr = NULL;
+
+    if (uid_or_port_name != NULL && *uid_or_port_name != '\0') {
+        uint32_t uid_num = 0;
+        int base58_rc = tf_base58_decode(uid_or_port_name, &uid_num);
+
+        // Could be a UID
+        if (base58_rc == TF_E_OK) {
+            TF_TFP *tfp = tf_hal_get_tfp(hal, &uid_num, NULL, &device_id, true);
+
+            if (tfp != NULL) {
+                *tfp_ptr = tfp;
+
+                return TF_E_OK;
+            }
+
+            // Could be wrong-device-type or already-in-use
+            tfp = tf_hal_get_tfp(hal, &uid_num, NULL, NULL, false);
+
+            if (tfp != NULL) {
+                if (tfp->device_id != device_id) {
+                    return TF_E_WRONG_DEVICE_TYPE;
+                }
+
+                return TF_E_DEVICE_ALREADY_IN_USE;
+            }
+
+            // Intentionally don't exit here and check port names
+        }
+
+        // Could be a port name
+        if (*(uid_or_port_name + 1) != '\0') {
+            bool known_port_name = false;
+
+            for (uint8_t port_id = 0; port_id < hal_common->port_count; ++port_id) {
+                char port_name = tf_hal_get_port_name(hal, port_id);
+
+                if (*uid_or_port_name != port_name) {
+                    continue;
+                }
+
+                known_port_name = true;
+
+                TF_TFP *tfp = tf_hal_get_tfp(hal, NULL, &port_id, &device_id, true);
+
+                if (tfp != NULL) {
+                    *tfp_ptr = tfp;
+
+                    return TF_E_OK;
+                }
+
+                // Could be already-in-use
+                tfp = tf_hal_get_tfp(hal, NULL, &port_id, &device_id, false);
+
+                if (tfp != NULL) {
+                    return TF_E_DEVICE_ALREADY_IN_USE;
+                }
+
+                // Intentionally don't exit here, port names are not enforced to be unique
+            }
+
+            if (known_port_name) {
+                return TF_E_DEVICE_NOT_FOUND;
+            }
+        }
+
+        return base58_rc;
+    } else {
+        TF_TFP *tfp = tf_hal_get_tfp(hal, NULL, NULL, &device_id, true);
+
+        if (tfp != NULL) {
+            *tfp_ptr = tfp;
+
+            return TF_E_OK;
+        }
+
+        // Could be already-in-use
+        tfp = tf_hal_get_tfp(hal, NULL, NULL, &device_id, false);
+
+        if (tfp != NULL) {
+            return TF_E_DEVICE_ALREADY_IN_USE;
+        }
+
+        return TF_E_DEVICE_NOT_FOUND;
+    }
 }

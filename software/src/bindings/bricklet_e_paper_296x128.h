@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,7 +28,7 @@ extern "C" {
 struct TF_EPaper296x128;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_EPaper296x128_DrawStatusHandler)(struct TF_EPaper296x128 *device, uint8_t draw_status, void *user_data);
+typedef void (*TF_EPaper296x128_DrawStatusHandler)(struct TF_EPaper296x128 *e_paper_296x128, uint8_t draw_status, void *user_data);
 
 #endif
 /**
@@ -424,7 +424,7 @@ typedef struct TF_EPaper296x128 {
  * Creates the device object \c e_paper_296x128 with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_e_paper_296x128_create(TF_EPaper296x128 *e_paper_296x128, const char *uid, TF_HAL *hal);
+int tf_e_paper_296x128_create(TF_EPaper296x128 *e_paper_296x128, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_EPaper296x128

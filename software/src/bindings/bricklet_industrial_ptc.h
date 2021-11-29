@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,9 +28,9 @@ extern "C" {
 struct TF_IndustrialPTC;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_IndustrialPTC_TemperatureHandler)(struct TF_IndustrialPTC *device, int32_t temperature, void *user_data);
-typedef void (*TF_IndustrialPTC_ResistanceHandler)(struct TF_IndustrialPTC *device, int32_t resistance, void *user_data);
-typedef void (*TF_IndustrialPTC_SensorConnectedHandler)(struct TF_IndustrialPTC *device, bool connected, void *user_data);
+typedef void (*TF_IndustrialPTC_TemperatureHandler)(struct TF_IndustrialPTC *industrial_ptc, int32_t temperature, void *user_data);
+typedef void (*TF_IndustrialPTC_ResistanceHandler)(struct TF_IndustrialPTC *industrial_ptc, int32_t resistance, void *user_data);
+typedef void (*TF_IndustrialPTC_SensorConnectedHandler)(struct TF_IndustrialPTC *industrial_ptc, bool connected, void *user_data);
 
 #endif
 /**
@@ -357,7 +357,7 @@ typedef struct TF_IndustrialPTC {
  * Creates the device object \c industrial_ptc with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_industrial_ptc_create(TF_IndustrialPTC *industrial_ptc, const char *uid, TF_HAL *hal);
+int tf_industrial_ptc_create(TF_IndustrialPTC *industrial_ptc, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_IndustrialPTC

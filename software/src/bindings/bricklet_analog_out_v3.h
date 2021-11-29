@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -221,7 +221,7 @@ typedef struct TF_AnalogOutV3 {
  * Creates the device object \c analog_out_v3 with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_analog_out_v3_create(TF_AnalogOutV3 *analog_out_v3, const char *uid, TF_HAL *hal);
+int tf_analog_out_v3_create(TF_AnalogOutV3 *analog_out_v3, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_AnalogOutV3

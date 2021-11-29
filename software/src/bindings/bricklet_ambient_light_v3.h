@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,7 +28,7 @@ extern "C" {
 struct TF_AmbientLightV3;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_AmbientLightV3_IlluminanceHandler)(struct TF_AmbientLightV3 *device, uint32_t illuminance, void *user_data);
+typedef void (*TF_AmbientLightV3_IlluminanceHandler)(struct TF_AmbientLightV3 *ambient_light_v3, uint32_t illuminance, void *user_data);
 
 #endif
 /**
@@ -339,7 +339,7 @@ typedef struct TF_AmbientLightV3 {
  * Creates the device object \c ambient_light_v3 with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_ambient_light_v3_create(TF_AmbientLightV3 *ambient_light_v3, const char *uid, TF_HAL *hal);
+int tf_ambient_light_v3_create(TF_AmbientLightV3 *ambient_light_v3, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_AmbientLightV3

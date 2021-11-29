@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,7 +28,7 @@ extern "C" {
 struct TF_IndustrialDual020mAV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_IndustrialDual020mAV2_CurrentHandler)(struct TF_IndustrialDual020mAV2 *device, uint8_t channel, int32_t current, void *user_data);
+typedef void (*TF_IndustrialDual020mAV2_CurrentHandler)(struct TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint8_t channel, int32_t current, void *user_data);
 
 #endif
 /**
@@ -364,7 +364,7 @@ typedef struct TF_IndustrialDual020mAV2 {
  * Creates the device object \c industrial_dual_0_20ma_v2 with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_industrial_dual_0_20ma_v2_create(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, const char *uid, TF_HAL *hal);
+int tf_industrial_dual_0_20ma_v2_create(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_IndustrialDual020mAV2

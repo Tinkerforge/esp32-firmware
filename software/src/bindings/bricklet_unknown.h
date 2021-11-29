@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,7 +28,7 @@ extern "C" {
 struct TF_Unknown;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_Unknown_EnumerateHandler)(struct TF_Unknown *device, char uid[8], char connected_uid[8], char position, uint8_t hardware_version[3], uint8_t firmware_version[3], uint16_t device_identifier, uint8_t enumeration_type, void *user_data);
+typedef void (*TF_Unknown_EnumerateHandler)(struct TF_Unknown *unknown, char uid[8], char connected_uid[8], char position, uint8_t hardware_version[3], uint8_t firmware_version[3], uint16_t device_identifier, uint8_t enumeration_type, void *user_data);
 
 #endif
 /**

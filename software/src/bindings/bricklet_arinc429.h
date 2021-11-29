@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,9 +28,9 @@ extern "C" {
 struct TF_ARINC429;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_ARINC429_HeartbeatMessageHandler)(struct TF_ARINC429 *device, uint8_t channel, uint8_t status, uint8_t seq_number, uint16_t timestamp, uint16_t frames_processed, uint16_t frames_lost, void *user_data);
-typedef void (*TF_ARINC429_FrameMessageHandler)(struct TF_ARINC429 *device, uint8_t channel, uint8_t status, uint8_t seq_number, uint16_t timestamp, uint32_t frame, uint16_t age, void *user_data);
-typedef void (*TF_ARINC429_SchedulerMessageHandler)(struct TF_ARINC429 *device, uint8_t channel, uint8_t status, uint8_t seq_number, uint16_t timestamp, uint8_t userdata, void *user_data);
+typedef void (*TF_ARINC429_HeartbeatMessageHandler)(struct TF_ARINC429 *arinc429, uint8_t channel, uint8_t status, uint8_t seq_number, uint16_t timestamp, uint16_t frames_processed, uint16_t frames_lost, void *user_data);
+typedef void (*TF_ARINC429_FrameMessageHandler)(struct TF_ARINC429 *arinc429, uint8_t channel, uint8_t status, uint8_t seq_number, uint16_t timestamp, uint32_t frame, uint16_t age, void *user_data);
+typedef void (*TF_ARINC429_SchedulerMessageHandler)(struct TF_ARINC429 *arinc429, uint8_t channel, uint8_t status, uint8_t seq_number, uint16_t timestamp, uint8_t userdata, void *user_data);
 
 #endif
 /**
@@ -512,7 +512,7 @@ typedef struct TF_ARINC429 {
  * Creates the device object \c arinc429 with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_arinc429_create(TF_ARINC429 *arinc429, const char *uid, TF_HAL *hal);
+int tf_arinc429_create(TF_ARINC429 *arinc429, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_ARINC429

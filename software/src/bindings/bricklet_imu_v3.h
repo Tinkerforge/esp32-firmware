@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,15 +28,15 @@ extern "C" {
 struct TF_IMUV3;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_IMUV3_AccelerationHandler)(struct TF_IMUV3 *device, int16_t x, int16_t y, int16_t z, void *user_data);
-typedef void (*TF_IMUV3_MagneticFieldHandler)(struct TF_IMUV3 *device, int16_t x, int16_t y, int16_t z, void *user_data);
-typedef void (*TF_IMUV3_AngularVelocityHandler)(struct TF_IMUV3 *device, int16_t x, int16_t y, int16_t z, void *user_data);
-typedef void (*TF_IMUV3_TemperatureHandler)(struct TF_IMUV3 *device, int8_t temperature, void *user_data);
-typedef void (*TF_IMUV3_LinearAccelerationHandler)(struct TF_IMUV3 *device, int16_t x, int16_t y, int16_t z, void *user_data);
-typedef void (*TF_IMUV3_GravityVectorHandler)(struct TF_IMUV3 *device, int16_t x, int16_t y, int16_t z, void *user_data);
-typedef void (*TF_IMUV3_OrientationHandler)(struct TF_IMUV3 *device, int16_t heading, int16_t roll, int16_t pitch, void *user_data);
-typedef void (*TF_IMUV3_QuaternionHandler)(struct TF_IMUV3 *device, int16_t w, int16_t x, int16_t y, int16_t z, void *user_data);
-typedef void (*TF_IMUV3_AllDataHandler)(struct TF_IMUV3 *device, int16_t acceleration[3], int16_t magnetic_field[3], int16_t angular_velocity[3], int16_t euler_angle[3], int16_t quaternion[4], int16_t linear_acceleration[3], int16_t gravity_vector[3], int8_t temperature, uint8_t calibration_status, void *user_data);
+typedef void (*TF_IMUV3_AccelerationHandler)(struct TF_IMUV3 *imu_v3, int16_t x, int16_t y, int16_t z, void *user_data);
+typedef void (*TF_IMUV3_MagneticFieldHandler)(struct TF_IMUV3 *imu_v3, int16_t x, int16_t y, int16_t z, void *user_data);
+typedef void (*TF_IMUV3_AngularVelocityHandler)(struct TF_IMUV3 *imu_v3, int16_t x, int16_t y, int16_t z, void *user_data);
+typedef void (*TF_IMUV3_TemperatureHandler)(struct TF_IMUV3 *imu_v3, int8_t temperature, void *user_data);
+typedef void (*TF_IMUV3_LinearAccelerationHandler)(struct TF_IMUV3 *imu_v3, int16_t x, int16_t y, int16_t z, void *user_data);
+typedef void (*TF_IMUV3_GravityVectorHandler)(struct TF_IMUV3 *imu_v3, int16_t x, int16_t y, int16_t z, void *user_data);
+typedef void (*TF_IMUV3_OrientationHandler)(struct TF_IMUV3 *imu_v3, int16_t heading, int16_t roll, int16_t pitch, void *user_data);
+typedef void (*TF_IMUV3_QuaternionHandler)(struct TF_IMUV3 *imu_v3, int16_t w, int16_t x, int16_t y, int16_t z, void *user_data);
+typedef void (*TF_IMUV3_AllDataHandler)(struct TF_IMUV3 *imu_v3, int16_t acceleration[3], int16_t magnetic_field[3], int16_t angular_velocity[3], int16_t euler_angle[3], int16_t quaternion[4], int16_t linear_acceleration[3], int16_t gravity_vector[3], int8_t temperature, uint8_t calibration_status, void *user_data);
 
 #endif
 /**
@@ -631,7 +631,7 @@ typedef struct TF_IMUV3 {
  * Creates the device object \c imu_v3 with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_imu_v3_create(TF_IMUV3 *imu_v3, const char *uid, TF_HAL *hal);
+int tf_imu_v3_create(TF_IMUV3 *imu_v3, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_IMUV3

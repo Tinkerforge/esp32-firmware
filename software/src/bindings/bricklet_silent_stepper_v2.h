@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-26.      *
+ * This file was automatically generated on 2021-11-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -28,11 +28,11 @@ extern "C" {
 struct TF_SilentStepperV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
-typedef void (*TF_SilentStepperV2_UnderVoltageHandler)(struct TF_SilentStepperV2 *device, uint16_t voltage, void *user_data);
-typedef void (*TF_SilentStepperV2_PositionReachedHandler)(struct TF_SilentStepperV2 *device, int32_t position, void *user_data);
-typedef void (*TF_SilentStepperV2_AllDataHandler)(struct TF_SilentStepperV2 *device, uint16_t current_velocity, int32_t current_position, int32_t remaining_steps, uint16_t input_voltage, uint16_t current_consumption, void *user_data);
-typedef void (*TF_SilentStepperV2_NewStateHandler)(struct TF_SilentStepperV2 *device, uint8_t state_new, uint8_t state_previous, void *user_data);
-typedef void (*TF_SilentStepperV2_GPIOStateHandler)(struct TF_SilentStepperV2 *device, bool gpio_state[2], void *user_data);
+typedef void (*TF_SilentStepperV2_UnderVoltageHandler)(struct TF_SilentStepperV2 *silent_stepper_v2, uint16_t voltage, void *user_data);
+typedef void (*TF_SilentStepperV2_PositionReachedHandler)(struct TF_SilentStepperV2 *silent_stepper_v2, int32_t position, void *user_data);
+typedef void (*TF_SilentStepperV2_AllDataHandler)(struct TF_SilentStepperV2 *silent_stepper_v2, uint16_t current_velocity, int32_t current_position, int32_t remaining_steps, uint16_t input_voltage, uint16_t current_consumption, void *user_data);
+typedef void (*TF_SilentStepperV2_NewStateHandler)(struct TF_SilentStepperV2 *silent_stepper_v2, uint8_t state_new, uint8_t state_previous, void *user_data);
+typedef void (*TF_SilentStepperV2_GPIOStateHandler)(struct TF_SilentStepperV2 *silent_stepper_v2, bool gpio_state[2], void *user_data);
 
 #endif
 /**
@@ -765,7 +765,7 @@ typedef struct TF_SilentStepperV2 {
  * Creates the device object \c silent_stepper_v2 with the unique device ID \c uid and adds
  * it to the HAL \c hal.
  */
-int tf_silent_stepper_v2_create(TF_SilentStepperV2 *silent_stepper_v2, const char *uid, TF_HAL *hal);
+int tf_silent_stepper_v2_create(TF_SilentStepperV2 *silent_stepper_v2, const char *uid_or_port_name, TF_HAL *hal);
 
 /**
  * \ingroup TF_SilentStepperV2
