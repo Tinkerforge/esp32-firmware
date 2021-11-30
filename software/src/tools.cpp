@@ -212,10 +212,8 @@ bool is_littlefs_available(const char *part_label, const char *base_path)
 }
 
 // Adapted from https://github.com/espressif/arduino-esp32/blob/master/libraries/LittleFS/examples/LITTLEFS_PlatformIO/src/main.cpp
-bool mirror_filesystem(fs::FS &fromFS, fs::FS &toFS, String root_name, int levels)
+bool mirror_filesystem(fs::FS &fromFS, fs::FS &toFS, String root_name, int levels, uint8_t *buf, size_t buf_size)
 {
-    uint8_t buf[4096] = {0};
-
     // File works RAII style, no need to close.
     File root = fromFS.open(root_name);
 
@@ -241,7 +239,7 @@ bool mirror_filesystem(fs::FS &fromFS, fs::FS &toFS, String root_name, int level
             logger.printfln("Recursing in directory %s. Depth left %d.", root_name.c_str(), levels - 1);
             toFS.mkdir(source.name());
 
-            if (!mirror_filesystem(fromFS, toFS, String(source.name()) + "/", levels - 1)) {
+            if (!mirror_filesystem(fromFS, toFS, String(source.name()) + "/", levels - 1, buf, buf_size)) {
                 return false;
             }
 
@@ -251,7 +249,7 @@ bool mirror_filesystem(fs::FS &fromFS, fs::FS &toFS, String root_name, int level
         File target = toFS.open(root_name + source.name(), FILE_WRITE);
 
         while (source.available()) {
-            size_t read = source.read(buf, sizeof(buf) / sizeof(buf[0]));
+            size_t read = source.read(buf, buf_size);
             size_t written = target.write(buf, read);
 
             if (written != read) {
@@ -288,12 +286,15 @@ bool mount_or_format_spiffs(void)
             LogSilencer ls{"esp_littlefs"};
             LogSilencer ls2{"ARDUINO"};
             LittleFS.begin(false, "/conf_backup", 10, "coredump");
+        }
         LittleFS.format();
         LittleFS.begin(false, "/conf_backup", 10, "coredump");
 
         logger.printfln("Mirroring configuration to core dump partition.");
         SPIFFS.begin(false);
-        mirror_filesystem(SPIFFS, LittleFS, "/", 4);
+        uint8_t *buf = (uint8_t *)malloc(4096);
+        mirror_filesystem(SPIFFS, LittleFS, "/", 4, buf, 4096);
+        free(buf);
         SPIFFS.end();
         LittleFS.end();
     }
@@ -317,7 +318,9 @@ bool mount_or_format_spiffs(void)
         logger.printfln("Mirroring configuration backup to configuration partition.");
         fs::LittleFSFS configFS;
         configFS.begin(false, "/conf_backup", 10, "coredump");
-        mirror_filesystem(configFS, LittleFS, "/", 4);
+        uint8_t *buf = (uint8_t *)malloc(4096);
+        mirror_filesystem(configFS, LittleFS, "/", 4, buf, 4096);
+        free(buf);
         configFS.end();
         LittleFS.end();
 
