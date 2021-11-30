@@ -71,9 +71,9 @@ void tf_hal_enumerate_handler(TF_HAL *hal, uint8_t port_id, TF_PacketBuffer *pay
     TF_HALCommon *hal_common = tf_hal_get_common(hal);
     char uid[8]; tf_packet_buffer_pop_n(payload, (uint8_t *)uid, 8);
     char connected_uid[8]; tf_packet_buffer_pop_n(payload, (uint8_t *)connected_uid, 8);
-    tf_packet_buffer_remove(payload, 7); // drop position, hardware version and firmware version
+    tf_packet_buffer_remove(payload, 7); // Drop position, hardware version and firmware version
     uint16_t device_id = tf_packet_buffer_read_uint16_t(payload);
-    tf_packet_buffer_remove(payload, 1); // drop enumeration type
+    tf_packet_buffer_remove(payload, 1); // Drop enumeration type
 
     if (hal_common->tfps_used >= sizeof(hal_common->tfps) / sizeof(hal_common->tfps[0])) {
         ++hal_common->device_overflow_count;
@@ -87,14 +87,34 @@ void tf_hal_enumerate_handler(TF_HAL *hal, uint8_t port_id, TF_PacketBuffer *pay
     }
 
     if (tf_hal_get_tfp(hal, &uid_num, NULL, NULL, false) != NULL) {
-        return; // device already known
+        return; // Device already known
     }
 
     tf_hal_log_info("Found device %s of type %d at port %c\n", uid, device_id, tf_hal_get_port_name(hal, port_id));
 
     TF_PortCommon *port_common = tf_hal_get_port_common(hal, port_id);
+    uint16_t index = hal_common->tfps_used;
 
-    tf_tfp_create(&hal_common->tfps[hal_common->tfps_used++], uid_num, device_id, &port_common->spitfp);
+    tf_tfp_create(&hal_common->tfps[hal_common->tfps_used], uid_num, device_id, &port_common->spitfp);
+
+    // Sort by port ID first and by UID second
+    for (uint16_t i = 0; i < hal_common->tfps_used; ++i) {
+        TF_TFP *other_tfp = &hal_common->tfps[hal_common->tfps_order[i]];
+
+        if (other_tfp->spitfp->port_id > port_id || (other_tfp->spitfp->port_id == port_id && other_tfp->uid > uid_num)) {
+            index = i;
+            break;
+        }
+    }
+
+    if (index < hal_common->tfps_used) {
+        memmove(&hal_common->tfps_order[index + 1],
+                &hal_common->tfps_order[index],
+                sizeof(hal_common->tfps_order[0]) * (hal_common->tfps_used - index));
+    }
+
+    hal_common->tfps_order[index] = hal_common->tfps_used;
+    ++hal_common->tfps_used;
 }
 
 static const char *alphabet = "0123456789abcdef";
@@ -358,6 +378,8 @@ int tf_hal_get_device_info(TF_HAL *hal, uint16_t index, char ret_uid[7], char *r
         return TF_E_DEVICE_NOT_FOUND;
     }
 
+    index = hal_common->tfps_order[index];
+
     if (ret_uid != NULL) {
         tf_base58_encode(hal_common->tfps[index].uid, ret_uid);
     }
@@ -593,14 +615,11 @@ void tf_hal_set_net(TF_HAL *hal, TF_Net *net) {
     hal_common->net = net;
 }
 
-// FIXME: For a device_id-only lookup to produce stable results the TFP order has to be stable.
-//        The order has to be predictable as wall for the user. This means having the TFPs
-//        sorted by port_id order port_name. This is currently not the case, I think.
 TF_TFP *tf_hal_get_tfp(TF_HAL *hal, const uint32_t *uid, const uint8_t *port_id, const uint16_t *device_id, bool skip_already_in_use) {
     TF_HALCommon *hal_common = tf_hal_get_common(hal);
 
     for (uint16_t i = 0; i < hal_common->tfps_used; ++i) {
-        TF_TFP *tfp = &hal_common->tfps[i];
+        TF_TFP *tfp = &hal_common->tfps[hal_common->tfps_order[i]];
 
         if (skip_already_in_use && tfp->device != NULL) {
             continue;

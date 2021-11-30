@@ -36,6 +36,7 @@ typedef union TF_PortCommon {
 
 typedef struct TF_HALCommon {
     TF_TFP tfps[TF_INVENTORY_SIZE];
+    uint16_t tfps_order[TF_INVENTORY_SIZE];
     uint16_t tfps_used;
 
     uint16_t device_overflow_count;
