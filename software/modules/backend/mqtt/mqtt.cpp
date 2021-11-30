@@ -266,7 +266,8 @@ void Mqtt::setup()
 
     mqtt_config_in_use = mqtt_config;
 
-    esp_mqtt_client_config_t mqtt_cfg;
+    esp_mqtt_client_config_t mqtt_cfg = {};
+
     mqtt_cfg.host = mqtt_config_in_use.get("broker_host")->asCStr();
     mqtt_cfg.port = mqtt_config_in_use.get("broker_port")->asUint();
     mqtt_cfg.client_id = mqtt_config_in_use.get("client_name")->asCStr();
