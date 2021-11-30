@@ -10,7 +10,7 @@
             "debug": "Debug",
             "uptime": "Uptime",
             "heap_free": "Free heap bytes",
-            "heap_block": "Largest free heap block",
+            "heap_block": "Largest free heap block"
         },
         "script": {
         }
