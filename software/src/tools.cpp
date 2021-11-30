@@ -149,9 +149,23 @@ int check(int rc, const char *msg)
     return rc;
 }
 
+class LogSilencer {
+public:
+    LogSilencer(const char *tag) : tag(tag), level_to_restore(ESP_LOG_NONE) {
+        level_to_restore = esp_log_level_get(tag);
+        esp_log_level_set(tag, ESP_LOG_NONE);
+    }
+
+    ~LogSilencer() {
+        esp_log_level_set(tag, level_to_restore);
+    }
+    const char *tag;
+    esp_log_level_t level_to_restore;
+};
+
 bool is_spiffs_available(const char *part_label, const char *base_path)
 {
-    Serial.printf("Checking if %s is mountable as SPIFFS. Please ignore following SPIFFS errors\n", part_label);
+    LogSilencer ls{"SPIFFS"};
 
     esp_vfs_spiffs_conf_t conf = {
         .base_path = base_path,
@@ -175,7 +189,7 @@ bool is_spiffs_available(const char *part_label, const char *base_path)
 
 bool is_littlefs_available(const char *part_label, const char *base_path)
 {
-    Serial.printf("Checking if %s is mountable as LittleFS. Please ignore following LittleFS errors\n", part_label);
+    LogSilencer ls{"esp_littlefs"};
 
     esp_vfs_littlefs_conf_t conf = {
         .base_path = base_path,
@@ -270,7 +284,10 @@ bool mount_or_format_spiffs(void)
         logger.printfln("Configuration partition is mountable as SPIFFS. Migrating to LittleFS.");
 
         logger.printfln("Formatting core dump partition as LittleFS.");
-        LittleFS.begin(false, "/conf_backup", 10, "coredump");
+        {
+            LogSilencer ls{"esp_littlefs"};
+            LogSilencer ls2{"ARDUINO"};
+            LittleFS.begin(false, "/conf_backup", 10, "coredump");
         LittleFS.format();
         LittleFS.begin(false, "/conf_backup", 10, "coredump");
 
@@ -289,7 +306,11 @@ bool mount_or_format_spiffs(void)
         logger.printfln("Core dump partition is mountable as LittleFS, configuration backup found. Continuing migration.");
 
         logger.printfln("Formatting configuration partition as LittleFS.");
-        LittleFS.begin(false, "/spiffs", 10, "spiffs");
+        {
+            LogSilencer ls{"esp_littlefs"};
+            LogSilencer ls2{"ARDUINO"};
+            LittleFS.begin(false, "/spiffs", 10, "spiffs");
+        }
         LittleFS.format();
         LittleFS.begin(false, "/spiffs", 10, "spiffs");
 
@@ -308,8 +329,12 @@ bool mount_or_format_spiffs(void)
 
     if (!is_littlefs_available("spiffs", "/spiffs")) {
         logger.printfln("Configuration partition is not mountable as LittleFS. Formatting now.");
-        LittleFS.begin(false, "/spiffs", 10, "spiffs");
+        {
+            LogSilencer ls{"esp_littlefs"};
+            LittleFS.begin(false, "/spiffs", 10, "spiffs");
+        }
         LittleFS.format();
+        logger.printfln("Configuration partition is now formatted as LittleFS.");
     }
 
     if (!LittleFS.begin(false, "/spiffs", 10, "spiffs")) {
