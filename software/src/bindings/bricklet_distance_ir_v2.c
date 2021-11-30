@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -84,20 +84,24 @@ int tf_distance_ir_v2_create(TF_DistanceIRV2 *distance_ir_v2, const char *uid_or
     distance_ir_v2->tfp = tfp;
     distance_ir_v2->tfp->device = distance_ir_v2;
     distance_ir_v2->tfp->cb_handler = tf_distance_ir_v2_callback_handler;
+    distance_ir_v2->magic = 0x5446;
     distance_ir_v2->response_expected[0] = 0x03;
     distance_ir_v2->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_distance_ir_v2_destroy(TF_DistanceIRV2 *distance_ir_v2) {
-    if (distance_ir_v2 == NULL || distance_ir_v2->tfp == NULL) {
+    if (distance_ir_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     distance_ir_v2->tfp->cb_handler = NULL;
     distance_ir_v2->tfp->device = NULL;
     distance_ir_v2->tfp = NULL;
+    distance_ir_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -105,6 +109,10 @@ int tf_distance_ir_v2_destroy(TF_DistanceIRV2 *distance_ir_v2) {
 int tf_distance_ir_v2_get_response_expected(TF_DistanceIRV2 *distance_ir_v2, uint8_t function_id, bool *ret_response_expected) {
     if (distance_ir_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -163,6 +171,10 @@ int tf_distance_ir_v2_get_response_expected(TF_DistanceIRV2 *distance_ir_v2, uin
 int tf_distance_ir_v2_set_response_expected(TF_DistanceIRV2 *distance_ir_v2, uint8_t function_id, bool response_expected) {
     if (distance_ir_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -241,6 +253,10 @@ int tf_distance_ir_v2_set_response_expected_all(TF_DistanceIRV2 *distance_ir_v2,
         return TF_E_NULL;
     }
 
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(distance_ir_v2->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -249,6 +265,10 @@ int tf_distance_ir_v2_set_response_expected_all(TF_DistanceIRV2 *distance_ir_v2,
 int tf_distance_ir_v2_get_distance(TF_DistanceIRV2 *distance_ir_v2, uint16_t *ret_distance) {
     if (distance_ir_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = distance_ir_v2->tfp->spitfp->hal;
@@ -302,6 +322,10 @@ int tf_distance_ir_v2_set_distance_callback_configuration(TF_DistanceIRV2 *dista
         return TF_E_NULL;
     }
 
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = distance_ir_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -350,6 +374,10 @@ int tf_distance_ir_v2_set_distance_callback_configuration(TF_DistanceIRV2 *dista
 int tf_distance_ir_v2_get_distance_callback_configuration(TF_DistanceIRV2 *distance_ir_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, uint16_t *ret_min, uint16_t *ret_max) {
     if (distance_ir_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = distance_ir_v2->tfp->spitfp->hal;
@@ -407,6 +435,10 @@ int tf_distance_ir_v2_get_analog_value(TF_DistanceIRV2 *distance_ir_v2, uint32_t
         return TF_E_NULL;
     }
 
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = distance_ir_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -458,6 +490,10 @@ int tf_distance_ir_v2_set_analog_value_callback_configuration(TF_DistanceIRV2 *d
         return TF_E_NULL;
     }
 
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = distance_ir_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -506,6 +542,10 @@ int tf_distance_ir_v2_set_analog_value_callback_configuration(TF_DistanceIRV2 *d
 int tf_distance_ir_v2_get_analog_value_callback_configuration(TF_DistanceIRV2 *distance_ir_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, uint32_t *ret_min, uint32_t *ret_max) {
     if (distance_ir_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = distance_ir_v2->tfp->spitfp->hal;
@@ -563,6 +603,10 @@ int tf_distance_ir_v2_set_moving_average_configuration(TF_DistanceIRV2 *distance
         return TF_E_NULL;
     }
 
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = distance_ir_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -607,6 +651,10 @@ int tf_distance_ir_v2_set_moving_average_configuration(TF_DistanceIRV2 *distance
 int tf_distance_ir_v2_get_moving_average_configuration(TF_DistanceIRV2 *distance_ir_v2, uint16_t *ret_moving_average_length) {
     if (distance_ir_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = distance_ir_v2->tfp->spitfp->hal;
@@ -660,6 +708,10 @@ int tf_distance_ir_v2_set_distance_led_config(TF_DistanceIRV2 *distance_ir_v2, u
         return TF_E_NULL;
     }
 
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = distance_ir_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -704,6 +756,10 @@ int tf_distance_ir_v2_set_distance_led_config(TF_DistanceIRV2 *distance_ir_v2, u
 int tf_distance_ir_v2_get_distance_led_config(TF_DistanceIRV2 *distance_ir_v2, uint8_t *ret_config) {
     if (distance_ir_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = distance_ir_v2->tfp->spitfp->hal;
@@ -757,6 +813,10 @@ int tf_distance_ir_v2_set_sensor_type(TF_DistanceIRV2 *distance_ir_v2, uint8_t s
         return TF_E_NULL;
     }
 
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = distance_ir_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -801,6 +861,10 @@ int tf_distance_ir_v2_set_sensor_type(TF_DistanceIRV2 *distance_ir_v2, uint8_t s
 int tf_distance_ir_v2_get_sensor_type(TF_DistanceIRV2 *distance_ir_v2, uint8_t *ret_sensor) {
     if (distance_ir_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = distance_ir_v2->tfp->spitfp->hal;
@@ -852,6 +916,10 @@ int tf_distance_ir_v2_get_sensor_type(TF_DistanceIRV2 *distance_ir_v2, uint8_t *
 int tf_distance_ir_v2_get_spitfp_error_count(TF_DistanceIRV2 *distance_ir_v2, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (distance_ir_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = distance_ir_v2->tfp->spitfp->hal;
@@ -906,6 +974,10 @@ int tf_distance_ir_v2_get_spitfp_error_count(TF_DistanceIRV2 *distance_ir_v2, ui
 int tf_distance_ir_v2_set_bootloader_mode(TF_DistanceIRV2 *distance_ir_v2, uint8_t mode, uint8_t *ret_status) {
     if (distance_ir_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = distance_ir_v2->tfp->spitfp->hal;
@@ -963,6 +1035,10 @@ int tf_distance_ir_v2_get_bootloader_mode(TF_DistanceIRV2 *distance_ir_v2, uint8
         return TF_E_NULL;
     }
 
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = distance_ir_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1014,6 +1090,10 @@ int tf_distance_ir_v2_set_write_firmware_pointer(TF_DistanceIRV2 *distance_ir_v2
         return TF_E_NULL;
     }
 
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = distance_ir_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1058,6 +1138,10 @@ int tf_distance_ir_v2_set_write_firmware_pointer(TF_DistanceIRV2 *distance_ir_v2
 int tf_distance_ir_v2_write_firmware(TF_DistanceIRV2 *distance_ir_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (distance_ir_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = distance_ir_v2->tfp->spitfp->hal;
@@ -1115,6 +1199,10 @@ int tf_distance_ir_v2_set_status_led_config(TF_DistanceIRV2 *distance_ir_v2, uin
         return TF_E_NULL;
     }
 
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = distance_ir_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1159,6 +1247,10 @@ int tf_distance_ir_v2_set_status_led_config(TF_DistanceIRV2 *distance_ir_v2, uin
 int tf_distance_ir_v2_get_status_led_config(TF_DistanceIRV2 *distance_ir_v2, uint8_t *ret_config) {
     if (distance_ir_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = distance_ir_v2->tfp->spitfp->hal;
@@ -1212,6 +1304,10 @@ int tf_distance_ir_v2_get_chip_temperature(TF_DistanceIRV2 *distance_ir_v2, int1
         return TF_E_NULL;
     }
 
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = distance_ir_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1263,6 +1359,10 @@ int tf_distance_ir_v2_reset(TF_DistanceIRV2 *distance_ir_v2) {
         return TF_E_NULL;
     }
 
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = distance_ir_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1303,6 +1403,10 @@ int tf_distance_ir_v2_reset(TF_DistanceIRV2 *distance_ir_v2) {
 int tf_distance_ir_v2_write_uid(TF_DistanceIRV2 *distance_ir_v2, uint32_t uid) {
     if (distance_ir_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = distance_ir_v2->tfp->spitfp->hal;
@@ -1349,6 +1453,10 @@ int tf_distance_ir_v2_write_uid(TF_DistanceIRV2 *distance_ir_v2, uint32_t uid) {
 int tf_distance_ir_v2_read_uid(TF_DistanceIRV2 *distance_ir_v2, uint32_t *ret_uid) {
     if (distance_ir_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = distance_ir_v2->tfp->spitfp->hal;
@@ -1400,6 +1508,10 @@ int tf_distance_ir_v2_read_uid(TF_DistanceIRV2 *distance_ir_v2, uint32_t *ret_ui
 int tf_distance_ir_v2_get_identity(TF_DistanceIRV2 *distance_ir_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (distance_ir_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = distance_ir_v2->tfp->spitfp->hal;
@@ -1459,11 +1571,8 @@ int tf_distance_ir_v2_register_distance_callback(TF_DistanceIRV2 *distance_ir_v2
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        distance_ir_v2->tfp->needs_callback_tick = false;
-        distance_ir_v2->tfp->needs_callback_tick |= distance_ir_v2->analog_value_handler != NULL;
-    } else {
-        distance_ir_v2->tfp->needs_callback_tick = true;
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     distance_ir_v2->distance_handler = handler;
@@ -1478,11 +1587,8 @@ int tf_distance_ir_v2_register_analog_value_callback(TF_DistanceIRV2 *distance_i
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        distance_ir_v2->tfp->needs_callback_tick = false;
-        distance_ir_v2->tfp->needs_callback_tick |= distance_ir_v2->distance_handler != NULL;
-    } else {
-        distance_ir_v2->tfp->needs_callback_tick = true;
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     distance_ir_v2->analog_value_handler = handler;
@@ -1494,6 +1600,10 @@ int tf_distance_ir_v2_register_analog_value_callback(TF_DistanceIRV2 *distance_i
 int tf_distance_ir_v2_callback_tick(TF_DistanceIRV2 *distance_ir_v2, uint32_t timeout_us) {
     if (distance_ir_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (distance_ir_v2->magic != 0x5446 || distance_ir_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = distance_ir_v2->tfp->spitfp->hal;

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -98,20 +98,24 @@ int tf_industrial_ptc_create(TF_IndustrialPTC *industrial_ptc, const char *uid_o
     industrial_ptc->tfp = tfp;
     industrial_ptc->tfp->device = industrial_ptc;
     industrial_ptc->tfp->cb_handler = tf_industrial_ptc_callback_handler;
+    industrial_ptc->magic = 0x5446;
     industrial_ptc->response_expected[0] = 0x23;
     industrial_ptc->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_industrial_ptc_destroy(TF_IndustrialPTC *industrial_ptc) {
-    if (industrial_ptc == NULL || industrial_ptc->tfp == NULL) {
+    if (industrial_ptc == NULL) {
         return TF_E_NULL;
+    }
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     industrial_ptc->tfp->cb_handler = NULL;
     industrial_ptc->tfp->device = NULL;
     industrial_ptc->tfp = NULL;
+    industrial_ptc->magic = 0;
 
     return TF_E_OK;
 }
@@ -119,6 +123,10 @@ int tf_industrial_ptc_destroy(TF_IndustrialPTC *industrial_ptc) {
 int tf_industrial_ptc_get_response_expected(TF_IndustrialPTC *industrial_ptc, uint8_t function_id, bool *ret_response_expected) {
     if (industrial_ptc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -182,6 +190,10 @@ int tf_industrial_ptc_get_response_expected(TF_IndustrialPTC *industrial_ptc, ui
 int tf_industrial_ptc_set_response_expected(TF_IndustrialPTC *industrial_ptc, uint8_t function_id, bool response_expected) {
     if (industrial_ptc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -267,6 +279,10 @@ int tf_industrial_ptc_set_response_expected_all(TF_IndustrialPTC *industrial_ptc
         return TF_E_NULL;
     }
 
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(industrial_ptc->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -275,6 +291,10 @@ int tf_industrial_ptc_set_response_expected_all(TF_IndustrialPTC *industrial_ptc
 int tf_industrial_ptc_get_temperature(TF_IndustrialPTC *industrial_ptc, int32_t *ret_temperature) {
     if (industrial_ptc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
@@ -328,6 +348,10 @@ int tf_industrial_ptc_set_temperature_callback_configuration(TF_IndustrialPTC *i
         return TF_E_NULL;
     }
 
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -376,6 +400,10 @@ int tf_industrial_ptc_set_temperature_callback_configuration(TF_IndustrialPTC *i
 int tf_industrial_ptc_get_temperature_callback_configuration(TF_IndustrialPTC *industrial_ptc, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int32_t *ret_min, int32_t *ret_max) {
     if (industrial_ptc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
@@ -433,6 +461,10 @@ int tf_industrial_ptc_get_resistance(TF_IndustrialPTC *industrial_ptc, int32_t *
         return TF_E_NULL;
     }
 
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -484,6 +516,10 @@ int tf_industrial_ptc_set_resistance_callback_configuration(TF_IndustrialPTC *in
         return TF_E_NULL;
     }
 
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -532,6 +568,10 @@ int tf_industrial_ptc_set_resistance_callback_configuration(TF_IndustrialPTC *in
 int tf_industrial_ptc_get_resistance_callback_configuration(TF_IndustrialPTC *industrial_ptc, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int32_t *ret_min, int32_t *ret_max) {
     if (industrial_ptc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
@@ -589,6 +629,10 @@ int tf_industrial_ptc_set_noise_rejection_filter(TF_IndustrialPTC *industrial_pt
         return TF_E_NULL;
     }
 
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -633,6 +677,10 @@ int tf_industrial_ptc_set_noise_rejection_filter(TF_IndustrialPTC *industrial_pt
 int tf_industrial_ptc_get_noise_rejection_filter(TF_IndustrialPTC *industrial_ptc, uint8_t *ret_filter) {
     if (industrial_ptc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
@@ -686,6 +734,10 @@ int tf_industrial_ptc_is_sensor_connected(TF_IndustrialPTC *industrial_ptc, bool
         return TF_E_NULL;
     }
 
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -737,6 +789,10 @@ int tf_industrial_ptc_set_wire_mode(TF_IndustrialPTC *industrial_ptc, uint8_t mo
         return TF_E_NULL;
     }
 
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -781,6 +837,10 @@ int tf_industrial_ptc_set_wire_mode(TF_IndustrialPTC *industrial_ptc, uint8_t mo
 int tf_industrial_ptc_get_wire_mode(TF_IndustrialPTC *industrial_ptc, uint8_t *ret_mode) {
     if (industrial_ptc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
@@ -834,6 +894,10 @@ int tf_industrial_ptc_set_moving_average_configuration(TF_IndustrialPTC *industr
         return TF_E_NULL;
     }
 
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -879,6 +943,10 @@ int tf_industrial_ptc_set_moving_average_configuration(TF_IndustrialPTC *industr
 int tf_industrial_ptc_get_moving_average_configuration(TF_IndustrialPTC *industrial_ptc, uint16_t *ret_moving_average_length_resistance, uint16_t *ret_moving_average_length_temperature) {
     if (industrial_ptc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
@@ -933,6 +1001,10 @@ int tf_industrial_ptc_set_sensor_connected_callback_configuration(TF_IndustrialP
         return TF_E_NULL;
     }
 
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -977,6 +1049,10 @@ int tf_industrial_ptc_set_sensor_connected_callback_configuration(TF_IndustrialP
 int tf_industrial_ptc_get_sensor_connected_callback_configuration(TF_IndustrialPTC *industrial_ptc, bool *ret_enabled) {
     if (industrial_ptc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
@@ -1028,6 +1104,10 @@ int tf_industrial_ptc_get_sensor_connected_callback_configuration(TF_IndustrialP
 int tf_industrial_ptc_get_spitfp_error_count(TF_IndustrialPTC *industrial_ptc, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (industrial_ptc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
@@ -1082,6 +1162,10 @@ int tf_industrial_ptc_get_spitfp_error_count(TF_IndustrialPTC *industrial_ptc, u
 int tf_industrial_ptc_set_bootloader_mode(TF_IndustrialPTC *industrial_ptc, uint8_t mode, uint8_t *ret_status) {
     if (industrial_ptc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
@@ -1139,6 +1223,10 @@ int tf_industrial_ptc_get_bootloader_mode(TF_IndustrialPTC *industrial_ptc, uint
         return TF_E_NULL;
     }
 
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1190,6 +1278,10 @@ int tf_industrial_ptc_set_write_firmware_pointer(TF_IndustrialPTC *industrial_pt
         return TF_E_NULL;
     }
 
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1234,6 +1326,10 @@ int tf_industrial_ptc_set_write_firmware_pointer(TF_IndustrialPTC *industrial_pt
 int tf_industrial_ptc_write_firmware(TF_IndustrialPTC *industrial_ptc, const uint8_t data[64], uint8_t *ret_status) {
     if (industrial_ptc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
@@ -1291,6 +1387,10 @@ int tf_industrial_ptc_set_status_led_config(TF_IndustrialPTC *industrial_ptc, ui
         return TF_E_NULL;
     }
 
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1335,6 +1435,10 @@ int tf_industrial_ptc_set_status_led_config(TF_IndustrialPTC *industrial_ptc, ui
 int tf_industrial_ptc_get_status_led_config(TF_IndustrialPTC *industrial_ptc, uint8_t *ret_config) {
     if (industrial_ptc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
@@ -1388,6 +1492,10 @@ int tf_industrial_ptc_get_chip_temperature(TF_IndustrialPTC *industrial_ptc, int
         return TF_E_NULL;
     }
 
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1439,6 +1547,10 @@ int tf_industrial_ptc_reset(TF_IndustrialPTC *industrial_ptc) {
         return TF_E_NULL;
     }
 
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1479,6 +1591,10 @@ int tf_industrial_ptc_reset(TF_IndustrialPTC *industrial_ptc) {
 int tf_industrial_ptc_write_uid(TF_IndustrialPTC *industrial_ptc, uint32_t uid) {
     if (industrial_ptc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
@@ -1525,6 +1641,10 @@ int tf_industrial_ptc_write_uid(TF_IndustrialPTC *industrial_ptc, uint32_t uid) 
 int tf_industrial_ptc_read_uid(TF_IndustrialPTC *industrial_ptc, uint32_t *ret_uid) {
     if (industrial_ptc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
@@ -1576,6 +1696,10 @@ int tf_industrial_ptc_read_uid(TF_IndustrialPTC *industrial_ptc, uint32_t *ret_u
 int tf_industrial_ptc_get_identity(TF_IndustrialPTC *industrial_ptc, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (industrial_ptc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_ptc->tfp->spitfp->hal;
@@ -1635,12 +1759,8 @@ int tf_industrial_ptc_register_temperature_callback(TF_IndustrialPTC *industrial
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        industrial_ptc->tfp->needs_callback_tick = false;
-        industrial_ptc->tfp->needs_callback_tick |= industrial_ptc->resistance_handler != NULL;
-        industrial_ptc->tfp->needs_callback_tick |= industrial_ptc->sensor_connected_handler != NULL;
-    } else {
-        industrial_ptc->tfp->needs_callback_tick = true;
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     industrial_ptc->temperature_handler = handler;
@@ -1655,12 +1775,8 @@ int tf_industrial_ptc_register_resistance_callback(TF_IndustrialPTC *industrial_
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        industrial_ptc->tfp->needs_callback_tick = false;
-        industrial_ptc->tfp->needs_callback_tick |= industrial_ptc->temperature_handler != NULL;
-        industrial_ptc->tfp->needs_callback_tick |= industrial_ptc->sensor_connected_handler != NULL;
-    } else {
-        industrial_ptc->tfp->needs_callback_tick = true;
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     industrial_ptc->resistance_handler = handler;
@@ -1675,12 +1791,8 @@ int tf_industrial_ptc_register_sensor_connected_callback(TF_IndustrialPTC *indus
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        industrial_ptc->tfp->needs_callback_tick = false;
-        industrial_ptc->tfp->needs_callback_tick |= industrial_ptc->temperature_handler != NULL;
-        industrial_ptc->tfp->needs_callback_tick |= industrial_ptc->resistance_handler != NULL;
-    } else {
-        industrial_ptc->tfp->needs_callback_tick = true;
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     industrial_ptc->sensor_connected_handler = handler;
@@ -1692,6 +1804,10 @@ int tf_industrial_ptc_register_sensor_connected_callback(TF_IndustrialPTC *indus
 int tf_industrial_ptc_callback_tick(TF_IndustrialPTC *industrial_ptc, uint32_t timeout_us) {
     if (industrial_ptc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_ptc->magic != 0x5446 || industrial_ptc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = industrial_ptc->tfp->spitfp->hal;

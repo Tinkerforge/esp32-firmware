@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -101,20 +101,24 @@ int tf_can_v2_create(TF_CANV2 *can_v2, const char *uid_or_port_name, TF_HAL *hal
     can_v2->tfp = tfp;
     can_v2->tfp->device = can_v2;
     can_v2->tfp->cb_handler = tf_can_v2_callback_handler;
+    can_v2->magic = 0x5446;
     can_v2->response_expected[0] = 0xC5;
     can_v2->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_can_v2_destroy(TF_CANV2 *can_v2) {
-    if (can_v2 == NULL || can_v2->tfp == NULL) {
+    if (can_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     can_v2->tfp->cb_handler = NULL;
     can_v2->tfp->device = NULL;
     can_v2->tfp = NULL;
+    can_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -122,6 +126,10 @@ int tf_can_v2_destroy(TF_CANV2 *can_v2) {
 int tf_can_v2_get_response_expected(TF_CANV2 *can_v2, uint8_t function_id, bool *ret_response_expected) {
     if (can_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -195,6 +203,10 @@ int tf_can_v2_get_response_expected(TF_CANV2 *can_v2, uint8_t function_id, bool 
 int tf_can_v2_set_response_expected(TF_CANV2 *can_v2, uint8_t function_id, bool response_expected) {
     if (can_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -294,6 +306,10 @@ int tf_can_v2_set_response_expected_all(TF_CANV2 *can_v2, bool response_expected
         return TF_E_NULL;
     }
 
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(can_v2->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -302,6 +318,10 @@ int tf_can_v2_set_response_expected_all(TF_CANV2 *can_v2, bool response_expected
 int tf_can_v2_write_frame_low_level(TF_CANV2 *can_v2, uint8_t frame_type, uint32_t identifier, uint8_t data_length, const uint8_t data_data[15], bool *ret_success) {
     if (can_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
@@ -362,6 +382,10 @@ int tf_can_v2_read_frame_low_level(TF_CANV2 *can_v2, bool *ret_success, uint8_t 
         return TF_E_NULL;
     }
 
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -418,6 +442,10 @@ int tf_can_v2_set_frame_read_callback_configuration(TF_CANV2 *can_v2, bool enabl
         return TF_E_NULL;
     }
 
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -462,6 +490,10 @@ int tf_can_v2_set_frame_read_callback_configuration(TF_CANV2 *can_v2, bool enabl
 int tf_can_v2_get_frame_read_callback_configuration(TF_CANV2 *can_v2, bool *ret_enabled) {
     if (can_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
@@ -515,6 +547,10 @@ int tf_can_v2_set_transceiver_configuration(TF_CANV2 *can_v2, uint32_t baud_rate
         return TF_E_NULL;
     }
 
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -561,6 +597,10 @@ int tf_can_v2_set_transceiver_configuration(TF_CANV2 *can_v2, uint32_t baud_rate
 int tf_can_v2_get_transceiver_configuration(TF_CANV2 *can_v2, uint32_t *ret_baud_rate, uint16_t *ret_sample_point, uint8_t *ret_transceiver_mode) {
     if (can_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
@@ -616,6 +656,10 @@ int tf_can_v2_set_queue_configuration_low_level(TF_CANV2 *can_v2, uint8_t write_
         return TF_E_NULL;
     }
 
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -665,6 +709,10 @@ int tf_can_v2_set_queue_configuration_low_level(TF_CANV2 *can_v2, uint8_t write_
 int tf_can_v2_get_queue_configuration_low_level(TF_CANV2 *can_v2, uint8_t *ret_write_buffer_size, int32_t *ret_write_buffer_timeout, uint16_t *ret_write_backlog_size, uint8_t *ret_read_buffer_sizes_length, int8_t ret_read_buffer_sizes_data[32], uint16_t *ret_read_backlog_size) {
     if (can_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
@@ -724,6 +772,10 @@ int tf_can_v2_set_read_filter_configuration(TF_CANV2 *can_v2, uint8_t buffer_ind
         return TF_E_NULL;
     }
 
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -771,6 +823,10 @@ int tf_can_v2_set_read_filter_configuration(TF_CANV2 *can_v2, uint8_t buffer_ind
 int tf_can_v2_get_read_filter_configuration(TF_CANV2 *can_v2, uint8_t buffer_index, uint8_t *ret_filter_mode, uint32_t *ret_filter_mask, uint32_t *ret_filter_identifier) {
     if (can_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
@@ -828,6 +884,10 @@ int tf_can_v2_get_read_filter_configuration(TF_CANV2 *can_v2, uint8_t buffer_ind
 int tf_can_v2_get_error_log_low_level(TF_CANV2 *can_v2, uint8_t *ret_transceiver_state, uint8_t *ret_transceiver_write_error_level, uint8_t *ret_transceiver_read_error_level, uint32_t *ret_transceiver_stuffing_error_count, uint32_t *ret_transceiver_format_error_count, uint32_t *ret_transceiver_ack_error_count, uint32_t *ret_transceiver_bit1_error_count, uint32_t *ret_transceiver_bit0_error_count, uint32_t *ret_transceiver_crc_error_count, uint32_t *ret_write_buffer_timeout_error_count, uint32_t *ret_read_buffer_overflow_error_count, uint8_t *ret_read_buffer_overflow_error_occurred_length, bool ret_read_buffer_overflow_error_occurred_data[32], uint32_t *ret_read_backlog_overflow_error_count) {
     if (can_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
@@ -894,6 +954,10 @@ int tf_can_v2_set_communication_led_config(TF_CANV2 *can_v2, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -938,6 +1002,10 @@ int tf_can_v2_set_communication_led_config(TF_CANV2 *can_v2, uint8_t config) {
 int tf_can_v2_get_communication_led_config(TF_CANV2 *can_v2, uint8_t *ret_config) {
     if (can_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
@@ -991,6 +1059,10 @@ int tf_can_v2_set_error_led_config(TF_CANV2 *can_v2, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1035,6 +1107,10 @@ int tf_can_v2_set_error_led_config(TF_CANV2 *can_v2, uint8_t config) {
 int tf_can_v2_get_error_led_config(TF_CANV2 *can_v2, uint8_t *ret_config) {
     if (can_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
@@ -1088,6 +1164,10 @@ int tf_can_v2_set_frame_readable_callback_configuration(TF_CANV2 *can_v2, bool e
         return TF_E_NULL;
     }
 
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1132,6 +1212,10 @@ int tf_can_v2_set_frame_readable_callback_configuration(TF_CANV2 *can_v2, bool e
 int tf_can_v2_get_frame_readable_callback_configuration(TF_CANV2 *can_v2, bool *ret_enabled) {
     if (can_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
@@ -1185,6 +1269,10 @@ int tf_can_v2_set_error_occurred_callback_configuration(TF_CANV2 *can_v2, bool e
         return TF_E_NULL;
     }
 
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1229,6 +1317,10 @@ int tf_can_v2_set_error_occurred_callback_configuration(TF_CANV2 *can_v2, bool e
 int tf_can_v2_get_error_occurred_callback_configuration(TF_CANV2 *can_v2, bool *ret_enabled) {
     if (can_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
@@ -1280,6 +1372,10 @@ int tf_can_v2_get_error_occurred_callback_configuration(TF_CANV2 *can_v2, bool *
 int tf_can_v2_get_spitfp_error_count(TF_CANV2 *can_v2, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (can_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
@@ -1334,6 +1430,10 @@ int tf_can_v2_get_spitfp_error_count(TF_CANV2 *can_v2, uint32_t *ret_error_count
 int tf_can_v2_set_bootloader_mode(TF_CANV2 *can_v2, uint8_t mode, uint8_t *ret_status) {
     if (can_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
@@ -1391,6 +1491,10 @@ int tf_can_v2_get_bootloader_mode(TF_CANV2 *can_v2, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1442,6 +1546,10 @@ int tf_can_v2_set_write_firmware_pointer(TF_CANV2 *can_v2, uint32_t pointer) {
         return TF_E_NULL;
     }
 
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1486,6 +1594,10 @@ int tf_can_v2_set_write_firmware_pointer(TF_CANV2 *can_v2, uint32_t pointer) {
 int tf_can_v2_write_firmware(TF_CANV2 *can_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (can_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
@@ -1543,6 +1655,10 @@ int tf_can_v2_set_status_led_config(TF_CANV2 *can_v2, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1587,6 +1703,10 @@ int tf_can_v2_set_status_led_config(TF_CANV2 *can_v2, uint8_t config) {
 int tf_can_v2_get_status_led_config(TF_CANV2 *can_v2, uint8_t *ret_config) {
     if (can_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
@@ -1640,6 +1760,10 @@ int tf_can_v2_get_chip_temperature(TF_CANV2 *can_v2, int16_t *ret_temperature) {
         return TF_E_NULL;
     }
 
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1691,6 +1815,10 @@ int tf_can_v2_reset(TF_CANV2 *can_v2) {
         return TF_E_NULL;
     }
 
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1731,6 +1859,10 @@ int tf_can_v2_reset(TF_CANV2 *can_v2) {
 int tf_can_v2_write_uid(TF_CANV2 *can_v2, uint32_t uid) {
     if (can_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
@@ -1777,6 +1909,10 @@ int tf_can_v2_write_uid(TF_CANV2 *can_v2, uint32_t uid) {
 int tf_can_v2_read_uid(TF_CANV2 *can_v2, uint32_t *ret_uid) {
     if (can_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
@@ -1828,6 +1964,10 @@ int tf_can_v2_read_uid(TF_CANV2 *can_v2, uint32_t *ret_uid) {
 int tf_can_v2_get_identity(TF_CANV2 *can_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (can_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = can_v2->tfp->spitfp->hal;
@@ -1905,6 +2045,10 @@ int tf_can_v2_write_frame(TF_CANV2 *can_v2, uint8_t frame_type, uint32_t identif
     if (can_v2 == NULL) {
         return TF_E_NULL;
     }
+
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
     
     TF_CANV2_WriteFrameLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
@@ -1927,6 +2071,10 @@ int tf_can_v2_write_frame(TF_CANV2 *can_v2, uint8_t frame_type, uint32_t identif
 int tf_can_v2_read_frame(TF_CANV2 *can_v2, bool *ret_success, uint8_t *ret_frame_type, uint32_t *ret_identifier, uint8_t *ret_data, uint8_t *ret_data_length) {
     if (can_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     int ret = TF_E_OK;
@@ -1979,6 +2127,10 @@ int tf_can_v2_set_queue_configuration(TF_CANV2 *can_v2, uint8_t write_buffer_siz
     if (can_v2 == NULL) {
         return TF_E_NULL;
     }
+
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
     
     TF_CANV2_SetQueueConfigurationLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
@@ -2002,6 +2154,10 @@ int tf_can_v2_set_queue_configuration(TF_CANV2 *can_v2, uint8_t write_buffer_siz
 int tf_can_v2_get_queue_configuration(TF_CANV2 *can_v2, uint8_t *ret_write_buffer_size, int32_t *ret_write_buffer_timeout, uint16_t *ret_write_backlog_size, int8_t *ret_read_buffer_sizes, uint8_t *ret_read_buffer_sizes_length, uint16_t *ret_read_backlog_size) {
     if (can_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     int ret = TF_E_OK;
@@ -2035,6 +2191,10 @@ int tf_can_v2_get_error_log(TF_CANV2 *can_v2, uint8_t *ret_transceiver_state, ui
         return TF_E_NULL;
     }
 
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     int ret = TF_E_OK;
     uint8_t read_buffer_overflow_error_occurred_length = 0;
     bool read_buffer_overflow_error_occurred_data[32];
@@ -2066,12 +2226,8 @@ int tf_can_v2_register_frame_read_low_level_callback(TF_CANV2 *can_v2, TF_CANV2_
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        can_v2->tfp->needs_callback_tick = false;
-        can_v2->tfp->needs_callback_tick |= can_v2->frame_readable_handler != NULL;
-        can_v2->tfp->needs_callback_tick |= can_v2->error_occurred_handler != NULL;
-    } else {
-        can_v2->tfp->needs_callback_tick = true;
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     can_v2->frame_read_low_level_handler = handler;
@@ -2101,6 +2257,10 @@ int tf_can_v2_register_frame_read_callback(TF_CANV2 *can_v2, TF_CANV2_FrameReadH
         return TF_E_NULL;
     }
 
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     can_v2->frame_read_handler = handler;
 
     can_v2->frame_read_hlc.data = data_buffer;
@@ -2116,12 +2276,8 @@ int tf_can_v2_register_frame_readable_callback(TF_CANV2 *can_v2, TF_CANV2_FrameR
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        can_v2->tfp->needs_callback_tick = false;
-        can_v2->tfp->needs_callback_tick |= can_v2->frame_read_low_level_handler != NULL;
-        can_v2->tfp->needs_callback_tick |= can_v2->error_occurred_handler != NULL;
-    } else {
-        can_v2->tfp->needs_callback_tick = true;
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     can_v2->frame_readable_handler = handler;
@@ -2136,12 +2292,8 @@ int tf_can_v2_register_error_occurred_callback(TF_CANV2 *can_v2, TF_CANV2_ErrorO
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        can_v2->tfp->needs_callback_tick = false;
-        can_v2->tfp->needs_callback_tick |= can_v2->frame_read_low_level_handler != NULL;
-        can_v2->tfp->needs_callback_tick |= can_v2->frame_readable_handler != NULL;
-    } else {
-        can_v2->tfp->needs_callback_tick = true;
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     can_v2->error_occurred_handler = handler;
@@ -2153,6 +2305,10 @@ int tf_can_v2_register_error_occurred_callback(TF_CANV2 *can_v2, TF_CANV2_ErrorO
 int tf_can_v2_callback_tick(TF_CANV2 *can_v2, uint32_t timeout_us) {
     if (can_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = can_v2->tfp->spitfp->hal;

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -91,19 +91,23 @@ int tf_particulate_matter_create(TF_ParticulateMatter *particulate_matter, const
     particulate_matter->tfp = tfp;
     particulate_matter->tfp->device = particulate_matter;
     particulate_matter->tfp->cb_handler = tf_particulate_matter_callback_handler;
+    particulate_matter->magic = 0x5446;
     particulate_matter->response_expected[0] = 0x06;
-
     return TF_E_OK;
 }
 
 int tf_particulate_matter_destroy(TF_ParticulateMatter *particulate_matter) {
-    if (particulate_matter == NULL || particulate_matter->tfp == NULL) {
+    if (particulate_matter == NULL) {
         return TF_E_NULL;
+    }
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     particulate_matter->tfp->cb_handler = NULL;
     particulate_matter->tfp->device = NULL;
     particulate_matter->tfp = NULL;
+    particulate_matter->magic = 0;
 
     return TF_E_OK;
 }
@@ -111,6 +115,10 @@ int tf_particulate_matter_destroy(TF_ParticulateMatter *particulate_matter) {
 int tf_particulate_matter_get_response_expected(TF_ParticulateMatter *particulate_matter, uint8_t function_id, bool *ret_response_expected) {
     if (particulate_matter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -159,6 +167,10 @@ int tf_particulate_matter_get_response_expected(TF_ParticulateMatter *particulat
 int tf_particulate_matter_set_response_expected(TF_ParticulateMatter *particulate_matter, uint8_t function_id, bool response_expected) {
     if (particulate_matter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -223,6 +235,10 @@ int tf_particulate_matter_set_response_expected_all(TF_ParticulateMatter *partic
         return TF_E_NULL;
     }
 
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(particulate_matter->response_expected, response_expected ? 0xFF : 0, 1);
 
     return TF_E_OK;
@@ -231,6 +247,10 @@ int tf_particulate_matter_set_response_expected_all(TF_ParticulateMatter *partic
 int tf_particulate_matter_get_pm_concentration(TF_ParticulateMatter *particulate_matter, uint16_t *ret_pm10, uint16_t *ret_pm25, uint16_t *ret_pm100) {
     if (particulate_matter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = particulate_matter->tfp->spitfp->hal;
@@ -284,6 +304,10 @@ int tf_particulate_matter_get_pm_concentration(TF_ParticulateMatter *particulate
 int tf_particulate_matter_get_pm_count(TF_ParticulateMatter *particulate_matter, uint16_t *ret_greater03um, uint16_t *ret_greater05um, uint16_t *ret_greater10um, uint16_t *ret_greater25um, uint16_t *ret_greater50um, uint16_t *ret_greater100um) {
     if (particulate_matter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = particulate_matter->tfp->spitfp->hal;
@@ -342,6 +366,10 @@ int tf_particulate_matter_set_enable(TF_ParticulateMatter *particulate_matter, b
         return TF_E_NULL;
     }
 
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = particulate_matter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -386,6 +414,10 @@ int tf_particulate_matter_set_enable(TF_ParticulateMatter *particulate_matter, b
 int tf_particulate_matter_get_enable(TF_ParticulateMatter *particulate_matter, bool *ret_enable) {
     if (particulate_matter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = particulate_matter->tfp->spitfp->hal;
@@ -437,6 +469,10 @@ int tf_particulate_matter_get_enable(TF_ParticulateMatter *particulate_matter, b
 int tf_particulate_matter_get_sensor_info(TF_ParticulateMatter *particulate_matter, uint8_t *ret_sensor_version, uint8_t *ret_last_error_code, uint8_t *ret_framing_error_count, uint8_t *ret_checksum_error_count) {
     if (particulate_matter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = particulate_matter->tfp->spitfp->hal;
@@ -493,6 +529,10 @@ int tf_particulate_matter_set_pm_concentration_callback_configuration(TF_Particu
         return TF_E_NULL;
     }
 
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = particulate_matter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -538,6 +578,10 @@ int tf_particulate_matter_set_pm_concentration_callback_configuration(TF_Particu
 int tf_particulate_matter_get_pm_concentration_callback_configuration(TF_ParticulateMatter *particulate_matter, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (particulate_matter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = particulate_matter->tfp->spitfp->hal;
@@ -592,6 +636,10 @@ int tf_particulate_matter_set_pm_count_callback_configuration(TF_ParticulateMatt
         return TF_E_NULL;
     }
 
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = particulate_matter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -637,6 +685,10 @@ int tf_particulate_matter_set_pm_count_callback_configuration(TF_ParticulateMatt
 int tf_particulate_matter_get_pm_count_callback_configuration(TF_ParticulateMatter *particulate_matter, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (particulate_matter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = particulate_matter->tfp->spitfp->hal;
@@ -691,6 +743,10 @@ int tf_particulate_matter_get_spitfp_error_count(TF_ParticulateMatter *particula
         return TF_E_NULL;
     }
 
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = particulate_matter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -743,6 +799,10 @@ int tf_particulate_matter_get_spitfp_error_count(TF_ParticulateMatter *particula
 int tf_particulate_matter_set_bootloader_mode(TF_ParticulateMatter *particulate_matter, uint8_t mode, uint8_t *ret_status) {
     if (particulate_matter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = particulate_matter->tfp->spitfp->hal;
@@ -800,6 +860,10 @@ int tf_particulate_matter_get_bootloader_mode(TF_ParticulateMatter *particulate_
         return TF_E_NULL;
     }
 
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = particulate_matter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -851,6 +915,10 @@ int tf_particulate_matter_set_write_firmware_pointer(TF_ParticulateMatter *parti
         return TF_E_NULL;
     }
 
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = particulate_matter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -895,6 +963,10 @@ int tf_particulate_matter_set_write_firmware_pointer(TF_ParticulateMatter *parti
 int tf_particulate_matter_write_firmware(TF_ParticulateMatter *particulate_matter, const uint8_t data[64], uint8_t *ret_status) {
     if (particulate_matter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = particulate_matter->tfp->spitfp->hal;
@@ -952,6 +1024,10 @@ int tf_particulate_matter_set_status_led_config(TF_ParticulateMatter *particulat
         return TF_E_NULL;
     }
 
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = particulate_matter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -996,6 +1072,10 @@ int tf_particulate_matter_set_status_led_config(TF_ParticulateMatter *particulat
 int tf_particulate_matter_get_status_led_config(TF_ParticulateMatter *particulate_matter, uint8_t *ret_config) {
     if (particulate_matter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = particulate_matter->tfp->spitfp->hal;
@@ -1049,6 +1129,10 @@ int tf_particulate_matter_get_chip_temperature(TF_ParticulateMatter *particulate
         return TF_E_NULL;
     }
 
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = particulate_matter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1100,6 +1184,10 @@ int tf_particulate_matter_reset(TF_ParticulateMatter *particulate_matter) {
         return TF_E_NULL;
     }
 
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = particulate_matter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1140,6 +1228,10 @@ int tf_particulate_matter_reset(TF_ParticulateMatter *particulate_matter) {
 int tf_particulate_matter_write_uid(TF_ParticulateMatter *particulate_matter, uint32_t uid) {
     if (particulate_matter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = particulate_matter->tfp->spitfp->hal;
@@ -1186,6 +1278,10 @@ int tf_particulate_matter_write_uid(TF_ParticulateMatter *particulate_matter, ui
 int tf_particulate_matter_read_uid(TF_ParticulateMatter *particulate_matter, uint32_t *ret_uid) {
     if (particulate_matter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = particulate_matter->tfp->spitfp->hal;
@@ -1237,6 +1333,10 @@ int tf_particulate_matter_read_uid(TF_ParticulateMatter *particulate_matter, uin
 int tf_particulate_matter_get_identity(TF_ParticulateMatter *particulate_matter, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (particulate_matter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = particulate_matter->tfp->spitfp->hal;
@@ -1296,11 +1396,8 @@ int tf_particulate_matter_register_pm_concentration_callback(TF_ParticulateMatte
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        particulate_matter->tfp->needs_callback_tick = false;
-        particulate_matter->tfp->needs_callback_tick |= particulate_matter->pm_count_handler != NULL;
-    } else {
-        particulate_matter->tfp->needs_callback_tick = true;
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     particulate_matter->pm_concentration_handler = handler;
@@ -1315,11 +1412,8 @@ int tf_particulate_matter_register_pm_count_callback(TF_ParticulateMatter *parti
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        particulate_matter->tfp->needs_callback_tick = false;
-        particulate_matter->tfp->needs_callback_tick |= particulate_matter->pm_concentration_handler != NULL;
-    } else {
-        particulate_matter->tfp->needs_callback_tick = true;
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     particulate_matter->pm_count_handler = handler;
@@ -1331,6 +1425,10 @@ int tf_particulate_matter_register_pm_count_callback(TF_ParticulateMatter *parti
 int tf_particulate_matter_callback_tick(TF_ParticulateMatter *particulate_matter, uint32_t timeout_us) {
     if (particulate_matter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (particulate_matter->magic != 0x5446 || particulate_matter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = particulate_matter->tfp->spitfp->hal;

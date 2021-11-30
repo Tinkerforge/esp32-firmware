@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -114,20 +114,24 @@ int tf_co2_v2_create(TF_CO2V2 *co2_v2, const char *uid_or_port_name, TF_HAL *hal
     co2_v2->tfp = tfp;
     co2_v2->tfp->device = co2_v2;
     co2_v2->tfp->cb_handler = tf_co2_v2_callback_handler;
+    co2_v2->magic = 0x5446;
     co2_v2->response_expected[0] = 0x3C;
     co2_v2->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_co2_v2_destroy(TF_CO2V2 *co2_v2) {
-    if (co2_v2 == NULL || co2_v2->tfp == NULL) {
+    if (co2_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     co2_v2->tfp->cb_handler = NULL;
     co2_v2->tfp->device = NULL;
     co2_v2->tfp = NULL;
+    co2_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -135,6 +139,10 @@ int tf_co2_v2_destroy(TF_CO2V2 *co2_v2) {
 int tf_co2_v2_get_response_expected(TF_CO2V2 *co2_v2, uint8_t function_id, bool *ret_response_expected) {
     if (co2_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -198,6 +206,10 @@ int tf_co2_v2_get_response_expected(TF_CO2V2 *co2_v2, uint8_t function_id, bool 
 int tf_co2_v2_set_response_expected(TF_CO2V2 *co2_v2, uint8_t function_id, bool response_expected) {
     if (co2_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -283,6 +295,10 @@ int tf_co2_v2_set_response_expected_all(TF_CO2V2 *co2_v2, bool response_expected
         return TF_E_NULL;
     }
 
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(co2_v2->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -291,6 +307,10 @@ int tf_co2_v2_set_response_expected_all(TF_CO2V2 *co2_v2, bool response_expected
 int tf_co2_v2_get_all_values(TF_CO2V2 *co2_v2, uint16_t *ret_co2_concentration, int16_t *ret_temperature, uint16_t *ret_humidity) {
     if (co2_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
@@ -346,6 +366,10 @@ int tf_co2_v2_set_air_pressure(TF_CO2V2 *co2_v2, uint16_t air_pressure) {
         return TF_E_NULL;
     }
 
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -390,6 +414,10 @@ int tf_co2_v2_set_air_pressure(TF_CO2V2 *co2_v2, uint16_t air_pressure) {
 int tf_co2_v2_get_air_pressure(TF_CO2V2 *co2_v2, uint16_t *ret_air_pressure) {
     if (co2_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
@@ -443,6 +471,10 @@ int tf_co2_v2_set_temperature_offset(TF_CO2V2 *co2_v2, uint16_t offset) {
         return TF_E_NULL;
     }
 
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -487,6 +519,10 @@ int tf_co2_v2_set_temperature_offset(TF_CO2V2 *co2_v2, uint16_t offset) {
 int tf_co2_v2_get_temperature_offset(TF_CO2V2 *co2_v2, uint16_t *ret_offset) {
     if (co2_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
@@ -540,6 +576,10 @@ int tf_co2_v2_set_all_values_callback_configuration(TF_CO2V2 *co2_v2, uint32_t p
         return TF_E_NULL;
     }
 
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -585,6 +625,10 @@ int tf_co2_v2_set_all_values_callback_configuration(TF_CO2V2 *co2_v2, uint32_t p
 int tf_co2_v2_get_all_values_callback_configuration(TF_CO2V2 *co2_v2, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (co2_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
@@ -639,6 +683,10 @@ int tf_co2_v2_get_co2_concentration(TF_CO2V2 *co2_v2, uint16_t *ret_co2_concentr
         return TF_E_NULL;
     }
 
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -690,6 +738,10 @@ int tf_co2_v2_set_co2_concentration_callback_configuration(TF_CO2V2 *co2_v2, uin
         return TF_E_NULL;
     }
 
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -738,6 +790,10 @@ int tf_co2_v2_set_co2_concentration_callback_configuration(TF_CO2V2 *co2_v2, uin
 int tf_co2_v2_get_co2_concentration_callback_configuration(TF_CO2V2 *co2_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, uint16_t *ret_min, uint16_t *ret_max) {
     if (co2_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
@@ -795,6 +851,10 @@ int tf_co2_v2_get_temperature(TF_CO2V2 *co2_v2, int16_t *ret_temperature) {
         return TF_E_NULL;
     }
 
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -846,6 +906,10 @@ int tf_co2_v2_set_temperature_callback_configuration(TF_CO2V2 *co2_v2, uint32_t 
         return TF_E_NULL;
     }
 
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -894,6 +958,10 @@ int tf_co2_v2_set_temperature_callback_configuration(TF_CO2V2 *co2_v2, uint32_t 
 int tf_co2_v2_get_temperature_callback_configuration(TF_CO2V2 *co2_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int16_t *ret_min, int16_t *ret_max) {
     if (co2_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
@@ -951,6 +1019,10 @@ int tf_co2_v2_get_humidity(TF_CO2V2 *co2_v2, uint16_t *ret_humidity) {
         return TF_E_NULL;
     }
 
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1002,6 +1074,10 @@ int tf_co2_v2_set_humidity_callback_configuration(TF_CO2V2 *co2_v2, uint32_t per
         return TF_E_NULL;
     }
 
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1050,6 +1126,10 @@ int tf_co2_v2_set_humidity_callback_configuration(TF_CO2V2 *co2_v2, uint32_t per
 int tf_co2_v2_get_humidity_callback_configuration(TF_CO2V2 *co2_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, uint16_t *ret_min, uint16_t *ret_max) {
     if (co2_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
@@ -1107,6 +1187,10 @@ int tf_co2_v2_get_spitfp_error_count(TF_CO2V2 *co2_v2, uint32_t *ret_error_count
         return TF_E_NULL;
     }
 
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1159,6 +1243,10 @@ int tf_co2_v2_get_spitfp_error_count(TF_CO2V2 *co2_v2, uint32_t *ret_error_count
 int tf_co2_v2_set_bootloader_mode(TF_CO2V2 *co2_v2, uint8_t mode, uint8_t *ret_status) {
     if (co2_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
@@ -1216,6 +1304,10 @@ int tf_co2_v2_get_bootloader_mode(TF_CO2V2 *co2_v2, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1267,6 +1359,10 @@ int tf_co2_v2_set_write_firmware_pointer(TF_CO2V2 *co2_v2, uint32_t pointer) {
         return TF_E_NULL;
     }
 
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1311,6 +1407,10 @@ int tf_co2_v2_set_write_firmware_pointer(TF_CO2V2 *co2_v2, uint32_t pointer) {
 int tf_co2_v2_write_firmware(TF_CO2V2 *co2_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (co2_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
@@ -1368,6 +1468,10 @@ int tf_co2_v2_set_status_led_config(TF_CO2V2 *co2_v2, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1412,6 +1516,10 @@ int tf_co2_v2_set_status_led_config(TF_CO2V2 *co2_v2, uint8_t config) {
 int tf_co2_v2_get_status_led_config(TF_CO2V2 *co2_v2, uint8_t *ret_config) {
     if (co2_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
@@ -1465,6 +1573,10 @@ int tf_co2_v2_get_chip_temperature(TF_CO2V2 *co2_v2, int16_t *ret_temperature) {
         return TF_E_NULL;
     }
 
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1516,6 +1628,10 @@ int tf_co2_v2_reset(TF_CO2V2 *co2_v2) {
         return TF_E_NULL;
     }
 
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1556,6 +1672,10 @@ int tf_co2_v2_reset(TF_CO2V2 *co2_v2) {
 int tf_co2_v2_write_uid(TF_CO2V2 *co2_v2, uint32_t uid) {
     if (co2_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
@@ -1602,6 +1722,10 @@ int tf_co2_v2_write_uid(TF_CO2V2 *co2_v2, uint32_t uid) {
 int tf_co2_v2_read_uid(TF_CO2V2 *co2_v2, uint32_t *ret_uid) {
     if (co2_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
@@ -1653,6 +1777,10 @@ int tf_co2_v2_read_uid(TF_CO2V2 *co2_v2, uint32_t *ret_uid) {
 int tf_co2_v2_get_identity(TF_CO2V2 *co2_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (co2_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = co2_v2->tfp->spitfp->hal;
@@ -1712,13 +1840,8 @@ int tf_co2_v2_register_all_values_callback(TF_CO2V2 *co2_v2, TF_CO2V2_AllValuesH
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        co2_v2->tfp->needs_callback_tick = false;
-        co2_v2->tfp->needs_callback_tick |= co2_v2->co2_concentration_handler != NULL;
-        co2_v2->tfp->needs_callback_tick |= co2_v2->temperature_handler != NULL;
-        co2_v2->tfp->needs_callback_tick |= co2_v2->humidity_handler != NULL;
-    } else {
-        co2_v2->tfp->needs_callback_tick = true;
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     co2_v2->all_values_handler = handler;
@@ -1733,13 +1856,8 @@ int tf_co2_v2_register_co2_concentration_callback(TF_CO2V2 *co2_v2, TF_CO2V2_CO2
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        co2_v2->tfp->needs_callback_tick = false;
-        co2_v2->tfp->needs_callback_tick |= co2_v2->all_values_handler != NULL;
-        co2_v2->tfp->needs_callback_tick |= co2_v2->temperature_handler != NULL;
-        co2_v2->tfp->needs_callback_tick |= co2_v2->humidity_handler != NULL;
-    } else {
-        co2_v2->tfp->needs_callback_tick = true;
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     co2_v2->co2_concentration_handler = handler;
@@ -1754,13 +1872,8 @@ int tf_co2_v2_register_temperature_callback(TF_CO2V2 *co2_v2, TF_CO2V2_Temperatu
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        co2_v2->tfp->needs_callback_tick = false;
-        co2_v2->tfp->needs_callback_tick |= co2_v2->all_values_handler != NULL;
-        co2_v2->tfp->needs_callback_tick |= co2_v2->co2_concentration_handler != NULL;
-        co2_v2->tfp->needs_callback_tick |= co2_v2->humidity_handler != NULL;
-    } else {
-        co2_v2->tfp->needs_callback_tick = true;
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     co2_v2->temperature_handler = handler;
@@ -1775,13 +1888,8 @@ int tf_co2_v2_register_humidity_callback(TF_CO2V2 *co2_v2, TF_CO2V2_HumidityHand
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        co2_v2->tfp->needs_callback_tick = false;
-        co2_v2->tfp->needs_callback_tick |= co2_v2->all_values_handler != NULL;
-        co2_v2->tfp->needs_callback_tick |= co2_v2->co2_concentration_handler != NULL;
-        co2_v2->tfp->needs_callback_tick |= co2_v2->temperature_handler != NULL;
-    } else {
-        co2_v2->tfp->needs_callback_tick = true;
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     co2_v2->humidity_handler = handler;
@@ -1793,6 +1901,10 @@ int tf_co2_v2_register_humidity_callback(TF_CO2V2 *co2_v2, TF_CO2V2_HumidityHand
 int tf_co2_v2_callback_tick(TF_CO2V2 *co2_v2, uint32_t timeout_us) {
     if (co2_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (co2_v2->magic != 0x5446 || co2_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = co2_v2->tfp->spitfp->hal;

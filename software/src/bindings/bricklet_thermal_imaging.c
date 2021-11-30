@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -86,20 +86,24 @@ int tf_thermal_imaging_create(TF_ThermalImaging *thermal_imaging, const char *ui
     thermal_imaging->tfp = tfp;
     thermal_imaging->tfp->device = thermal_imaging;
     thermal_imaging->tfp->cb_handler = tf_thermal_imaging_callback_handler;
+    thermal_imaging->magic = 0x5446;
     thermal_imaging->response_expected[0] = 0x08;
     thermal_imaging->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_thermal_imaging_destroy(TF_ThermalImaging *thermal_imaging) {
-    if (thermal_imaging == NULL || thermal_imaging->tfp == NULL) {
+    if (thermal_imaging == NULL) {
         return TF_E_NULL;
+    }
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     thermal_imaging->tfp->cb_handler = NULL;
     thermal_imaging->tfp->device = NULL;
     thermal_imaging->tfp = NULL;
+    thermal_imaging->magic = 0;
 
     return TF_E_OK;
 }
@@ -107,6 +111,10 @@ int tf_thermal_imaging_destroy(TF_ThermalImaging *thermal_imaging) {
 int tf_thermal_imaging_get_response_expected(TF_ThermalImaging *thermal_imaging, uint8_t function_id, bool *ret_response_expected) {
     if (thermal_imaging == NULL) {
         return TF_E_NULL;
+    }
+
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -165,6 +173,10 @@ int tf_thermal_imaging_get_response_expected(TF_ThermalImaging *thermal_imaging,
 int tf_thermal_imaging_set_response_expected(TF_ThermalImaging *thermal_imaging, uint8_t function_id, bool response_expected) {
     if (thermal_imaging == NULL) {
         return TF_E_NULL;
+    }
+
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -243,6 +255,10 @@ int tf_thermal_imaging_set_response_expected_all(TF_ThermalImaging *thermal_imag
         return TF_E_NULL;
     }
 
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(thermal_imaging->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -251,6 +267,10 @@ int tf_thermal_imaging_set_response_expected_all(TF_ThermalImaging *thermal_imag
 int tf_thermal_imaging_get_high_contrast_image_low_level(TF_ThermalImaging *thermal_imaging, uint16_t *ret_image_chunk_offset, uint8_t ret_image_chunk_data[62]) {
     if (thermal_imaging == NULL) {
         return TF_E_NULL;
+    }
+
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = thermal_imaging->tfp->spitfp->hal;
@@ -306,6 +326,10 @@ int tf_thermal_imaging_get_temperature_image_low_level(TF_ThermalImaging *therma
         return TF_E_NULL;
     }
 
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = thermal_imaging->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -357,6 +381,10 @@ int tf_thermal_imaging_get_temperature_image_low_level(TF_ThermalImaging *therma
 int tf_thermal_imaging_get_statistics(TF_ThermalImaging *thermal_imaging, uint16_t ret_spotmeter_statistics[4], uint16_t ret_temperatures[4], uint8_t *ret_resolution, uint8_t *ret_ffc_status, bool ret_temperature_warning[2]) {
     if (thermal_imaging == NULL) {
         return TF_E_NULL;
+    }
+
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = thermal_imaging->tfp->spitfp->hal;
@@ -415,6 +443,10 @@ int tf_thermal_imaging_set_resolution(TF_ThermalImaging *thermal_imaging, uint8_
         return TF_E_NULL;
     }
 
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = thermal_imaging->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -459,6 +491,10 @@ int tf_thermal_imaging_set_resolution(TF_ThermalImaging *thermal_imaging, uint8_
 int tf_thermal_imaging_get_resolution(TF_ThermalImaging *thermal_imaging, uint8_t *ret_resolution) {
     if (thermal_imaging == NULL) {
         return TF_E_NULL;
+    }
+
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = thermal_imaging->tfp->spitfp->hal;
@@ -512,6 +548,10 @@ int tf_thermal_imaging_set_spotmeter_config(TF_ThermalImaging *thermal_imaging, 
         return TF_E_NULL;
     }
 
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = thermal_imaging->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -556,6 +596,10 @@ int tf_thermal_imaging_set_spotmeter_config(TF_ThermalImaging *thermal_imaging, 
 int tf_thermal_imaging_get_spotmeter_config(TF_ThermalImaging *thermal_imaging, uint8_t ret_region_of_interest[4]) {
     if (thermal_imaging == NULL) {
         return TF_E_NULL;
+    }
+
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = thermal_imaging->tfp->spitfp->hal;
@@ -610,6 +654,10 @@ int tf_thermal_imaging_set_high_contrast_config(TF_ThermalImaging *thermal_imagi
         return TF_E_NULL;
     }
 
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = thermal_imaging->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -658,6 +706,10 @@ int tf_thermal_imaging_set_high_contrast_config(TF_ThermalImaging *thermal_imagi
 int tf_thermal_imaging_get_high_contrast_config(TF_ThermalImaging *thermal_imaging, uint8_t ret_region_of_interest[4], uint16_t *ret_dampening_factor, uint16_t ret_clip_limit[2], uint16_t *ret_empty_counts) {
     if (thermal_imaging == NULL) {
         return TF_E_NULL;
+    }
+
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = thermal_imaging->tfp->spitfp->hal;
@@ -715,6 +767,10 @@ int tf_thermal_imaging_set_image_transfer_config(TF_ThermalImaging *thermal_imag
         return TF_E_NULL;
     }
 
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = thermal_imaging->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -759,6 +815,10 @@ int tf_thermal_imaging_set_image_transfer_config(TF_ThermalImaging *thermal_imag
 int tf_thermal_imaging_get_image_transfer_config(TF_ThermalImaging *thermal_imaging, uint8_t *ret_config) {
     if (thermal_imaging == NULL) {
         return TF_E_NULL;
+    }
+
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = thermal_imaging->tfp->spitfp->hal;
@@ -812,6 +872,10 @@ int tf_thermal_imaging_set_flux_linear_parameters(TF_ThermalImaging *thermal_ima
         return TF_E_NULL;
     }
 
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = thermal_imaging->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -863,6 +927,10 @@ int tf_thermal_imaging_set_flux_linear_parameters(TF_ThermalImaging *thermal_ima
 int tf_thermal_imaging_get_flux_linear_parameters(TF_ThermalImaging *thermal_imaging, uint16_t *ret_scene_emissivity, uint16_t *ret_temperature_background, uint16_t *ret_tau_window, uint16_t *ret_temperatur_window, uint16_t *ret_tau_atmosphere, uint16_t *ret_temperature_atmosphere, uint16_t *ret_reflection_window, uint16_t *ret_temperature_reflection) {
     if (thermal_imaging == NULL) {
         return TF_E_NULL;
+    }
+
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = thermal_imaging->tfp->spitfp->hal;
@@ -923,6 +991,10 @@ int tf_thermal_imaging_get_spitfp_error_count(TF_ThermalImaging *thermal_imaging
         return TF_E_NULL;
     }
 
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = thermal_imaging->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -975,6 +1047,10 @@ int tf_thermal_imaging_get_spitfp_error_count(TF_ThermalImaging *thermal_imaging
 int tf_thermal_imaging_set_bootloader_mode(TF_ThermalImaging *thermal_imaging, uint8_t mode, uint8_t *ret_status) {
     if (thermal_imaging == NULL) {
         return TF_E_NULL;
+    }
+
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = thermal_imaging->tfp->spitfp->hal;
@@ -1032,6 +1108,10 @@ int tf_thermal_imaging_get_bootloader_mode(TF_ThermalImaging *thermal_imaging, u
         return TF_E_NULL;
     }
 
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = thermal_imaging->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1083,6 +1163,10 @@ int tf_thermal_imaging_set_write_firmware_pointer(TF_ThermalImaging *thermal_ima
         return TF_E_NULL;
     }
 
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = thermal_imaging->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1127,6 +1211,10 @@ int tf_thermal_imaging_set_write_firmware_pointer(TF_ThermalImaging *thermal_ima
 int tf_thermal_imaging_write_firmware(TF_ThermalImaging *thermal_imaging, const uint8_t data[64], uint8_t *ret_status) {
     if (thermal_imaging == NULL) {
         return TF_E_NULL;
+    }
+
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = thermal_imaging->tfp->spitfp->hal;
@@ -1184,6 +1272,10 @@ int tf_thermal_imaging_set_status_led_config(TF_ThermalImaging *thermal_imaging,
         return TF_E_NULL;
     }
 
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = thermal_imaging->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1228,6 +1320,10 @@ int tf_thermal_imaging_set_status_led_config(TF_ThermalImaging *thermal_imaging,
 int tf_thermal_imaging_get_status_led_config(TF_ThermalImaging *thermal_imaging, uint8_t *ret_config) {
     if (thermal_imaging == NULL) {
         return TF_E_NULL;
+    }
+
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = thermal_imaging->tfp->spitfp->hal;
@@ -1281,6 +1377,10 @@ int tf_thermal_imaging_get_chip_temperature(TF_ThermalImaging *thermal_imaging, 
         return TF_E_NULL;
     }
 
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = thermal_imaging->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1332,6 +1432,10 @@ int tf_thermal_imaging_reset(TF_ThermalImaging *thermal_imaging) {
         return TF_E_NULL;
     }
 
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = thermal_imaging->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1372,6 +1476,10 @@ int tf_thermal_imaging_reset(TF_ThermalImaging *thermal_imaging) {
 int tf_thermal_imaging_write_uid(TF_ThermalImaging *thermal_imaging, uint32_t uid) {
     if (thermal_imaging == NULL) {
         return TF_E_NULL;
+    }
+
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = thermal_imaging->tfp->spitfp->hal;
@@ -1418,6 +1526,10 @@ int tf_thermal_imaging_write_uid(TF_ThermalImaging *thermal_imaging, uint32_t ui
 int tf_thermal_imaging_read_uid(TF_ThermalImaging *thermal_imaging, uint32_t *ret_uid) {
     if (thermal_imaging == NULL) {
         return TF_E_NULL;
+    }
+
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = thermal_imaging->tfp->spitfp->hal;
@@ -1469,6 +1581,10 @@ int tf_thermal_imaging_read_uid(TF_ThermalImaging *thermal_imaging, uint32_t *re
 int tf_thermal_imaging_get_identity(TF_ThermalImaging *thermal_imaging, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (thermal_imaging == NULL) {
         return TF_E_NULL;
+    }
+
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = thermal_imaging->tfp->spitfp->hal;
@@ -1543,6 +1659,10 @@ int tf_thermal_imaging_get_high_contrast_image(TF_ThermalImaging *thermal_imagin
     if (thermal_imaging == NULL) {
         return TF_E_NULL;
     }
+
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
     
     uint32_t _image_length = 0;
     uint8_t _image_chunk_data[62];
@@ -1575,6 +1695,10 @@ int tf_thermal_imaging_get_temperature_image(TF_ThermalImaging *thermal_imaging,
     if (thermal_imaging == NULL) {
         return TF_E_NULL;
     }
+
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
     
     uint32_t _image_length = 0;
     uint16_t _image_chunk_data[31];
@@ -1592,11 +1716,8 @@ int tf_thermal_imaging_register_high_contrast_image_low_level_callback(TF_Therma
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        thermal_imaging->tfp->needs_callback_tick = false;
-        thermal_imaging->tfp->needs_callback_tick |= thermal_imaging->temperature_image_low_level_handler != NULL;
-    } else {
-        thermal_imaging->tfp->needs_callback_tick = true;
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     thermal_imaging->high_contrast_image_low_level_handler = handler;
@@ -1627,6 +1748,10 @@ int tf_thermal_imaging_register_high_contrast_image_callback(TF_ThermalImaging *
         return TF_E_NULL;
     }
 
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     thermal_imaging->high_contrast_image_handler = handler;
 
     thermal_imaging->high_contrast_image_hlc.data = image_buffer;
@@ -1642,11 +1767,8 @@ int tf_thermal_imaging_register_temperature_image_low_level_callback(TF_ThermalI
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        thermal_imaging->tfp->needs_callback_tick = false;
-        thermal_imaging->tfp->needs_callback_tick |= thermal_imaging->high_contrast_image_low_level_handler != NULL;
-    } else {
-        thermal_imaging->tfp->needs_callback_tick = true;
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     thermal_imaging->temperature_image_low_level_handler = handler;
@@ -1677,6 +1799,10 @@ int tf_thermal_imaging_register_temperature_image_callback(TF_ThermalImaging *th
         return TF_E_NULL;
     }
 
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     thermal_imaging->temperature_image_handler = handler;
 
     thermal_imaging->temperature_image_hlc.data = image_buffer;
@@ -1689,6 +1815,10 @@ int tf_thermal_imaging_register_temperature_image_callback(TF_ThermalImaging *th
 int tf_thermal_imaging_callback_tick(TF_ThermalImaging *thermal_imaging, uint32_t timeout_us) {
     if (thermal_imaging == NULL) {
         return TF_E_NULL;
+    }
+
+    if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = thermal_imaging->tfp->spitfp->hal;

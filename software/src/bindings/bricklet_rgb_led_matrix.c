@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -70,20 +70,24 @@ int tf_rgb_led_matrix_create(TF_RGBLEDMatrix *rgb_led_matrix, const char *uid_or
     rgb_led_matrix->tfp = tfp;
     rgb_led_matrix->tfp->device = rgb_led_matrix;
     rgb_led_matrix->tfp->cb_handler = tf_rgb_led_matrix_callback_handler;
+    rgb_led_matrix->magic = 0x5446;
     rgb_led_matrix->response_expected[0] = 0x00;
     rgb_led_matrix->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_rgb_led_matrix_destroy(TF_RGBLEDMatrix *rgb_led_matrix) {
-    if (rgb_led_matrix == NULL || rgb_led_matrix->tfp == NULL) {
+    if (rgb_led_matrix == NULL) {
         return TF_E_NULL;
+    }
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rgb_led_matrix->tfp->cb_handler = NULL;
     rgb_led_matrix->tfp->device = NULL;
     rgb_led_matrix->tfp = NULL;
+    rgb_led_matrix->magic = 0;
 
     return TF_E_OK;
 }
@@ -91,6 +95,10 @@ int tf_rgb_led_matrix_destroy(TF_RGBLEDMatrix *rgb_led_matrix) {
 int tf_rgb_led_matrix_get_response_expected(TF_RGBLEDMatrix *rgb_led_matrix, uint8_t function_id, bool *ret_response_expected) {
     if (rgb_led_matrix == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -149,6 +157,10 @@ int tf_rgb_led_matrix_get_response_expected(TF_RGBLEDMatrix *rgb_led_matrix, uin
 int tf_rgb_led_matrix_set_response_expected(TF_RGBLEDMatrix *rgb_led_matrix, uint8_t function_id, bool response_expected) {
     if (rgb_led_matrix == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -227,6 +239,10 @@ int tf_rgb_led_matrix_set_response_expected_all(TF_RGBLEDMatrix *rgb_led_matrix,
         return TF_E_NULL;
     }
 
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(rgb_led_matrix->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -235,6 +251,10 @@ int tf_rgb_led_matrix_set_response_expected_all(TF_RGBLEDMatrix *rgb_led_matrix,
 int tf_rgb_led_matrix_set_red(TF_RGBLEDMatrix *rgb_led_matrix, const uint8_t red[64]) {
     if (rgb_led_matrix == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_matrix->tfp->spitfp->hal;
@@ -281,6 +301,10 @@ int tf_rgb_led_matrix_set_red(TF_RGBLEDMatrix *rgb_led_matrix, const uint8_t red
 int tf_rgb_led_matrix_get_red(TF_RGBLEDMatrix *rgb_led_matrix, uint8_t ret_red[64]) {
     if (rgb_led_matrix == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_matrix->tfp->spitfp->hal;
@@ -335,6 +359,10 @@ int tf_rgb_led_matrix_set_green(TF_RGBLEDMatrix *rgb_led_matrix, const uint8_t g
         return TF_E_NULL;
     }
 
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rgb_led_matrix->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -379,6 +407,10 @@ int tf_rgb_led_matrix_set_green(TF_RGBLEDMatrix *rgb_led_matrix, const uint8_t g
 int tf_rgb_led_matrix_get_green(TF_RGBLEDMatrix *rgb_led_matrix, uint8_t ret_green[64]) {
     if (rgb_led_matrix == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_matrix->tfp->spitfp->hal;
@@ -433,6 +465,10 @@ int tf_rgb_led_matrix_set_blue(TF_RGBLEDMatrix *rgb_led_matrix, const uint8_t bl
         return TF_E_NULL;
     }
 
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rgb_led_matrix->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -477,6 +513,10 @@ int tf_rgb_led_matrix_set_blue(TF_RGBLEDMatrix *rgb_led_matrix, const uint8_t bl
 int tf_rgb_led_matrix_get_blue(TF_RGBLEDMatrix *rgb_led_matrix, uint8_t ret_blue[64]) {
     if (rgb_led_matrix == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_matrix->tfp->spitfp->hal;
@@ -531,6 +571,10 @@ int tf_rgb_led_matrix_set_frame_duration(TF_RGBLEDMatrix *rgb_led_matrix, uint16
         return TF_E_NULL;
     }
 
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rgb_led_matrix->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -575,6 +619,10 @@ int tf_rgb_led_matrix_set_frame_duration(TF_RGBLEDMatrix *rgb_led_matrix, uint16
 int tf_rgb_led_matrix_get_frame_duration(TF_RGBLEDMatrix *rgb_led_matrix, uint16_t *ret_frame_duration) {
     if (rgb_led_matrix == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_matrix->tfp->spitfp->hal;
@@ -628,6 +676,10 @@ int tf_rgb_led_matrix_draw_frame(TF_RGBLEDMatrix *rgb_led_matrix) {
         return TF_E_NULL;
     }
 
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rgb_led_matrix->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -668,6 +720,10 @@ int tf_rgb_led_matrix_draw_frame(TF_RGBLEDMatrix *rgb_led_matrix) {
 int tf_rgb_led_matrix_get_supply_voltage(TF_RGBLEDMatrix *rgb_led_matrix, uint16_t *ret_voltage) {
     if (rgb_led_matrix == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_matrix->tfp->spitfp->hal;
@@ -719,6 +775,10 @@ int tf_rgb_led_matrix_get_supply_voltage(TF_RGBLEDMatrix *rgb_led_matrix, uint16
 int tf_rgb_led_matrix_get_spitfp_error_count(TF_RGBLEDMatrix *rgb_led_matrix, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (rgb_led_matrix == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_matrix->tfp->spitfp->hal;
@@ -773,6 +833,10 @@ int tf_rgb_led_matrix_get_spitfp_error_count(TF_RGBLEDMatrix *rgb_led_matrix, ui
 int tf_rgb_led_matrix_set_bootloader_mode(TF_RGBLEDMatrix *rgb_led_matrix, uint8_t mode, uint8_t *ret_status) {
     if (rgb_led_matrix == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_matrix->tfp->spitfp->hal;
@@ -830,6 +894,10 @@ int tf_rgb_led_matrix_get_bootloader_mode(TF_RGBLEDMatrix *rgb_led_matrix, uint8
         return TF_E_NULL;
     }
 
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rgb_led_matrix->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -881,6 +949,10 @@ int tf_rgb_led_matrix_set_write_firmware_pointer(TF_RGBLEDMatrix *rgb_led_matrix
         return TF_E_NULL;
     }
 
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rgb_led_matrix->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -925,6 +997,10 @@ int tf_rgb_led_matrix_set_write_firmware_pointer(TF_RGBLEDMatrix *rgb_led_matrix
 int tf_rgb_led_matrix_write_firmware(TF_RGBLEDMatrix *rgb_led_matrix, const uint8_t data[64], uint8_t *ret_status) {
     if (rgb_led_matrix == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_matrix->tfp->spitfp->hal;
@@ -982,6 +1058,10 @@ int tf_rgb_led_matrix_set_status_led_config(TF_RGBLEDMatrix *rgb_led_matrix, uin
         return TF_E_NULL;
     }
 
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rgb_led_matrix->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1026,6 +1106,10 @@ int tf_rgb_led_matrix_set_status_led_config(TF_RGBLEDMatrix *rgb_led_matrix, uin
 int tf_rgb_led_matrix_get_status_led_config(TF_RGBLEDMatrix *rgb_led_matrix, uint8_t *ret_config) {
     if (rgb_led_matrix == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_matrix->tfp->spitfp->hal;
@@ -1079,6 +1163,10 @@ int tf_rgb_led_matrix_get_chip_temperature(TF_RGBLEDMatrix *rgb_led_matrix, int1
         return TF_E_NULL;
     }
 
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rgb_led_matrix->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1130,6 +1218,10 @@ int tf_rgb_led_matrix_reset(TF_RGBLEDMatrix *rgb_led_matrix) {
         return TF_E_NULL;
     }
 
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rgb_led_matrix->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1170,6 +1262,10 @@ int tf_rgb_led_matrix_reset(TF_RGBLEDMatrix *rgb_led_matrix) {
 int tf_rgb_led_matrix_write_uid(TF_RGBLEDMatrix *rgb_led_matrix, uint32_t uid) {
     if (rgb_led_matrix == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_matrix->tfp->spitfp->hal;
@@ -1216,6 +1312,10 @@ int tf_rgb_led_matrix_write_uid(TF_RGBLEDMatrix *rgb_led_matrix, uint32_t uid) {
 int tf_rgb_led_matrix_read_uid(TF_RGBLEDMatrix *rgb_led_matrix, uint32_t *ret_uid) {
     if (rgb_led_matrix == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_matrix->tfp->spitfp->hal;
@@ -1267,6 +1367,10 @@ int tf_rgb_led_matrix_read_uid(TF_RGBLEDMatrix *rgb_led_matrix, uint32_t *ret_ui
 int tf_rgb_led_matrix_get_identity(TF_RGBLEDMatrix *rgb_led_matrix, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (rgb_led_matrix == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_matrix->tfp->spitfp->hal;
@@ -1326,10 +1430,8 @@ int tf_rgb_led_matrix_register_frame_started_callback(TF_RGBLEDMatrix *rgb_led_m
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rgb_led_matrix->tfp->needs_callback_tick = false;
-    } else {
-        rgb_led_matrix->tfp->needs_callback_tick = true;
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rgb_led_matrix->frame_started_handler = handler;
@@ -1341,6 +1443,10 @@ int tf_rgb_led_matrix_register_frame_started_callback(TF_RGBLEDMatrix *rgb_led_m
 int tf_rgb_led_matrix_callback_tick(TF_RGBLEDMatrix *rgb_led_matrix, uint32_t timeout_us) {
     if (rgb_led_matrix == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_matrix->magic != 0x5446 || rgb_led_matrix->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = rgb_led_matrix->tfp->spitfp->hal;

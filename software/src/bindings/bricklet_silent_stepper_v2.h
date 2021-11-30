@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -59,6 +59,7 @@ typedef struct TF_SilentStepperV2 {
     void *gpio_state_user_data;
 
 #endif
+    uint16_t magic;
     uint8_t response_expected[4];
 } TF_SilentStepperV2;
 

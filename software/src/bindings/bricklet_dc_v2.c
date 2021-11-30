@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -98,20 +98,24 @@ int tf_dc_v2_create(TF_DCV2 *dc_v2, const char *uid_or_port_name, TF_HAL *hal) {
     dc_v2->tfp = tfp;
     dc_v2->tfp->device = dc_v2;
     dc_v2->tfp->cb_handler = tf_dc_v2_callback_handler;
+    dc_v2->magic = 0x5446;
     dc_v2->response_expected[0] = 0x80;
     dc_v2->response_expected[1] = 0x03;
-
     return TF_E_OK;
 }
 
 int tf_dc_v2_destroy(TF_DCV2 *dc_v2) {
-    if (dc_v2 == NULL || dc_v2->tfp == NULL) {
+    if (dc_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     dc_v2->tfp->cb_handler = NULL;
     dc_v2->tfp->device = NULL;
     dc_v2->tfp = NULL;
+    dc_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -119,6 +123,10 @@ int tf_dc_v2_destroy(TF_DCV2 *dc_v2) {
 int tf_dc_v2_get_response_expected(TF_DCV2 *dc_v2, uint8_t function_id, bool *ret_response_expected) {
     if (dc_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -202,6 +210,10 @@ int tf_dc_v2_get_response_expected(TF_DCV2 *dc_v2, uint8_t function_id, bool *re
 int tf_dc_v2_set_response_expected(TF_DCV2 *dc_v2, uint8_t function_id, bool response_expected) {
     if (dc_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -315,6 +327,10 @@ int tf_dc_v2_set_response_expected_all(TF_DCV2 *dc_v2, bool response_expected) {
         return TF_E_NULL;
     }
 
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(dc_v2->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -323,6 +339,10 @@ int tf_dc_v2_set_response_expected_all(TF_DCV2 *dc_v2, bool response_expected) {
 int tf_dc_v2_set_enabled(TF_DCV2 *dc_v2, bool enabled) {
     if (dc_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
@@ -369,6 +389,10 @@ int tf_dc_v2_set_enabled(TF_DCV2 *dc_v2, bool enabled) {
 int tf_dc_v2_get_enabled(TF_DCV2 *dc_v2, bool *ret_enabled) {
     if (dc_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
@@ -422,6 +446,10 @@ int tf_dc_v2_set_velocity(TF_DCV2 *dc_v2, int16_t velocity) {
         return TF_E_NULL;
     }
 
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -466,6 +494,10 @@ int tf_dc_v2_set_velocity(TF_DCV2 *dc_v2, int16_t velocity) {
 int tf_dc_v2_get_velocity(TF_DCV2 *dc_v2, int16_t *ret_velocity) {
     if (dc_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
@@ -519,6 +551,10 @@ int tf_dc_v2_get_current_velocity(TF_DCV2 *dc_v2, int16_t *ret_velocity) {
         return TF_E_NULL;
     }
 
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -570,6 +606,10 @@ int tf_dc_v2_set_motion(TF_DCV2 *dc_v2, uint16_t acceleration, uint16_t decelera
         return TF_E_NULL;
     }
 
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -615,6 +655,10 @@ int tf_dc_v2_set_motion(TF_DCV2 *dc_v2, uint16_t acceleration, uint16_t decelera
 int tf_dc_v2_get_motion(TF_DCV2 *dc_v2, uint16_t *ret_acceleration, uint16_t *ret_deceleration) {
     if (dc_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
@@ -669,6 +713,10 @@ int tf_dc_v2_full_brake(TF_DCV2 *dc_v2) {
         return TF_E_NULL;
     }
 
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -709,6 +757,10 @@ int tf_dc_v2_full_brake(TF_DCV2 *dc_v2) {
 int tf_dc_v2_set_drive_mode(TF_DCV2 *dc_v2, uint8_t mode) {
     if (dc_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
@@ -755,6 +807,10 @@ int tf_dc_v2_set_drive_mode(TF_DCV2 *dc_v2, uint8_t mode) {
 int tf_dc_v2_get_drive_mode(TF_DCV2 *dc_v2, uint8_t *ret_mode) {
     if (dc_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
@@ -808,6 +864,10 @@ int tf_dc_v2_set_pwm_frequency(TF_DCV2 *dc_v2, uint16_t frequency) {
         return TF_E_NULL;
     }
 
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -852,6 +912,10 @@ int tf_dc_v2_set_pwm_frequency(TF_DCV2 *dc_v2, uint16_t frequency) {
 int tf_dc_v2_get_pwm_frequency(TF_DCV2 *dc_v2, uint16_t *ret_frequency) {
     if (dc_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
@@ -903,6 +967,10 @@ int tf_dc_v2_get_pwm_frequency(TF_DCV2 *dc_v2, uint16_t *ret_frequency) {
 int tf_dc_v2_get_power_statistics(TF_DCV2 *dc_v2, uint16_t *ret_voltage, uint16_t *ret_current) {
     if (dc_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
@@ -957,6 +1025,10 @@ int tf_dc_v2_set_error_led_config(TF_DCV2 *dc_v2, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1001,6 +1073,10 @@ int tf_dc_v2_set_error_led_config(TF_DCV2 *dc_v2, uint8_t config) {
 int tf_dc_v2_get_error_led_config(TF_DCV2 *dc_v2, uint8_t *ret_config) {
     if (dc_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
@@ -1054,6 +1130,10 @@ int tf_dc_v2_set_emergency_shutdown_callback_configuration(TF_DCV2 *dc_v2, bool 
         return TF_E_NULL;
     }
 
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1098,6 +1178,10 @@ int tf_dc_v2_set_emergency_shutdown_callback_configuration(TF_DCV2 *dc_v2, bool 
 int tf_dc_v2_get_emergency_shutdown_callback_configuration(TF_DCV2 *dc_v2, bool *ret_enabled) {
     if (dc_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
@@ -1151,6 +1235,10 @@ int tf_dc_v2_set_velocity_reached_callback_configuration(TF_DCV2 *dc_v2, bool en
         return TF_E_NULL;
     }
 
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1195,6 +1283,10 @@ int tf_dc_v2_set_velocity_reached_callback_configuration(TF_DCV2 *dc_v2, bool en
 int tf_dc_v2_get_velocity_reached_callback_configuration(TF_DCV2 *dc_v2, bool *ret_enabled) {
     if (dc_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
@@ -1248,6 +1340,10 @@ int tf_dc_v2_set_current_velocity_callback_configuration(TF_DCV2 *dc_v2, uint32_
         return TF_E_NULL;
     }
 
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1293,6 +1389,10 @@ int tf_dc_v2_set_current_velocity_callback_configuration(TF_DCV2 *dc_v2, uint32_
 int tf_dc_v2_get_current_velocity_callback_configuration(TF_DCV2 *dc_v2, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (dc_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
@@ -1347,6 +1447,10 @@ int tf_dc_v2_get_spitfp_error_count(TF_DCV2 *dc_v2, uint32_t *ret_error_count_ac
         return TF_E_NULL;
     }
 
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1399,6 +1503,10 @@ int tf_dc_v2_get_spitfp_error_count(TF_DCV2 *dc_v2, uint32_t *ret_error_count_ac
 int tf_dc_v2_set_bootloader_mode(TF_DCV2 *dc_v2, uint8_t mode, uint8_t *ret_status) {
     if (dc_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
@@ -1456,6 +1564,10 @@ int tf_dc_v2_get_bootloader_mode(TF_DCV2 *dc_v2, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1507,6 +1619,10 @@ int tf_dc_v2_set_write_firmware_pointer(TF_DCV2 *dc_v2, uint32_t pointer) {
         return TF_E_NULL;
     }
 
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1551,6 +1667,10 @@ int tf_dc_v2_set_write_firmware_pointer(TF_DCV2 *dc_v2, uint32_t pointer) {
 int tf_dc_v2_write_firmware(TF_DCV2 *dc_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (dc_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
@@ -1608,6 +1728,10 @@ int tf_dc_v2_set_status_led_config(TF_DCV2 *dc_v2, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1652,6 +1776,10 @@ int tf_dc_v2_set_status_led_config(TF_DCV2 *dc_v2, uint8_t config) {
 int tf_dc_v2_get_status_led_config(TF_DCV2 *dc_v2, uint8_t *ret_config) {
     if (dc_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
@@ -1705,6 +1833,10 @@ int tf_dc_v2_get_chip_temperature(TF_DCV2 *dc_v2, int16_t *ret_temperature) {
         return TF_E_NULL;
     }
 
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1756,6 +1888,10 @@ int tf_dc_v2_reset(TF_DCV2 *dc_v2) {
         return TF_E_NULL;
     }
 
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1796,6 +1932,10 @@ int tf_dc_v2_reset(TF_DCV2 *dc_v2) {
 int tf_dc_v2_write_uid(TF_DCV2 *dc_v2, uint32_t uid) {
     if (dc_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
@@ -1842,6 +1982,10 @@ int tf_dc_v2_write_uid(TF_DCV2 *dc_v2, uint32_t uid) {
 int tf_dc_v2_read_uid(TF_DCV2 *dc_v2, uint32_t *ret_uid) {
     if (dc_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
@@ -1893,6 +2037,10 @@ int tf_dc_v2_read_uid(TF_DCV2 *dc_v2, uint32_t *ret_uid) {
 int tf_dc_v2_get_identity(TF_DCV2 *dc_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (dc_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = dc_v2->tfp->spitfp->hal;
@@ -1952,12 +2100,8 @@ int tf_dc_v2_register_emergency_shutdown_callback(TF_DCV2 *dc_v2, TF_DCV2_Emerge
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        dc_v2->tfp->needs_callback_tick = false;
-        dc_v2->tfp->needs_callback_tick |= dc_v2->velocity_reached_handler != NULL;
-        dc_v2->tfp->needs_callback_tick |= dc_v2->current_velocity_handler != NULL;
-    } else {
-        dc_v2->tfp->needs_callback_tick = true;
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     dc_v2->emergency_shutdown_handler = handler;
@@ -1972,12 +2116,8 @@ int tf_dc_v2_register_velocity_reached_callback(TF_DCV2 *dc_v2, TF_DCV2_Velocity
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        dc_v2->tfp->needs_callback_tick = false;
-        dc_v2->tfp->needs_callback_tick |= dc_v2->emergency_shutdown_handler != NULL;
-        dc_v2->tfp->needs_callback_tick |= dc_v2->current_velocity_handler != NULL;
-    } else {
-        dc_v2->tfp->needs_callback_tick = true;
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     dc_v2->velocity_reached_handler = handler;
@@ -1992,12 +2132,8 @@ int tf_dc_v2_register_current_velocity_callback(TF_DCV2 *dc_v2, TF_DCV2_CurrentV
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        dc_v2->tfp->needs_callback_tick = false;
-        dc_v2->tfp->needs_callback_tick |= dc_v2->emergency_shutdown_handler != NULL;
-        dc_v2->tfp->needs_callback_tick |= dc_v2->velocity_reached_handler != NULL;
-    } else {
-        dc_v2->tfp->needs_callback_tick = true;
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     dc_v2->current_velocity_handler = handler;
@@ -2009,6 +2145,10 @@ int tf_dc_v2_register_current_velocity_callback(TF_DCV2 *dc_v2, TF_DCV2_CurrentV
 int tf_dc_v2_callback_tick(TF_DCV2 *dc_v2, uint32_t timeout_us) {
     if (dc_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (dc_v2->magic != 0x5446 || dc_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = dc_v2->tfp->spitfp->hal;

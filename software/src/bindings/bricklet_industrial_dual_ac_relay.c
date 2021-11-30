@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -71,19 +71,23 @@ int tf_industrial_dual_ac_relay_create(TF_IndustrialDualACRelay *industrial_dual
     industrial_dual_ac_relay->tfp = tfp;
     industrial_dual_ac_relay->tfp->device = industrial_dual_ac_relay;
     industrial_dual_ac_relay->tfp->cb_handler = tf_industrial_dual_ac_relay_callback_handler;
+    industrial_dual_ac_relay->magic = 0x5446;
     industrial_dual_ac_relay->response_expected[0] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_industrial_dual_ac_relay_destroy(TF_IndustrialDualACRelay *industrial_dual_ac_relay) {
-    if (industrial_dual_ac_relay == NULL || industrial_dual_ac_relay->tfp == NULL) {
+    if (industrial_dual_ac_relay == NULL) {
         return TF_E_NULL;
+    }
+    if (industrial_dual_ac_relay->magic != 0x5446 || industrial_dual_ac_relay->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     industrial_dual_ac_relay->tfp->cb_handler = NULL;
     industrial_dual_ac_relay->tfp->device = NULL;
     industrial_dual_ac_relay->tfp = NULL;
+    industrial_dual_ac_relay->magic = 0;
 
     return TF_E_OK;
 }
@@ -91,6 +95,10 @@ int tf_industrial_dual_ac_relay_destroy(TF_IndustrialDualACRelay *industrial_dua
 int tf_industrial_dual_ac_relay_get_response_expected(TF_IndustrialDualACRelay *industrial_dual_ac_relay, uint8_t function_id, bool *ret_response_expected) {
     if (industrial_dual_ac_relay == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_ac_relay->magic != 0x5446 || industrial_dual_ac_relay->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -144,6 +152,10 @@ int tf_industrial_dual_ac_relay_get_response_expected(TF_IndustrialDualACRelay *
 int tf_industrial_dual_ac_relay_set_response_expected(TF_IndustrialDualACRelay *industrial_dual_ac_relay, uint8_t function_id, bool response_expected) {
     if (industrial_dual_ac_relay == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_ac_relay->magic != 0x5446 || industrial_dual_ac_relay->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -215,6 +227,10 @@ int tf_industrial_dual_ac_relay_set_response_expected_all(TF_IndustrialDualACRel
         return TF_E_NULL;
     }
 
+    if (industrial_dual_ac_relay->magic != 0x5446 || industrial_dual_ac_relay->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(industrial_dual_ac_relay->response_expected, response_expected ? 0xFF : 0, 1);
 
     return TF_E_OK;
@@ -223,6 +239,10 @@ int tf_industrial_dual_ac_relay_set_response_expected_all(TF_IndustrialDualACRel
 int tf_industrial_dual_ac_relay_set_value(TF_IndustrialDualACRelay *industrial_dual_ac_relay, bool channel0, bool channel1) {
     if (industrial_dual_ac_relay == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_ac_relay->magic != 0x5446 || industrial_dual_ac_relay->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_dual_ac_relay->tfp->spitfp->hal;
@@ -270,6 +290,10 @@ int tf_industrial_dual_ac_relay_set_value(TF_IndustrialDualACRelay *industrial_d
 int tf_industrial_dual_ac_relay_get_value(TF_IndustrialDualACRelay *industrial_dual_ac_relay, bool *ret_channel0, bool *ret_channel1) {
     if (industrial_dual_ac_relay == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_ac_relay->magic != 0x5446 || industrial_dual_ac_relay->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_dual_ac_relay->tfp->spitfp->hal;
@@ -324,6 +348,10 @@ int tf_industrial_dual_ac_relay_set_channel_led_config(TF_IndustrialDualACRelay 
         return TF_E_NULL;
     }
 
+    if (industrial_dual_ac_relay->magic != 0x5446 || industrial_dual_ac_relay->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_dual_ac_relay->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -369,6 +397,10 @@ int tf_industrial_dual_ac_relay_set_channel_led_config(TF_IndustrialDualACRelay 
 int tf_industrial_dual_ac_relay_get_channel_led_config(TF_IndustrialDualACRelay *industrial_dual_ac_relay, uint8_t channel, uint8_t *ret_config) {
     if (industrial_dual_ac_relay == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_ac_relay->magic != 0x5446 || industrial_dual_ac_relay->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_dual_ac_relay->tfp->spitfp->hal;
@@ -426,6 +458,10 @@ int tf_industrial_dual_ac_relay_set_monoflop(TF_IndustrialDualACRelay *industria
         return TF_E_NULL;
     }
 
+    if (industrial_dual_ac_relay->magic != 0x5446 || industrial_dual_ac_relay->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_dual_ac_relay->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -472,6 +508,10 @@ int tf_industrial_dual_ac_relay_set_monoflop(TF_IndustrialDualACRelay *industria
 int tf_industrial_dual_ac_relay_get_monoflop(TF_IndustrialDualACRelay *industrial_dual_ac_relay, uint8_t channel, bool *ret_value, uint32_t *ret_time, uint32_t *ret_time_remaining) {
     if (industrial_dual_ac_relay == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_ac_relay->magic != 0x5446 || industrial_dual_ac_relay->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_dual_ac_relay->tfp->spitfp->hal;
@@ -531,6 +571,10 @@ int tf_industrial_dual_ac_relay_set_selected_value(TF_IndustrialDualACRelay *ind
         return TF_E_NULL;
     }
 
+    if (industrial_dual_ac_relay->magic != 0x5446 || industrial_dual_ac_relay->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_dual_ac_relay->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -576,6 +620,10 @@ int tf_industrial_dual_ac_relay_set_selected_value(TF_IndustrialDualACRelay *ind
 int tf_industrial_dual_ac_relay_get_spitfp_error_count(TF_IndustrialDualACRelay *industrial_dual_ac_relay, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (industrial_dual_ac_relay == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_ac_relay->magic != 0x5446 || industrial_dual_ac_relay->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_dual_ac_relay->tfp->spitfp->hal;
@@ -630,6 +678,10 @@ int tf_industrial_dual_ac_relay_get_spitfp_error_count(TF_IndustrialDualACRelay 
 int tf_industrial_dual_ac_relay_set_bootloader_mode(TF_IndustrialDualACRelay *industrial_dual_ac_relay, uint8_t mode, uint8_t *ret_status) {
     if (industrial_dual_ac_relay == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_ac_relay->magic != 0x5446 || industrial_dual_ac_relay->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_dual_ac_relay->tfp->spitfp->hal;
@@ -687,6 +739,10 @@ int tf_industrial_dual_ac_relay_get_bootloader_mode(TF_IndustrialDualACRelay *in
         return TF_E_NULL;
     }
 
+    if (industrial_dual_ac_relay->magic != 0x5446 || industrial_dual_ac_relay->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_dual_ac_relay->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -738,6 +794,10 @@ int tf_industrial_dual_ac_relay_set_write_firmware_pointer(TF_IndustrialDualACRe
         return TF_E_NULL;
     }
 
+    if (industrial_dual_ac_relay->magic != 0x5446 || industrial_dual_ac_relay->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_dual_ac_relay->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -782,6 +842,10 @@ int tf_industrial_dual_ac_relay_set_write_firmware_pointer(TF_IndustrialDualACRe
 int tf_industrial_dual_ac_relay_write_firmware(TF_IndustrialDualACRelay *industrial_dual_ac_relay, const uint8_t data[64], uint8_t *ret_status) {
     if (industrial_dual_ac_relay == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_ac_relay->magic != 0x5446 || industrial_dual_ac_relay->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_dual_ac_relay->tfp->spitfp->hal;
@@ -839,6 +903,10 @@ int tf_industrial_dual_ac_relay_set_status_led_config(TF_IndustrialDualACRelay *
         return TF_E_NULL;
     }
 
+    if (industrial_dual_ac_relay->magic != 0x5446 || industrial_dual_ac_relay->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_dual_ac_relay->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -883,6 +951,10 @@ int tf_industrial_dual_ac_relay_set_status_led_config(TF_IndustrialDualACRelay *
 int tf_industrial_dual_ac_relay_get_status_led_config(TF_IndustrialDualACRelay *industrial_dual_ac_relay, uint8_t *ret_config) {
     if (industrial_dual_ac_relay == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_ac_relay->magic != 0x5446 || industrial_dual_ac_relay->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_dual_ac_relay->tfp->spitfp->hal;
@@ -936,6 +1008,10 @@ int tf_industrial_dual_ac_relay_get_chip_temperature(TF_IndustrialDualACRelay *i
         return TF_E_NULL;
     }
 
+    if (industrial_dual_ac_relay->magic != 0x5446 || industrial_dual_ac_relay->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_dual_ac_relay->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -987,6 +1063,10 @@ int tf_industrial_dual_ac_relay_reset(TF_IndustrialDualACRelay *industrial_dual_
         return TF_E_NULL;
     }
 
+    if (industrial_dual_ac_relay->magic != 0x5446 || industrial_dual_ac_relay->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_dual_ac_relay->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1027,6 +1107,10 @@ int tf_industrial_dual_ac_relay_reset(TF_IndustrialDualACRelay *industrial_dual_
 int tf_industrial_dual_ac_relay_write_uid(TF_IndustrialDualACRelay *industrial_dual_ac_relay, uint32_t uid) {
     if (industrial_dual_ac_relay == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_ac_relay->magic != 0x5446 || industrial_dual_ac_relay->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_dual_ac_relay->tfp->spitfp->hal;
@@ -1073,6 +1157,10 @@ int tf_industrial_dual_ac_relay_write_uid(TF_IndustrialDualACRelay *industrial_d
 int tf_industrial_dual_ac_relay_read_uid(TF_IndustrialDualACRelay *industrial_dual_ac_relay, uint32_t *ret_uid) {
     if (industrial_dual_ac_relay == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_ac_relay->magic != 0x5446 || industrial_dual_ac_relay->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_dual_ac_relay->tfp->spitfp->hal;
@@ -1124,6 +1212,10 @@ int tf_industrial_dual_ac_relay_read_uid(TF_IndustrialDualACRelay *industrial_du
 int tf_industrial_dual_ac_relay_get_identity(TF_IndustrialDualACRelay *industrial_dual_ac_relay, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (industrial_dual_ac_relay == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_ac_relay->magic != 0x5446 || industrial_dual_ac_relay->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_dual_ac_relay->tfp->spitfp->hal;
@@ -1183,10 +1275,8 @@ int tf_industrial_dual_ac_relay_register_monoflop_done_callback(TF_IndustrialDua
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        industrial_dual_ac_relay->tfp->needs_callback_tick = false;
-    } else {
-        industrial_dual_ac_relay->tfp->needs_callback_tick = true;
+    if (industrial_dual_ac_relay->magic != 0x5446 || industrial_dual_ac_relay->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     industrial_dual_ac_relay->monoflop_done_handler = handler;
@@ -1198,6 +1288,10 @@ int tf_industrial_dual_ac_relay_register_monoflop_done_callback(TF_IndustrialDua
 int tf_industrial_dual_ac_relay_callback_tick(TF_IndustrialDualACRelay *industrial_dual_ac_relay, uint32_t timeout_us) {
     if (industrial_dual_ac_relay == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_ac_relay->magic != 0x5446 || industrial_dual_ac_relay->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = industrial_dual_ac_relay->tfp->spitfp->hal;

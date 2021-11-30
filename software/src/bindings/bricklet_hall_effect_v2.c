@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -84,19 +84,23 @@ int tf_hall_effect_v2_create(TF_HallEffectV2 *hall_effect_v2, const char *uid_or
     hall_effect_v2->tfp = tfp;
     hall_effect_v2->tfp->device = hall_effect_v2;
     hall_effect_v2->tfp->cb_handler = tf_hall_effect_v2_callback_handler;
+    hall_effect_v2->magic = 0x5446;
     hall_effect_v2->response_expected[0] = 0x05;
-
     return TF_E_OK;
 }
 
 int tf_hall_effect_v2_destroy(TF_HallEffectV2 *hall_effect_v2) {
-    if (hall_effect_v2 == NULL || hall_effect_v2->tfp == NULL) {
+    if (hall_effect_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     hall_effect_v2->tfp->cb_handler = NULL;
     hall_effect_v2->tfp->device = NULL;
     hall_effect_v2->tfp = NULL;
+    hall_effect_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -104,6 +108,10 @@ int tf_hall_effect_v2_destroy(TF_HallEffectV2 *hall_effect_v2) {
 int tf_hall_effect_v2_get_response_expected(TF_HallEffectV2 *hall_effect_v2, uint8_t function_id, bool *ret_response_expected) {
     if (hall_effect_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -152,6 +160,10 @@ int tf_hall_effect_v2_get_response_expected(TF_HallEffectV2 *hall_effect_v2, uin
 int tf_hall_effect_v2_set_response_expected(TF_HallEffectV2 *hall_effect_v2, uint8_t function_id, bool response_expected) {
     if (hall_effect_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -216,6 +228,10 @@ int tf_hall_effect_v2_set_response_expected_all(TF_HallEffectV2 *hall_effect_v2,
         return TF_E_NULL;
     }
 
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(hall_effect_v2->response_expected, response_expected ? 0xFF : 0, 1);
 
     return TF_E_OK;
@@ -224,6 +240,10 @@ int tf_hall_effect_v2_set_response_expected_all(TF_HallEffectV2 *hall_effect_v2,
 int tf_hall_effect_v2_get_magnetic_flux_density(TF_HallEffectV2 *hall_effect_v2, int16_t *ret_magnetic_flux_density) {
     if (hall_effect_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hall_effect_v2->tfp->spitfp->hal;
@@ -277,6 +297,10 @@ int tf_hall_effect_v2_set_magnetic_flux_density_callback_configuration(TF_HallEf
         return TF_E_NULL;
     }
 
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = hall_effect_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -325,6 +349,10 @@ int tf_hall_effect_v2_set_magnetic_flux_density_callback_configuration(TF_HallEf
 int tf_hall_effect_v2_get_magnetic_flux_density_callback_configuration(TF_HallEffectV2 *hall_effect_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int16_t *ret_min, int16_t *ret_max) {
     if (hall_effect_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hall_effect_v2->tfp->spitfp->hal;
@@ -382,6 +410,10 @@ int tf_hall_effect_v2_get_counter(TF_HallEffectV2 *hall_effect_v2, bool reset_co
         return TF_E_NULL;
     }
 
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = hall_effect_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -437,6 +469,10 @@ int tf_hall_effect_v2_set_counter_config(TF_HallEffectV2 *hall_effect_v2, int16_
         return TF_E_NULL;
     }
 
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = hall_effect_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -483,6 +519,10 @@ int tf_hall_effect_v2_set_counter_config(TF_HallEffectV2 *hall_effect_v2, int16_
 int tf_hall_effect_v2_get_counter_config(TF_HallEffectV2 *hall_effect_v2, int16_t *ret_high_threshold, int16_t *ret_low_threshold, uint32_t *ret_debounce) {
     if (hall_effect_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hall_effect_v2->tfp->spitfp->hal;
@@ -538,6 +578,10 @@ int tf_hall_effect_v2_set_counter_callback_configuration(TF_HallEffectV2 *hall_e
         return TF_E_NULL;
     }
 
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = hall_effect_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -583,6 +627,10 @@ int tf_hall_effect_v2_set_counter_callback_configuration(TF_HallEffectV2 *hall_e
 int tf_hall_effect_v2_get_counter_callback_configuration(TF_HallEffectV2 *hall_effect_v2, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (hall_effect_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hall_effect_v2->tfp->spitfp->hal;
@@ -637,6 +685,10 @@ int tf_hall_effect_v2_get_spitfp_error_count(TF_HallEffectV2 *hall_effect_v2, ui
         return TF_E_NULL;
     }
 
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = hall_effect_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -689,6 +741,10 @@ int tf_hall_effect_v2_get_spitfp_error_count(TF_HallEffectV2 *hall_effect_v2, ui
 int tf_hall_effect_v2_set_bootloader_mode(TF_HallEffectV2 *hall_effect_v2, uint8_t mode, uint8_t *ret_status) {
     if (hall_effect_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hall_effect_v2->tfp->spitfp->hal;
@@ -746,6 +802,10 @@ int tf_hall_effect_v2_get_bootloader_mode(TF_HallEffectV2 *hall_effect_v2, uint8
         return TF_E_NULL;
     }
 
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = hall_effect_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -797,6 +857,10 @@ int tf_hall_effect_v2_set_write_firmware_pointer(TF_HallEffectV2 *hall_effect_v2
         return TF_E_NULL;
     }
 
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = hall_effect_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -841,6 +905,10 @@ int tf_hall_effect_v2_set_write_firmware_pointer(TF_HallEffectV2 *hall_effect_v2
 int tf_hall_effect_v2_write_firmware(TF_HallEffectV2 *hall_effect_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (hall_effect_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hall_effect_v2->tfp->spitfp->hal;
@@ -898,6 +966,10 @@ int tf_hall_effect_v2_set_status_led_config(TF_HallEffectV2 *hall_effect_v2, uin
         return TF_E_NULL;
     }
 
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = hall_effect_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -942,6 +1014,10 @@ int tf_hall_effect_v2_set_status_led_config(TF_HallEffectV2 *hall_effect_v2, uin
 int tf_hall_effect_v2_get_status_led_config(TF_HallEffectV2 *hall_effect_v2, uint8_t *ret_config) {
     if (hall_effect_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hall_effect_v2->tfp->spitfp->hal;
@@ -995,6 +1071,10 @@ int tf_hall_effect_v2_get_chip_temperature(TF_HallEffectV2 *hall_effect_v2, int1
         return TF_E_NULL;
     }
 
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = hall_effect_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1046,6 +1126,10 @@ int tf_hall_effect_v2_reset(TF_HallEffectV2 *hall_effect_v2) {
         return TF_E_NULL;
     }
 
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = hall_effect_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1086,6 +1170,10 @@ int tf_hall_effect_v2_reset(TF_HallEffectV2 *hall_effect_v2) {
 int tf_hall_effect_v2_write_uid(TF_HallEffectV2 *hall_effect_v2, uint32_t uid) {
     if (hall_effect_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hall_effect_v2->tfp->spitfp->hal;
@@ -1132,6 +1220,10 @@ int tf_hall_effect_v2_write_uid(TF_HallEffectV2 *hall_effect_v2, uint32_t uid) {
 int tf_hall_effect_v2_read_uid(TF_HallEffectV2 *hall_effect_v2, uint32_t *ret_uid) {
     if (hall_effect_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hall_effect_v2->tfp->spitfp->hal;
@@ -1183,6 +1275,10 @@ int tf_hall_effect_v2_read_uid(TF_HallEffectV2 *hall_effect_v2, uint32_t *ret_ui
 int tf_hall_effect_v2_get_identity(TF_HallEffectV2 *hall_effect_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (hall_effect_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hall_effect_v2->tfp->spitfp->hal;
@@ -1242,11 +1338,8 @@ int tf_hall_effect_v2_register_magnetic_flux_density_callback(TF_HallEffectV2 *h
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        hall_effect_v2->tfp->needs_callback_tick = false;
-        hall_effect_v2->tfp->needs_callback_tick |= hall_effect_v2->counter_handler != NULL;
-    } else {
-        hall_effect_v2->tfp->needs_callback_tick = true;
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     hall_effect_v2->magnetic_flux_density_handler = handler;
@@ -1261,11 +1354,8 @@ int tf_hall_effect_v2_register_counter_callback(TF_HallEffectV2 *hall_effect_v2,
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        hall_effect_v2->tfp->needs_callback_tick = false;
-        hall_effect_v2->tfp->needs_callback_tick |= hall_effect_v2->magnetic_flux_density_handler != NULL;
-    } else {
-        hall_effect_v2->tfp->needs_callback_tick = true;
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     hall_effect_v2->counter_handler = handler;
@@ -1277,6 +1367,10 @@ int tf_hall_effect_v2_register_counter_callback(TF_HallEffectV2 *hall_effect_v2,
 int tf_hall_effect_v2_callback_tick(TF_HallEffectV2 *hall_effect_v2, uint32_t timeout_us) {
     if (hall_effect_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hall_effect_v2->magic != 0x5446 || hall_effect_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = hall_effect_v2->tfp->spitfp->hal;

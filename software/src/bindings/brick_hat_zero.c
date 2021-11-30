@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -70,19 +70,23 @@ int tf_hat_zero_create(TF_HATZero *hat_zero, const char *uid_or_port_name, TF_HA
     hat_zero->tfp = tfp;
     hat_zero->tfp->device = hat_zero;
     hat_zero->tfp->cb_handler = tf_hat_zero_callback_handler;
+    hat_zero->magic = 0x5446;
     hat_zero->response_expected[0] = 0x01;
-
     return TF_E_OK;
 }
 
 int tf_hat_zero_destroy(TF_HATZero *hat_zero) {
-    if (hat_zero == NULL || hat_zero->tfp == NULL) {
+    if (hat_zero == NULL) {
         return TF_E_NULL;
+    }
+    if (hat_zero->magic != 0x5446 || hat_zero->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     hat_zero->tfp->cb_handler = NULL;
     hat_zero->tfp->device = NULL;
     hat_zero->tfp = NULL;
+    hat_zero->magic = 0;
 
     return TF_E_OK;
 }
@@ -90,6 +94,10 @@ int tf_hat_zero_destroy(TF_HATZero *hat_zero) {
 int tf_hat_zero_get_response_expected(TF_HATZero *hat_zero, uint8_t function_id, bool *ret_response_expected) {
     if (hat_zero == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat_zero->magic != 0x5446 || hat_zero->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -128,6 +136,10 @@ int tf_hat_zero_get_response_expected(TF_HATZero *hat_zero, uint8_t function_id,
 int tf_hat_zero_set_response_expected(TF_HATZero *hat_zero, uint8_t function_id, bool response_expected) {
     if (hat_zero == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat_zero->magic != 0x5446 || hat_zero->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -178,6 +190,10 @@ int tf_hat_zero_set_response_expected_all(TF_HATZero *hat_zero, bool response_ex
         return TF_E_NULL;
     }
 
+    if (hat_zero->magic != 0x5446 || hat_zero->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(hat_zero->response_expected, response_expected ? 0xFF : 0, 1);
 
     return TF_E_OK;
@@ -186,6 +202,10 @@ int tf_hat_zero_set_response_expected_all(TF_HATZero *hat_zero, bool response_ex
 int tf_hat_zero_get_usb_voltage(TF_HATZero *hat_zero, uint16_t *ret_voltage) {
     if (hat_zero == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat_zero->magic != 0x5446 || hat_zero->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hat_zero->tfp->spitfp->hal;
@@ -239,6 +259,10 @@ int tf_hat_zero_set_usb_voltage_callback_configuration(TF_HATZero *hat_zero, uin
         return TF_E_NULL;
     }
 
+    if (hat_zero->magic != 0x5446 || hat_zero->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = hat_zero->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -287,6 +311,10 @@ int tf_hat_zero_set_usb_voltage_callback_configuration(TF_HATZero *hat_zero, uin
 int tf_hat_zero_get_usb_voltage_callback_configuration(TF_HATZero *hat_zero, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, uint16_t *ret_min, uint16_t *ret_max) {
     if (hat_zero == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat_zero->magic != 0x5446 || hat_zero->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hat_zero->tfp->spitfp->hal;
@@ -344,6 +372,10 @@ int tf_hat_zero_get_spitfp_error_count(TF_HATZero *hat_zero, uint32_t *ret_error
         return TF_E_NULL;
     }
 
+    if (hat_zero->magic != 0x5446 || hat_zero->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = hat_zero->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -396,6 +428,10 @@ int tf_hat_zero_get_spitfp_error_count(TF_HATZero *hat_zero, uint32_t *ret_error
 int tf_hat_zero_set_bootloader_mode(TF_HATZero *hat_zero, uint8_t mode, uint8_t *ret_status) {
     if (hat_zero == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat_zero->magic != 0x5446 || hat_zero->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hat_zero->tfp->spitfp->hal;
@@ -453,6 +489,10 @@ int tf_hat_zero_get_bootloader_mode(TF_HATZero *hat_zero, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
+    if (hat_zero->magic != 0x5446 || hat_zero->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = hat_zero->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -504,6 +544,10 @@ int tf_hat_zero_set_write_firmware_pointer(TF_HATZero *hat_zero, uint32_t pointe
         return TF_E_NULL;
     }
 
+    if (hat_zero->magic != 0x5446 || hat_zero->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = hat_zero->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -548,6 +592,10 @@ int tf_hat_zero_set_write_firmware_pointer(TF_HATZero *hat_zero, uint32_t pointe
 int tf_hat_zero_write_firmware(TF_HATZero *hat_zero, const uint8_t data[64], uint8_t *ret_status) {
     if (hat_zero == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat_zero->magic != 0x5446 || hat_zero->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hat_zero->tfp->spitfp->hal;
@@ -605,6 +653,10 @@ int tf_hat_zero_set_status_led_config(TF_HATZero *hat_zero, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (hat_zero->magic != 0x5446 || hat_zero->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = hat_zero->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -649,6 +701,10 @@ int tf_hat_zero_set_status_led_config(TF_HATZero *hat_zero, uint8_t config) {
 int tf_hat_zero_get_status_led_config(TF_HATZero *hat_zero, uint8_t *ret_config) {
     if (hat_zero == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat_zero->magic != 0x5446 || hat_zero->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hat_zero->tfp->spitfp->hal;
@@ -702,6 +758,10 @@ int tf_hat_zero_get_chip_temperature(TF_HATZero *hat_zero, int16_t *ret_temperat
         return TF_E_NULL;
     }
 
+    if (hat_zero->magic != 0x5446 || hat_zero->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = hat_zero->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -753,6 +813,10 @@ int tf_hat_zero_reset(TF_HATZero *hat_zero) {
         return TF_E_NULL;
     }
 
+    if (hat_zero->magic != 0x5446 || hat_zero->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = hat_zero->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -793,6 +857,10 @@ int tf_hat_zero_reset(TF_HATZero *hat_zero) {
 int tf_hat_zero_write_uid(TF_HATZero *hat_zero, uint32_t uid) {
     if (hat_zero == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat_zero->magic != 0x5446 || hat_zero->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hat_zero->tfp->spitfp->hal;
@@ -839,6 +907,10 @@ int tf_hat_zero_write_uid(TF_HATZero *hat_zero, uint32_t uid) {
 int tf_hat_zero_read_uid(TF_HATZero *hat_zero, uint32_t *ret_uid) {
     if (hat_zero == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat_zero->magic != 0x5446 || hat_zero->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hat_zero->tfp->spitfp->hal;
@@ -890,6 +962,10 @@ int tf_hat_zero_read_uid(TF_HATZero *hat_zero, uint32_t *ret_uid) {
 int tf_hat_zero_get_identity(TF_HATZero *hat_zero, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (hat_zero == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat_zero->magic != 0x5446 || hat_zero->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hat_zero->tfp->spitfp->hal;
@@ -949,10 +1025,8 @@ int tf_hat_zero_register_usb_voltage_callback(TF_HATZero *hat_zero, TF_HATZero_U
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        hat_zero->tfp->needs_callback_tick = false;
-    } else {
-        hat_zero->tfp->needs_callback_tick = true;
+    if (hat_zero->magic != 0x5446 || hat_zero->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     hat_zero->usb_voltage_handler = handler;
@@ -964,6 +1038,10 @@ int tf_hat_zero_register_usb_voltage_callback(TF_HATZero *hat_zero, TF_HATZero_U
 int tf_hat_zero_callback_tick(TF_HATZero *hat_zero, uint32_t timeout_us) {
     if (hat_zero == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat_zero->magic != 0x5446 || hat_zero->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = hat_zero->tfp->spitfp->hal;

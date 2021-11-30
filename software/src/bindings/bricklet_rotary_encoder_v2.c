@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -98,19 +98,23 @@ int tf_rotary_encoder_v2_create(TF_RotaryEncoderV2 *rotary_encoder_v2, const cha
     rotary_encoder_v2->tfp = tfp;
     rotary_encoder_v2->tfp->device = rotary_encoder_v2;
     rotary_encoder_v2->tfp->cb_handler = tf_rotary_encoder_v2_callback_handler;
+    rotary_encoder_v2->magic = 0x5446;
     rotary_encoder_v2->response_expected[0] = 0x01;
-
     return TF_E_OK;
 }
 
 int tf_rotary_encoder_v2_destroy(TF_RotaryEncoderV2 *rotary_encoder_v2) {
-    if (rotary_encoder_v2 == NULL || rotary_encoder_v2->tfp == NULL) {
+    if (rotary_encoder_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (rotary_encoder_v2->magic != 0x5446 || rotary_encoder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rotary_encoder_v2->tfp->cb_handler = NULL;
     rotary_encoder_v2->tfp->device = NULL;
     rotary_encoder_v2->tfp = NULL;
+    rotary_encoder_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -118,6 +122,10 @@ int tf_rotary_encoder_v2_destroy(TF_RotaryEncoderV2 *rotary_encoder_v2) {
 int tf_rotary_encoder_v2_get_response_expected(TF_RotaryEncoderV2 *rotary_encoder_v2, uint8_t function_id, bool *ret_response_expected) {
     if (rotary_encoder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rotary_encoder_v2->magic != 0x5446 || rotary_encoder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -156,6 +164,10 @@ int tf_rotary_encoder_v2_get_response_expected(TF_RotaryEncoderV2 *rotary_encode
 int tf_rotary_encoder_v2_set_response_expected(TF_RotaryEncoderV2 *rotary_encoder_v2, uint8_t function_id, bool response_expected) {
     if (rotary_encoder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rotary_encoder_v2->magic != 0x5446 || rotary_encoder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -206,6 +218,10 @@ int tf_rotary_encoder_v2_set_response_expected_all(TF_RotaryEncoderV2 *rotary_en
         return TF_E_NULL;
     }
 
+    if (rotary_encoder_v2->magic != 0x5446 || rotary_encoder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(rotary_encoder_v2->response_expected, response_expected ? 0xFF : 0, 1);
 
     return TF_E_OK;
@@ -214,6 +230,10 @@ int tf_rotary_encoder_v2_set_response_expected_all(TF_RotaryEncoderV2 *rotary_en
 int tf_rotary_encoder_v2_get_count(TF_RotaryEncoderV2 *rotary_encoder_v2, bool reset, int32_t *ret_count) {
     if (rotary_encoder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rotary_encoder_v2->magic != 0x5446 || rotary_encoder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rotary_encoder_v2->tfp->spitfp->hal;
@@ -271,6 +291,10 @@ int tf_rotary_encoder_v2_set_count_callback_configuration(TF_RotaryEncoderV2 *ro
         return TF_E_NULL;
     }
 
+    if (rotary_encoder_v2->magic != 0x5446 || rotary_encoder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rotary_encoder_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -319,6 +343,10 @@ int tf_rotary_encoder_v2_set_count_callback_configuration(TF_RotaryEncoderV2 *ro
 int tf_rotary_encoder_v2_get_count_callback_configuration(TF_RotaryEncoderV2 *rotary_encoder_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int32_t *ret_min, int32_t *ret_max) {
     if (rotary_encoder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rotary_encoder_v2->magic != 0x5446 || rotary_encoder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rotary_encoder_v2->tfp->spitfp->hal;
@@ -376,6 +404,10 @@ int tf_rotary_encoder_v2_is_pressed(TF_RotaryEncoderV2 *rotary_encoder_v2, bool 
         return TF_E_NULL;
     }
 
+    if (rotary_encoder_v2->magic != 0x5446 || rotary_encoder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rotary_encoder_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -425,6 +457,10 @@ int tf_rotary_encoder_v2_is_pressed(TF_RotaryEncoderV2 *rotary_encoder_v2, bool 
 int tf_rotary_encoder_v2_get_spitfp_error_count(TF_RotaryEncoderV2 *rotary_encoder_v2, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (rotary_encoder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rotary_encoder_v2->magic != 0x5446 || rotary_encoder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rotary_encoder_v2->tfp->spitfp->hal;
@@ -479,6 +515,10 @@ int tf_rotary_encoder_v2_get_spitfp_error_count(TF_RotaryEncoderV2 *rotary_encod
 int tf_rotary_encoder_v2_set_bootloader_mode(TF_RotaryEncoderV2 *rotary_encoder_v2, uint8_t mode, uint8_t *ret_status) {
     if (rotary_encoder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rotary_encoder_v2->magic != 0x5446 || rotary_encoder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rotary_encoder_v2->tfp->spitfp->hal;
@@ -536,6 +576,10 @@ int tf_rotary_encoder_v2_get_bootloader_mode(TF_RotaryEncoderV2 *rotary_encoder_
         return TF_E_NULL;
     }
 
+    if (rotary_encoder_v2->magic != 0x5446 || rotary_encoder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rotary_encoder_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -587,6 +631,10 @@ int tf_rotary_encoder_v2_set_write_firmware_pointer(TF_RotaryEncoderV2 *rotary_e
         return TF_E_NULL;
     }
 
+    if (rotary_encoder_v2->magic != 0x5446 || rotary_encoder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rotary_encoder_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -631,6 +679,10 @@ int tf_rotary_encoder_v2_set_write_firmware_pointer(TF_RotaryEncoderV2 *rotary_e
 int tf_rotary_encoder_v2_write_firmware(TF_RotaryEncoderV2 *rotary_encoder_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (rotary_encoder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rotary_encoder_v2->magic != 0x5446 || rotary_encoder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rotary_encoder_v2->tfp->spitfp->hal;
@@ -688,6 +740,10 @@ int tf_rotary_encoder_v2_set_status_led_config(TF_RotaryEncoderV2 *rotary_encode
         return TF_E_NULL;
     }
 
+    if (rotary_encoder_v2->magic != 0x5446 || rotary_encoder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rotary_encoder_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -732,6 +788,10 @@ int tf_rotary_encoder_v2_set_status_led_config(TF_RotaryEncoderV2 *rotary_encode
 int tf_rotary_encoder_v2_get_status_led_config(TF_RotaryEncoderV2 *rotary_encoder_v2, uint8_t *ret_config) {
     if (rotary_encoder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rotary_encoder_v2->magic != 0x5446 || rotary_encoder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rotary_encoder_v2->tfp->spitfp->hal;
@@ -785,6 +845,10 @@ int tf_rotary_encoder_v2_get_chip_temperature(TF_RotaryEncoderV2 *rotary_encoder
         return TF_E_NULL;
     }
 
+    if (rotary_encoder_v2->magic != 0x5446 || rotary_encoder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rotary_encoder_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -836,6 +900,10 @@ int tf_rotary_encoder_v2_reset(TF_RotaryEncoderV2 *rotary_encoder_v2) {
         return TF_E_NULL;
     }
 
+    if (rotary_encoder_v2->magic != 0x5446 || rotary_encoder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rotary_encoder_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -876,6 +944,10 @@ int tf_rotary_encoder_v2_reset(TF_RotaryEncoderV2 *rotary_encoder_v2) {
 int tf_rotary_encoder_v2_write_uid(TF_RotaryEncoderV2 *rotary_encoder_v2, uint32_t uid) {
     if (rotary_encoder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rotary_encoder_v2->magic != 0x5446 || rotary_encoder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rotary_encoder_v2->tfp->spitfp->hal;
@@ -922,6 +994,10 @@ int tf_rotary_encoder_v2_write_uid(TF_RotaryEncoderV2 *rotary_encoder_v2, uint32
 int tf_rotary_encoder_v2_read_uid(TF_RotaryEncoderV2 *rotary_encoder_v2, uint32_t *ret_uid) {
     if (rotary_encoder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rotary_encoder_v2->magic != 0x5446 || rotary_encoder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rotary_encoder_v2->tfp->spitfp->hal;
@@ -973,6 +1049,10 @@ int tf_rotary_encoder_v2_read_uid(TF_RotaryEncoderV2 *rotary_encoder_v2, uint32_
 int tf_rotary_encoder_v2_get_identity(TF_RotaryEncoderV2 *rotary_encoder_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (rotary_encoder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rotary_encoder_v2->magic != 0x5446 || rotary_encoder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rotary_encoder_v2->tfp->spitfp->hal;
@@ -1032,12 +1112,8 @@ int tf_rotary_encoder_v2_register_count_callback(TF_RotaryEncoderV2 *rotary_enco
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rotary_encoder_v2->tfp->needs_callback_tick = false;
-        rotary_encoder_v2->tfp->needs_callback_tick |= rotary_encoder_v2->pressed_handler != NULL;
-        rotary_encoder_v2->tfp->needs_callback_tick |= rotary_encoder_v2->released_handler != NULL;
-    } else {
-        rotary_encoder_v2->tfp->needs_callback_tick = true;
+    if (rotary_encoder_v2->magic != 0x5446 || rotary_encoder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rotary_encoder_v2->count_handler = handler;
@@ -1052,12 +1128,8 @@ int tf_rotary_encoder_v2_register_pressed_callback(TF_RotaryEncoderV2 *rotary_en
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rotary_encoder_v2->tfp->needs_callback_tick = false;
-        rotary_encoder_v2->tfp->needs_callback_tick |= rotary_encoder_v2->count_handler != NULL;
-        rotary_encoder_v2->tfp->needs_callback_tick |= rotary_encoder_v2->released_handler != NULL;
-    } else {
-        rotary_encoder_v2->tfp->needs_callback_tick = true;
+    if (rotary_encoder_v2->magic != 0x5446 || rotary_encoder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rotary_encoder_v2->pressed_handler = handler;
@@ -1072,12 +1144,8 @@ int tf_rotary_encoder_v2_register_released_callback(TF_RotaryEncoderV2 *rotary_e
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rotary_encoder_v2->tfp->needs_callback_tick = false;
-        rotary_encoder_v2->tfp->needs_callback_tick |= rotary_encoder_v2->count_handler != NULL;
-        rotary_encoder_v2->tfp->needs_callback_tick |= rotary_encoder_v2->pressed_handler != NULL;
-    } else {
-        rotary_encoder_v2->tfp->needs_callback_tick = true;
+    if (rotary_encoder_v2->magic != 0x5446 || rotary_encoder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rotary_encoder_v2->released_handler = handler;
@@ -1089,6 +1157,10 @@ int tf_rotary_encoder_v2_register_released_callback(TF_RotaryEncoderV2 *rotary_e
 int tf_rotary_encoder_v2_callback_tick(TF_RotaryEncoderV2 *rotary_encoder_v2, uint32_t timeout_us) {
     if (rotary_encoder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rotary_encoder_v2->magic != 0x5446 || rotary_encoder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = rotary_encoder_v2->tfp->spitfp->hal;

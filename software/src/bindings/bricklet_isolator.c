@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -73,19 +73,23 @@ int tf_isolator_create(TF_Isolator *isolator, const char *uid_or_port_name, TF_H
     isolator->tfp = tfp;
     isolator->tfp->device = isolator;
     isolator->tfp->cb_handler = tf_isolator_callback_handler;
+    isolator->magic = 0x5446;
     isolator->response_expected[0] = 0x04;
-
     return TF_E_OK;
 }
 
 int tf_isolator_destroy(TF_Isolator *isolator) {
-    if (isolator == NULL || isolator->tfp == NULL) {
+    if (isolator == NULL) {
         return TF_E_NULL;
+    }
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     isolator->tfp->cb_handler = NULL;
     isolator->tfp->device = NULL;
     isolator->tfp = NULL;
+    isolator->magic = 0;
 
     return TF_E_OK;
 }
@@ -93,6 +97,10 @@ int tf_isolator_destroy(TF_Isolator *isolator) {
 int tf_isolator_get_response_expected(TF_Isolator *isolator, uint8_t function_id, bool *ret_response_expected) {
     if (isolator == NULL) {
         return TF_E_NULL;
+    }
+
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -141,6 +149,10 @@ int tf_isolator_get_response_expected(TF_Isolator *isolator, uint8_t function_id
 int tf_isolator_set_response_expected(TF_Isolator *isolator, uint8_t function_id, bool response_expected) {
     if (isolator == NULL) {
         return TF_E_NULL;
+    }
+
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -205,6 +217,10 @@ int tf_isolator_set_response_expected_all(TF_Isolator *isolator, bool response_e
         return TF_E_NULL;
     }
 
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(isolator->response_expected, response_expected ? 0xFF : 0, 1);
 
     return TF_E_OK;
@@ -213,6 +229,10 @@ int tf_isolator_set_response_expected_all(TF_Isolator *isolator, bool response_e
 int tf_isolator_get_statistics(TF_Isolator *isolator, uint32_t *ret_messages_from_brick, uint32_t *ret_messages_from_bricklet, uint16_t *ret_connected_bricklet_device_identifier, char ret_connected_bricklet_uid[8]) {
     if (isolator == NULL) {
         return TF_E_NULL;
+    }
+
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = isolator->tfp->spitfp->hal;
@@ -269,6 +289,10 @@ int tf_isolator_set_spitfp_baudrate_config(TF_Isolator *isolator, bool enable_dy
         return TF_E_NULL;
     }
 
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = isolator->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -314,6 +338,10 @@ int tf_isolator_set_spitfp_baudrate_config(TF_Isolator *isolator, bool enable_dy
 int tf_isolator_get_spitfp_baudrate_config(TF_Isolator *isolator, bool *ret_enable_dynamic_baudrate, uint32_t *ret_minimum_dynamic_baudrate) {
     if (isolator == NULL) {
         return TF_E_NULL;
+    }
+
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = isolator->tfp->spitfp->hal;
@@ -368,6 +396,10 @@ int tf_isolator_set_spitfp_baudrate(TF_Isolator *isolator, uint32_t baudrate) {
         return TF_E_NULL;
     }
 
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = isolator->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -412,6 +444,10 @@ int tf_isolator_set_spitfp_baudrate(TF_Isolator *isolator, uint32_t baudrate) {
 int tf_isolator_get_spitfp_baudrate(TF_Isolator *isolator, uint32_t *ret_baudrate) {
     if (isolator == NULL) {
         return TF_E_NULL;
+    }
+
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = isolator->tfp->spitfp->hal;
@@ -463,6 +499,10 @@ int tf_isolator_get_spitfp_baudrate(TF_Isolator *isolator, uint32_t *ret_baudrat
 int tf_isolator_get_isolator_spitfp_error_count(TF_Isolator *isolator, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (isolator == NULL) {
         return TF_E_NULL;
+    }
+
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = isolator->tfp->spitfp->hal;
@@ -519,6 +559,10 @@ int tf_isolator_set_statistics_callback_configuration(TF_Isolator *isolator, uin
         return TF_E_NULL;
     }
 
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = isolator->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -564,6 +608,10 @@ int tf_isolator_set_statistics_callback_configuration(TF_Isolator *isolator, uin
 int tf_isolator_get_statistics_callback_configuration(TF_Isolator *isolator, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (isolator == NULL) {
         return TF_E_NULL;
+    }
+
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = isolator->tfp->spitfp->hal;
@@ -618,6 +666,10 @@ int tf_isolator_get_spitfp_error_count(TF_Isolator *isolator, uint32_t *ret_erro
         return TF_E_NULL;
     }
 
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = isolator->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -670,6 +722,10 @@ int tf_isolator_get_spitfp_error_count(TF_Isolator *isolator, uint32_t *ret_erro
 int tf_isolator_set_bootloader_mode(TF_Isolator *isolator, uint8_t mode, uint8_t *ret_status) {
     if (isolator == NULL) {
         return TF_E_NULL;
+    }
+
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = isolator->tfp->spitfp->hal;
@@ -727,6 +783,10 @@ int tf_isolator_get_bootloader_mode(TF_Isolator *isolator, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = isolator->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -778,6 +838,10 @@ int tf_isolator_set_write_firmware_pointer(TF_Isolator *isolator, uint32_t point
         return TF_E_NULL;
     }
 
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = isolator->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -822,6 +886,10 @@ int tf_isolator_set_write_firmware_pointer(TF_Isolator *isolator, uint32_t point
 int tf_isolator_write_firmware(TF_Isolator *isolator, const uint8_t data[64], uint8_t *ret_status) {
     if (isolator == NULL) {
         return TF_E_NULL;
+    }
+
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = isolator->tfp->spitfp->hal;
@@ -879,6 +947,10 @@ int tf_isolator_set_status_led_config(TF_Isolator *isolator, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = isolator->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -923,6 +995,10 @@ int tf_isolator_set_status_led_config(TF_Isolator *isolator, uint8_t config) {
 int tf_isolator_get_status_led_config(TF_Isolator *isolator, uint8_t *ret_config) {
     if (isolator == NULL) {
         return TF_E_NULL;
+    }
+
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = isolator->tfp->spitfp->hal;
@@ -976,6 +1052,10 @@ int tf_isolator_get_chip_temperature(TF_Isolator *isolator, int16_t *ret_tempera
         return TF_E_NULL;
     }
 
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = isolator->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1027,6 +1107,10 @@ int tf_isolator_reset(TF_Isolator *isolator) {
         return TF_E_NULL;
     }
 
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = isolator->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1067,6 +1151,10 @@ int tf_isolator_reset(TF_Isolator *isolator) {
 int tf_isolator_write_uid(TF_Isolator *isolator, uint32_t uid) {
     if (isolator == NULL) {
         return TF_E_NULL;
+    }
+
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = isolator->tfp->spitfp->hal;
@@ -1113,6 +1201,10 @@ int tf_isolator_write_uid(TF_Isolator *isolator, uint32_t uid) {
 int tf_isolator_read_uid(TF_Isolator *isolator, uint32_t *ret_uid) {
     if (isolator == NULL) {
         return TF_E_NULL;
+    }
+
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = isolator->tfp->spitfp->hal;
@@ -1164,6 +1256,10 @@ int tf_isolator_read_uid(TF_Isolator *isolator, uint32_t *ret_uid) {
 int tf_isolator_get_identity(TF_Isolator *isolator, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (isolator == NULL) {
         return TF_E_NULL;
+    }
+
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = isolator->tfp->spitfp->hal;
@@ -1223,10 +1319,8 @@ int tf_isolator_register_statistics_callback(TF_Isolator *isolator, TF_Isolator_
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        isolator->tfp->needs_callback_tick = false;
-    } else {
-        isolator->tfp->needs_callback_tick = true;
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     isolator->statistics_handler = handler;
@@ -1238,6 +1332,10 @@ int tf_isolator_register_statistics_callback(TF_Isolator *isolator, TF_Isolator_
 int tf_isolator_callback_tick(TF_Isolator *isolator, uint32_t timeout_us) {
     if (isolator == NULL) {
         return TF_E_NULL;
+    }
+
+    if (isolator->magic != 0x5446 || isolator->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = isolator->tfp->spitfp->hal;

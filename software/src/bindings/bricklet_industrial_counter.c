@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -87,20 +87,24 @@ int tf_industrial_counter_create(TF_IndustrialCounter *industrial_counter, const
     industrial_counter->tfp = tfp;
     industrial_counter->tfp->device = industrial_counter;
     industrial_counter->tfp->cb_handler = tf_industrial_counter_callback_handler;
+    industrial_counter->magic = 0x5446;
     industrial_counter->response_expected[0] = 0x60;
     industrial_counter->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_industrial_counter_destroy(TF_IndustrialCounter *industrial_counter) {
-    if (industrial_counter == NULL || industrial_counter->tfp == NULL) {
+    if (industrial_counter == NULL) {
         return TF_E_NULL;
+    }
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     industrial_counter->tfp->cb_handler = NULL;
     industrial_counter->tfp->device = NULL;
     industrial_counter->tfp = NULL;
+    industrial_counter->magic = 0;
 
     return TF_E_OK;
 }
@@ -108,6 +112,10 @@ int tf_industrial_counter_destroy(TF_IndustrialCounter *industrial_counter) {
 int tf_industrial_counter_get_response_expected(TF_IndustrialCounter *industrial_counter, uint8_t function_id, bool *ret_response_expected) {
     if (industrial_counter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -181,6 +189,10 @@ int tf_industrial_counter_get_response_expected(TF_IndustrialCounter *industrial
 int tf_industrial_counter_set_response_expected(TF_IndustrialCounter *industrial_counter, uint8_t function_id, bool response_expected) {
     if (industrial_counter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -280,6 +292,10 @@ int tf_industrial_counter_set_response_expected_all(TF_IndustrialCounter *indust
         return TF_E_NULL;
     }
 
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(industrial_counter->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -288,6 +304,10 @@ int tf_industrial_counter_set_response_expected_all(TF_IndustrialCounter *indust
 int tf_industrial_counter_get_counter(TF_IndustrialCounter *industrial_counter, uint8_t channel, int64_t *ret_counter) {
     if (industrial_counter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
@@ -345,6 +365,10 @@ int tf_industrial_counter_get_all_counter(TF_IndustrialCounter *industrial_count
         return TF_E_NULL;
     }
 
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -397,6 +421,10 @@ int tf_industrial_counter_set_counter(TF_IndustrialCounter *industrial_counter, 
         return TF_E_NULL;
     }
 
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -444,6 +472,10 @@ int tf_industrial_counter_set_all_counter(TF_IndustrialCounter *industrial_count
         return TF_E_NULL;
     }
 
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -489,6 +521,10 @@ int tf_industrial_counter_set_all_counter(TF_IndustrialCounter *industrial_count
 int tf_industrial_counter_get_signal_data(TF_IndustrialCounter *industrial_counter, uint8_t channel, uint16_t *ret_duty_cycle, uint64_t *ret_period, uint32_t *ret_frequency, bool *ret_value) {
     if (industrial_counter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
@@ -549,6 +585,10 @@ int tf_industrial_counter_get_all_signal_data(TF_IndustrialCounter *industrial_c
         return TF_E_NULL;
     }
 
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -604,6 +644,10 @@ int tf_industrial_counter_set_counter_active(TF_IndustrialCounter *industrial_co
         return TF_E_NULL;
     }
 
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -651,6 +695,10 @@ int tf_industrial_counter_set_all_counter_active(TF_IndustrialCounter *industria
         return TF_E_NULL;
     }
 
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -696,6 +744,10 @@ int tf_industrial_counter_set_all_counter_active(TF_IndustrialCounter *industria
 int tf_industrial_counter_get_counter_active(TF_IndustrialCounter *industrial_counter, uint8_t channel, bool *ret_active) {
     if (industrial_counter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
@@ -753,6 +805,10 @@ int tf_industrial_counter_get_all_counter_active(TF_IndustrialCounter *industria
         return TF_E_NULL;
     }
 
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -804,6 +860,10 @@ int tf_industrial_counter_set_counter_configuration(TF_IndustrialCounter *indust
         return TF_E_NULL;
     }
 
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -852,6 +912,10 @@ int tf_industrial_counter_set_counter_configuration(TF_IndustrialCounter *indust
 int tf_industrial_counter_get_counter_configuration(TF_IndustrialCounter *industrial_counter, uint8_t channel, uint8_t *ret_count_edge, uint8_t *ret_count_direction, uint8_t *ret_duty_cycle_prescaler, uint8_t *ret_frequency_integration_time) {
     if (industrial_counter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
@@ -912,6 +976,10 @@ int tf_industrial_counter_set_all_counter_callback_configuration(TF_IndustrialCo
         return TF_E_NULL;
     }
 
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -957,6 +1025,10 @@ int tf_industrial_counter_set_all_counter_callback_configuration(TF_IndustrialCo
 int tf_industrial_counter_get_all_counter_callback_configuration(TF_IndustrialCounter *industrial_counter, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (industrial_counter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
@@ -1011,6 +1083,10 @@ int tf_industrial_counter_set_all_signal_data_callback_configuration(TF_Industri
         return TF_E_NULL;
     }
 
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1056,6 +1132,10 @@ int tf_industrial_counter_set_all_signal_data_callback_configuration(TF_Industri
 int tf_industrial_counter_get_all_signal_data_callback_configuration(TF_IndustrialCounter *industrial_counter, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (industrial_counter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
@@ -1110,6 +1190,10 @@ int tf_industrial_counter_set_channel_led_config(TF_IndustrialCounter *industria
         return TF_E_NULL;
     }
 
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1155,6 +1239,10 @@ int tf_industrial_counter_set_channel_led_config(TF_IndustrialCounter *industria
 int tf_industrial_counter_get_channel_led_config(TF_IndustrialCounter *industrial_counter, uint8_t channel, uint8_t *ret_config) {
     if (industrial_counter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
@@ -1212,6 +1300,10 @@ int tf_industrial_counter_get_spitfp_error_count(TF_IndustrialCounter *industria
         return TF_E_NULL;
     }
 
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1264,6 +1356,10 @@ int tf_industrial_counter_get_spitfp_error_count(TF_IndustrialCounter *industria
 int tf_industrial_counter_set_bootloader_mode(TF_IndustrialCounter *industrial_counter, uint8_t mode, uint8_t *ret_status) {
     if (industrial_counter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
@@ -1321,6 +1417,10 @@ int tf_industrial_counter_get_bootloader_mode(TF_IndustrialCounter *industrial_c
         return TF_E_NULL;
     }
 
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1372,6 +1472,10 @@ int tf_industrial_counter_set_write_firmware_pointer(TF_IndustrialCounter *indus
         return TF_E_NULL;
     }
 
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1416,6 +1520,10 @@ int tf_industrial_counter_set_write_firmware_pointer(TF_IndustrialCounter *indus
 int tf_industrial_counter_write_firmware(TF_IndustrialCounter *industrial_counter, const uint8_t data[64], uint8_t *ret_status) {
     if (industrial_counter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
@@ -1473,6 +1581,10 @@ int tf_industrial_counter_set_status_led_config(TF_IndustrialCounter *industrial
         return TF_E_NULL;
     }
 
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1517,6 +1629,10 @@ int tf_industrial_counter_set_status_led_config(TF_IndustrialCounter *industrial
 int tf_industrial_counter_get_status_led_config(TF_IndustrialCounter *industrial_counter, uint8_t *ret_config) {
     if (industrial_counter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
@@ -1570,6 +1686,10 @@ int tf_industrial_counter_get_chip_temperature(TF_IndustrialCounter *industrial_
         return TF_E_NULL;
     }
 
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1621,6 +1741,10 @@ int tf_industrial_counter_reset(TF_IndustrialCounter *industrial_counter) {
         return TF_E_NULL;
     }
 
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1661,6 +1785,10 @@ int tf_industrial_counter_reset(TF_IndustrialCounter *industrial_counter) {
 int tf_industrial_counter_write_uid(TF_IndustrialCounter *industrial_counter, uint32_t uid) {
     if (industrial_counter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
@@ -1707,6 +1835,10 @@ int tf_industrial_counter_write_uid(TF_IndustrialCounter *industrial_counter, ui
 int tf_industrial_counter_read_uid(TF_IndustrialCounter *industrial_counter, uint32_t *ret_uid) {
     if (industrial_counter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
@@ -1758,6 +1890,10 @@ int tf_industrial_counter_read_uid(TF_IndustrialCounter *industrial_counter, uin
 int tf_industrial_counter_get_identity(TF_IndustrialCounter *industrial_counter, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (industrial_counter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_counter->tfp->spitfp->hal;
@@ -1817,11 +1953,8 @@ int tf_industrial_counter_register_all_counter_callback(TF_IndustrialCounter *in
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        industrial_counter->tfp->needs_callback_tick = false;
-        industrial_counter->tfp->needs_callback_tick |= industrial_counter->all_signal_data_handler != NULL;
-    } else {
-        industrial_counter->tfp->needs_callback_tick = true;
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     industrial_counter->all_counter_handler = handler;
@@ -1836,11 +1969,8 @@ int tf_industrial_counter_register_all_signal_data_callback(TF_IndustrialCounter
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        industrial_counter->tfp->needs_callback_tick = false;
-        industrial_counter->tfp->needs_callback_tick |= industrial_counter->all_counter_handler != NULL;
-    } else {
-        industrial_counter->tfp->needs_callback_tick = true;
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     industrial_counter->all_signal_data_handler = handler;
@@ -1852,6 +1982,10 @@ int tf_industrial_counter_register_all_signal_data_callback(TF_IndustrialCounter
 int tf_industrial_counter_callback_tick(TF_IndustrialCounter *industrial_counter, uint32_t timeout_us) {
     if (industrial_counter == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_counter->magic != 0x5446 || industrial_counter->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = industrial_counter->tfp->spitfp->hal;

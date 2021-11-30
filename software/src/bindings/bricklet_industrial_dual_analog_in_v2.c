@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -85,20 +85,24 @@ int tf_industrial_dual_analog_in_v2_create(TF_IndustrialDualAnalogInV2 *industri
     industrial_dual_analog_in_v2->tfp = tfp;
     industrial_dual_analog_in_v2->tfp->device = industrial_dual_analog_in_v2;
     industrial_dual_analog_in_v2->tfp->cb_handler = tf_industrial_dual_analog_in_v2_callback_handler;
+    industrial_dual_analog_in_v2->magic = 0x5446;
     industrial_dual_analog_in_v2->response_expected[0] = 0x21;
     industrial_dual_analog_in_v2->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_industrial_dual_analog_in_v2_destroy(TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2) {
-    if (industrial_dual_analog_in_v2 == NULL || industrial_dual_analog_in_v2->tfp == NULL) {
+    if (industrial_dual_analog_in_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     industrial_dual_analog_in_v2->tfp->cb_handler = NULL;
     industrial_dual_analog_in_v2->tfp->device = NULL;
     industrial_dual_analog_in_v2->tfp = NULL;
+    industrial_dual_analog_in_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -106,6 +110,10 @@ int tf_industrial_dual_analog_in_v2_destroy(TF_IndustrialDualAnalogInV2 *industr
 int tf_industrial_dual_analog_in_v2_get_response_expected(TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, uint8_t function_id, bool *ret_response_expected) {
     if (industrial_dual_analog_in_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -169,6 +177,10 @@ int tf_industrial_dual_analog_in_v2_get_response_expected(TF_IndustrialDualAnalo
 int tf_industrial_dual_analog_in_v2_set_response_expected(TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, uint8_t function_id, bool response_expected) {
     if (industrial_dual_analog_in_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -254,6 +266,10 @@ int tf_industrial_dual_analog_in_v2_set_response_expected_all(TF_IndustrialDualA
         return TF_E_NULL;
     }
 
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(industrial_dual_analog_in_v2->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -262,6 +278,10 @@ int tf_industrial_dual_analog_in_v2_set_response_expected_all(TF_IndustrialDualA
 int tf_industrial_dual_analog_in_v2_get_voltage(TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, uint8_t channel, int32_t *ret_voltage) {
     if (industrial_dual_analog_in_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
@@ -319,6 +339,10 @@ int tf_industrial_dual_analog_in_v2_set_voltage_callback_configuration(TF_Indust
         return TF_E_NULL;
     }
 
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -368,6 +392,10 @@ int tf_industrial_dual_analog_in_v2_set_voltage_callback_configuration(TF_Indust
 int tf_industrial_dual_analog_in_v2_get_voltage_callback_configuration(TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, uint8_t channel, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int32_t *ret_min, int32_t *ret_max) {
     if (industrial_dual_analog_in_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
@@ -429,6 +457,10 @@ int tf_industrial_dual_analog_in_v2_set_sample_rate(TF_IndustrialDualAnalogInV2 
         return TF_E_NULL;
     }
 
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -473,6 +505,10 @@ int tf_industrial_dual_analog_in_v2_set_sample_rate(TF_IndustrialDualAnalogInV2 
 int tf_industrial_dual_analog_in_v2_get_sample_rate(TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, uint8_t *ret_rate) {
     if (industrial_dual_analog_in_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
@@ -526,6 +562,10 @@ int tf_industrial_dual_analog_in_v2_set_calibration(TF_IndustrialDualAnalogInV2 
         return TF_E_NULL;
     }
 
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -572,6 +612,10 @@ int tf_industrial_dual_analog_in_v2_set_calibration(TF_IndustrialDualAnalogInV2 
 int tf_industrial_dual_analog_in_v2_get_calibration(TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, int32_t ret_offset[2], int32_t ret_gain[2]) {
     if (industrial_dual_analog_in_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
@@ -627,6 +671,10 @@ int tf_industrial_dual_analog_in_v2_get_adc_values(TF_IndustrialDualAnalogInV2 *
         return TF_E_NULL;
     }
 
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -679,6 +727,10 @@ int tf_industrial_dual_analog_in_v2_set_channel_led_config(TF_IndustrialDualAnal
         return TF_E_NULL;
     }
 
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -724,6 +776,10 @@ int tf_industrial_dual_analog_in_v2_set_channel_led_config(TF_IndustrialDualAnal
 int tf_industrial_dual_analog_in_v2_get_channel_led_config(TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, uint8_t channel, uint8_t *ret_config) {
     if (industrial_dual_analog_in_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
@@ -781,6 +837,10 @@ int tf_industrial_dual_analog_in_v2_set_channel_led_status_config(TF_IndustrialD
         return TF_E_NULL;
     }
 
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -828,6 +888,10 @@ int tf_industrial_dual_analog_in_v2_set_channel_led_status_config(TF_IndustrialD
 int tf_industrial_dual_analog_in_v2_get_channel_led_status_config(TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, uint8_t channel, int32_t *ret_min, int32_t *ret_max, uint8_t *ret_config) {
     if (industrial_dual_analog_in_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
@@ -887,6 +951,10 @@ int tf_industrial_dual_analog_in_v2_get_all_voltages(TF_IndustrialDualAnalogInV2
         return TF_E_NULL;
     }
 
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -939,6 +1007,10 @@ int tf_industrial_dual_analog_in_v2_set_all_voltages_callback_configuration(TF_I
         return TF_E_NULL;
     }
 
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -984,6 +1056,10 @@ int tf_industrial_dual_analog_in_v2_set_all_voltages_callback_configuration(TF_I
 int tf_industrial_dual_analog_in_v2_get_all_voltages_callback_configuration(TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (industrial_dual_analog_in_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
@@ -1038,6 +1114,10 @@ int tf_industrial_dual_analog_in_v2_get_spitfp_error_count(TF_IndustrialDualAnal
         return TF_E_NULL;
     }
 
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1090,6 +1170,10 @@ int tf_industrial_dual_analog_in_v2_get_spitfp_error_count(TF_IndustrialDualAnal
 int tf_industrial_dual_analog_in_v2_set_bootloader_mode(TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, uint8_t mode, uint8_t *ret_status) {
     if (industrial_dual_analog_in_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
@@ -1147,6 +1231,10 @@ int tf_industrial_dual_analog_in_v2_get_bootloader_mode(TF_IndustrialDualAnalogI
         return TF_E_NULL;
     }
 
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1198,6 +1286,10 @@ int tf_industrial_dual_analog_in_v2_set_write_firmware_pointer(TF_IndustrialDual
         return TF_E_NULL;
     }
 
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1242,6 +1334,10 @@ int tf_industrial_dual_analog_in_v2_set_write_firmware_pointer(TF_IndustrialDual
 int tf_industrial_dual_analog_in_v2_write_firmware(TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (industrial_dual_analog_in_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
@@ -1299,6 +1395,10 @@ int tf_industrial_dual_analog_in_v2_set_status_led_config(TF_IndustrialDualAnalo
         return TF_E_NULL;
     }
 
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1343,6 +1443,10 @@ int tf_industrial_dual_analog_in_v2_set_status_led_config(TF_IndustrialDualAnalo
 int tf_industrial_dual_analog_in_v2_get_status_led_config(TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, uint8_t *ret_config) {
     if (industrial_dual_analog_in_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
@@ -1396,6 +1500,10 @@ int tf_industrial_dual_analog_in_v2_get_chip_temperature(TF_IndustrialDualAnalog
         return TF_E_NULL;
     }
 
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1447,6 +1555,10 @@ int tf_industrial_dual_analog_in_v2_reset(TF_IndustrialDualAnalogInV2 *industria
         return TF_E_NULL;
     }
 
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1487,6 +1599,10 @@ int tf_industrial_dual_analog_in_v2_reset(TF_IndustrialDualAnalogInV2 *industria
 int tf_industrial_dual_analog_in_v2_write_uid(TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, uint32_t uid) {
     if (industrial_dual_analog_in_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
@@ -1533,6 +1649,10 @@ int tf_industrial_dual_analog_in_v2_write_uid(TF_IndustrialDualAnalogInV2 *indus
 int tf_industrial_dual_analog_in_v2_read_uid(TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, uint32_t *ret_uid) {
     if (industrial_dual_analog_in_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
@@ -1584,6 +1704,10 @@ int tf_industrial_dual_analog_in_v2_read_uid(TF_IndustrialDualAnalogInV2 *indust
 int tf_industrial_dual_analog_in_v2_get_identity(TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (industrial_dual_analog_in_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;
@@ -1643,11 +1767,8 @@ int tf_industrial_dual_analog_in_v2_register_voltage_callback(TF_IndustrialDualA
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        industrial_dual_analog_in_v2->tfp->needs_callback_tick = false;
-        industrial_dual_analog_in_v2->tfp->needs_callback_tick |= industrial_dual_analog_in_v2->all_voltages_handler != NULL;
-    } else {
-        industrial_dual_analog_in_v2->tfp->needs_callback_tick = true;
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     industrial_dual_analog_in_v2->voltage_handler = handler;
@@ -1662,11 +1783,8 @@ int tf_industrial_dual_analog_in_v2_register_all_voltages_callback(TF_Industrial
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        industrial_dual_analog_in_v2->tfp->needs_callback_tick = false;
-        industrial_dual_analog_in_v2->tfp->needs_callback_tick |= industrial_dual_analog_in_v2->voltage_handler != NULL;
-    } else {
-        industrial_dual_analog_in_v2->tfp->needs_callback_tick = true;
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     industrial_dual_analog_in_v2->all_voltages_handler = handler;
@@ -1678,6 +1796,10 @@ int tf_industrial_dual_analog_in_v2_register_all_voltages_callback(TF_Industrial
 int tf_industrial_dual_analog_in_v2_callback_tick(TF_IndustrialDualAnalogInV2 *industrial_dual_analog_in_v2, uint32_t timeout_us) {
     if (industrial_dual_analog_in_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_dual_analog_in_v2->magic != 0x5446 || industrial_dual_analog_in_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = industrial_dual_analog_in_v2->tfp->spitfp->hal;

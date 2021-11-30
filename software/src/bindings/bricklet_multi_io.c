@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -45,19 +45,23 @@ int tf_multi_io_create(TF_MultiIO *multi_io, const char *uid_or_port_name, TF_HA
     multi_io->tfp = tfp;
     multi_io->tfp->device = multi_io;
     multi_io->tfp->cb_handler = tf_multi_io_callback_handler;
+    multi_io->magic = 0x5446;
     multi_io->response_expected[0] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_multi_io_destroy(TF_MultiIO *multi_io) {
-    if (multi_io == NULL || multi_io->tfp == NULL) {
+    if (multi_io == NULL) {
         return TF_E_NULL;
+    }
+    if (multi_io->magic != 0x5446 || multi_io->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     multi_io->tfp->cb_handler = NULL;
     multi_io->tfp->device = NULL;
     multi_io->tfp = NULL;
+    multi_io->magic = 0;
 
     return TF_E_OK;
 }
@@ -65,6 +69,10 @@ int tf_multi_io_destroy(TF_MultiIO *multi_io) {
 int tf_multi_io_get_response_expected(TF_MultiIO *multi_io, uint8_t function_id, bool *ret_response_expected) {
     if (multi_io == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_io->magic != 0x5446 || multi_io->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -103,6 +111,10 @@ int tf_multi_io_get_response_expected(TF_MultiIO *multi_io, uint8_t function_id,
 int tf_multi_io_set_response_expected(TF_MultiIO *multi_io, uint8_t function_id, bool response_expected) {
     if (multi_io == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_io->magic != 0x5446 || multi_io->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -153,6 +165,10 @@ int tf_multi_io_set_response_expected_all(TF_MultiIO *multi_io, bool response_ex
         return TF_E_NULL;
     }
 
+    if (multi_io->magic != 0x5446 || multi_io->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(multi_io->response_expected, response_expected ? 0xFF : 0, 1);
 
     return TF_E_OK;
@@ -161,6 +177,10 @@ int tf_multi_io_set_response_expected_all(TF_MultiIO *multi_io, bool response_ex
 int tf_multi_io_get_inputs(TF_MultiIO *multi_io, uint8_t ret_value[16]) {
     if (multi_io == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_io->magic != 0x5446 || multi_io->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = multi_io->tfp->spitfp->hal;
@@ -215,6 +235,10 @@ int tf_multi_io_set_outputs(TF_MultiIO *multi_io, const bool value[2]) {
         return TF_E_NULL;
     }
 
+    if (multi_io->magic != 0x5446 || multi_io->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = multi_io->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -260,6 +284,10 @@ int tf_multi_io_set_outputs(TF_MultiIO *multi_io, const bool value[2]) {
 int tf_multi_io_get_outputs(TF_MultiIO *multi_io, bool ret_value[2]) {
     if (multi_io == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_io->magic != 0x5446 || multi_io->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = multi_io->tfp->spitfp->hal;
@@ -311,6 +339,10 @@ int tf_multi_io_get_outputs(TF_MultiIO *multi_io, bool ret_value[2]) {
 int tf_multi_io_get_spitfp_error_count(TF_MultiIO *multi_io, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (multi_io == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_io->magic != 0x5446 || multi_io->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = multi_io->tfp->spitfp->hal;
@@ -365,6 +397,10 @@ int tf_multi_io_get_spitfp_error_count(TF_MultiIO *multi_io, uint32_t *ret_error
 int tf_multi_io_set_bootloader_mode(TF_MultiIO *multi_io, uint8_t mode, uint8_t *ret_status) {
     if (multi_io == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_io->magic != 0x5446 || multi_io->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = multi_io->tfp->spitfp->hal;
@@ -422,6 +458,10 @@ int tf_multi_io_get_bootloader_mode(TF_MultiIO *multi_io, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
+    if (multi_io->magic != 0x5446 || multi_io->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = multi_io->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -473,6 +513,10 @@ int tf_multi_io_set_write_firmware_pointer(TF_MultiIO *multi_io, uint32_t pointe
         return TF_E_NULL;
     }
 
+    if (multi_io->magic != 0x5446 || multi_io->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = multi_io->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -517,6 +561,10 @@ int tf_multi_io_set_write_firmware_pointer(TF_MultiIO *multi_io, uint32_t pointe
 int tf_multi_io_write_firmware(TF_MultiIO *multi_io, const uint8_t data[64], uint8_t *ret_status) {
     if (multi_io == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_io->magic != 0x5446 || multi_io->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = multi_io->tfp->spitfp->hal;
@@ -574,6 +622,10 @@ int tf_multi_io_set_status_led_config(TF_MultiIO *multi_io, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (multi_io->magic != 0x5446 || multi_io->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = multi_io->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -618,6 +670,10 @@ int tf_multi_io_set_status_led_config(TF_MultiIO *multi_io, uint8_t config) {
 int tf_multi_io_get_status_led_config(TF_MultiIO *multi_io, uint8_t *ret_config) {
     if (multi_io == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_io->magic != 0x5446 || multi_io->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = multi_io->tfp->spitfp->hal;
@@ -671,6 +727,10 @@ int tf_multi_io_get_chip_temperature(TF_MultiIO *multi_io, int16_t *ret_temperat
         return TF_E_NULL;
     }
 
+    if (multi_io->magic != 0x5446 || multi_io->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = multi_io->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -722,6 +782,10 @@ int tf_multi_io_reset(TF_MultiIO *multi_io) {
         return TF_E_NULL;
     }
 
+    if (multi_io->magic != 0x5446 || multi_io->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = multi_io->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -762,6 +826,10 @@ int tf_multi_io_reset(TF_MultiIO *multi_io) {
 int tf_multi_io_write_uid(TF_MultiIO *multi_io, uint32_t uid) {
     if (multi_io == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_io->magic != 0x5446 || multi_io->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = multi_io->tfp->spitfp->hal;
@@ -808,6 +876,10 @@ int tf_multi_io_write_uid(TF_MultiIO *multi_io, uint32_t uid) {
 int tf_multi_io_read_uid(TF_MultiIO *multi_io, uint32_t *ret_uid) {
     if (multi_io == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_io->magic != 0x5446 || multi_io->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = multi_io->tfp->spitfp->hal;
@@ -859,6 +931,10 @@ int tf_multi_io_read_uid(TF_MultiIO *multi_io, uint32_t *ret_uid) {
 int tf_multi_io_get_identity(TF_MultiIO *multi_io, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (multi_io == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_io->magic != 0x5446 || multi_io->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = multi_io->tfp->spitfp->hal;
@@ -917,6 +993,10 @@ int tf_multi_io_get_identity(TF_MultiIO *multi_io, char ret_uid[8], char ret_con
 int tf_multi_io_callback_tick(TF_MultiIO *multi_io, uint32_t timeout_us) {
     if (multi_io == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_io->magic != 0x5446 || multi_io->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = multi_io->tfp->spitfp->hal;

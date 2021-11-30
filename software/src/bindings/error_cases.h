@@ -1,3 +1,6 @@
+// This file really has to be named error_cases.h. Don't rename it to (f.e.) errors.inc.
+// The Arduino IDE does not want to include files that don't have a header file ending, i.e. .h, .hpp, etc.
+
 case TF_E_OK:
     return "no error";
 
@@ -48,3 +51,6 @@ case TF_E_DEVICE_ALREADY_IN_USE:
 
 case TF_E_WRONG_RESPONSE_LENGTH:
     return "device returned a packet of unexpected length. This is a firmware bug in the device. Please report to info@tinkerforge.com";
+
+case TF_E_NOT_INITIALIZED:
+    return "device not initialized";

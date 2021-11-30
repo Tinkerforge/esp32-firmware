@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -98,19 +98,23 @@ int tf_uv_light_v2_create(TF_UVLightV2 *uv_light_v2, const char *uid_or_port_nam
     uv_light_v2->tfp = tfp;
     uv_light_v2->tfp->device = uv_light_v2;
     uv_light_v2->tfp->cb_handler = tf_uv_light_v2_callback_handler;
+    uv_light_v2->magic = 0x5446;
     uv_light_v2->response_expected[0] = 0x07;
-
     return TF_E_OK;
 }
 
 int tf_uv_light_v2_destroy(TF_UVLightV2 *uv_light_v2) {
-    if (uv_light_v2 == NULL || uv_light_v2->tfp == NULL) {
+    if (uv_light_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     uv_light_v2->tfp->cb_handler = NULL;
     uv_light_v2->tfp->device = NULL;
     uv_light_v2->tfp = NULL;
+    uv_light_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -118,6 +122,10 @@ int tf_uv_light_v2_destroy(TF_UVLightV2 *uv_light_v2) {
 int tf_uv_light_v2_get_response_expected(TF_UVLightV2 *uv_light_v2, uint8_t function_id, bool *ret_response_expected) {
     if (uv_light_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -171,6 +179,10 @@ int tf_uv_light_v2_get_response_expected(TF_UVLightV2 *uv_light_v2, uint8_t func
 int tf_uv_light_v2_set_response_expected(TF_UVLightV2 *uv_light_v2, uint8_t function_id, bool response_expected) {
     if (uv_light_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -242,6 +254,10 @@ int tf_uv_light_v2_set_response_expected_all(TF_UVLightV2 *uv_light_v2, bool res
         return TF_E_NULL;
     }
 
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(uv_light_v2->response_expected, response_expected ? 0xFF : 0, 1);
 
     return TF_E_OK;
@@ -250,6 +266,10 @@ int tf_uv_light_v2_set_response_expected_all(TF_UVLightV2 *uv_light_v2, bool res
 int tf_uv_light_v2_get_uva(TF_UVLightV2 *uv_light_v2, int32_t *ret_uva) {
     if (uv_light_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = uv_light_v2->tfp->spitfp->hal;
@@ -303,6 +323,10 @@ int tf_uv_light_v2_set_uva_callback_configuration(TF_UVLightV2 *uv_light_v2, uin
         return TF_E_NULL;
     }
 
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = uv_light_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -351,6 +375,10 @@ int tf_uv_light_v2_set_uva_callback_configuration(TF_UVLightV2 *uv_light_v2, uin
 int tf_uv_light_v2_get_uva_callback_configuration(TF_UVLightV2 *uv_light_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int32_t *ret_min, int32_t *ret_max) {
     if (uv_light_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = uv_light_v2->tfp->spitfp->hal;
@@ -408,6 +436,10 @@ int tf_uv_light_v2_get_uvb(TF_UVLightV2 *uv_light_v2, int32_t *ret_uvb) {
         return TF_E_NULL;
     }
 
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = uv_light_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -459,6 +491,10 @@ int tf_uv_light_v2_set_uvb_callback_configuration(TF_UVLightV2 *uv_light_v2, uin
         return TF_E_NULL;
     }
 
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = uv_light_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -507,6 +543,10 @@ int tf_uv_light_v2_set_uvb_callback_configuration(TF_UVLightV2 *uv_light_v2, uin
 int tf_uv_light_v2_get_uvb_callback_configuration(TF_UVLightV2 *uv_light_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int32_t *ret_min, int32_t *ret_max) {
     if (uv_light_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = uv_light_v2->tfp->spitfp->hal;
@@ -564,6 +604,10 @@ int tf_uv_light_v2_get_uvi(TF_UVLightV2 *uv_light_v2, int32_t *ret_uvi) {
         return TF_E_NULL;
     }
 
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = uv_light_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -615,6 +659,10 @@ int tf_uv_light_v2_set_uvi_callback_configuration(TF_UVLightV2 *uv_light_v2, uin
         return TF_E_NULL;
     }
 
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = uv_light_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -663,6 +711,10 @@ int tf_uv_light_v2_set_uvi_callback_configuration(TF_UVLightV2 *uv_light_v2, uin
 int tf_uv_light_v2_get_uvi_callback_configuration(TF_UVLightV2 *uv_light_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int32_t *ret_min, int32_t *ret_max) {
     if (uv_light_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = uv_light_v2->tfp->spitfp->hal;
@@ -720,6 +772,10 @@ int tf_uv_light_v2_set_configuration(TF_UVLightV2 *uv_light_v2, uint8_t integrat
         return TF_E_NULL;
     }
 
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = uv_light_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -764,6 +820,10 @@ int tf_uv_light_v2_set_configuration(TF_UVLightV2 *uv_light_v2, uint8_t integrat
 int tf_uv_light_v2_get_configuration(TF_UVLightV2 *uv_light_v2, uint8_t *ret_integration_time) {
     if (uv_light_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = uv_light_v2->tfp->spitfp->hal;
@@ -815,6 +875,10 @@ int tf_uv_light_v2_get_configuration(TF_UVLightV2 *uv_light_v2, uint8_t *ret_int
 int tf_uv_light_v2_get_spitfp_error_count(TF_UVLightV2 *uv_light_v2, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (uv_light_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = uv_light_v2->tfp->spitfp->hal;
@@ -869,6 +933,10 @@ int tf_uv_light_v2_get_spitfp_error_count(TF_UVLightV2 *uv_light_v2, uint32_t *r
 int tf_uv_light_v2_set_bootloader_mode(TF_UVLightV2 *uv_light_v2, uint8_t mode, uint8_t *ret_status) {
     if (uv_light_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = uv_light_v2->tfp->spitfp->hal;
@@ -926,6 +994,10 @@ int tf_uv_light_v2_get_bootloader_mode(TF_UVLightV2 *uv_light_v2, uint8_t *ret_m
         return TF_E_NULL;
     }
 
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = uv_light_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -977,6 +1049,10 @@ int tf_uv_light_v2_set_write_firmware_pointer(TF_UVLightV2 *uv_light_v2, uint32_
         return TF_E_NULL;
     }
 
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = uv_light_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1021,6 +1097,10 @@ int tf_uv_light_v2_set_write_firmware_pointer(TF_UVLightV2 *uv_light_v2, uint32_
 int tf_uv_light_v2_write_firmware(TF_UVLightV2 *uv_light_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (uv_light_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = uv_light_v2->tfp->spitfp->hal;
@@ -1078,6 +1158,10 @@ int tf_uv_light_v2_set_status_led_config(TF_UVLightV2 *uv_light_v2, uint8_t conf
         return TF_E_NULL;
     }
 
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = uv_light_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1122,6 +1206,10 @@ int tf_uv_light_v2_set_status_led_config(TF_UVLightV2 *uv_light_v2, uint8_t conf
 int tf_uv_light_v2_get_status_led_config(TF_UVLightV2 *uv_light_v2, uint8_t *ret_config) {
     if (uv_light_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = uv_light_v2->tfp->spitfp->hal;
@@ -1175,6 +1263,10 @@ int tf_uv_light_v2_get_chip_temperature(TF_UVLightV2 *uv_light_v2, int16_t *ret_
         return TF_E_NULL;
     }
 
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = uv_light_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1226,6 +1318,10 @@ int tf_uv_light_v2_reset(TF_UVLightV2 *uv_light_v2) {
         return TF_E_NULL;
     }
 
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = uv_light_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1266,6 +1362,10 @@ int tf_uv_light_v2_reset(TF_UVLightV2 *uv_light_v2) {
 int tf_uv_light_v2_write_uid(TF_UVLightV2 *uv_light_v2, uint32_t uid) {
     if (uv_light_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = uv_light_v2->tfp->spitfp->hal;
@@ -1312,6 +1412,10 @@ int tf_uv_light_v2_write_uid(TF_UVLightV2 *uv_light_v2, uint32_t uid) {
 int tf_uv_light_v2_read_uid(TF_UVLightV2 *uv_light_v2, uint32_t *ret_uid) {
     if (uv_light_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = uv_light_v2->tfp->spitfp->hal;
@@ -1363,6 +1467,10 @@ int tf_uv_light_v2_read_uid(TF_UVLightV2 *uv_light_v2, uint32_t *ret_uid) {
 int tf_uv_light_v2_get_identity(TF_UVLightV2 *uv_light_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (uv_light_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = uv_light_v2->tfp->spitfp->hal;
@@ -1422,12 +1530,8 @@ int tf_uv_light_v2_register_uva_callback(TF_UVLightV2 *uv_light_v2, TF_UVLightV2
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        uv_light_v2->tfp->needs_callback_tick = false;
-        uv_light_v2->tfp->needs_callback_tick |= uv_light_v2->uvb_handler != NULL;
-        uv_light_v2->tfp->needs_callback_tick |= uv_light_v2->uvi_handler != NULL;
-    } else {
-        uv_light_v2->tfp->needs_callback_tick = true;
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     uv_light_v2->uva_handler = handler;
@@ -1442,12 +1546,8 @@ int tf_uv_light_v2_register_uvb_callback(TF_UVLightV2 *uv_light_v2, TF_UVLightV2
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        uv_light_v2->tfp->needs_callback_tick = false;
-        uv_light_v2->tfp->needs_callback_tick |= uv_light_v2->uva_handler != NULL;
-        uv_light_v2->tfp->needs_callback_tick |= uv_light_v2->uvi_handler != NULL;
-    } else {
-        uv_light_v2->tfp->needs_callback_tick = true;
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     uv_light_v2->uvb_handler = handler;
@@ -1462,12 +1562,8 @@ int tf_uv_light_v2_register_uvi_callback(TF_UVLightV2 *uv_light_v2, TF_UVLightV2
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        uv_light_v2->tfp->needs_callback_tick = false;
-        uv_light_v2->tfp->needs_callback_tick |= uv_light_v2->uva_handler != NULL;
-        uv_light_v2->tfp->needs_callback_tick |= uv_light_v2->uvb_handler != NULL;
-    } else {
-        uv_light_v2->tfp->needs_callback_tick = true;
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     uv_light_v2->uvi_handler = handler;
@@ -1479,6 +1575,10 @@ int tf_uv_light_v2_register_uvi_callback(TF_UVLightV2 *uv_light_v2, TF_UVLightV2
 int tf_uv_light_v2_callback_tick(TF_UVLightV2 *uv_light_v2, uint32_t timeout_us) {
     if (uv_light_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (uv_light_v2->magic != 0x5446 || uv_light_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = uv_light_v2->tfp->spitfp->hal;

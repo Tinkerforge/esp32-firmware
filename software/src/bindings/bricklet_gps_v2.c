@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -147,20 +147,24 @@ int tf_gps_v2_create(TF_GPSV2 *gps_v2, const char *uid_or_port_name, TF_HAL *hal
     gps_v2->tfp = tfp;
     gps_v2->tfp->device = gps_v2;
     gps_v2->tfp->cb_handler = tf_gps_v2_callback_handler;
+    gps_v2->magic = 0x5446;
     gps_v2->response_expected[0] = 0x7C;
     gps_v2->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_gps_v2_destroy(TF_GPSV2 *gps_v2) {
-    if (gps_v2 == NULL || gps_v2->tfp == NULL) {
+    if (gps_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     gps_v2->tfp->cb_handler = NULL;
     gps_v2->tfp->device = NULL;
     gps_v2->tfp = NULL;
+    gps_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -168,6 +172,10 @@ int tf_gps_v2_destroy(TF_GPSV2 *gps_v2) {
 int tf_gps_v2_get_response_expected(TF_GPSV2 *gps_v2, uint8_t function_id, bool *ret_response_expected) {
     if (gps_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -241,6 +249,10 @@ int tf_gps_v2_get_response_expected(TF_GPSV2 *gps_v2, uint8_t function_id, bool 
 int tf_gps_v2_set_response_expected(TF_GPSV2 *gps_v2, uint8_t function_id, bool response_expected) {
     if (gps_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -340,6 +352,10 @@ int tf_gps_v2_set_response_expected_all(TF_GPSV2 *gps_v2, bool response_expected
         return TF_E_NULL;
     }
 
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(gps_v2->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -348,6 +364,10 @@ int tf_gps_v2_set_response_expected_all(TF_GPSV2 *gps_v2, bool response_expected
 int tf_gps_v2_get_coordinates(TF_GPSV2 *gps_v2, uint32_t *ret_latitude, char *ret_ns, uint32_t *ret_longitude, char *ret_ew) {
     if (gps_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
@@ -404,6 +424,10 @@ int tf_gps_v2_get_status(TF_GPSV2 *gps_v2, bool *ret_has_fix, uint8_t *ret_satel
         return TF_E_NULL;
     }
 
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -454,6 +478,10 @@ int tf_gps_v2_get_status(TF_GPSV2 *gps_v2, bool *ret_has_fix, uint8_t *ret_satel
 int tf_gps_v2_get_altitude(TF_GPSV2 *gps_v2, int32_t *ret_altitude, int32_t *ret_geoidal_separation) {
     if (gps_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
@@ -508,6 +536,10 @@ int tf_gps_v2_get_motion(TF_GPSV2 *gps_v2, uint32_t *ret_course, uint32_t *ret_s
         return TF_E_NULL;
     }
 
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -558,6 +590,10 @@ int tf_gps_v2_get_motion(TF_GPSV2 *gps_v2, uint32_t *ret_course, uint32_t *ret_s
 int tf_gps_v2_get_date_time(TF_GPSV2 *gps_v2, uint32_t *ret_date, uint32_t *ret_time) {
     if (gps_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
@@ -612,6 +648,10 @@ int tf_gps_v2_restart(TF_GPSV2 *gps_v2, uint8_t restart_type) {
         return TF_E_NULL;
     }
 
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -656,6 +696,10 @@ int tf_gps_v2_restart(TF_GPSV2 *gps_v2, uint8_t restart_type) {
 int tf_gps_v2_get_satellite_system_status_low_level(TF_GPSV2 *gps_v2, uint8_t satellite_system, uint8_t *ret_satellite_numbers_length, uint8_t ret_satellite_numbers_data[12], uint8_t *ret_fix, uint16_t *ret_pdop, uint16_t *ret_hdop, uint16_t *ret_vdop) {
     if (gps_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
@@ -719,6 +763,10 @@ int tf_gps_v2_get_satellite_status(TF_GPSV2 *gps_v2, uint8_t satellite_system, u
         return TF_E_NULL;
     }
 
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -777,6 +825,10 @@ int tf_gps_v2_set_fix_led_config(TF_GPSV2 *gps_v2, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -821,6 +873,10 @@ int tf_gps_v2_set_fix_led_config(TF_GPSV2 *gps_v2, uint8_t config) {
 int tf_gps_v2_get_fix_led_config(TF_GPSV2 *gps_v2, uint8_t *ret_config) {
     if (gps_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
@@ -874,6 +930,10 @@ int tf_gps_v2_set_coordinates_callback_period(TF_GPSV2 *gps_v2, uint32_t period)
         return TF_E_NULL;
     }
 
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -918,6 +978,10 @@ int tf_gps_v2_set_coordinates_callback_period(TF_GPSV2 *gps_v2, uint32_t period)
 int tf_gps_v2_get_coordinates_callback_period(TF_GPSV2 *gps_v2, uint32_t *ret_period) {
     if (gps_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
@@ -971,6 +1035,10 @@ int tf_gps_v2_set_status_callback_period(TF_GPSV2 *gps_v2, uint32_t period) {
         return TF_E_NULL;
     }
 
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1015,6 +1083,10 @@ int tf_gps_v2_set_status_callback_period(TF_GPSV2 *gps_v2, uint32_t period) {
 int tf_gps_v2_get_status_callback_period(TF_GPSV2 *gps_v2, uint32_t *ret_period) {
     if (gps_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
@@ -1068,6 +1140,10 @@ int tf_gps_v2_set_altitude_callback_period(TF_GPSV2 *gps_v2, uint32_t period) {
         return TF_E_NULL;
     }
 
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1112,6 +1188,10 @@ int tf_gps_v2_set_altitude_callback_period(TF_GPSV2 *gps_v2, uint32_t period) {
 int tf_gps_v2_get_altitude_callback_period(TF_GPSV2 *gps_v2, uint32_t *ret_period) {
     if (gps_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
@@ -1165,6 +1245,10 @@ int tf_gps_v2_set_motion_callback_period(TF_GPSV2 *gps_v2, uint32_t period) {
         return TF_E_NULL;
     }
 
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1209,6 +1293,10 @@ int tf_gps_v2_set_motion_callback_period(TF_GPSV2 *gps_v2, uint32_t period) {
 int tf_gps_v2_get_motion_callback_period(TF_GPSV2 *gps_v2, uint32_t *ret_period) {
     if (gps_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
@@ -1262,6 +1350,10 @@ int tf_gps_v2_set_date_time_callback_period(TF_GPSV2 *gps_v2, uint32_t period) {
         return TF_E_NULL;
     }
 
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1306,6 +1398,10 @@ int tf_gps_v2_set_date_time_callback_period(TF_GPSV2 *gps_v2, uint32_t period) {
 int tf_gps_v2_get_date_time_callback_period(TF_GPSV2 *gps_v2, uint32_t *ret_period) {
     if (gps_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
@@ -1359,6 +1455,10 @@ int tf_gps_v2_set_sbas_config(TF_GPSV2 *gps_v2, uint8_t sbas_config) {
         return TF_E_NULL;
     }
 
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1403,6 +1503,10 @@ int tf_gps_v2_set_sbas_config(TF_GPSV2 *gps_v2, uint8_t sbas_config) {
 int tf_gps_v2_get_sbas_config(TF_GPSV2 *gps_v2, uint8_t *ret_sbas_config) {
     if (gps_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
@@ -1454,6 +1558,10 @@ int tf_gps_v2_get_sbas_config(TF_GPSV2 *gps_v2, uint8_t *ret_sbas_config) {
 int tf_gps_v2_get_spitfp_error_count(TF_GPSV2 *gps_v2, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (gps_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
@@ -1508,6 +1616,10 @@ int tf_gps_v2_get_spitfp_error_count(TF_GPSV2 *gps_v2, uint32_t *ret_error_count
 int tf_gps_v2_set_bootloader_mode(TF_GPSV2 *gps_v2, uint8_t mode, uint8_t *ret_status) {
     if (gps_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
@@ -1565,6 +1677,10 @@ int tf_gps_v2_get_bootloader_mode(TF_GPSV2 *gps_v2, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1616,6 +1732,10 @@ int tf_gps_v2_set_write_firmware_pointer(TF_GPSV2 *gps_v2, uint32_t pointer) {
         return TF_E_NULL;
     }
 
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1660,6 +1780,10 @@ int tf_gps_v2_set_write_firmware_pointer(TF_GPSV2 *gps_v2, uint32_t pointer) {
 int tf_gps_v2_write_firmware(TF_GPSV2 *gps_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (gps_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
@@ -1717,6 +1841,10 @@ int tf_gps_v2_set_status_led_config(TF_GPSV2 *gps_v2, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1761,6 +1889,10 @@ int tf_gps_v2_set_status_led_config(TF_GPSV2 *gps_v2, uint8_t config) {
 int tf_gps_v2_get_status_led_config(TF_GPSV2 *gps_v2, uint8_t *ret_config) {
     if (gps_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
@@ -1814,6 +1946,10 @@ int tf_gps_v2_get_chip_temperature(TF_GPSV2 *gps_v2, int16_t *ret_temperature) {
         return TF_E_NULL;
     }
 
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1865,6 +2001,10 @@ int tf_gps_v2_reset(TF_GPSV2 *gps_v2) {
         return TF_E_NULL;
     }
 
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1905,6 +2045,10 @@ int tf_gps_v2_reset(TF_GPSV2 *gps_v2) {
 int tf_gps_v2_write_uid(TF_GPSV2 *gps_v2, uint32_t uid) {
     if (gps_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
@@ -1951,6 +2095,10 @@ int tf_gps_v2_write_uid(TF_GPSV2 *gps_v2, uint32_t uid) {
 int tf_gps_v2_read_uid(TF_GPSV2 *gps_v2, uint32_t *ret_uid) {
     if (gps_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
@@ -2002,6 +2150,10 @@ int tf_gps_v2_read_uid(TF_GPSV2 *gps_v2, uint32_t *ret_uid) {
 int tf_gps_v2_get_identity(TF_GPSV2 *gps_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (gps_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = gps_v2->tfp->spitfp->hal;
@@ -2061,6 +2213,10 @@ int tf_gps_v2_get_satellite_system_status(TF_GPSV2 *gps_v2, uint8_t satellite_sy
         return TF_E_NULL;
     }
 
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     int ret = TF_E_OK;
     uint8_t satellite_numbers_length = 0;
     uint8_t satellite_numbers_data[12];
@@ -2092,15 +2248,8 @@ int tf_gps_v2_register_pulse_per_second_callback(TF_GPSV2 *gps_v2, TF_GPSV2_Puls
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        gps_v2->tfp->needs_callback_tick = false;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->coordinates_handler != NULL;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->status_handler != NULL;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->altitude_handler != NULL;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->motion_handler != NULL;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->date_time_handler != NULL;
-    } else {
-        gps_v2->tfp->needs_callback_tick = true;
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     gps_v2->pulse_per_second_handler = handler;
@@ -2115,15 +2264,8 @@ int tf_gps_v2_register_coordinates_callback(TF_GPSV2 *gps_v2, TF_GPSV2_Coordinat
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        gps_v2->tfp->needs_callback_tick = false;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->pulse_per_second_handler != NULL;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->status_handler != NULL;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->altitude_handler != NULL;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->motion_handler != NULL;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->date_time_handler != NULL;
-    } else {
-        gps_v2->tfp->needs_callback_tick = true;
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     gps_v2->coordinates_handler = handler;
@@ -2138,15 +2280,8 @@ int tf_gps_v2_register_status_callback(TF_GPSV2 *gps_v2, TF_GPSV2_StatusHandler 
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        gps_v2->tfp->needs_callback_tick = false;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->pulse_per_second_handler != NULL;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->coordinates_handler != NULL;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->altitude_handler != NULL;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->motion_handler != NULL;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->date_time_handler != NULL;
-    } else {
-        gps_v2->tfp->needs_callback_tick = true;
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     gps_v2->status_handler = handler;
@@ -2161,15 +2296,8 @@ int tf_gps_v2_register_altitude_callback(TF_GPSV2 *gps_v2, TF_GPSV2_AltitudeHand
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        gps_v2->tfp->needs_callback_tick = false;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->pulse_per_second_handler != NULL;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->coordinates_handler != NULL;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->status_handler != NULL;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->motion_handler != NULL;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->date_time_handler != NULL;
-    } else {
-        gps_v2->tfp->needs_callback_tick = true;
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     gps_v2->altitude_handler = handler;
@@ -2184,15 +2312,8 @@ int tf_gps_v2_register_motion_callback(TF_GPSV2 *gps_v2, TF_GPSV2_MotionHandler 
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        gps_v2->tfp->needs_callback_tick = false;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->pulse_per_second_handler != NULL;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->coordinates_handler != NULL;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->status_handler != NULL;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->altitude_handler != NULL;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->date_time_handler != NULL;
-    } else {
-        gps_v2->tfp->needs_callback_tick = true;
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     gps_v2->motion_handler = handler;
@@ -2207,15 +2328,8 @@ int tf_gps_v2_register_date_time_callback(TF_GPSV2 *gps_v2, TF_GPSV2_DateTimeHan
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        gps_v2->tfp->needs_callback_tick = false;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->pulse_per_second_handler != NULL;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->coordinates_handler != NULL;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->status_handler != NULL;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->altitude_handler != NULL;
-        gps_v2->tfp->needs_callback_tick |= gps_v2->motion_handler != NULL;
-    } else {
-        gps_v2->tfp->needs_callback_tick = true;
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     gps_v2->date_time_handler = handler;
@@ -2227,6 +2341,10 @@ int tf_gps_v2_register_date_time_callback(TF_GPSV2 *gps_v2, TF_GPSV2_DateTimeHan
 int tf_gps_v2_callback_tick(TF_GPSV2 *gps_v2, uint32_t timeout_us) {
     if (gps_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (gps_v2->magic != 0x5446 || gps_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = gps_v2->tfp->spitfp->hal;

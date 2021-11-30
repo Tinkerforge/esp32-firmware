@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -70,20 +70,24 @@ int tf_load_cell_v2_create(TF_LoadCellV2 *load_cell_v2, const char *uid_or_port_
     load_cell_v2->tfp = tfp;
     load_cell_v2->tfp->device = load_cell_v2;
     load_cell_v2->tfp->cb_handler = tf_load_cell_v2_callback_handler;
+    load_cell_v2->magic = 0x5446;
     load_cell_v2->response_expected[0] = 0x01;
     load_cell_v2->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_load_cell_v2_destroy(TF_LoadCellV2 *load_cell_v2) {
-    if (load_cell_v2 == NULL || load_cell_v2->tfp == NULL) {
+    if (load_cell_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     load_cell_v2->tfp->cb_handler = NULL;
     load_cell_v2->tfp->device = NULL;
     load_cell_v2->tfp = NULL;
+    load_cell_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -91,6 +95,10 @@ int tf_load_cell_v2_destroy(TF_LoadCellV2 *load_cell_v2) {
 int tf_load_cell_v2_get_response_expected(TF_LoadCellV2 *load_cell_v2, uint8_t function_id, bool *ret_response_expected) {
     if (load_cell_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -154,6 +162,10 @@ int tf_load_cell_v2_get_response_expected(TF_LoadCellV2 *load_cell_v2, uint8_t f
 int tf_load_cell_v2_set_response_expected(TF_LoadCellV2 *load_cell_v2, uint8_t function_id, bool response_expected) {
     if (load_cell_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -239,6 +251,10 @@ int tf_load_cell_v2_set_response_expected_all(TF_LoadCellV2 *load_cell_v2, bool 
         return TF_E_NULL;
     }
 
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(load_cell_v2->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -247,6 +263,10 @@ int tf_load_cell_v2_set_response_expected_all(TF_LoadCellV2 *load_cell_v2, bool 
 int tf_load_cell_v2_get_weight(TF_LoadCellV2 *load_cell_v2, int32_t *ret_weight) {
     if (load_cell_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = load_cell_v2->tfp->spitfp->hal;
@@ -300,6 +320,10 @@ int tf_load_cell_v2_set_weight_callback_configuration(TF_LoadCellV2 *load_cell_v
         return TF_E_NULL;
     }
 
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = load_cell_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -348,6 +372,10 @@ int tf_load_cell_v2_set_weight_callback_configuration(TF_LoadCellV2 *load_cell_v
 int tf_load_cell_v2_get_weight_callback_configuration(TF_LoadCellV2 *load_cell_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int32_t *ret_min, int32_t *ret_max) {
     if (load_cell_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = load_cell_v2->tfp->spitfp->hal;
@@ -405,6 +433,10 @@ int tf_load_cell_v2_set_moving_average(TF_LoadCellV2 *load_cell_v2, uint16_t ave
         return TF_E_NULL;
     }
 
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = load_cell_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -449,6 +481,10 @@ int tf_load_cell_v2_set_moving_average(TF_LoadCellV2 *load_cell_v2, uint16_t ave
 int tf_load_cell_v2_get_moving_average(TF_LoadCellV2 *load_cell_v2, uint16_t *ret_average) {
     if (load_cell_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = load_cell_v2->tfp->spitfp->hal;
@@ -502,6 +538,10 @@ int tf_load_cell_v2_set_info_led_config(TF_LoadCellV2 *load_cell_v2, uint8_t con
         return TF_E_NULL;
     }
 
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = load_cell_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -546,6 +586,10 @@ int tf_load_cell_v2_set_info_led_config(TF_LoadCellV2 *load_cell_v2, uint8_t con
 int tf_load_cell_v2_get_info_led_config(TF_LoadCellV2 *load_cell_v2, uint8_t *ret_config) {
     if (load_cell_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = load_cell_v2->tfp->spitfp->hal;
@@ -599,6 +643,10 @@ int tf_load_cell_v2_calibrate(TF_LoadCellV2 *load_cell_v2, uint32_t weight) {
         return TF_E_NULL;
     }
 
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = load_cell_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -645,6 +693,10 @@ int tf_load_cell_v2_tare(TF_LoadCellV2 *load_cell_v2) {
         return TF_E_NULL;
     }
 
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = load_cell_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -685,6 +737,10 @@ int tf_load_cell_v2_tare(TF_LoadCellV2 *load_cell_v2) {
 int tf_load_cell_v2_set_configuration(TF_LoadCellV2 *load_cell_v2, uint8_t rate, uint8_t gain) {
     if (load_cell_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = load_cell_v2->tfp->spitfp->hal;
@@ -732,6 +788,10 @@ int tf_load_cell_v2_set_configuration(TF_LoadCellV2 *load_cell_v2, uint8_t rate,
 int tf_load_cell_v2_get_configuration(TF_LoadCellV2 *load_cell_v2, uint8_t *ret_rate, uint8_t *ret_gain) {
     if (load_cell_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = load_cell_v2->tfp->spitfp->hal;
@@ -786,6 +846,10 @@ int tf_load_cell_v2_get_spitfp_error_count(TF_LoadCellV2 *load_cell_v2, uint32_t
         return TF_E_NULL;
     }
 
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = load_cell_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -838,6 +902,10 @@ int tf_load_cell_v2_get_spitfp_error_count(TF_LoadCellV2 *load_cell_v2, uint32_t
 int tf_load_cell_v2_set_bootloader_mode(TF_LoadCellV2 *load_cell_v2, uint8_t mode, uint8_t *ret_status) {
     if (load_cell_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = load_cell_v2->tfp->spitfp->hal;
@@ -895,6 +963,10 @@ int tf_load_cell_v2_get_bootloader_mode(TF_LoadCellV2 *load_cell_v2, uint8_t *re
         return TF_E_NULL;
     }
 
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = load_cell_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -946,6 +1018,10 @@ int tf_load_cell_v2_set_write_firmware_pointer(TF_LoadCellV2 *load_cell_v2, uint
         return TF_E_NULL;
     }
 
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = load_cell_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -990,6 +1066,10 @@ int tf_load_cell_v2_set_write_firmware_pointer(TF_LoadCellV2 *load_cell_v2, uint
 int tf_load_cell_v2_write_firmware(TF_LoadCellV2 *load_cell_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (load_cell_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = load_cell_v2->tfp->spitfp->hal;
@@ -1047,6 +1127,10 @@ int tf_load_cell_v2_set_status_led_config(TF_LoadCellV2 *load_cell_v2, uint8_t c
         return TF_E_NULL;
     }
 
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = load_cell_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1091,6 +1175,10 @@ int tf_load_cell_v2_set_status_led_config(TF_LoadCellV2 *load_cell_v2, uint8_t c
 int tf_load_cell_v2_get_status_led_config(TF_LoadCellV2 *load_cell_v2, uint8_t *ret_config) {
     if (load_cell_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = load_cell_v2->tfp->spitfp->hal;
@@ -1144,6 +1232,10 @@ int tf_load_cell_v2_get_chip_temperature(TF_LoadCellV2 *load_cell_v2, int16_t *r
         return TF_E_NULL;
     }
 
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = load_cell_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1195,6 +1287,10 @@ int tf_load_cell_v2_reset(TF_LoadCellV2 *load_cell_v2) {
         return TF_E_NULL;
     }
 
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = load_cell_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1235,6 +1331,10 @@ int tf_load_cell_v2_reset(TF_LoadCellV2 *load_cell_v2) {
 int tf_load_cell_v2_write_uid(TF_LoadCellV2 *load_cell_v2, uint32_t uid) {
     if (load_cell_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = load_cell_v2->tfp->spitfp->hal;
@@ -1281,6 +1381,10 @@ int tf_load_cell_v2_write_uid(TF_LoadCellV2 *load_cell_v2, uint32_t uid) {
 int tf_load_cell_v2_read_uid(TF_LoadCellV2 *load_cell_v2, uint32_t *ret_uid) {
     if (load_cell_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = load_cell_v2->tfp->spitfp->hal;
@@ -1332,6 +1436,10 @@ int tf_load_cell_v2_read_uid(TF_LoadCellV2 *load_cell_v2, uint32_t *ret_uid) {
 int tf_load_cell_v2_get_identity(TF_LoadCellV2 *load_cell_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (load_cell_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = load_cell_v2->tfp->spitfp->hal;
@@ -1391,10 +1499,8 @@ int tf_load_cell_v2_register_weight_callback(TF_LoadCellV2 *load_cell_v2, TF_Loa
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        load_cell_v2->tfp->needs_callback_tick = false;
-    } else {
-        load_cell_v2->tfp->needs_callback_tick = true;
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     load_cell_v2->weight_handler = handler;
@@ -1406,6 +1512,10 @@ int tf_load_cell_v2_register_weight_callback(TF_LoadCellV2 *load_cell_v2, TF_Loa
 int tf_load_cell_v2_callback_tick(TF_LoadCellV2 *load_cell_v2, uint32_t timeout_us) {
     if (load_cell_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (load_cell_v2->magic != 0x5446 || load_cell_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = load_cell_v2->tfp->spitfp->hal;

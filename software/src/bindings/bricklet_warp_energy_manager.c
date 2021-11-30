@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -45,20 +45,24 @@ int tf_warp_energy_manager_create(TF_WARPEnergyManager *warp_energy_manager, con
     warp_energy_manager->tfp = tfp;
     warp_energy_manager->tfp->device = warp_energy_manager;
     warp_energy_manager->tfp->cb_handler = tf_warp_energy_manager_callback_handler;
+    warp_energy_manager->magic = 0x5446;
     warp_energy_manager->response_expected[0] = 0x00;
     warp_energy_manager->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_warp_energy_manager_destroy(TF_WARPEnergyManager *warp_energy_manager) {
-    if (warp_energy_manager == NULL || warp_energy_manager->tfp == NULL) {
+    if (warp_energy_manager == NULL) {
         return TF_E_NULL;
+    }
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     warp_energy_manager->tfp->cb_handler = NULL;
     warp_energy_manager->tfp->device = NULL;
     warp_energy_manager->tfp = NULL;
+    warp_energy_manager->magic = 0;
 
     return TF_E_OK;
 }
@@ -66,6 +70,10 @@ int tf_warp_energy_manager_destroy(TF_WARPEnergyManager *warp_energy_manager) {
 int tf_warp_energy_manager_get_response_expected(TF_WARPEnergyManager *warp_energy_manager, uint8_t function_id, bool *ret_response_expected) {
     if (warp_energy_manager == NULL) {
         return TF_E_NULL;
+    }
+
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -124,6 +132,10 @@ int tf_warp_energy_manager_get_response_expected(TF_WARPEnergyManager *warp_ener
 int tf_warp_energy_manager_set_response_expected(TF_WARPEnergyManager *warp_energy_manager, uint8_t function_id, bool response_expected) {
     if (warp_energy_manager == NULL) {
         return TF_E_NULL;
+    }
+
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -202,6 +214,10 @@ int tf_warp_energy_manager_set_response_expected_all(TF_WARPEnergyManager *warp_
         return TF_E_NULL;
     }
 
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(warp_energy_manager->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -210,6 +226,10 @@ int tf_warp_energy_manager_set_response_expected_all(TF_WARPEnergyManager *warp_
 int tf_warp_energy_manager_set_contactor(TF_WARPEnergyManager *warp_energy_manager, bool value) {
     if (warp_energy_manager == NULL) {
         return TF_E_NULL;
+    }
+
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
@@ -256,6 +276,10 @@ int tf_warp_energy_manager_set_contactor(TF_WARPEnergyManager *warp_energy_manag
 int tf_warp_energy_manager_get_contactor(TF_WARPEnergyManager *warp_energy_manager, bool *ret_value) {
     if (warp_energy_manager == NULL) {
         return TF_E_NULL;
+    }
+
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
@@ -309,6 +333,10 @@ int tf_warp_energy_manager_set_rgb_value(TF_WARPEnergyManager *warp_energy_manag
         return TF_E_NULL;
     }
 
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -355,6 +383,10 @@ int tf_warp_energy_manager_set_rgb_value(TF_WARPEnergyManager *warp_energy_manag
 int tf_warp_energy_manager_get_rgb_value(TF_WARPEnergyManager *warp_energy_manager, uint8_t *ret_r, uint8_t *ret_g, uint8_t *ret_b) {
     if (warp_energy_manager == NULL) {
         return TF_E_NULL;
+    }
+
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
@@ -408,6 +440,10 @@ int tf_warp_energy_manager_get_rgb_value(TF_WARPEnergyManager *warp_energy_manag
 int tf_warp_energy_manager_get_energy_meter_values(TF_WARPEnergyManager *warp_energy_manager, float *ret_power, float *ret_energy_relative, float *ret_energy_absolute, bool ret_phases_active[3], bool ret_phases_connected[3]) {
     if (warp_energy_manager == NULL) {
         return TF_E_NULL;
+    }
+
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
@@ -465,6 +501,10 @@ int tf_warp_energy_manager_get_energy_meter_detailed_values_low_level(TF_WARPEne
         return TF_E_NULL;
     }
 
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -516,6 +556,10 @@ int tf_warp_energy_manager_get_energy_meter_detailed_values_low_level(TF_WARPEne
 int tf_warp_energy_manager_get_energy_meter_state(TF_WARPEnergyManager *warp_energy_manager, bool *ret_available, uint32_t ret_error_count[6]) {
     if (warp_energy_manager == NULL) {
         return TF_E_NULL;
+    }
+
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
@@ -571,6 +615,10 @@ int tf_warp_energy_manager_reset_energy_meter(TF_WARPEnergyManager *warp_energy_
         return TF_E_NULL;
     }
 
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -611,6 +659,10 @@ int tf_warp_energy_manager_reset_energy_meter(TF_WARPEnergyManager *warp_energy_
 int tf_warp_energy_manager_get_input(TF_WARPEnergyManager *warp_energy_manager, bool ret_input[2]) {
     if (warp_energy_manager == NULL) {
         return TF_E_NULL;
+    }
+
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
@@ -664,6 +716,10 @@ int tf_warp_energy_manager_set_output(TF_WARPEnergyManager *warp_energy_manager,
         return TF_E_NULL;
     }
 
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -708,6 +764,10 @@ int tf_warp_energy_manager_set_output(TF_WARPEnergyManager *warp_energy_manager,
 int tf_warp_energy_manager_get_output(TF_WARPEnergyManager *warp_energy_manager, bool *ret_output) {
     if (warp_energy_manager == NULL) {
         return TF_E_NULL;
+    }
+
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
@@ -761,6 +821,10 @@ int tf_warp_energy_manager_set_input_configuration(TF_WARPEnergyManager *warp_en
         return TF_E_NULL;
     }
 
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -805,6 +869,10 @@ int tf_warp_energy_manager_set_input_configuration(TF_WARPEnergyManager *warp_en
 int tf_warp_energy_manager_get_input_configuration(TF_WARPEnergyManager *warp_energy_manager, uint8_t ret_input_configuration[2]) {
     if (warp_energy_manager == NULL) {
         return TF_E_NULL;
+    }
+
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
@@ -859,6 +927,10 @@ int tf_warp_energy_manager_get_input_voltage(TF_WARPEnergyManager *warp_energy_m
         return TF_E_NULL;
     }
 
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -910,6 +982,10 @@ int tf_warp_energy_manager_get_state(TF_WARPEnergyManager *warp_energy_manager, 
         return TF_E_NULL;
     }
 
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -959,6 +1035,10 @@ int tf_warp_energy_manager_get_state(TF_WARPEnergyManager *warp_energy_manager, 
 int tf_warp_energy_manager_get_spitfp_error_count(TF_WARPEnergyManager *warp_energy_manager, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (warp_energy_manager == NULL) {
         return TF_E_NULL;
+    }
+
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
@@ -1013,6 +1093,10 @@ int tf_warp_energy_manager_get_spitfp_error_count(TF_WARPEnergyManager *warp_ene
 int tf_warp_energy_manager_set_bootloader_mode(TF_WARPEnergyManager *warp_energy_manager, uint8_t mode, uint8_t *ret_status) {
     if (warp_energy_manager == NULL) {
         return TF_E_NULL;
+    }
+
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
@@ -1070,6 +1154,10 @@ int tf_warp_energy_manager_get_bootloader_mode(TF_WARPEnergyManager *warp_energy
         return TF_E_NULL;
     }
 
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1121,6 +1209,10 @@ int tf_warp_energy_manager_set_write_firmware_pointer(TF_WARPEnergyManager *warp
         return TF_E_NULL;
     }
 
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1165,6 +1257,10 @@ int tf_warp_energy_manager_set_write_firmware_pointer(TF_WARPEnergyManager *warp
 int tf_warp_energy_manager_write_firmware(TF_WARPEnergyManager *warp_energy_manager, const uint8_t data[64], uint8_t *ret_status) {
     if (warp_energy_manager == NULL) {
         return TF_E_NULL;
+    }
+
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
@@ -1222,6 +1318,10 @@ int tf_warp_energy_manager_set_status_led_config(TF_WARPEnergyManager *warp_ener
         return TF_E_NULL;
     }
 
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1266,6 +1366,10 @@ int tf_warp_energy_manager_set_status_led_config(TF_WARPEnergyManager *warp_ener
 int tf_warp_energy_manager_get_status_led_config(TF_WARPEnergyManager *warp_energy_manager, uint8_t *ret_config) {
     if (warp_energy_manager == NULL) {
         return TF_E_NULL;
+    }
+
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
@@ -1319,6 +1423,10 @@ int tf_warp_energy_manager_get_chip_temperature(TF_WARPEnergyManager *warp_energ
         return TF_E_NULL;
     }
 
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1370,6 +1478,10 @@ int tf_warp_energy_manager_reset(TF_WARPEnergyManager *warp_energy_manager) {
         return TF_E_NULL;
     }
 
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1410,6 +1522,10 @@ int tf_warp_energy_manager_reset(TF_WARPEnergyManager *warp_energy_manager) {
 int tf_warp_energy_manager_write_uid(TF_WARPEnergyManager *warp_energy_manager, uint32_t uid) {
     if (warp_energy_manager == NULL) {
         return TF_E_NULL;
+    }
+
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
@@ -1456,6 +1572,10 @@ int tf_warp_energy_manager_write_uid(TF_WARPEnergyManager *warp_energy_manager, 
 int tf_warp_energy_manager_read_uid(TF_WARPEnergyManager *warp_energy_manager, uint32_t *ret_uid) {
     if (warp_energy_manager == NULL) {
         return TF_E_NULL;
+    }
+
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
@@ -1507,6 +1627,10 @@ int tf_warp_energy_manager_read_uid(TF_WARPEnergyManager *warp_energy_manager, u
 int tf_warp_energy_manager_get_identity(TF_WARPEnergyManager *warp_energy_manager, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (warp_energy_manager == NULL) {
         return TF_E_NULL;
+    }
+
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = warp_energy_manager->tfp->spitfp->hal;
@@ -1581,6 +1705,10 @@ int tf_warp_energy_manager_get_energy_meter_detailed_values(TF_WARPEnergyManager
     if (warp_energy_manager == NULL) {
         return TF_E_NULL;
     }
+
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
     
     uint32_t _values_length = 0;
     float _values_chunk_data[15];
@@ -1597,6 +1725,10 @@ int tf_warp_energy_manager_get_energy_meter_detailed_values(TF_WARPEnergyManager
 int tf_warp_energy_manager_callback_tick(TF_WARPEnergyManager *warp_energy_manager, uint32_t timeout_us) {
     if (warp_energy_manager == NULL) {
         return TF_E_NULL;
+    }
+
+    if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = warp_energy_manager->tfp->spitfp->hal;

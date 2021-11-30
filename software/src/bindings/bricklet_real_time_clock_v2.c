@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -100,19 +100,23 @@ int tf_real_time_clock_v2_create(TF_RealTimeClockV2 *real_time_clock_v2, const c
     real_time_clock_v2->tfp = tfp;
     real_time_clock_v2->tfp->device = real_time_clock_v2;
     real_time_clock_v2->tfp->cb_handler = tf_real_time_clock_v2_callback_handler;
+    real_time_clock_v2->magic = 0x5446;
     real_time_clock_v2->response_expected[0] = 0x0C;
-
     return TF_E_OK;
 }
 
 int tf_real_time_clock_v2_destroy(TF_RealTimeClockV2 *real_time_clock_v2) {
-    if (real_time_clock_v2 == NULL || real_time_clock_v2->tfp == NULL) {
+    if (real_time_clock_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     real_time_clock_v2->tfp->cb_handler = NULL;
     real_time_clock_v2->tfp->device = NULL;
     real_time_clock_v2->tfp = NULL;
+    real_time_clock_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -120,6 +124,10 @@ int tf_real_time_clock_v2_destroy(TF_RealTimeClockV2 *real_time_clock_v2) {
 int tf_real_time_clock_v2_get_response_expected(TF_RealTimeClockV2 *real_time_clock_v2, uint8_t function_id, bool *ret_response_expected) {
     if (real_time_clock_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -173,6 +181,10 @@ int tf_real_time_clock_v2_get_response_expected(TF_RealTimeClockV2 *real_time_cl
 int tf_real_time_clock_v2_set_response_expected(TF_RealTimeClockV2 *real_time_clock_v2, uint8_t function_id, bool response_expected) {
     if (real_time_clock_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -244,6 +256,10 @@ int tf_real_time_clock_v2_set_response_expected_all(TF_RealTimeClockV2 *real_tim
         return TF_E_NULL;
     }
 
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(real_time_clock_v2->response_expected, response_expected ? 0xFF : 0, 1);
 
     return TF_E_OK;
@@ -252,6 +268,10 @@ int tf_real_time_clock_v2_set_response_expected_all(TF_RealTimeClockV2 *real_tim
 int tf_real_time_clock_v2_set_date_time(TF_RealTimeClockV2 *real_time_clock_v2, uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second, uint8_t centisecond, uint8_t weekday) {
     if (real_time_clock_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
@@ -305,6 +325,10 @@ int tf_real_time_clock_v2_set_date_time(TF_RealTimeClockV2 *real_time_clock_v2, 
 int tf_real_time_clock_v2_get_date_time(TF_RealTimeClockV2 *real_time_clock_v2, uint16_t *ret_year, uint8_t *ret_month, uint8_t *ret_day, uint8_t *ret_hour, uint8_t *ret_minute, uint8_t *ret_second, uint8_t *ret_centisecond, uint8_t *ret_weekday, int64_t *ret_timestamp) {
     if (real_time_clock_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
@@ -366,6 +390,10 @@ int tf_real_time_clock_v2_get_timestamp(TF_RealTimeClockV2 *real_time_clock_v2, 
         return TF_E_NULL;
     }
 
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -417,6 +445,10 @@ int tf_real_time_clock_v2_set_offset(TF_RealTimeClockV2 *real_time_clock_v2, int
         return TF_E_NULL;
     }
 
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -461,6 +493,10 @@ int tf_real_time_clock_v2_set_offset(TF_RealTimeClockV2 *real_time_clock_v2, int
 int tf_real_time_clock_v2_get_offset(TF_RealTimeClockV2 *real_time_clock_v2, int8_t *ret_offset) {
     if (real_time_clock_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
@@ -514,6 +550,10 @@ int tf_real_time_clock_v2_set_date_time_callback_configuration(TF_RealTimeClockV
         return TF_E_NULL;
     }
 
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -558,6 +598,10 @@ int tf_real_time_clock_v2_set_date_time_callback_configuration(TF_RealTimeClockV
 int tf_real_time_clock_v2_get_date_time_callback_configuration(TF_RealTimeClockV2 *real_time_clock_v2, uint32_t *ret_period) {
     if (real_time_clock_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
@@ -611,6 +655,10 @@ int tf_real_time_clock_v2_set_alarm(TF_RealTimeClockV2 *real_time_clock_v2, int8
         return TF_E_NULL;
     }
 
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -661,6 +709,10 @@ int tf_real_time_clock_v2_set_alarm(TF_RealTimeClockV2 *real_time_clock_v2, int8
 int tf_real_time_clock_v2_get_alarm(TF_RealTimeClockV2 *real_time_clock_v2, int8_t *ret_month, int8_t *ret_day, int8_t *ret_hour, int8_t *ret_minute, int8_t *ret_second, int8_t *ret_weekday, int32_t *ret_interval) {
     if (real_time_clock_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
@@ -720,6 +772,10 @@ int tf_real_time_clock_v2_get_spitfp_error_count(TF_RealTimeClockV2 *real_time_c
         return TF_E_NULL;
     }
 
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -772,6 +828,10 @@ int tf_real_time_clock_v2_get_spitfp_error_count(TF_RealTimeClockV2 *real_time_c
 int tf_real_time_clock_v2_set_bootloader_mode(TF_RealTimeClockV2 *real_time_clock_v2, uint8_t mode, uint8_t *ret_status) {
     if (real_time_clock_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
@@ -829,6 +889,10 @@ int tf_real_time_clock_v2_get_bootloader_mode(TF_RealTimeClockV2 *real_time_cloc
         return TF_E_NULL;
     }
 
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -880,6 +944,10 @@ int tf_real_time_clock_v2_set_write_firmware_pointer(TF_RealTimeClockV2 *real_ti
         return TF_E_NULL;
     }
 
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -924,6 +992,10 @@ int tf_real_time_clock_v2_set_write_firmware_pointer(TF_RealTimeClockV2 *real_ti
 int tf_real_time_clock_v2_write_firmware(TF_RealTimeClockV2 *real_time_clock_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (real_time_clock_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
@@ -981,6 +1053,10 @@ int tf_real_time_clock_v2_set_status_led_config(TF_RealTimeClockV2 *real_time_cl
         return TF_E_NULL;
     }
 
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1025,6 +1101,10 @@ int tf_real_time_clock_v2_set_status_led_config(TF_RealTimeClockV2 *real_time_cl
 int tf_real_time_clock_v2_get_status_led_config(TF_RealTimeClockV2 *real_time_clock_v2, uint8_t *ret_config) {
     if (real_time_clock_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
@@ -1078,6 +1158,10 @@ int tf_real_time_clock_v2_get_chip_temperature(TF_RealTimeClockV2 *real_time_clo
         return TF_E_NULL;
     }
 
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1129,6 +1213,10 @@ int tf_real_time_clock_v2_reset(TF_RealTimeClockV2 *real_time_clock_v2) {
         return TF_E_NULL;
     }
 
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1169,6 +1257,10 @@ int tf_real_time_clock_v2_reset(TF_RealTimeClockV2 *real_time_clock_v2) {
 int tf_real_time_clock_v2_write_uid(TF_RealTimeClockV2 *real_time_clock_v2, uint32_t uid) {
     if (real_time_clock_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
@@ -1215,6 +1307,10 @@ int tf_real_time_clock_v2_write_uid(TF_RealTimeClockV2 *real_time_clock_v2, uint
 int tf_real_time_clock_v2_read_uid(TF_RealTimeClockV2 *real_time_clock_v2, uint32_t *ret_uid) {
     if (real_time_clock_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
@@ -1266,6 +1362,10 @@ int tf_real_time_clock_v2_read_uid(TF_RealTimeClockV2 *real_time_clock_v2, uint3
 int tf_real_time_clock_v2_get_identity(TF_RealTimeClockV2 *real_time_clock_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (real_time_clock_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = real_time_clock_v2->tfp->spitfp->hal;
@@ -1325,11 +1425,8 @@ int tf_real_time_clock_v2_register_date_time_callback(TF_RealTimeClockV2 *real_t
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        real_time_clock_v2->tfp->needs_callback_tick = false;
-        real_time_clock_v2->tfp->needs_callback_tick |= real_time_clock_v2->alarm_handler != NULL;
-    } else {
-        real_time_clock_v2->tfp->needs_callback_tick = true;
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     real_time_clock_v2->date_time_handler = handler;
@@ -1344,11 +1441,8 @@ int tf_real_time_clock_v2_register_alarm_callback(TF_RealTimeClockV2 *real_time_
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        real_time_clock_v2->tfp->needs_callback_tick = false;
-        real_time_clock_v2->tfp->needs_callback_tick |= real_time_clock_v2->date_time_handler != NULL;
-    } else {
-        real_time_clock_v2->tfp->needs_callback_tick = true;
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     real_time_clock_v2->alarm_handler = handler;
@@ -1360,6 +1454,10 @@ int tf_real_time_clock_v2_register_alarm_callback(TF_RealTimeClockV2 *real_time_
 int tf_real_time_clock_v2_callback_tick(TF_RealTimeClockV2 *real_time_clock_v2, uint32_t timeout_us) {
     if (real_time_clock_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (real_time_clock_v2->magic != 0x5446 || real_time_clock_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = real_time_clock_v2->tfp->spitfp->hal;

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -102,20 +102,24 @@ int tf_io4_v2_create(TF_IO4V2 *io4_v2, const char *uid_or_port_name, TF_HAL *hal
     io4_v2->tfp = tfp;
     io4_v2->tfp->device = io4_v2;
     io4_v2->tfp->cb_handler = tf_io4_v2_callback_handler;
+    io4_v2->magic = 0x5446;
     io4_v2->response_expected[0] = 0x18;
     io4_v2->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_io4_v2_destroy(TF_IO4V2 *io4_v2) {
-    if (io4_v2 == NULL || io4_v2->tfp == NULL) {
+    if (io4_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     io4_v2->tfp->cb_handler = NULL;
     io4_v2->tfp->device = NULL;
     io4_v2->tfp = NULL;
+    io4_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -123,6 +127,10 @@ int tf_io4_v2_destroy(TF_IO4V2 *io4_v2) {
 int tf_io4_v2_get_response_expected(TF_IO4V2 *io4_v2, uint8_t function_id, bool *ret_response_expected) {
     if (io4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -196,6 +204,10 @@ int tf_io4_v2_get_response_expected(TF_IO4V2 *io4_v2, uint8_t function_id, bool 
 int tf_io4_v2_set_response_expected(TF_IO4V2 *io4_v2, uint8_t function_id, bool response_expected) {
     if (io4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -295,6 +307,10 @@ int tf_io4_v2_set_response_expected_all(TF_IO4V2 *io4_v2, bool response_expected
         return TF_E_NULL;
     }
 
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(io4_v2->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -303,6 +319,10 @@ int tf_io4_v2_set_response_expected_all(TF_IO4V2 *io4_v2, bool response_expected
 int tf_io4_v2_set_value(TF_IO4V2 *io4_v2, const bool value[4]) {
     if (io4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
@@ -350,6 +370,10 @@ int tf_io4_v2_set_value(TF_IO4V2 *io4_v2, const bool value[4]) {
 int tf_io4_v2_get_value(TF_IO4V2 *io4_v2, bool ret_value[4]) {
     if (io4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
@@ -403,6 +427,10 @@ int tf_io4_v2_set_selected_value(TF_IO4V2 *io4_v2, uint8_t channel, bool value) 
         return TF_E_NULL;
     }
 
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -448,6 +476,10 @@ int tf_io4_v2_set_selected_value(TF_IO4V2 *io4_v2, uint8_t channel, bool value) 
 int tf_io4_v2_set_configuration(TF_IO4V2 *io4_v2, uint8_t channel, char direction, bool value) {
     if (io4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
@@ -496,6 +528,10 @@ int tf_io4_v2_set_configuration(TF_IO4V2 *io4_v2, uint8_t channel, char directio
 int tf_io4_v2_get_configuration(TF_IO4V2 *io4_v2, uint8_t channel, char *ret_direction, bool *ret_value) {
     if (io4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
@@ -554,6 +590,10 @@ int tf_io4_v2_set_input_value_callback_configuration(TF_IO4V2 *io4_v2, uint8_t c
         return TF_E_NULL;
     }
 
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -600,6 +640,10 @@ int tf_io4_v2_set_input_value_callback_configuration(TF_IO4V2 *io4_v2, uint8_t c
 int tf_io4_v2_get_input_value_callback_configuration(TF_IO4V2 *io4_v2, uint8_t channel, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (io4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
@@ -658,6 +702,10 @@ int tf_io4_v2_set_all_input_value_callback_configuration(TF_IO4V2 *io4_v2, uint3
         return TF_E_NULL;
     }
 
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -703,6 +751,10 @@ int tf_io4_v2_set_all_input_value_callback_configuration(TF_IO4V2 *io4_v2, uint3
 int tf_io4_v2_get_all_input_value_callback_configuration(TF_IO4V2 *io4_v2, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (io4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
@@ -757,6 +809,10 @@ int tf_io4_v2_set_monoflop(TF_IO4V2 *io4_v2, uint8_t channel, bool value, uint32
         return TF_E_NULL;
     }
 
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -803,6 +859,10 @@ int tf_io4_v2_set_monoflop(TF_IO4V2 *io4_v2, uint8_t channel, bool value, uint32
 int tf_io4_v2_get_monoflop(TF_IO4V2 *io4_v2, uint8_t channel, bool *ret_value, uint32_t *ret_time, uint32_t *ret_time_remaining) {
     if (io4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
@@ -862,6 +922,10 @@ int tf_io4_v2_get_edge_count(TF_IO4V2 *io4_v2, uint8_t channel, bool reset_count
         return TF_E_NULL;
     }
 
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -918,6 +982,10 @@ int tf_io4_v2_set_edge_count_configuration(TF_IO4V2 *io4_v2, uint8_t channel, ui
         return TF_E_NULL;
     }
 
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -964,6 +1032,10 @@ int tf_io4_v2_set_edge_count_configuration(TF_IO4V2 *io4_v2, uint8_t channel, ui
 int tf_io4_v2_get_edge_count_configuration(TF_IO4V2 *io4_v2, uint8_t channel, uint8_t *ret_edge_type, uint8_t *ret_debounce) {
     if (io4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
@@ -1022,6 +1094,10 @@ int tf_io4_v2_set_pwm_configuration(TF_IO4V2 *io4_v2, uint8_t channel, uint32_t 
         return TF_E_NULL;
     }
 
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1068,6 +1144,10 @@ int tf_io4_v2_set_pwm_configuration(TF_IO4V2 *io4_v2, uint8_t channel, uint32_t 
 int tf_io4_v2_get_pwm_configuration(TF_IO4V2 *io4_v2, uint8_t channel, uint32_t *ret_frequency, uint16_t *ret_duty_cycle) {
     if (io4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
@@ -1126,6 +1206,10 @@ int tf_io4_v2_get_spitfp_error_count(TF_IO4V2 *io4_v2, uint32_t *ret_error_count
         return TF_E_NULL;
     }
 
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1178,6 +1262,10 @@ int tf_io4_v2_get_spitfp_error_count(TF_IO4V2 *io4_v2, uint32_t *ret_error_count
 int tf_io4_v2_set_bootloader_mode(TF_IO4V2 *io4_v2, uint8_t mode, uint8_t *ret_status) {
     if (io4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
@@ -1235,6 +1323,10 @@ int tf_io4_v2_get_bootloader_mode(TF_IO4V2 *io4_v2, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1286,6 +1378,10 @@ int tf_io4_v2_set_write_firmware_pointer(TF_IO4V2 *io4_v2, uint32_t pointer) {
         return TF_E_NULL;
     }
 
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1330,6 +1426,10 @@ int tf_io4_v2_set_write_firmware_pointer(TF_IO4V2 *io4_v2, uint32_t pointer) {
 int tf_io4_v2_write_firmware(TF_IO4V2 *io4_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (io4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
@@ -1387,6 +1487,10 @@ int tf_io4_v2_set_status_led_config(TF_IO4V2 *io4_v2, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1431,6 +1535,10 @@ int tf_io4_v2_set_status_led_config(TF_IO4V2 *io4_v2, uint8_t config) {
 int tf_io4_v2_get_status_led_config(TF_IO4V2 *io4_v2, uint8_t *ret_config) {
     if (io4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
@@ -1484,6 +1592,10 @@ int tf_io4_v2_get_chip_temperature(TF_IO4V2 *io4_v2, int16_t *ret_temperature) {
         return TF_E_NULL;
     }
 
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1535,6 +1647,10 @@ int tf_io4_v2_reset(TF_IO4V2 *io4_v2) {
         return TF_E_NULL;
     }
 
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1575,6 +1691,10 @@ int tf_io4_v2_reset(TF_IO4V2 *io4_v2) {
 int tf_io4_v2_write_uid(TF_IO4V2 *io4_v2, uint32_t uid) {
     if (io4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
@@ -1621,6 +1741,10 @@ int tf_io4_v2_write_uid(TF_IO4V2 *io4_v2, uint32_t uid) {
 int tf_io4_v2_read_uid(TF_IO4V2 *io4_v2, uint32_t *ret_uid) {
     if (io4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
@@ -1672,6 +1796,10 @@ int tf_io4_v2_read_uid(TF_IO4V2 *io4_v2, uint32_t *ret_uid) {
 int tf_io4_v2_get_identity(TF_IO4V2 *io4_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (io4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
@@ -1731,12 +1859,8 @@ int tf_io4_v2_register_input_value_callback(TF_IO4V2 *io4_v2, TF_IO4V2_InputValu
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        io4_v2->tfp->needs_callback_tick = false;
-        io4_v2->tfp->needs_callback_tick |= io4_v2->all_input_value_handler != NULL;
-        io4_v2->tfp->needs_callback_tick |= io4_v2->monoflop_done_handler != NULL;
-    } else {
-        io4_v2->tfp->needs_callback_tick = true;
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     io4_v2->input_value_handler = handler;
@@ -1751,12 +1875,8 @@ int tf_io4_v2_register_all_input_value_callback(TF_IO4V2 *io4_v2, TF_IO4V2_AllIn
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        io4_v2->tfp->needs_callback_tick = false;
-        io4_v2->tfp->needs_callback_tick |= io4_v2->input_value_handler != NULL;
-        io4_v2->tfp->needs_callback_tick |= io4_v2->monoflop_done_handler != NULL;
-    } else {
-        io4_v2->tfp->needs_callback_tick = true;
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     io4_v2->all_input_value_handler = handler;
@@ -1771,12 +1891,8 @@ int tf_io4_v2_register_monoflop_done_callback(TF_IO4V2 *io4_v2, TF_IO4V2_Monoflo
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        io4_v2->tfp->needs_callback_tick = false;
-        io4_v2->tfp->needs_callback_tick |= io4_v2->input_value_handler != NULL;
-        io4_v2->tfp->needs_callback_tick |= io4_v2->all_input_value_handler != NULL;
-    } else {
-        io4_v2->tfp->needs_callback_tick = true;
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     io4_v2->monoflop_done_handler = handler;
@@ -1788,6 +1904,10 @@ int tf_io4_v2_register_monoflop_done_callback(TF_IO4V2 *io4_v2, TF_IO4V2_Monoflo
 int tf_io4_v2_callback_tick(TF_IO4V2 *io4_v2, uint32_t timeout_us) {
     if (io4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = io4_v2->tfp->spitfp->hal;

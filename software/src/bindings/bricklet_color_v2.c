@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -101,20 +101,24 @@ int tf_color_v2_create(TF_ColorV2 *color_v2, const char *uid_or_port_name, TF_HA
     color_v2->tfp = tfp;
     color_v2->tfp->device = color_v2;
     color_v2->tfp->cb_handler = tf_color_v2_callback_handler;
+    color_v2->magic = 0x5446;
     color_v2->response_expected[0] = 0x07;
     color_v2->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_color_v2_destroy(TF_ColorV2 *color_v2) {
-    if (color_v2 == NULL || color_v2->tfp == NULL) {
+    if (color_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     color_v2->tfp->cb_handler = NULL;
     color_v2->tfp->device = NULL;
     color_v2->tfp = NULL;
+    color_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -122,6 +126,10 @@ int tf_color_v2_destroy(TF_ColorV2 *color_v2) {
 int tf_color_v2_get_response_expected(TF_ColorV2 *color_v2, uint8_t function_id, bool *ret_response_expected) {
     if (color_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -180,6 +188,10 @@ int tf_color_v2_get_response_expected(TF_ColorV2 *color_v2, uint8_t function_id,
 int tf_color_v2_set_response_expected(TF_ColorV2 *color_v2, uint8_t function_id, bool response_expected) {
     if (color_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -258,6 +270,10 @@ int tf_color_v2_set_response_expected_all(TF_ColorV2 *color_v2, bool response_ex
         return TF_E_NULL;
     }
 
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(color_v2->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -266,6 +282,10 @@ int tf_color_v2_set_response_expected_all(TF_ColorV2 *color_v2, bool response_ex
 int tf_color_v2_get_color(TF_ColorV2 *color_v2, uint16_t *ret_r, uint16_t *ret_g, uint16_t *ret_b, uint16_t *ret_c) {
     if (color_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = color_v2->tfp->spitfp->hal;
@@ -322,6 +342,10 @@ int tf_color_v2_set_color_callback_configuration(TF_ColorV2 *color_v2, uint32_t 
         return TF_E_NULL;
     }
 
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = color_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -367,6 +391,10 @@ int tf_color_v2_set_color_callback_configuration(TF_ColorV2 *color_v2, uint32_t 
 int tf_color_v2_get_color_callback_configuration(TF_ColorV2 *color_v2, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (color_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = color_v2->tfp->spitfp->hal;
@@ -421,6 +449,10 @@ int tf_color_v2_get_illuminance(TF_ColorV2 *color_v2, uint32_t *ret_illuminance)
         return TF_E_NULL;
     }
 
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = color_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -472,6 +504,10 @@ int tf_color_v2_set_illuminance_callback_configuration(TF_ColorV2 *color_v2, uin
         return TF_E_NULL;
     }
 
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = color_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -520,6 +556,10 @@ int tf_color_v2_set_illuminance_callback_configuration(TF_ColorV2 *color_v2, uin
 int tf_color_v2_get_illuminance_callback_configuration(TF_ColorV2 *color_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, uint32_t *ret_min, uint32_t *ret_max) {
     if (color_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = color_v2->tfp->spitfp->hal;
@@ -577,6 +617,10 @@ int tf_color_v2_get_color_temperature(TF_ColorV2 *color_v2, uint16_t *ret_color_
         return TF_E_NULL;
     }
 
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = color_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -628,6 +672,10 @@ int tf_color_v2_set_color_temperature_callback_configuration(TF_ColorV2 *color_v
         return TF_E_NULL;
     }
 
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = color_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -676,6 +724,10 @@ int tf_color_v2_set_color_temperature_callback_configuration(TF_ColorV2 *color_v
 int tf_color_v2_get_color_temperature_callback_configuration(TF_ColorV2 *color_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, uint16_t *ret_min, uint16_t *ret_max) {
     if (color_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = color_v2->tfp->spitfp->hal;
@@ -733,6 +785,10 @@ int tf_color_v2_set_light(TF_ColorV2 *color_v2, bool enable) {
         return TF_E_NULL;
     }
 
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = color_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -777,6 +833,10 @@ int tf_color_v2_set_light(TF_ColorV2 *color_v2, bool enable) {
 int tf_color_v2_get_light(TF_ColorV2 *color_v2, bool *ret_enable) {
     if (color_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = color_v2->tfp->spitfp->hal;
@@ -830,6 +890,10 @@ int tf_color_v2_set_configuration(TF_ColorV2 *color_v2, uint8_t gain, uint8_t in
         return TF_E_NULL;
     }
 
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = color_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -875,6 +939,10 @@ int tf_color_v2_set_configuration(TF_ColorV2 *color_v2, uint8_t gain, uint8_t in
 int tf_color_v2_get_configuration(TF_ColorV2 *color_v2, uint8_t *ret_gain, uint8_t *ret_integration_time) {
     if (color_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = color_v2->tfp->spitfp->hal;
@@ -929,6 +997,10 @@ int tf_color_v2_get_spitfp_error_count(TF_ColorV2 *color_v2, uint32_t *ret_error
         return TF_E_NULL;
     }
 
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = color_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -981,6 +1053,10 @@ int tf_color_v2_get_spitfp_error_count(TF_ColorV2 *color_v2, uint32_t *ret_error
 int tf_color_v2_set_bootloader_mode(TF_ColorV2 *color_v2, uint8_t mode, uint8_t *ret_status) {
     if (color_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = color_v2->tfp->spitfp->hal;
@@ -1038,6 +1114,10 @@ int tf_color_v2_get_bootloader_mode(TF_ColorV2 *color_v2, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = color_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1089,6 +1169,10 @@ int tf_color_v2_set_write_firmware_pointer(TF_ColorV2 *color_v2, uint32_t pointe
         return TF_E_NULL;
     }
 
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = color_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1133,6 +1217,10 @@ int tf_color_v2_set_write_firmware_pointer(TF_ColorV2 *color_v2, uint32_t pointe
 int tf_color_v2_write_firmware(TF_ColorV2 *color_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (color_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = color_v2->tfp->spitfp->hal;
@@ -1190,6 +1278,10 @@ int tf_color_v2_set_status_led_config(TF_ColorV2 *color_v2, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = color_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1234,6 +1326,10 @@ int tf_color_v2_set_status_led_config(TF_ColorV2 *color_v2, uint8_t config) {
 int tf_color_v2_get_status_led_config(TF_ColorV2 *color_v2, uint8_t *ret_config) {
     if (color_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = color_v2->tfp->spitfp->hal;
@@ -1287,6 +1383,10 @@ int tf_color_v2_get_chip_temperature(TF_ColorV2 *color_v2, int16_t *ret_temperat
         return TF_E_NULL;
     }
 
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = color_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1338,6 +1438,10 @@ int tf_color_v2_reset(TF_ColorV2 *color_v2) {
         return TF_E_NULL;
     }
 
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = color_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1378,6 +1482,10 @@ int tf_color_v2_reset(TF_ColorV2 *color_v2) {
 int tf_color_v2_write_uid(TF_ColorV2 *color_v2, uint32_t uid) {
     if (color_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = color_v2->tfp->spitfp->hal;
@@ -1424,6 +1532,10 @@ int tf_color_v2_write_uid(TF_ColorV2 *color_v2, uint32_t uid) {
 int tf_color_v2_read_uid(TF_ColorV2 *color_v2, uint32_t *ret_uid) {
     if (color_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = color_v2->tfp->spitfp->hal;
@@ -1475,6 +1587,10 @@ int tf_color_v2_read_uid(TF_ColorV2 *color_v2, uint32_t *ret_uid) {
 int tf_color_v2_get_identity(TF_ColorV2 *color_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (color_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = color_v2->tfp->spitfp->hal;
@@ -1534,12 +1650,8 @@ int tf_color_v2_register_color_callback(TF_ColorV2 *color_v2, TF_ColorV2_ColorHa
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        color_v2->tfp->needs_callback_tick = false;
-        color_v2->tfp->needs_callback_tick |= color_v2->illuminance_handler != NULL;
-        color_v2->tfp->needs_callback_tick |= color_v2->color_temperature_handler != NULL;
-    } else {
-        color_v2->tfp->needs_callback_tick = true;
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     color_v2->color_handler = handler;
@@ -1554,12 +1666,8 @@ int tf_color_v2_register_illuminance_callback(TF_ColorV2 *color_v2, TF_ColorV2_I
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        color_v2->tfp->needs_callback_tick = false;
-        color_v2->tfp->needs_callback_tick |= color_v2->color_handler != NULL;
-        color_v2->tfp->needs_callback_tick |= color_v2->color_temperature_handler != NULL;
-    } else {
-        color_v2->tfp->needs_callback_tick = true;
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     color_v2->illuminance_handler = handler;
@@ -1574,12 +1682,8 @@ int tf_color_v2_register_color_temperature_callback(TF_ColorV2 *color_v2, TF_Col
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        color_v2->tfp->needs_callback_tick = false;
-        color_v2->tfp->needs_callback_tick |= color_v2->color_handler != NULL;
-        color_v2->tfp->needs_callback_tick |= color_v2->illuminance_handler != NULL;
-    } else {
-        color_v2->tfp->needs_callback_tick = true;
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     color_v2->color_temperature_handler = handler;
@@ -1591,6 +1695,10 @@ int tf_color_v2_register_color_temperature_callback(TF_ColorV2 *color_v2, TF_Col
 int tf_color_v2_callback_tick(TF_ColorV2 *color_v2, uint32_t timeout_us) {
     if (color_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (color_v2->magic != 0x5446 || color_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = color_v2->tfp->spitfp->hal;

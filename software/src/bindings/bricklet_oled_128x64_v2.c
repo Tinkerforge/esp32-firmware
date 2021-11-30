@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -45,20 +45,24 @@ int tf_oled_128x64_v2_create(TF_OLED128x64V2 *oled_128x64_v2, const char *uid_or
     oled_128x64_v2->tfp = tfp;
     oled_128x64_v2->tfp->device = oled_128x64_v2;
     oled_128x64_v2->tfp->cb_handler = tf_oled_128x64_v2_callback_handler;
+    oled_128x64_v2->magic = 0x5446;
     oled_128x64_v2->response_expected[0] = 0x01;
     oled_128x64_v2->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_oled_128x64_v2_destroy(TF_OLED128x64V2 *oled_128x64_v2) {
-    if (oled_128x64_v2 == NULL || oled_128x64_v2->tfp == NULL) {
+    if (oled_128x64_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     oled_128x64_v2->tfp->cb_handler = NULL;
     oled_128x64_v2->tfp->device = NULL;
     oled_128x64_v2->tfp = NULL;
+    oled_128x64_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -66,6 +70,10 @@ int tf_oled_128x64_v2_destroy(TF_OLED128x64V2 *oled_128x64_v2) {
 int tf_oled_128x64_v2_get_response_expected(TF_OLED128x64V2 *oled_128x64_v2, uint8_t function_id, bool *ret_response_expected) {
     if (oled_128x64_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -124,6 +132,10 @@ int tf_oled_128x64_v2_get_response_expected(TF_OLED128x64V2 *oled_128x64_v2, uin
 int tf_oled_128x64_v2_set_response_expected(TF_OLED128x64V2 *oled_128x64_v2, uint8_t function_id, bool response_expected) {
     if (oled_128x64_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -202,6 +214,10 @@ int tf_oled_128x64_v2_set_response_expected_all(TF_OLED128x64V2 *oled_128x64_v2,
         return TF_E_NULL;
     }
 
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(oled_128x64_v2->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -210,6 +226,10 @@ int tf_oled_128x64_v2_set_response_expected_all(TF_OLED128x64V2 *oled_128x64_v2,
 int tf_oled_128x64_v2_write_pixels_low_level(TF_OLED128x64V2 *oled_128x64_v2, uint8_t x_start, uint8_t y_start, uint8_t x_end, uint8_t y_end, uint16_t pixels_length, uint16_t pixels_chunk_offset, const bool pixels_chunk_data[448]) {
     if (oled_128x64_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = oled_128x64_v2->tfp->spitfp->hal;
@@ -263,6 +283,10 @@ int tf_oled_128x64_v2_write_pixels_low_level(TF_OLED128x64V2 *oled_128x64_v2, ui
 int tf_oled_128x64_v2_read_pixels_low_level(TF_OLED128x64V2 *oled_128x64_v2, uint8_t x_start, uint8_t y_start, uint8_t x_end, uint8_t y_end, uint16_t *ret_pixels_length, uint16_t *ret_pixels_chunk_offset, bool ret_pixels_chunk_data[480]) {
     if (oled_128x64_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = oled_128x64_v2->tfp->spitfp->hal;
@@ -325,6 +349,10 @@ int tf_oled_128x64_v2_clear_display(TF_OLED128x64V2 *oled_128x64_v2) {
         return TF_E_NULL;
     }
 
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = oled_128x64_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -365,6 +393,10 @@ int tf_oled_128x64_v2_clear_display(TF_OLED128x64V2 *oled_128x64_v2) {
 int tf_oled_128x64_v2_set_display_configuration(TF_OLED128x64V2 *oled_128x64_v2, uint8_t contrast, bool invert, bool automatic_draw) {
     if (oled_128x64_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = oled_128x64_v2->tfp->spitfp->hal;
@@ -413,6 +445,10 @@ int tf_oled_128x64_v2_set_display_configuration(TF_OLED128x64V2 *oled_128x64_v2,
 int tf_oled_128x64_v2_get_display_configuration(TF_OLED128x64V2 *oled_128x64_v2, uint8_t *ret_contrast, bool *ret_invert, bool *ret_automatic_draw) {
     if (oled_128x64_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = oled_128x64_v2->tfp->spitfp->hal;
@@ -468,6 +504,10 @@ int tf_oled_128x64_v2_write_line(TF_OLED128x64V2 *oled_128x64_v2, uint8_t line, 
         return TF_E_NULL;
     }
 
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = oled_128x64_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -517,6 +557,10 @@ int tf_oled_128x64_v2_draw_buffered_frame(TF_OLED128x64V2 *oled_128x64_v2, bool 
         return TF_E_NULL;
     }
 
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = oled_128x64_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -561,6 +605,10 @@ int tf_oled_128x64_v2_draw_buffered_frame(TF_OLED128x64V2 *oled_128x64_v2, bool 
 int tf_oled_128x64_v2_get_spitfp_error_count(TF_OLED128x64V2 *oled_128x64_v2, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (oled_128x64_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = oled_128x64_v2->tfp->spitfp->hal;
@@ -615,6 +663,10 @@ int tf_oled_128x64_v2_get_spitfp_error_count(TF_OLED128x64V2 *oled_128x64_v2, ui
 int tf_oled_128x64_v2_set_bootloader_mode(TF_OLED128x64V2 *oled_128x64_v2, uint8_t mode, uint8_t *ret_status) {
     if (oled_128x64_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = oled_128x64_v2->tfp->spitfp->hal;
@@ -672,6 +724,10 @@ int tf_oled_128x64_v2_get_bootloader_mode(TF_OLED128x64V2 *oled_128x64_v2, uint8
         return TF_E_NULL;
     }
 
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = oled_128x64_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -723,6 +779,10 @@ int tf_oled_128x64_v2_set_write_firmware_pointer(TF_OLED128x64V2 *oled_128x64_v2
         return TF_E_NULL;
     }
 
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = oled_128x64_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -767,6 +827,10 @@ int tf_oled_128x64_v2_set_write_firmware_pointer(TF_OLED128x64V2 *oled_128x64_v2
 int tf_oled_128x64_v2_write_firmware(TF_OLED128x64V2 *oled_128x64_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (oled_128x64_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = oled_128x64_v2->tfp->spitfp->hal;
@@ -824,6 +888,10 @@ int tf_oled_128x64_v2_set_status_led_config(TF_OLED128x64V2 *oled_128x64_v2, uin
         return TF_E_NULL;
     }
 
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = oled_128x64_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -868,6 +936,10 @@ int tf_oled_128x64_v2_set_status_led_config(TF_OLED128x64V2 *oled_128x64_v2, uin
 int tf_oled_128x64_v2_get_status_led_config(TF_OLED128x64V2 *oled_128x64_v2, uint8_t *ret_config) {
     if (oled_128x64_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = oled_128x64_v2->tfp->spitfp->hal;
@@ -921,6 +993,10 @@ int tf_oled_128x64_v2_get_chip_temperature(TF_OLED128x64V2 *oled_128x64_v2, int1
         return TF_E_NULL;
     }
 
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = oled_128x64_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -972,6 +1048,10 @@ int tf_oled_128x64_v2_reset(TF_OLED128x64V2 *oled_128x64_v2) {
         return TF_E_NULL;
     }
 
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = oled_128x64_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1012,6 +1092,10 @@ int tf_oled_128x64_v2_reset(TF_OLED128x64V2 *oled_128x64_v2) {
 int tf_oled_128x64_v2_write_uid(TF_OLED128x64V2 *oled_128x64_v2, uint32_t uid) {
     if (oled_128x64_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = oled_128x64_v2->tfp->spitfp->hal;
@@ -1058,6 +1142,10 @@ int tf_oled_128x64_v2_write_uid(TF_OLED128x64V2 *oled_128x64_v2, uint32_t uid) {
 int tf_oled_128x64_v2_read_uid(TF_OLED128x64V2 *oled_128x64_v2, uint32_t *ret_uid) {
     if (oled_128x64_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = oled_128x64_v2->tfp->spitfp->hal;
@@ -1109,6 +1197,10 @@ int tf_oled_128x64_v2_read_uid(TF_OLED128x64V2 *oled_128x64_v2, uint32_t *ret_ui
 int tf_oled_128x64_v2_get_identity(TF_OLED128x64V2 *oled_128x64_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (oled_128x64_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = oled_128x64_v2->tfp->spitfp->hal;
@@ -1188,6 +1280,10 @@ int tf_oled_128x64_v2_write_pixels(TF_OLED128x64V2 *oled_128x64_v2, uint8_t x_st
     if (oled_128x64_v2 == NULL) {
         return TF_E_NULL;
     }
+
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
     
     TF_OLED128x64V2_WritePixelsLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
@@ -1232,6 +1328,10 @@ int tf_oled_128x64_v2_read_pixels(TF_OLED128x64V2 *oled_128x64_v2, uint8_t x_sta
     if (oled_128x64_v2 == NULL) {
         return TF_E_NULL;
     }
+
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
     
     TF_OLED128x64V2_ReadPixelsLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
@@ -1254,6 +1354,10 @@ int tf_oled_128x64_v2_read_pixels(TF_OLED128x64V2 *oled_128x64_v2, uint8_t x_sta
 int tf_oled_128x64_v2_callback_tick(TF_OLED128x64V2 *oled_128x64_v2, uint32_t timeout_us) {
     if (oled_128x64_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = oled_128x64_v2->tfp->spitfp->hal;

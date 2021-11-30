@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -45,21 +45,25 @@ int tf_performance_stepper_create(TF_PerformanceStepper *performance_stepper, co
     performance_stepper->tfp = tfp;
     performance_stepper->tfp->device = performance_stepper;
     performance_stepper->tfp->cb_handler = tf_performance_stepper_callback_handler;
+    performance_stepper->magic = 0x5446;
     performance_stepper->response_expected[0] = 0x00;
     performance_stepper->response_expected[1] = 0x00;
     performance_stepper->response_expected[2] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_performance_stepper_destroy(TF_PerformanceStepper *performance_stepper) {
-    if (performance_stepper == NULL || performance_stepper->tfp == NULL) {
+    if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     performance_stepper->tfp->cb_handler = NULL;
     performance_stepper->tfp->device = NULL;
     performance_stepper->tfp = NULL;
+    performance_stepper->magic = 0;
 
     return TF_E_OK;
 }
@@ -67,6 +71,10 @@ int tf_performance_stepper_destroy(TF_PerformanceStepper *performance_stepper) {
 int tf_performance_stepper_get_response_expected(TF_PerformanceStepper *performance_stepper, uint8_t function_id, bool *ret_response_expected) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -190,6 +198,10 @@ int tf_performance_stepper_get_response_expected(TF_PerformanceStepper *performa
 int tf_performance_stepper_set_response_expected(TF_PerformanceStepper *performance_stepper, uint8_t function_id, bool response_expected) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -359,6 +371,10 @@ int tf_performance_stepper_set_response_expected_all(TF_PerformanceStepper *perf
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(performance_stepper->response_expected, response_expected ? 0xFF : 0, 3);
 
     return TF_E_OK;
@@ -367,6 +383,10 @@ int tf_performance_stepper_set_response_expected_all(TF_PerformanceStepper *perf
 int tf_performance_stepper_set_motion_configuration(TF_PerformanceStepper *performance_stepper, uint8_t ramping_mode, int32_t velocity_start, int32_t acceleration_1, int32_t velocity_1, int32_t acceleration_max, int32_t velocity_max, int32_t deceleration_max, int32_t deceleration_1, int32_t velocity_stop, int32_t ramp_zero_wait) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -422,6 +442,10 @@ int tf_performance_stepper_set_motion_configuration(TF_PerformanceStepper *perfo
 int tf_performance_stepper_get_motion_configuration(TF_PerformanceStepper *performance_stepper, uint8_t *ret_ramping_mode, int32_t *ret_velocity_start, int32_t *ret_acceleration_1, int32_t *ret_velocity_1, int32_t *ret_acceleration_max, int32_t *ret_velocity_max, int32_t *ret_deceleration_max, int32_t *ret_deceleration_1, int32_t *ret_velocity_stop, int32_t *ret_ramp_zero_wait) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -484,6 +508,10 @@ int tf_performance_stepper_set_current_position(TF_PerformanceStepper *performan
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -528,6 +556,10 @@ int tf_performance_stepper_set_current_position(TF_PerformanceStepper *performan
 int tf_performance_stepper_get_current_position(TF_PerformanceStepper *performance_stepper, int32_t *ret_position) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -581,6 +613,10 @@ int tf_performance_stepper_get_current_velocity(TF_PerformanceStepper *performan
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -632,6 +668,10 @@ int tf_performance_stepper_set_target_position(TF_PerformanceStepper *performanc
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -676,6 +716,10 @@ int tf_performance_stepper_set_target_position(TF_PerformanceStepper *performanc
 int tf_performance_stepper_get_target_position(TF_PerformanceStepper *performance_stepper, int32_t *ret_position) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -729,6 +773,10 @@ int tf_performance_stepper_set_steps(TF_PerformanceStepper *performance_stepper,
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -773,6 +821,10 @@ int tf_performance_stepper_set_steps(TF_PerformanceStepper *performance_stepper,
 int tf_performance_stepper_get_steps(TF_PerformanceStepper *performance_stepper, int32_t *ret_steps) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -826,6 +878,10 @@ int tf_performance_stepper_get_remaining_steps(TF_PerformanceStepper *performanc
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -877,6 +933,10 @@ int tf_performance_stepper_set_step_configuration(TF_PerformanceStepper *perform
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -922,6 +982,10 @@ int tf_performance_stepper_set_step_configuration(TF_PerformanceStepper *perform
 int tf_performance_stepper_get_step_configuration(TF_PerformanceStepper *performance_stepper, uint8_t *ret_step_resolution, bool *ret_interpolation) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -976,6 +1040,10 @@ int tf_performance_stepper_set_motor_current(TF_PerformanceStepper *performance_
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1020,6 +1088,10 @@ int tf_performance_stepper_set_motor_current(TF_PerformanceStepper *performance_
 int tf_performance_stepper_get_motor_current(TF_PerformanceStepper *performance_stepper, uint16_t *ret_current) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -1073,6 +1145,10 @@ int tf_performance_stepper_set_enabled(TF_PerformanceStepper *performance_steppe
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1117,6 +1193,10 @@ int tf_performance_stepper_set_enabled(TF_PerformanceStepper *performance_steppe
 int tf_performance_stepper_get_enabled(TF_PerformanceStepper *performance_stepper, bool *ret_enabled) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -1170,6 +1250,10 @@ int tf_performance_stepper_set_basic_configuration(TF_PerformanceStepper *perfor
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1221,6 +1305,10 @@ int tf_performance_stepper_set_basic_configuration(TF_PerformanceStepper *perfor
 int tf_performance_stepper_get_basic_configuration(TF_PerformanceStepper *performance_stepper, uint16_t *ret_standstill_current, uint16_t *ret_motor_run_current, uint16_t *ret_standstill_delay_time, uint16_t *ret_power_down_time, uint16_t *ret_stealth_threshold, uint16_t *ret_coolstep_threshold, uint16_t *ret_classic_threshold, bool *ret_high_velocity_chopper_mode) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -1281,6 +1369,10 @@ int tf_performance_stepper_set_spreadcycle_configuration(TF_PerformanceStepper *
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1333,6 +1425,10 @@ int tf_performance_stepper_set_spreadcycle_configuration(TF_PerformanceStepper *
 int tf_performance_stepper_get_spreadcycle_configuration(TF_PerformanceStepper *performance_stepper, uint8_t *ret_slow_decay_duration, bool *ret_high_velocity_fullstep, bool *ret_enable_random_slow_decay, uint8_t *ret_fast_decay_duration, uint8_t *ret_hysteresis_start_value, int8_t *ret_hysteresis_end_value, int8_t *ret_sine_wave_offset, uint8_t *ret_chopper_mode, uint8_t *ret_comparator_blank_time, bool *ret_fast_decay_without_comparator) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -1395,6 +1491,10 @@ int tf_performance_stepper_set_stealth_configuration(TF_PerformanceStepper *perf
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1446,6 +1546,10 @@ int tf_performance_stepper_set_stealth_configuration(TF_PerformanceStepper *perf
 int tf_performance_stepper_get_stealth_configuration(TF_PerformanceStepper *performance_stepper, bool *ret_enable_stealth, uint8_t *ret_offset, uint8_t *ret_gradient, bool *ret_enable_autoscale, bool *ret_enable_autogradient, uint8_t *ret_freewheel_mode, uint8_t *ret_regulation_loop_gradient, uint8_t *ret_amplitude_limit) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -1506,6 +1610,10 @@ int tf_performance_stepper_set_coolstep_configuration(TF_PerformanceStepper *per
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1556,6 +1664,10 @@ int tf_performance_stepper_set_coolstep_configuration(TF_PerformanceStepper *per
 int tf_performance_stepper_get_coolstep_configuration(TF_PerformanceStepper *performance_stepper, uint8_t *ret_minimum_stallguard_value, uint8_t *ret_maximum_stallguard_value, uint8_t *ret_current_up_step_width, uint8_t *ret_current_down_step_width, uint8_t *ret_minimum_current, int8_t *ret_stallguard_threshold_value, uint8_t *ret_stallguard_mode) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -1615,6 +1727,10 @@ int tf_performance_stepper_set_short_configuration(TF_PerformanceStepper *perfor
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1665,6 +1781,10 @@ int tf_performance_stepper_set_short_configuration(TF_PerformanceStepper *perfor
 int tf_performance_stepper_get_short_configuration(TF_PerformanceStepper *performance_stepper, bool *ret_disable_short_to_voltage_protection, bool *ret_disable_short_to_ground_protection, uint8_t *ret_short_to_voltage_level, uint8_t *ret_short_to_ground_level, uint8_t *ret_spike_filter_bandwidth, bool *ret_short_detection_delay, uint8_t *ret_filter_time) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -1722,6 +1842,10 @@ int tf_performance_stepper_get_short_configuration(TF_PerformanceStepper *perfor
 int tf_performance_stepper_get_driver_status(TF_PerformanceStepper *performance_stepper, uint8_t *ret_open_load, uint8_t *ret_short_to_ground, uint8_t *ret_over_temperature, bool *ret_motor_stalled, uint8_t *ret_actual_motor_current, bool *ret_full_step_active, uint8_t *ret_stallguard_result, uint8_t *ret_stealth_voltage_amplitude) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -1782,6 +1906,10 @@ int tf_performance_stepper_get_input_voltage(TF_PerformanceStepper *performance_
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1831,6 +1959,10 @@ int tf_performance_stepper_get_input_voltage(TF_PerformanceStepper *performance_
 int tf_performance_stepper_get_temperature(TF_PerformanceStepper *performance_stepper, int16_t *ret_temperature) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -1884,6 +2016,10 @@ int tf_performance_stepper_set_gpio_configuration(TF_PerformanceStepper *perform
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1929,6 +2065,10 @@ int tf_performance_stepper_set_gpio_configuration(TF_PerformanceStepper *perform
 int tf_performance_stepper_get_gpio_configuration(TF_PerformanceStepper *performance_stepper, uint16_t *ret_debounce, int32_t *ret_stop_deceleration) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -1983,6 +2123,10 @@ int tf_performance_stepper_set_gpio_action(TF_PerformanceStepper *performance_st
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2028,6 +2172,10 @@ int tf_performance_stepper_set_gpio_action(TF_PerformanceStepper *performance_st
 int tf_performance_stepper_get_gpio_action(TF_PerformanceStepper *performance_stepper, uint8_t channel, uint32_t *ret_action) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -2085,6 +2233,10 @@ int tf_performance_stepper_get_gpio_state(TF_PerformanceStepper *performance_ste
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2136,6 +2288,10 @@ int tf_performance_stepper_set_error_led_config(TF_PerformanceStepper *performan
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2180,6 +2336,10 @@ int tf_performance_stepper_set_error_led_config(TF_PerformanceStepper *performan
 int tf_performance_stepper_get_error_led_config(TF_PerformanceStepper *performance_stepper, uint8_t *ret_config) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -2233,6 +2393,10 @@ int tf_performance_stepper_set_enable_led_config(TF_PerformanceStepper *performa
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2277,6 +2441,10 @@ int tf_performance_stepper_set_enable_led_config(TF_PerformanceStepper *performa
 int tf_performance_stepper_get_enable_led_config(TF_PerformanceStepper *performance_stepper, uint8_t *ret_config) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -2330,6 +2498,10 @@ int tf_performance_stepper_set_steps_led_config(TF_PerformanceStepper *performan
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2374,6 +2546,10 @@ int tf_performance_stepper_set_steps_led_config(TF_PerformanceStepper *performan
 int tf_performance_stepper_get_steps_led_config(TF_PerformanceStepper *performance_stepper, uint8_t *ret_config) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -2427,6 +2603,10 @@ int tf_performance_stepper_set_gpio_led_config(TF_PerformanceStepper *performanc
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2472,6 +2652,10 @@ int tf_performance_stepper_set_gpio_led_config(TF_PerformanceStepper *performanc
 int tf_performance_stepper_get_gpio_led_config(TF_PerformanceStepper *performance_stepper, uint8_t channel, uint8_t *ret_config) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -2527,6 +2711,10 @@ int tf_performance_stepper_get_gpio_led_config(TF_PerformanceStepper *performanc
 int tf_performance_stepper_write_register(TF_PerformanceStepper *performance_stepper, uint8_t register_, uint32_t value, uint8_t *ret_status) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -2585,6 +2773,10 @@ int tf_performance_stepper_read_register(TF_PerformanceStepper *performance_step
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2641,6 +2833,10 @@ int tf_performance_stepper_get_spitfp_error_count(TF_PerformanceStepper *perform
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2693,6 +2889,10 @@ int tf_performance_stepper_get_spitfp_error_count(TF_PerformanceStepper *perform
 int tf_performance_stepper_set_bootloader_mode(TF_PerformanceStepper *performance_stepper, uint8_t mode, uint8_t *ret_status) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -2750,6 +2950,10 @@ int tf_performance_stepper_get_bootloader_mode(TF_PerformanceStepper *performanc
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2801,6 +3005,10 @@ int tf_performance_stepper_set_write_firmware_pointer(TF_PerformanceStepper *per
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2845,6 +3053,10 @@ int tf_performance_stepper_set_write_firmware_pointer(TF_PerformanceStepper *per
 int tf_performance_stepper_write_firmware(TF_PerformanceStepper *performance_stepper, const uint8_t data[64], uint8_t *ret_status) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -2902,6 +3114,10 @@ int tf_performance_stepper_set_status_led_config(TF_PerformanceStepper *performa
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2946,6 +3162,10 @@ int tf_performance_stepper_set_status_led_config(TF_PerformanceStepper *performa
 int tf_performance_stepper_get_status_led_config(TF_PerformanceStepper *performance_stepper, uint8_t *ret_config) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -2999,6 +3219,10 @@ int tf_performance_stepper_get_chip_temperature(TF_PerformanceStepper *performan
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -3050,6 +3274,10 @@ int tf_performance_stepper_reset(TF_PerformanceStepper *performance_stepper) {
         return TF_E_NULL;
     }
 
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -3090,6 +3318,10 @@ int tf_performance_stepper_reset(TF_PerformanceStepper *performance_stepper) {
 int tf_performance_stepper_write_uid(TF_PerformanceStepper *performance_stepper, uint32_t uid) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -3136,6 +3368,10 @@ int tf_performance_stepper_write_uid(TF_PerformanceStepper *performance_stepper,
 int tf_performance_stepper_read_uid(TF_PerformanceStepper *performance_stepper, uint32_t *ret_uid) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -3187,6 +3423,10 @@ int tf_performance_stepper_read_uid(TF_PerformanceStepper *performance_stepper, 
 int tf_performance_stepper_get_identity(TF_PerformanceStepper *performance_stepper, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = performance_stepper->tfp->spitfp->hal;
@@ -3245,6 +3485,10 @@ int tf_performance_stepper_get_identity(TF_PerformanceStepper *performance_stepp
 int tf_performance_stepper_callback_tick(TF_PerformanceStepper *performance_stepper, uint32_t timeout_us) {
     if (performance_stepper == NULL) {
         return TF_E_NULL;
+    }
+
+    if (performance_stepper->magic != 0x5446 || performance_stepper->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = performance_stepper->tfp->spitfp->hal;

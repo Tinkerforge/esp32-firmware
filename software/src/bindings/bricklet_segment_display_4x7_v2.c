@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -70,20 +70,24 @@ int tf_segment_display_4x7_v2_create(TF_SegmentDisplay4x7V2 *segment_display_4x7
     segment_display_4x7_v2->tfp = tfp;
     segment_display_4x7_v2->tfp->device = segment_display_4x7_v2;
     segment_display_4x7_v2->tfp->cb_handler = tf_segment_display_4x7_v2_callback_handler;
+    segment_display_4x7_v2->magic = 0x5446;
     segment_display_4x7_v2->response_expected[0] = 0x00;
     segment_display_4x7_v2->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_segment_display_4x7_v2_destroy(TF_SegmentDisplay4x7V2 *segment_display_4x7_v2) {
-    if (segment_display_4x7_v2 == NULL || segment_display_4x7_v2->tfp == NULL) {
+    if (segment_display_4x7_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     segment_display_4x7_v2->tfp->cb_handler = NULL;
     segment_display_4x7_v2->tfp->device = NULL;
     segment_display_4x7_v2->tfp = NULL;
+    segment_display_4x7_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -91,6 +95,10 @@ int tf_segment_display_4x7_v2_destroy(TF_SegmentDisplay4x7V2 *segment_display_4x
 int tf_segment_display_4x7_v2_get_response_expected(TF_SegmentDisplay4x7V2 *segment_display_4x7_v2, uint8_t function_id, bool *ret_response_expected) {
     if (segment_display_4x7_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -149,6 +157,10 @@ int tf_segment_display_4x7_v2_get_response_expected(TF_SegmentDisplay4x7V2 *segm
 int tf_segment_display_4x7_v2_set_response_expected(TF_SegmentDisplay4x7V2 *segment_display_4x7_v2, uint8_t function_id, bool response_expected) {
     if (segment_display_4x7_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -227,6 +239,10 @@ int tf_segment_display_4x7_v2_set_response_expected_all(TF_SegmentDisplay4x7V2 *
         return TF_E_NULL;
     }
 
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(segment_display_4x7_v2->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -235,6 +251,10 @@ int tf_segment_display_4x7_v2_set_response_expected_all(TF_SegmentDisplay4x7V2 *
 int tf_segment_display_4x7_v2_set_segments(TF_SegmentDisplay4x7V2 *segment_display_4x7_v2, const bool digit0[8], const bool digit1[8], const bool digit2[8], const bool digit3[8], const bool colon[2], bool tick) {
     if (segment_display_4x7_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = segment_display_4x7_v2->tfp->spitfp->hal;
@@ -287,6 +307,10 @@ int tf_segment_display_4x7_v2_set_segments(TF_SegmentDisplay4x7V2 *segment_displ
 int tf_segment_display_4x7_v2_get_segments(TF_SegmentDisplay4x7V2 *segment_display_4x7_v2, bool ret_digit0[8], bool ret_digit1[8], bool ret_digit2[8], bool ret_digit3[8], bool ret_colon[2], bool *ret_tick) {
     if (segment_display_4x7_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = segment_display_4x7_v2->tfp->spitfp->hal;
@@ -345,6 +369,10 @@ int tf_segment_display_4x7_v2_set_brightness(TF_SegmentDisplay4x7V2 *segment_dis
         return TF_E_NULL;
     }
 
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = segment_display_4x7_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -389,6 +417,10 @@ int tf_segment_display_4x7_v2_set_brightness(TF_SegmentDisplay4x7V2 *segment_dis
 int tf_segment_display_4x7_v2_get_brightness(TF_SegmentDisplay4x7V2 *segment_display_4x7_v2, uint8_t *ret_brightness) {
     if (segment_display_4x7_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = segment_display_4x7_v2->tfp->spitfp->hal;
@@ -442,6 +474,10 @@ int tf_segment_display_4x7_v2_set_numeric_value(TF_SegmentDisplay4x7V2 *segment_
         return TF_E_NULL;
     }
 
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = segment_display_4x7_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -486,6 +522,10 @@ int tf_segment_display_4x7_v2_set_numeric_value(TF_SegmentDisplay4x7V2 *segment_
 int tf_segment_display_4x7_v2_set_selected_segment(TF_SegmentDisplay4x7V2 *segment_display_4x7_v2, uint8_t segment, bool value) {
     if (segment_display_4x7_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = segment_display_4x7_v2->tfp->spitfp->hal;
@@ -533,6 +573,10 @@ int tf_segment_display_4x7_v2_set_selected_segment(TF_SegmentDisplay4x7V2 *segme
 int tf_segment_display_4x7_v2_get_selected_segment(TF_SegmentDisplay4x7V2 *segment_display_4x7_v2, uint8_t segment, bool *ret_value) {
     if (segment_display_4x7_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = segment_display_4x7_v2->tfp->spitfp->hal;
@@ -590,6 +634,10 @@ int tf_segment_display_4x7_v2_start_counter(TF_SegmentDisplay4x7V2 *segment_disp
         return TF_E_NULL;
     }
 
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = segment_display_4x7_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -637,6 +685,10 @@ int tf_segment_display_4x7_v2_start_counter(TF_SegmentDisplay4x7V2 *segment_disp
 int tf_segment_display_4x7_v2_get_counter_value(TF_SegmentDisplay4x7V2 *segment_display_4x7_v2, uint16_t *ret_value) {
     if (segment_display_4x7_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = segment_display_4x7_v2->tfp->spitfp->hal;
@@ -688,6 +740,10 @@ int tf_segment_display_4x7_v2_get_counter_value(TF_SegmentDisplay4x7V2 *segment_
 int tf_segment_display_4x7_v2_get_spitfp_error_count(TF_SegmentDisplay4x7V2 *segment_display_4x7_v2, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (segment_display_4x7_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = segment_display_4x7_v2->tfp->spitfp->hal;
@@ -742,6 +798,10 @@ int tf_segment_display_4x7_v2_get_spitfp_error_count(TF_SegmentDisplay4x7V2 *seg
 int tf_segment_display_4x7_v2_set_bootloader_mode(TF_SegmentDisplay4x7V2 *segment_display_4x7_v2, uint8_t mode, uint8_t *ret_status) {
     if (segment_display_4x7_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = segment_display_4x7_v2->tfp->spitfp->hal;
@@ -799,6 +859,10 @@ int tf_segment_display_4x7_v2_get_bootloader_mode(TF_SegmentDisplay4x7V2 *segmen
         return TF_E_NULL;
     }
 
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = segment_display_4x7_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -850,6 +914,10 @@ int tf_segment_display_4x7_v2_set_write_firmware_pointer(TF_SegmentDisplay4x7V2 
         return TF_E_NULL;
     }
 
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = segment_display_4x7_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -894,6 +962,10 @@ int tf_segment_display_4x7_v2_set_write_firmware_pointer(TF_SegmentDisplay4x7V2 
 int tf_segment_display_4x7_v2_write_firmware(TF_SegmentDisplay4x7V2 *segment_display_4x7_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (segment_display_4x7_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = segment_display_4x7_v2->tfp->spitfp->hal;
@@ -951,6 +1023,10 @@ int tf_segment_display_4x7_v2_set_status_led_config(TF_SegmentDisplay4x7V2 *segm
         return TF_E_NULL;
     }
 
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = segment_display_4x7_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -995,6 +1071,10 @@ int tf_segment_display_4x7_v2_set_status_led_config(TF_SegmentDisplay4x7V2 *segm
 int tf_segment_display_4x7_v2_get_status_led_config(TF_SegmentDisplay4x7V2 *segment_display_4x7_v2, uint8_t *ret_config) {
     if (segment_display_4x7_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = segment_display_4x7_v2->tfp->spitfp->hal;
@@ -1048,6 +1128,10 @@ int tf_segment_display_4x7_v2_get_chip_temperature(TF_SegmentDisplay4x7V2 *segme
         return TF_E_NULL;
     }
 
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = segment_display_4x7_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1099,6 +1183,10 @@ int tf_segment_display_4x7_v2_reset(TF_SegmentDisplay4x7V2 *segment_display_4x7_
         return TF_E_NULL;
     }
 
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = segment_display_4x7_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1139,6 +1227,10 @@ int tf_segment_display_4x7_v2_reset(TF_SegmentDisplay4x7V2 *segment_display_4x7_
 int tf_segment_display_4x7_v2_write_uid(TF_SegmentDisplay4x7V2 *segment_display_4x7_v2, uint32_t uid) {
     if (segment_display_4x7_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = segment_display_4x7_v2->tfp->spitfp->hal;
@@ -1185,6 +1277,10 @@ int tf_segment_display_4x7_v2_write_uid(TF_SegmentDisplay4x7V2 *segment_display_
 int tf_segment_display_4x7_v2_read_uid(TF_SegmentDisplay4x7V2 *segment_display_4x7_v2, uint32_t *ret_uid) {
     if (segment_display_4x7_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = segment_display_4x7_v2->tfp->spitfp->hal;
@@ -1236,6 +1332,10 @@ int tf_segment_display_4x7_v2_read_uid(TF_SegmentDisplay4x7V2 *segment_display_4
 int tf_segment_display_4x7_v2_get_identity(TF_SegmentDisplay4x7V2 *segment_display_4x7_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (segment_display_4x7_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = segment_display_4x7_v2->tfp->spitfp->hal;
@@ -1295,10 +1395,8 @@ int tf_segment_display_4x7_v2_register_counter_finished_callback(TF_SegmentDispl
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        segment_display_4x7_v2->tfp->needs_callback_tick = false;
-    } else {
-        segment_display_4x7_v2->tfp->needs_callback_tick = true;
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     segment_display_4x7_v2->counter_finished_handler = handler;
@@ -1310,6 +1408,10 @@ int tf_segment_display_4x7_v2_register_counter_finished_callback(TF_SegmentDispl
 int tf_segment_display_4x7_v2_callback_tick(TF_SegmentDisplay4x7V2 *segment_display_4x7_v2, uint32_t timeout_us) {
     if (segment_display_4x7_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (segment_display_4x7_v2->magic != 0x5446 || segment_display_4x7_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = segment_display_4x7_v2->tfp->spitfp->hal;

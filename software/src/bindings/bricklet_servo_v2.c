@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -71,20 +71,24 @@ int tf_servo_v2_create(TF_ServoV2 *servo_v2, const char *uid_or_port_name, TF_HA
     servo_v2->tfp = tfp;
     servo_v2->tfp->device = servo_v2;
     servo_v2->tfp->cb_handler = tf_servo_v2_callback_handler;
+    servo_v2->magic = 0x5446;
     servo_v2->response_expected[0] = 0x00;
     servo_v2->response_expected[1] = 0x02;
-
     return TF_E_OK;
 }
 
 int tf_servo_v2_destroy(TF_ServoV2 *servo_v2) {
-    if (servo_v2 == NULL || servo_v2->tfp == NULL) {
+    if (servo_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     servo_v2->tfp->cb_handler = NULL;
     servo_v2->tfp->device = NULL;
     servo_v2->tfp = NULL;
+    servo_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -92,6 +96,10 @@ int tf_servo_v2_destroy(TF_ServoV2 *servo_v2) {
 int tf_servo_v2_get_response_expected(TF_ServoV2 *servo_v2, uint8_t function_id, bool *ret_response_expected) {
     if (servo_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -175,6 +183,10 @@ int tf_servo_v2_get_response_expected(TF_ServoV2 *servo_v2, uint8_t function_id,
 int tf_servo_v2_set_response_expected(TF_ServoV2 *servo_v2, uint8_t function_id, bool response_expected) {
     if (servo_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -288,6 +300,10 @@ int tf_servo_v2_set_response_expected_all(TF_ServoV2 *servo_v2, bool response_ex
         return TF_E_NULL;
     }
 
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(servo_v2->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -296,6 +312,10 @@ int tf_servo_v2_set_response_expected_all(TF_ServoV2 *servo_v2, bool response_ex
 int tf_servo_v2_get_status(TF_ServoV2 *servo_v2, bool ret_enabled[10], int16_t ret_current_position[10], int16_t ret_current_velocity[10], uint16_t ret_current[10], uint16_t *ret_input_voltage) {
     if (servo_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
@@ -354,6 +374,10 @@ int tf_servo_v2_set_enable(TF_ServoV2 *servo_v2, uint16_t servo_channel, bool en
         return TF_E_NULL;
     }
 
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -399,6 +423,10 @@ int tf_servo_v2_set_enable(TF_ServoV2 *servo_v2, uint16_t servo_channel, bool en
 int tf_servo_v2_get_enabled(TF_ServoV2 *servo_v2, uint16_t servo_channel, bool *ret_enable) {
     if (servo_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
@@ -456,6 +484,10 @@ int tf_servo_v2_set_position(TF_ServoV2 *servo_v2, uint16_t servo_channel, int16
         return TF_E_NULL;
     }
 
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -501,6 +533,10 @@ int tf_servo_v2_set_position(TF_ServoV2 *servo_v2, uint16_t servo_channel, int16
 int tf_servo_v2_get_position(TF_ServoV2 *servo_v2, uint16_t servo_channel, int16_t *ret_position) {
     if (servo_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
@@ -558,6 +594,10 @@ int tf_servo_v2_get_current_position(TF_ServoV2 *servo_v2, uint16_t servo_channe
         return TF_E_NULL;
     }
 
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -611,6 +651,10 @@ int tf_servo_v2_get_current_position(TF_ServoV2 *servo_v2, uint16_t servo_channe
 int tf_servo_v2_get_current_velocity(TF_ServoV2 *servo_v2, uint16_t servo_channel, uint16_t *ret_velocity) {
     if (servo_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
@@ -668,6 +712,10 @@ int tf_servo_v2_set_motion_configuration(TF_ServoV2 *servo_v2, uint16_t servo_ch
         return TF_E_NULL;
     }
 
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -715,6 +763,10 @@ int tf_servo_v2_set_motion_configuration(TF_ServoV2 *servo_v2, uint16_t servo_ch
 int tf_servo_v2_get_motion_configuration(TF_ServoV2 *servo_v2, uint16_t servo_channel, uint32_t *ret_velocity, uint32_t *ret_acceleration, uint32_t *ret_deceleration) {
     if (servo_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
@@ -774,6 +826,10 @@ int tf_servo_v2_set_pulse_width(TF_ServoV2 *servo_v2, uint16_t servo_channel, ui
         return TF_E_NULL;
     }
 
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -820,6 +876,10 @@ int tf_servo_v2_set_pulse_width(TF_ServoV2 *servo_v2, uint16_t servo_channel, ui
 int tf_servo_v2_get_pulse_width(TF_ServoV2 *servo_v2, uint16_t servo_channel, uint32_t *ret_min, uint32_t *ret_max) {
     if (servo_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
@@ -878,6 +938,10 @@ int tf_servo_v2_set_degree(TF_ServoV2 *servo_v2, uint16_t servo_channel, int16_t
         return TF_E_NULL;
     }
 
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -924,6 +988,10 @@ int tf_servo_v2_set_degree(TF_ServoV2 *servo_v2, uint16_t servo_channel, int16_t
 int tf_servo_v2_get_degree(TF_ServoV2 *servo_v2, uint16_t servo_channel, int16_t *ret_min, int16_t *ret_max) {
     if (servo_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
@@ -982,6 +1050,10 @@ int tf_servo_v2_set_period(TF_ServoV2 *servo_v2, uint16_t servo_channel, uint32_
         return TF_E_NULL;
     }
 
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1027,6 +1099,10 @@ int tf_servo_v2_set_period(TF_ServoV2 *servo_v2, uint16_t servo_channel, uint32_
 int tf_servo_v2_get_period(TF_ServoV2 *servo_v2, uint16_t servo_channel, uint32_t *ret_period) {
     if (servo_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
@@ -1084,6 +1160,10 @@ int tf_servo_v2_get_servo_current(TF_ServoV2 *servo_v2, uint16_t servo_channel, 
         return TF_E_NULL;
     }
 
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1139,6 +1219,10 @@ int tf_servo_v2_set_servo_current_configuration(TF_ServoV2 *servo_v2, uint16_t s
         return TF_E_NULL;
     }
 
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1184,6 +1268,10 @@ int tf_servo_v2_set_servo_current_configuration(TF_ServoV2 *servo_v2, uint16_t s
 int tf_servo_v2_get_servo_current_configuration(TF_ServoV2 *servo_v2, uint16_t servo_channel, uint8_t *ret_averaging_duration) {
     if (servo_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
@@ -1241,6 +1329,10 @@ int tf_servo_v2_set_input_voltage_configuration(TF_ServoV2 *servo_v2, uint8_t av
         return TF_E_NULL;
     }
 
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1285,6 +1377,10 @@ int tf_servo_v2_set_input_voltage_configuration(TF_ServoV2 *servo_v2, uint8_t av
 int tf_servo_v2_get_input_voltage_configuration(TF_ServoV2 *servo_v2, uint8_t *ret_averaging_duration) {
     if (servo_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
@@ -1338,6 +1434,10 @@ int tf_servo_v2_get_overall_current(TF_ServoV2 *servo_v2, uint16_t *ret_current)
         return TF_E_NULL;
     }
 
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1387,6 +1487,10 @@ int tf_servo_v2_get_overall_current(TF_ServoV2 *servo_v2, uint16_t *ret_current)
 int tf_servo_v2_get_input_voltage(TF_ServoV2 *servo_v2, uint16_t *ret_voltage) {
     if (servo_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
@@ -1440,6 +1544,10 @@ int tf_servo_v2_set_current_calibration(TF_ServoV2 *servo_v2, const int16_t offs
         return TF_E_NULL;
     }
 
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1485,6 +1593,10 @@ int tf_servo_v2_set_current_calibration(TF_ServoV2 *servo_v2, const int16_t offs
 int tf_servo_v2_get_current_calibration(TF_ServoV2 *servo_v2, int16_t ret_offset[10]) {
     if (servo_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
@@ -1539,6 +1651,10 @@ int tf_servo_v2_set_position_reached_callback_configuration(TF_ServoV2 *servo_v2
         return TF_E_NULL;
     }
 
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1584,6 +1700,10 @@ int tf_servo_v2_set_position_reached_callback_configuration(TF_ServoV2 *servo_v2
 int tf_servo_v2_get_position_reached_callback_configuration(TF_ServoV2 *servo_v2, uint16_t servo_channel, bool *ret_enabled) {
     if (servo_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
@@ -1641,6 +1761,10 @@ int tf_servo_v2_get_spitfp_error_count(TF_ServoV2 *servo_v2, uint32_t *ret_error
         return TF_E_NULL;
     }
 
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1693,6 +1817,10 @@ int tf_servo_v2_get_spitfp_error_count(TF_ServoV2 *servo_v2, uint32_t *ret_error
 int tf_servo_v2_set_bootloader_mode(TF_ServoV2 *servo_v2, uint8_t mode, uint8_t *ret_status) {
     if (servo_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
@@ -1750,6 +1878,10 @@ int tf_servo_v2_get_bootloader_mode(TF_ServoV2 *servo_v2, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1801,6 +1933,10 @@ int tf_servo_v2_set_write_firmware_pointer(TF_ServoV2 *servo_v2, uint32_t pointe
         return TF_E_NULL;
     }
 
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1845,6 +1981,10 @@ int tf_servo_v2_set_write_firmware_pointer(TF_ServoV2 *servo_v2, uint32_t pointe
 int tf_servo_v2_write_firmware(TF_ServoV2 *servo_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (servo_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
@@ -1902,6 +2042,10 @@ int tf_servo_v2_set_status_led_config(TF_ServoV2 *servo_v2, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1946,6 +2090,10 @@ int tf_servo_v2_set_status_led_config(TF_ServoV2 *servo_v2, uint8_t config) {
 int tf_servo_v2_get_status_led_config(TF_ServoV2 *servo_v2, uint8_t *ret_config) {
     if (servo_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
@@ -1999,6 +2147,10 @@ int tf_servo_v2_get_chip_temperature(TF_ServoV2 *servo_v2, int16_t *ret_temperat
         return TF_E_NULL;
     }
 
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2050,6 +2202,10 @@ int tf_servo_v2_reset(TF_ServoV2 *servo_v2) {
         return TF_E_NULL;
     }
 
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2090,6 +2246,10 @@ int tf_servo_v2_reset(TF_ServoV2 *servo_v2) {
 int tf_servo_v2_write_uid(TF_ServoV2 *servo_v2, uint32_t uid) {
     if (servo_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
@@ -2136,6 +2296,10 @@ int tf_servo_v2_write_uid(TF_ServoV2 *servo_v2, uint32_t uid) {
 int tf_servo_v2_read_uid(TF_ServoV2 *servo_v2, uint32_t *ret_uid) {
     if (servo_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
@@ -2187,6 +2351,10 @@ int tf_servo_v2_read_uid(TF_ServoV2 *servo_v2, uint32_t *ret_uid) {
 int tf_servo_v2_get_identity(TF_ServoV2 *servo_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (servo_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = servo_v2->tfp->spitfp->hal;
@@ -2246,10 +2414,8 @@ int tf_servo_v2_register_position_reached_callback(TF_ServoV2 *servo_v2, TF_Serv
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        servo_v2->tfp->needs_callback_tick = false;
-    } else {
-        servo_v2->tfp->needs_callback_tick = true;
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     servo_v2->position_reached_handler = handler;
@@ -2261,6 +2427,10 @@ int tf_servo_v2_register_position_reached_callback(TF_ServoV2 *servo_v2, TF_Serv
 int tf_servo_v2_callback_tick(TF_ServoV2 *servo_v2, uint32_t timeout_us) {
     if (servo_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (servo_v2->magic != 0x5446 || servo_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = servo_v2->tfp->spitfp->hal;

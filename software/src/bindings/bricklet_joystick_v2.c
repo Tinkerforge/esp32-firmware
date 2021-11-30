@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -85,19 +85,23 @@ int tf_joystick_v2_create(TF_JoystickV2 *joystick_v2, const char *uid_or_port_na
     joystick_v2->tfp = tfp;
     joystick_v2->tfp->device = joystick_v2;
     joystick_v2->tfp->cb_handler = tf_joystick_v2_callback_handler;
+    joystick_v2->magic = 0x5446;
     joystick_v2->response_expected[0] = 0x06;
-
     return TF_E_OK;
 }
 
 int tf_joystick_v2_destroy(TF_JoystickV2 *joystick_v2) {
-    if (joystick_v2 == NULL || joystick_v2->tfp == NULL) {
+    if (joystick_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     joystick_v2->tfp->cb_handler = NULL;
     joystick_v2->tfp->device = NULL;
     joystick_v2->tfp = NULL;
+    joystick_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -105,6 +109,10 @@ int tf_joystick_v2_destroy(TF_JoystickV2 *joystick_v2) {
 int tf_joystick_v2_get_response_expected(TF_JoystickV2 *joystick_v2, uint8_t function_id, bool *ret_response_expected) {
     if (joystick_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -153,6 +161,10 @@ int tf_joystick_v2_get_response_expected(TF_JoystickV2 *joystick_v2, uint8_t fun
 int tf_joystick_v2_set_response_expected(TF_JoystickV2 *joystick_v2, uint8_t function_id, bool response_expected) {
     if (joystick_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -217,6 +229,10 @@ int tf_joystick_v2_set_response_expected_all(TF_JoystickV2 *joystick_v2, bool re
         return TF_E_NULL;
     }
 
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(joystick_v2->response_expected, response_expected ? 0xFF : 0, 1);
 
     return TF_E_OK;
@@ -225,6 +241,10 @@ int tf_joystick_v2_set_response_expected_all(TF_JoystickV2 *joystick_v2, bool re
 int tf_joystick_v2_get_position(TF_JoystickV2 *joystick_v2, int16_t *ret_x, int16_t *ret_y) {
     if (joystick_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = joystick_v2->tfp->spitfp->hal;
@@ -279,6 +299,10 @@ int tf_joystick_v2_is_pressed(TF_JoystickV2 *joystick_v2, bool *ret_pressed) {
         return TF_E_NULL;
     }
 
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = joystick_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -330,6 +354,10 @@ int tf_joystick_v2_calibrate(TF_JoystickV2 *joystick_v2) {
         return TF_E_NULL;
     }
 
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = joystick_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -370,6 +398,10 @@ int tf_joystick_v2_calibrate(TF_JoystickV2 *joystick_v2) {
 int tf_joystick_v2_set_position_callback_configuration(TF_JoystickV2 *joystick_v2, uint32_t period, bool value_has_to_change) {
     if (joystick_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = joystick_v2->tfp->spitfp->hal;
@@ -417,6 +449,10 @@ int tf_joystick_v2_set_position_callback_configuration(TF_JoystickV2 *joystick_v
 int tf_joystick_v2_get_position_callback_configuration(TF_JoystickV2 *joystick_v2, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (joystick_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = joystick_v2->tfp->spitfp->hal;
@@ -471,6 +507,10 @@ int tf_joystick_v2_set_pressed_callback_configuration(TF_JoystickV2 *joystick_v2
         return TF_E_NULL;
     }
 
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = joystick_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -516,6 +556,10 @@ int tf_joystick_v2_set_pressed_callback_configuration(TF_JoystickV2 *joystick_v2
 int tf_joystick_v2_get_pressed_callback_configuration(TF_JoystickV2 *joystick_v2, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (joystick_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = joystick_v2->tfp->spitfp->hal;
@@ -570,6 +614,10 @@ int tf_joystick_v2_get_spitfp_error_count(TF_JoystickV2 *joystick_v2, uint32_t *
         return TF_E_NULL;
     }
 
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = joystick_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -622,6 +670,10 @@ int tf_joystick_v2_get_spitfp_error_count(TF_JoystickV2 *joystick_v2, uint32_t *
 int tf_joystick_v2_set_bootloader_mode(TF_JoystickV2 *joystick_v2, uint8_t mode, uint8_t *ret_status) {
     if (joystick_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = joystick_v2->tfp->spitfp->hal;
@@ -679,6 +731,10 @@ int tf_joystick_v2_get_bootloader_mode(TF_JoystickV2 *joystick_v2, uint8_t *ret_
         return TF_E_NULL;
     }
 
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = joystick_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -730,6 +786,10 @@ int tf_joystick_v2_set_write_firmware_pointer(TF_JoystickV2 *joystick_v2, uint32
         return TF_E_NULL;
     }
 
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = joystick_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -774,6 +834,10 @@ int tf_joystick_v2_set_write_firmware_pointer(TF_JoystickV2 *joystick_v2, uint32
 int tf_joystick_v2_write_firmware(TF_JoystickV2 *joystick_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (joystick_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = joystick_v2->tfp->spitfp->hal;
@@ -831,6 +895,10 @@ int tf_joystick_v2_set_status_led_config(TF_JoystickV2 *joystick_v2, uint8_t con
         return TF_E_NULL;
     }
 
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = joystick_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -875,6 +943,10 @@ int tf_joystick_v2_set_status_led_config(TF_JoystickV2 *joystick_v2, uint8_t con
 int tf_joystick_v2_get_status_led_config(TF_JoystickV2 *joystick_v2, uint8_t *ret_config) {
     if (joystick_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = joystick_v2->tfp->spitfp->hal;
@@ -928,6 +1000,10 @@ int tf_joystick_v2_get_chip_temperature(TF_JoystickV2 *joystick_v2, int16_t *ret
         return TF_E_NULL;
     }
 
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = joystick_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -979,6 +1055,10 @@ int tf_joystick_v2_reset(TF_JoystickV2 *joystick_v2) {
         return TF_E_NULL;
     }
 
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = joystick_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1019,6 +1099,10 @@ int tf_joystick_v2_reset(TF_JoystickV2 *joystick_v2) {
 int tf_joystick_v2_write_uid(TF_JoystickV2 *joystick_v2, uint32_t uid) {
     if (joystick_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = joystick_v2->tfp->spitfp->hal;
@@ -1065,6 +1149,10 @@ int tf_joystick_v2_write_uid(TF_JoystickV2 *joystick_v2, uint32_t uid) {
 int tf_joystick_v2_read_uid(TF_JoystickV2 *joystick_v2, uint32_t *ret_uid) {
     if (joystick_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = joystick_v2->tfp->spitfp->hal;
@@ -1116,6 +1204,10 @@ int tf_joystick_v2_read_uid(TF_JoystickV2 *joystick_v2, uint32_t *ret_uid) {
 int tf_joystick_v2_get_identity(TF_JoystickV2 *joystick_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (joystick_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = joystick_v2->tfp->spitfp->hal;
@@ -1175,11 +1267,8 @@ int tf_joystick_v2_register_position_callback(TF_JoystickV2 *joystick_v2, TF_Joy
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        joystick_v2->tfp->needs_callback_tick = false;
-        joystick_v2->tfp->needs_callback_tick |= joystick_v2->pressed_handler != NULL;
-    } else {
-        joystick_v2->tfp->needs_callback_tick = true;
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     joystick_v2->position_handler = handler;
@@ -1194,11 +1283,8 @@ int tf_joystick_v2_register_pressed_callback(TF_JoystickV2 *joystick_v2, TF_Joys
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        joystick_v2->tfp->needs_callback_tick = false;
-        joystick_v2->tfp->needs_callback_tick |= joystick_v2->position_handler != NULL;
-    } else {
-        joystick_v2->tfp->needs_callback_tick = true;
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     joystick_v2->pressed_handler = handler;
@@ -1210,6 +1296,10 @@ int tf_joystick_v2_register_pressed_callback(TF_JoystickV2 *joystick_v2, TF_Joys
 int tf_joystick_v2_callback_tick(TF_JoystickV2 *joystick_v2, uint32_t timeout_us) {
     if (joystick_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (joystick_v2->magic != 0x5446 || joystick_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = joystick_v2->tfp->spitfp->hal;

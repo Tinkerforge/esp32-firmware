@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -45,20 +45,24 @@ int tf_evse_create(TF_EVSE *evse, const char *uid_or_port_name, TF_HAL *hal) {
     evse->tfp = tfp;
     evse->tfp->device = evse;
     evse->tfp->cb_handler = tf_evse_callback_handler;
+    evse->magic = 0x5446;
     evse->response_expected[0] = 0x50;
     evse->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_evse_destroy(TF_EVSE *evse) {
-    if (evse == NULL || evse->tfp == NULL) {
+    if (evse == NULL) {
         return TF_E_NULL;
+    }
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     evse->tfp->cb_handler = NULL;
     evse->tfp->device = NULL;
     evse->tfp = NULL;
+    evse->magic = 0;
 
     return TF_E_OK;
 }
@@ -66,6 +70,10 @@ int tf_evse_destroy(TF_EVSE *evse) {
 int tf_evse_get_response_expected(TF_EVSE *evse, uint8_t function_id, bool *ret_response_expected) {
     if (evse == NULL) {
         return TF_E_NULL;
+    }
+
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -139,6 +147,10 @@ int tf_evse_get_response_expected(TF_EVSE *evse, uint8_t function_id, bool *ret_
 int tf_evse_set_response_expected(TF_EVSE *evse, uint8_t function_id, bool response_expected) {
     if (evse == NULL) {
         return TF_E_NULL;
+    }
+
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -238,6 +250,10 @@ int tf_evse_set_response_expected_all(TF_EVSE *evse, bool response_expected) {
         return TF_E_NULL;
     }
 
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(evse->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -246,6 +262,10 @@ int tf_evse_set_response_expected_all(TF_EVSE *evse, bool response_expected) {
 int tf_evse_get_state(TF_EVSE *evse, uint8_t *ret_iec61851_state, uint8_t *ret_vehicle_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint8_t *ret_charge_release, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state, uint32_t *ret_time_since_state_change, uint32_t *ret_uptime) {
     if (evse == NULL) {
         return TF_E_NULL;
+    }
+
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = evse->tfp->spitfp->hal;
@@ -308,6 +328,10 @@ int tf_evse_get_hardware_configuration(TF_EVSE *evse, uint8_t *ret_jumper_config
         return TF_E_NULL;
     }
 
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = evse->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -358,6 +382,10 @@ int tf_evse_get_hardware_configuration(TF_EVSE *evse, uint8_t *ret_jumper_config
 int tf_evse_get_low_level_state(TF_EVSE *evse, bool *ret_low_level_mode_enabled, uint8_t *ret_led_state, uint16_t *ret_cp_pwm_duty_cycle, uint16_t ret_adc_values[2], int16_t ret_voltages[3], uint32_t ret_resistances[2], bool ret_gpio[5], uint8_t *ret_hardware_version, uint32_t *ret_charging_time) {
     if (evse == NULL) {
         return TF_E_NULL;
+    }
+
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = evse->tfp->spitfp->hal;
@@ -420,6 +448,10 @@ int tf_evse_set_max_charging_current(TF_EVSE *evse, uint16_t max_current) {
         return TF_E_NULL;
     }
 
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = evse->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -464,6 +496,10 @@ int tf_evse_set_max_charging_current(TF_EVSE *evse, uint16_t max_current) {
 int tf_evse_get_max_charging_current(TF_EVSE *evse, uint16_t *ret_max_current_configured, uint16_t *ret_max_current_incoming_cable, uint16_t *ret_max_current_outgoing_cable, uint16_t *ret_max_current_managed) {
     if (evse == NULL) {
         return TF_E_NULL;
+    }
+
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = evse->tfp->spitfp->hal;
@@ -518,6 +554,10 @@ int tf_evse_get_max_charging_current(TF_EVSE *evse, uint16_t *ret_max_current_co
 int tf_evse_calibrate(TF_EVSE *evse, uint8_t state, uint32_t password, int32_t value, bool *ret_success) {
     if (evse == NULL) {
         return TF_E_NULL;
+    }
+
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = evse->tfp->spitfp->hal;
@@ -577,6 +617,10 @@ int tf_evse_start_charging(TF_EVSE *evse) {
         return TF_E_NULL;
     }
 
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = evse->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -619,6 +663,10 @@ int tf_evse_stop_charging(TF_EVSE *evse) {
         return TF_E_NULL;
     }
 
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = evse->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -659,6 +707,10 @@ int tf_evse_stop_charging(TF_EVSE *evse) {
 int tf_evse_set_charging_autostart(TF_EVSE *evse, bool autostart) {
     if (evse == NULL) {
         return TF_E_NULL;
+    }
+
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = evse->tfp->spitfp->hal;
@@ -705,6 +757,10 @@ int tf_evse_set_charging_autostart(TF_EVSE *evse, bool autostart) {
 int tf_evse_get_charging_autostart(TF_EVSE *evse, bool *ret_autostart) {
     if (evse == NULL) {
         return TF_E_NULL;
+    }
+
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = evse->tfp->spitfp->hal;
@@ -758,6 +814,10 @@ int tf_evse_get_managed(TF_EVSE *evse, bool *ret_managed) {
         return TF_E_NULL;
     }
 
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = evse->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -809,6 +869,10 @@ int tf_evse_set_managed(TF_EVSE *evse, bool managed, uint32_t password) {
         return TF_E_NULL;
     }
 
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = evse->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -856,6 +920,10 @@ int tf_evse_set_managed_current(TF_EVSE *evse, uint16_t current) {
         return TF_E_NULL;
     }
 
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = evse->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -900,6 +968,10 @@ int tf_evse_set_managed_current(TF_EVSE *evse, uint16_t current) {
 int tf_evse_get_user_calibration(TF_EVSE *evse, bool *ret_user_calibration_active, int16_t *ret_voltage_diff, int16_t *ret_voltage_mul, int16_t *ret_voltage_div, int16_t *ret_resistance_2700, int16_t ret_resistance_880[14]) {
     if (evse == NULL) {
         return TF_E_NULL;
+    }
+
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = evse->tfp->spitfp->hal;
@@ -959,6 +1031,10 @@ int tf_evse_set_user_calibration(TF_EVSE *evse, uint32_t password, bool user_cal
         return TF_E_NULL;
     }
 
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = evse->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1010,6 +1086,10 @@ int tf_evse_set_user_calibration(TF_EVSE *evse, uint32_t password, bool user_cal
 int tf_evse_get_data_storage(TF_EVSE *evse, uint8_t page, uint8_t ret_data[63]) {
     if (evse == NULL) {
         return TF_E_NULL;
+    }
+
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = evse->tfp->spitfp->hal;
@@ -1068,6 +1148,10 @@ int tf_evse_set_data_storage(TF_EVSE *evse, uint8_t page, const uint8_t data[63]
         return TF_E_NULL;
     }
 
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = evse->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1113,6 +1197,10 @@ int tf_evse_set_data_storage(TF_EVSE *evse, uint8_t page, const uint8_t data[63]
 int tf_evse_get_indicator_led(TF_EVSE *evse, int16_t *ret_indication, uint16_t *ret_duration) {
     if (evse == NULL) {
         return TF_E_NULL;
+    }
+
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = evse->tfp->spitfp->hal;
@@ -1165,6 +1253,10 @@ int tf_evse_get_indicator_led(TF_EVSE *evse, int16_t *ret_indication, uint16_t *
 int tf_evse_set_indicator_led(TF_EVSE *evse, int16_t indication, uint16_t duration, uint8_t *ret_status) {
     if (evse == NULL) {
         return TF_E_NULL;
+    }
+
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = evse->tfp->spitfp->hal;
@@ -1223,6 +1315,10 @@ int tf_evse_get_button_state(TF_EVSE *evse, uint32_t *ret_button_press_time, uin
         return TF_E_NULL;
     }
 
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = evse->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1274,6 +1370,10 @@ int tf_evse_get_button_state(TF_EVSE *evse, uint32_t *ret_button_press_time, uin
 int tf_evse_get_all_data_1(TF_EVSE *evse, uint8_t *ret_iec61851_state, uint8_t *ret_vehicle_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint8_t *ret_charge_release, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state, uint32_t *ret_time_since_state_change, uint32_t *ret_uptime, uint8_t *ret_jumper_configuration, bool *ret_has_lock_switch, bool *ret_low_level_mode_enabled, uint8_t *ret_led_state, uint16_t *ret_cp_pwm_duty_cycle, uint16_t ret_adc_values[2], int16_t ret_voltages[3], uint32_t ret_resistances[2], bool ret_gpio[5], uint8_t *ret_hardware_version, uint32_t *ret_charging_time, uint16_t *ret_max_current_configured, uint16_t *ret_max_current_incoming_cable, uint16_t *ret_max_current_outgoing_cable, uint16_t *ret_max_current_managed, bool *ret_autostart, bool *ret_managed) {
     if (evse == NULL) {
         return TF_E_NULL;
+    }
+
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = evse->tfp->spitfp->hal;
@@ -1354,6 +1454,10 @@ int tf_evse_get_all_data_2(TF_EVSE *evse, bool *ret_user_calibration_active, int
         return TF_E_NULL;
     }
 
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = evse->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1416,6 +1520,10 @@ int tf_evse_get_spitfp_error_count(TF_EVSE *evse, uint32_t *ret_error_count_ack_
         return TF_E_NULL;
     }
 
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = evse->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1468,6 +1576,10 @@ int tf_evse_get_spitfp_error_count(TF_EVSE *evse, uint32_t *ret_error_count_ack_
 int tf_evse_set_bootloader_mode(TF_EVSE *evse, uint8_t mode, uint8_t *ret_status) {
     if (evse == NULL) {
         return TF_E_NULL;
+    }
+
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = evse->tfp->spitfp->hal;
@@ -1525,6 +1637,10 @@ int tf_evse_get_bootloader_mode(TF_EVSE *evse, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = evse->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1576,6 +1692,10 @@ int tf_evse_set_write_firmware_pointer(TF_EVSE *evse, uint32_t pointer) {
         return TF_E_NULL;
     }
 
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = evse->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1620,6 +1740,10 @@ int tf_evse_set_write_firmware_pointer(TF_EVSE *evse, uint32_t pointer) {
 int tf_evse_write_firmware(TF_EVSE *evse, const uint8_t data[64], uint8_t *ret_status) {
     if (evse == NULL) {
         return TF_E_NULL;
+    }
+
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = evse->tfp->spitfp->hal;
@@ -1677,6 +1801,10 @@ int tf_evse_set_status_led_config(TF_EVSE *evse, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = evse->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1721,6 +1849,10 @@ int tf_evse_set_status_led_config(TF_EVSE *evse, uint8_t config) {
 int tf_evse_get_status_led_config(TF_EVSE *evse, uint8_t *ret_config) {
     if (evse == NULL) {
         return TF_E_NULL;
+    }
+
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = evse->tfp->spitfp->hal;
@@ -1774,6 +1906,10 @@ int tf_evse_get_chip_temperature(TF_EVSE *evse, int16_t *ret_temperature) {
         return TF_E_NULL;
     }
 
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = evse->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1825,6 +1961,10 @@ int tf_evse_reset(TF_EVSE *evse) {
         return TF_E_NULL;
     }
 
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = evse->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1865,6 +2005,10 @@ int tf_evse_reset(TF_EVSE *evse) {
 int tf_evse_write_uid(TF_EVSE *evse, uint32_t uid) {
     if (evse == NULL) {
         return TF_E_NULL;
+    }
+
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = evse->tfp->spitfp->hal;
@@ -1911,6 +2055,10 @@ int tf_evse_write_uid(TF_EVSE *evse, uint32_t uid) {
 int tf_evse_read_uid(TF_EVSE *evse, uint32_t *ret_uid) {
     if (evse == NULL) {
         return TF_E_NULL;
+    }
+
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = evse->tfp->spitfp->hal;
@@ -1962,6 +2110,10 @@ int tf_evse_read_uid(TF_EVSE *evse, uint32_t *ret_uid) {
 int tf_evse_get_identity(TF_EVSE *evse, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (evse == NULL) {
         return TF_E_NULL;
+    }
+
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = evse->tfp->spitfp->hal;
@@ -2020,6 +2172,10 @@ int tf_evse_get_identity(TF_EVSE *evse, char ret_uid[8], char ret_connected_uid[
 int tf_evse_callback_tick(TF_EVSE *evse, uint32_t timeout_us) {
     if (evse == NULL) {
         return TF_E_NULL;
+    }
+
+    if (evse->magic != 0x5446 || evse->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = evse->tfp->spitfp->hal;

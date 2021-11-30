@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -87,19 +87,23 @@ int tf_industrial_digital_in_4_v2_create(TF_IndustrialDigitalIn4V2 *industrial_d
     industrial_digital_in_4_v2->tfp = tfp;
     industrial_digital_in_4_v2->tfp->device = industrial_digital_in_4_v2;
     industrial_digital_in_4_v2->tfp->cb_handler = tf_industrial_digital_in_4_v2_callback_handler;
+    industrial_digital_in_4_v2->magic = 0x5446;
     industrial_digital_in_4_v2->response_expected[0] = 0x03;
-
     return TF_E_OK;
 }
 
 int tf_industrial_digital_in_4_v2_destroy(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2) {
-    if (industrial_digital_in_4_v2 == NULL || industrial_digital_in_4_v2->tfp == NULL) {
+    if (industrial_digital_in_4_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     industrial_digital_in_4_v2->tfp->cb_handler = NULL;
     industrial_digital_in_4_v2->tfp->device = NULL;
     industrial_digital_in_4_v2->tfp = NULL;
+    industrial_digital_in_4_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -107,6 +111,10 @@ int tf_industrial_digital_in_4_v2_destroy(TF_IndustrialDigitalIn4V2 *industrial_
 int tf_industrial_digital_in_4_v2_get_response_expected(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, uint8_t function_id, bool *ret_response_expected) {
     if (industrial_digital_in_4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -160,6 +168,10 @@ int tf_industrial_digital_in_4_v2_get_response_expected(TF_IndustrialDigitalIn4V
 int tf_industrial_digital_in_4_v2_set_response_expected(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, uint8_t function_id, bool response_expected) {
     if (industrial_digital_in_4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -231,6 +243,10 @@ int tf_industrial_digital_in_4_v2_set_response_expected_all(TF_IndustrialDigital
         return TF_E_NULL;
     }
 
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(industrial_digital_in_4_v2->response_expected, response_expected ? 0xFF : 0, 1);
 
     return TF_E_OK;
@@ -239,6 +255,10 @@ int tf_industrial_digital_in_4_v2_set_response_expected_all(TF_IndustrialDigital
 int tf_industrial_digital_in_4_v2_get_value(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, bool ret_value[4]) {
     if (industrial_digital_in_4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_digital_in_4_v2->tfp->spitfp->hal;
@@ -292,6 +312,10 @@ int tf_industrial_digital_in_4_v2_set_value_callback_configuration(TF_Industrial
         return TF_E_NULL;
     }
 
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_digital_in_4_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -338,6 +362,10 @@ int tf_industrial_digital_in_4_v2_set_value_callback_configuration(TF_Industrial
 int tf_industrial_digital_in_4_v2_get_value_callback_configuration(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, uint8_t channel, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (industrial_digital_in_4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_digital_in_4_v2->tfp->spitfp->hal;
@@ -396,6 +424,10 @@ int tf_industrial_digital_in_4_v2_set_all_value_callback_configuration(TF_Indust
         return TF_E_NULL;
     }
 
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_digital_in_4_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -441,6 +473,10 @@ int tf_industrial_digital_in_4_v2_set_all_value_callback_configuration(TF_Indust
 int tf_industrial_digital_in_4_v2_get_all_value_callback_configuration(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (industrial_digital_in_4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_digital_in_4_v2->tfp->spitfp->hal;
@@ -493,6 +529,10 @@ int tf_industrial_digital_in_4_v2_get_all_value_callback_configuration(TF_Indust
 int tf_industrial_digital_in_4_v2_get_edge_count(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, uint8_t channel, bool reset_counter, uint32_t *ret_count) {
     if (industrial_digital_in_4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_digital_in_4_v2->tfp->spitfp->hal;
@@ -551,6 +591,10 @@ int tf_industrial_digital_in_4_v2_set_edge_count_configuration(TF_IndustrialDigi
         return TF_E_NULL;
     }
 
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_digital_in_4_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -597,6 +641,10 @@ int tf_industrial_digital_in_4_v2_set_edge_count_configuration(TF_IndustrialDigi
 int tf_industrial_digital_in_4_v2_get_edge_count_configuration(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, uint8_t channel, uint8_t *ret_edge_type, uint8_t *ret_debounce) {
     if (industrial_digital_in_4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_digital_in_4_v2->tfp->spitfp->hal;
@@ -655,6 +703,10 @@ int tf_industrial_digital_in_4_v2_set_channel_led_config(TF_IndustrialDigitalIn4
         return TF_E_NULL;
     }
 
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_digital_in_4_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -700,6 +752,10 @@ int tf_industrial_digital_in_4_v2_set_channel_led_config(TF_IndustrialDigitalIn4
 int tf_industrial_digital_in_4_v2_get_channel_led_config(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, uint8_t channel, uint8_t *ret_config) {
     if (industrial_digital_in_4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_digital_in_4_v2->tfp->spitfp->hal;
@@ -757,6 +813,10 @@ int tf_industrial_digital_in_4_v2_get_spitfp_error_count(TF_IndustrialDigitalIn4
         return TF_E_NULL;
     }
 
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_digital_in_4_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -809,6 +869,10 @@ int tf_industrial_digital_in_4_v2_get_spitfp_error_count(TF_IndustrialDigitalIn4
 int tf_industrial_digital_in_4_v2_set_bootloader_mode(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, uint8_t mode, uint8_t *ret_status) {
     if (industrial_digital_in_4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_digital_in_4_v2->tfp->spitfp->hal;
@@ -866,6 +930,10 @@ int tf_industrial_digital_in_4_v2_get_bootloader_mode(TF_IndustrialDigitalIn4V2 
         return TF_E_NULL;
     }
 
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_digital_in_4_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -917,6 +985,10 @@ int tf_industrial_digital_in_4_v2_set_write_firmware_pointer(TF_IndustrialDigita
         return TF_E_NULL;
     }
 
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_digital_in_4_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -961,6 +1033,10 @@ int tf_industrial_digital_in_4_v2_set_write_firmware_pointer(TF_IndustrialDigita
 int tf_industrial_digital_in_4_v2_write_firmware(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (industrial_digital_in_4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_digital_in_4_v2->tfp->spitfp->hal;
@@ -1018,6 +1094,10 @@ int tf_industrial_digital_in_4_v2_set_status_led_config(TF_IndustrialDigitalIn4V
         return TF_E_NULL;
     }
 
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_digital_in_4_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1062,6 +1142,10 @@ int tf_industrial_digital_in_4_v2_set_status_led_config(TF_IndustrialDigitalIn4V
 int tf_industrial_digital_in_4_v2_get_status_led_config(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, uint8_t *ret_config) {
     if (industrial_digital_in_4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_digital_in_4_v2->tfp->spitfp->hal;
@@ -1115,6 +1199,10 @@ int tf_industrial_digital_in_4_v2_get_chip_temperature(TF_IndustrialDigitalIn4V2
         return TF_E_NULL;
     }
 
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_digital_in_4_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1166,6 +1254,10 @@ int tf_industrial_digital_in_4_v2_reset(TF_IndustrialDigitalIn4V2 *industrial_di
         return TF_E_NULL;
     }
 
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_digital_in_4_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1206,6 +1298,10 @@ int tf_industrial_digital_in_4_v2_reset(TF_IndustrialDigitalIn4V2 *industrial_di
 int tf_industrial_digital_in_4_v2_write_uid(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, uint32_t uid) {
     if (industrial_digital_in_4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_digital_in_4_v2->tfp->spitfp->hal;
@@ -1252,6 +1348,10 @@ int tf_industrial_digital_in_4_v2_write_uid(TF_IndustrialDigitalIn4V2 *industria
 int tf_industrial_digital_in_4_v2_read_uid(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, uint32_t *ret_uid) {
     if (industrial_digital_in_4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_digital_in_4_v2->tfp->spitfp->hal;
@@ -1303,6 +1403,10 @@ int tf_industrial_digital_in_4_v2_read_uid(TF_IndustrialDigitalIn4V2 *industrial
 int tf_industrial_digital_in_4_v2_get_identity(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (industrial_digital_in_4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_digital_in_4_v2->tfp->spitfp->hal;
@@ -1362,11 +1466,8 @@ int tf_industrial_digital_in_4_v2_register_value_callback(TF_IndustrialDigitalIn
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        industrial_digital_in_4_v2->tfp->needs_callback_tick = false;
-        industrial_digital_in_4_v2->tfp->needs_callback_tick |= industrial_digital_in_4_v2->all_value_handler != NULL;
-    } else {
-        industrial_digital_in_4_v2->tfp->needs_callback_tick = true;
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     industrial_digital_in_4_v2->value_handler = handler;
@@ -1381,11 +1482,8 @@ int tf_industrial_digital_in_4_v2_register_all_value_callback(TF_IndustrialDigit
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        industrial_digital_in_4_v2->tfp->needs_callback_tick = false;
-        industrial_digital_in_4_v2->tfp->needs_callback_tick |= industrial_digital_in_4_v2->value_handler != NULL;
-    } else {
-        industrial_digital_in_4_v2->tfp->needs_callback_tick = true;
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     industrial_digital_in_4_v2->all_value_handler = handler;
@@ -1397,6 +1495,10 @@ int tf_industrial_digital_in_4_v2_register_all_value_callback(TF_IndustrialDigit
 int tf_industrial_digital_in_4_v2_callback_tick(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, uint32_t timeout_us) {
     if (industrial_digital_in_4_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_digital_in_4_v2->magic != 0x5446 || industrial_digital_in_4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = industrial_digital_in_4_v2->tfp->spitfp->hal;

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -112,20 +112,24 @@ int tf_arinc429_create(TF_ARINC429 *arinc429, const char *uid_or_port_name, TF_H
     arinc429->tfp = tfp;
     arinc429->tfp->device = arinc429;
     arinc429->tfp->cb_handler = tf_arinc429_callback_handler;
+    arinc429->magic = 0x5446;
     arinc429->response_expected[0] = 0x21;
     arinc429->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_arinc429_destroy(TF_ARINC429 *arinc429) {
-    if (arinc429 == NULL || arinc429->tfp == NULL) {
+    if (arinc429 == NULL) {
         return TF_E_NULL;
+    }
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     arinc429->tfp->cb_handler = NULL;
     arinc429->tfp->device = NULL;
     arinc429->tfp = NULL;
+    arinc429->magic = 0;
 
     return TF_E_OK;
 }
@@ -133,6 +137,10 @@ int tf_arinc429_destroy(TF_ARINC429 *arinc429) {
 int tf_arinc429_get_response_expected(TF_ARINC429 *arinc429, uint8_t function_id, bool *ret_response_expected) {
     if (arinc429 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -226,6 +234,10 @@ int tf_arinc429_get_response_expected(TF_ARINC429 *arinc429, uint8_t function_id
 int tf_arinc429_set_response_expected(TF_ARINC429 *arinc429, uint8_t function_id, bool response_expected) {
     if (arinc429 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -353,6 +365,10 @@ int tf_arinc429_set_response_expected_all(TF_ARINC429 *arinc429, bool response_e
         return TF_E_NULL;
     }
 
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(arinc429->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -361,6 +377,10 @@ int tf_arinc429_set_response_expected_all(TF_ARINC429 *arinc429, bool response_e
 int tf_arinc429_get_capabilities(TF_ARINC429 *arinc429, uint16_t *ret_tx_total_scheduler_jobs, uint16_t *ret_tx_used_scheduler_jobs, uint16_t *ret_rx_total_frame_filters, uint16_t ret_rx_used_frame_filters[2]) {
     if (arinc429 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
@@ -418,6 +438,10 @@ int tf_arinc429_set_heartbeat_callback_configuration(TF_ARINC429 *arinc429, uint
         return TF_E_NULL;
     }
 
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -465,6 +489,10 @@ int tf_arinc429_set_heartbeat_callback_configuration(TF_ARINC429 *arinc429, uint
 int tf_arinc429_get_heartbeat_callback_configuration(TF_ARINC429 *arinc429, uint8_t channel, bool *ret_enabled, bool *ret_value_has_to_change, uint16_t *ret_period) {
     if (arinc429 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
@@ -524,6 +552,10 @@ int tf_arinc429_set_channel_configuration(TF_ARINC429 *arinc429, uint8_t channel
         return TF_E_NULL;
     }
 
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -570,6 +602,10 @@ int tf_arinc429_set_channel_configuration(TF_ARINC429 *arinc429, uint8_t channel
 int tf_arinc429_get_channel_configuration(TF_ARINC429 *arinc429, uint8_t channel, uint8_t *ret_parity, uint8_t *ret_speed) {
     if (arinc429 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
@@ -628,6 +664,10 @@ int tf_arinc429_set_channel_mode(TF_ARINC429 *arinc429, uint8_t channel, uint8_t
         return TF_E_NULL;
     }
 
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -673,6 +713,10 @@ int tf_arinc429_set_channel_mode(TF_ARINC429 *arinc429, uint8_t channel, uint8_t
 int tf_arinc429_get_channel_mode(TF_ARINC429 *arinc429, uint8_t channel, uint8_t *ret_mode) {
     if (arinc429 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
@@ -730,6 +774,10 @@ int tf_arinc429_clear_all_rx_filters(TF_ARINC429 *arinc429, uint8_t channel) {
         return TF_E_NULL;
     }
 
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -774,6 +822,10 @@ int tf_arinc429_clear_all_rx_filters(TF_ARINC429 *arinc429, uint8_t channel) {
 int tf_arinc429_clear_rx_filter(TF_ARINC429 *arinc429, uint8_t channel, uint8_t label, uint8_t sdi, bool *ret_success) {
     if (arinc429 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
@@ -833,6 +885,10 @@ int tf_arinc429_set_rx_standard_filters(TF_ARINC429 *arinc429, uint8_t channel) 
         return TF_E_NULL;
     }
 
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -877,6 +933,10 @@ int tf_arinc429_set_rx_standard_filters(TF_ARINC429 *arinc429, uint8_t channel) 
 int tf_arinc429_set_rx_filter(TF_ARINC429 *arinc429, uint8_t channel, uint8_t label, uint8_t sdi, bool *ret_success) {
     if (arinc429 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
@@ -936,6 +996,10 @@ int tf_arinc429_get_rx_filter(TF_ARINC429 *arinc429, uint8_t channel, uint8_t la
         return TF_E_NULL;
     }
 
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -991,6 +1055,10 @@ int tf_arinc429_get_rx_filter(TF_ARINC429 *arinc429, uint8_t channel, uint8_t la
 int tf_arinc429_read_frame(TF_ARINC429 *arinc429, uint8_t channel, uint8_t label, uint8_t sdi, bool *ret_status, uint32_t *ret_frame, uint16_t *ret_age) {
     if (arinc429 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
@@ -1052,6 +1120,10 @@ int tf_arinc429_set_rx_callback_configuration(TF_ARINC429 *arinc429, uint8_t cha
         return TF_E_NULL;
     }
 
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1099,6 +1171,10 @@ int tf_arinc429_set_rx_callback_configuration(TF_ARINC429 *arinc429, uint8_t cha
 int tf_arinc429_get_rx_callback_configuration(TF_ARINC429 *arinc429, uint8_t channel, bool *ret_enabled, bool *ret_value_has_to_change, uint16_t *ret_timeout) {
     if (arinc429 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
@@ -1158,6 +1234,10 @@ int tf_arinc429_write_frame_direct(TF_ARINC429 *arinc429, uint8_t channel, uint3
         return TF_E_NULL;
     }
 
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1203,6 +1283,10 @@ int tf_arinc429_write_frame_direct(TF_ARINC429 *arinc429, uint8_t channel, uint3
 int tf_arinc429_write_frame_scheduled(TF_ARINC429 *arinc429, uint8_t channel, uint16_t frame_index, uint32_t frame) {
     if (arinc429 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
@@ -1253,6 +1337,10 @@ int tf_arinc429_clear_schedule_entries(TF_ARINC429 *arinc429, uint8_t channel, u
         return TF_E_NULL;
     }
 
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1299,6 +1387,10 @@ int tf_arinc429_clear_schedule_entries(TF_ARINC429 *arinc429, uint8_t channel, u
 int tf_arinc429_set_schedule_entry(TF_ARINC429 *arinc429, uint8_t channel, uint16_t job_index, uint8_t job, uint16_t frame_index, uint8_t dwell_time) {
     if (arinc429 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
@@ -1349,6 +1441,10 @@ int tf_arinc429_set_schedule_entry(TF_ARINC429 *arinc429, uint8_t channel, uint1
 int tf_arinc429_get_schedule_entry(TF_ARINC429 *arinc429, uint8_t channel, uint16_t job_index, uint8_t *ret_job, uint16_t *ret_frame_index, uint32_t *ret_frame, uint8_t *ret_dwell_time) {
     if (arinc429 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
@@ -1410,6 +1506,10 @@ int tf_arinc429_restart(TF_ARINC429 *arinc429) {
         return TF_E_NULL;
     }
 
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1450,6 +1550,10 @@ int tf_arinc429_restart(TF_ARINC429 *arinc429) {
 int tf_arinc429_set_frame_mode(TF_ARINC429 *arinc429, uint8_t channel, uint16_t frame_index, uint8_t mode) {
     if (arinc429 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
@@ -1498,6 +1602,10 @@ int tf_arinc429_set_frame_mode(TF_ARINC429 *arinc429, uint8_t channel, uint16_t 
 int tf_arinc429_get_spitfp_error_count(TF_ARINC429 *arinc429, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (arinc429 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
@@ -1552,6 +1660,10 @@ int tf_arinc429_get_spitfp_error_count(TF_ARINC429 *arinc429, uint32_t *ret_erro
 int tf_arinc429_set_bootloader_mode(TF_ARINC429 *arinc429, uint8_t mode, uint8_t *ret_status) {
     if (arinc429 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
@@ -1609,6 +1721,10 @@ int tf_arinc429_get_bootloader_mode(TF_ARINC429 *arinc429, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1660,6 +1776,10 @@ int tf_arinc429_set_write_firmware_pointer(TF_ARINC429 *arinc429, uint32_t point
         return TF_E_NULL;
     }
 
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1704,6 +1824,10 @@ int tf_arinc429_set_write_firmware_pointer(TF_ARINC429 *arinc429, uint32_t point
 int tf_arinc429_write_firmware(TF_ARINC429 *arinc429, const uint8_t data[64], uint8_t *ret_status) {
     if (arinc429 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
@@ -1761,6 +1885,10 @@ int tf_arinc429_set_status_led_config(TF_ARINC429 *arinc429, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1805,6 +1933,10 @@ int tf_arinc429_set_status_led_config(TF_ARINC429 *arinc429, uint8_t config) {
 int tf_arinc429_get_status_led_config(TF_ARINC429 *arinc429, uint8_t *ret_config) {
     if (arinc429 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
@@ -1858,6 +1990,10 @@ int tf_arinc429_get_chip_temperature(TF_ARINC429 *arinc429, int16_t *ret_tempera
         return TF_E_NULL;
     }
 
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1909,6 +2045,10 @@ int tf_arinc429_reset(TF_ARINC429 *arinc429) {
         return TF_E_NULL;
     }
 
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1949,6 +2089,10 @@ int tf_arinc429_reset(TF_ARINC429 *arinc429) {
 int tf_arinc429_write_uid(TF_ARINC429 *arinc429, uint32_t uid) {
     if (arinc429 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
@@ -1995,6 +2139,10 @@ int tf_arinc429_write_uid(TF_ARINC429 *arinc429, uint32_t uid) {
 int tf_arinc429_read_uid(TF_ARINC429 *arinc429, uint32_t *ret_uid) {
     if (arinc429 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
@@ -2046,6 +2194,10 @@ int tf_arinc429_read_uid(TF_ARINC429 *arinc429, uint32_t *ret_uid) {
 int tf_arinc429_get_identity(TF_ARINC429 *arinc429, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (arinc429 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = arinc429->tfp->spitfp->hal;
@@ -2105,12 +2257,8 @@ int tf_arinc429_register_heartbeat_message_callback(TF_ARINC429 *arinc429, TF_AR
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        arinc429->tfp->needs_callback_tick = false;
-        arinc429->tfp->needs_callback_tick |= arinc429->frame_message_handler != NULL;
-        arinc429->tfp->needs_callback_tick |= arinc429->scheduler_message_handler != NULL;
-    } else {
-        arinc429->tfp->needs_callback_tick = true;
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     arinc429->heartbeat_message_handler = handler;
@@ -2125,12 +2273,8 @@ int tf_arinc429_register_frame_message_callback(TF_ARINC429 *arinc429, TF_ARINC4
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        arinc429->tfp->needs_callback_tick = false;
-        arinc429->tfp->needs_callback_tick |= arinc429->heartbeat_message_handler != NULL;
-        arinc429->tfp->needs_callback_tick |= arinc429->scheduler_message_handler != NULL;
-    } else {
-        arinc429->tfp->needs_callback_tick = true;
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     arinc429->frame_message_handler = handler;
@@ -2145,12 +2289,8 @@ int tf_arinc429_register_scheduler_message_callback(TF_ARINC429 *arinc429, TF_AR
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        arinc429->tfp->needs_callback_tick = false;
-        arinc429->tfp->needs_callback_tick |= arinc429->heartbeat_message_handler != NULL;
-        arinc429->tfp->needs_callback_tick |= arinc429->frame_message_handler != NULL;
-    } else {
-        arinc429->tfp->needs_callback_tick = true;
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     arinc429->scheduler_message_handler = handler;
@@ -2162,6 +2302,10 @@ int tf_arinc429_register_scheduler_message_callback(TF_ARINC429 *arinc429, TF_AR
 int tf_arinc429_callback_tick(TF_ARINC429 *arinc429, uint32_t timeout_us) {
     if (arinc429 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (arinc429->magic != 0x5446 || arinc429->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = arinc429->tfp->spitfp->hal;

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -84,20 +84,24 @@ int tf_laser_range_finder_v2_create(TF_LaserRangeFinderV2 *laser_range_finder_v2
     laser_range_finder_v2->tfp = tfp;
     laser_range_finder_v2->tfp->device = laser_range_finder_v2;
     laser_range_finder_v2->tfp->cb_handler = tf_laser_range_finder_v2_callback_handler;
+    laser_range_finder_v2->magic = 0x5446;
     laser_range_finder_v2->response_expected[0] = 0x03;
     laser_range_finder_v2->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_laser_range_finder_v2_destroy(TF_LaserRangeFinderV2 *laser_range_finder_v2) {
-    if (laser_range_finder_v2 == NULL || laser_range_finder_v2->tfp == NULL) {
+    if (laser_range_finder_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     laser_range_finder_v2->tfp->cb_handler = NULL;
     laser_range_finder_v2->tfp->device = NULL;
     laser_range_finder_v2->tfp = NULL;
+    laser_range_finder_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -105,6 +109,10 @@ int tf_laser_range_finder_v2_destroy(TF_LaserRangeFinderV2 *laser_range_finder_v
 int tf_laser_range_finder_v2_get_response_expected(TF_LaserRangeFinderV2 *laser_range_finder_v2, uint8_t function_id, bool *ret_response_expected) {
     if (laser_range_finder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -173,6 +181,10 @@ int tf_laser_range_finder_v2_get_response_expected(TF_LaserRangeFinderV2 *laser_
 int tf_laser_range_finder_v2_set_response_expected(TF_LaserRangeFinderV2 *laser_range_finder_v2, uint8_t function_id, bool response_expected) {
     if (laser_range_finder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -265,6 +277,10 @@ int tf_laser_range_finder_v2_set_response_expected_all(TF_LaserRangeFinderV2 *la
         return TF_E_NULL;
     }
 
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(laser_range_finder_v2->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -273,6 +289,10 @@ int tf_laser_range_finder_v2_set_response_expected_all(TF_LaserRangeFinderV2 *la
 int tf_laser_range_finder_v2_get_distance(TF_LaserRangeFinderV2 *laser_range_finder_v2, int16_t *ret_distance) {
     if (laser_range_finder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
@@ -326,6 +346,10 @@ int tf_laser_range_finder_v2_set_distance_callback_configuration(TF_LaserRangeFi
         return TF_E_NULL;
     }
 
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -374,6 +398,10 @@ int tf_laser_range_finder_v2_set_distance_callback_configuration(TF_LaserRangeFi
 int tf_laser_range_finder_v2_get_distance_callback_configuration(TF_LaserRangeFinderV2 *laser_range_finder_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int16_t *ret_min, int16_t *ret_max) {
     if (laser_range_finder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
@@ -431,6 +459,10 @@ int tf_laser_range_finder_v2_get_velocity(TF_LaserRangeFinderV2 *laser_range_fin
         return TF_E_NULL;
     }
 
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -482,6 +514,10 @@ int tf_laser_range_finder_v2_set_velocity_callback_configuration(TF_LaserRangeFi
         return TF_E_NULL;
     }
 
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -530,6 +566,10 @@ int tf_laser_range_finder_v2_set_velocity_callback_configuration(TF_LaserRangeFi
 int tf_laser_range_finder_v2_get_velocity_callback_configuration(TF_LaserRangeFinderV2 *laser_range_finder_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int16_t *ret_min, int16_t *ret_max) {
     if (laser_range_finder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
@@ -587,6 +627,10 @@ int tf_laser_range_finder_v2_set_enable(TF_LaserRangeFinderV2 *laser_range_finde
         return TF_E_NULL;
     }
 
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -631,6 +675,10 @@ int tf_laser_range_finder_v2_set_enable(TF_LaserRangeFinderV2 *laser_range_finde
 int tf_laser_range_finder_v2_get_enable(TF_LaserRangeFinderV2 *laser_range_finder_v2, bool *ret_enable) {
     if (laser_range_finder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
@@ -684,6 +732,10 @@ int tf_laser_range_finder_v2_set_configuration(TF_LaserRangeFinderV2 *laser_rang
         return TF_E_NULL;
     }
 
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -731,6 +783,10 @@ int tf_laser_range_finder_v2_set_configuration(TF_LaserRangeFinderV2 *laser_rang
 int tf_laser_range_finder_v2_get_configuration(TF_LaserRangeFinderV2 *laser_range_finder_v2, uint8_t *ret_acquisition_count, bool *ret_enable_quick_termination, uint8_t *ret_threshold_value, uint16_t *ret_measurement_frequency) {
     if (laser_range_finder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
@@ -787,6 +843,10 @@ int tf_laser_range_finder_v2_set_moving_average(TF_LaserRangeFinderV2 *laser_ran
         return TF_E_NULL;
     }
 
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -832,6 +892,10 @@ int tf_laser_range_finder_v2_set_moving_average(TF_LaserRangeFinderV2 *laser_ran
 int tf_laser_range_finder_v2_get_moving_average(TF_LaserRangeFinderV2 *laser_range_finder_v2, uint8_t *ret_distance_average_length, uint8_t *ret_velocity_average_length) {
     if (laser_range_finder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
@@ -886,6 +950,10 @@ int tf_laser_range_finder_v2_set_offset_calibration(TF_LaserRangeFinderV2 *laser
         return TF_E_NULL;
     }
 
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -930,6 +998,10 @@ int tf_laser_range_finder_v2_set_offset_calibration(TF_LaserRangeFinderV2 *laser
 int tf_laser_range_finder_v2_get_offset_calibration(TF_LaserRangeFinderV2 *laser_range_finder_v2, int16_t *ret_offset) {
     if (laser_range_finder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
@@ -983,6 +1055,10 @@ int tf_laser_range_finder_v2_set_distance_led_config(TF_LaserRangeFinderV2 *lase
         return TF_E_NULL;
     }
 
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1027,6 +1103,10 @@ int tf_laser_range_finder_v2_set_distance_led_config(TF_LaserRangeFinderV2 *lase
 int tf_laser_range_finder_v2_get_distance_led_config(TF_LaserRangeFinderV2 *laser_range_finder_v2, uint8_t *ret_config) {
     if (laser_range_finder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
@@ -1078,6 +1158,10 @@ int tf_laser_range_finder_v2_get_distance_led_config(TF_LaserRangeFinderV2 *lase
 int tf_laser_range_finder_v2_get_spitfp_error_count(TF_LaserRangeFinderV2 *laser_range_finder_v2, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (laser_range_finder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
@@ -1132,6 +1216,10 @@ int tf_laser_range_finder_v2_get_spitfp_error_count(TF_LaserRangeFinderV2 *laser
 int tf_laser_range_finder_v2_set_bootloader_mode(TF_LaserRangeFinderV2 *laser_range_finder_v2, uint8_t mode, uint8_t *ret_status) {
     if (laser_range_finder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
@@ -1189,6 +1277,10 @@ int tf_laser_range_finder_v2_get_bootloader_mode(TF_LaserRangeFinderV2 *laser_ra
         return TF_E_NULL;
     }
 
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1240,6 +1332,10 @@ int tf_laser_range_finder_v2_set_write_firmware_pointer(TF_LaserRangeFinderV2 *l
         return TF_E_NULL;
     }
 
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1284,6 +1380,10 @@ int tf_laser_range_finder_v2_set_write_firmware_pointer(TF_LaserRangeFinderV2 *l
 int tf_laser_range_finder_v2_write_firmware(TF_LaserRangeFinderV2 *laser_range_finder_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (laser_range_finder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
@@ -1341,6 +1441,10 @@ int tf_laser_range_finder_v2_set_status_led_config(TF_LaserRangeFinderV2 *laser_
         return TF_E_NULL;
     }
 
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1385,6 +1489,10 @@ int tf_laser_range_finder_v2_set_status_led_config(TF_LaserRangeFinderV2 *laser_
 int tf_laser_range_finder_v2_get_status_led_config(TF_LaserRangeFinderV2 *laser_range_finder_v2, uint8_t *ret_config) {
     if (laser_range_finder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
@@ -1438,6 +1546,10 @@ int tf_laser_range_finder_v2_get_chip_temperature(TF_LaserRangeFinderV2 *laser_r
         return TF_E_NULL;
     }
 
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1489,6 +1601,10 @@ int tf_laser_range_finder_v2_reset(TF_LaserRangeFinderV2 *laser_range_finder_v2)
         return TF_E_NULL;
     }
 
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1529,6 +1645,10 @@ int tf_laser_range_finder_v2_reset(TF_LaserRangeFinderV2 *laser_range_finder_v2)
 int tf_laser_range_finder_v2_write_uid(TF_LaserRangeFinderV2 *laser_range_finder_v2, uint32_t uid) {
     if (laser_range_finder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
@@ -1575,6 +1695,10 @@ int tf_laser_range_finder_v2_write_uid(TF_LaserRangeFinderV2 *laser_range_finder
 int tf_laser_range_finder_v2_read_uid(TF_LaserRangeFinderV2 *laser_range_finder_v2, uint32_t *ret_uid) {
     if (laser_range_finder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
@@ -1626,6 +1750,10 @@ int tf_laser_range_finder_v2_read_uid(TF_LaserRangeFinderV2 *laser_range_finder_
 int tf_laser_range_finder_v2_get_identity(TF_LaserRangeFinderV2 *laser_range_finder_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (laser_range_finder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = laser_range_finder_v2->tfp->spitfp->hal;
@@ -1685,11 +1813,8 @@ int tf_laser_range_finder_v2_register_distance_callback(TF_LaserRangeFinderV2 *l
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        laser_range_finder_v2->tfp->needs_callback_tick = false;
-        laser_range_finder_v2->tfp->needs_callback_tick |= laser_range_finder_v2->velocity_handler != NULL;
-    } else {
-        laser_range_finder_v2->tfp->needs_callback_tick = true;
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     laser_range_finder_v2->distance_handler = handler;
@@ -1704,11 +1829,8 @@ int tf_laser_range_finder_v2_register_velocity_callback(TF_LaserRangeFinderV2 *l
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        laser_range_finder_v2->tfp->needs_callback_tick = false;
-        laser_range_finder_v2->tfp->needs_callback_tick |= laser_range_finder_v2->distance_handler != NULL;
-    } else {
-        laser_range_finder_v2->tfp->needs_callback_tick = true;
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     laser_range_finder_v2->velocity_handler = handler;
@@ -1720,6 +1842,10 @@ int tf_laser_range_finder_v2_register_velocity_callback(TF_LaserRangeFinderV2 *l
 int tf_laser_range_finder_v2_callback_tick(TF_LaserRangeFinderV2 *laser_range_finder_v2, uint32_t timeout_us) {
     if (laser_range_finder_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (laser_range_finder_v2->magic != 0x5446 || laser_range_finder_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = laser_range_finder_v2->tfp->spitfp->hal;

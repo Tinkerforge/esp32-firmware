@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -70,19 +70,23 @@ int tf_temperature_v2_create(TF_TemperatureV2 *temperature_v2, const char *uid_o
     temperature_v2->tfp = tfp;
     temperature_v2->tfp->device = temperature_v2;
     temperature_v2->tfp->cb_handler = tf_temperature_v2_callback_handler;
+    temperature_v2->magic = 0x5446;
     temperature_v2->response_expected[0] = 0x01;
-
     return TF_E_OK;
 }
 
 int tf_temperature_v2_destroy(TF_TemperatureV2 *temperature_v2) {
-    if (temperature_v2 == NULL || temperature_v2->tfp == NULL) {
+    if (temperature_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (temperature_v2->magic != 0x5446 || temperature_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     temperature_v2->tfp->cb_handler = NULL;
     temperature_v2->tfp->device = NULL;
     temperature_v2->tfp = NULL;
+    temperature_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -90,6 +94,10 @@ int tf_temperature_v2_destroy(TF_TemperatureV2 *temperature_v2) {
 int tf_temperature_v2_get_response_expected(TF_TemperatureV2 *temperature_v2, uint8_t function_id, bool *ret_response_expected) {
     if (temperature_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (temperature_v2->magic != 0x5446 || temperature_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -133,6 +141,10 @@ int tf_temperature_v2_get_response_expected(TF_TemperatureV2 *temperature_v2, ui
 int tf_temperature_v2_set_response_expected(TF_TemperatureV2 *temperature_v2, uint8_t function_id, bool response_expected) {
     if (temperature_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (temperature_v2->magic != 0x5446 || temperature_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -190,6 +202,10 @@ int tf_temperature_v2_set_response_expected_all(TF_TemperatureV2 *temperature_v2
         return TF_E_NULL;
     }
 
+    if (temperature_v2->magic != 0x5446 || temperature_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(temperature_v2->response_expected, response_expected ? 0xFF : 0, 1);
 
     return TF_E_OK;
@@ -198,6 +214,10 @@ int tf_temperature_v2_set_response_expected_all(TF_TemperatureV2 *temperature_v2
 int tf_temperature_v2_get_temperature(TF_TemperatureV2 *temperature_v2, int16_t *ret_temperature) {
     if (temperature_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (temperature_v2->magic != 0x5446 || temperature_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = temperature_v2->tfp->spitfp->hal;
@@ -251,6 +271,10 @@ int tf_temperature_v2_set_temperature_callback_configuration(TF_TemperatureV2 *t
         return TF_E_NULL;
     }
 
+    if (temperature_v2->magic != 0x5446 || temperature_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = temperature_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -299,6 +323,10 @@ int tf_temperature_v2_set_temperature_callback_configuration(TF_TemperatureV2 *t
 int tf_temperature_v2_get_temperature_callback_configuration(TF_TemperatureV2 *temperature_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int16_t *ret_min, int16_t *ret_max) {
     if (temperature_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (temperature_v2->magic != 0x5446 || temperature_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = temperature_v2->tfp->spitfp->hal;
@@ -356,6 +384,10 @@ int tf_temperature_v2_set_heater_configuration(TF_TemperatureV2 *temperature_v2,
         return TF_E_NULL;
     }
 
+    if (temperature_v2->magic != 0x5446 || temperature_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = temperature_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -400,6 +432,10 @@ int tf_temperature_v2_set_heater_configuration(TF_TemperatureV2 *temperature_v2,
 int tf_temperature_v2_get_heater_configuration(TF_TemperatureV2 *temperature_v2, uint8_t *ret_heater_config) {
     if (temperature_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (temperature_v2->magic != 0x5446 || temperature_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = temperature_v2->tfp->spitfp->hal;
@@ -451,6 +487,10 @@ int tf_temperature_v2_get_heater_configuration(TF_TemperatureV2 *temperature_v2,
 int tf_temperature_v2_get_spitfp_error_count(TF_TemperatureV2 *temperature_v2, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (temperature_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (temperature_v2->magic != 0x5446 || temperature_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = temperature_v2->tfp->spitfp->hal;
@@ -505,6 +545,10 @@ int tf_temperature_v2_get_spitfp_error_count(TF_TemperatureV2 *temperature_v2, u
 int tf_temperature_v2_set_bootloader_mode(TF_TemperatureV2 *temperature_v2, uint8_t mode, uint8_t *ret_status) {
     if (temperature_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (temperature_v2->magic != 0x5446 || temperature_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = temperature_v2->tfp->spitfp->hal;
@@ -562,6 +606,10 @@ int tf_temperature_v2_get_bootloader_mode(TF_TemperatureV2 *temperature_v2, uint
         return TF_E_NULL;
     }
 
+    if (temperature_v2->magic != 0x5446 || temperature_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = temperature_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -613,6 +661,10 @@ int tf_temperature_v2_set_write_firmware_pointer(TF_TemperatureV2 *temperature_v
         return TF_E_NULL;
     }
 
+    if (temperature_v2->magic != 0x5446 || temperature_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = temperature_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -657,6 +709,10 @@ int tf_temperature_v2_set_write_firmware_pointer(TF_TemperatureV2 *temperature_v
 int tf_temperature_v2_write_firmware(TF_TemperatureV2 *temperature_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (temperature_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (temperature_v2->magic != 0x5446 || temperature_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = temperature_v2->tfp->spitfp->hal;
@@ -714,6 +770,10 @@ int tf_temperature_v2_set_status_led_config(TF_TemperatureV2 *temperature_v2, ui
         return TF_E_NULL;
     }
 
+    if (temperature_v2->magic != 0x5446 || temperature_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = temperature_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -758,6 +818,10 @@ int tf_temperature_v2_set_status_led_config(TF_TemperatureV2 *temperature_v2, ui
 int tf_temperature_v2_get_status_led_config(TF_TemperatureV2 *temperature_v2, uint8_t *ret_config) {
     if (temperature_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (temperature_v2->magic != 0x5446 || temperature_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = temperature_v2->tfp->spitfp->hal;
@@ -811,6 +875,10 @@ int tf_temperature_v2_get_chip_temperature(TF_TemperatureV2 *temperature_v2, int
         return TF_E_NULL;
     }
 
+    if (temperature_v2->magic != 0x5446 || temperature_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = temperature_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -862,6 +930,10 @@ int tf_temperature_v2_reset(TF_TemperatureV2 *temperature_v2) {
         return TF_E_NULL;
     }
 
+    if (temperature_v2->magic != 0x5446 || temperature_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = temperature_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -902,6 +974,10 @@ int tf_temperature_v2_reset(TF_TemperatureV2 *temperature_v2) {
 int tf_temperature_v2_write_uid(TF_TemperatureV2 *temperature_v2, uint32_t uid) {
     if (temperature_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (temperature_v2->magic != 0x5446 || temperature_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = temperature_v2->tfp->spitfp->hal;
@@ -948,6 +1024,10 @@ int tf_temperature_v2_write_uid(TF_TemperatureV2 *temperature_v2, uint32_t uid) 
 int tf_temperature_v2_read_uid(TF_TemperatureV2 *temperature_v2, uint32_t *ret_uid) {
     if (temperature_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (temperature_v2->magic != 0x5446 || temperature_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = temperature_v2->tfp->spitfp->hal;
@@ -999,6 +1079,10 @@ int tf_temperature_v2_read_uid(TF_TemperatureV2 *temperature_v2, uint32_t *ret_u
 int tf_temperature_v2_get_identity(TF_TemperatureV2 *temperature_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (temperature_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (temperature_v2->magic != 0x5446 || temperature_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = temperature_v2->tfp->spitfp->hal;
@@ -1058,10 +1142,8 @@ int tf_temperature_v2_register_temperature_callback(TF_TemperatureV2 *temperatur
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        temperature_v2->tfp->needs_callback_tick = false;
-    } else {
-        temperature_v2->tfp->needs_callback_tick = true;
+    if (temperature_v2->magic != 0x5446 || temperature_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     temperature_v2->temperature_handler = handler;
@@ -1073,6 +1155,10 @@ int tf_temperature_v2_register_temperature_callback(TF_TemperatureV2 *temperatur
 int tf_temperature_v2_callback_tick(TF_TemperatureV2 *temperature_v2, uint32_t timeout_us) {
     if (temperature_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (temperature_v2->magic != 0x5446 || temperature_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = temperature_v2->tfp->spitfp->hal;

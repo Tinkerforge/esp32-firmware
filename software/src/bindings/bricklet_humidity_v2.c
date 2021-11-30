@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -84,20 +84,24 @@ int tf_humidity_v2_create(TF_HumidityV2 *humidity_v2, const char *uid_or_port_na
     humidity_v2->tfp = tfp;
     humidity_v2->tfp->device = humidity_v2;
     humidity_v2->tfp->cb_handler = tf_humidity_v2_callback_handler;
+    humidity_v2->magic = 0x5446;
     humidity_v2->response_expected[0] = 0x03;
     humidity_v2->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_humidity_v2_destroy(TF_HumidityV2 *humidity_v2) {
-    if (humidity_v2 == NULL || humidity_v2->tfp == NULL) {
+    if (humidity_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     humidity_v2->tfp->cb_handler = NULL;
     humidity_v2->tfp->device = NULL;
     humidity_v2->tfp = NULL;
+    humidity_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -105,6 +109,10 @@ int tf_humidity_v2_destroy(TF_HumidityV2 *humidity_v2) {
 int tf_humidity_v2_get_response_expected(TF_HumidityV2 *humidity_v2, uint8_t function_id, bool *ret_response_expected) {
     if (humidity_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -163,6 +171,10 @@ int tf_humidity_v2_get_response_expected(TF_HumidityV2 *humidity_v2, uint8_t fun
 int tf_humidity_v2_set_response_expected(TF_HumidityV2 *humidity_v2, uint8_t function_id, bool response_expected) {
     if (humidity_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -241,6 +253,10 @@ int tf_humidity_v2_set_response_expected_all(TF_HumidityV2 *humidity_v2, bool re
         return TF_E_NULL;
     }
 
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(humidity_v2->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -249,6 +265,10 @@ int tf_humidity_v2_set_response_expected_all(TF_HumidityV2 *humidity_v2, bool re
 int tf_humidity_v2_get_humidity(TF_HumidityV2 *humidity_v2, uint16_t *ret_humidity) {
     if (humidity_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = humidity_v2->tfp->spitfp->hal;
@@ -302,6 +322,10 @@ int tf_humidity_v2_set_humidity_callback_configuration(TF_HumidityV2 *humidity_v
         return TF_E_NULL;
     }
 
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = humidity_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -350,6 +374,10 @@ int tf_humidity_v2_set_humidity_callback_configuration(TF_HumidityV2 *humidity_v
 int tf_humidity_v2_get_humidity_callback_configuration(TF_HumidityV2 *humidity_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, uint16_t *ret_min, uint16_t *ret_max) {
     if (humidity_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = humidity_v2->tfp->spitfp->hal;
@@ -407,6 +435,10 @@ int tf_humidity_v2_get_temperature(TF_HumidityV2 *humidity_v2, int16_t *ret_temp
         return TF_E_NULL;
     }
 
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = humidity_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -458,6 +490,10 @@ int tf_humidity_v2_set_temperature_callback_configuration(TF_HumidityV2 *humidit
         return TF_E_NULL;
     }
 
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = humidity_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -506,6 +542,10 @@ int tf_humidity_v2_set_temperature_callback_configuration(TF_HumidityV2 *humidit
 int tf_humidity_v2_get_temperature_callback_configuration(TF_HumidityV2 *humidity_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int16_t *ret_min, int16_t *ret_max) {
     if (humidity_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = humidity_v2->tfp->spitfp->hal;
@@ -563,6 +603,10 @@ int tf_humidity_v2_set_heater_configuration(TF_HumidityV2 *humidity_v2, uint8_t 
         return TF_E_NULL;
     }
 
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = humidity_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -607,6 +651,10 @@ int tf_humidity_v2_set_heater_configuration(TF_HumidityV2 *humidity_v2, uint8_t 
 int tf_humidity_v2_get_heater_configuration(TF_HumidityV2 *humidity_v2, uint8_t *ret_heater_config) {
     if (humidity_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = humidity_v2->tfp->spitfp->hal;
@@ -660,6 +708,10 @@ int tf_humidity_v2_set_moving_average_configuration(TF_HumidityV2 *humidity_v2, 
         return TF_E_NULL;
     }
 
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = humidity_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -705,6 +757,10 @@ int tf_humidity_v2_set_moving_average_configuration(TF_HumidityV2 *humidity_v2, 
 int tf_humidity_v2_get_moving_average_configuration(TF_HumidityV2 *humidity_v2, uint16_t *ret_moving_average_length_humidity, uint16_t *ret_moving_average_length_temperature) {
     if (humidity_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = humidity_v2->tfp->spitfp->hal;
@@ -759,6 +815,10 @@ int tf_humidity_v2_set_samples_per_second(TF_HumidityV2 *humidity_v2, uint8_t sp
         return TF_E_NULL;
     }
 
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = humidity_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -803,6 +863,10 @@ int tf_humidity_v2_set_samples_per_second(TF_HumidityV2 *humidity_v2, uint8_t sp
 int tf_humidity_v2_get_samples_per_second(TF_HumidityV2 *humidity_v2, uint8_t *ret_sps) {
     if (humidity_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = humidity_v2->tfp->spitfp->hal;
@@ -854,6 +918,10 @@ int tf_humidity_v2_get_samples_per_second(TF_HumidityV2 *humidity_v2, uint8_t *r
 int tf_humidity_v2_get_spitfp_error_count(TF_HumidityV2 *humidity_v2, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (humidity_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = humidity_v2->tfp->spitfp->hal;
@@ -908,6 +976,10 @@ int tf_humidity_v2_get_spitfp_error_count(TF_HumidityV2 *humidity_v2, uint32_t *
 int tf_humidity_v2_set_bootloader_mode(TF_HumidityV2 *humidity_v2, uint8_t mode, uint8_t *ret_status) {
     if (humidity_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = humidity_v2->tfp->spitfp->hal;
@@ -965,6 +1037,10 @@ int tf_humidity_v2_get_bootloader_mode(TF_HumidityV2 *humidity_v2, uint8_t *ret_
         return TF_E_NULL;
     }
 
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = humidity_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1016,6 +1092,10 @@ int tf_humidity_v2_set_write_firmware_pointer(TF_HumidityV2 *humidity_v2, uint32
         return TF_E_NULL;
     }
 
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = humidity_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1060,6 +1140,10 @@ int tf_humidity_v2_set_write_firmware_pointer(TF_HumidityV2 *humidity_v2, uint32
 int tf_humidity_v2_write_firmware(TF_HumidityV2 *humidity_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (humidity_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = humidity_v2->tfp->spitfp->hal;
@@ -1117,6 +1201,10 @@ int tf_humidity_v2_set_status_led_config(TF_HumidityV2 *humidity_v2, uint8_t con
         return TF_E_NULL;
     }
 
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = humidity_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1161,6 +1249,10 @@ int tf_humidity_v2_set_status_led_config(TF_HumidityV2 *humidity_v2, uint8_t con
 int tf_humidity_v2_get_status_led_config(TF_HumidityV2 *humidity_v2, uint8_t *ret_config) {
     if (humidity_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = humidity_v2->tfp->spitfp->hal;
@@ -1214,6 +1306,10 @@ int tf_humidity_v2_get_chip_temperature(TF_HumidityV2 *humidity_v2, int16_t *ret
         return TF_E_NULL;
     }
 
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = humidity_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1265,6 +1361,10 @@ int tf_humidity_v2_reset(TF_HumidityV2 *humidity_v2) {
         return TF_E_NULL;
     }
 
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = humidity_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1305,6 +1405,10 @@ int tf_humidity_v2_reset(TF_HumidityV2 *humidity_v2) {
 int tf_humidity_v2_write_uid(TF_HumidityV2 *humidity_v2, uint32_t uid) {
     if (humidity_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = humidity_v2->tfp->spitfp->hal;
@@ -1351,6 +1455,10 @@ int tf_humidity_v2_write_uid(TF_HumidityV2 *humidity_v2, uint32_t uid) {
 int tf_humidity_v2_read_uid(TF_HumidityV2 *humidity_v2, uint32_t *ret_uid) {
     if (humidity_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = humidity_v2->tfp->spitfp->hal;
@@ -1402,6 +1510,10 @@ int tf_humidity_v2_read_uid(TF_HumidityV2 *humidity_v2, uint32_t *ret_uid) {
 int tf_humidity_v2_get_identity(TF_HumidityV2 *humidity_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (humidity_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = humidity_v2->tfp->spitfp->hal;
@@ -1461,11 +1573,8 @@ int tf_humidity_v2_register_humidity_callback(TF_HumidityV2 *humidity_v2, TF_Hum
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        humidity_v2->tfp->needs_callback_tick = false;
-        humidity_v2->tfp->needs_callback_tick |= humidity_v2->temperature_handler != NULL;
-    } else {
-        humidity_v2->tfp->needs_callback_tick = true;
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     humidity_v2->humidity_handler = handler;
@@ -1480,11 +1589,8 @@ int tf_humidity_v2_register_temperature_callback(TF_HumidityV2 *humidity_v2, TF_
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        humidity_v2->tfp->needs_callback_tick = false;
-        humidity_v2->tfp->needs_callback_tick |= humidity_v2->humidity_handler != NULL;
-    } else {
-        humidity_v2->tfp->needs_callback_tick = true;
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     humidity_v2->temperature_handler = handler;
@@ -1496,6 +1602,10 @@ int tf_humidity_v2_register_temperature_callback(TF_HumidityV2 *humidity_v2, TF_
 int tf_humidity_v2_callback_tick(TF_HumidityV2 *humidity_v2, uint32_t timeout_us) {
     if (humidity_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (humidity_v2->magic != 0x5446 || humidity_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = humidity_v2->tfp->spitfp->hal;

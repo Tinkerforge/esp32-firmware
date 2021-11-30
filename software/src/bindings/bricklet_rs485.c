@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -365,21 +365,25 @@ int tf_rs485_create(TF_RS485 *rs485, const char *uid_or_port_name, TF_HAL *hal) 
     rs485->tfp = tfp;
     rs485->tfp->device = rs485;
     rs485->tfp->cb_handler = tf_rs485_callback_handler;
+    rs485->magic = 0x5446;
     rs485->response_expected[0] = 0x03;
     rs485->response_expected[1] = 0x1B;
     rs485->response_expected[2] = 0x0E;
-
     return TF_E_OK;
 }
 
 int tf_rs485_destroy(TF_RS485 *rs485) {
-    if (rs485 == NULL || rs485->tfp == NULL) {
+    if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rs485->tfp->cb_handler = NULL;
     rs485->tfp->device = NULL;
     rs485->tfp = NULL;
+    rs485->magic = 0;
 
     return TF_E_OK;
 }
@@ -387,6 +391,10 @@ int tf_rs485_destroy(TF_RS485 *rs485) {
 int tf_rs485_get_response_expected(TF_RS485 *rs485, uint8_t function_id, bool *ret_response_expected) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -520,6 +528,10 @@ int tf_rs485_get_response_expected(TF_RS485 *rs485, uint8_t function_id, bool *r
 int tf_rs485_set_response_expected(TF_RS485 *rs485, uint8_t function_id, bool response_expected) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -703,6 +715,10 @@ int tf_rs485_set_response_expected_all(TF_RS485 *rs485, bool response_expected) 
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(rs485->response_expected, response_expected ? 0xFF : 0, 3);
 
     return TF_E_OK;
@@ -711,6 +727,10 @@ int tf_rs485_set_response_expected_all(TF_RS485 *rs485, bool response_expected) 
 int tf_rs485_write_low_level(TF_RS485 *rs485, uint16_t message_length, uint16_t message_chunk_offset, const char message_chunk_data[60], uint8_t *ret_message_chunk_written) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -768,6 +788,10 @@ int tf_rs485_write_low_level(TF_RS485 *rs485, uint16_t message_length, uint16_t 
 int tf_rs485_read_low_level(TF_RS485 *rs485, uint16_t length, uint16_t *ret_message_length, uint16_t *ret_message_chunk_offset, char ret_message_chunk_data[60]) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -828,6 +852,10 @@ int tf_rs485_enable_read_callback(TF_RS485 *rs485) {
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -870,6 +898,10 @@ int tf_rs485_disable_read_callback(TF_RS485 *rs485) {
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -910,6 +942,10 @@ int tf_rs485_disable_read_callback(TF_RS485 *rs485) {
 int tf_rs485_is_read_callback_enabled(TF_RS485 *rs485, bool *ret_enabled) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -963,6 +999,10 @@ int tf_rs485_set_rs485_configuration(TF_RS485 *rs485, uint32_t baudrate, uint8_t
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1011,6 +1051,10 @@ int tf_rs485_set_rs485_configuration(TF_RS485 *rs485, uint32_t baudrate, uint8_t
 int tf_rs485_get_rs485_configuration(TF_RS485 *rs485, uint32_t *ret_baudrate, uint8_t *ret_parity, uint8_t *ret_stopbits, uint8_t *ret_wordlength, uint8_t *ret_duplex) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -1068,6 +1112,10 @@ int tf_rs485_set_modbus_configuration(TF_RS485 *rs485, uint8_t slave_address, ui
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1113,6 +1161,10 @@ int tf_rs485_set_modbus_configuration(TF_RS485 *rs485, uint8_t slave_address, ui
 int tf_rs485_get_modbus_configuration(TF_RS485 *rs485, uint8_t *ret_slave_address, uint32_t *ret_master_request_timeout) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -1167,6 +1219,10 @@ int tf_rs485_set_mode(TF_RS485 *rs485, uint8_t mode) {
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1211,6 +1267,10 @@ int tf_rs485_set_mode(TF_RS485 *rs485, uint8_t mode) {
 int tf_rs485_get_mode(TF_RS485 *rs485, uint8_t *ret_mode) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -1264,6 +1324,10 @@ int tf_rs485_set_communication_led_config(TF_RS485 *rs485, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1308,6 +1372,10 @@ int tf_rs485_set_communication_led_config(TF_RS485 *rs485, uint8_t config) {
 int tf_rs485_get_communication_led_config(TF_RS485 *rs485, uint8_t *ret_config) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -1361,6 +1429,10 @@ int tf_rs485_set_error_led_config(TF_RS485 *rs485, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1405,6 +1477,10 @@ int tf_rs485_set_error_led_config(TF_RS485 *rs485, uint8_t config) {
 int tf_rs485_get_error_led_config(TF_RS485 *rs485, uint8_t *ret_config) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -1458,6 +1534,10 @@ int tf_rs485_set_buffer_config(TF_RS485 *rs485, uint16_t send_buffer_size, uint1
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1503,6 +1583,10 @@ int tf_rs485_set_buffer_config(TF_RS485 *rs485, uint16_t send_buffer_size, uint1
 int tf_rs485_get_buffer_config(TF_RS485 *rs485, uint16_t *ret_send_buffer_size, uint16_t *ret_receive_buffer_size) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -1557,6 +1641,10 @@ int tf_rs485_get_buffer_status(TF_RS485 *rs485, uint16_t *ret_send_buffer_used, 
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1609,6 +1697,10 @@ int tf_rs485_enable_error_count_callback(TF_RS485 *rs485) {
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1651,6 +1743,10 @@ int tf_rs485_disable_error_count_callback(TF_RS485 *rs485) {
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1691,6 +1787,10 @@ int tf_rs485_disable_error_count_callback(TF_RS485 *rs485) {
 int tf_rs485_is_error_count_callback_enabled(TF_RS485 *rs485, bool *ret_enabled) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -1744,6 +1844,10 @@ int tf_rs485_get_error_count(TF_RS485 *rs485, uint32_t *ret_overrun_error_count,
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1794,6 +1898,10 @@ int tf_rs485_get_error_count(TF_RS485 *rs485, uint32_t *ret_overrun_error_count,
 int tf_rs485_get_modbus_common_error_count(TF_RS485 *rs485, uint32_t *ret_timeout_error_count, uint32_t *ret_checksum_error_count, uint32_t *ret_frame_too_big_error_count, uint32_t *ret_illegal_function_error_count, uint32_t *ret_illegal_data_address_error_count, uint32_t *ret_illegal_data_value_error_count, uint32_t *ret_slave_device_failure_error_count) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -1853,6 +1961,10 @@ int tf_rs485_modbus_slave_report_exception(TF_RS485 *rs485, uint8_t request_id, 
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1898,6 +2010,10 @@ int tf_rs485_modbus_slave_report_exception(TF_RS485 *rs485, uint8_t request_id, 
 int tf_rs485_modbus_slave_answer_read_coils_request_low_level(TF_RS485 *rs485, uint8_t request_id, uint16_t coils_length, uint16_t coils_chunk_offset, const bool coils_chunk_data[472]) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -1948,6 +2064,10 @@ int tf_rs485_modbus_slave_answer_read_coils_request_low_level(TF_RS485 *rs485, u
 int tf_rs485_modbus_master_read_coils(TF_RS485 *rs485, uint8_t slave_address, uint32_t starting_address, uint16_t count, uint8_t *ret_request_id) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -2007,6 +2127,10 @@ int tf_rs485_modbus_slave_answer_read_holding_registers_request_low_level(TF_RS4
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2055,6 +2179,10 @@ int tf_rs485_modbus_slave_answer_read_holding_registers_request_low_level(TF_RS4
 int tf_rs485_modbus_master_read_holding_registers(TF_RS485 *rs485, uint8_t slave_address, uint32_t starting_address, uint16_t count, uint8_t *ret_request_id) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -2114,6 +2242,10 @@ int tf_rs485_modbus_slave_answer_write_single_coil_request(TF_RS485 *rs485, uint
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2158,6 +2290,10 @@ int tf_rs485_modbus_slave_answer_write_single_coil_request(TF_RS485 *rs485, uint
 int tf_rs485_modbus_master_write_single_coil(TF_RS485 *rs485, uint8_t slave_address, uint32_t coil_address, bool coil_value, uint8_t *ret_request_id) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -2217,6 +2353,10 @@ int tf_rs485_modbus_slave_answer_write_single_register_request(TF_RS485 *rs485, 
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2261,6 +2401,10 @@ int tf_rs485_modbus_slave_answer_write_single_register_request(TF_RS485 *rs485, 
 int tf_rs485_modbus_master_write_single_register(TF_RS485 *rs485, uint8_t slave_address, uint32_t register_address, uint16_t register_value, uint8_t *ret_request_id) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -2320,6 +2464,10 @@ int tf_rs485_modbus_slave_answer_write_multiple_coils_request(TF_RS485 *rs485, u
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2364,6 +2512,10 @@ int tf_rs485_modbus_slave_answer_write_multiple_coils_request(TF_RS485 *rs485, u
 int tf_rs485_modbus_master_write_multiple_coils_low_level(TF_RS485 *rs485, uint8_t slave_address, uint32_t starting_address, uint16_t coils_length, uint16_t coils_chunk_offset, const bool coils_chunk_data[440], uint8_t *ret_request_id) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -2426,6 +2578,10 @@ int tf_rs485_modbus_slave_answer_write_multiple_registers_request(TF_RS485 *rs48
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2470,6 +2626,10 @@ int tf_rs485_modbus_slave_answer_write_multiple_registers_request(TF_RS485 *rs48
 int tf_rs485_modbus_master_write_multiple_registers_low_level(TF_RS485 *rs485, uint8_t slave_address, uint32_t starting_address, uint16_t registers_length, uint16_t registers_chunk_offset, const uint16_t registers_chunk_data[27], uint8_t *ret_request_id) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -2532,6 +2692,10 @@ int tf_rs485_modbus_slave_answer_read_discrete_inputs_request_low_level(TF_RS485
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2580,6 +2744,10 @@ int tf_rs485_modbus_slave_answer_read_discrete_inputs_request_low_level(TF_RS485
 int tf_rs485_modbus_master_read_discrete_inputs(TF_RS485 *rs485, uint8_t slave_address, uint32_t starting_address, uint16_t count, uint8_t *ret_request_id) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -2639,6 +2807,10 @@ int tf_rs485_modbus_slave_answer_read_input_registers_request_low_level(TF_RS485
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2687,6 +2859,10 @@ int tf_rs485_modbus_slave_answer_read_input_registers_request_low_level(TF_RS485
 int tf_rs485_modbus_master_read_input_registers(TF_RS485 *rs485, uint8_t slave_address, uint32_t starting_address, uint16_t count, uint8_t *ret_request_id) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -2746,6 +2922,10 @@ int tf_rs485_set_frame_readable_callback_configuration(TF_RS485 *rs485, uint16_t
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2790,6 +2970,10 @@ int tf_rs485_set_frame_readable_callback_configuration(TF_RS485 *rs485, uint16_t
 int tf_rs485_get_frame_readable_callback_configuration(TF_RS485 *rs485, uint16_t *ret_frame_size) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -2841,6 +3025,10 @@ int tf_rs485_get_frame_readable_callback_configuration(TF_RS485 *rs485, uint16_t
 int tf_rs485_get_spitfp_error_count(TF_RS485 *rs485, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -2895,6 +3083,10 @@ int tf_rs485_get_spitfp_error_count(TF_RS485 *rs485, uint32_t *ret_error_count_a
 int tf_rs485_set_bootloader_mode(TF_RS485 *rs485, uint8_t mode, uint8_t *ret_status) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -2952,6 +3144,10 @@ int tf_rs485_get_bootloader_mode(TF_RS485 *rs485, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -3003,6 +3199,10 @@ int tf_rs485_set_write_firmware_pointer(TF_RS485 *rs485, uint32_t pointer) {
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -3047,6 +3247,10 @@ int tf_rs485_set_write_firmware_pointer(TF_RS485 *rs485, uint32_t pointer) {
 int tf_rs485_write_firmware(TF_RS485 *rs485, const uint8_t data[64], uint8_t *ret_status) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -3104,6 +3308,10 @@ int tf_rs485_set_status_led_config(TF_RS485 *rs485, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -3148,6 +3356,10 @@ int tf_rs485_set_status_led_config(TF_RS485 *rs485, uint8_t config) {
 int tf_rs485_get_status_led_config(TF_RS485 *rs485, uint8_t *ret_config) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -3201,6 +3413,10 @@ int tf_rs485_get_chip_temperature(TF_RS485 *rs485, int16_t *ret_temperature) {
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -3252,6 +3468,10 @@ int tf_rs485_reset(TF_RS485 *rs485) {
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -3292,6 +3512,10 @@ int tf_rs485_reset(TF_RS485 *rs485) {
 int tf_rs485_write_uid(TF_RS485 *rs485, uint32_t uid) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -3338,6 +3562,10 @@ int tf_rs485_write_uid(TF_RS485 *rs485, uint32_t uid) {
 int tf_rs485_read_uid(TF_RS485 *rs485, uint32_t *ret_uid) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -3389,6 +3617,10 @@ int tf_rs485_read_uid(TF_RS485 *rs485, uint32_t *ret_uid) {
 int tf_rs485_get_identity(TF_RS485 *rs485, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs485->tfp->spitfp->hal;
@@ -3460,6 +3692,10 @@ int tf_rs485_write(TF_RS485 *rs485, const char *message, uint16_t message_length
     if (rs485 == NULL) {
         return TF_E_NULL;
     }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
     
 
     uint32_t _stream_length = message_length;
@@ -3497,6 +3733,10 @@ int tf_rs485_read(TF_RS485 *rs485, uint16_t length, char *ret_message, uint16_t 
     if (rs485 == NULL) {
         return TF_E_NULL;
     }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
     
     TF_RS485_ReadLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
@@ -3533,6 +3773,10 @@ static int tf_rs485_modbus_slave_answer_read_coils_request_ll_wrapper(void *devi
 int tf_rs485_modbus_slave_answer_read_coils_request(TF_RS485 *rs485, uint8_t request_id, const bool *coils, uint16_t coils_length) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
     
     TF_RS485_ModbusSlaveAnswerReadCoilsRequestLLWrapperData _wrapper_data;
@@ -3572,6 +3816,10 @@ static int tf_rs485_modbus_slave_answer_read_holding_registers_request_ll_wrappe
 int tf_rs485_modbus_slave_answer_read_holding_registers_request(TF_RS485 *rs485, uint8_t request_id, const uint16_t *holding_registers, uint16_t holding_registers_length) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
     
     TF_RS485_ModbusSlaveAnswerReadHoldingRegistersRequestLLWrapperData _wrapper_data;
@@ -3613,6 +3861,10 @@ static int tf_rs485_modbus_master_write_multiple_coils_ll_wrapper(void *device, 
 int tf_rs485_modbus_master_write_multiple_coils(TF_RS485 *rs485, uint8_t slave_address, uint32_t starting_address, const bool *coils, uint16_t coils_length, uint8_t *ret_request_id) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
     
     TF_RS485_ModbusMasterWriteMultipleCoilsLLWrapperData _wrapper_data;
@@ -3657,6 +3909,10 @@ int tf_rs485_modbus_master_write_multiple_registers(TF_RS485 *rs485, uint8_t sla
     if (rs485 == NULL) {
         return TF_E_NULL;
     }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
     
     TF_RS485_ModbusMasterWriteMultipleRegistersLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
@@ -3698,6 +3954,10 @@ int tf_rs485_modbus_slave_answer_read_discrete_inputs_request(TF_RS485 *rs485, u
     if (rs485 == NULL) {
         return TF_E_NULL;
     }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
     
     TF_RS485_ModbusSlaveAnswerReadDiscreteInputsRequestLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
@@ -3737,6 +3997,10 @@ int tf_rs485_modbus_slave_answer_read_input_registers_request(TF_RS485 *rs485, u
     if (rs485 == NULL) {
         return TF_E_NULL;
     }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
     
     TF_RS485_ModbusSlaveAnswerReadInputRegistersRequestLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
@@ -3759,28 +4023,8 @@ int tf_rs485_register_read_low_level_callback(TF_RS485 *rs485, TF_RS485_ReadLowL
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rs485->tfp->needs_callback_tick = false;
-        rs485->tfp->needs_callback_tick |= rs485->error_count_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_coils_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_coils_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_holding_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_holding_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_coil_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_coil_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_register_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_register_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_coils_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_coils_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_registers_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_registers_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_discrete_inputs_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_discrete_inputs_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_input_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_input_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->frame_readable_handler != NULL;
-    } else {
-        rs485->tfp->needs_callback_tick = true;
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rs485->read_low_level_handler = handler;
@@ -3810,6 +4054,10 @@ int tf_rs485_register_read_callback(TF_RS485 *rs485, TF_RS485_ReadHandler handle
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     rs485->read_handler = handler;
 
     rs485->read_hlc.data = message_buffer;
@@ -3825,28 +4073,8 @@ int tf_rs485_register_error_count_callback(TF_RS485 *rs485, TF_RS485_ErrorCountH
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rs485->tfp->needs_callback_tick = false;
-        rs485->tfp->needs_callback_tick |= rs485->read_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_coils_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_coils_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_holding_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_holding_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_coil_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_coil_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_register_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_register_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_coils_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_coils_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_registers_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_registers_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_discrete_inputs_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_discrete_inputs_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_input_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_input_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->frame_readable_handler != NULL;
-    } else {
-        rs485->tfp->needs_callback_tick = true;
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rs485->error_count_handler = handler;
@@ -3861,28 +4089,8 @@ int tf_rs485_register_modbus_slave_read_coils_request_callback(TF_RS485 *rs485, 
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rs485->tfp->needs_callback_tick = false;
-        rs485->tfp->needs_callback_tick |= rs485->read_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->error_count_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_coils_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_holding_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_holding_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_coil_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_coil_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_register_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_register_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_coils_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_coils_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_registers_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_registers_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_discrete_inputs_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_discrete_inputs_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_input_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_input_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->frame_readable_handler != NULL;
-    } else {
-        rs485->tfp->needs_callback_tick = true;
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rs485->modbus_slave_read_coils_request_handler = handler;
@@ -3897,28 +4105,8 @@ int tf_rs485_register_modbus_master_read_coils_response_low_level_callback(TF_RS
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rs485->tfp->needs_callback_tick = false;
-        rs485->tfp->needs_callback_tick |= rs485->read_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->error_count_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_coils_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_holding_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_holding_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_coil_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_coil_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_register_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_register_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_coils_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_coils_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_registers_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_registers_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_discrete_inputs_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_discrete_inputs_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_input_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_input_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->frame_readable_handler != NULL;
-    } else {
-        rs485->tfp->needs_callback_tick = true;
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rs485->modbus_master_read_coils_response_low_level_handler = handler;
@@ -3948,6 +4136,10 @@ int tf_rs485_register_modbus_master_read_coils_response_callback(TF_RS485 *rs485
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     rs485->modbus_master_read_coils_response_handler = handler;
 
     rs485->modbus_master_read_coils_response_hlc.data = coils_buffer;
@@ -3963,28 +4155,8 @@ int tf_rs485_register_modbus_slave_read_holding_registers_request_callback(TF_RS
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rs485->tfp->needs_callback_tick = false;
-        rs485->tfp->needs_callback_tick |= rs485->read_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->error_count_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_coils_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_coils_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_holding_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_coil_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_coil_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_register_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_register_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_coils_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_coils_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_registers_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_registers_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_discrete_inputs_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_discrete_inputs_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_input_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_input_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->frame_readable_handler != NULL;
-    } else {
-        rs485->tfp->needs_callback_tick = true;
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rs485->modbus_slave_read_holding_registers_request_handler = handler;
@@ -3999,28 +4171,8 @@ int tf_rs485_register_modbus_master_read_holding_registers_response_low_level_ca
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rs485->tfp->needs_callback_tick = false;
-        rs485->tfp->needs_callback_tick |= rs485->read_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->error_count_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_coils_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_coils_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_holding_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_coil_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_coil_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_register_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_register_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_coils_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_coils_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_registers_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_registers_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_discrete_inputs_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_discrete_inputs_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_input_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_input_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->frame_readable_handler != NULL;
-    } else {
-        rs485->tfp->needs_callback_tick = true;
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rs485->modbus_master_read_holding_registers_response_low_level_handler = handler;
@@ -4050,6 +4202,10 @@ int tf_rs485_register_modbus_master_read_holding_registers_response_callback(TF_
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     rs485->modbus_master_read_holding_registers_response_handler = handler;
 
     rs485->modbus_master_read_holding_registers_response_hlc.data = holding_registers_buffer;
@@ -4065,28 +4221,8 @@ int tf_rs485_register_modbus_slave_write_single_coil_request_callback(TF_RS485 *
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rs485->tfp->needs_callback_tick = false;
-        rs485->tfp->needs_callback_tick |= rs485->read_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->error_count_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_coils_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_coils_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_holding_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_holding_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_coil_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_register_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_register_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_coils_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_coils_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_registers_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_registers_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_discrete_inputs_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_discrete_inputs_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_input_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_input_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->frame_readable_handler != NULL;
-    } else {
-        rs485->tfp->needs_callback_tick = true;
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rs485->modbus_slave_write_single_coil_request_handler = handler;
@@ -4101,28 +4237,8 @@ int tf_rs485_register_modbus_master_write_single_coil_response_callback(TF_RS485
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rs485->tfp->needs_callback_tick = false;
-        rs485->tfp->needs_callback_tick |= rs485->read_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->error_count_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_coils_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_coils_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_holding_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_holding_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_coil_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_register_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_register_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_coils_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_coils_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_registers_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_registers_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_discrete_inputs_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_discrete_inputs_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_input_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_input_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->frame_readable_handler != NULL;
-    } else {
-        rs485->tfp->needs_callback_tick = true;
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rs485->modbus_master_write_single_coil_response_handler = handler;
@@ -4137,28 +4253,8 @@ int tf_rs485_register_modbus_slave_write_single_register_request_callback(TF_RS4
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rs485->tfp->needs_callback_tick = false;
-        rs485->tfp->needs_callback_tick |= rs485->read_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->error_count_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_coils_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_coils_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_holding_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_holding_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_coil_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_coil_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_register_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_coils_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_coils_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_registers_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_registers_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_discrete_inputs_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_discrete_inputs_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_input_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_input_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->frame_readable_handler != NULL;
-    } else {
-        rs485->tfp->needs_callback_tick = true;
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rs485->modbus_slave_write_single_register_request_handler = handler;
@@ -4173,28 +4269,8 @@ int tf_rs485_register_modbus_master_write_single_register_response_callback(TF_R
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rs485->tfp->needs_callback_tick = false;
-        rs485->tfp->needs_callback_tick |= rs485->read_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->error_count_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_coils_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_coils_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_holding_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_holding_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_coil_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_coil_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_register_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_coils_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_coils_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_registers_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_registers_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_discrete_inputs_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_discrete_inputs_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_input_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_input_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->frame_readable_handler != NULL;
-    } else {
-        rs485->tfp->needs_callback_tick = true;
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rs485->modbus_master_write_single_register_response_handler = handler;
@@ -4209,28 +4285,8 @@ int tf_rs485_register_modbus_slave_write_multiple_coils_request_low_level_callba
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rs485->tfp->needs_callback_tick = false;
-        rs485->tfp->needs_callback_tick |= rs485->read_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->error_count_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_coils_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_coils_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_holding_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_holding_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_coil_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_coil_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_register_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_register_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_coils_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_registers_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_registers_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_discrete_inputs_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_discrete_inputs_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_input_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_input_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->frame_readable_handler != NULL;
-    } else {
-        rs485->tfp->needs_callback_tick = true;
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rs485->modbus_slave_write_multiple_coils_request_low_level_handler = handler;
@@ -4260,6 +4316,10 @@ int tf_rs485_register_modbus_slave_write_multiple_coils_request_callback(TF_RS48
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     rs485->modbus_slave_write_multiple_coils_request_handler = handler;
 
     rs485->modbus_slave_write_multiple_coils_request_hlc.data = coils_buffer;
@@ -4275,28 +4335,8 @@ int tf_rs485_register_modbus_master_write_multiple_coils_response_callback(TF_RS
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rs485->tfp->needs_callback_tick = false;
-        rs485->tfp->needs_callback_tick |= rs485->read_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->error_count_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_coils_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_coils_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_holding_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_holding_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_coil_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_coil_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_register_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_register_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_coils_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_registers_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_registers_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_discrete_inputs_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_discrete_inputs_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_input_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_input_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->frame_readable_handler != NULL;
-    } else {
-        rs485->tfp->needs_callback_tick = true;
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rs485->modbus_master_write_multiple_coils_response_handler = handler;
@@ -4311,28 +4351,8 @@ int tf_rs485_register_modbus_slave_write_multiple_registers_request_low_level_ca
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rs485->tfp->needs_callback_tick = false;
-        rs485->tfp->needs_callback_tick |= rs485->read_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->error_count_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_coils_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_coils_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_holding_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_holding_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_coil_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_coil_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_register_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_register_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_coils_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_coils_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_registers_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_discrete_inputs_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_discrete_inputs_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_input_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_input_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->frame_readable_handler != NULL;
-    } else {
-        rs485->tfp->needs_callback_tick = true;
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rs485->modbus_slave_write_multiple_registers_request_low_level_handler = handler;
@@ -4362,6 +4382,10 @@ int tf_rs485_register_modbus_slave_write_multiple_registers_request_callback(TF_
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     rs485->modbus_slave_write_multiple_registers_request_handler = handler;
 
     rs485->modbus_slave_write_multiple_registers_request_hlc.data = registers_buffer;
@@ -4377,28 +4401,8 @@ int tf_rs485_register_modbus_master_write_multiple_registers_response_callback(T
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rs485->tfp->needs_callback_tick = false;
-        rs485->tfp->needs_callback_tick |= rs485->read_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->error_count_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_coils_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_coils_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_holding_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_holding_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_coil_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_coil_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_register_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_register_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_coils_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_coils_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_registers_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_discrete_inputs_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_discrete_inputs_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_input_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_input_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->frame_readable_handler != NULL;
-    } else {
-        rs485->tfp->needs_callback_tick = true;
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rs485->modbus_master_write_multiple_registers_response_handler = handler;
@@ -4413,28 +4417,8 @@ int tf_rs485_register_modbus_slave_read_discrete_inputs_request_callback(TF_RS48
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rs485->tfp->needs_callback_tick = false;
-        rs485->tfp->needs_callback_tick |= rs485->read_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->error_count_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_coils_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_coils_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_holding_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_holding_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_coil_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_coil_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_register_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_register_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_coils_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_coils_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_registers_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_registers_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_discrete_inputs_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_input_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_input_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->frame_readable_handler != NULL;
-    } else {
-        rs485->tfp->needs_callback_tick = true;
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rs485->modbus_slave_read_discrete_inputs_request_handler = handler;
@@ -4449,28 +4433,8 @@ int tf_rs485_register_modbus_master_read_discrete_inputs_response_low_level_call
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rs485->tfp->needs_callback_tick = false;
-        rs485->tfp->needs_callback_tick |= rs485->read_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->error_count_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_coils_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_coils_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_holding_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_holding_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_coil_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_coil_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_register_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_register_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_coils_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_coils_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_registers_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_registers_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_discrete_inputs_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_input_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_input_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->frame_readable_handler != NULL;
-    } else {
-        rs485->tfp->needs_callback_tick = true;
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rs485->modbus_master_read_discrete_inputs_response_low_level_handler = handler;
@@ -4500,6 +4464,10 @@ int tf_rs485_register_modbus_master_read_discrete_inputs_response_callback(TF_RS
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     rs485->modbus_master_read_discrete_inputs_response_handler = handler;
 
     rs485->modbus_master_read_discrete_inputs_response_hlc.data = discrete_inputs_buffer;
@@ -4515,28 +4483,8 @@ int tf_rs485_register_modbus_slave_read_input_registers_request_callback(TF_RS48
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rs485->tfp->needs_callback_tick = false;
-        rs485->tfp->needs_callback_tick |= rs485->read_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->error_count_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_coils_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_coils_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_holding_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_holding_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_coil_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_coil_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_register_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_register_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_coils_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_coils_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_registers_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_registers_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_discrete_inputs_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_discrete_inputs_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_input_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->frame_readable_handler != NULL;
-    } else {
-        rs485->tfp->needs_callback_tick = true;
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rs485->modbus_slave_read_input_registers_request_handler = handler;
@@ -4551,28 +4499,8 @@ int tf_rs485_register_modbus_master_read_input_registers_response_low_level_call
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rs485->tfp->needs_callback_tick = false;
-        rs485->tfp->needs_callback_tick |= rs485->read_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->error_count_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_coils_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_coils_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_holding_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_holding_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_coil_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_coil_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_register_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_register_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_coils_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_coils_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_registers_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_registers_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_discrete_inputs_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_discrete_inputs_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_input_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->frame_readable_handler != NULL;
-    } else {
-        rs485->tfp->needs_callback_tick = true;
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rs485->modbus_master_read_input_registers_response_low_level_handler = handler;
@@ -4602,6 +4530,10 @@ int tf_rs485_register_modbus_master_read_input_registers_response_callback(TF_RS
         return TF_E_NULL;
     }
 
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     rs485->modbus_master_read_input_registers_response_handler = handler;
 
     rs485->modbus_master_read_input_registers_response_hlc.data = input_registers_buffer;
@@ -4617,28 +4549,8 @@ int tf_rs485_register_frame_readable_callback(TF_RS485 *rs485, TF_RS485_FrameRea
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rs485->tfp->needs_callback_tick = false;
-        rs485->tfp->needs_callback_tick |= rs485->read_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->error_count_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_coils_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_coils_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_holding_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_holding_registers_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_coil_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_coil_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_single_register_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_single_register_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_coils_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_coils_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_write_multiple_registers_request_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_write_multiple_registers_response_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_discrete_inputs_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_discrete_inputs_response_low_level_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_slave_read_input_registers_request_handler != NULL;
-        rs485->tfp->needs_callback_tick |= rs485->modbus_master_read_input_registers_response_low_level_handler != NULL;
-    } else {
-        rs485->tfp->needs_callback_tick = true;
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rs485->frame_readable_handler = handler;
@@ -4650,6 +4562,10 @@ int tf_rs485_register_frame_readable_callback(TF_RS485 *rs485, TF_RS485_FrameRea
 int tf_rs485_callback_tick(TF_RS485 *rs485, uint32_t timeout_us) {
     if (rs485 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = rs485->tfp->spitfp->hal;

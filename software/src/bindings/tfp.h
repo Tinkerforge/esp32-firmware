@@ -29,7 +29,6 @@ typedef struct TF_TFP {
     void *device;
 
     uint32_t uid;
-    uint16_t device_id;
 
     uint32_t error_count_frame;
     uint32_t error_count_unexpected;
@@ -37,11 +36,11 @@ typedef struct TF_TFP {
     uint8_t next_sequence_number;
     uint8_t waiting_for_fid; // 0 if waiting for nothing
     uint8_t waiting_for_sequence_number; // 0 if waiting for nothing
+    bool send_enumerate_request;
 
     TF_CallbackHandler cb_handler;
-    bool needs_callback_tick;
 
-    bool send_enumerate_request;
+    uint16_t device_id;
 } TF_TFP;
 
 void tf_tfp_create(TF_TFP *tfp, uint32_t uid, uint16_t device_id, TF_SPITFP *spitfp) TF_ATTRIBUTE_NONNULL_ALL;

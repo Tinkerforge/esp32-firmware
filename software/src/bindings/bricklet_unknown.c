@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -73,20 +73,23 @@ int tf_unknown_create(TF_Unknown *unknown, TF_TFP *tfp) {
     unknown->tfp = tfp;
     unknown->tfp->device = unknown;
     unknown->tfp->cb_handler = tf_unknown_callback_handler;
-
+    unknown->magic = 0x5446;
     unknown->response_expected[0] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_unknown_destroy(TF_Unknown *unknown) {
-    if (unknown == NULL || unknown->tfp == NULL) {
+    if (unknown == NULL) {
         return TF_E_NULL;
+    }
+    if (unknown->magic != 0x5446 || unknown->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     unknown->tfp->cb_handler = NULL;
     unknown->tfp->device = NULL;
     unknown->tfp = NULL;
+    unknown->magic = 0;
 
     return TF_E_OK;
 }
@@ -94,6 +97,10 @@ int tf_unknown_destroy(TF_Unknown *unknown) {
 int tf_unknown_get_response_expected(TF_Unknown *unknown, uint8_t function_id, bool *ret_response_expected) {
     if (unknown == NULL) {
         return TF_E_NULL;
+    }
+
+    if (unknown->magic != 0x5446 || unknown->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -137,6 +144,10 @@ int tf_unknown_get_response_expected(TF_Unknown *unknown, uint8_t function_id, b
 int tf_unknown_set_response_expected(TF_Unknown *unknown, uint8_t function_id, bool response_expected) {
     if (unknown == NULL) {
         return TF_E_NULL;
+    }
+
+    if (unknown->magic != 0x5446 || unknown->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -194,6 +205,10 @@ int tf_unknown_set_response_expected_all(TF_Unknown *unknown, bool response_expe
         return TF_E_NULL;
     }
 
+    if (unknown->magic != 0x5446 || unknown->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(unknown->response_expected, response_expected ? 0xFF : 0, 1);
 
     return TF_E_OK;
@@ -202,6 +217,10 @@ int tf_unknown_set_response_expected_all(TF_Unknown *unknown, bool response_expe
 int tf_unknown_get_spitfp_error_count(TF_Unknown *unknown, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (unknown == NULL) {
         return TF_E_NULL;
+    }
+
+    if (unknown->magic != 0x5446 || unknown->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = unknown->tfp->spitfp->hal;
@@ -256,6 +275,10 @@ int tf_unknown_get_spitfp_error_count(TF_Unknown *unknown, uint32_t *ret_error_c
 int tf_unknown_set_bootloader_mode(TF_Unknown *unknown, uint8_t mode, uint8_t *ret_status) {
     if (unknown == NULL) {
         return TF_E_NULL;
+    }
+
+    if (unknown->magic != 0x5446 || unknown->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = unknown->tfp->spitfp->hal;
@@ -313,6 +336,10 @@ int tf_unknown_get_bootloader_mode(TF_Unknown *unknown, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
+    if (unknown->magic != 0x5446 || unknown->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = unknown->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -364,6 +391,10 @@ int tf_unknown_set_write_firmware_pointer(TF_Unknown *unknown, uint32_t pointer)
         return TF_E_NULL;
     }
 
+    if (unknown->magic != 0x5446 || unknown->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = unknown->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -408,6 +439,10 @@ int tf_unknown_set_write_firmware_pointer(TF_Unknown *unknown, uint32_t pointer)
 int tf_unknown_write_firmware(TF_Unknown *unknown, const uint8_t data[64], uint8_t *ret_status) {
     if (unknown == NULL) {
         return TF_E_NULL;
+    }
+
+    if (unknown->magic != 0x5446 || unknown->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = unknown->tfp->spitfp->hal;
@@ -465,6 +500,10 @@ int tf_unknown_set_status_led_config(TF_Unknown *unknown, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (unknown->magic != 0x5446 || unknown->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = unknown->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -509,6 +548,10 @@ int tf_unknown_set_status_led_config(TF_Unknown *unknown, uint8_t config) {
 int tf_unknown_get_status_led_config(TF_Unknown *unknown, uint8_t *ret_config) {
     if (unknown == NULL) {
         return TF_E_NULL;
+    }
+
+    if (unknown->magic != 0x5446 || unknown->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = unknown->tfp->spitfp->hal;
@@ -562,6 +605,10 @@ int tf_unknown_get_chip_temperature(TF_Unknown *unknown, int16_t *ret_temperatur
         return TF_E_NULL;
     }
 
+    if (unknown->magic != 0x5446 || unknown->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = unknown->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -613,6 +660,10 @@ int tf_unknown_reset(TF_Unknown *unknown) {
         return TF_E_NULL;
     }
 
+    if (unknown->magic != 0x5446 || unknown->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = unknown->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -653,6 +704,10 @@ int tf_unknown_reset(TF_Unknown *unknown) {
 int tf_unknown_write_uid(TF_Unknown *unknown, uint32_t uid) {
     if (unknown == NULL) {
         return TF_E_NULL;
+    }
+
+    if (unknown->magic != 0x5446 || unknown->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = unknown->tfp->spitfp->hal;
@@ -699,6 +754,10 @@ int tf_unknown_write_uid(TF_Unknown *unknown, uint32_t uid) {
 int tf_unknown_read_uid(TF_Unknown *unknown, uint32_t *ret_uid) {
     if (unknown == NULL) {
         return TF_E_NULL;
+    }
+
+    if (unknown->magic != 0x5446 || unknown->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = unknown->tfp->spitfp->hal;
@@ -752,6 +811,10 @@ int tf_unknown_comcu_enumerate(TF_Unknown *unknown) {
         return TF_E_NULL;
     }
 
+    if (unknown->magic != 0x5446 || unknown->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = unknown->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -794,6 +857,10 @@ int tf_unknown_enumerate(TF_Unknown *unknown) {
         return TF_E_NULL;
     }
 
+    if (unknown->magic != 0x5446 || unknown->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = unknown->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -834,6 +901,10 @@ int tf_unknown_enumerate(TF_Unknown *unknown) {
 int tf_unknown_get_identity(TF_Unknown *unknown, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (unknown == NULL) {
         return TF_E_NULL;
+    }
+
+    if (unknown->magic != 0x5446 || unknown->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = unknown->tfp->spitfp->hal;
@@ -893,10 +964,8 @@ int tf_unknown_register_enumerate_callback(TF_Unknown *unknown, TF_Unknown_Enume
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        unknown->tfp->needs_callback_tick = false;
-    } else {
-        unknown->tfp->needs_callback_tick = true;
+    if (unknown->magic != 0x5446 || unknown->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     unknown->enumerate_handler = handler;
@@ -908,6 +977,10 @@ int tf_unknown_register_enumerate_callback(TF_Unknown *unknown, TF_Unknown_Enume
 int tf_unknown_callback_tick(TF_Unknown *unknown, uint32_t timeout_us) {
     if (unknown == NULL) {
         return TF_E_NULL;
+    }
+
+    if (unknown->magic != 0x5446 || unknown->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = unknown->tfp->spitfp->hal;

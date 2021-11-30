@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -70,19 +70,23 @@ int tf_rotary_poti_v2_create(TF_RotaryPotiV2 *rotary_poti_v2, const char *uid_or
     rotary_poti_v2->tfp = tfp;
     rotary_poti_v2->tfp->device = rotary_poti_v2;
     rotary_poti_v2->tfp->cb_handler = tf_rotary_poti_v2_callback_handler;
+    rotary_poti_v2->magic = 0x5446;
     rotary_poti_v2->response_expected[0] = 0x01;
-
     return TF_E_OK;
 }
 
 int tf_rotary_poti_v2_destroy(TF_RotaryPotiV2 *rotary_poti_v2) {
-    if (rotary_poti_v2 == NULL || rotary_poti_v2->tfp == NULL) {
+    if (rotary_poti_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (rotary_poti_v2->magic != 0x5446 || rotary_poti_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rotary_poti_v2->tfp->cb_handler = NULL;
     rotary_poti_v2->tfp->device = NULL;
     rotary_poti_v2->tfp = NULL;
+    rotary_poti_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -90,6 +94,10 @@ int tf_rotary_poti_v2_destroy(TF_RotaryPotiV2 *rotary_poti_v2) {
 int tf_rotary_poti_v2_get_response_expected(TF_RotaryPotiV2 *rotary_poti_v2, uint8_t function_id, bool *ret_response_expected) {
     if (rotary_poti_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rotary_poti_v2->magic != 0x5446 || rotary_poti_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -128,6 +136,10 @@ int tf_rotary_poti_v2_get_response_expected(TF_RotaryPotiV2 *rotary_poti_v2, uin
 int tf_rotary_poti_v2_set_response_expected(TF_RotaryPotiV2 *rotary_poti_v2, uint8_t function_id, bool response_expected) {
     if (rotary_poti_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rotary_poti_v2->magic != 0x5446 || rotary_poti_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -178,6 +190,10 @@ int tf_rotary_poti_v2_set_response_expected_all(TF_RotaryPotiV2 *rotary_poti_v2,
         return TF_E_NULL;
     }
 
+    if (rotary_poti_v2->magic != 0x5446 || rotary_poti_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(rotary_poti_v2->response_expected, response_expected ? 0xFF : 0, 1);
 
     return TF_E_OK;
@@ -186,6 +202,10 @@ int tf_rotary_poti_v2_set_response_expected_all(TF_RotaryPotiV2 *rotary_poti_v2,
 int tf_rotary_poti_v2_get_position(TF_RotaryPotiV2 *rotary_poti_v2, int16_t *ret_position) {
     if (rotary_poti_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rotary_poti_v2->magic != 0x5446 || rotary_poti_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rotary_poti_v2->tfp->spitfp->hal;
@@ -239,6 +259,10 @@ int tf_rotary_poti_v2_set_position_callback_configuration(TF_RotaryPotiV2 *rotar
         return TF_E_NULL;
     }
 
+    if (rotary_poti_v2->magic != 0x5446 || rotary_poti_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rotary_poti_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -287,6 +311,10 @@ int tf_rotary_poti_v2_set_position_callback_configuration(TF_RotaryPotiV2 *rotar
 int tf_rotary_poti_v2_get_position_callback_configuration(TF_RotaryPotiV2 *rotary_poti_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int16_t *ret_min, int16_t *ret_max) {
     if (rotary_poti_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rotary_poti_v2->magic != 0x5446 || rotary_poti_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rotary_poti_v2->tfp->spitfp->hal;
@@ -344,6 +372,10 @@ int tf_rotary_poti_v2_get_spitfp_error_count(TF_RotaryPotiV2 *rotary_poti_v2, ui
         return TF_E_NULL;
     }
 
+    if (rotary_poti_v2->magic != 0x5446 || rotary_poti_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rotary_poti_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -396,6 +428,10 @@ int tf_rotary_poti_v2_get_spitfp_error_count(TF_RotaryPotiV2 *rotary_poti_v2, ui
 int tf_rotary_poti_v2_set_bootloader_mode(TF_RotaryPotiV2 *rotary_poti_v2, uint8_t mode, uint8_t *ret_status) {
     if (rotary_poti_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rotary_poti_v2->magic != 0x5446 || rotary_poti_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rotary_poti_v2->tfp->spitfp->hal;
@@ -453,6 +489,10 @@ int tf_rotary_poti_v2_get_bootloader_mode(TF_RotaryPotiV2 *rotary_poti_v2, uint8
         return TF_E_NULL;
     }
 
+    if (rotary_poti_v2->magic != 0x5446 || rotary_poti_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rotary_poti_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -504,6 +544,10 @@ int tf_rotary_poti_v2_set_write_firmware_pointer(TF_RotaryPotiV2 *rotary_poti_v2
         return TF_E_NULL;
     }
 
+    if (rotary_poti_v2->magic != 0x5446 || rotary_poti_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rotary_poti_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -548,6 +592,10 @@ int tf_rotary_poti_v2_set_write_firmware_pointer(TF_RotaryPotiV2 *rotary_poti_v2
 int tf_rotary_poti_v2_write_firmware(TF_RotaryPotiV2 *rotary_poti_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (rotary_poti_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rotary_poti_v2->magic != 0x5446 || rotary_poti_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rotary_poti_v2->tfp->spitfp->hal;
@@ -605,6 +653,10 @@ int tf_rotary_poti_v2_set_status_led_config(TF_RotaryPotiV2 *rotary_poti_v2, uin
         return TF_E_NULL;
     }
 
+    if (rotary_poti_v2->magic != 0x5446 || rotary_poti_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rotary_poti_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -649,6 +701,10 @@ int tf_rotary_poti_v2_set_status_led_config(TF_RotaryPotiV2 *rotary_poti_v2, uin
 int tf_rotary_poti_v2_get_status_led_config(TF_RotaryPotiV2 *rotary_poti_v2, uint8_t *ret_config) {
     if (rotary_poti_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rotary_poti_v2->magic != 0x5446 || rotary_poti_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rotary_poti_v2->tfp->spitfp->hal;
@@ -702,6 +758,10 @@ int tf_rotary_poti_v2_get_chip_temperature(TF_RotaryPotiV2 *rotary_poti_v2, int1
         return TF_E_NULL;
     }
 
+    if (rotary_poti_v2->magic != 0x5446 || rotary_poti_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rotary_poti_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -753,6 +813,10 @@ int tf_rotary_poti_v2_reset(TF_RotaryPotiV2 *rotary_poti_v2) {
         return TF_E_NULL;
     }
 
+    if (rotary_poti_v2->magic != 0x5446 || rotary_poti_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rotary_poti_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -793,6 +857,10 @@ int tf_rotary_poti_v2_reset(TF_RotaryPotiV2 *rotary_poti_v2) {
 int tf_rotary_poti_v2_write_uid(TF_RotaryPotiV2 *rotary_poti_v2, uint32_t uid) {
     if (rotary_poti_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rotary_poti_v2->magic != 0x5446 || rotary_poti_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rotary_poti_v2->tfp->spitfp->hal;
@@ -839,6 +907,10 @@ int tf_rotary_poti_v2_write_uid(TF_RotaryPotiV2 *rotary_poti_v2, uint32_t uid) {
 int tf_rotary_poti_v2_read_uid(TF_RotaryPotiV2 *rotary_poti_v2, uint32_t *ret_uid) {
     if (rotary_poti_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rotary_poti_v2->magic != 0x5446 || rotary_poti_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rotary_poti_v2->tfp->spitfp->hal;
@@ -890,6 +962,10 @@ int tf_rotary_poti_v2_read_uid(TF_RotaryPotiV2 *rotary_poti_v2, uint32_t *ret_ui
 int tf_rotary_poti_v2_get_identity(TF_RotaryPotiV2 *rotary_poti_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (rotary_poti_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rotary_poti_v2->magic != 0x5446 || rotary_poti_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rotary_poti_v2->tfp->spitfp->hal;
@@ -949,10 +1025,8 @@ int tf_rotary_poti_v2_register_position_callback(TF_RotaryPotiV2 *rotary_poti_v2
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rotary_poti_v2->tfp->needs_callback_tick = false;
-    } else {
-        rotary_poti_v2->tfp->needs_callback_tick = true;
+    if (rotary_poti_v2->magic != 0x5446 || rotary_poti_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rotary_poti_v2->position_handler = handler;
@@ -964,6 +1038,10 @@ int tf_rotary_poti_v2_register_position_callback(TF_RotaryPotiV2 *rotary_poti_v2
 int tf_rotary_poti_v2_callback_tick(TF_RotaryPotiV2 *rotary_poti_v2, uint32_t timeout_us) {
     if (rotary_poti_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rotary_poti_v2->magic != 0x5446 || rotary_poti_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = rotary_poti_v2->tfp->spitfp->hal;

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -102,20 +102,24 @@ int tf_io16_v2_create(TF_IO16V2 *io16_v2, const char *uid_or_port_name, TF_HAL *
     io16_v2->tfp = tfp;
     io16_v2->tfp->device = io16_v2;
     io16_v2->tfp->cb_handler = tf_io16_v2_callback_handler;
+    io16_v2->magic = 0x5446;
     io16_v2->response_expected[0] = 0x18;
     io16_v2->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_io16_v2_destroy(TF_IO16V2 *io16_v2) {
-    if (io16_v2 == NULL || io16_v2->tfp == NULL) {
+    if (io16_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     io16_v2->tfp->cb_handler = NULL;
     io16_v2->tfp->device = NULL;
     io16_v2->tfp = NULL;
+    io16_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -123,6 +127,10 @@ int tf_io16_v2_destroy(TF_IO16V2 *io16_v2) {
 int tf_io16_v2_get_response_expected(TF_IO16V2 *io16_v2, uint8_t function_id, bool *ret_response_expected) {
     if (io16_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -191,6 +199,10 @@ int tf_io16_v2_get_response_expected(TF_IO16V2 *io16_v2, uint8_t function_id, bo
 int tf_io16_v2_set_response_expected(TF_IO16V2 *io16_v2, uint8_t function_id, bool response_expected) {
     if (io16_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -283,6 +295,10 @@ int tf_io16_v2_set_response_expected_all(TF_IO16V2 *io16_v2, bool response_expec
         return TF_E_NULL;
     }
 
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(io16_v2->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -291,6 +307,10 @@ int tf_io16_v2_set_response_expected_all(TF_IO16V2 *io16_v2, bool response_expec
 int tf_io16_v2_set_value(TF_IO16V2 *io16_v2, const bool value[16]) {
     if (io16_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
@@ -338,6 +358,10 @@ int tf_io16_v2_set_value(TF_IO16V2 *io16_v2, const bool value[16]) {
 int tf_io16_v2_get_value(TF_IO16V2 *io16_v2, bool ret_value[16]) {
     if (io16_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
@@ -391,6 +415,10 @@ int tf_io16_v2_set_selected_value(TF_IO16V2 *io16_v2, uint8_t channel, bool valu
         return TF_E_NULL;
     }
 
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -436,6 +464,10 @@ int tf_io16_v2_set_selected_value(TF_IO16V2 *io16_v2, uint8_t channel, bool valu
 int tf_io16_v2_set_configuration(TF_IO16V2 *io16_v2, uint8_t channel, char direction, bool value) {
     if (io16_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
@@ -484,6 +516,10 @@ int tf_io16_v2_set_configuration(TF_IO16V2 *io16_v2, uint8_t channel, char direc
 int tf_io16_v2_get_configuration(TF_IO16V2 *io16_v2, uint8_t channel, char *ret_direction, bool *ret_value) {
     if (io16_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
@@ -542,6 +578,10 @@ int tf_io16_v2_set_input_value_callback_configuration(TF_IO16V2 *io16_v2, uint8_
         return TF_E_NULL;
     }
 
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -588,6 +628,10 @@ int tf_io16_v2_set_input_value_callback_configuration(TF_IO16V2 *io16_v2, uint8_
 int tf_io16_v2_get_input_value_callback_configuration(TF_IO16V2 *io16_v2, uint8_t channel, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (io16_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
@@ -646,6 +690,10 @@ int tf_io16_v2_set_all_input_value_callback_configuration(TF_IO16V2 *io16_v2, ui
         return TF_E_NULL;
     }
 
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -691,6 +739,10 @@ int tf_io16_v2_set_all_input_value_callback_configuration(TF_IO16V2 *io16_v2, ui
 int tf_io16_v2_get_all_input_value_callback_configuration(TF_IO16V2 *io16_v2, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (io16_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
@@ -745,6 +797,10 @@ int tf_io16_v2_set_monoflop(TF_IO16V2 *io16_v2, uint8_t channel, bool value, uin
         return TF_E_NULL;
     }
 
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -791,6 +847,10 @@ int tf_io16_v2_set_monoflop(TF_IO16V2 *io16_v2, uint8_t channel, bool value, uin
 int tf_io16_v2_get_monoflop(TF_IO16V2 *io16_v2, uint8_t channel, bool *ret_value, uint32_t *ret_time, uint32_t *ret_time_remaining) {
     if (io16_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
@@ -850,6 +910,10 @@ int tf_io16_v2_get_edge_count(TF_IO16V2 *io16_v2, uint8_t channel, bool reset_co
         return TF_E_NULL;
     }
 
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -906,6 +970,10 @@ int tf_io16_v2_set_edge_count_configuration(TF_IO16V2 *io16_v2, uint8_t channel,
         return TF_E_NULL;
     }
 
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -952,6 +1020,10 @@ int tf_io16_v2_set_edge_count_configuration(TF_IO16V2 *io16_v2, uint8_t channel,
 int tf_io16_v2_get_edge_count_configuration(TF_IO16V2 *io16_v2, uint8_t channel, uint8_t *ret_edge_type, uint8_t *ret_debounce) {
     if (io16_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
@@ -1010,6 +1082,10 @@ int tf_io16_v2_get_spitfp_error_count(TF_IO16V2 *io16_v2, uint32_t *ret_error_co
         return TF_E_NULL;
     }
 
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1062,6 +1138,10 @@ int tf_io16_v2_get_spitfp_error_count(TF_IO16V2 *io16_v2, uint32_t *ret_error_co
 int tf_io16_v2_set_bootloader_mode(TF_IO16V2 *io16_v2, uint8_t mode, uint8_t *ret_status) {
     if (io16_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
@@ -1119,6 +1199,10 @@ int tf_io16_v2_get_bootloader_mode(TF_IO16V2 *io16_v2, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1170,6 +1254,10 @@ int tf_io16_v2_set_write_firmware_pointer(TF_IO16V2 *io16_v2, uint32_t pointer) 
         return TF_E_NULL;
     }
 
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1214,6 +1302,10 @@ int tf_io16_v2_set_write_firmware_pointer(TF_IO16V2 *io16_v2, uint32_t pointer) 
 int tf_io16_v2_write_firmware(TF_IO16V2 *io16_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (io16_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
@@ -1271,6 +1363,10 @@ int tf_io16_v2_set_status_led_config(TF_IO16V2 *io16_v2, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1315,6 +1411,10 @@ int tf_io16_v2_set_status_led_config(TF_IO16V2 *io16_v2, uint8_t config) {
 int tf_io16_v2_get_status_led_config(TF_IO16V2 *io16_v2, uint8_t *ret_config) {
     if (io16_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
@@ -1368,6 +1468,10 @@ int tf_io16_v2_get_chip_temperature(TF_IO16V2 *io16_v2, int16_t *ret_temperature
         return TF_E_NULL;
     }
 
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1419,6 +1523,10 @@ int tf_io16_v2_reset(TF_IO16V2 *io16_v2) {
         return TF_E_NULL;
     }
 
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1459,6 +1567,10 @@ int tf_io16_v2_reset(TF_IO16V2 *io16_v2) {
 int tf_io16_v2_write_uid(TF_IO16V2 *io16_v2, uint32_t uid) {
     if (io16_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
@@ -1505,6 +1617,10 @@ int tf_io16_v2_write_uid(TF_IO16V2 *io16_v2, uint32_t uid) {
 int tf_io16_v2_read_uid(TF_IO16V2 *io16_v2, uint32_t *ret_uid) {
     if (io16_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
@@ -1556,6 +1672,10 @@ int tf_io16_v2_read_uid(TF_IO16V2 *io16_v2, uint32_t *ret_uid) {
 int tf_io16_v2_get_identity(TF_IO16V2 *io16_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (io16_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = io16_v2->tfp->spitfp->hal;
@@ -1615,12 +1735,8 @@ int tf_io16_v2_register_input_value_callback(TF_IO16V2 *io16_v2, TF_IO16V2_Input
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        io16_v2->tfp->needs_callback_tick = false;
-        io16_v2->tfp->needs_callback_tick |= io16_v2->all_input_value_handler != NULL;
-        io16_v2->tfp->needs_callback_tick |= io16_v2->monoflop_done_handler != NULL;
-    } else {
-        io16_v2->tfp->needs_callback_tick = true;
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     io16_v2->input_value_handler = handler;
@@ -1635,12 +1751,8 @@ int tf_io16_v2_register_all_input_value_callback(TF_IO16V2 *io16_v2, TF_IO16V2_A
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        io16_v2->tfp->needs_callback_tick = false;
-        io16_v2->tfp->needs_callback_tick |= io16_v2->input_value_handler != NULL;
-        io16_v2->tfp->needs_callback_tick |= io16_v2->monoflop_done_handler != NULL;
-    } else {
-        io16_v2->tfp->needs_callback_tick = true;
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     io16_v2->all_input_value_handler = handler;
@@ -1655,12 +1767,8 @@ int tf_io16_v2_register_monoflop_done_callback(TF_IO16V2 *io16_v2, TF_IO16V2_Mon
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        io16_v2->tfp->needs_callback_tick = false;
-        io16_v2->tfp->needs_callback_tick |= io16_v2->input_value_handler != NULL;
-        io16_v2->tfp->needs_callback_tick |= io16_v2->all_input_value_handler != NULL;
-    } else {
-        io16_v2->tfp->needs_callback_tick = true;
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     io16_v2->monoflop_done_handler = handler;
@@ -1672,6 +1780,10 @@ int tf_io16_v2_register_monoflop_done_callback(TF_IO16V2 *io16_v2, TF_IO16V2_Mon
 int tf_io16_v2_callback_tick(TF_IO16V2 *io16_v2, uint32_t timeout_us) {
     if (io16_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (io16_v2->magic != 0x5446 || io16_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = io16_v2->tfp->spitfp->hal;

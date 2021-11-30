@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -70,20 +70,24 @@ int tf_e_paper_296x128_create(TF_EPaper296x128 *e_paper_296x128, const char *uid
     e_paper_296x128->tfp = tfp;
     e_paper_296x128->tfp->device = e_paper_296x128;
     e_paper_296x128->tfp->cb_handler = tf_e_paper_296x128_callback_handler;
+    e_paper_296x128->magic = 0x5446;
     e_paper_296x128->response_expected[0] = 0x06;
     e_paper_296x128->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_e_paper_296x128_destroy(TF_EPaper296x128 *e_paper_296x128) {
-    if (e_paper_296x128 == NULL || e_paper_296x128->tfp == NULL) {
+    if (e_paper_296x128 == NULL) {
         return TF_E_NULL;
+    }
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     e_paper_296x128->tfp->cb_handler = NULL;
     e_paper_296x128->tfp->device = NULL;
     e_paper_296x128->tfp = NULL;
+    e_paper_296x128->magic = 0;
 
     return TF_E_OK;
 }
@@ -91,6 +95,10 @@ int tf_e_paper_296x128_destroy(TF_EPaper296x128 *e_paper_296x128) {
 int tf_e_paper_296x128_get_response_expected(TF_EPaper296x128 *e_paper_296x128, uint8_t function_id, bool *ret_response_expected) {
     if (e_paper_296x128 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -174,6 +182,10 @@ int tf_e_paper_296x128_get_response_expected(TF_EPaper296x128 *e_paper_296x128, 
 int tf_e_paper_296x128_set_response_expected(TF_EPaper296x128 *e_paper_296x128, uint8_t function_id, bool response_expected) {
     if (e_paper_296x128 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -287,6 +299,10 @@ int tf_e_paper_296x128_set_response_expected_all(TF_EPaper296x128 *e_paper_296x1
         return TF_E_NULL;
     }
 
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(e_paper_296x128->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -295,6 +311,10 @@ int tf_e_paper_296x128_set_response_expected_all(TF_EPaper296x128 *e_paper_296x1
 int tf_e_paper_296x128_draw(TF_EPaper296x128 *e_paper_296x128) {
     if (e_paper_296x128 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
@@ -337,6 +357,10 @@ int tf_e_paper_296x128_draw(TF_EPaper296x128 *e_paper_296x128) {
 int tf_e_paper_296x128_get_draw_status(TF_EPaper296x128 *e_paper_296x128, uint8_t *ret_draw_status) {
     if (e_paper_296x128 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
@@ -390,6 +414,10 @@ int tf_e_paper_296x128_write_black_white_low_level(TF_EPaper296x128 *e_paper_296
         return TF_E_NULL;
     }
 
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -441,6 +469,10 @@ int tf_e_paper_296x128_write_black_white_low_level(TF_EPaper296x128 *e_paper_296
 int tf_e_paper_296x128_read_black_white_low_level(TF_EPaper296x128 *e_paper_296x128, uint16_t x_start, uint8_t y_start, uint16_t x_end, uint8_t y_end, uint16_t *ret_pixels_length, uint16_t *ret_pixels_chunk_offset, bool ret_pixels_chunk_data[464]) {
     if (e_paper_296x128 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
@@ -503,6 +535,10 @@ int tf_e_paper_296x128_write_color_low_level(TF_EPaper296x128 *e_paper_296x128, 
         return TF_E_NULL;
     }
 
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -554,6 +590,10 @@ int tf_e_paper_296x128_write_color_low_level(TF_EPaper296x128 *e_paper_296x128, 
 int tf_e_paper_296x128_read_color_low_level(TF_EPaper296x128 *e_paper_296x128, uint16_t x_start, uint8_t y_start, uint16_t x_end, uint8_t y_end, uint16_t *ret_pixels_length, uint16_t *ret_pixels_chunk_offset, bool ret_pixels_chunk_data[464]) {
     if (e_paper_296x128 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
@@ -616,6 +656,10 @@ int tf_e_paper_296x128_fill_display(TF_EPaper296x128 *e_paper_296x128, uint8_t c
         return TF_E_NULL;
     }
 
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -660,6 +704,10 @@ int tf_e_paper_296x128_fill_display(TF_EPaper296x128 *e_paper_296x128, uint8_t c
 int tf_e_paper_296x128_draw_text(TF_EPaper296x128 *e_paper_296x128, uint16_t position_x, uint8_t position_y, uint8_t font, uint8_t color, uint8_t orientation, const char *text) {
     if (e_paper_296x128 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
@@ -714,6 +762,10 @@ int tf_e_paper_296x128_draw_line(TF_EPaper296x128 *e_paper_296x128, uint16_t pos
         return TF_E_NULL;
     }
 
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -762,6 +814,10 @@ int tf_e_paper_296x128_draw_line(TF_EPaper296x128 *e_paper_296x128, uint16_t pos
 int tf_e_paper_296x128_draw_box(TF_EPaper296x128 *e_paper_296x128, uint16_t position_x_start, uint8_t position_y_start, uint16_t position_x_end, uint8_t position_y_end, bool fill, uint8_t color) {
     if (e_paper_296x128 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
@@ -815,6 +871,10 @@ int tf_e_paper_296x128_set_update_mode(TF_EPaper296x128 *e_paper_296x128, uint8_
         return TF_E_NULL;
     }
 
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -859,6 +919,10 @@ int tf_e_paper_296x128_set_update_mode(TF_EPaper296x128 *e_paper_296x128, uint8_
 int tf_e_paper_296x128_get_update_mode(TF_EPaper296x128 *e_paper_296x128, uint8_t *ret_update_mode) {
     if (e_paper_296x128 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
@@ -912,6 +976,10 @@ int tf_e_paper_296x128_set_display_type(TF_EPaper296x128 *e_paper_296x128, uint8
         return TF_E_NULL;
     }
 
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -956,6 +1024,10 @@ int tf_e_paper_296x128_set_display_type(TF_EPaper296x128 *e_paper_296x128, uint8
 int tf_e_paper_296x128_get_display_type(TF_EPaper296x128 *e_paper_296x128, uint8_t *ret_display_type) {
     if (e_paper_296x128 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
@@ -1009,6 +1081,10 @@ int tf_e_paper_296x128_set_display_driver(TF_EPaper296x128 *e_paper_296x128, uin
         return TF_E_NULL;
     }
 
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1053,6 +1129,10 @@ int tf_e_paper_296x128_set_display_driver(TF_EPaper296x128 *e_paper_296x128, uin
 int tf_e_paper_296x128_get_display_driver(TF_EPaper296x128 *e_paper_296x128, uint8_t *ret_display_driver) {
     if (e_paper_296x128 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
@@ -1104,6 +1184,10 @@ int tf_e_paper_296x128_get_display_driver(TF_EPaper296x128 *e_paper_296x128, uin
 int tf_e_paper_296x128_get_spitfp_error_count(TF_EPaper296x128 *e_paper_296x128, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (e_paper_296x128 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
@@ -1158,6 +1242,10 @@ int tf_e_paper_296x128_get_spitfp_error_count(TF_EPaper296x128 *e_paper_296x128,
 int tf_e_paper_296x128_set_bootloader_mode(TF_EPaper296x128 *e_paper_296x128, uint8_t mode, uint8_t *ret_status) {
     if (e_paper_296x128 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
@@ -1215,6 +1303,10 @@ int tf_e_paper_296x128_get_bootloader_mode(TF_EPaper296x128 *e_paper_296x128, ui
         return TF_E_NULL;
     }
 
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1266,6 +1358,10 @@ int tf_e_paper_296x128_set_write_firmware_pointer(TF_EPaper296x128 *e_paper_296x
         return TF_E_NULL;
     }
 
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1310,6 +1406,10 @@ int tf_e_paper_296x128_set_write_firmware_pointer(TF_EPaper296x128 *e_paper_296x
 int tf_e_paper_296x128_write_firmware(TF_EPaper296x128 *e_paper_296x128, const uint8_t data[64], uint8_t *ret_status) {
     if (e_paper_296x128 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
@@ -1367,6 +1467,10 @@ int tf_e_paper_296x128_set_status_led_config(TF_EPaper296x128 *e_paper_296x128, 
         return TF_E_NULL;
     }
 
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1411,6 +1515,10 @@ int tf_e_paper_296x128_set_status_led_config(TF_EPaper296x128 *e_paper_296x128, 
 int tf_e_paper_296x128_get_status_led_config(TF_EPaper296x128 *e_paper_296x128, uint8_t *ret_config) {
     if (e_paper_296x128 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
@@ -1464,6 +1572,10 @@ int tf_e_paper_296x128_get_chip_temperature(TF_EPaper296x128 *e_paper_296x128, i
         return TF_E_NULL;
     }
 
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1515,6 +1627,10 @@ int tf_e_paper_296x128_reset(TF_EPaper296x128 *e_paper_296x128) {
         return TF_E_NULL;
     }
 
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1555,6 +1671,10 @@ int tf_e_paper_296x128_reset(TF_EPaper296x128 *e_paper_296x128) {
 int tf_e_paper_296x128_write_uid(TF_EPaper296x128 *e_paper_296x128, uint32_t uid) {
     if (e_paper_296x128 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
@@ -1601,6 +1721,10 @@ int tf_e_paper_296x128_write_uid(TF_EPaper296x128 *e_paper_296x128, uint32_t uid
 int tf_e_paper_296x128_read_uid(TF_EPaper296x128 *e_paper_296x128, uint32_t *ret_uid) {
     if (e_paper_296x128 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
@@ -1652,6 +1776,10 @@ int tf_e_paper_296x128_read_uid(TF_EPaper296x128 *e_paper_296x128, uint32_t *ret
 int tf_e_paper_296x128_get_identity(TF_EPaper296x128 *e_paper_296x128, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (e_paper_296x128 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = e_paper_296x128->tfp->spitfp->hal;
@@ -1731,6 +1859,10 @@ int tf_e_paper_296x128_write_black_white(TF_EPaper296x128 *e_paper_296x128, uint
     if (e_paper_296x128 == NULL) {
         return TF_E_NULL;
     }
+
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
     
     TF_EPaper296x128_WriteBlackWhiteLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
@@ -1775,6 +1907,10 @@ int tf_e_paper_296x128_read_black_white(TF_EPaper296x128 *e_paper_296x128, uint1
     if (e_paper_296x128 == NULL) {
         return TF_E_NULL;
     }
+
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
     
     TF_EPaper296x128_ReadBlackWhiteLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
@@ -1817,6 +1953,10 @@ static int tf_e_paper_296x128_write_color_ll_wrapper(void *device, void *wrapper
 int tf_e_paper_296x128_write_color(TF_EPaper296x128 *e_paper_296x128, uint16_t x_start, uint8_t y_start, uint16_t x_end, uint8_t y_end, const bool *pixels, uint16_t pixels_length) {
     if (e_paper_296x128 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
     
     TF_EPaper296x128_WriteColorLLWrapperData _wrapper_data;
@@ -1862,6 +2002,10 @@ int tf_e_paper_296x128_read_color(TF_EPaper296x128 *e_paper_296x128, uint16_t x_
     if (e_paper_296x128 == NULL) {
         return TF_E_NULL;
     }
+
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
     
     TF_EPaper296x128_ReadColorLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
@@ -1885,10 +2029,8 @@ int tf_e_paper_296x128_register_draw_status_callback(TF_EPaper296x128 *e_paper_2
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        e_paper_296x128->tfp->needs_callback_tick = false;
-    } else {
-        e_paper_296x128->tfp->needs_callback_tick = true;
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     e_paper_296x128->draw_status_handler = handler;
@@ -1900,6 +2042,10 @@ int tf_e_paper_296x128_register_draw_status_callback(TF_EPaper296x128 *e_paper_2
 int tf_e_paper_296x128_callback_tick(TF_EPaper296x128 *e_paper_296x128, uint32_t timeout_us) {
     if (e_paper_296x128 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = e_paper_296x128->tfp->spitfp->hal;

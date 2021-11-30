@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -131,20 +131,24 @@ int tf_air_quality_create(TF_AirQuality *air_quality, const char *uid_or_port_na
     air_quality->tfp = tfp;
     air_quality->tfp->device = air_quality;
     air_quality->tfp->cb_handler = tf_air_quality_callback_handler;
+    air_quality->magic = 0x5446;
     air_quality->response_expected[0] = 0x3E;
     air_quality->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_air_quality_destroy(TF_AirQuality *air_quality) {
-    if (air_quality == NULL || air_quality->tfp == NULL) {
+    if (air_quality == NULL) {
         return TF_E_NULL;
+    }
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     air_quality->tfp->cb_handler = NULL;
     air_quality->tfp->device = NULL;
     air_quality->tfp = NULL;
+    air_quality->magic = 0;
 
     return TF_E_OK;
 }
@@ -152,6 +156,10 @@ int tf_air_quality_destroy(TF_AirQuality *air_quality) {
 int tf_air_quality_get_response_expected(TF_AirQuality *air_quality, uint8_t function_id, bool *ret_response_expected) {
     if (air_quality == NULL) {
         return TF_E_NULL;
+    }
+
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -225,6 +233,10 @@ int tf_air_quality_get_response_expected(TF_AirQuality *air_quality, uint8_t fun
 int tf_air_quality_set_response_expected(TF_AirQuality *air_quality, uint8_t function_id, bool response_expected) {
     if (air_quality == NULL) {
         return TF_E_NULL;
+    }
+
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -324,6 +336,10 @@ int tf_air_quality_set_response_expected_all(TF_AirQuality *air_quality, bool re
         return TF_E_NULL;
     }
 
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(air_quality->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -332,6 +348,10 @@ int tf_air_quality_set_response_expected_all(TF_AirQuality *air_quality, bool re
 int tf_air_quality_get_all_values(TF_AirQuality *air_quality, int32_t *ret_iaq_index, uint8_t *ret_iaq_index_accuracy, int32_t *ret_temperature, int32_t *ret_humidity, int32_t *ret_air_pressure) {
     if (air_quality == NULL) {
         return TF_E_NULL;
+    }
+
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
@@ -389,6 +409,10 @@ int tf_air_quality_set_temperature_offset(TF_AirQuality *air_quality, int32_t of
         return TF_E_NULL;
     }
 
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -433,6 +457,10 @@ int tf_air_quality_set_temperature_offset(TF_AirQuality *air_quality, int32_t of
 int tf_air_quality_get_temperature_offset(TF_AirQuality *air_quality, int32_t *ret_offset) {
     if (air_quality == NULL) {
         return TF_E_NULL;
+    }
+
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
@@ -486,6 +514,10 @@ int tf_air_quality_set_all_values_callback_configuration(TF_AirQuality *air_qual
         return TF_E_NULL;
     }
 
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -531,6 +563,10 @@ int tf_air_quality_set_all_values_callback_configuration(TF_AirQuality *air_qual
 int tf_air_quality_get_all_values_callback_configuration(TF_AirQuality *air_quality, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (air_quality == NULL) {
         return TF_E_NULL;
+    }
+
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
@@ -585,6 +621,10 @@ int tf_air_quality_get_iaq_index(TF_AirQuality *air_quality, int32_t *ret_iaq_in
         return TF_E_NULL;
     }
 
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -637,6 +677,10 @@ int tf_air_quality_set_iaq_index_callback_configuration(TF_AirQuality *air_quali
         return TF_E_NULL;
     }
 
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -682,6 +726,10 @@ int tf_air_quality_set_iaq_index_callback_configuration(TF_AirQuality *air_quali
 int tf_air_quality_get_iaq_index_callback_configuration(TF_AirQuality *air_quality, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (air_quality == NULL) {
         return TF_E_NULL;
+    }
+
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
@@ -736,6 +784,10 @@ int tf_air_quality_get_temperature(TF_AirQuality *air_quality, int32_t *ret_temp
         return TF_E_NULL;
     }
 
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -787,6 +839,10 @@ int tf_air_quality_set_temperature_callback_configuration(TF_AirQuality *air_qua
         return TF_E_NULL;
     }
 
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -835,6 +891,10 @@ int tf_air_quality_set_temperature_callback_configuration(TF_AirQuality *air_qua
 int tf_air_quality_get_temperature_callback_configuration(TF_AirQuality *air_quality, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int32_t *ret_min, int32_t *ret_max) {
     if (air_quality == NULL) {
         return TF_E_NULL;
+    }
+
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
@@ -892,6 +952,10 @@ int tf_air_quality_get_humidity(TF_AirQuality *air_quality, int32_t *ret_humidit
         return TF_E_NULL;
     }
 
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -943,6 +1007,10 @@ int tf_air_quality_set_humidity_callback_configuration(TF_AirQuality *air_qualit
         return TF_E_NULL;
     }
 
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -991,6 +1059,10 @@ int tf_air_quality_set_humidity_callback_configuration(TF_AirQuality *air_qualit
 int tf_air_quality_get_humidity_callback_configuration(TF_AirQuality *air_quality, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int32_t *ret_min, int32_t *ret_max) {
     if (air_quality == NULL) {
         return TF_E_NULL;
+    }
+
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
@@ -1048,6 +1120,10 @@ int tf_air_quality_get_air_pressure(TF_AirQuality *air_quality, int32_t *ret_air
         return TF_E_NULL;
     }
 
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1099,6 +1175,10 @@ int tf_air_quality_set_air_pressure_callback_configuration(TF_AirQuality *air_qu
         return TF_E_NULL;
     }
 
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1147,6 +1227,10 @@ int tf_air_quality_set_air_pressure_callback_configuration(TF_AirQuality *air_qu
 int tf_air_quality_get_air_pressure_callback_configuration(TF_AirQuality *air_quality, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int32_t *ret_min, int32_t *ret_max) {
     if (air_quality == NULL) {
         return TF_E_NULL;
+    }
+
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
@@ -1204,6 +1288,10 @@ int tf_air_quality_remove_calibration(TF_AirQuality *air_quality) {
         return TF_E_NULL;
     }
 
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1244,6 +1332,10 @@ int tf_air_quality_remove_calibration(TF_AirQuality *air_quality) {
 int tf_air_quality_set_background_calibration_duration(TF_AirQuality *air_quality, uint8_t duration) {
     if (air_quality == NULL) {
         return TF_E_NULL;
+    }
+
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
@@ -1290,6 +1382,10 @@ int tf_air_quality_set_background_calibration_duration(TF_AirQuality *air_qualit
 int tf_air_quality_get_background_calibration_duration(TF_AirQuality *air_quality, uint8_t *ret_duration) {
     if (air_quality == NULL) {
         return TF_E_NULL;
+    }
+
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
@@ -1341,6 +1437,10 @@ int tf_air_quality_get_background_calibration_duration(TF_AirQuality *air_qualit
 int tf_air_quality_get_spitfp_error_count(TF_AirQuality *air_quality, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (air_quality == NULL) {
         return TF_E_NULL;
+    }
+
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
@@ -1395,6 +1495,10 @@ int tf_air_quality_get_spitfp_error_count(TF_AirQuality *air_quality, uint32_t *
 int tf_air_quality_set_bootloader_mode(TF_AirQuality *air_quality, uint8_t mode, uint8_t *ret_status) {
     if (air_quality == NULL) {
         return TF_E_NULL;
+    }
+
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
@@ -1452,6 +1556,10 @@ int tf_air_quality_get_bootloader_mode(TF_AirQuality *air_quality, uint8_t *ret_
         return TF_E_NULL;
     }
 
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1503,6 +1611,10 @@ int tf_air_quality_set_write_firmware_pointer(TF_AirQuality *air_quality, uint32
         return TF_E_NULL;
     }
 
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1547,6 +1659,10 @@ int tf_air_quality_set_write_firmware_pointer(TF_AirQuality *air_quality, uint32
 int tf_air_quality_write_firmware(TF_AirQuality *air_quality, const uint8_t data[64], uint8_t *ret_status) {
     if (air_quality == NULL) {
         return TF_E_NULL;
+    }
+
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
@@ -1604,6 +1720,10 @@ int tf_air_quality_set_status_led_config(TF_AirQuality *air_quality, uint8_t con
         return TF_E_NULL;
     }
 
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1648,6 +1768,10 @@ int tf_air_quality_set_status_led_config(TF_AirQuality *air_quality, uint8_t con
 int tf_air_quality_get_status_led_config(TF_AirQuality *air_quality, uint8_t *ret_config) {
     if (air_quality == NULL) {
         return TF_E_NULL;
+    }
+
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
@@ -1701,6 +1825,10 @@ int tf_air_quality_get_chip_temperature(TF_AirQuality *air_quality, int16_t *ret
         return TF_E_NULL;
     }
 
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1752,6 +1880,10 @@ int tf_air_quality_reset(TF_AirQuality *air_quality) {
         return TF_E_NULL;
     }
 
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1792,6 +1924,10 @@ int tf_air_quality_reset(TF_AirQuality *air_quality) {
 int tf_air_quality_write_uid(TF_AirQuality *air_quality, uint32_t uid) {
     if (air_quality == NULL) {
         return TF_E_NULL;
+    }
+
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
@@ -1838,6 +1974,10 @@ int tf_air_quality_write_uid(TF_AirQuality *air_quality, uint32_t uid) {
 int tf_air_quality_read_uid(TF_AirQuality *air_quality, uint32_t *ret_uid) {
     if (air_quality == NULL) {
         return TF_E_NULL;
+    }
+
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
@@ -1889,6 +2029,10 @@ int tf_air_quality_read_uid(TF_AirQuality *air_quality, uint32_t *ret_uid) {
 int tf_air_quality_get_identity(TF_AirQuality *air_quality, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (air_quality == NULL) {
         return TF_E_NULL;
+    }
+
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = air_quality->tfp->spitfp->hal;
@@ -1948,14 +2092,8 @@ int tf_air_quality_register_all_values_callback(TF_AirQuality *air_quality, TF_A
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        air_quality->tfp->needs_callback_tick = false;
-        air_quality->tfp->needs_callback_tick |= air_quality->iaq_index_handler != NULL;
-        air_quality->tfp->needs_callback_tick |= air_quality->temperature_handler != NULL;
-        air_quality->tfp->needs_callback_tick |= air_quality->humidity_handler != NULL;
-        air_quality->tfp->needs_callback_tick |= air_quality->air_pressure_handler != NULL;
-    } else {
-        air_quality->tfp->needs_callback_tick = true;
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     air_quality->all_values_handler = handler;
@@ -1970,14 +2108,8 @@ int tf_air_quality_register_iaq_index_callback(TF_AirQuality *air_quality, TF_Ai
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        air_quality->tfp->needs_callback_tick = false;
-        air_quality->tfp->needs_callback_tick |= air_quality->all_values_handler != NULL;
-        air_quality->tfp->needs_callback_tick |= air_quality->temperature_handler != NULL;
-        air_quality->tfp->needs_callback_tick |= air_quality->humidity_handler != NULL;
-        air_quality->tfp->needs_callback_tick |= air_quality->air_pressure_handler != NULL;
-    } else {
-        air_quality->tfp->needs_callback_tick = true;
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     air_quality->iaq_index_handler = handler;
@@ -1992,14 +2124,8 @@ int tf_air_quality_register_temperature_callback(TF_AirQuality *air_quality, TF_
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        air_quality->tfp->needs_callback_tick = false;
-        air_quality->tfp->needs_callback_tick |= air_quality->all_values_handler != NULL;
-        air_quality->tfp->needs_callback_tick |= air_quality->iaq_index_handler != NULL;
-        air_quality->tfp->needs_callback_tick |= air_quality->humidity_handler != NULL;
-        air_quality->tfp->needs_callback_tick |= air_quality->air_pressure_handler != NULL;
-    } else {
-        air_quality->tfp->needs_callback_tick = true;
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     air_quality->temperature_handler = handler;
@@ -2014,14 +2140,8 @@ int tf_air_quality_register_humidity_callback(TF_AirQuality *air_quality, TF_Air
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        air_quality->tfp->needs_callback_tick = false;
-        air_quality->tfp->needs_callback_tick |= air_quality->all_values_handler != NULL;
-        air_quality->tfp->needs_callback_tick |= air_quality->iaq_index_handler != NULL;
-        air_quality->tfp->needs_callback_tick |= air_quality->temperature_handler != NULL;
-        air_quality->tfp->needs_callback_tick |= air_quality->air_pressure_handler != NULL;
-    } else {
-        air_quality->tfp->needs_callback_tick = true;
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     air_quality->humidity_handler = handler;
@@ -2036,14 +2156,8 @@ int tf_air_quality_register_air_pressure_callback(TF_AirQuality *air_quality, TF
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        air_quality->tfp->needs_callback_tick = false;
-        air_quality->tfp->needs_callback_tick |= air_quality->all_values_handler != NULL;
-        air_quality->tfp->needs_callback_tick |= air_quality->iaq_index_handler != NULL;
-        air_quality->tfp->needs_callback_tick |= air_quality->temperature_handler != NULL;
-        air_quality->tfp->needs_callback_tick |= air_quality->humidity_handler != NULL;
-    } else {
-        air_quality->tfp->needs_callback_tick = true;
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     air_quality->air_pressure_handler = handler;
@@ -2055,6 +2169,10 @@ int tf_air_quality_register_air_pressure_callback(TF_AirQuality *air_quality, TF
 int tf_air_quality_callback_tick(TF_AirQuality *air_quality, uint32_t timeout_us) {
     if (air_quality == NULL) {
         return TF_E_NULL;
+    }
+
+    if (air_quality->magic != 0x5446 || air_quality->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = air_quality->tfp->spitfp->hal;

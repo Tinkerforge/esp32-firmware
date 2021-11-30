@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -205,20 +205,24 @@ int tf_imu_v3_create(TF_IMUV3 *imu_v3, const char *uid_or_port_name, TF_HAL *hal
     imu_v3->tfp = tfp;
     imu_v3->tfp->device = imu_v3;
     imu_v3->tfp->cb_handler = tf_imu_v3_callback_handler;
+    imu_v3->magic = 0x5446;
     imu_v3->response_expected[0] = 0xFC;
     imu_v3->response_expected[1] = 0x07;
-
     return TF_E_OK;
 }
 
 int tf_imu_v3_destroy(TF_IMUV3 *imu_v3) {
-    if (imu_v3 == NULL || imu_v3->tfp == NULL) {
+    if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     imu_v3->tfp->cb_handler = NULL;
     imu_v3->tfp->device = NULL;
     imu_v3->tfp = NULL;
+    imu_v3->magic = 0;
 
     return TF_E_OK;
 }
@@ -226,6 +230,10 @@ int tf_imu_v3_destroy(TF_IMUV3 *imu_v3) {
 int tf_imu_v3_get_response_expected(TF_IMUV3 *imu_v3, uint8_t function_id, bool *ret_response_expected) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -314,6 +322,10 @@ int tf_imu_v3_get_response_expected(TF_IMUV3 *imu_v3, uint8_t function_id, bool 
 int tf_imu_v3_set_response_expected(TF_IMUV3 *imu_v3, uint8_t function_id, bool response_expected) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -434,6 +446,10 @@ int tf_imu_v3_set_response_expected_all(TF_IMUV3 *imu_v3, bool response_expected
         return TF_E_NULL;
     }
 
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(imu_v3->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -442,6 +458,10 @@ int tf_imu_v3_set_response_expected_all(TF_IMUV3 *imu_v3, bool response_expected
 int tf_imu_v3_get_acceleration(TF_IMUV3 *imu_v3, int16_t *ret_x, int16_t *ret_y, int16_t *ret_z) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
@@ -497,6 +517,10 @@ int tf_imu_v3_get_magnetic_field(TF_IMUV3 *imu_v3, int16_t *ret_x, int16_t *ret_
         return TF_E_NULL;
     }
 
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -548,6 +572,10 @@ int tf_imu_v3_get_magnetic_field(TF_IMUV3 *imu_v3, int16_t *ret_x, int16_t *ret_
 int tf_imu_v3_get_angular_velocity(TF_IMUV3 *imu_v3, int16_t *ret_x, int16_t *ret_y, int16_t *ret_z) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
@@ -603,6 +631,10 @@ int tf_imu_v3_get_temperature(TF_IMUV3 *imu_v3, int8_t *ret_temperature) {
         return TF_E_NULL;
     }
 
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -652,6 +684,10 @@ int tf_imu_v3_get_temperature(TF_IMUV3 *imu_v3, int8_t *ret_temperature) {
 int tf_imu_v3_get_orientation(TF_IMUV3 *imu_v3, int16_t *ret_heading, int16_t *ret_roll, int16_t *ret_pitch) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
@@ -707,6 +743,10 @@ int tf_imu_v3_get_linear_acceleration(TF_IMUV3 *imu_v3, int16_t *ret_x, int16_t 
         return TF_E_NULL;
     }
 
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -758,6 +798,10 @@ int tf_imu_v3_get_linear_acceleration(TF_IMUV3 *imu_v3, int16_t *ret_x, int16_t 
 int tf_imu_v3_get_gravity_vector(TF_IMUV3 *imu_v3, int16_t *ret_x, int16_t *ret_y, int16_t *ret_z) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
@@ -813,6 +857,10 @@ int tf_imu_v3_get_quaternion(TF_IMUV3 *imu_v3, int16_t *ret_w, int16_t *ret_x, i
         return TF_E_NULL;
     }
 
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -865,6 +913,10 @@ int tf_imu_v3_get_quaternion(TF_IMUV3 *imu_v3, int16_t *ret_w, int16_t *ret_x, i
 int tf_imu_v3_get_all_data(TF_IMUV3 *imu_v3, int16_t ret_acceleration[3], int16_t ret_magnetic_field[3], int16_t ret_angular_velocity[3], int16_t ret_euler_angle[3], int16_t ret_quaternion[4], int16_t ret_linear_acceleration[3], int16_t ret_gravity_vector[3], int8_t *ret_temperature, uint8_t *ret_calibration_status) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
@@ -927,6 +979,10 @@ int tf_imu_v3_save_calibration(TF_IMUV3 *imu_v3, bool *ret_calibration_done) {
         return TF_E_NULL;
     }
 
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -978,6 +1034,10 @@ int tf_imu_v3_set_sensor_configuration(TF_IMUV3 *imu_v3, uint8_t magnetometer_ra
         return TF_E_NULL;
     }
 
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1026,6 +1086,10 @@ int tf_imu_v3_set_sensor_configuration(TF_IMUV3 *imu_v3, uint8_t magnetometer_ra
 int tf_imu_v3_get_sensor_configuration(TF_IMUV3 *imu_v3, uint8_t *ret_magnetometer_rate, uint8_t *ret_gyroscope_range, uint8_t *ret_gyroscope_bandwidth, uint8_t *ret_accelerometer_range, uint8_t *ret_accelerometer_bandwidth) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
@@ -1083,6 +1147,10 @@ int tf_imu_v3_set_sensor_fusion_mode(TF_IMUV3 *imu_v3, uint8_t mode) {
         return TF_E_NULL;
     }
 
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1127,6 +1195,10 @@ int tf_imu_v3_set_sensor_fusion_mode(TF_IMUV3 *imu_v3, uint8_t mode) {
 int tf_imu_v3_get_sensor_fusion_mode(TF_IMUV3 *imu_v3, uint8_t *ret_mode) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
@@ -1180,6 +1252,10 @@ int tf_imu_v3_set_acceleration_callback_configuration(TF_IMUV3 *imu_v3, uint32_t
         return TF_E_NULL;
     }
 
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1225,6 +1301,10 @@ int tf_imu_v3_set_acceleration_callback_configuration(TF_IMUV3 *imu_v3, uint32_t
 int tf_imu_v3_get_acceleration_callback_configuration(TF_IMUV3 *imu_v3, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
@@ -1279,6 +1359,10 @@ int tf_imu_v3_set_magnetic_field_callback_configuration(TF_IMUV3 *imu_v3, uint32
         return TF_E_NULL;
     }
 
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1324,6 +1408,10 @@ int tf_imu_v3_set_magnetic_field_callback_configuration(TF_IMUV3 *imu_v3, uint32
 int tf_imu_v3_get_magnetic_field_callback_configuration(TF_IMUV3 *imu_v3, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
@@ -1378,6 +1466,10 @@ int tf_imu_v3_set_angular_velocity_callback_configuration(TF_IMUV3 *imu_v3, uint
         return TF_E_NULL;
     }
 
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1423,6 +1515,10 @@ int tf_imu_v3_set_angular_velocity_callback_configuration(TF_IMUV3 *imu_v3, uint
 int tf_imu_v3_get_angular_velocity_callback_configuration(TF_IMUV3 *imu_v3, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
@@ -1477,6 +1573,10 @@ int tf_imu_v3_set_temperature_callback_configuration(TF_IMUV3 *imu_v3, uint32_t 
         return TF_E_NULL;
     }
 
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1522,6 +1622,10 @@ int tf_imu_v3_set_temperature_callback_configuration(TF_IMUV3 *imu_v3, uint32_t 
 int tf_imu_v3_get_temperature_callback_configuration(TF_IMUV3 *imu_v3, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
@@ -1576,6 +1680,10 @@ int tf_imu_v3_set_orientation_callback_configuration(TF_IMUV3 *imu_v3, uint32_t 
         return TF_E_NULL;
     }
 
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1621,6 +1729,10 @@ int tf_imu_v3_set_orientation_callback_configuration(TF_IMUV3 *imu_v3, uint32_t 
 int tf_imu_v3_get_orientation_callback_configuration(TF_IMUV3 *imu_v3, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
@@ -1675,6 +1787,10 @@ int tf_imu_v3_set_linear_acceleration_callback_configuration(TF_IMUV3 *imu_v3, u
         return TF_E_NULL;
     }
 
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1720,6 +1836,10 @@ int tf_imu_v3_set_linear_acceleration_callback_configuration(TF_IMUV3 *imu_v3, u
 int tf_imu_v3_get_linear_acceleration_callback_configuration(TF_IMUV3 *imu_v3, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
@@ -1774,6 +1894,10 @@ int tf_imu_v3_set_gravity_vector_callback_configuration(TF_IMUV3 *imu_v3, uint32
         return TF_E_NULL;
     }
 
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1819,6 +1943,10 @@ int tf_imu_v3_set_gravity_vector_callback_configuration(TF_IMUV3 *imu_v3, uint32
 int tf_imu_v3_get_gravity_vector_callback_configuration(TF_IMUV3 *imu_v3, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
@@ -1873,6 +2001,10 @@ int tf_imu_v3_set_quaternion_callback_configuration(TF_IMUV3 *imu_v3, uint32_t p
         return TF_E_NULL;
     }
 
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1918,6 +2050,10 @@ int tf_imu_v3_set_quaternion_callback_configuration(TF_IMUV3 *imu_v3, uint32_t p
 int tf_imu_v3_get_quaternion_callback_configuration(TF_IMUV3 *imu_v3, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
@@ -1972,6 +2108,10 @@ int tf_imu_v3_set_all_data_callback_configuration(TF_IMUV3 *imu_v3, uint32_t per
         return TF_E_NULL;
     }
 
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2017,6 +2157,10 @@ int tf_imu_v3_set_all_data_callback_configuration(TF_IMUV3 *imu_v3, uint32_t per
 int tf_imu_v3_get_all_data_callback_configuration(TF_IMUV3 *imu_v3, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
@@ -2071,6 +2215,10 @@ int tf_imu_v3_get_spitfp_error_count(TF_IMUV3 *imu_v3, uint32_t *ret_error_count
         return TF_E_NULL;
     }
 
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2123,6 +2271,10 @@ int tf_imu_v3_get_spitfp_error_count(TF_IMUV3 *imu_v3, uint32_t *ret_error_count
 int tf_imu_v3_set_bootloader_mode(TF_IMUV3 *imu_v3, uint8_t mode, uint8_t *ret_status) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
@@ -2180,6 +2332,10 @@ int tf_imu_v3_get_bootloader_mode(TF_IMUV3 *imu_v3, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2231,6 +2387,10 @@ int tf_imu_v3_set_write_firmware_pointer(TF_IMUV3 *imu_v3, uint32_t pointer) {
         return TF_E_NULL;
     }
 
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2275,6 +2435,10 @@ int tf_imu_v3_set_write_firmware_pointer(TF_IMUV3 *imu_v3, uint32_t pointer) {
 int tf_imu_v3_write_firmware(TF_IMUV3 *imu_v3, const uint8_t data[64], uint8_t *ret_status) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
@@ -2332,6 +2496,10 @@ int tf_imu_v3_set_status_led_config(TF_IMUV3 *imu_v3, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2376,6 +2544,10 @@ int tf_imu_v3_set_status_led_config(TF_IMUV3 *imu_v3, uint8_t config) {
 int tf_imu_v3_get_status_led_config(TF_IMUV3 *imu_v3, uint8_t *ret_config) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
@@ -2429,6 +2601,10 @@ int tf_imu_v3_get_chip_temperature(TF_IMUV3 *imu_v3, int16_t *ret_temperature) {
         return TF_E_NULL;
     }
 
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2480,6 +2656,10 @@ int tf_imu_v3_reset(TF_IMUV3 *imu_v3) {
         return TF_E_NULL;
     }
 
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2520,6 +2700,10 @@ int tf_imu_v3_reset(TF_IMUV3 *imu_v3) {
 int tf_imu_v3_write_uid(TF_IMUV3 *imu_v3, uint32_t uid) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
@@ -2566,6 +2750,10 @@ int tf_imu_v3_write_uid(TF_IMUV3 *imu_v3, uint32_t uid) {
 int tf_imu_v3_read_uid(TF_IMUV3 *imu_v3, uint32_t *ret_uid) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
@@ -2617,6 +2805,10 @@ int tf_imu_v3_read_uid(TF_IMUV3 *imu_v3, uint32_t *ret_uid) {
 int tf_imu_v3_get_identity(TF_IMUV3 *imu_v3, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = imu_v3->tfp->spitfp->hal;
@@ -2676,18 +2868,8 @@ int tf_imu_v3_register_acceleration_callback(TF_IMUV3 *imu_v3, TF_IMUV3_Accelera
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        imu_v3->tfp->needs_callback_tick = false;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->magnetic_field_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->angular_velocity_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->temperature_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->linear_acceleration_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->gravity_vector_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->orientation_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->quaternion_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->all_data_handler != NULL;
-    } else {
-        imu_v3->tfp->needs_callback_tick = true;
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     imu_v3->acceleration_handler = handler;
@@ -2702,18 +2884,8 @@ int tf_imu_v3_register_magnetic_field_callback(TF_IMUV3 *imu_v3, TF_IMUV3_Magnet
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        imu_v3->tfp->needs_callback_tick = false;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->acceleration_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->angular_velocity_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->temperature_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->linear_acceleration_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->gravity_vector_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->orientation_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->quaternion_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->all_data_handler != NULL;
-    } else {
-        imu_v3->tfp->needs_callback_tick = true;
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     imu_v3->magnetic_field_handler = handler;
@@ -2728,18 +2900,8 @@ int tf_imu_v3_register_angular_velocity_callback(TF_IMUV3 *imu_v3, TF_IMUV3_Angu
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        imu_v3->tfp->needs_callback_tick = false;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->acceleration_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->magnetic_field_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->temperature_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->linear_acceleration_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->gravity_vector_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->orientation_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->quaternion_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->all_data_handler != NULL;
-    } else {
-        imu_v3->tfp->needs_callback_tick = true;
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     imu_v3->angular_velocity_handler = handler;
@@ -2754,18 +2916,8 @@ int tf_imu_v3_register_temperature_callback(TF_IMUV3 *imu_v3, TF_IMUV3_Temperatu
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        imu_v3->tfp->needs_callback_tick = false;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->acceleration_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->magnetic_field_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->angular_velocity_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->linear_acceleration_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->gravity_vector_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->orientation_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->quaternion_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->all_data_handler != NULL;
-    } else {
-        imu_v3->tfp->needs_callback_tick = true;
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     imu_v3->temperature_handler = handler;
@@ -2780,18 +2932,8 @@ int tf_imu_v3_register_linear_acceleration_callback(TF_IMUV3 *imu_v3, TF_IMUV3_L
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        imu_v3->tfp->needs_callback_tick = false;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->acceleration_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->magnetic_field_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->angular_velocity_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->temperature_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->gravity_vector_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->orientation_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->quaternion_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->all_data_handler != NULL;
-    } else {
-        imu_v3->tfp->needs_callback_tick = true;
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     imu_v3->linear_acceleration_handler = handler;
@@ -2806,18 +2948,8 @@ int tf_imu_v3_register_gravity_vector_callback(TF_IMUV3 *imu_v3, TF_IMUV3_Gravit
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        imu_v3->tfp->needs_callback_tick = false;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->acceleration_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->magnetic_field_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->angular_velocity_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->temperature_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->linear_acceleration_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->orientation_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->quaternion_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->all_data_handler != NULL;
-    } else {
-        imu_v3->tfp->needs_callback_tick = true;
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     imu_v3->gravity_vector_handler = handler;
@@ -2832,18 +2964,8 @@ int tf_imu_v3_register_orientation_callback(TF_IMUV3 *imu_v3, TF_IMUV3_Orientati
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        imu_v3->tfp->needs_callback_tick = false;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->acceleration_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->magnetic_field_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->angular_velocity_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->temperature_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->linear_acceleration_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->gravity_vector_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->quaternion_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->all_data_handler != NULL;
-    } else {
-        imu_v3->tfp->needs_callback_tick = true;
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     imu_v3->orientation_handler = handler;
@@ -2858,18 +2980,8 @@ int tf_imu_v3_register_quaternion_callback(TF_IMUV3 *imu_v3, TF_IMUV3_Quaternion
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        imu_v3->tfp->needs_callback_tick = false;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->acceleration_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->magnetic_field_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->angular_velocity_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->temperature_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->linear_acceleration_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->gravity_vector_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->orientation_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->all_data_handler != NULL;
-    } else {
-        imu_v3->tfp->needs_callback_tick = true;
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     imu_v3->quaternion_handler = handler;
@@ -2884,18 +2996,8 @@ int tf_imu_v3_register_all_data_callback(TF_IMUV3 *imu_v3, TF_IMUV3_AllDataHandl
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        imu_v3->tfp->needs_callback_tick = false;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->acceleration_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->magnetic_field_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->angular_velocity_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->temperature_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->linear_acceleration_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->gravity_vector_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->orientation_handler != NULL;
-        imu_v3->tfp->needs_callback_tick |= imu_v3->quaternion_handler != NULL;
-    } else {
-        imu_v3->tfp->needs_callback_tick = true;
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     imu_v3->all_data_handler = handler;
@@ -2907,6 +3009,10 @@ int tf_imu_v3_register_all_data_callback(TF_IMUV3 *imu_v3, TF_IMUV3_AllDataHandl
 int tf_imu_v3_callback_tick(TF_IMUV3 *imu_v3, uint32_t timeout_us) {
     if (imu_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (imu_v3->magic != 0x5446 || imu_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = imu_v3->tfp->spitfp->hal;

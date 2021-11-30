@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -84,19 +84,23 @@ int tf_xmc1400_breakout_create(TF_XMC1400Breakout *xmc1400_breakout, const char 
     xmc1400_breakout->tfp = tfp;
     xmc1400_breakout->tfp->device = xmc1400_breakout;
     xmc1400_breakout->tfp->cb_handler = tf_xmc1400_breakout_callback_handler;
+    xmc1400_breakout->magic = 0x5446;
     xmc1400_breakout->response_expected[0] = 0x0C;
-
     return TF_E_OK;
 }
 
 int tf_xmc1400_breakout_destroy(TF_XMC1400Breakout *xmc1400_breakout) {
-    if (xmc1400_breakout == NULL || xmc1400_breakout->tfp == NULL) {
+    if (xmc1400_breakout == NULL) {
         return TF_E_NULL;
+    }
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     xmc1400_breakout->tfp->cb_handler = NULL;
     xmc1400_breakout->tfp->device = NULL;
     xmc1400_breakout->tfp = NULL;
+    xmc1400_breakout->magic = 0;
 
     return TF_E_OK;
 }
@@ -104,6 +108,10 @@ int tf_xmc1400_breakout_destroy(TF_XMC1400Breakout *xmc1400_breakout) {
 int tf_xmc1400_breakout_get_response_expected(TF_XMC1400Breakout *xmc1400_breakout, uint8_t function_id, bool *ret_response_expected) {
     if (xmc1400_breakout == NULL) {
         return TF_E_NULL;
+    }
+
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -157,6 +165,10 @@ int tf_xmc1400_breakout_get_response_expected(TF_XMC1400Breakout *xmc1400_breako
 int tf_xmc1400_breakout_set_response_expected(TF_XMC1400Breakout *xmc1400_breakout, uint8_t function_id, bool response_expected) {
     if (xmc1400_breakout == NULL) {
         return TF_E_NULL;
+    }
+
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -228,6 +240,10 @@ int tf_xmc1400_breakout_set_response_expected_all(TF_XMC1400Breakout *xmc1400_br
         return TF_E_NULL;
     }
 
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(xmc1400_breakout->response_expected, response_expected ? 0xFF : 0, 1);
 
     return TF_E_OK;
@@ -236,6 +252,10 @@ int tf_xmc1400_breakout_set_response_expected_all(TF_XMC1400Breakout *xmc1400_br
 int tf_xmc1400_breakout_set_gpio_config(TF_XMC1400Breakout *xmc1400_breakout, uint8_t port, uint8_t pin, uint8_t mode, uint8_t input_hysteresis, bool output_level) {
     if (xmc1400_breakout == NULL) {
         return TF_E_NULL;
+    }
+
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = xmc1400_breakout->tfp->spitfp->hal;
@@ -286,6 +306,10 @@ int tf_xmc1400_breakout_set_gpio_config(TF_XMC1400Breakout *xmc1400_breakout, ui
 int tf_xmc1400_breakout_get_gpio_input(TF_XMC1400Breakout *xmc1400_breakout, uint8_t port, uint8_t pin, bool *ret_value) {
     if (xmc1400_breakout == NULL) {
         return TF_E_NULL;
+    }
+
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = xmc1400_breakout->tfp->spitfp->hal;
@@ -344,6 +368,10 @@ int tf_xmc1400_breakout_set_adc_channel_config(TF_XMC1400Breakout *xmc1400_break
         return TF_E_NULL;
     }
 
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = xmc1400_breakout->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -389,6 +417,10 @@ int tf_xmc1400_breakout_set_adc_channel_config(TF_XMC1400Breakout *xmc1400_break
 int tf_xmc1400_breakout_get_adc_channel_config(TF_XMC1400Breakout *xmc1400_breakout, uint8_t channel, bool *ret_enable) {
     if (xmc1400_breakout == NULL) {
         return TF_E_NULL;
+    }
+
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = xmc1400_breakout->tfp->spitfp->hal;
@@ -446,6 +478,10 @@ int tf_xmc1400_breakout_get_adc_channel_value(TF_XMC1400Breakout *xmc1400_breako
         return TF_E_NULL;
     }
 
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = xmc1400_breakout->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -501,6 +537,10 @@ int tf_xmc1400_breakout_get_adc_values(TF_XMC1400Breakout *xmc1400_breakout, uin
         return TF_E_NULL;
     }
 
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = xmc1400_breakout->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -553,6 +593,10 @@ int tf_xmc1400_breakout_set_adc_values_callback_configuration(TF_XMC1400Breakout
         return TF_E_NULL;
     }
 
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = xmc1400_breakout->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -598,6 +642,10 @@ int tf_xmc1400_breakout_set_adc_values_callback_configuration(TF_XMC1400Breakout
 int tf_xmc1400_breakout_get_adc_values_callback_configuration(TF_XMC1400Breakout *xmc1400_breakout, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (xmc1400_breakout == NULL) {
         return TF_E_NULL;
+    }
+
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = xmc1400_breakout->tfp->spitfp->hal;
@@ -652,6 +700,10 @@ int tf_xmc1400_breakout_get_count(TF_XMC1400Breakout *xmc1400_breakout, uint32_t
         return TF_E_NULL;
     }
 
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = xmc1400_breakout->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -703,6 +755,10 @@ int tf_xmc1400_breakout_set_count_callback_configuration(TF_XMC1400Breakout *xmc
         return TF_E_NULL;
     }
 
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = xmc1400_breakout->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -751,6 +807,10 @@ int tf_xmc1400_breakout_set_count_callback_configuration(TF_XMC1400Breakout *xmc
 int tf_xmc1400_breakout_get_count_callback_configuration(TF_XMC1400Breakout *xmc1400_breakout, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, uint32_t *ret_min, uint32_t *ret_max) {
     if (xmc1400_breakout == NULL) {
         return TF_E_NULL;
+    }
+
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = xmc1400_breakout->tfp->spitfp->hal;
@@ -808,6 +868,10 @@ int tf_xmc1400_breakout_get_spitfp_error_count(TF_XMC1400Breakout *xmc1400_break
         return TF_E_NULL;
     }
 
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = xmc1400_breakout->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -860,6 +924,10 @@ int tf_xmc1400_breakout_get_spitfp_error_count(TF_XMC1400Breakout *xmc1400_break
 int tf_xmc1400_breakout_set_bootloader_mode(TF_XMC1400Breakout *xmc1400_breakout, uint8_t mode, uint8_t *ret_status) {
     if (xmc1400_breakout == NULL) {
         return TF_E_NULL;
+    }
+
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = xmc1400_breakout->tfp->spitfp->hal;
@@ -917,6 +985,10 @@ int tf_xmc1400_breakout_get_bootloader_mode(TF_XMC1400Breakout *xmc1400_breakout
         return TF_E_NULL;
     }
 
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = xmc1400_breakout->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -968,6 +1040,10 @@ int tf_xmc1400_breakout_set_write_firmware_pointer(TF_XMC1400Breakout *xmc1400_b
         return TF_E_NULL;
     }
 
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = xmc1400_breakout->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1012,6 +1088,10 @@ int tf_xmc1400_breakout_set_write_firmware_pointer(TF_XMC1400Breakout *xmc1400_b
 int tf_xmc1400_breakout_write_firmware(TF_XMC1400Breakout *xmc1400_breakout, const uint8_t data[64], uint8_t *ret_status) {
     if (xmc1400_breakout == NULL) {
         return TF_E_NULL;
+    }
+
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = xmc1400_breakout->tfp->spitfp->hal;
@@ -1069,6 +1149,10 @@ int tf_xmc1400_breakout_set_status_led_config(TF_XMC1400Breakout *xmc1400_breako
         return TF_E_NULL;
     }
 
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = xmc1400_breakout->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1113,6 +1197,10 @@ int tf_xmc1400_breakout_set_status_led_config(TF_XMC1400Breakout *xmc1400_breako
 int tf_xmc1400_breakout_get_status_led_config(TF_XMC1400Breakout *xmc1400_breakout, uint8_t *ret_config) {
     if (xmc1400_breakout == NULL) {
         return TF_E_NULL;
+    }
+
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = xmc1400_breakout->tfp->spitfp->hal;
@@ -1166,6 +1254,10 @@ int tf_xmc1400_breakout_get_chip_temperature(TF_XMC1400Breakout *xmc1400_breakou
         return TF_E_NULL;
     }
 
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = xmc1400_breakout->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1217,6 +1309,10 @@ int tf_xmc1400_breakout_reset(TF_XMC1400Breakout *xmc1400_breakout) {
         return TF_E_NULL;
     }
 
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = xmc1400_breakout->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1257,6 +1353,10 @@ int tf_xmc1400_breakout_reset(TF_XMC1400Breakout *xmc1400_breakout) {
 int tf_xmc1400_breakout_write_uid(TF_XMC1400Breakout *xmc1400_breakout, uint32_t uid) {
     if (xmc1400_breakout == NULL) {
         return TF_E_NULL;
+    }
+
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = xmc1400_breakout->tfp->spitfp->hal;
@@ -1303,6 +1403,10 @@ int tf_xmc1400_breakout_write_uid(TF_XMC1400Breakout *xmc1400_breakout, uint32_t
 int tf_xmc1400_breakout_read_uid(TF_XMC1400Breakout *xmc1400_breakout, uint32_t *ret_uid) {
     if (xmc1400_breakout == NULL) {
         return TF_E_NULL;
+    }
+
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = xmc1400_breakout->tfp->spitfp->hal;
@@ -1354,6 +1458,10 @@ int tf_xmc1400_breakout_read_uid(TF_XMC1400Breakout *xmc1400_breakout, uint32_t 
 int tf_xmc1400_breakout_get_identity(TF_XMC1400Breakout *xmc1400_breakout, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (xmc1400_breakout == NULL) {
         return TF_E_NULL;
+    }
+
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = xmc1400_breakout->tfp->spitfp->hal;
@@ -1413,11 +1521,8 @@ int tf_xmc1400_breakout_register_adc_values_callback(TF_XMC1400Breakout *xmc1400
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        xmc1400_breakout->tfp->needs_callback_tick = false;
-        xmc1400_breakout->tfp->needs_callback_tick |= xmc1400_breakout->count_handler != NULL;
-    } else {
-        xmc1400_breakout->tfp->needs_callback_tick = true;
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     xmc1400_breakout->adc_values_handler = handler;
@@ -1432,11 +1537,8 @@ int tf_xmc1400_breakout_register_count_callback(TF_XMC1400Breakout *xmc1400_brea
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        xmc1400_breakout->tfp->needs_callback_tick = false;
-        xmc1400_breakout->tfp->needs_callback_tick |= xmc1400_breakout->adc_values_handler != NULL;
-    } else {
-        xmc1400_breakout->tfp->needs_callback_tick = true;
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     xmc1400_breakout->count_handler = handler;
@@ -1448,6 +1550,10 @@ int tf_xmc1400_breakout_register_count_callback(TF_XMC1400Breakout *xmc1400_brea
 int tf_xmc1400_breakout_callback_tick(TF_XMC1400Breakout *xmc1400_breakout, uint32_t timeout_us) {
     if (xmc1400_breakout == NULL) {
         return TF_E_NULL;
+    }
+
+    if (xmc1400_breakout->magic != 0x5446 || xmc1400_breakout->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = xmc1400_breakout->tfp->spitfp->hal;

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -101,20 +101,24 @@ int tf_rs232_v2_create(TF_RS232V2 *rs232_v2, const char *uid_or_port_name, TF_HA
     rs232_v2->tfp = tfp;
     rs232_v2->tfp->device = rs232_v2;
     rs232_v2->tfp->cb_handler = tf_rs232_v2_callback_handler;
+    rs232_v2->magic = 0x5446;
     rs232_v2->response_expected[0] = 0x13;
     rs232_v2->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_rs232_v2_destroy(TF_RS232V2 *rs232_v2) {
-    if (rs232_v2 == NULL || rs232_v2->tfp == NULL) {
+    if (rs232_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rs232_v2->tfp->cb_handler = NULL;
     rs232_v2->tfp->device = NULL;
     rs232_v2->tfp = NULL;
+    rs232_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -122,6 +126,10 @@ int tf_rs232_v2_destroy(TF_RS232V2 *rs232_v2) {
 int tf_rs232_v2_get_response_expected(TF_RS232V2 *rs232_v2, uint8_t function_id, bool *ret_response_expected) {
     if (rs232_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -180,6 +188,10 @@ int tf_rs232_v2_get_response_expected(TF_RS232V2 *rs232_v2, uint8_t function_id,
 int tf_rs232_v2_set_response_expected(TF_RS232V2 *rs232_v2, uint8_t function_id, bool response_expected) {
     if (rs232_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -258,6 +270,10 @@ int tf_rs232_v2_set_response_expected_all(TF_RS232V2 *rs232_v2, bool response_ex
         return TF_E_NULL;
     }
 
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(rs232_v2->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -266,6 +282,10 @@ int tf_rs232_v2_set_response_expected_all(TF_RS232V2 *rs232_v2, bool response_ex
 int tf_rs232_v2_write_low_level(TF_RS232V2 *rs232_v2, uint16_t message_length, uint16_t message_chunk_offset, const char message_chunk_data[60], uint8_t *ret_message_chunk_written) {
     if (rs232_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs232_v2->tfp->spitfp->hal;
@@ -323,6 +343,10 @@ int tf_rs232_v2_write_low_level(TF_RS232V2 *rs232_v2, uint16_t message_length, u
 int tf_rs232_v2_read_low_level(TF_RS232V2 *rs232_v2, uint16_t length, uint16_t *ret_message_length, uint16_t *ret_message_chunk_offset, char ret_message_chunk_data[60]) {
     if (rs232_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs232_v2->tfp->spitfp->hal;
@@ -383,6 +407,10 @@ int tf_rs232_v2_enable_read_callback(TF_RS232V2 *rs232_v2) {
         return TF_E_NULL;
     }
 
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs232_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -425,6 +453,10 @@ int tf_rs232_v2_disable_read_callback(TF_RS232V2 *rs232_v2) {
         return TF_E_NULL;
     }
 
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs232_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -465,6 +497,10 @@ int tf_rs232_v2_disable_read_callback(TF_RS232V2 *rs232_v2) {
 int tf_rs232_v2_is_read_callback_enabled(TF_RS232V2 *rs232_v2, bool *ret_enabled) {
     if (rs232_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs232_v2->tfp->spitfp->hal;
@@ -518,6 +554,10 @@ int tf_rs232_v2_set_configuration(TF_RS232V2 *rs232_v2, uint32_t baudrate, uint8
         return TF_E_NULL;
     }
 
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs232_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -566,6 +606,10 @@ int tf_rs232_v2_set_configuration(TF_RS232V2 *rs232_v2, uint32_t baudrate, uint8
 int tf_rs232_v2_get_configuration(TF_RS232V2 *rs232_v2, uint32_t *ret_baudrate, uint8_t *ret_parity, uint8_t *ret_stopbits, uint8_t *ret_wordlength, uint8_t *ret_flowcontrol) {
     if (rs232_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs232_v2->tfp->spitfp->hal;
@@ -623,6 +667,10 @@ int tf_rs232_v2_set_buffer_config(TF_RS232V2 *rs232_v2, uint16_t send_buffer_siz
         return TF_E_NULL;
     }
 
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs232_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -668,6 +716,10 @@ int tf_rs232_v2_set_buffer_config(TF_RS232V2 *rs232_v2, uint16_t send_buffer_siz
 int tf_rs232_v2_get_buffer_config(TF_RS232V2 *rs232_v2, uint16_t *ret_send_buffer_size, uint16_t *ret_receive_buffer_size) {
     if (rs232_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs232_v2->tfp->spitfp->hal;
@@ -722,6 +774,10 @@ int tf_rs232_v2_get_buffer_status(TF_RS232V2 *rs232_v2, uint16_t *ret_send_buffe
         return TF_E_NULL;
     }
 
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs232_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -772,6 +828,10 @@ int tf_rs232_v2_get_buffer_status(TF_RS232V2 *rs232_v2, uint16_t *ret_send_buffe
 int tf_rs232_v2_get_error_count(TF_RS232V2 *rs232_v2, uint32_t *ret_error_count_overrun, uint32_t *ret_error_count_parity) {
     if (rs232_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs232_v2->tfp->spitfp->hal;
@@ -826,6 +886,10 @@ int tf_rs232_v2_set_frame_readable_callback_configuration(TF_RS232V2 *rs232_v2, 
         return TF_E_NULL;
     }
 
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs232_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -870,6 +934,10 @@ int tf_rs232_v2_set_frame_readable_callback_configuration(TF_RS232V2 *rs232_v2, 
 int tf_rs232_v2_get_frame_readable_callback_configuration(TF_RS232V2 *rs232_v2, uint16_t *ret_frame_size) {
     if (rs232_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs232_v2->tfp->spitfp->hal;
@@ -921,6 +989,10 @@ int tf_rs232_v2_get_frame_readable_callback_configuration(TF_RS232V2 *rs232_v2, 
 int tf_rs232_v2_get_spitfp_error_count(TF_RS232V2 *rs232_v2, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (rs232_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs232_v2->tfp->spitfp->hal;
@@ -975,6 +1047,10 @@ int tf_rs232_v2_get_spitfp_error_count(TF_RS232V2 *rs232_v2, uint32_t *ret_error
 int tf_rs232_v2_set_bootloader_mode(TF_RS232V2 *rs232_v2, uint8_t mode, uint8_t *ret_status) {
     if (rs232_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs232_v2->tfp->spitfp->hal;
@@ -1032,6 +1108,10 @@ int tf_rs232_v2_get_bootloader_mode(TF_RS232V2 *rs232_v2, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs232_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1083,6 +1163,10 @@ int tf_rs232_v2_set_write_firmware_pointer(TF_RS232V2 *rs232_v2, uint32_t pointe
         return TF_E_NULL;
     }
 
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs232_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1127,6 +1211,10 @@ int tf_rs232_v2_set_write_firmware_pointer(TF_RS232V2 *rs232_v2, uint32_t pointe
 int tf_rs232_v2_write_firmware(TF_RS232V2 *rs232_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (rs232_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs232_v2->tfp->spitfp->hal;
@@ -1184,6 +1272,10 @@ int tf_rs232_v2_set_status_led_config(TF_RS232V2 *rs232_v2, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs232_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1228,6 +1320,10 @@ int tf_rs232_v2_set_status_led_config(TF_RS232V2 *rs232_v2, uint8_t config) {
 int tf_rs232_v2_get_status_led_config(TF_RS232V2 *rs232_v2, uint8_t *ret_config) {
     if (rs232_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs232_v2->tfp->spitfp->hal;
@@ -1281,6 +1377,10 @@ int tf_rs232_v2_get_chip_temperature(TF_RS232V2 *rs232_v2, int16_t *ret_temperat
         return TF_E_NULL;
     }
 
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs232_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1332,6 +1432,10 @@ int tf_rs232_v2_reset(TF_RS232V2 *rs232_v2) {
         return TF_E_NULL;
     }
 
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rs232_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1372,6 +1476,10 @@ int tf_rs232_v2_reset(TF_RS232V2 *rs232_v2) {
 int tf_rs232_v2_write_uid(TF_RS232V2 *rs232_v2, uint32_t uid) {
     if (rs232_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs232_v2->tfp->spitfp->hal;
@@ -1418,6 +1526,10 @@ int tf_rs232_v2_write_uid(TF_RS232V2 *rs232_v2, uint32_t uid) {
 int tf_rs232_v2_read_uid(TF_RS232V2 *rs232_v2, uint32_t *ret_uid) {
     if (rs232_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs232_v2->tfp->spitfp->hal;
@@ -1469,6 +1581,10 @@ int tf_rs232_v2_read_uid(TF_RS232V2 *rs232_v2, uint32_t *ret_uid) {
 int tf_rs232_v2_get_identity(TF_RS232V2 *rs232_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (rs232_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rs232_v2->tfp->spitfp->hal;
@@ -1540,6 +1656,10 @@ int tf_rs232_v2_write(TF_RS232V2 *rs232_v2, const char *message, uint16_t messag
     if (rs232_v2 == NULL) {
         return TF_E_NULL;
     }
+
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
     
 
     uint32_t _stream_length = message_length;
@@ -1577,6 +1697,10 @@ int tf_rs232_v2_read(TF_RS232V2 *rs232_v2, uint16_t length, char *ret_message, u
     if (rs232_v2 == NULL) {
         return TF_E_NULL;
     }
+
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
     
     TF_RS232V2_ReadLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
@@ -1597,12 +1721,8 @@ int tf_rs232_v2_register_read_low_level_callback(TF_RS232V2 *rs232_v2, TF_RS232V
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rs232_v2->tfp->needs_callback_tick = false;
-        rs232_v2->tfp->needs_callback_tick |= rs232_v2->error_count_handler != NULL;
-        rs232_v2->tfp->needs_callback_tick |= rs232_v2->frame_readable_handler != NULL;
-    } else {
-        rs232_v2->tfp->needs_callback_tick = true;
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rs232_v2->read_low_level_handler = handler;
@@ -1632,6 +1752,10 @@ int tf_rs232_v2_register_read_callback(TF_RS232V2 *rs232_v2, TF_RS232V2_ReadHand
         return TF_E_NULL;
     }
 
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     rs232_v2->read_handler = handler;
 
     rs232_v2->read_hlc.data = message_buffer;
@@ -1647,12 +1771,8 @@ int tf_rs232_v2_register_error_count_callback(TF_RS232V2 *rs232_v2, TF_RS232V2_E
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rs232_v2->tfp->needs_callback_tick = false;
-        rs232_v2->tfp->needs_callback_tick |= rs232_v2->read_low_level_handler != NULL;
-        rs232_v2->tfp->needs_callback_tick |= rs232_v2->frame_readable_handler != NULL;
-    } else {
-        rs232_v2->tfp->needs_callback_tick = true;
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rs232_v2->error_count_handler = handler;
@@ -1667,12 +1787,8 @@ int tf_rs232_v2_register_frame_readable_callback(TF_RS232V2 *rs232_v2, TF_RS232V
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rs232_v2->tfp->needs_callback_tick = false;
-        rs232_v2->tfp->needs_callback_tick |= rs232_v2->read_low_level_handler != NULL;
-        rs232_v2->tfp->needs_callback_tick |= rs232_v2->error_count_handler != NULL;
-    } else {
-        rs232_v2->tfp->needs_callback_tick = true;
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rs232_v2->frame_readable_handler = handler;
@@ -1684,6 +1800,10 @@ int tf_rs232_v2_register_frame_readable_callback(TF_RS232V2 *rs232_v2, TF_RS232V
 int tf_rs232_v2_callback_tick(TF_RS232V2 *rs232_v2, uint32_t timeout_us) {
     if (rs232_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = rs232_v2->tfp->spitfp->hal;

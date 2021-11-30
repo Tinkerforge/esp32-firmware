@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -45,19 +45,23 @@ int tf_rgb_led_v2_create(TF_RGBLEDV2 *rgb_led_v2, const char *uid_or_port_name, 
     rgb_led_v2->tfp = tfp;
     rgb_led_v2->tfp->device = rgb_led_v2;
     rgb_led_v2->tfp->cb_handler = tf_rgb_led_v2_callback_handler;
+    rgb_led_v2->magic = 0x5446;
     rgb_led_v2->response_expected[0] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_rgb_led_v2_destroy(TF_RGBLEDV2 *rgb_led_v2) {
-    if (rgb_led_v2 == NULL || rgb_led_v2->tfp == NULL) {
+    if (rgb_led_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (rgb_led_v2->magic != 0x5446 || rgb_led_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rgb_led_v2->tfp->cb_handler = NULL;
     rgb_led_v2->tfp->device = NULL;
     rgb_led_v2->tfp = NULL;
+    rgb_led_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -65,6 +69,10 @@ int tf_rgb_led_v2_destroy(TF_RGBLEDV2 *rgb_led_v2) {
 int tf_rgb_led_v2_get_response_expected(TF_RGBLEDV2 *rgb_led_v2, uint8_t function_id, bool *ret_response_expected) {
     if (rgb_led_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_v2->magic != 0x5446 || rgb_led_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -103,6 +111,10 @@ int tf_rgb_led_v2_get_response_expected(TF_RGBLEDV2 *rgb_led_v2, uint8_t functio
 int tf_rgb_led_v2_set_response_expected(TF_RGBLEDV2 *rgb_led_v2, uint8_t function_id, bool response_expected) {
     if (rgb_led_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_v2->magic != 0x5446 || rgb_led_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -153,6 +165,10 @@ int tf_rgb_led_v2_set_response_expected_all(TF_RGBLEDV2 *rgb_led_v2, bool respon
         return TF_E_NULL;
     }
 
+    if (rgb_led_v2->magic != 0x5446 || rgb_led_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(rgb_led_v2->response_expected, response_expected ? 0xFF : 0, 1);
 
     return TF_E_OK;
@@ -161,6 +177,10 @@ int tf_rgb_led_v2_set_response_expected_all(TF_RGBLEDV2 *rgb_led_v2, bool respon
 int tf_rgb_led_v2_set_rgb_value(TF_RGBLEDV2 *rgb_led_v2, uint8_t r, uint8_t g, uint8_t b) {
     if (rgb_led_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_v2->magic != 0x5446 || rgb_led_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_v2->tfp->spitfp->hal;
@@ -209,6 +229,10 @@ int tf_rgb_led_v2_set_rgb_value(TF_RGBLEDV2 *rgb_led_v2, uint8_t r, uint8_t g, u
 int tf_rgb_led_v2_get_rgb_value(TF_RGBLEDV2 *rgb_led_v2, uint8_t *ret_r, uint8_t *ret_g, uint8_t *ret_b) {
     if (rgb_led_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_v2->magic != 0x5446 || rgb_led_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_v2->tfp->spitfp->hal;
@@ -264,6 +288,10 @@ int tf_rgb_led_v2_get_spitfp_error_count(TF_RGBLEDV2 *rgb_led_v2, uint32_t *ret_
         return TF_E_NULL;
     }
 
+    if (rgb_led_v2->magic != 0x5446 || rgb_led_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rgb_led_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -316,6 +344,10 @@ int tf_rgb_led_v2_get_spitfp_error_count(TF_RGBLEDV2 *rgb_led_v2, uint32_t *ret_
 int tf_rgb_led_v2_set_bootloader_mode(TF_RGBLEDV2 *rgb_led_v2, uint8_t mode, uint8_t *ret_status) {
     if (rgb_led_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_v2->magic != 0x5446 || rgb_led_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_v2->tfp->spitfp->hal;
@@ -373,6 +405,10 @@ int tf_rgb_led_v2_get_bootloader_mode(TF_RGBLEDV2 *rgb_led_v2, uint8_t *ret_mode
         return TF_E_NULL;
     }
 
+    if (rgb_led_v2->magic != 0x5446 || rgb_led_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rgb_led_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -424,6 +460,10 @@ int tf_rgb_led_v2_set_write_firmware_pointer(TF_RGBLEDV2 *rgb_led_v2, uint32_t p
         return TF_E_NULL;
     }
 
+    if (rgb_led_v2->magic != 0x5446 || rgb_led_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rgb_led_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -468,6 +508,10 @@ int tf_rgb_led_v2_set_write_firmware_pointer(TF_RGBLEDV2 *rgb_led_v2, uint32_t p
 int tf_rgb_led_v2_write_firmware(TF_RGBLEDV2 *rgb_led_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (rgb_led_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_v2->magic != 0x5446 || rgb_led_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_v2->tfp->spitfp->hal;
@@ -525,6 +569,10 @@ int tf_rgb_led_v2_set_status_led_config(TF_RGBLEDV2 *rgb_led_v2, uint8_t config)
         return TF_E_NULL;
     }
 
+    if (rgb_led_v2->magic != 0x5446 || rgb_led_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rgb_led_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -569,6 +617,10 @@ int tf_rgb_led_v2_set_status_led_config(TF_RGBLEDV2 *rgb_led_v2, uint8_t config)
 int tf_rgb_led_v2_get_status_led_config(TF_RGBLEDV2 *rgb_led_v2, uint8_t *ret_config) {
     if (rgb_led_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_v2->magic != 0x5446 || rgb_led_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_v2->tfp->spitfp->hal;
@@ -622,6 +674,10 @@ int tf_rgb_led_v2_get_chip_temperature(TF_RGBLEDV2 *rgb_led_v2, int16_t *ret_tem
         return TF_E_NULL;
     }
 
+    if (rgb_led_v2->magic != 0x5446 || rgb_led_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rgb_led_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -673,6 +729,10 @@ int tf_rgb_led_v2_reset(TF_RGBLEDV2 *rgb_led_v2) {
         return TF_E_NULL;
     }
 
+    if (rgb_led_v2->magic != 0x5446 || rgb_led_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rgb_led_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -713,6 +773,10 @@ int tf_rgb_led_v2_reset(TF_RGBLEDV2 *rgb_led_v2) {
 int tf_rgb_led_v2_write_uid(TF_RGBLEDV2 *rgb_led_v2, uint32_t uid) {
     if (rgb_led_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_v2->magic != 0x5446 || rgb_led_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_v2->tfp->spitfp->hal;
@@ -759,6 +823,10 @@ int tf_rgb_led_v2_write_uid(TF_RGBLEDV2 *rgb_led_v2, uint32_t uid) {
 int tf_rgb_led_v2_read_uid(TF_RGBLEDV2 *rgb_led_v2, uint32_t *ret_uid) {
     if (rgb_led_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_v2->magic != 0x5446 || rgb_led_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_v2->tfp->spitfp->hal;
@@ -810,6 +878,10 @@ int tf_rgb_led_v2_read_uid(TF_RGBLEDV2 *rgb_led_v2, uint32_t *ret_uid) {
 int tf_rgb_led_v2_get_identity(TF_RGBLEDV2 *rgb_led_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (rgb_led_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_v2->magic != 0x5446 || rgb_led_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_v2->tfp->spitfp->hal;
@@ -868,6 +940,10 @@ int tf_rgb_led_v2_get_identity(TF_RGBLEDV2 *rgb_led_v2, char ret_uid[8], char re
 int tf_rgb_led_v2_callback_tick(TF_RGBLEDV2 *rgb_led_v2, uint32_t timeout_us) {
     if (rgb_led_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_v2->magic != 0x5446 || rgb_led_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = rgb_led_v2->tfp->spitfp->hal;

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -100,20 +100,24 @@ int tf_accelerometer_v2_create(TF_AccelerometerV2 *accelerometer_v2, const char 
     accelerometer_v2->tfp = tfp;
     accelerometer_v2->tfp->device = accelerometer_v2;
     accelerometer_v2->tfp->cb_handler = tf_accelerometer_v2_callback_handler;
+    accelerometer_v2->magic = 0x5446;
     accelerometer_v2->response_expected[0] = 0x0A;
     accelerometer_v2->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_accelerometer_v2_destroy(TF_AccelerometerV2 *accelerometer_v2) {
-    if (accelerometer_v2 == NULL || accelerometer_v2->tfp == NULL) {
+    if (accelerometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     accelerometer_v2->tfp->cb_handler = NULL;
     accelerometer_v2->tfp->device = NULL;
     accelerometer_v2->tfp = NULL;
+    accelerometer_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -121,6 +125,10 @@ int tf_accelerometer_v2_destroy(TF_AccelerometerV2 *accelerometer_v2) {
 int tf_accelerometer_v2_get_response_expected(TF_AccelerometerV2 *accelerometer_v2, uint8_t function_id, bool *ret_response_expected) {
     if (accelerometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -179,6 +187,10 @@ int tf_accelerometer_v2_get_response_expected(TF_AccelerometerV2 *accelerometer_
 int tf_accelerometer_v2_set_response_expected(TF_AccelerometerV2 *accelerometer_v2, uint8_t function_id, bool response_expected) {
     if (accelerometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -257,6 +269,10 @@ int tf_accelerometer_v2_set_response_expected_all(TF_AccelerometerV2 *accelerome
         return TF_E_NULL;
     }
 
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(accelerometer_v2->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -265,6 +281,10 @@ int tf_accelerometer_v2_set_response_expected_all(TF_AccelerometerV2 *accelerome
 int tf_accelerometer_v2_get_acceleration(TF_AccelerometerV2 *accelerometer_v2, int32_t *ret_x, int32_t *ret_y, int32_t *ret_z) {
     if (accelerometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = accelerometer_v2->tfp->spitfp->hal;
@@ -320,6 +340,10 @@ int tf_accelerometer_v2_set_configuration(TF_AccelerometerV2 *accelerometer_v2, 
         return TF_E_NULL;
     }
 
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = accelerometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -365,6 +389,10 @@ int tf_accelerometer_v2_set_configuration(TF_AccelerometerV2 *accelerometer_v2, 
 int tf_accelerometer_v2_get_configuration(TF_AccelerometerV2 *accelerometer_v2, uint8_t *ret_data_rate, uint8_t *ret_full_scale) {
     if (accelerometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = accelerometer_v2->tfp->spitfp->hal;
@@ -419,6 +447,10 @@ int tf_accelerometer_v2_set_acceleration_callback_configuration(TF_Accelerometer
         return TF_E_NULL;
     }
 
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = accelerometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -464,6 +496,10 @@ int tf_accelerometer_v2_set_acceleration_callback_configuration(TF_Accelerometer
 int tf_accelerometer_v2_get_acceleration_callback_configuration(TF_AccelerometerV2 *accelerometer_v2, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (accelerometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = accelerometer_v2->tfp->spitfp->hal;
@@ -518,6 +554,10 @@ int tf_accelerometer_v2_set_info_led_config(TF_AccelerometerV2 *accelerometer_v2
         return TF_E_NULL;
     }
 
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = accelerometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -562,6 +602,10 @@ int tf_accelerometer_v2_set_info_led_config(TF_AccelerometerV2 *accelerometer_v2
 int tf_accelerometer_v2_get_info_led_config(TF_AccelerometerV2 *accelerometer_v2, uint8_t *ret_config) {
     if (accelerometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = accelerometer_v2->tfp->spitfp->hal;
@@ -615,6 +659,10 @@ int tf_accelerometer_v2_set_continuous_acceleration_configuration(TF_Acceleromet
         return TF_E_NULL;
     }
 
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = accelerometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -662,6 +710,10 @@ int tf_accelerometer_v2_set_continuous_acceleration_configuration(TF_Acceleromet
 int tf_accelerometer_v2_get_continuous_acceleration_configuration(TF_AccelerometerV2 *accelerometer_v2, bool *ret_enable_x, bool *ret_enable_y, bool *ret_enable_z, uint8_t *ret_resolution) {
     if (accelerometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = accelerometer_v2->tfp->spitfp->hal;
@@ -718,6 +770,10 @@ int tf_accelerometer_v2_set_filter_configuration(TF_AccelerometerV2 *acceleromet
         return TF_E_NULL;
     }
 
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = accelerometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -763,6 +819,10 @@ int tf_accelerometer_v2_set_filter_configuration(TF_AccelerometerV2 *acceleromet
 int tf_accelerometer_v2_get_filter_configuration(TF_AccelerometerV2 *accelerometer_v2, uint8_t *ret_iir_bypass, uint8_t *ret_low_pass_filter) {
     if (accelerometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = accelerometer_v2->tfp->spitfp->hal;
@@ -817,6 +877,10 @@ int tf_accelerometer_v2_get_spitfp_error_count(TF_AccelerometerV2 *accelerometer
         return TF_E_NULL;
     }
 
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = accelerometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -869,6 +933,10 @@ int tf_accelerometer_v2_get_spitfp_error_count(TF_AccelerometerV2 *accelerometer
 int tf_accelerometer_v2_set_bootloader_mode(TF_AccelerometerV2 *accelerometer_v2, uint8_t mode, uint8_t *ret_status) {
     if (accelerometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = accelerometer_v2->tfp->spitfp->hal;
@@ -926,6 +994,10 @@ int tf_accelerometer_v2_get_bootloader_mode(TF_AccelerometerV2 *accelerometer_v2
         return TF_E_NULL;
     }
 
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = accelerometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -977,6 +1049,10 @@ int tf_accelerometer_v2_set_write_firmware_pointer(TF_AccelerometerV2 *accelerom
         return TF_E_NULL;
     }
 
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = accelerometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1021,6 +1097,10 @@ int tf_accelerometer_v2_set_write_firmware_pointer(TF_AccelerometerV2 *accelerom
 int tf_accelerometer_v2_write_firmware(TF_AccelerometerV2 *accelerometer_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (accelerometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = accelerometer_v2->tfp->spitfp->hal;
@@ -1078,6 +1158,10 @@ int tf_accelerometer_v2_set_status_led_config(TF_AccelerometerV2 *accelerometer_
         return TF_E_NULL;
     }
 
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = accelerometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1122,6 +1206,10 @@ int tf_accelerometer_v2_set_status_led_config(TF_AccelerometerV2 *accelerometer_
 int tf_accelerometer_v2_get_status_led_config(TF_AccelerometerV2 *accelerometer_v2, uint8_t *ret_config) {
     if (accelerometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = accelerometer_v2->tfp->spitfp->hal;
@@ -1175,6 +1263,10 @@ int tf_accelerometer_v2_get_chip_temperature(TF_AccelerometerV2 *accelerometer_v
         return TF_E_NULL;
     }
 
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = accelerometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1226,6 +1318,10 @@ int tf_accelerometer_v2_reset(TF_AccelerometerV2 *accelerometer_v2) {
         return TF_E_NULL;
     }
 
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = accelerometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1266,6 +1362,10 @@ int tf_accelerometer_v2_reset(TF_AccelerometerV2 *accelerometer_v2) {
 int tf_accelerometer_v2_write_uid(TF_AccelerometerV2 *accelerometer_v2, uint32_t uid) {
     if (accelerometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = accelerometer_v2->tfp->spitfp->hal;
@@ -1312,6 +1412,10 @@ int tf_accelerometer_v2_write_uid(TF_AccelerometerV2 *accelerometer_v2, uint32_t
 int tf_accelerometer_v2_read_uid(TF_AccelerometerV2 *accelerometer_v2, uint32_t *ret_uid) {
     if (accelerometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = accelerometer_v2->tfp->spitfp->hal;
@@ -1363,6 +1467,10 @@ int tf_accelerometer_v2_read_uid(TF_AccelerometerV2 *accelerometer_v2, uint32_t 
 int tf_accelerometer_v2_get_identity(TF_AccelerometerV2 *accelerometer_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (accelerometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = accelerometer_v2->tfp->spitfp->hal;
@@ -1422,12 +1530,8 @@ int tf_accelerometer_v2_register_acceleration_callback(TF_AccelerometerV2 *accel
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        accelerometer_v2->tfp->needs_callback_tick = false;
-        accelerometer_v2->tfp->needs_callback_tick |= accelerometer_v2->continuous_acceleration_16_bit_handler != NULL;
-        accelerometer_v2->tfp->needs_callback_tick |= accelerometer_v2->continuous_acceleration_8_bit_handler != NULL;
-    } else {
-        accelerometer_v2->tfp->needs_callback_tick = true;
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     accelerometer_v2->acceleration_handler = handler;
@@ -1442,12 +1546,8 @@ int tf_accelerometer_v2_register_continuous_acceleration_16_bit_callback(TF_Acce
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        accelerometer_v2->tfp->needs_callback_tick = false;
-        accelerometer_v2->tfp->needs_callback_tick |= accelerometer_v2->acceleration_handler != NULL;
-        accelerometer_v2->tfp->needs_callback_tick |= accelerometer_v2->continuous_acceleration_8_bit_handler != NULL;
-    } else {
-        accelerometer_v2->tfp->needs_callback_tick = true;
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     accelerometer_v2->continuous_acceleration_16_bit_handler = handler;
@@ -1462,12 +1562,8 @@ int tf_accelerometer_v2_register_continuous_acceleration_8_bit_callback(TF_Accel
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        accelerometer_v2->tfp->needs_callback_tick = false;
-        accelerometer_v2->tfp->needs_callback_tick |= accelerometer_v2->acceleration_handler != NULL;
-        accelerometer_v2->tfp->needs_callback_tick |= accelerometer_v2->continuous_acceleration_16_bit_handler != NULL;
-    } else {
-        accelerometer_v2->tfp->needs_callback_tick = true;
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     accelerometer_v2->continuous_acceleration_8_bit_handler = handler;
@@ -1479,6 +1575,10 @@ int tf_accelerometer_v2_register_continuous_acceleration_8_bit_callback(TF_Accel
 int tf_accelerometer_v2_callback_tick(TF_AccelerometerV2 *accelerometer_v2, uint32_t timeout_us) {
     if (accelerometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (accelerometer_v2->magic != 0x5446 || accelerometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = accelerometer_v2->tfp->spitfp->hal;

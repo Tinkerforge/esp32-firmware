@@ -200,7 +200,6 @@ void tf_tfp_create(TF_TFP *tfp, uint32_t uid, uint16_t device_id, TF_SPITFP *spi
     tfp->device_id = device_id;
     tfp->next_sequence_number = 1;
     tfp->cb_handler = empty_cb_handler;
-    tfp->needs_callback_tick = true;
 }
 
 void tf_tfp_prepare_send(TF_TFP *tfp, uint8_t fid, uint8_t payload_size, bool response_expected) {

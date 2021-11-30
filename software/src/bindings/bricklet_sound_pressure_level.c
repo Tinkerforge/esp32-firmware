@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -86,19 +86,23 @@ int tf_sound_pressure_level_create(TF_SoundPressureLevel *sound_pressure_level, 
     sound_pressure_level->tfp = tfp;
     sound_pressure_level->tfp->device = sound_pressure_level;
     sound_pressure_level->tfp->cb_handler = tf_sound_pressure_level_callback_handler;
+    sound_pressure_level->magic = 0x5446;
     sound_pressure_level->response_expected[0] = 0x03;
-
     return TF_E_OK;
 }
 
 int tf_sound_pressure_level_destroy(TF_SoundPressureLevel *sound_pressure_level) {
-    if (sound_pressure_level == NULL || sound_pressure_level->tfp == NULL) {
+    if (sound_pressure_level == NULL) {
         return TF_E_NULL;
+    }
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     sound_pressure_level->tfp->cb_handler = NULL;
     sound_pressure_level->tfp->device = NULL;
     sound_pressure_level->tfp = NULL;
+    sound_pressure_level->magic = 0;
 
     return TF_E_OK;
 }
@@ -106,6 +110,10 @@ int tf_sound_pressure_level_destroy(TF_SoundPressureLevel *sound_pressure_level)
 int tf_sound_pressure_level_get_response_expected(TF_SoundPressureLevel *sound_pressure_level, uint8_t function_id, bool *ret_response_expected) {
     if (sound_pressure_level == NULL) {
         return TF_E_NULL;
+    }
+
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -154,6 +162,10 @@ int tf_sound_pressure_level_get_response_expected(TF_SoundPressureLevel *sound_p
 int tf_sound_pressure_level_set_response_expected(TF_SoundPressureLevel *sound_pressure_level, uint8_t function_id, bool response_expected) {
     if (sound_pressure_level == NULL) {
         return TF_E_NULL;
+    }
+
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -218,6 +230,10 @@ int tf_sound_pressure_level_set_response_expected_all(TF_SoundPressureLevel *sou
         return TF_E_NULL;
     }
 
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(sound_pressure_level->response_expected, response_expected ? 0xFF : 0, 1);
 
     return TF_E_OK;
@@ -226,6 +242,10 @@ int tf_sound_pressure_level_set_response_expected_all(TF_SoundPressureLevel *sou
 int tf_sound_pressure_level_get_decibel(TF_SoundPressureLevel *sound_pressure_level, uint16_t *ret_decibel) {
     if (sound_pressure_level == NULL) {
         return TF_E_NULL;
+    }
+
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = sound_pressure_level->tfp->spitfp->hal;
@@ -279,6 +299,10 @@ int tf_sound_pressure_level_set_decibel_callback_configuration(TF_SoundPressureL
         return TF_E_NULL;
     }
 
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = sound_pressure_level->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -327,6 +351,10 @@ int tf_sound_pressure_level_set_decibel_callback_configuration(TF_SoundPressureL
 int tf_sound_pressure_level_get_decibel_callback_configuration(TF_SoundPressureLevel *sound_pressure_level, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, uint16_t *ret_min, uint16_t *ret_max) {
     if (sound_pressure_level == NULL) {
         return TF_E_NULL;
+    }
+
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = sound_pressure_level->tfp->spitfp->hal;
@@ -384,6 +412,10 @@ int tf_sound_pressure_level_get_spectrum_low_level(TF_SoundPressureLevel *sound_
         return TF_E_NULL;
     }
 
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = sound_pressure_level->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -438,6 +470,10 @@ int tf_sound_pressure_level_set_spectrum_callback_configuration(TF_SoundPressure
         return TF_E_NULL;
     }
 
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = sound_pressure_level->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -482,6 +518,10 @@ int tf_sound_pressure_level_set_spectrum_callback_configuration(TF_SoundPressure
 int tf_sound_pressure_level_get_spectrum_callback_configuration(TF_SoundPressureLevel *sound_pressure_level, uint32_t *ret_period) {
     if (sound_pressure_level == NULL) {
         return TF_E_NULL;
+    }
+
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = sound_pressure_level->tfp->spitfp->hal;
@@ -535,6 +575,10 @@ int tf_sound_pressure_level_set_configuration(TF_SoundPressureLevel *sound_press
         return TF_E_NULL;
     }
 
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = sound_pressure_level->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -580,6 +624,10 @@ int tf_sound_pressure_level_set_configuration(TF_SoundPressureLevel *sound_press
 int tf_sound_pressure_level_get_configuration(TF_SoundPressureLevel *sound_pressure_level, uint8_t *ret_fft_size, uint8_t *ret_weighting) {
     if (sound_pressure_level == NULL) {
         return TF_E_NULL;
+    }
+
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = sound_pressure_level->tfp->spitfp->hal;
@@ -634,6 +682,10 @@ int tf_sound_pressure_level_get_spitfp_error_count(TF_SoundPressureLevel *sound_
         return TF_E_NULL;
     }
 
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = sound_pressure_level->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -686,6 +738,10 @@ int tf_sound_pressure_level_get_spitfp_error_count(TF_SoundPressureLevel *sound_
 int tf_sound_pressure_level_set_bootloader_mode(TF_SoundPressureLevel *sound_pressure_level, uint8_t mode, uint8_t *ret_status) {
     if (sound_pressure_level == NULL) {
         return TF_E_NULL;
+    }
+
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = sound_pressure_level->tfp->spitfp->hal;
@@ -743,6 +799,10 @@ int tf_sound_pressure_level_get_bootloader_mode(TF_SoundPressureLevel *sound_pre
         return TF_E_NULL;
     }
 
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = sound_pressure_level->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -794,6 +854,10 @@ int tf_sound_pressure_level_set_write_firmware_pointer(TF_SoundPressureLevel *so
         return TF_E_NULL;
     }
 
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = sound_pressure_level->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -838,6 +902,10 @@ int tf_sound_pressure_level_set_write_firmware_pointer(TF_SoundPressureLevel *so
 int tf_sound_pressure_level_write_firmware(TF_SoundPressureLevel *sound_pressure_level, const uint8_t data[64], uint8_t *ret_status) {
     if (sound_pressure_level == NULL) {
         return TF_E_NULL;
+    }
+
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = sound_pressure_level->tfp->spitfp->hal;
@@ -895,6 +963,10 @@ int tf_sound_pressure_level_set_status_led_config(TF_SoundPressureLevel *sound_p
         return TF_E_NULL;
     }
 
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = sound_pressure_level->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -939,6 +1011,10 @@ int tf_sound_pressure_level_set_status_led_config(TF_SoundPressureLevel *sound_p
 int tf_sound_pressure_level_get_status_led_config(TF_SoundPressureLevel *sound_pressure_level, uint8_t *ret_config) {
     if (sound_pressure_level == NULL) {
         return TF_E_NULL;
+    }
+
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = sound_pressure_level->tfp->spitfp->hal;
@@ -992,6 +1068,10 @@ int tf_sound_pressure_level_get_chip_temperature(TF_SoundPressureLevel *sound_pr
         return TF_E_NULL;
     }
 
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = sound_pressure_level->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1043,6 +1123,10 @@ int tf_sound_pressure_level_reset(TF_SoundPressureLevel *sound_pressure_level) {
         return TF_E_NULL;
     }
 
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = sound_pressure_level->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1083,6 +1167,10 @@ int tf_sound_pressure_level_reset(TF_SoundPressureLevel *sound_pressure_level) {
 int tf_sound_pressure_level_write_uid(TF_SoundPressureLevel *sound_pressure_level, uint32_t uid) {
     if (sound_pressure_level == NULL) {
         return TF_E_NULL;
+    }
+
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = sound_pressure_level->tfp->spitfp->hal;
@@ -1129,6 +1217,10 @@ int tf_sound_pressure_level_write_uid(TF_SoundPressureLevel *sound_pressure_leve
 int tf_sound_pressure_level_read_uid(TF_SoundPressureLevel *sound_pressure_level, uint32_t *ret_uid) {
     if (sound_pressure_level == NULL) {
         return TF_E_NULL;
+    }
+
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = sound_pressure_level->tfp->spitfp->hal;
@@ -1180,6 +1272,10 @@ int tf_sound_pressure_level_read_uid(TF_SoundPressureLevel *sound_pressure_level
 int tf_sound_pressure_level_get_identity(TF_SoundPressureLevel *sound_pressure_level, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (sound_pressure_level == NULL) {
         return TF_E_NULL;
+    }
+
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = sound_pressure_level->tfp->spitfp->hal;
@@ -1250,6 +1346,10 @@ int tf_sound_pressure_level_get_spectrum(TF_SoundPressureLevel *sound_pressure_l
     if (sound_pressure_level == NULL) {
         return TF_E_NULL;
     }
+
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
     
     uint32_t _spectrum_length = 0;
     uint16_t _spectrum_chunk_data[30];
@@ -1267,11 +1367,8 @@ int tf_sound_pressure_level_register_decibel_callback(TF_SoundPressureLevel *sou
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        sound_pressure_level->tfp->needs_callback_tick = false;
-        sound_pressure_level->tfp->needs_callback_tick |= sound_pressure_level->spectrum_low_level_handler != NULL;
-    } else {
-        sound_pressure_level->tfp->needs_callback_tick = true;
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     sound_pressure_level->decibel_handler = handler;
@@ -1286,11 +1383,8 @@ int tf_sound_pressure_level_register_spectrum_low_level_callback(TF_SoundPressur
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        sound_pressure_level->tfp->needs_callback_tick = false;
-        sound_pressure_level->tfp->needs_callback_tick |= sound_pressure_level->decibel_handler != NULL;
-    } else {
-        sound_pressure_level->tfp->needs_callback_tick = true;
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     sound_pressure_level->spectrum_low_level_handler = handler;
@@ -1320,6 +1414,10 @@ int tf_sound_pressure_level_register_spectrum_callback(TF_SoundPressureLevel *so
         return TF_E_NULL;
     }
 
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     sound_pressure_level->spectrum_handler = handler;
 
     sound_pressure_level->spectrum_hlc.data = spectrum_buffer;
@@ -1332,6 +1430,10 @@ int tf_sound_pressure_level_register_spectrum_callback(TF_SoundPressureLevel *so
 int tf_sound_pressure_level_callback_tick(TF_SoundPressureLevel *sound_pressure_level, uint32_t timeout_us) {
     if (sound_pressure_level == NULL) {
         return TF_E_NULL;
+    }
+
+    if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = sound_pressure_level->tfp->spitfp->hal;

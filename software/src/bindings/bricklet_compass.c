@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -86,19 +86,23 @@ int tf_compass_create(TF_Compass *compass, const char *uid_or_port_name, TF_HAL 
     compass->tfp = tfp;
     compass->tfp->device = compass;
     compass->tfp->cb_handler = tf_compass_callback_handler;
+    compass->magic = 0x5446;
     compass->response_expected[0] = 0x03;
-
     return TF_E_OK;
 }
 
 int tf_compass_destroy(TF_Compass *compass) {
-    if (compass == NULL || compass->tfp == NULL) {
+    if (compass == NULL) {
         return TF_E_NULL;
+    }
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     compass->tfp->cb_handler = NULL;
     compass->tfp->device = NULL;
     compass->tfp = NULL;
+    compass->magic = 0;
 
     return TF_E_OK;
 }
@@ -106,6 +110,10 @@ int tf_compass_destroy(TF_Compass *compass) {
 int tf_compass_get_response_expected(TF_Compass *compass, uint8_t function_id, bool *ret_response_expected) {
     if (compass == NULL) {
         return TF_E_NULL;
+    }
+
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -159,6 +167,10 @@ int tf_compass_get_response_expected(TF_Compass *compass, uint8_t function_id, b
 int tf_compass_set_response_expected(TF_Compass *compass, uint8_t function_id, bool response_expected) {
     if (compass == NULL) {
         return TF_E_NULL;
+    }
+
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -230,6 +242,10 @@ int tf_compass_set_response_expected_all(TF_Compass *compass, bool response_expe
         return TF_E_NULL;
     }
 
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(compass->response_expected, response_expected ? 0xFF : 0, 1);
 
     return TF_E_OK;
@@ -238,6 +254,10 @@ int tf_compass_set_response_expected_all(TF_Compass *compass, bool response_expe
 int tf_compass_get_heading(TF_Compass *compass, int16_t *ret_heading) {
     if (compass == NULL) {
         return TF_E_NULL;
+    }
+
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = compass->tfp->spitfp->hal;
@@ -291,6 +311,10 @@ int tf_compass_set_heading_callback_configuration(TF_Compass *compass, uint32_t 
         return TF_E_NULL;
     }
 
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = compass->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -339,6 +363,10 @@ int tf_compass_set_heading_callback_configuration(TF_Compass *compass, uint32_t 
 int tf_compass_get_heading_callback_configuration(TF_Compass *compass, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int16_t *ret_min, int16_t *ret_max) {
     if (compass == NULL) {
         return TF_E_NULL;
+    }
+
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = compass->tfp->spitfp->hal;
@@ -396,6 +424,10 @@ int tf_compass_get_magnetic_flux_density(TF_Compass *compass, int32_t *ret_x, in
         return TF_E_NULL;
     }
 
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = compass->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -449,6 +481,10 @@ int tf_compass_set_magnetic_flux_density_callback_configuration(TF_Compass *comp
         return TF_E_NULL;
     }
 
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = compass->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -494,6 +530,10 @@ int tf_compass_set_magnetic_flux_density_callback_configuration(TF_Compass *comp
 int tf_compass_get_magnetic_flux_density_callback_configuration(TF_Compass *compass, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (compass == NULL) {
         return TF_E_NULL;
+    }
+
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = compass->tfp->spitfp->hal;
@@ -548,6 +588,10 @@ int tf_compass_set_configuration(TF_Compass *compass, uint8_t data_rate, bool ba
         return TF_E_NULL;
     }
 
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = compass->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -593,6 +637,10 @@ int tf_compass_set_configuration(TF_Compass *compass, uint8_t data_rate, bool ba
 int tf_compass_get_configuration(TF_Compass *compass, uint8_t *ret_data_rate, bool *ret_background_calibration) {
     if (compass == NULL) {
         return TF_E_NULL;
+    }
+
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = compass->tfp->spitfp->hal;
@@ -647,6 +695,10 @@ int tf_compass_set_calibration(TF_Compass *compass, const int16_t offset[3], con
         return TF_E_NULL;
     }
 
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = compass->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -693,6 +745,10 @@ int tf_compass_set_calibration(TF_Compass *compass, const int16_t offset[3], con
 int tf_compass_get_calibration(TF_Compass *compass, int16_t ret_offset[3], int16_t ret_gain[3]) {
     if (compass == NULL) {
         return TF_E_NULL;
+    }
+
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = compass->tfp->spitfp->hal;
@@ -748,6 +804,10 @@ int tf_compass_get_spitfp_error_count(TF_Compass *compass, uint32_t *ret_error_c
         return TF_E_NULL;
     }
 
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = compass->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -800,6 +860,10 @@ int tf_compass_get_spitfp_error_count(TF_Compass *compass, uint32_t *ret_error_c
 int tf_compass_set_bootloader_mode(TF_Compass *compass, uint8_t mode, uint8_t *ret_status) {
     if (compass == NULL) {
         return TF_E_NULL;
+    }
+
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = compass->tfp->spitfp->hal;
@@ -857,6 +921,10 @@ int tf_compass_get_bootloader_mode(TF_Compass *compass, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = compass->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -908,6 +976,10 @@ int tf_compass_set_write_firmware_pointer(TF_Compass *compass, uint32_t pointer)
         return TF_E_NULL;
     }
 
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = compass->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -952,6 +1024,10 @@ int tf_compass_set_write_firmware_pointer(TF_Compass *compass, uint32_t pointer)
 int tf_compass_write_firmware(TF_Compass *compass, const uint8_t data[64], uint8_t *ret_status) {
     if (compass == NULL) {
         return TF_E_NULL;
+    }
+
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = compass->tfp->spitfp->hal;
@@ -1009,6 +1085,10 @@ int tf_compass_set_status_led_config(TF_Compass *compass, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = compass->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1053,6 +1133,10 @@ int tf_compass_set_status_led_config(TF_Compass *compass, uint8_t config) {
 int tf_compass_get_status_led_config(TF_Compass *compass, uint8_t *ret_config) {
     if (compass == NULL) {
         return TF_E_NULL;
+    }
+
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = compass->tfp->spitfp->hal;
@@ -1106,6 +1190,10 @@ int tf_compass_get_chip_temperature(TF_Compass *compass, int16_t *ret_temperatur
         return TF_E_NULL;
     }
 
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = compass->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1157,6 +1245,10 @@ int tf_compass_reset(TF_Compass *compass) {
         return TF_E_NULL;
     }
 
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = compass->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1197,6 +1289,10 @@ int tf_compass_reset(TF_Compass *compass) {
 int tf_compass_write_uid(TF_Compass *compass, uint32_t uid) {
     if (compass == NULL) {
         return TF_E_NULL;
+    }
+
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = compass->tfp->spitfp->hal;
@@ -1243,6 +1339,10 @@ int tf_compass_write_uid(TF_Compass *compass, uint32_t uid) {
 int tf_compass_read_uid(TF_Compass *compass, uint32_t *ret_uid) {
     if (compass == NULL) {
         return TF_E_NULL;
+    }
+
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = compass->tfp->spitfp->hal;
@@ -1294,6 +1394,10 @@ int tf_compass_read_uid(TF_Compass *compass, uint32_t *ret_uid) {
 int tf_compass_get_identity(TF_Compass *compass, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (compass == NULL) {
         return TF_E_NULL;
+    }
+
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = compass->tfp->spitfp->hal;
@@ -1353,11 +1457,8 @@ int tf_compass_register_heading_callback(TF_Compass *compass, TF_Compass_Heading
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        compass->tfp->needs_callback_tick = false;
-        compass->tfp->needs_callback_tick |= compass->magnetic_flux_density_handler != NULL;
-    } else {
-        compass->tfp->needs_callback_tick = true;
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     compass->heading_handler = handler;
@@ -1372,11 +1473,8 @@ int tf_compass_register_magnetic_flux_density_callback(TF_Compass *compass, TF_C
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        compass->tfp->needs_callback_tick = false;
-        compass->tfp->needs_callback_tick |= compass->heading_handler != NULL;
-    } else {
-        compass->tfp->needs_callback_tick = true;
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     compass->magnetic_flux_density_handler = handler;
@@ -1388,6 +1486,10 @@ int tf_compass_register_magnetic_flux_density_callback(TF_Compass *compass, TF_C
 int tf_compass_callback_tick(TF_Compass *compass, uint32_t timeout_us) {
     if (compass == NULL) {
         return TF_E_NULL;
+    }
+
+    if (compass->magic != 0x5446 || compass->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = compass->tfp->spitfp->hal;

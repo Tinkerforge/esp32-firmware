@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -101,21 +101,25 @@ int tf_nfc_create(TF_NFC *nfc, const char *uid_or_port_name, TF_HAL *hal) {
     nfc->tfp = tfp;
     nfc->tfp->device = nfc;
     nfc->tfp->cb_handler = tf_nfc_callback_handler;
+    nfc->magic = 0x5446;
     nfc->response_expected[0] = 0x24;
     nfc->response_expected[1] = 0x09;
     nfc->response_expected[2] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_nfc_destroy(TF_NFC *nfc) {
-    if (nfc == NULL || nfc->tfp == NULL) {
+    if (nfc == NULL) {
         return TF_E_NULL;
+    }
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     nfc->tfp->cb_handler = NULL;
     nfc->tfp->device = NULL;
     nfc->tfp = NULL;
+    nfc->magic = 0;
 
     return TF_E_OK;
 }
@@ -123,6 +127,10 @@ int tf_nfc_destroy(TF_NFC *nfc) {
 int tf_nfc_get_response_expected(TF_NFC *nfc, uint8_t function_id, bool *ret_response_expected) {
     if (nfc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -231,6 +239,10 @@ int tf_nfc_get_response_expected(TF_NFC *nfc, uint8_t function_id, bool *ret_res
 int tf_nfc_set_response_expected(TF_NFC *nfc, uint8_t function_id, bool response_expected) {
     if (nfc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -379,6 +391,10 @@ int tf_nfc_set_response_expected_all(TF_NFC *nfc, bool response_expected) {
         return TF_E_NULL;
     }
 
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(nfc->response_expected, response_expected ? 0xFF : 0, 3);
 
     return TF_E_OK;
@@ -387,6 +403,10 @@ int tf_nfc_set_response_expected_all(TF_NFC *nfc, bool response_expected) {
 int tf_nfc_set_mode(TF_NFC *nfc, uint8_t mode) {
     if (nfc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
@@ -433,6 +453,10 @@ int tf_nfc_set_mode(TF_NFC *nfc, uint8_t mode) {
 int tf_nfc_get_mode(TF_NFC *nfc, uint8_t *ret_mode) {
     if (nfc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
@@ -486,6 +510,10 @@ int tf_nfc_reader_request_tag_id(TF_NFC *nfc) {
         return TF_E_NULL;
     }
 
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -526,6 +554,10 @@ int tf_nfc_reader_request_tag_id(TF_NFC *nfc) {
 int tf_nfc_reader_get_tag_id_low_level(TF_NFC *nfc, uint8_t *ret_tag_type, uint8_t *ret_tag_id_length, uint8_t ret_tag_id_data[32]) {
     if (nfc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
@@ -582,6 +614,10 @@ int tf_nfc_reader_get_state(TF_NFC *nfc, uint8_t *ret_state, bool *ret_idle) {
         return TF_E_NULL;
     }
 
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -634,6 +670,10 @@ int tf_nfc_reader_write_ndef_low_level(TF_NFC *nfc, uint16_t ndef_length, uint16
         return TF_E_NULL;
     }
 
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -682,6 +722,10 @@ int tf_nfc_reader_request_ndef(TF_NFC *nfc) {
         return TF_E_NULL;
     }
 
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -722,6 +766,10 @@ int tf_nfc_reader_request_ndef(TF_NFC *nfc) {
 int tf_nfc_reader_read_ndef_low_level(TF_NFC *nfc, uint16_t *ret_ndef_length, uint16_t *ret_ndef_chunk_offset, uint8_t ret_ndef_chunk_data[60]) {
     if (nfc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
@@ -778,6 +826,10 @@ int tf_nfc_reader_authenticate_mifare_classic_page(TF_NFC *nfc, uint16_t page, u
         return TF_E_NULL;
     }
 
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -824,6 +876,10 @@ int tf_nfc_reader_authenticate_mifare_classic_page(TF_NFC *nfc, uint16_t page, u
 int tf_nfc_reader_write_page_low_level(TF_NFC *nfc, uint16_t page, uint16_t data_length, uint16_t data_chunk_offset, const uint8_t data_chunk_data[58]) {
     if (nfc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
@@ -875,6 +931,10 @@ int tf_nfc_reader_request_page(TF_NFC *nfc, uint16_t page, uint16_t length) {
         return TF_E_NULL;
     }
 
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -920,6 +980,10 @@ int tf_nfc_reader_request_page(TF_NFC *nfc, uint16_t page, uint16_t length) {
 int tf_nfc_reader_read_page_low_level(TF_NFC *nfc, uint16_t *ret_data_length, uint16_t *ret_data_chunk_offset, uint8_t ret_data_chunk_data[60]) {
     if (nfc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
@@ -976,6 +1040,10 @@ int tf_nfc_cardemu_get_state(TF_NFC *nfc, uint8_t *ret_state, bool *ret_idle) {
         return TF_E_NULL;
     }
 
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1028,6 +1096,10 @@ int tf_nfc_cardemu_start_discovery(TF_NFC *nfc) {
         return TF_E_NULL;
     }
 
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1068,6 +1140,10 @@ int tf_nfc_cardemu_start_discovery(TF_NFC *nfc) {
 int tf_nfc_cardemu_write_ndef_low_level(TF_NFC *nfc, uint16_t ndef_length, uint16_t ndef_chunk_offset, const uint8_t ndef_chunk_data[60]) {
     if (nfc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
@@ -1118,6 +1194,10 @@ int tf_nfc_cardemu_start_transfer(TF_NFC *nfc, uint8_t transfer) {
         return TF_E_NULL;
     }
 
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1162,6 +1242,10 @@ int tf_nfc_cardemu_start_transfer(TF_NFC *nfc, uint8_t transfer) {
 int tf_nfc_p2p_get_state(TF_NFC *nfc, uint8_t *ret_state, bool *ret_idle) {
     if (nfc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
@@ -1216,6 +1300,10 @@ int tf_nfc_p2p_start_discovery(TF_NFC *nfc) {
         return TF_E_NULL;
     }
 
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1256,6 +1344,10 @@ int tf_nfc_p2p_start_discovery(TF_NFC *nfc) {
 int tf_nfc_p2p_write_ndef_low_level(TF_NFC *nfc, uint16_t ndef_length, uint16_t ndef_chunk_offset, const uint8_t ndef_chunk_data[60]) {
     if (nfc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
@@ -1306,6 +1398,10 @@ int tf_nfc_p2p_start_transfer(TF_NFC *nfc, uint8_t transfer) {
         return TF_E_NULL;
     }
 
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1350,6 +1446,10 @@ int tf_nfc_p2p_start_transfer(TF_NFC *nfc, uint8_t transfer) {
 int tf_nfc_p2p_read_ndef_low_level(TF_NFC *nfc, uint16_t *ret_ndef_length, uint16_t *ret_ndef_chunk_offset, uint8_t ret_ndef_chunk_data[60]) {
     if (nfc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
@@ -1406,6 +1506,10 @@ int tf_nfc_set_detection_led_config(TF_NFC *nfc, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1450,6 +1554,10 @@ int tf_nfc_set_detection_led_config(TF_NFC *nfc, uint8_t config) {
 int tf_nfc_get_detection_led_config(TF_NFC *nfc, uint8_t *ret_config) {
     if (nfc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
@@ -1503,6 +1611,10 @@ int tf_nfc_set_maximum_timeout(TF_NFC *nfc, uint16_t timeout) {
         return TF_E_NULL;
     }
 
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1547,6 +1659,10 @@ int tf_nfc_set_maximum_timeout(TF_NFC *nfc, uint16_t timeout) {
 int tf_nfc_get_maximum_timeout(TF_NFC *nfc, uint16_t *ret_timeout) {
     if (nfc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
@@ -1598,6 +1714,10 @@ int tf_nfc_get_maximum_timeout(TF_NFC *nfc, uint16_t *ret_timeout) {
 int tf_nfc_simple_get_tag_id_low_level(TF_NFC *nfc, uint8_t index, uint8_t *ret_tag_type, uint8_t *ret_tag_id_length, uint8_t ret_tag_id_data[10], uint32_t *ret_last_seen) {
     if (nfc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
@@ -1659,6 +1779,10 @@ int tf_nfc_get_spitfp_error_count(TF_NFC *nfc, uint32_t *ret_error_count_ack_che
         return TF_E_NULL;
     }
 
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1711,6 +1835,10 @@ int tf_nfc_get_spitfp_error_count(TF_NFC *nfc, uint32_t *ret_error_count_ack_che
 int tf_nfc_set_bootloader_mode(TF_NFC *nfc, uint8_t mode, uint8_t *ret_status) {
     if (nfc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
@@ -1768,6 +1896,10 @@ int tf_nfc_get_bootloader_mode(TF_NFC *nfc, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1819,6 +1951,10 @@ int tf_nfc_set_write_firmware_pointer(TF_NFC *nfc, uint32_t pointer) {
         return TF_E_NULL;
     }
 
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1863,6 +1999,10 @@ int tf_nfc_set_write_firmware_pointer(TF_NFC *nfc, uint32_t pointer) {
 int tf_nfc_write_firmware(TF_NFC *nfc, const uint8_t data[64], uint8_t *ret_status) {
     if (nfc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
@@ -1920,6 +2060,10 @@ int tf_nfc_set_status_led_config(TF_NFC *nfc, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1964,6 +2108,10 @@ int tf_nfc_set_status_led_config(TF_NFC *nfc, uint8_t config) {
 int tf_nfc_get_status_led_config(TF_NFC *nfc, uint8_t *ret_config) {
     if (nfc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
@@ -2017,6 +2165,10 @@ int tf_nfc_get_chip_temperature(TF_NFC *nfc, int16_t *ret_temperature) {
         return TF_E_NULL;
     }
 
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2068,6 +2220,10 @@ int tf_nfc_reset(TF_NFC *nfc) {
         return TF_E_NULL;
     }
 
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -2108,6 +2264,10 @@ int tf_nfc_reset(TF_NFC *nfc) {
 int tf_nfc_write_uid(TF_NFC *nfc, uint32_t uid) {
     if (nfc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
@@ -2154,6 +2314,10 @@ int tf_nfc_write_uid(TF_NFC *nfc, uint32_t uid) {
 int tf_nfc_read_uid(TF_NFC *nfc, uint32_t *ret_uid) {
     if (nfc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
@@ -2205,6 +2369,10 @@ int tf_nfc_read_uid(TF_NFC *nfc, uint32_t *ret_uid) {
 int tf_nfc_get_identity(TF_NFC *nfc, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (nfc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = nfc->tfp->spitfp->hal;
@@ -2264,6 +2432,10 @@ int tf_nfc_reader_get_tag_id(TF_NFC *nfc, uint8_t *ret_tag_type, uint8_t *ret_ta
         return TF_E_NULL;
     }
 
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     int ret = TF_E_OK;
     uint8_t tag_id_length = 0;
     uint8_t tag_id_data[32];
@@ -2307,6 +2479,10 @@ int tf_nfc_reader_write_ndef(TF_NFC *nfc, const uint8_t *ndef, uint16_t ndef_len
     if (nfc == NULL) {
         return TF_E_NULL;
     }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
     
 
     uint32_t _stream_length = ndef_length;
@@ -2336,6 +2512,10 @@ static int tf_nfc_reader_read_ndef_ll_wrapper(void *device, void *wrapper_data, 
 int tf_nfc_reader_read_ndef(TF_NFC *nfc, uint8_t *ret_ndef, uint16_t *ret_ndef_length) {
     if (nfc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
     
     uint32_t _ndef_length = 0;
@@ -2371,6 +2551,10 @@ int tf_nfc_reader_write_page(TF_NFC *nfc, uint16_t page, const uint8_t *data, ui
     if (nfc == NULL) {
         return TF_E_NULL;
     }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
     
     TF_NFC_ReaderWritePageLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
@@ -2404,6 +2588,10 @@ int tf_nfc_reader_read_page(TF_NFC *nfc, uint8_t *ret_data, uint16_t *ret_data_l
     if (nfc == NULL) {
         return TF_E_NULL;
     }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
     
     uint32_t _data_length = 0;
     uint8_t _data_chunk_data[60];
@@ -2432,6 +2620,10 @@ static int tf_nfc_cardemu_write_ndef_ll_wrapper(void *device, void *wrapper_data
 int tf_nfc_cardemu_write_ndef(TF_NFC *nfc, const uint8_t *ndef, uint16_t ndef_length) {
     if (nfc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
     
 
@@ -2464,6 +2656,10 @@ int tf_nfc_p2p_write_ndef(TF_NFC *nfc, const uint8_t *ndef, uint16_t ndef_length
     if (nfc == NULL) {
         return TF_E_NULL;
     }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
     
 
     uint32_t _stream_length = ndef_length;
@@ -2494,6 +2690,10 @@ int tf_nfc_p2p_read_ndef(TF_NFC *nfc, uint8_t *ret_ndef, uint16_t *ret_ndef_leng
     if (nfc == NULL) {
         return TF_E_NULL;
     }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
     
     uint32_t _ndef_length = 0;
     uint8_t _ndef_chunk_data[60];
@@ -2509,6 +2709,10 @@ int tf_nfc_p2p_read_ndef(TF_NFC *nfc, uint8_t *ret_ndef, uint16_t *ret_ndef_leng
 int tf_nfc_simple_get_tag_id(TF_NFC *nfc, uint8_t index, uint8_t *ret_tag_type, uint8_t *ret_tag_id, uint8_t *ret_tag_id_length, uint32_t *ret_last_seen) {
     if (nfc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     int ret = TF_E_OK;
@@ -2542,12 +2746,8 @@ int tf_nfc_register_reader_state_changed_callback(TF_NFC *nfc, TF_NFC_ReaderStat
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        nfc->tfp->needs_callback_tick = false;
-        nfc->tfp->needs_callback_tick |= nfc->cardemu_state_changed_handler != NULL;
-        nfc->tfp->needs_callback_tick |= nfc->p2p_state_changed_handler != NULL;
-    } else {
-        nfc->tfp->needs_callback_tick = true;
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     nfc->reader_state_changed_handler = handler;
@@ -2562,12 +2762,8 @@ int tf_nfc_register_cardemu_state_changed_callback(TF_NFC *nfc, TF_NFC_CardemuSt
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        nfc->tfp->needs_callback_tick = false;
-        nfc->tfp->needs_callback_tick |= nfc->reader_state_changed_handler != NULL;
-        nfc->tfp->needs_callback_tick |= nfc->p2p_state_changed_handler != NULL;
-    } else {
-        nfc->tfp->needs_callback_tick = true;
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     nfc->cardemu_state_changed_handler = handler;
@@ -2582,12 +2778,8 @@ int tf_nfc_register_p2p_state_changed_callback(TF_NFC *nfc, TF_NFC_P2PStateChang
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        nfc->tfp->needs_callback_tick = false;
-        nfc->tfp->needs_callback_tick |= nfc->reader_state_changed_handler != NULL;
-        nfc->tfp->needs_callback_tick |= nfc->cardemu_state_changed_handler != NULL;
-    } else {
-        nfc->tfp->needs_callback_tick = true;
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     nfc->p2p_state_changed_handler = handler;
@@ -2599,6 +2791,10 @@ int tf_nfc_register_p2p_state_changed_callback(TF_NFC *nfc, TF_NFC_P2PStateChang
 int tf_nfc_callback_tick(TF_NFC *nfc, uint32_t timeout_us) {
     if (nfc == NULL) {
         return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = nfc->tfp->spitfp->hal;

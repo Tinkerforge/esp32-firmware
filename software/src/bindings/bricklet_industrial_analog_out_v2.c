@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -45,20 +45,24 @@ int tf_industrial_analog_out_v2_create(TF_IndustrialAnalogOutV2 *industrial_anal
     industrial_analog_out_v2->tfp = tfp;
     industrial_analog_out_v2->tfp->device = industrial_analog_out_v2;
     industrial_analog_out_v2->tfp->cb_handler = tf_industrial_analog_out_v2_callback_handler;
+    industrial_analog_out_v2->magic = 0x5446;
     industrial_analog_out_v2->response_expected[0] = 0x00;
     industrial_analog_out_v2->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_industrial_analog_out_v2_destroy(TF_IndustrialAnalogOutV2 *industrial_analog_out_v2) {
-    if (industrial_analog_out_v2 == NULL || industrial_analog_out_v2->tfp == NULL) {
+    if (industrial_analog_out_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     industrial_analog_out_v2->tfp->cb_handler = NULL;
     industrial_analog_out_v2->tfp->device = NULL;
     industrial_analog_out_v2->tfp = NULL;
+    industrial_analog_out_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -66,6 +70,10 @@ int tf_industrial_analog_out_v2_destroy(TF_IndustrialAnalogOutV2 *industrial_ana
 int tf_industrial_analog_out_v2_get_response_expected(TF_IndustrialAnalogOutV2 *industrial_analog_out_v2, uint8_t function_id, bool *ret_response_expected) {
     if (industrial_analog_out_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -129,6 +137,10 @@ int tf_industrial_analog_out_v2_get_response_expected(TF_IndustrialAnalogOutV2 *
 int tf_industrial_analog_out_v2_set_response_expected(TF_IndustrialAnalogOutV2 *industrial_analog_out_v2, uint8_t function_id, bool response_expected) {
     if (industrial_analog_out_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -214,6 +226,10 @@ int tf_industrial_analog_out_v2_set_response_expected_all(TF_IndustrialAnalogOut
         return TF_E_NULL;
     }
 
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(industrial_analog_out_v2->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -222,6 +238,10 @@ int tf_industrial_analog_out_v2_set_response_expected_all(TF_IndustrialAnalogOut
 int tf_industrial_analog_out_v2_set_enabled(TF_IndustrialAnalogOutV2 *industrial_analog_out_v2, bool enabled) {
     if (industrial_analog_out_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_analog_out_v2->tfp->spitfp->hal;
@@ -268,6 +288,10 @@ int tf_industrial_analog_out_v2_set_enabled(TF_IndustrialAnalogOutV2 *industrial
 int tf_industrial_analog_out_v2_get_enabled(TF_IndustrialAnalogOutV2 *industrial_analog_out_v2, bool *ret_enabled) {
     if (industrial_analog_out_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_analog_out_v2->tfp->spitfp->hal;
@@ -321,6 +345,10 @@ int tf_industrial_analog_out_v2_set_voltage(TF_IndustrialAnalogOutV2 *industrial
         return TF_E_NULL;
     }
 
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_analog_out_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -365,6 +393,10 @@ int tf_industrial_analog_out_v2_set_voltage(TF_IndustrialAnalogOutV2 *industrial
 int tf_industrial_analog_out_v2_get_voltage(TF_IndustrialAnalogOutV2 *industrial_analog_out_v2, uint16_t *ret_voltage) {
     if (industrial_analog_out_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_analog_out_v2->tfp->spitfp->hal;
@@ -418,6 +450,10 @@ int tf_industrial_analog_out_v2_set_current(TF_IndustrialAnalogOutV2 *industrial
         return TF_E_NULL;
     }
 
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_analog_out_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -462,6 +498,10 @@ int tf_industrial_analog_out_v2_set_current(TF_IndustrialAnalogOutV2 *industrial
 int tf_industrial_analog_out_v2_get_current(TF_IndustrialAnalogOutV2 *industrial_analog_out_v2, uint16_t *ret_current) {
     if (industrial_analog_out_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_analog_out_v2->tfp->spitfp->hal;
@@ -515,6 +555,10 @@ int tf_industrial_analog_out_v2_set_configuration(TF_IndustrialAnalogOutV2 *indu
         return TF_E_NULL;
     }
 
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_analog_out_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -560,6 +604,10 @@ int tf_industrial_analog_out_v2_set_configuration(TF_IndustrialAnalogOutV2 *indu
 int tf_industrial_analog_out_v2_get_configuration(TF_IndustrialAnalogOutV2 *industrial_analog_out_v2, uint8_t *ret_voltage_range, uint8_t *ret_current_range) {
     if (industrial_analog_out_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_analog_out_v2->tfp->spitfp->hal;
@@ -614,6 +662,10 @@ int tf_industrial_analog_out_v2_set_out_led_config(TF_IndustrialAnalogOutV2 *ind
         return TF_E_NULL;
     }
 
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_analog_out_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -658,6 +710,10 @@ int tf_industrial_analog_out_v2_set_out_led_config(TF_IndustrialAnalogOutV2 *ind
 int tf_industrial_analog_out_v2_get_out_led_config(TF_IndustrialAnalogOutV2 *industrial_analog_out_v2, uint8_t *ret_config) {
     if (industrial_analog_out_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_analog_out_v2->tfp->spitfp->hal;
@@ -711,6 +767,10 @@ int tf_industrial_analog_out_v2_set_out_led_status_config(TF_IndustrialAnalogOut
         return TF_E_NULL;
     }
 
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_analog_out_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -757,6 +817,10 @@ int tf_industrial_analog_out_v2_set_out_led_status_config(TF_IndustrialAnalogOut
 int tf_industrial_analog_out_v2_get_out_led_status_config(TF_IndustrialAnalogOutV2 *industrial_analog_out_v2, uint16_t *ret_min, uint16_t *ret_max, uint8_t *ret_config) {
     if (industrial_analog_out_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_analog_out_v2->tfp->spitfp->hal;
@@ -812,6 +876,10 @@ int tf_industrial_analog_out_v2_get_spitfp_error_count(TF_IndustrialAnalogOutV2 
         return TF_E_NULL;
     }
 
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_analog_out_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -864,6 +932,10 @@ int tf_industrial_analog_out_v2_get_spitfp_error_count(TF_IndustrialAnalogOutV2 
 int tf_industrial_analog_out_v2_set_bootloader_mode(TF_IndustrialAnalogOutV2 *industrial_analog_out_v2, uint8_t mode, uint8_t *ret_status) {
     if (industrial_analog_out_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_analog_out_v2->tfp->spitfp->hal;
@@ -921,6 +993,10 @@ int tf_industrial_analog_out_v2_get_bootloader_mode(TF_IndustrialAnalogOutV2 *in
         return TF_E_NULL;
     }
 
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_analog_out_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -972,6 +1048,10 @@ int tf_industrial_analog_out_v2_set_write_firmware_pointer(TF_IndustrialAnalogOu
         return TF_E_NULL;
     }
 
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_analog_out_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1016,6 +1096,10 @@ int tf_industrial_analog_out_v2_set_write_firmware_pointer(TF_IndustrialAnalogOu
 int tf_industrial_analog_out_v2_write_firmware(TF_IndustrialAnalogOutV2 *industrial_analog_out_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (industrial_analog_out_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_analog_out_v2->tfp->spitfp->hal;
@@ -1073,6 +1157,10 @@ int tf_industrial_analog_out_v2_set_status_led_config(TF_IndustrialAnalogOutV2 *
         return TF_E_NULL;
     }
 
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_analog_out_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1117,6 +1205,10 @@ int tf_industrial_analog_out_v2_set_status_led_config(TF_IndustrialAnalogOutV2 *
 int tf_industrial_analog_out_v2_get_status_led_config(TF_IndustrialAnalogOutV2 *industrial_analog_out_v2, uint8_t *ret_config) {
     if (industrial_analog_out_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_analog_out_v2->tfp->spitfp->hal;
@@ -1170,6 +1262,10 @@ int tf_industrial_analog_out_v2_get_chip_temperature(TF_IndustrialAnalogOutV2 *i
         return TF_E_NULL;
     }
 
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_analog_out_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1221,6 +1317,10 @@ int tf_industrial_analog_out_v2_reset(TF_IndustrialAnalogOutV2 *industrial_analo
         return TF_E_NULL;
     }
 
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = industrial_analog_out_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1261,6 +1361,10 @@ int tf_industrial_analog_out_v2_reset(TF_IndustrialAnalogOutV2 *industrial_analo
 int tf_industrial_analog_out_v2_write_uid(TF_IndustrialAnalogOutV2 *industrial_analog_out_v2, uint32_t uid) {
     if (industrial_analog_out_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_analog_out_v2->tfp->spitfp->hal;
@@ -1307,6 +1411,10 @@ int tf_industrial_analog_out_v2_write_uid(TF_IndustrialAnalogOutV2 *industrial_a
 int tf_industrial_analog_out_v2_read_uid(TF_IndustrialAnalogOutV2 *industrial_analog_out_v2, uint32_t *ret_uid) {
     if (industrial_analog_out_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_analog_out_v2->tfp->spitfp->hal;
@@ -1358,6 +1466,10 @@ int tf_industrial_analog_out_v2_read_uid(TF_IndustrialAnalogOutV2 *industrial_an
 int tf_industrial_analog_out_v2_get_identity(TF_IndustrialAnalogOutV2 *industrial_analog_out_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (industrial_analog_out_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = industrial_analog_out_v2->tfp->spitfp->hal;
@@ -1416,6 +1528,10 @@ int tf_industrial_analog_out_v2_get_identity(TF_IndustrialAnalogOutV2 *industria
 int tf_industrial_analog_out_v2_callback_tick(TF_IndustrialAnalogOutV2 *industrial_analog_out_v2, uint32_t timeout_us) {
     if (industrial_analog_out_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (industrial_analog_out_v2->magic != 0x5446 || industrial_analog_out_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = industrial_analog_out_v2->tfp->spitfp->hal;

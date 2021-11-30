@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -77,19 +77,23 @@ int tf_energy_monitor_create(TF_EnergyMonitor *energy_monitor, const char *uid_o
     energy_monitor->tfp = tfp;
     energy_monitor->tfp->device = energy_monitor;
     energy_monitor->tfp->cb_handler = tf_energy_monitor_callback_handler;
+    energy_monitor->magic = 0x5446;
     energy_monitor->response_expected[0] = 0x08;
-
     return TF_E_OK;
 }
 
 int tf_energy_monitor_destroy(TF_EnergyMonitor *energy_monitor) {
-    if (energy_monitor == NULL || energy_monitor->tfp == NULL) {
+    if (energy_monitor == NULL) {
         return TF_E_NULL;
+    }
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     energy_monitor->tfp->cb_handler = NULL;
     energy_monitor->tfp->device = NULL;
     energy_monitor->tfp = NULL;
+    energy_monitor->magic = 0;
 
     return TF_E_OK;
 }
@@ -97,6 +101,10 @@ int tf_energy_monitor_destroy(TF_EnergyMonitor *energy_monitor) {
 int tf_energy_monitor_get_response_expected(TF_EnergyMonitor *energy_monitor, uint8_t function_id, bool *ret_response_expected) {
     if (energy_monitor == NULL) {
         return TF_E_NULL;
+    }
+
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -150,6 +158,10 @@ int tf_energy_monitor_get_response_expected(TF_EnergyMonitor *energy_monitor, ui
 int tf_energy_monitor_set_response_expected(TF_EnergyMonitor *energy_monitor, uint8_t function_id, bool response_expected) {
     if (energy_monitor == NULL) {
         return TF_E_NULL;
+    }
+
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -221,6 +233,10 @@ int tf_energy_monitor_set_response_expected_all(TF_EnergyMonitor *energy_monitor
         return TF_E_NULL;
     }
 
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(energy_monitor->response_expected, response_expected ? 0xFF : 0, 1);
 
     return TF_E_OK;
@@ -229,6 +245,10 @@ int tf_energy_monitor_set_response_expected_all(TF_EnergyMonitor *energy_monitor
 int tf_energy_monitor_get_energy_data(TF_EnergyMonitor *energy_monitor, int32_t *ret_voltage, int32_t *ret_current, int32_t *ret_energy, int32_t *ret_real_power, int32_t *ret_apparent_power, int32_t *ret_reactive_power, uint16_t *ret_power_factor, uint16_t *ret_frequency) {
     if (energy_monitor == NULL) {
         return TF_E_NULL;
+    }
+
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = energy_monitor->tfp->spitfp->hal;
@@ -289,6 +309,10 @@ int tf_energy_monitor_reset_energy(TF_EnergyMonitor *energy_monitor) {
         return TF_E_NULL;
     }
 
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = energy_monitor->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -329,6 +353,10 @@ int tf_energy_monitor_reset_energy(TF_EnergyMonitor *energy_monitor) {
 int tf_energy_monitor_get_waveform_low_level(TF_EnergyMonitor *energy_monitor, uint16_t *ret_waveform_chunk_offset, int16_t ret_waveform_chunk_data[30]) {
     if (energy_monitor == NULL) {
         return TF_E_NULL;
+    }
+
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = energy_monitor->tfp->spitfp->hal;
@@ -384,6 +412,10 @@ int tf_energy_monitor_get_transformer_status(TF_EnergyMonitor *energy_monitor, b
         return TF_E_NULL;
     }
 
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = energy_monitor->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -436,6 +468,10 @@ int tf_energy_monitor_set_transformer_calibration(TF_EnergyMonitor *energy_monit
         return TF_E_NULL;
     }
 
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = energy_monitor->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -482,6 +518,10 @@ int tf_energy_monitor_set_transformer_calibration(TF_EnergyMonitor *energy_monit
 int tf_energy_monitor_get_transformer_calibration(TF_EnergyMonitor *energy_monitor, uint16_t *ret_voltage_ratio, uint16_t *ret_current_ratio, int16_t *ret_phase_shift) {
     if (energy_monitor == NULL) {
         return TF_E_NULL;
+    }
+
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = energy_monitor->tfp->spitfp->hal;
@@ -537,6 +577,10 @@ int tf_energy_monitor_calibrate_offset(TF_EnergyMonitor *energy_monitor) {
         return TF_E_NULL;
     }
 
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = energy_monitor->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -577,6 +621,10 @@ int tf_energy_monitor_calibrate_offset(TF_EnergyMonitor *energy_monitor) {
 int tf_energy_monitor_set_energy_data_callback_configuration(TF_EnergyMonitor *energy_monitor, uint32_t period, bool value_has_to_change) {
     if (energy_monitor == NULL) {
         return TF_E_NULL;
+    }
+
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = energy_monitor->tfp->spitfp->hal;
@@ -624,6 +672,10 @@ int tf_energy_monitor_set_energy_data_callback_configuration(TF_EnergyMonitor *e
 int tf_energy_monitor_get_energy_data_callback_configuration(TF_EnergyMonitor *energy_monitor, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (energy_monitor == NULL) {
         return TF_E_NULL;
+    }
+
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = energy_monitor->tfp->spitfp->hal;
@@ -678,6 +730,10 @@ int tf_energy_monitor_get_spitfp_error_count(TF_EnergyMonitor *energy_monitor, u
         return TF_E_NULL;
     }
 
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = energy_monitor->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -730,6 +786,10 @@ int tf_energy_monitor_get_spitfp_error_count(TF_EnergyMonitor *energy_monitor, u
 int tf_energy_monitor_set_bootloader_mode(TF_EnergyMonitor *energy_monitor, uint8_t mode, uint8_t *ret_status) {
     if (energy_monitor == NULL) {
         return TF_E_NULL;
+    }
+
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = energy_monitor->tfp->spitfp->hal;
@@ -787,6 +847,10 @@ int tf_energy_monitor_get_bootloader_mode(TF_EnergyMonitor *energy_monitor, uint
         return TF_E_NULL;
     }
 
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = energy_monitor->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -838,6 +902,10 @@ int tf_energy_monitor_set_write_firmware_pointer(TF_EnergyMonitor *energy_monito
         return TF_E_NULL;
     }
 
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = energy_monitor->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -882,6 +950,10 @@ int tf_energy_monitor_set_write_firmware_pointer(TF_EnergyMonitor *energy_monito
 int tf_energy_monitor_write_firmware(TF_EnergyMonitor *energy_monitor, const uint8_t data[64], uint8_t *ret_status) {
     if (energy_monitor == NULL) {
         return TF_E_NULL;
+    }
+
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = energy_monitor->tfp->spitfp->hal;
@@ -939,6 +1011,10 @@ int tf_energy_monitor_set_status_led_config(TF_EnergyMonitor *energy_monitor, ui
         return TF_E_NULL;
     }
 
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = energy_monitor->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -983,6 +1059,10 @@ int tf_energy_monitor_set_status_led_config(TF_EnergyMonitor *energy_monitor, ui
 int tf_energy_monitor_get_status_led_config(TF_EnergyMonitor *energy_monitor, uint8_t *ret_config) {
     if (energy_monitor == NULL) {
         return TF_E_NULL;
+    }
+
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = energy_monitor->tfp->spitfp->hal;
@@ -1036,6 +1116,10 @@ int tf_energy_monitor_get_chip_temperature(TF_EnergyMonitor *energy_monitor, int
         return TF_E_NULL;
     }
 
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = energy_monitor->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1087,6 +1171,10 @@ int tf_energy_monitor_reset(TF_EnergyMonitor *energy_monitor) {
         return TF_E_NULL;
     }
 
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = energy_monitor->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1127,6 +1215,10 @@ int tf_energy_monitor_reset(TF_EnergyMonitor *energy_monitor) {
 int tf_energy_monitor_write_uid(TF_EnergyMonitor *energy_monitor, uint32_t uid) {
     if (energy_monitor == NULL) {
         return TF_E_NULL;
+    }
+
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = energy_monitor->tfp->spitfp->hal;
@@ -1173,6 +1265,10 @@ int tf_energy_monitor_write_uid(TF_EnergyMonitor *energy_monitor, uint32_t uid) 
 int tf_energy_monitor_read_uid(TF_EnergyMonitor *energy_monitor, uint32_t *ret_uid) {
     if (energy_monitor == NULL) {
         return TF_E_NULL;
+    }
+
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = energy_monitor->tfp->spitfp->hal;
@@ -1224,6 +1320,10 @@ int tf_energy_monitor_read_uid(TF_EnergyMonitor *energy_monitor, uint32_t *ret_u
 int tf_energy_monitor_get_identity(TF_EnergyMonitor *energy_monitor, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (energy_monitor == NULL) {
         return TF_E_NULL;
+    }
+
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = energy_monitor->tfp->spitfp->hal;
@@ -1298,6 +1398,10 @@ int tf_energy_monitor_get_waveform(TF_EnergyMonitor *energy_monitor, int16_t *re
     if (energy_monitor == NULL) {
         return TF_E_NULL;
     }
+
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
     
     uint32_t _waveform_length = 0;
     int16_t _waveform_chunk_data[30];
@@ -1315,10 +1419,8 @@ int tf_energy_monitor_register_energy_data_callback(TF_EnergyMonitor *energy_mon
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        energy_monitor->tfp->needs_callback_tick = false;
-    } else {
-        energy_monitor->tfp->needs_callback_tick = true;
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     energy_monitor->energy_data_handler = handler;
@@ -1330,6 +1432,10 @@ int tf_energy_monitor_register_energy_data_callback(TF_EnergyMonitor *energy_mon
 int tf_energy_monitor_callback_tick(TF_EnergyMonitor *energy_monitor, uint32_t timeout_us) {
     if (energy_monitor == NULL) {
         return TF_E_NULL;
+    }
+
+    if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = energy_monitor->tfp->spitfp->hal;

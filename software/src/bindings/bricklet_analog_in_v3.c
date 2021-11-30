@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -70,19 +70,23 @@ int tf_analog_in_v3_create(TF_AnalogInV3 *analog_in_v3, const char *uid_or_port_
     analog_in_v3->tfp = tfp;
     analog_in_v3->tfp->device = analog_in_v3;
     analog_in_v3->tfp->cb_handler = tf_analog_in_v3_callback_handler;
+    analog_in_v3->magic = 0x5446;
     analog_in_v3->response_expected[0] = 0x01;
-
     return TF_E_OK;
 }
 
 int tf_analog_in_v3_destroy(TF_AnalogInV3 *analog_in_v3) {
-    if (analog_in_v3 == NULL || analog_in_v3->tfp == NULL) {
+    if (analog_in_v3 == NULL) {
         return TF_E_NULL;
+    }
+    if (analog_in_v3->magic != 0x5446 || analog_in_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     analog_in_v3->tfp->cb_handler = NULL;
     analog_in_v3->tfp->device = NULL;
     analog_in_v3->tfp = NULL;
+    analog_in_v3->magic = 0;
 
     return TF_E_OK;
 }
@@ -90,6 +94,10 @@ int tf_analog_in_v3_destroy(TF_AnalogInV3 *analog_in_v3) {
 int tf_analog_in_v3_get_response_expected(TF_AnalogInV3 *analog_in_v3, uint8_t function_id, bool *ret_response_expected) {
     if (analog_in_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (analog_in_v3->magic != 0x5446 || analog_in_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -138,6 +146,10 @@ int tf_analog_in_v3_get_response_expected(TF_AnalogInV3 *analog_in_v3, uint8_t f
 int tf_analog_in_v3_set_response_expected(TF_AnalogInV3 *analog_in_v3, uint8_t function_id, bool response_expected) {
     if (analog_in_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (analog_in_v3->magic != 0x5446 || analog_in_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -202,6 +214,10 @@ int tf_analog_in_v3_set_response_expected_all(TF_AnalogInV3 *analog_in_v3, bool 
         return TF_E_NULL;
     }
 
+    if (analog_in_v3->magic != 0x5446 || analog_in_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(analog_in_v3->response_expected, response_expected ? 0xFF : 0, 1);
 
     return TF_E_OK;
@@ -210,6 +226,10 @@ int tf_analog_in_v3_set_response_expected_all(TF_AnalogInV3 *analog_in_v3, bool 
 int tf_analog_in_v3_get_voltage(TF_AnalogInV3 *analog_in_v3, uint16_t *ret_voltage) {
     if (analog_in_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (analog_in_v3->magic != 0x5446 || analog_in_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = analog_in_v3->tfp->spitfp->hal;
@@ -263,6 +283,10 @@ int tf_analog_in_v3_set_voltage_callback_configuration(TF_AnalogInV3 *analog_in_
         return TF_E_NULL;
     }
 
+    if (analog_in_v3->magic != 0x5446 || analog_in_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = analog_in_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -311,6 +335,10 @@ int tf_analog_in_v3_set_voltage_callback_configuration(TF_AnalogInV3 *analog_in_
 int tf_analog_in_v3_get_voltage_callback_configuration(TF_AnalogInV3 *analog_in_v3, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, uint16_t *ret_min, uint16_t *ret_max) {
     if (analog_in_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (analog_in_v3->magic != 0x5446 || analog_in_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = analog_in_v3->tfp->spitfp->hal;
@@ -368,6 +396,10 @@ int tf_analog_in_v3_set_oversampling(TF_AnalogInV3 *analog_in_v3, uint8_t oversa
         return TF_E_NULL;
     }
 
+    if (analog_in_v3->magic != 0x5446 || analog_in_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = analog_in_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -412,6 +444,10 @@ int tf_analog_in_v3_set_oversampling(TF_AnalogInV3 *analog_in_v3, uint8_t oversa
 int tf_analog_in_v3_get_oversampling(TF_AnalogInV3 *analog_in_v3, uint8_t *ret_oversampling) {
     if (analog_in_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (analog_in_v3->magic != 0x5446 || analog_in_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = analog_in_v3->tfp->spitfp->hal;
@@ -465,6 +501,10 @@ int tf_analog_in_v3_set_calibration(TF_AnalogInV3 *analog_in_v3, int16_t offset,
         return TF_E_NULL;
     }
 
+    if (analog_in_v3->magic != 0x5446 || analog_in_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = analog_in_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -511,6 +551,10 @@ int tf_analog_in_v3_set_calibration(TF_AnalogInV3 *analog_in_v3, int16_t offset,
 int tf_analog_in_v3_get_calibration(TF_AnalogInV3 *analog_in_v3, int16_t *ret_offset, uint16_t *ret_multiplier, uint16_t *ret_divisor) {
     if (analog_in_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (analog_in_v3->magic != 0x5446 || analog_in_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = analog_in_v3->tfp->spitfp->hal;
@@ -566,6 +610,10 @@ int tf_analog_in_v3_get_spitfp_error_count(TF_AnalogInV3 *analog_in_v3, uint32_t
         return TF_E_NULL;
     }
 
+    if (analog_in_v3->magic != 0x5446 || analog_in_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = analog_in_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -618,6 +666,10 @@ int tf_analog_in_v3_get_spitfp_error_count(TF_AnalogInV3 *analog_in_v3, uint32_t
 int tf_analog_in_v3_set_bootloader_mode(TF_AnalogInV3 *analog_in_v3, uint8_t mode, uint8_t *ret_status) {
     if (analog_in_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (analog_in_v3->magic != 0x5446 || analog_in_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = analog_in_v3->tfp->spitfp->hal;
@@ -675,6 +727,10 @@ int tf_analog_in_v3_get_bootloader_mode(TF_AnalogInV3 *analog_in_v3, uint8_t *re
         return TF_E_NULL;
     }
 
+    if (analog_in_v3->magic != 0x5446 || analog_in_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = analog_in_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -726,6 +782,10 @@ int tf_analog_in_v3_set_write_firmware_pointer(TF_AnalogInV3 *analog_in_v3, uint
         return TF_E_NULL;
     }
 
+    if (analog_in_v3->magic != 0x5446 || analog_in_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = analog_in_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -770,6 +830,10 @@ int tf_analog_in_v3_set_write_firmware_pointer(TF_AnalogInV3 *analog_in_v3, uint
 int tf_analog_in_v3_write_firmware(TF_AnalogInV3 *analog_in_v3, const uint8_t data[64], uint8_t *ret_status) {
     if (analog_in_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (analog_in_v3->magic != 0x5446 || analog_in_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = analog_in_v3->tfp->spitfp->hal;
@@ -827,6 +891,10 @@ int tf_analog_in_v3_set_status_led_config(TF_AnalogInV3 *analog_in_v3, uint8_t c
         return TF_E_NULL;
     }
 
+    if (analog_in_v3->magic != 0x5446 || analog_in_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = analog_in_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -871,6 +939,10 @@ int tf_analog_in_v3_set_status_led_config(TF_AnalogInV3 *analog_in_v3, uint8_t c
 int tf_analog_in_v3_get_status_led_config(TF_AnalogInV3 *analog_in_v3, uint8_t *ret_config) {
     if (analog_in_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (analog_in_v3->magic != 0x5446 || analog_in_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = analog_in_v3->tfp->spitfp->hal;
@@ -924,6 +996,10 @@ int tf_analog_in_v3_get_chip_temperature(TF_AnalogInV3 *analog_in_v3, int16_t *r
         return TF_E_NULL;
     }
 
+    if (analog_in_v3->magic != 0x5446 || analog_in_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = analog_in_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -975,6 +1051,10 @@ int tf_analog_in_v3_reset(TF_AnalogInV3 *analog_in_v3) {
         return TF_E_NULL;
     }
 
+    if (analog_in_v3->magic != 0x5446 || analog_in_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = analog_in_v3->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1015,6 +1095,10 @@ int tf_analog_in_v3_reset(TF_AnalogInV3 *analog_in_v3) {
 int tf_analog_in_v3_write_uid(TF_AnalogInV3 *analog_in_v3, uint32_t uid) {
     if (analog_in_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (analog_in_v3->magic != 0x5446 || analog_in_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = analog_in_v3->tfp->spitfp->hal;
@@ -1061,6 +1145,10 @@ int tf_analog_in_v3_write_uid(TF_AnalogInV3 *analog_in_v3, uint32_t uid) {
 int tf_analog_in_v3_read_uid(TF_AnalogInV3 *analog_in_v3, uint32_t *ret_uid) {
     if (analog_in_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (analog_in_v3->magic != 0x5446 || analog_in_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = analog_in_v3->tfp->spitfp->hal;
@@ -1112,6 +1200,10 @@ int tf_analog_in_v3_read_uid(TF_AnalogInV3 *analog_in_v3, uint32_t *ret_uid) {
 int tf_analog_in_v3_get_identity(TF_AnalogInV3 *analog_in_v3, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (analog_in_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (analog_in_v3->magic != 0x5446 || analog_in_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = analog_in_v3->tfp->spitfp->hal;
@@ -1171,10 +1263,8 @@ int tf_analog_in_v3_register_voltage_callback(TF_AnalogInV3 *analog_in_v3, TF_An
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        analog_in_v3->tfp->needs_callback_tick = false;
-    } else {
-        analog_in_v3->tfp->needs_callback_tick = true;
+    if (analog_in_v3->magic != 0x5446 || analog_in_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     analog_in_v3->voltage_handler = handler;
@@ -1186,6 +1276,10 @@ int tf_analog_in_v3_register_voltage_callback(TF_AnalogInV3 *analog_in_v3, TF_An
 int tf_analog_in_v3_callback_tick(TF_AnalogInV3 *analog_in_v3, uint32_t timeout_us) {
     if (analog_in_v3 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (analog_in_v3->magic != 0x5446 || analog_in_v3->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = analog_in_v3->tfp->spitfp->hal;

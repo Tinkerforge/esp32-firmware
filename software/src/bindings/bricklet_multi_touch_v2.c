@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -70,20 +70,24 @@ int tf_multi_touch_v2_create(TF_MultiTouchV2 *multi_touch_v2, const char *uid_or
     multi_touch_v2->tfp = tfp;
     multi_touch_v2->tfp->device = multi_touch_v2;
     multi_touch_v2->tfp->cb_handler = tf_multi_touch_v2_callback_handler;
+    multi_touch_v2->magic = 0x5446;
     multi_touch_v2->response_expected[0] = 0x01;
     multi_touch_v2->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_multi_touch_v2_destroy(TF_MultiTouchV2 *multi_touch_v2) {
-    if (multi_touch_v2 == NULL || multi_touch_v2->tfp == NULL) {
+    if (multi_touch_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     multi_touch_v2->tfp->cb_handler = NULL;
     multi_touch_v2->tfp->device = NULL;
     multi_touch_v2->tfp = NULL;
+    multi_touch_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -91,6 +95,10 @@ int tf_multi_touch_v2_destroy(TF_MultiTouchV2 *multi_touch_v2) {
 int tf_multi_touch_v2_get_response_expected(TF_MultiTouchV2 *multi_touch_v2, uint8_t function_id, bool *ret_response_expected) {
     if (multi_touch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -149,6 +157,10 @@ int tf_multi_touch_v2_get_response_expected(TF_MultiTouchV2 *multi_touch_v2, uin
 int tf_multi_touch_v2_set_response_expected(TF_MultiTouchV2 *multi_touch_v2, uint8_t function_id, bool response_expected) {
     if (multi_touch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -227,6 +239,10 @@ int tf_multi_touch_v2_set_response_expected_all(TF_MultiTouchV2 *multi_touch_v2,
         return TF_E_NULL;
     }
 
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(multi_touch_v2->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -235,6 +251,10 @@ int tf_multi_touch_v2_set_response_expected_all(TF_MultiTouchV2 *multi_touch_v2,
 int tf_multi_touch_v2_get_touch_state(TF_MultiTouchV2 *multi_touch_v2, bool ret_state[13]) {
     if (multi_touch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = multi_touch_v2->tfp->spitfp->hal;
@@ -288,6 +308,10 @@ int tf_multi_touch_v2_set_touch_state_callback_configuration(TF_MultiTouchV2 *mu
         return TF_E_NULL;
     }
 
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = multi_touch_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -333,6 +357,10 @@ int tf_multi_touch_v2_set_touch_state_callback_configuration(TF_MultiTouchV2 *mu
 int tf_multi_touch_v2_get_touch_state_callback_configuration(TF_MultiTouchV2 *multi_touch_v2, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (multi_touch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = multi_touch_v2->tfp->spitfp->hal;
@@ -387,6 +415,10 @@ int tf_multi_touch_v2_recalibrate(TF_MultiTouchV2 *multi_touch_v2) {
         return TF_E_NULL;
     }
 
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = multi_touch_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -427,6 +459,10 @@ int tf_multi_touch_v2_recalibrate(TF_MultiTouchV2 *multi_touch_v2) {
 int tf_multi_touch_v2_set_electrode_config(TF_MultiTouchV2 *multi_touch_v2, const bool enabled_electrodes[13]) {
     if (multi_touch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = multi_touch_v2->tfp->spitfp->hal;
@@ -474,6 +510,10 @@ int tf_multi_touch_v2_set_electrode_config(TF_MultiTouchV2 *multi_touch_v2, cons
 int tf_multi_touch_v2_get_electrode_config(TF_MultiTouchV2 *multi_touch_v2, bool ret_enabled_electrodes[13]) {
     if (multi_touch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = multi_touch_v2->tfp->spitfp->hal;
@@ -527,6 +567,10 @@ int tf_multi_touch_v2_set_electrode_sensitivity(TF_MultiTouchV2 *multi_touch_v2,
         return TF_E_NULL;
     }
 
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = multi_touch_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -571,6 +615,10 @@ int tf_multi_touch_v2_set_electrode_sensitivity(TF_MultiTouchV2 *multi_touch_v2,
 int tf_multi_touch_v2_get_electrode_sensitivity(TF_MultiTouchV2 *multi_touch_v2, uint8_t *ret_sensitivity) {
     if (multi_touch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = multi_touch_v2->tfp->spitfp->hal;
@@ -624,6 +672,10 @@ int tf_multi_touch_v2_set_touch_led_config(TF_MultiTouchV2 *multi_touch_v2, uint
         return TF_E_NULL;
     }
 
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = multi_touch_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -668,6 +720,10 @@ int tf_multi_touch_v2_set_touch_led_config(TF_MultiTouchV2 *multi_touch_v2, uint
 int tf_multi_touch_v2_get_touch_led_config(TF_MultiTouchV2 *multi_touch_v2, uint8_t *ret_config) {
     if (multi_touch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = multi_touch_v2->tfp->spitfp->hal;
@@ -719,6 +775,10 @@ int tf_multi_touch_v2_get_touch_led_config(TF_MultiTouchV2 *multi_touch_v2, uint
 int tf_multi_touch_v2_get_spitfp_error_count(TF_MultiTouchV2 *multi_touch_v2, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (multi_touch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = multi_touch_v2->tfp->spitfp->hal;
@@ -773,6 +833,10 @@ int tf_multi_touch_v2_get_spitfp_error_count(TF_MultiTouchV2 *multi_touch_v2, ui
 int tf_multi_touch_v2_set_bootloader_mode(TF_MultiTouchV2 *multi_touch_v2, uint8_t mode, uint8_t *ret_status) {
     if (multi_touch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = multi_touch_v2->tfp->spitfp->hal;
@@ -830,6 +894,10 @@ int tf_multi_touch_v2_get_bootloader_mode(TF_MultiTouchV2 *multi_touch_v2, uint8
         return TF_E_NULL;
     }
 
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = multi_touch_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -881,6 +949,10 @@ int tf_multi_touch_v2_set_write_firmware_pointer(TF_MultiTouchV2 *multi_touch_v2
         return TF_E_NULL;
     }
 
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = multi_touch_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -925,6 +997,10 @@ int tf_multi_touch_v2_set_write_firmware_pointer(TF_MultiTouchV2 *multi_touch_v2
 int tf_multi_touch_v2_write_firmware(TF_MultiTouchV2 *multi_touch_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (multi_touch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = multi_touch_v2->tfp->spitfp->hal;
@@ -982,6 +1058,10 @@ int tf_multi_touch_v2_set_status_led_config(TF_MultiTouchV2 *multi_touch_v2, uin
         return TF_E_NULL;
     }
 
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = multi_touch_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1026,6 +1106,10 @@ int tf_multi_touch_v2_set_status_led_config(TF_MultiTouchV2 *multi_touch_v2, uin
 int tf_multi_touch_v2_get_status_led_config(TF_MultiTouchV2 *multi_touch_v2, uint8_t *ret_config) {
     if (multi_touch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = multi_touch_v2->tfp->spitfp->hal;
@@ -1079,6 +1163,10 @@ int tf_multi_touch_v2_get_chip_temperature(TF_MultiTouchV2 *multi_touch_v2, int1
         return TF_E_NULL;
     }
 
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = multi_touch_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1130,6 +1218,10 @@ int tf_multi_touch_v2_reset(TF_MultiTouchV2 *multi_touch_v2) {
         return TF_E_NULL;
     }
 
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = multi_touch_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1170,6 +1262,10 @@ int tf_multi_touch_v2_reset(TF_MultiTouchV2 *multi_touch_v2) {
 int tf_multi_touch_v2_write_uid(TF_MultiTouchV2 *multi_touch_v2, uint32_t uid) {
     if (multi_touch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = multi_touch_v2->tfp->spitfp->hal;
@@ -1216,6 +1312,10 @@ int tf_multi_touch_v2_write_uid(TF_MultiTouchV2 *multi_touch_v2, uint32_t uid) {
 int tf_multi_touch_v2_read_uid(TF_MultiTouchV2 *multi_touch_v2, uint32_t *ret_uid) {
     if (multi_touch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = multi_touch_v2->tfp->spitfp->hal;
@@ -1267,6 +1367,10 @@ int tf_multi_touch_v2_read_uid(TF_MultiTouchV2 *multi_touch_v2, uint32_t *ret_ui
 int tf_multi_touch_v2_get_identity(TF_MultiTouchV2 *multi_touch_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (multi_touch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = multi_touch_v2->tfp->spitfp->hal;
@@ -1326,10 +1430,8 @@ int tf_multi_touch_v2_register_touch_state_callback(TF_MultiTouchV2 *multi_touch
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        multi_touch_v2->tfp->needs_callback_tick = false;
-    } else {
-        multi_touch_v2->tfp->needs_callback_tick = true;
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     multi_touch_v2->touch_state_handler = handler;
@@ -1341,6 +1443,10 @@ int tf_multi_touch_v2_register_touch_state_callback(TF_MultiTouchV2 *multi_touch
 int tf_multi_touch_v2_callback_tick(TF_MultiTouchV2 *multi_touch_v2, uint32_t timeout_us) {
     if (multi_touch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (multi_touch_v2->magic != 0x5446 || multi_touch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = multi_touch_v2->tfp->spitfp->hal;

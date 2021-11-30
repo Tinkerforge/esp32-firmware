@@ -136,7 +136,7 @@ void tf_hal_log_newline(void) {
 #if TF_IMPLEMENT_STRERROR != 0
 const char *tf_hal_strerror(int e_code) {
     switch (e_code) {
-        #include "bindings/errors.inc"
+        #include "bindings/error_cases.h"
 
         default:
             return "unknown error";

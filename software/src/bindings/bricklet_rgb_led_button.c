@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -70,19 +70,23 @@ int tf_rgb_led_button_create(TF_RGBLEDButton *rgb_led_button, const char *uid_or
     rgb_led_button->tfp = tfp;
     rgb_led_button->tfp->device = rgb_led_button;
     rgb_led_button->tfp->cb_handler = tf_rgb_led_button_callback_handler;
+    rgb_led_button->magic = 0x5446;
     rgb_led_button->response_expected[0] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_rgb_led_button_destroy(TF_RGBLEDButton *rgb_led_button) {
-    if (rgb_led_button == NULL || rgb_led_button->tfp == NULL) {
+    if (rgb_led_button == NULL) {
         return TF_E_NULL;
+    }
+    if (rgb_led_button->magic != 0x5446 || rgb_led_button->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rgb_led_button->tfp->cb_handler = NULL;
     rgb_led_button->tfp->device = NULL;
     rgb_led_button->tfp = NULL;
+    rgb_led_button->magic = 0;
 
     return TF_E_OK;
 }
@@ -90,6 +94,10 @@ int tf_rgb_led_button_destroy(TF_RGBLEDButton *rgb_led_button) {
 int tf_rgb_led_button_get_response_expected(TF_RGBLEDButton *rgb_led_button, uint8_t function_id, bool *ret_response_expected) {
     if (rgb_led_button == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_button->magic != 0x5446 || rgb_led_button->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -133,6 +141,10 @@ int tf_rgb_led_button_get_response_expected(TF_RGBLEDButton *rgb_led_button, uin
 int tf_rgb_led_button_set_response_expected(TF_RGBLEDButton *rgb_led_button, uint8_t function_id, bool response_expected) {
     if (rgb_led_button == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_button->magic != 0x5446 || rgb_led_button->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -190,6 +202,10 @@ int tf_rgb_led_button_set_response_expected_all(TF_RGBLEDButton *rgb_led_button,
         return TF_E_NULL;
     }
 
+    if (rgb_led_button->magic != 0x5446 || rgb_led_button->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(rgb_led_button->response_expected, response_expected ? 0xFF : 0, 1);
 
     return TF_E_OK;
@@ -198,6 +214,10 @@ int tf_rgb_led_button_set_response_expected_all(TF_RGBLEDButton *rgb_led_button,
 int tf_rgb_led_button_set_color(TF_RGBLEDButton *rgb_led_button, uint8_t red, uint8_t green, uint8_t blue) {
     if (rgb_led_button == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_button->magic != 0x5446 || rgb_led_button->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_button->tfp->spitfp->hal;
@@ -246,6 +266,10 @@ int tf_rgb_led_button_set_color(TF_RGBLEDButton *rgb_led_button, uint8_t red, ui
 int tf_rgb_led_button_get_color(TF_RGBLEDButton *rgb_led_button, uint8_t *ret_red, uint8_t *ret_green, uint8_t *ret_blue) {
     if (rgb_led_button == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_button->magic != 0x5446 || rgb_led_button->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_button->tfp->spitfp->hal;
@@ -301,6 +325,10 @@ int tf_rgb_led_button_get_button_state(TF_RGBLEDButton *rgb_led_button, uint8_t 
         return TF_E_NULL;
     }
 
+    if (rgb_led_button->magic != 0x5446 || rgb_led_button->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rgb_led_button->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -352,6 +380,10 @@ int tf_rgb_led_button_set_color_calibration(TF_RGBLEDButton *rgb_led_button, uin
         return TF_E_NULL;
     }
 
+    if (rgb_led_button->magic != 0x5446 || rgb_led_button->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rgb_led_button->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -398,6 +430,10 @@ int tf_rgb_led_button_set_color_calibration(TF_RGBLEDButton *rgb_led_button, uin
 int tf_rgb_led_button_get_color_calibration(TF_RGBLEDButton *rgb_led_button, uint8_t *ret_red, uint8_t *ret_green, uint8_t *ret_blue) {
     if (rgb_led_button == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_button->magic != 0x5446 || rgb_led_button->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_button->tfp->spitfp->hal;
@@ -453,6 +489,10 @@ int tf_rgb_led_button_get_spitfp_error_count(TF_RGBLEDButton *rgb_led_button, ui
         return TF_E_NULL;
     }
 
+    if (rgb_led_button->magic != 0x5446 || rgb_led_button->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rgb_led_button->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -505,6 +545,10 @@ int tf_rgb_led_button_get_spitfp_error_count(TF_RGBLEDButton *rgb_led_button, ui
 int tf_rgb_led_button_set_bootloader_mode(TF_RGBLEDButton *rgb_led_button, uint8_t mode, uint8_t *ret_status) {
     if (rgb_led_button == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_button->magic != 0x5446 || rgb_led_button->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_button->tfp->spitfp->hal;
@@ -562,6 +606,10 @@ int tf_rgb_led_button_get_bootloader_mode(TF_RGBLEDButton *rgb_led_button, uint8
         return TF_E_NULL;
     }
 
+    if (rgb_led_button->magic != 0x5446 || rgb_led_button->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rgb_led_button->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -613,6 +661,10 @@ int tf_rgb_led_button_set_write_firmware_pointer(TF_RGBLEDButton *rgb_led_button
         return TF_E_NULL;
     }
 
+    if (rgb_led_button->magic != 0x5446 || rgb_led_button->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rgb_led_button->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -657,6 +709,10 @@ int tf_rgb_led_button_set_write_firmware_pointer(TF_RGBLEDButton *rgb_led_button
 int tf_rgb_led_button_write_firmware(TF_RGBLEDButton *rgb_led_button, const uint8_t data[64], uint8_t *ret_status) {
     if (rgb_led_button == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_button->magic != 0x5446 || rgb_led_button->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_button->tfp->spitfp->hal;
@@ -714,6 +770,10 @@ int tf_rgb_led_button_set_status_led_config(TF_RGBLEDButton *rgb_led_button, uin
         return TF_E_NULL;
     }
 
+    if (rgb_led_button->magic != 0x5446 || rgb_led_button->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rgb_led_button->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -758,6 +818,10 @@ int tf_rgb_led_button_set_status_led_config(TF_RGBLEDButton *rgb_led_button, uin
 int tf_rgb_led_button_get_status_led_config(TF_RGBLEDButton *rgb_led_button, uint8_t *ret_config) {
     if (rgb_led_button == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_button->magic != 0x5446 || rgb_led_button->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_button->tfp->spitfp->hal;
@@ -811,6 +875,10 @@ int tf_rgb_led_button_get_chip_temperature(TF_RGBLEDButton *rgb_led_button, int1
         return TF_E_NULL;
     }
 
+    if (rgb_led_button->magic != 0x5446 || rgb_led_button->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rgb_led_button->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -862,6 +930,10 @@ int tf_rgb_led_button_reset(TF_RGBLEDButton *rgb_led_button) {
         return TF_E_NULL;
     }
 
+    if (rgb_led_button->magic != 0x5446 || rgb_led_button->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = rgb_led_button->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -902,6 +974,10 @@ int tf_rgb_led_button_reset(TF_RGBLEDButton *rgb_led_button) {
 int tf_rgb_led_button_write_uid(TF_RGBLEDButton *rgb_led_button, uint32_t uid) {
     if (rgb_led_button == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_button->magic != 0x5446 || rgb_led_button->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_button->tfp->spitfp->hal;
@@ -948,6 +1024,10 @@ int tf_rgb_led_button_write_uid(TF_RGBLEDButton *rgb_led_button, uint32_t uid) {
 int tf_rgb_led_button_read_uid(TF_RGBLEDButton *rgb_led_button, uint32_t *ret_uid) {
     if (rgb_led_button == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_button->magic != 0x5446 || rgb_led_button->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_button->tfp->spitfp->hal;
@@ -999,6 +1079,10 @@ int tf_rgb_led_button_read_uid(TF_RGBLEDButton *rgb_led_button, uint32_t *ret_ui
 int tf_rgb_led_button_get_identity(TF_RGBLEDButton *rgb_led_button, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (rgb_led_button == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_button->magic != 0x5446 || rgb_led_button->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = rgb_led_button->tfp->spitfp->hal;
@@ -1058,10 +1142,8 @@ int tf_rgb_led_button_register_button_state_changed_callback(TF_RGBLEDButton *rg
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        rgb_led_button->tfp->needs_callback_tick = false;
-    } else {
-        rgb_led_button->tfp->needs_callback_tick = true;
+    if (rgb_led_button->magic != 0x5446 || rgb_led_button->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     rgb_led_button->button_state_changed_handler = handler;
@@ -1073,6 +1155,10 @@ int tf_rgb_led_button_register_button_state_changed_callback(TF_RGBLEDButton *rg
 int tf_rgb_led_button_callback_tick(TF_RGBLEDButton *rgb_led_button, uint32_t timeout_us) {
     if (rgb_led_button == NULL) {
         return TF_E_NULL;
+    }
+
+    if (rgb_led_button->magic != 0x5446 || rgb_led_button->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = rgb_led_button->tfp->spitfp->hal;

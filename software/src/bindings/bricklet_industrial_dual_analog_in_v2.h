@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -47,6 +47,7 @@ typedef struct TF_IndustrialDualAnalogInV2 {
     void *all_voltages_user_data;
 
 #endif
+    uint16_t magic;
     uint8_t response_expected[2];
 } TF_IndustrialDualAnalogInV2;
 

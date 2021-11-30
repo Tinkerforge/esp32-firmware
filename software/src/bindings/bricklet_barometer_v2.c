@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -98,20 +98,24 @@ int tf_barometer_v2_create(TF_BarometerV2 *barometer_v2, const char *uid_or_port
     barometer_v2->tfp = tfp;
     barometer_v2->tfp->device = barometer_v2;
     barometer_v2->tfp->cb_handler = tf_barometer_v2_callback_handler;
+    barometer_v2->magic = 0x5446;
     barometer_v2->response_expected[0] = 0x07;
     barometer_v2->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_barometer_v2_destroy(TF_BarometerV2 *barometer_v2) {
-    if (barometer_v2 == NULL || barometer_v2->tfp == NULL) {
+    if (barometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     barometer_v2->tfp->cb_handler = NULL;
     barometer_v2->tfp->device = NULL;
     barometer_v2->tfp = NULL;
+    barometer_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -119,6 +123,10 @@ int tf_barometer_v2_destroy(TF_BarometerV2 *barometer_v2) {
 int tf_barometer_v2_get_response_expected(TF_BarometerV2 *barometer_v2, uint8_t function_id, bool *ret_response_expected) {
     if (barometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -187,6 +195,10 @@ int tf_barometer_v2_get_response_expected(TF_BarometerV2 *barometer_v2, uint8_t 
 int tf_barometer_v2_set_response_expected(TF_BarometerV2 *barometer_v2, uint8_t function_id, bool response_expected) {
     if (barometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -279,6 +291,10 @@ int tf_barometer_v2_set_response_expected_all(TF_BarometerV2 *barometer_v2, bool
         return TF_E_NULL;
     }
 
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(barometer_v2->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -287,6 +303,10 @@ int tf_barometer_v2_set_response_expected_all(TF_BarometerV2 *barometer_v2, bool
 int tf_barometer_v2_get_air_pressure(TF_BarometerV2 *barometer_v2, int32_t *ret_air_pressure) {
     if (barometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
@@ -340,6 +360,10 @@ int tf_barometer_v2_set_air_pressure_callback_configuration(TF_BarometerV2 *baro
         return TF_E_NULL;
     }
 
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -388,6 +412,10 @@ int tf_barometer_v2_set_air_pressure_callback_configuration(TF_BarometerV2 *baro
 int tf_barometer_v2_get_air_pressure_callback_configuration(TF_BarometerV2 *barometer_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int32_t *ret_min, int32_t *ret_max) {
     if (barometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
@@ -445,6 +473,10 @@ int tf_barometer_v2_get_altitude(TF_BarometerV2 *barometer_v2, int32_t *ret_alti
         return TF_E_NULL;
     }
 
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -496,6 +528,10 @@ int tf_barometer_v2_set_altitude_callback_configuration(TF_BarometerV2 *baromete
         return TF_E_NULL;
     }
 
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -544,6 +580,10 @@ int tf_barometer_v2_set_altitude_callback_configuration(TF_BarometerV2 *baromete
 int tf_barometer_v2_get_altitude_callback_configuration(TF_BarometerV2 *barometer_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int32_t *ret_min, int32_t *ret_max) {
     if (barometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
@@ -601,6 +641,10 @@ int tf_barometer_v2_get_temperature(TF_BarometerV2 *barometer_v2, int32_t *ret_t
         return TF_E_NULL;
     }
 
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -652,6 +696,10 @@ int tf_barometer_v2_set_temperature_callback_configuration(TF_BarometerV2 *barom
         return TF_E_NULL;
     }
 
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -700,6 +748,10 @@ int tf_barometer_v2_set_temperature_callback_configuration(TF_BarometerV2 *barom
 int tf_barometer_v2_get_temperature_callback_configuration(TF_BarometerV2 *barometer_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int32_t *ret_min, int32_t *ret_max) {
     if (barometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
@@ -757,6 +809,10 @@ int tf_barometer_v2_set_moving_average_configuration(TF_BarometerV2 *barometer_v
         return TF_E_NULL;
     }
 
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -802,6 +858,10 @@ int tf_barometer_v2_set_moving_average_configuration(TF_BarometerV2 *barometer_v
 int tf_barometer_v2_get_moving_average_configuration(TF_BarometerV2 *barometer_v2, uint16_t *ret_moving_average_length_air_pressure, uint16_t *ret_moving_average_length_temperature) {
     if (barometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
@@ -856,6 +916,10 @@ int tf_barometer_v2_set_reference_air_pressure(TF_BarometerV2 *barometer_v2, int
         return TF_E_NULL;
     }
 
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -900,6 +964,10 @@ int tf_barometer_v2_set_reference_air_pressure(TF_BarometerV2 *barometer_v2, int
 int tf_barometer_v2_get_reference_air_pressure(TF_BarometerV2 *barometer_v2, int32_t *ret_air_pressure) {
     if (barometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
@@ -953,6 +1021,10 @@ int tf_barometer_v2_set_calibration(TF_BarometerV2 *barometer_v2, int32_t measur
         return TF_E_NULL;
     }
 
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -998,6 +1070,10 @@ int tf_barometer_v2_set_calibration(TF_BarometerV2 *barometer_v2, int32_t measur
 int tf_barometer_v2_get_calibration(TF_BarometerV2 *barometer_v2, int32_t *ret_measured_air_pressure, int32_t *ret_actual_air_pressure) {
     if (barometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
@@ -1052,6 +1128,10 @@ int tf_barometer_v2_set_sensor_configuration(TF_BarometerV2 *barometer_v2, uint8
         return TF_E_NULL;
     }
 
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1097,6 +1177,10 @@ int tf_barometer_v2_set_sensor_configuration(TF_BarometerV2 *barometer_v2, uint8
 int tf_barometer_v2_get_sensor_configuration(TF_BarometerV2 *barometer_v2, uint8_t *ret_data_rate, uint8_t *ret_air_pressure_low_pass_filter) {
     if (barometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
@@ -1151,6 +1235,10 @@ int tf_barometer_v2_get_spitfp_error_count(TF_BarometerV2 *barometer_v2, uint32_
         return TF_E_NULL;
     }
 
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1203,6 +1291,10 @@ int tf_barometer_v2_get_spitfp_error_count(TF_BarometerV2 *barometer_v2, uint32_
 int tf_barometer_v2_set_bootloader_mode(TF_BarometerV2 *barometer_v2, uint8_t mode, uint8_t *ret_status) {
     if (barometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
@@ -1260,6 +1352,10 @@ int tf_barometer_v2_get_bootloader_mode(TF_BarometerV2 *barometer_v2, uint8_t *r
         return TF_E_NULL;
     }
 
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1311,6 +1407,10 @@ int tf_barometer_v2_set_write_firmware_pointer(TF_BarometerV2 *barometer_v2, uin
         return TF_E_NULL;
     }
 
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1355,6 +1455,10 @@ int tf_barometer_v2_set_write_firmware_pointer(TF_BarometerV2 *barometer_v2, uin
 int tf_barometer_v2_write_firmware(TF_BarometerV2 *barometer_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (barometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
@@ -1412,6 +1516,10 @@ int tf_barometer_v2_set_status_led_config(TF_BarometerV2 *barometer_v2, uint8_t 
         return TF_E_NULL;
     }
 
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1456,6 +1564,10 @@ int tf_barometer_v2_set_status_led_config(TF_BarometerV2 *barometer_v2, uint8_t 
 int tf_barometer_v2_get_status_led_config(TF_BarometerV2 *barometer_v2, uint8_t *ret_config) {
     if (barometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
@@ -1509,6 +1621,10 @@ int tf_barometer_v2_get_chip_temperature(TF_BarometerV2 *barometer_v2, int16_t *
         return TF_E_NULL;
     }
 
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1560,6 +1676,10 @@ int tf_barometer_v2_reset(TF_BarometerV2 *barometer_v2) {
         return TF_E_NULL;
     }
 
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1600,6 +1720,10 @@ int tf_barometer_v2_reset(TF_BarometerV2 *barometer_v2) {
 int tf_barometer_v2_write_uid(TF_BarometerV2 *barometer_v2, uint32_t uid) {
     if (barometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
@@ -1646,6 +1770,10 @@ int tf_barometer_v2_write_uid(TF_BarometerV2 *barometer_v2, uint32_t uid) {
 int tf_barometer_v2_read_uid(TF_BarometerV2 *barometer_v2, uint32_t *ret_uid) {
     if (barometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
@@ -1697,6 +1825,10 @@ int tf_barometer_v2_read_uid(TF_BarometerV2 *barometer_v2, uint32_t *ret_uid) {
 int tf_barometer_v2_get_identity(TF_BarometerV2 *barometer_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (barometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = barometer_v2->tfp->spitfp->hal;
@@ -1756,12 +1888,8 @@ int tf_barometer_v2_register_air_pressure_callback(TF_BarometerV2 *barometer_v2,
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        barometer_v2->tfp->needs_callback_tick = false;
-        barometer_v2->tfp->needs_callback_tick |= barometer_v2->altitude_handler != NULL;
-        barometer_v2->tfp->needs_callback_tick |= barometer_v2->temperature_handler != NULL;
-    } else {
-        barometer_v2->tfp->needs_callback_tick = true;
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     barometer_v2->air_pressure_handler = handler;
@@ -1776,12 +1904,8 @@ int tf_barometer_v2_register_altitude_callback(TF_BarometerV2 *barometer_v2, TF_
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        barometer_v2->tfp->needs_callback_tick = false;
-        barometer_v2->tfp->needs_callback_tick |= barometer_v2->air_pressure_handler != NULL;
-        barometer_v2->tfp->needs_callback_tick |= barometer_v2->temperature_handler != NULL;
-    } else {
-        barometer_v2->tfp->needs_callback_tick = true;
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     barometer_v2->altitude_handler = handler;
@@ -1796,12 +1920,8 @@ int tf_barometer_v2_register_temperature_callback(TF_BarometerV2 *barometer_v2, 
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        barometer_v2->tfp->needs_callback_tick = false;
-        barometer_v2->tfp->needs_callback_tick |= barometer_v2->air_pressure_handler != NULL;
-        barometer_v2->tfp->needs_callback_tick |= barometer_v2->altitude_handler != NULL;
-    } else {
-        barometer_v2->tfp->needs_callback_tick = true;
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     barometer_v2->temperature_handler = handler;
@@ -1813,6 +1933,10 @@ int tf_barometer_v2_register_temperature_callback(TF_BarometerV2 *barometer_v2, 
 int tf_barometer_v2_callback_tick(TF_BarometerV2 *barometer_v2, uint32_t timeout_us) {
     if (barometer_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (barometer_v2->magic != 0x5446 || barometer_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = barometer_v2->tfp->spitfp->hal;

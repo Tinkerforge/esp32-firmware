@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -45,19 +45,23 @@ int tf_one_wire_create(TF_OneWire *one_wire, const char *uid_or_port_name, TF_HA
     one_wire->tfp = tfp;
     one_wire->tfp->device = one_wire;
     one_wire->tfp->cb_handler = tf_one_wire_callback_handler;
+    one_wire->magic = 0x5446;
     one_wire->response_expected[0] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_one_wire_destroy(TF_OneWire *one_wire) {
-    if (one_wire == NULL || one_wire->tfp == NULL) {
+    if (one_wire == NULL) {
         return TF_E_NULL;
+    }
+    if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     one_wire->tfp->cb_handler = NULL;
     one_wire->tfp->device = NULL;
     one_wire->tfp = NULL;
+    one_wire->magic = 0;
 
     return TF_E_OK;
 }
@@ -65,6 +69,10 @@ int tf_one_wire_destroy(TF_OneWire *one_wire) {
 int tf_one_wire_get_response_expected(TF_OneWire *one_wire, uint8_t function_id, bool *ret_response_expected) {
     if (one_wire == NULL) {
         return TF_E_NULL;
+    }
+
+    if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -103,6 +111,10 @@ int tf_one_wire_get_response_expected(TF_OneWire *one_wire, uint8_t function_id,
 int tf_one_wire_set_response_expected(TF_OneWire *one_wire, uint8_t function_id, bool response_expected) {
     if (one_wire == NULL) {
         return TF_E_NULL;
+    }
+
+    if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -153,6 +165,10 @@ int tf_one_wire_set_response_expected_all(TF_OneWire *one_wire, bool response_ex
         return TF_E_NULL;
     }
 
+    if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(one_wire->response_expected, response_expected ? 0xFF : 0, 1);
 
     return TF_E_OK;
@@ -161,6 +177,10 @@ int tf_one_wire_set_response_expected_all(TF_OneWire *one_wire, bool response_ex
 int tf_one_wire_search_bus_low_level(TF_OneWire *one_wire, uint16_t *ret_identifier_length, uint16_t *ret_identifier_chunk_offset, uint64_t ret_identifier_chunk_data[7], uint8_t *ret_status) {
     if (one_wire == NULL) {
         return TF_E_NULL;
+    }
+
+    if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = one_wire->tfp->spitfp->hal;
@@ -218,6 +238,10 @@ int tf_one_wire_reset_bus(TF_OneWire *one_wire, uint8_t *ret_status) {
         return TF_E_NULL;
     }
 
+    if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = one_wire->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -267,6 +291,10 @@ int tf_one_wire_reset_bus(TF_OneWire *one_wire, uint8_t *ret_status) {
 int tf_one_wire_write(TF_OneWire *one_wire, uint8_t data, uint8_t *ret_status) {
     if (one_wire == NULL) {
         return TF_E_NULL;
+    }
+
+    if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = one_wire->tfp->spitfp->hal;
@@ -324,6 +352,10 @@ int tf_one_wire_read(TF_OneWire *one_wire, uint8_t *ret_data, uint8_t *ret_statu
         return TF_E_NULL;
     }
 
+    if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = one_wire->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -374,6 +406,10 @@ int tf_one_wire_read(TF_OneWire *one_wire, uint8_t *ret_data, uint8_t *ret_statu
 int tf_one_wire_write_command(TF_OneWire *one_wire, uint64_t identifier, uint8_t command, uint8_t *ret_status) {
     if (one_wire == NULL) {
         return TF_E_NULL;
+    }
+
+    if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = one_wire->tfp->spitfp->hal;
@@ -432,6 +468,10 @@ int tf_one_wire_set_communication_led_config(TF_OneWire *one_wire, uint8_t confi
         return TF_E_NULL;
     }
 
+    if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = one_wire->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -476,6 +516,10 @@ int tf_one_wire_set_communication_led_config(TF_OneWire *one_wire, uint8_t confi
 int tf_one_wire_get_communication_led_config(TF_OneWire *one_wire, uint8_t *ret_config) {
     if (one_wire == NULL) {
         return TF_E_NULL;
+    }
+
+    if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = one_wire->tfp->spitfp->hal;
@@ -527,6 +571,10 @@ int tf_one_wire_get_communication_led_config(TF_OneWire *one_wire, uint8_t *ret_
 int tf_one_wire_get_spitfp_error_count(TF_OneWire *one_wire, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (one_wire == NULL) {
         return TF_E_NULL;
+    }
+
+    if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = one_wire->tfp->spitfp->hal;
@@ -581,6 +629,10 @@ int tf_one_wire_get_spitfp_error_count(TF_OneWire *one_wire, uint32_t *ret_error
 int tf_one_wire_set_bootloader_mode(TF_OneWire *one_wire, uint8_t mode, uint8_t *ret_status) {
     if (one_wire == NULL) {
         return TF_E_NULL;
+    }
+
+    if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = one_wire->tfp->spitfp->hal;
@@ -638,6 +690,10 @@ int tf_one_wire_get_bootloader_mode(TF_OneWire *one_wire, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
+    if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = one_wire->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -689,6 +745,10 @@ int tf_one_wire_set_write_firmware_pointer(TF_OneWire *one_wire, uint32_t pointe
         return TF_E_NULL;
     }
 
+    if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = one_wire->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -733,6 +793,10 @@ int tf_one_wire_set_write_firmware_pointer(TF_OneWire *one_wire, uint32_t pointe
 int tf_one_wire_write_firmware(TF_OneWire *one_wire, const uint8_t data[64], uint8_t *ret_status) {
     if (one_wire == NULL) {
         return TF_E_NULL;
+    }
+
+    if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = one_wire->tfp->spitfp->hal;
@@ -790,6 +854,10 @@ int tf_one_wire_set_status_led_config(TF_OneWire *one_wire, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = one_wire->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -834,6 +902,10 @@ int tf_one_wire_set_status_led_config(TF_OneWire *one_wire, uint8_t config) {
 int tf_one_wire_get_status_led_config(TF_OneWire *one_wire, uint8_t *ret_config) {
     if (one_wire == NULL) {
         return TF_E_NULL;
+    }
+
+    if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = one_wire->tfp->spitfp->hal;
@@ -887,6 +959,10 @@ int tf_one_wire_get_chip_temperature(TF_OneWire *one_wire, int16_t *ret_temperat
         return TF_E_NULL;
     }
 
+    if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = one_wire->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -938,6 +1014,10 @@ int tf_one_wire_reset(TF_OneWire *one_wire) {
         return TF_E_NULL;
     }
 
+    if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = one_wire->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -978,6 +1058,10 @@ int tf_one_wire_reset(TF_OneWire *one_wire) {
 int tf_one_wire_write_uid(TF_OneWire *one_wire, uint32_t uid) {
     if (one_wire == NULL) {
         return TF_E_NULL;
+    }
+
+    if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = one_wire->tfp->spitfp->hal;
@@ -1024,6 +1108,10 @@ int tf_one_wire_write_uid(TF_OneWire *one_wire, uint32_t uid) {
 int tf_one_wire_read_uid(TF_OneWire *one_wire, uint32_t *ret_uid) {
     if (one_wire == NULL) {
         return TF_E_NULL;
+    }
+
+    if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = one_wire->tfp->spitfp->hal;
@@ -1075,6 +1163,10 @@ int tf_one_wire_read_uid(TF_OneWire *one_wire, uint32_t *ret_uid) {
 int tf_one_wire_get_identity(TF_OneWire *one_wire, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (one_wire == NULL) {
         return TF_E_NULL;
+    }
+
+    if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = one_wire->tfp->spitfp->hal;
@@ -1150,6 +1242,10 @@ int tf_one_wire_search_bus(TF_OneWire *one_wire, uint64_t *ret_identifier, uint1
     if (one_wire == NULL) {
         return TF_E_NULL;
     }
+
+    if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
     
     TF_OneWire_SearchBusLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
@@ -1169,6 +1265,10 @@ int tf_one_wire_search_bus(TF_OneWire *one_wire, uint64_t *ret_identifier, uint1
 int tf_one_wire_callback_tick(TF_OneWire *one_wire, uint32_t timeout_us) {
     if (one_wire == NULL) {
         return TF_E_NULL;
+    }
+
+    if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = one_wire->tfp->spitfp->hal;

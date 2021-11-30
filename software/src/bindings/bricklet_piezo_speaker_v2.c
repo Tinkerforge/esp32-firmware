@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -84,19 +84,23 @@ int tf_piezo_speaker_v2_create(TF_PiezoSpeakerV2 *piezo_speaker_v2, const char *
     piezo_speaker_v2->tfp = tfp;
     piezo_speaker_v2->tfp->device = piezo_speaker_v2;
     piezo_speaker_v2->tfp->cb_handler = tf_piezo_speaker_v2_callback_handler;
+    piezo_speaker_v2->magic = 0x5446;
     piezo_speaker_v2->response_expected[0] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_piezo_speaker_v2_destroy(TF_PiezoSpeakerV2 *piezo_speaker_v2) {
-    if (piezo_speaker_v2 == NULL || piezo_speaker_v2->tfp == NULL) {
+    if (piezo_speaker_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (piezo_speaker_v2->magic != 0x5446 || piezo_speaker_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     piezo_speaker_v2->tfp->cb_handler = NULL;
     piezo_speaker_v2->tfp->device = NULL;
     piezo_speaker_v2->tfp = NULL;
+    piezo_speaker_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -104,6 +108,10 @@ int tf_piezo_speaker_v2_destroy(TF_PiezoSpeakerV2 *piezo_speaker_v2) {
 int tf_piezo_speaker_v2_get_response_expected(TF_PiezoSpeakerV2 *piezo_speaker_v2, uint8_t function_id, bool *ret_response_expected) {
     if (piezo_speaker_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (piezo_speaker_v2->magic != 0x5446 || piezo_speaker_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -157,6 +165,10 @@ int tf_piezo_speaker_v2_get_response_expected(TF_PiezoSpeakerV2 *piezo_speaker_v
 int tf_piezo_speaker_v2_set_response_expected(TF_PiezoSpeakerV2 *piezo_speaker_v2, uint8_t function_id, bool response_expected) {
     if (piezo_speaker_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (piezo_speaker_v2->magic != 0x5446 || piezo_speaker_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -228,6 +240,10 @@ int tf_piezo_speaker_v2_set_response_expected_all(TF_PiezoSpeakerV2 *piezo_speak
         return TF_E_NULL;
     }
 
+    if (piezo_speaker_v2->magic != 0x5446 || piezo_speaker_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(piezo_speaker_v2->response_expected, response_expected ? 0xFF : 0, 1);
 
     return TF_E_OK;
@@ -236,6 +252,10 @@ int tf_piezo_speaker_v2_set_response_expected_all(TF_PiezoSpeakerV2 *piezo_speak
 int tf_piezo_speaker_v2_set_beep(TF_PiezoSpeakerV2 *piezo_speaker_v2, uint16_t frequency, uint8_t volume, uint32_t duration) {
     if (piezo_speaker_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (piezo_speaker_v2->magic != 0x5446 || piezo_speaker_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = piezo_speaker_v2->tfp->spitfp->hal;
@@ -284,6 +304,10 @@ int tf_piezo_speaker_v2_set_beep(TF_PiezoSpeakerV2 *piezo_speaker_v2, uint16_t f
 int tf_piezo_speaker_v2_get_beep(TF_PiezoSpeakerV2 *piezo_speaker_v2, uint16_t *ret_frequency, uint8_t *ret_volume, uint32_t *ret_duration, uint32_t *ret_duration_remaining) {
     if (piezo_speaker_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (piezo_speaker_v2->magic != 0x5446 || piezo_speaker_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = piezo_speaker_v2->tfp->spitfp->hal;
@@ -340,6 +364,10 @@ int tf_piezo_speaker_v2_set_alarm(TF_PiezoSpeakerV2 *piezo_speaker_v2, uint16_t 
         return TF_E_NULL;
     }
 
+    if (piezo_speaker_v2->magic != 0x5446 || piezo_speaker_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = piezo_speaker_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -389,6 +417,10 @@ int tf_piezo_speaker_v2_set_alarm(TF_PiezoSpeakerV2 *piezo_speaker_v2, uint16_t 
 int tf_piezo_speaker_v2_get_alarm(TF_PiezoSpeakerV2 *piezo_speaker_v2, uint16_t *ret_start_frequency, uint16_t *ret_end_frequency, uint16_t *ret_step_size, uint16_t *ret_step_delay, uint8_t *ret_volume, uint32_t *ret_duration, uint32_t *ret_duration_remaining, uint16_t *ret_current_frequency) {
     if (piezo_speaker_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (piezo_speaker_v2->magic != 0x5446 || piezo_speaker_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = piezo_speaker_v2->tfp->spitfp->hal;
@@ -449,6 +481,10 @@ int tf_piezo_speaker_v2_update_volume(TF_PiezoSpeakerV2 *piezo_speaker_v2, uint8
         return TF_E_NULL;
     }
 
+    if (piezo_speaker_v2->magic != 0x5446 || piezo_speaker_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = piezo_speaker_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -495,6 +531,10 @@ int tf_piezo_speaker_v2_update_frequency(TF_PiezoSpeakerV2 *piezo_speaker_v2, ui
         return TF_E_NULL;
     }
 
+    if (piezo_speaker_v2->magic != 0x5446 || piezo_speaker_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = piezo_speaker_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -539,6 +579,10 @@ int tf_piezo_speaker_v2_update_frequency(TF_PiezoSpeakerV2 *piezo_speaker_v2, ui
 int tf_piezo_speaker_v2_get_spitfp_error_count(TF_PiezoSpeakerV2 *piezo_speaker_v2, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (piezo_speaker_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (piezo_speaker_v2->magic != 0x5446 || piezo_speaker_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = piezo_speaker_v2->tfp->spitfp->hal;
@@ -593,6 +637,10 @@ int tf_piezo_speaker_v2_get_spitfp_error_count(TF_PiezoSpeakerV2 *piezo_speaker_
 int tf_piezo_speaker_v2_set_bootloader_mode(TF_PiezoSpeakerV2 *piezo_speaker_v2, uint8_t mode, uint8_t *ret_status) {
     if (piezo_speaker_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (piezo_speaker_v2->magic != 0x5446 || piezo_speaker_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = piezo_speaker_v2->tfp->spitfp->hal;
@@ -650,6 +698,10 @@ int tf_piezo_speaker_v2_get_bootloader_mode(TF_PiezoSpeakerV2 *piezo_speaker_v2,
         return TF_E_NULL;
     }
 
+    if (piezo_speaker_v2->magic != 0x5446 || piezo_speaker_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = piezo_speaker_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -701,6 +753,10 @@ int tf_piezo_speaker_v2_set_write_firmware_pointer(TF_PiezoSpeakerV2 *piezo_spea
         return TF_E_NULL;
     }
 
+    if (piezo_speaker_v2->magic != 0x5446 || piezo_speaker_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = piezo_speaker_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -745,6 +801,10 @@ int tf_piezo_speaker_v2_set_write_firmware_pointer(TF_PiezoSpeakerV2 *piezo_spea
 int tf_piezo_speaker_v2_write_firmware(TF_PiezoSpeakerV2 *piezo_speaker_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (piezo_speaker_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (piezo_speaker_v2->magic != 0x5446 || piezo_speaker_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = piezo_speaker_v2->tfp->spitfp->hal;
@@ -802,6 +862,10 @@ int tf_piezo_speaker_v2_set_status_led_config(TF_PiezoSpeakerV2 *piezo_speaker_v
         return TF_E_NULL;
     }
 
+    if (piezo_speaker_v2->magic != 0x5446 || piezo_speaker_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = piezo_speaker_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -846,6 +910,10 @@ int tf_piezo_speaker_v2_set_status_led_config(TF_PiezoSpeakerV2 *piezo_speaker_v
 int tf_piezo_speaker_v2_get_status_led_config(TF_PiezoSpeakerV2 *piezo_speaker_v2, uint8_t *ret_config) {
     if (piezo_speaker_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (piezo_speaker_v2->magic != 0x5446 || piezo_speaker_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = piezo_speaker_v2->tfp->spitfp->hal;
@@ -899,6 +967,10 @@ int tf_piezo_speaker_v2_get_chip_temperature(TF_PiezoSpeakerV2 *piezo_speaker_v2
         return TF_E_NULL;
     }
 
+    if (piezo_speaker_v2->magic != 0x5446 || piezo_speaker_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = piezo_speaker_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -950,6 +1022,10 @@ int tf_piezo_speaker_v2_reset(TF_PiezoSpeakerV2 *piezo_speaker_v2) {
         return TF_E_NULL;
     }
 
+    if (piezo_speaker_v2->magic != 0x5446 || piezo_speaker_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = piezo_speaker_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -990,6 +1066,10 @@ int tf_piezo_speaker_v2_reset(TF_PiezoSpeakerV2 *piezo_speaker_v2) {
 int tf_piezo_speaker_v2_write_uid(TF_PiezoSpeakerV2 *piezo_speaker_v2, uint32_t uid) {
     if (piezo_speaker_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (piezo_speaker_v2->magic != 0x5446 || piezo_speaker_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = piezo_speaker_v2->tfp->spitfp->hal;
@@ -1036,6 +1116,10 @@ int tf_piezo_speaker_v2_write_uid(TF_PiezoSpeakerV2 *piezo_speaker_v2, uint32_t 
 int tf_piezo_speaker_v2_read_uid(TF_PiezoSpeakerV2 *piezo_speaker_v2, uint32_t *ret_uid) {
     if (piezo_speaker_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (piezo_speaker_v2->magic != 0x5446 || piezo_speaker_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = piezo_speaker_v2->tfp->spitfp->hal;
@@ -1087,6 +1171,10 @@ int tf_piezo_speaker_v2_read_uid(TF_PiezoSpeakerV2 *piezo_speaker_v2, uint32_t *
 int tf_piezo_speaker_v2_get_identity(TF_PiezoSpeakerV2 *piezo_speaker_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (piezo_speaker_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (piezo_speaker_v2->magic != 0x5446 || piezo_speaker_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = piezo_speaker_v2->tfp->spitfp->hal;
@@ -1146,11 +1234,8 @@ int tf_piezo_speaker_v2_register_beep_finished_callback(TF_PiezoSpeakerV2 *piezo
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        piezo_speaker_v2->tfp->needs_callback_tick = false;
-        piezo_speaker_v2->tfp->needs_callback_tick |= piezo_speaker_v2->alarm_finished_handler != NULL;
-    } else {
-        piezo_speaker_v2->tfp->needs_callback_tick = true;
+    if (piezo_speaker_v2->magic != 0x5446 || piezo_speaker_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     piezo_speaker_v2->beep_finished_handler = handler;
@@ -1165,11 +1250,8 @@ int tf_piezo_speaker_v2_register_alarm_finished_callback(TF_PiezoSpeakerV2 *piez
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        piezo_speaker_v2->tfp->needs_callback_tick = false;
-        piezo_speaker_v2->tfp->needs_callback_tick |= piezo_speaker_v2->beep_finished_handler != NULL;
-    } else {
-        piezo_speaker_v2->tfp->needs_callback_tick = true;
+    if (piezo_speaker_v2->magic != 0x5446 || piezo_speaker_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     piezo_speaker_v2->alarm_finished_handler = handler;
@@ -1181,6 +1263,10 @@ int tf_piezo_speaker_v2_register_alarm_finished_callback(TF_PiezoSpeakerV2 *piez
 int tf_piezo_speaker_v2_callback_tick(TF_PiezoSpeakerV2 *piezo_speaker_v2, uint32_t timeout_us) {
     if (piezo_speaker_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (piezo_speaker_v2->magic != 0x5446 || piezo_speaker_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = piezo_speaker_v2->tfp->spitfp->hal;

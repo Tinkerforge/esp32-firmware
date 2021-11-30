@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -122,20 +122,24 @@ int tf_remote_switch_v2_create(TF_RemoteSwitchV2 *remote_switch_v2, const char *
     remote_switch_v2->tfp = tfp;
     remote_switch_v2->tfp->device = remote_switch_v2;
     remote_switch_v2->tfp->cb_handler = tf_remote_switch_v2_callback_handler;
+    remote_switch_v2->magic = 0x5446;
     remote_switch_v2->response_expected[0] = 0x00;
     remote_switch_v2->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_remote_switch_v2_destroy(TF_RemoteSwitchV2 *remote_switch_v2) {
-    if (remote_switch_v2 == NULL || remote_switch_v2->tfp == NULL) {
+    if (remote_switch_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     remote_switch_v2->tfp->cb_handler = NULL;
     remote_switch_v2->tfp->device = NULL;
     remote_switch_v2->tfp = NULL;
+    remote_switch_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -143,6 +147,10 @@ int tf_remote_switch_v2_destroy(TF_RemoteSwitchV2 *remote_switch_v2) {
 int tf_remote_switch_v2_get_response_expected(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t function_id, bool *ret_response_expected) {
     if (remote_switch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -206,6 +214,10 @@ int tf_remote_switch_v2_get_response_expected(TF_RemoteSwitchV2 *remote_switch_v
 int tf_remote_switch_v2_set_response_expected(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t function_id, bool response_expected) {
     if (remote_switch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -291,6 +303,10 @@ int tf_remote_switch_v2_set_response_expected_all(TF_RemoteSwitchV2 *remote_swit
         return TF_E_NULL;
     }
 
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(remote_switch_v2->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -299,6 +315,10 @@ int tf_remote_switch_v2_set_response_expected_all(TF_RemoteSwitchV2 *remote_swit
 int tf_remote_switch_v2_get_switching_state(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t *ret_state) {
     if (remote_switch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = remote_switch_v2->tfp->spitfp->hal;
@@ -352,6 +372,10 @@ int tf_remote_switch_v2_set_repeats(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t
         return TF_E_NULL;
     }
 
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = remote_switch_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -396,6 +420,10 @@ int tf_remote_switch_v2_set_repeats(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t
 int tf_remote_switch_v2_get_repeats(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t *ret_repeats) {
     if (remote_switch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = remote_switch_v2->tfp->spitfp->hal;
@@ -449,6 +477,10 @@ int tf_remote_switch_v2_switch_socket_a(TF_RemoteSwitchV2 *remote_switch_v2, uin
         return TF_E_NULL;
     }
 
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = remote_switch_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -495,6 +527,10 @@ int tf_remote_switch_v2_switch_socket_a(TF_RemoteSwitchV2 *remote_switch_v2, uin
 int tf_remote_switch_v2_switch_socket_b(TF_RemoteSwitchV2 *remote_switch_v2, uint32_t address, uint8_t unit, uint8_t switch_to) {
     if (remote_switch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = remote_switch_v2->tfp->spitfp->hal;
@@ -545,6 +581,10 @@ int tf_remote_switch_v2_dim_socket_b(TF_RemoteSwitchV2 *remote_switch_v2, uint32
         return TF_E_NULL;
     }
 
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = remote_switch_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -591,6 +631,10 @@ int tf_remote_switch_v2_dim_socket_b(TF_RemoteSwitchV2 *remote_switch_v2, uint32
 int tf_remote_switch_v2_switch_socket_c(TF_RemoteSwitchV2 *remote_switch_v2, char system_code, uint8_t device_code, uint8_t switch_to) {
     if (remote_switch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = remote_switch_v2->tfp->spitfp->hal;
@@ -641,6 +685,10 @@ int tf_remote_switch_v2_set_remote_configuration(TF_RemoteSwitchV2 *remote_switc
         return TF_E_NULL;
     }
 
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = remote_switch_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -687,6 +735,10 @@ int tf_remote_switch_v2_set_remote_configuration(TF_RemoteSwitchV2 *remote_switc
 int tf_remote_switch_v2_get_remote_configuration(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t *ret_remote_type, uint16_t *ret_minimum_repeats, bool *ret_callback_enabled) {
     if (remote_switch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = remote_switch_v2->tfp->spitfp->hal;
@@ -742,6 +794,10 @@ int tf_remote_switch_v2_get_remote_status_a(TF_RemoteSwitchV2 *remote_switch_v2,
         return TF_E_NULL;
     }
 
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = remote_switch_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -794,6 +850,10 @@ int tf_remote_switch_v2_get_remote_status_a(TF_RemoteSwitchV2 *remote_switch_v2,
 int tf_remote_switch_v2_get_remote_status_b(TF_RemoteSwitchV2 *remote_switch_v2, uint32_t *ret_address, uint8_t *ret_unit, uint8_t *ret_switch_to, uint8_t *ret_dim_value, uint16_t *ret_repeats) {
     if (remote_switch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = remote_switch_v2->tfp->spitfp->hal;
@@ -851,6 +911,10 @@ int tf_remote_switch_v2_get_remote_status_c(TF_RemoteSwitchV2 *remote_switch_v2,
         return TF_E_NULL;
     }
 
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = remote_switch_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -905,6 +969,10 @@ int tf_remote_switch_v2_get_spitfp_error_count(TF_RemoteSwitchV2 *remote_switch_
         return TF_E_NULL;
     }
 
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = remote_switch_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -957,6 +1025,10 @@ int tf_remote_switch_v2_get_spitfp_error_count(TF_RemoteSwitchV2 *remote_switch_
 int tf_remote_switch_v2_set_bootloader_mode(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t mode, uint8_t *ret_status) {
     if (remote_switch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = remote_switch_v2->tfp->spitfp->hal;
@@ -1014,6 +1086,10 @@ int tf_remote_switch_v2_get_bootloader_mode(TF_RemoteSwitchV2 *remote_switch_v2,
         return TF_E_NULL;
     }
 
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = remote_switch_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1065,6 +1141,10 @@ int tf_remote_switch_v2_set_write_firmware_pointer(TF_RemoteSwitchV2 *remote_swi
         return TF_E_NULL;
     }
 
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = remote_switch_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1109,6 +1189,10 @@ int tf_remote_switch_v2_set_write_firmware_pointer(TF_RemoteSwitchV2 *remote_swi
 int tf_remote_switch_v2_write_firmware(TF_RemoteSwitchV2 *remote_switch_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (remote_switch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = remote_switch_v2->tfp->spitfp->hal;
@@ -1166,6 +1250,10 @@ int tf_remote_switch_v2_set_status_led_config(TF_RemoteSwitchV2 *remote_switch_v
         return TF_E_NULL;
     }
 
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = remote_switch_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1210,6 +1298,10 @@ int tf_remote_switch_v2_set_status_led_config(TF_RemoteSwitchV2 *remote_switch_v
 int tf_remote_switch_v2_get_status_led_config(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t *ret_config) {
     if (remote_switch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = remote_switch_v2->tfp->spitfp->hal;
@@ -1263,6 +1355,10 @@ int tf_remote_switch_v2_get_chip_temperature(TF_RemoteSwitchV2 *remote_switch_v2
         return TF_E_NULL;
     }
 
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = remote_switch_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1314,6 +1410,10 @@ int tf_remote_switch_v2_reset(TF_RemoteSwitchV2 *remote_switch_v2) {
         return TF_E_NULL;
     }
 
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = remote_switch_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1354,6 +1454,10 @@ int tf_remote_switch_v2_reset(TF_RemoteSwitchV2 *remote_switch_v2) {
 int tf_remote_switch_v2_write_uid(TF_RemoteSwitchV2 *remote_switch_v2, uint32_t uid) {
     if (remote_switch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = remote_switch_v2->tfp->spitfp->hal;
@@ -1400,6 +1504,10 @@ int tf_remote_switch_v2_write_uid(TF_RemoteSwitchV2 *remote_switch_v2, uint32_t 
 int tf_remote_switch_v2_read_uid(TF_RemoteSwitchV2 *remote_switch_v2, uint32_t *ret_uid) {
     if (remote_switch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = remote_switch_v2->tfp->spitfp->hal;
@@ -1451,6 +1559,10 @@ int tf_remote_switch_v2_read_uid(TF_RemoteSwitchV2 *remote_switch_v2, uint32_t *
 int tf_remote_switch_v2_get_identity(TF_RemoteSwitchV2 *remote_switch_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (remote_switch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = remote_switch_v2->tfp->spitfp->hal;
@@ -1510,13 +1622,8 @@ int tf_remote_switch_v2_register_switching_done_callback(TF_RemoteSwitchV2 *remo
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        remote_switch_v2->tfp->needs_callback_tick = false;
-        remote_switch_v2->tfp->needs_callback_tick |= remote_switch_v2->remote_status_a_handler != NULL;
-        remote_switch_v2->tfp->needs_callback_tick |= remote_switch_v2->remote_status_b_handler != NULL;
-        remote_switch_v2->tfp->needs_callback_tick |= remote_switch_v2->remote_status_c_handler != NULL;
-    } else {
-        remote_switch_v2->tfp->needs_callback_tick = true;
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     remote_switch_v2->switching_done_handler = handler;
@@ -1531,13 +1638,8 @@ int tf_remote_switch_v2_register_remote_status_a_callback(TF_RemoteSwitchV2 *rem
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        remote_switch_v2->tfp->needs_callback_tick = false;
-        remote_switch_v2->tfp->needs_callback_tick |= remote_switch_v2->switching_done_handler != NULL;
-        remote_switch_v2->tfp->needs_callback_tick |= remote_switch_v2->remote_status_b_handler != NULL;
-        remote_switch_v2->tfp->needs_callback_tick |= remote_switch_v2->remote_status_c_handler != NULL;
-    } else {
-        remote_switch_v2->tfp->needs_callback_tick = true;
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     remote_switch_v2->remote_status_a_handler = handler;
@@ -1552,13 +1654,8 @@ int tf_remote_switch_v2_register_remote_status_b_callback(TF_RemoteSwitchV2 *rem
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        remote_switch_v2->tfp->needs_callback_tick = false;
-        remote_switch_v2->tfp->needs_callback_tick |= remote_switch_v2->switching_done_handler != NULL;
-        remote_switch_v2->tfp->needs_callback_tick |= remote_switch_v2->remote_status_a_handler != NULL;
-        remote_switch_v2->tfp->needs_callback_tick |= remote_switch_v2->remote_status_c_handler != NULL;
-    } else {
-        remote_switch_v2->tfp->needs_callback_tick = true;
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     remote_switch_v2->remote_status_b_handler = handler;
@@ -1573,13 +1670,8 @@ int tf_remote_switch_v2_register_remote_status_c_callback(TF_RemoteSwitchV2 *rem
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        remote_switch_v2->tfp->needs_callback_tick = false;
-        remote_switch_v2->tfp->needs_callback_tick |= remote_switch_v2->switching_done_handler != NULL;
-        remote_switch_v2->tfp->needs_callback_tick |= remote_switch_v2->remote_status_a_handler != NULL;
-        remote_switch_v2->tfp->needs_callback_tick |= remote_switch_v2->remote_status_b_handler != NULL;
-    } else {
-        remote_switch_v2->tfp->needs_callback_tick = true;
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     remote_switch_v2->remote_status_c_handler = handler;
@@ -1591,6 +1683,10 @@ int tf_remote_switch_v2_register_remote_status_c_callback(TF_RemoteSwitchV2 *rem
 int tf_remote_switch_v2_callback_tick(TF_RemoteSwitchV2 *remote_switch_v2, uint32_t timeout_us) {
     if (remote_switch_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (remote_switch_v2->magic != 0x5446 || remote_switch_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = remote_switch_v2->tfp->spitfp->hal;

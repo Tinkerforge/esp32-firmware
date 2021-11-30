@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -98,20 +98,24 @@ int tf_voltage_current_v2_create(TF_VoltageCurrentV2 *voltage_current_v2, const 
     voltage_current_v2->tfp = tfp;
     voltage_current_v2->tfp->device = voltage_current_v2;
     voltage_current_v2->tfp->cb_handler = tf_voltage_current_v2_callback_handler;
+    voltage_current_v2->magic = 0x5446;
     voltage_current_v2->response_expected[0] = 0x07;
     voltage_current_v2->response_expected[1] = 0x00;
-
     return TF_E_OK;
 }
 
 int tf_voltage_current_v2_destroy(TF_VoltageCurrentV2 *voltage_current_v2) {
-    if (voltage_current_v2 == NULL || voltage_current_v2->tfp == NULL) {
+    if (voltage_current_v2 == NULL) {
         return TF_E_NULL;
+    }
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     voltage_current_v2->tfp->cb_handler = NULL;
     voltage_current_v2->tfp->device = NULL;
     voltage_current_v2->tfp = NULL;
+    voltage_current_v2->magic = 0;
 
     return TF_E_OK;
 }
@@ -119,6 +123,10 @@ int tf_voltage_current_v2_destroy(TF_VoltageCurrentV2 *voltage_current_v2) {
 int tf_voltage_current_v2_get_response_expected(TF_VoltageCurrentV2 *voltage_current_v2, uint8_t function_id, bool *ret_response_expected) {
     if (voltage_current_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -177,6 +185,10 @@ int tf_voltage_current_v2_get_response_expected(TF_VoltageCurrentV2 *voltage_cur
 int tf_voltage_current_v2_set_response_expected(TF_VoltageCurrentV2 *voltage_current_v2, uint8_t function_id, bool response_expected) {
     if (voltage_current_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -255,6 +267,10 @@ int tf_voltage_current_v2_set_response_expected_all(TF_VoltageCurrentV2 *voltage
         return TF_E_NULL;
     }
 
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(voltage_current_v2->response_expected, response_expected ? 0xFF : 0, 2);
 
     return TF_E_OK;
@@ -263,6 +279,10 @@ int tf_voltage_current_v2_set_response_expected_all(TF_VoltageCurrentV2 *voltage
 int tf_voltage_current_v2_get_current(TF_VoltageCurrentV2 *voltage_current_v2, int32_t *ret_current) {
     if (voltage_current_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = voltage_current_v2->tfp->spitfp->hal;
@@ -316,6 +336,10 @@ int tf_voltage_current_v2_set_current_callback_configuration(TF_VoltageCurrentV2
         return TF_E_NULL;
     }
 
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = voltage_current_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -364,6 +388,10 @@ int tf_voltage_current_v2_set_current_callback_configuration(TF_VoltageCurrentV2
 int tf_voltage_current_v2_get_current_callback_configuration(TF_VoltageCurrentV2 *voltage_current_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int32_t *ret_min, int32_t *ret_max) {
     if (voltage_current_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = voltage_current_v2->tfp->spitfp->hal;
@@ -421,6 +449,10 @@ int tf_voltage_current_v2_get_voltage(TF_VoltageCurrentV2 *voltage_current_v2, i
         return TF_E_NULL;
     }
 
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = voltage_current_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -472,6 +504,10 @@ int tf_voltage_current_v2_set_voltage_callback_configuration(TF_VoltageCurrentV2
         return TF_E_NULL;
     }
 
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = voltage_current_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -520,6 +556,10 @@ int tf_voltage_current_v2_set_voltage_callback_configuration(TF_VoltageCurrentV2
 int tf_voltage_current_v2_get_voltage_callback_configuration(TF_VoltageCurrentV2 *voltage_current_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int32_t *ret_min, int32_t *ret_max) {
     if (voltage_current_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = voltage_current_v2->tfp->spitfp->hal;
@@ -577,6 +617,10 @@ int tf_voltage_current_v2_get_power(TF_VoltageCurrentV2 *voltage_current_v2, int
         return TF_E_NULL;
     }
 
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = voltage_current_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -628,6 +672,10 @@ int tf_voltage_current_v2_set_power_callback_configuration(TF_VoltageCurrentV2 *
         return TF_E_NULL;
     }
 
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = voltage_current_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -676,6 +724,10 @@ int tf_voltage_current_v2_set_power_callback_configuration(TF_VoltageCurrentV2 *
 int tf_voltage_current_v2_get_power_callback_configuration(TF_VoltageCurrentV2 *voltage_current_v2, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, int32_t *ret_min, int32_t *ret_max) {
     if (voltage_current_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = voltage_current_v2->tfp->spitfp->hal;
@@ -733,6 +785,10 @@ int tf_voltage_current_v2_set_configuration(TF_VoltageCurrentV2 *voltage_current
         return TF_E_NULL;
     }
 
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = voltage_current_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -779,6 +835,10 @@ int tf_voltage_current_v2_set_configuration(TF_VoltageCurrentV2 *voltage_current
 int tf_voltage_current_v2_get_configuration(TF_VoltageCurrentV2 *voltage_current_v2, uint8_t *ret_averaging, uint8_t *ret_voltage_conversion_time, uint8_t *ret_current_conversion_time) {
     if (voltage_current_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = voltage_current_v2->tfp->spitfp->hal;
@@ -834,6 +894,10 @@ int tf_voltage_current_v2_set_calibration(TF_VoltageCurrentV2 *voltage_current_v
         return TF_E_NULL;
     }
 
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = voltage_current_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -881,6 +945,10 @@ int tf_voltage_current_v2_set_calibration(TF_VoltageCurrentV2 *voltage_current_v
 int tf_voltage_current_v2_get_calibration(TF_VoltageCurrentV2 *voltage_current_v2, uint16_t *ret_voltage_multiplier, uint16_t *ret_voltage_divisor, uint16_t *ret_current_multiplier, uint16_t *ret_current_divisor) {
     if (voltage_current_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = voltage_current_v2->tfp->spitfp->hal;
@@ -937,6 +1005,10 @@ int tf_voltage_current_v2_get_spitfp_error_count(TF_VoltageCurrentV2 *voltage_cu
         return TF_E_NULL;
     }
 
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = voltage_current_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -989,6 +1061,10 @@ int tf_voltage_current_v2_get_spitfp_error_count(TF_VoltageCurrentV2 *voltage_cu
 int tf_voltage_current_v2_set_bootloader_mode(TF_VoltageCurrentV2 *voltage_current_v2, uint8_t mode, uint8_t *ret_status) {
     if (voltage_current_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = voltage_current_v2->tfp->spitfp->hal;
@@ -1046,6 +1122,10 @@ int tf_voltage_current_v2_get_bootloader_mode(TF_VoltageCurrentV2 *voltage_curre
         return TF_E_NULL;
     }
 
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = voltage_current_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1097,6 +1177,10 @@ int tf_voltage_current_v2_set_write_firmware_pointer(TF_VoltageCurrentV2 *voltag
         return TF_E_NULL;
     }
 
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = voltage_current_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1141,6 +1225,10 @@ int tf_voltage_current_v2_set_write_firmware_pointer(TF_VoltageCurrentV2 *voltag
 int tf_voltage_current_v2_write_firmware(TF_VoltageCurrentV2 *voltage_current_v2, const uint8_t data[64], uint8_t *ret_status) {
     if (voltage_current_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = voltage_current_v2->tfp->spitfp->hal;
@@ -1198,6 +1286,10 @@ int tf_voltage_current_v2_set_status_led_config(TF_VoltageCurrentV2 *voltage_cur
         return TF_E_NULL;
     }
 
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = voltage_current_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1242,6 +1334,10 @@ int tf_voltage_current_v2_set_status_led_config(TF_VoltageCurrentV2 *voltage_cur
 int tf_voltage_current_v2_get_status_led_config(TF_VoltageCurrentV2 *voltage_current_v2, uint8_t *ret_config) {
     if (voltage_current_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = voltage_current_v2->tfp->spitfp->hal;
@@ -1295,6 +1391,10 @@ int tf_voltage_current_v2_get_chip_temperature(TF_VoltageCurrentV2 *voltage_curr
         return TF_E_NULL;
     }
 
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = voltage_current_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1346,6 +1446,10 @@ int tf_voltage_current_v2_reset(TF_VoltageCurrentV2 *voltage_current_v2) {
         return TF_E_NULL;
     }
 
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = voltage_current_v2->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1386,6 +1490,10 @@ int tf_voltage_current_v2_reset(TF_VoltageCurrentV2 *voltage_current_v2) {
 int tf_voltage_current_v2_write_uid(TF_VoltageCurrentV2 *voltage_current_v2, uint32_t uid) {
     if (voltage_current_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = voltage_current_v2->tfp->spitfp->hal;
@@ -1432,6 +1540,10 @@ int tf_voltage_current_v2_write_uid(TF_VoltageCurrentV2 *voltage_current_v2, uin
 int tf_voltage_current_v2_read_uid(TF_VoltageCurrentV2 *voltage_current_v2, uint32_t *ret_uid) {
     if (voltage_current_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = voltage_current_v2->tfp->spitfp->hal;
@@ -1483,6 +1595,10 @@ int tf_voltage_current_v2_read_uid(TF_VoltageCurrentV2 *voltage_current_v2, uint
 int tf_voltage_current_v2_get_identity(TF_VoltageCurrentV2 *voltage_current_v2, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (voltage_current_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = voltage_current_v2->tfp->spitfp->hal;
@@ -1542,12 +1658,8 @@ int tf_voltage_current_v2_register_current_callback(TF_VoltageCurrentV2 *voltage
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        voltage_current_v2->tfp->needs_callback_tick = false;
-        voltage_current_v2->tfp->needs_callback_tick |= voltage_current_v2->voltage_handler != NULL;
-        voltage_current_v2->tfp->needs_callback_tick |= voltage_current_v2->power_handler != NULL;
-    } else {
-        voltage_current_v2->tfp->needs_callback_tick = true;
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     voltage_current_v2->current_handler = handler;
@@ -1562,12 +1674,8 @@ int tf_voltage_current_v2_register_voltage_callback(TF_VoltageCurrentV2 *voltage
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        voltage_current_v2->tfp->needs_callback_tick = false;
-        voltage_current_v2->tfp->needs_callback_tick |= voltage_current_v2->current_handler != NULL;
-        voltage_current_v2->tfp->needs_callback_tick |= voltage_current_v2->power_handler != NULL;
-    } else {
-        voltage_current_v2->tfp->needs_callback_tick = true;
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     voltage_current_v2->voltage_handler = handler;
@@ -1582,12 +1690,8 @@ int tf_voltage_current_v2_register_power_callback(TF_VoltageCurrentV2 *voltage_c
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        voltage_current_v2->tfp->needs_callback_tick = false;
-        voltage_current_v2->tfp->needs_callback_tick |= voltage_current_v2->current_handler != NULL;
-        voltage_current_v2->tfp->needs_callback_tick |= voltage_current_v2->voltage_handler != NULL;
-    } else {
-        voltage_current_v2->tfp->needs_callback_tick = true;
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     voltage_current_v2->power_handler = handler;
@@ -1599,6 +1703,10 @@ int tf_voltage_current_v2_register_power_callback(TF_VoltageCurrentV2 *voltage_c
 int tf_voltage_current_v2_callback_tick(TF_VoltageCurrentV2 *voltage_current_v2, uint32_t timeout_us) {
     if (voltage_current_v2 == NULL) {
         return TF_E_NULL;
+    }
+
+    if (voltage_current_v2->magic != 0x5446 || voltage_current_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = voltage_current_v2->tfp->spitfp->hal;

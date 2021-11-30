@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -71,19 +71,23 @@ int tf_hat_create(TF_HAT *hat, const char *uid_or_port_name, TF_HAL *hal) {
     hat->tfp = tfp;
     hat->tfp->device = hat;
     hat->tfp->cb_handler = tf_hat_callback_handler;
+    hat->magic = 0x5446;
     hat->response_expected[0] = 0x04;
-
     return TF_E_OK;
 }
 
 int tf_hat_destroy(TF_HAT *hat) {
-    if (hat == NULL || hat->tfp == NULL) {
+    if (hat == NULL) {
         return TF_E_NULL;
+    }
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     hat->tfp->cb_handler = NULL;
     hat->tfp->device = NULL;
     hat->tfp = NULL;
+    hat->magic = 0;
 
     return TF_E_OK;
 }
@@ -91,6 +95,10 @@ int tf_hat_destroy(TF_HAT *hat) {
 int tf_hat_get_response_expected(TF_HAT *hat, uint8_t function_id, bool *ret_response_expected) {
     if (hat == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -144,6 +152,10 @@ int tf_hat_get_response_expected(TF_HAT *hat, uint8_t function_id, bool *ret_res
 int tf_hat_set_response_expected(TF_HAT *hat, uint8_t function_id, bool response_expected) {
     if (hat == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -215,6 +227,10 @@ int tf_hat_set_response_expected_all(TF_HAT *hat, bool response_expected) {
         return TF_E_NULL;
     }
 
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(hat->response_expected, response_expected ? 0xFF : 0, 1);
 
     return TF_E_OK;
@@ -223,6 +239,10 @@ int tf_hat_set_response_expected_all(TF_HAT *hat, bool response_expected) {
 int tf_hat_set_sleep_mode(TF_HAT *hat, uint32_t power_off_delay, uint32_t power_off_duration, bool raspberry_pi_off, bool bricklets_off, bool enable_sleep_indicator) {
     if (hat == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hat->tfp->spitfp->hal;
@@ -273,6 +293,10 @@ int tf_hat_set_sleep_mode(TF_HAT *hat, uint32_t power_off_delay, uint32_t power_
 int tf_hat_get_sleep_mode(TF_HAT *hat, uint32_t *ret_power_off_delay, uint32_t *ret_power_off_duration, bool *ret_raspberry_pi_off, bool *ret_bricklets_off, bool *ret_enable_sleep_indicator) {
     if (hat == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hat->tfp->spitfp->hal;
@@ -330,6 +354,10 @@ int tf_hat_set_bricklet_power(TF_HAT *hat, bool bricklet_power) {
         return TF_E_NULL;
     }
 
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = hat->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -374,6 +402,10 @@ int tf_hat_set_bricklet_power(TF_HAT *hat, bool bricklet_power) {
 int tf_hat_get_bricklet_power(TF_HAT *hat, bool *ret_bricklet_power) {
     if (hat == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hat->tfp->spitfp->hal;
@@ -425,6 +457,10 @@ int tf_hat_get_bricklet_power(TF_HAT *hat, bool *ret_bricklet_power) {
 int tf_hat_get_voltages(TF_HAT *hat, uint16_t *ret_voltage_usb, uint16_t *ret_voltage_dc) {
     if (hat == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hat->tfp->spitfp->hal;
@@ -479,6 +515,10 @@ int tf_hat_set_voltages_callback_configuration(TF_HAT *hat, uint32_t period, boo
         return TF_E_NULL;
     }
 
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = hat->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -524,6 +564,10 @@ int tf_hat_set_voltages_callback_configuration(TF_HAT *hat, uint32_t period, boo
 int tf_hat_get_voltages_callback_configuration(TF_HAT *hat, uint32_t *ret_period, bool *ret_value_has_to_change) {
     if (hat == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hat->tfp->spitfp->hal;
@@ -578,6 +622,10 @@ int tf_hat_set_rtc_driver(TF_HAT *hat, uint8_t rtc_driver) {
         return TF_E_NULL;
     }
 
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = hat->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -622,6 +670,10 @@ int tf_hat_set_rtc_driver(TF_HAT *hat, uint8_t rtc_driver) {
 int tf_hat_get_rtc_driver(TF_HAT *hat, uint8_t *ret_rtc_driver) {
     if (hat == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hat->tfp->spitfp->hal;
@@ -673,6 +725,10 @@ int tf_hat_get_rtc_driver(TF_HAT *hat, uint8_t *ret_rtc_driver) {
 int tf_hat_get_spitfp_error_count(TF_HAT *hat, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (hat == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hat->tfp->spitfp->hal;
@@ -727,6 +783,10 @@ int tf_hat_get_spitfp_error_count(TF_HAT *hat, uint32_t *ret_error_count_ack_che
 int tf_hat_set_bootloader_mode(TF_HAT *hat, uint8_t mode, uint8_t *ret_status) {
     if (hat == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hat->tfp->spitfp->hal;
@@ -784,6 +844,10 @@ int tf_hat_get_bootloader_mode(TF_HAT *hat, uint8_t *ret_mode) {
         return TF_E_NULL;
     }
 
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = hat->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -835,6 +899,10 @@ int tf_hat_set_write_firmware_pointer(TF_HAT *hat, uint32_t pointer) {
         return TF_E_NULL;
     }
 
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = hat->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -879,6 +947,10 @@ int tf_hat_set_write_firmware_pointer(TF_HAT *hat, uint32_t pointer) {
 int tf_hat_write_firmware(TF_HAT *hat, const uint8_t data[64], uint8_t *ret_status) {
     if (hat == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hat->tfp->spitfp->hal;
@@ -936,6 +1008,10 @@ int tf_hat_set_status_led_config(TF_HAT *hat, uint8_t config) {
         return TF_E_NULL;
     }
 
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = hat->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -980,6 +1056,10 @@ int tf_hat_set_status_led_config(TF_HAT *hat, uint8_t config) {
 int tf_hat_get_status_led_config(TF_HAT *hat, uint8_t *ret_config) {
     if (hat == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hat->tfp->spitfp->hal;
@@ -1033,6 +1113,10 @@ int tf_hat_get_chip_temperature(TF_HAT *hat, int16_t *ret_temperature) {
         return TF_E_NULL;
     }
 
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = hat->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1084,6 +1168,10 @@ int tf_hat_reset(TF_HAT *hat) {
         return TF_E_NULL;
     }
 
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = hat->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1124,6 +1212,10 @@ int tf_hat_reset(TF_HAT *hat) {
 int tf_hat_write_uid(TF_HAT *hat, uint32_t uid) {
     if (hat == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hat->tfp->spitfp->hal;
@@ -1170,6 +1262,10 @@ int tf_hat_write_uid(TF_HAT *hat, uint32_t uid) {
 int tf_hat_read_uid(TF_HAT *hat, uint32_t *ret_uid) {
     if (hat == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hat->tfp->spitfp->hal;
@@ -1221,6 +1317,10 @@ int tf_hat_read_uid(TF_HAT *hat, uint32_t *ret_uid) {
 int tf_hat_get_identity(TF_HAT *hat, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (hat == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = hat->tfp->spitfp->hal;
@@ -1280,10 +1380,8 @@ int tf_hat_register_voltages_callback(TF_HAT *hat, TF_HAT_VoltagesHandler handle
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        hat->tfp->needs_callback_tick = false;
-    } else {
-        hat->tfp->needs_callback_tick = true;
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     hat->voltages_handler = handler;
@@ -1295,6 +1393,10 @@ int tf_hat_register_voltages_callback(TF_HAT *hat, TF_HAT_VoltagesHandler handle
 int tf_hat_callback_tick(TF_HAT *hat, uint32_t timeout_us) {
     if (hat == NULL) {
         return TF_E_NULL;
+    }
+
+    if (hat->magic != 0x5446 || hat->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = hat->tfp->spitfp->hal;

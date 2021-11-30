@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-11-29.      *
+ * This file was automatically generated on 2021-11-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -84,19 +84,23 @@ int tf_motorized_linear_poti_create(TF_MotorizedLinearPoti *motorized_linear_pot
     motorized_linear_poti->tfp = tfp;
     motorized_linear_poti->tfp->device = motorized_linear_poti;
     motorized_linear_poti->tfp->cb_handler = tf_motorized_linear_poti_callback_handler;
+    motorized_linear_poti->magic = 0x5446;
     motorized_linear_poti->response_expected[0] = 0x09;
-
     return TF_E_OK;
 }
 
 int tf_motorized_linear_poti_destroy(TF_MotorizedLinearPoti *motorized_linear_poti) {
-    if (motorized_linear_poti == NULL || motorized_linear_poti->tfp == NULL) {
+    if (motorized_linear_poti == NULL) {
         return TF_E_NULL;
+    }
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     motorized_linear_poti->tfp->cb_handler = NULL;
     motorized_linear_poti->tfp->device = NULL;
     motorized_linear_poti->tfp = NULL;
+    motorized_linear_poti->magic = 0;
 
     return TF_E_OK;
 }
@@ -104,6 +108,10 @@ int tf_motorized_linear_poti_destroy(TF_MotorizedLinearPoti *motorized_linear_po
 int tf_motorized_linear_poti_get_response_expected(TF_MotorizedLinearPoti *motorized_linear_poti, uint8_t function_id, bool *ret_response_expected) {
     if (motorized_linear_poti == NULL) {
         return TF_E_NULL;
+    }
+
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -157,6 +165,10 @@ int tf_motorized_linear_poti_get_response_expected(TF_MotorizedLinearPoti *motor
 int tf_motorized_linear_poti_set_response_expected(TF_MotorizedLinearPoti *motorized_linear_poti, uint8_t function_id, bool response_expected) {
     if (motorized_linear_poti == NULL) {
         return TF_E_NULL;
+    }
+
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     switch (function_id) {
@@ -228,6 +240,10 @@ int tf_motorized_linear_poti_set_response_expected_all(TF_MotorizedLinearPoti *m
         return TF_E_NULL;
     }
 
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     memset(motorized_linear_poti->response_expected, response_expected ? 0xFF : 0, 1);
 
     return TF_E_OK;
@@ -236,6 +252,10 @@ int tf_motorized_linear_poti_set_response_expected_all(TF_MotorizedLinearPoti *m
 int tf_motorized_linear_poti_get_position(TF_MotorizedLinearPoti *motorized_linear_poti, uint16_t *ret_position) {
     if (motorized_linear_poti == NULL) {
         return TF_E_NULL;
+    }
+
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = motorized_linear_poti->tfp->spitfp->hal;
@@ -289,6 +309,10 @@ int tf_motorized_linear_poti_set_position_callback_configuration(TF_MotorizedLin
         return TF_E_NULL;
     }
 
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = motorized_linear_poti->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -337,6 +361,10 @@ int tf_motorized_linear_poti_set_position_callback_configuration(TF_MotorizedLin
 int tf_motorized_linear_poti_get_position_callback_configuration(TF_MotorizedLinearPoti *motorized_linear_poti, uint32_t *ret_period, bool *ret_value_has_to_change, char *ret_option, uint16_t *ret_min, uint16_t *ret_max) {
     if (motorized_linear_poti == NULL) {
         return TF_E_NULL;
+    }
+
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = motorized_linear_poti->tfp->spitfp->hal;
@@ -394,6 +422,10 @@ int tf_motorized_linear_poti_set_motor_position(TF_MotorizedLinearPoti *motorize
         return TF_E_NULL;
     }
 
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = motorized_linear_poti->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -440,6 +472,10 @@ int tf_motorized_linear_poti_set_motor_position(TF_MotorizedLinearPoti *motorize
 int tf_motorized_linear_poti_get_motor_position(TF_MotorizedLinearPoti *motorized_linear_poti, uint16_t *ret_position, uint8_t *ret_drive_mode, bool *ret_hold_position, bool *ret_position_reached) {
     if (motorized_linear_poti == NULL) {
         return TF_E_NULL;
+    }
+
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = motorized_linear_poti->tfp->spitfp->hal;
@@ -496,6 +532,10 @@ int tf_motorized_linear_poti_calibrate(TF_MotorizedLinearPoti *motorized_linear_
         return TF_E_NULL;
     }
 
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = motorized_linear_poti->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -536,6 +576,10 @@ int tf_motorized_linear_poti_calibrate(TF_MotorizedLinearPoti *motorized_linear_
 int tf_motorized_linear_poti_set_position_reached_callback_configuration(TF_MotorizedLinearPoti *motorized_linear_poti, bool enabled) {
     if (motorized_linear_poti == NULL) {
         return TF_E_NULL;
+    }
+
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = motorized_linear_poti->tfp->spitfp->hal;
@@ -582,6 +626,10 @@ int tf_motorized_linear_poti_set_position_reached_callback_configuration(TF_Moto
 int tf_motorized_linear_poti_get_position_reached_callback_configuration(TF_MotorizedLinearPoti *motorized_linear_poti, bool *ret_enabled) {
     if (motorized_linear_poti == NULL) {
         return TF_E_NULL;
+    }
+
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = motorized_linear_poti->tfp->spitfp->hal;
@@ -633,6 +681,10 @@ int tf_motorized_linear_poti_get_position_reached_callback_configuration(TF_Moto
 int tf_motorized_linear_poti_get_spitfp_error_count(TF_MotorizedLinearPoti *motorized_linear_poti, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (motorized_linear_poti == NULL) {
         return TF_E_NULL;
+    }
+
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = motorized_linear_poti->tfp->spitfp->hal;
@@ -687,6 +739,10 @@ int tf_motorized_linear_poti_get_spitfp_error_count(TF_MotorizedLinearPoti *moto
 int tf_motorized_linear_poti_set_bootloader_mode(TF_MotorizedLinearPoti *motorized_linear_poti, uint8_t mode, uint8_t *ret_status) {
     if (motorized_linear_poti == NULL) {
         return TF_E_NULL;
+    }
+
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = motorized_linear_poti->tfp->spitfp->hal;
@@ -744,6 +800,10 @@ int tf_motorized_linear_poti_get_bootloader_mode(TF_MotorizedLinearPoti *motoriz
         return TF_E_NULL;
     }
 
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = motorized_linear_poti->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -795,6 +855,10 @@ int tf_motorized_linear_poti_set_write_firmware_pointer(TF_MotorizedLinearPoti *
         return TF_E_NULL;
     }
 
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = motorized_linear_poti->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -839,6 +903,10 @@ int tf_motorized_linear_poti_set_write_firmware_pointer(TF_MotorizedLinearPoti *
 int tf_motorized_linear_poti_write_firmware(TF_MotorizedLinearPoti *motorized_linear_poti, const uint8_t data[64], uint8_t *ret_status) {
     if (motorized_linear_poti == NULL) {
         return TF_E_NULL;
+    }
+
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = motorized_linear_poti->tfp->spitfp->hal;
@@ -896,6 +964,10 @@ int tf_motorized_linear_poti_set_status_led_config(TF_MotorizedLinearPoti *motor
         return TF_E_NULL;
     }
 
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = motorized_linear_poti->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -940,6 +1012,10 @@ int tf_motorized_linear_poti_set_status_led_config(TF_MotorizedLinearPoti *motor
 int tf_motorized_linear_poti_get_status_led_config(TF_MotorizedLinearPoti *motorized_linear_poti, uint8_t *ret_config) {
     if (motorized_linear_poti == NULL) {
         return TF_E_NULL;
+    }
+
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = motorized_linear_poti->tfp->spitfp->hal;
@@ -993,6 +1069,10 @@ int tf_motorized_linear_poti_get_chip_temperature(TF_MotorizedLinearPoti *motori
         return TF_E_NULL;
     }
 
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = motorized_linear_poti->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1044,6 +1124,10 @@ int tf_motorized_linear_poti_reset(TF_MotorizedLinearPoti *motorized_linear_poti
         return TF_E_NULL;
     }
 
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
     TF_HAL *_hal = motorized_linear_poti->tfp->spitfp->hal;
 
     if (tf_hal_get_common(_hal)->locked) {
@@ -1084,6 +1168,10 @@ int tf_motorized_linear_poti_reset(TF_MotorizedLinearPoti *motorized_linear_poti
 int tf_motorized_linear_poti_write_uid(TF_MotorizedLinearPoti *motorized_linear_poti, uint32_t uid) {
     if (motorized_linear_poti == NULL) {
         return TF_E_NULL;
+    }
+
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = motorized_linear_poti->tfp->spitfp->hal;
@@ -1130,6 +1218,10 @@ int tf_motorized_linear_poti_write_uid(TF_MotorizedLinearPoti *motorized_linear_
 int tf_motorized_linear_poti_read_uid(TF_MotorizedLinearPoti *motorized_linear_poti, uint32_t *ret_uid) {
     if (motorized_linear_poti == NULL) {
         return TF_E_NULL;
+    }
+
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = motorized_linear_poti->tfp->spitfp->hal;
@@ -1181,6 +1273,10 @@ int tf_motorized_linear_poti_read_uid(TF_MotorizedLinearPoti *motorized_linear_p
 int tf_motorized_linear_poti_get_identity(TF_MotorizedLinearPoti *motorized_linear_poti, char ret_uid[8], char ret_connected_uid[8], char *ret_position, uint8_t ret_hardware_version[3], uint8_t ret_firmware_version[3], uint16_t *ret_device_identifier) {
     if (motorized_linear_poti == NULL) {
         return TF_E_NULL;
+    }
+
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *_hal = motorized_linear_poti->tfp->spitfp->hal;
@@ -1240,11 +1336,8 @@ int tf_motorized_linear_poti_register_position_callback(TF_MotorizedLinearPoti *
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        motorized_linear_poti->tfp->needs_callback_tick = false;
-        motorized_linear_poti->tfp->needs_callback_tick |= motorized_linear_poti->position_reached_handler != NULL;
-    } else {
-        motorized_linear_poti->tfp->needs_callback_tick = true;
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     motorized_linear_poti->position_handler = handler;
@@ -1259,11 +1352,8 @@ int tf_motorized_linear_poti_register_position_reached_callback(TF_MotorizedLine
         return TF_E_NULL;
     }
 
-    if (handler == NULL) {
-        motorized_linear_poti->tfp->needs_callback_tick = false;
-        motorized_linear_poti->tfp->needs_callback_tick |= motorized_linear_poti->position_handler != NULL;
-    } else {
-        motorized_linear_poti->tfp->needs_callback_tick = true;
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     motorized_linear_poti->position_reached_handler = handler;
@@ -1275,6 +1365,10 @@ int tf_motorized_linear_poti_register_position_reached_callback(TF_MotorizedLine
 int tf_motorized_linear_poti_callback_tick(TF_MotorizedLinearPoti *motorized_linear_poti, uint32_t timeout_us) {
     if (motorized_linear_poti == NULL) {
         return TF_E_NULL;
+    }
+
+    if (motorized_linear_poti->magic != 0x5446 || motorized_linear_poti->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
     }
 
     TF_HAL *hal = motorized_linear_poti->tfp->spitfp->hal;
