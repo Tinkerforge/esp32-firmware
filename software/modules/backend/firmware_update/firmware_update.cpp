@@ -30,6 +30,7 @@
 #include "build.h"
 
 #include "./crc32.h"
+#include "./recovery_page.h"
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -234,8 +235,10 @@ bool FirmwareUpdate::handle_update_chunk(int command, WebServerRequest request, 
 
 void FirmwareUpdate::register_urls()
 {
-    server.on("/update", HTTP_GET, [](WebServerRequest request){
-        request.send(200, "text/html", "<form><input id=\"firmware\"type=\"file\"> <button id=\"u_firmware\"type=\"button\"onclick='u(\"firmware\")'>Upload firmware</button> <label id=\"p_firmware\"></label></form><form><input id=\"spiffs\"type=\"file\"> <button id=\"u_spiffs\"type=\"button\"onclick='u(\"spiffs\")'>Upload SPIFFS</button> <label id=\"p_spiffs\"></label></form><script>function u(e){var t,n,d,o=document.getElementById(e).files;0==o.length?alert(\"No file selected!\"):(document.getElementById(\"firmware\").disabled=!0,document.getElementById(\"u_firmware\").disabled=!0,document.getElementById(\"spiffs\").disabled=!0,document.getElementById(\"u_spiffs\").disabled=!0,t=o[0],n=new XMLHttpRequest,d=document.getElementById(\"p_\"+e),n.onreadystatechange=function(){4==n.readyState&&(200==n.status?(document.open(),document.write(n.responseText),document.close()):(0==n.status?alert(\"Server closed the connection abruptly!\"):alert(n.status+\" Error!\\n\"+n.responseText),location.reload()))},n.upload.addEventListener(\"progress\",function(e){e.lengthComputable&&(d.innerHTML=e.loaded/e.total*100+\"% (\"+e.loaded+\" / \"+e.total+\")\")},!1),n.open(\"POST\",\"/flash_\"+e,!0),n.send(t))}</script>");
+    server.on("/recovery", HTTP_GET, [](WebServerRequest req) {
+        req.addResponseHeader("Content-Encoding", "gzip");
+        req.addResponseHeader("ETag", BUILD_TIMESTAMP_HEX_STR);
+        req.send(200, "text/html", recovery_page, recovery_page_len);
     });
 
     server.on("/flash_firmware", HTTP_POST, [this](WebServerRequest request){

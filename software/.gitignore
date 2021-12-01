@@ -6,6 +6,8 @@ data/wifi_sta_config.json
 data/wifi_soft_ap_config.json
 modules/backend/**/*_firmware.h
 modules/backend/**/*_firmware.cpp
+modules/backend/firmware_update/recovery_page.h
+modules/backend/firmware_update/recovery_page.cpp
 src/index.html.h
 src/index.html.h.digest
 src/main.cpp
