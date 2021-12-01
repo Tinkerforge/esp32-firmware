@@ -42,7 +42,7 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, ssid, stage3):
     master = next((e for e in enumerations if e.device_identifier == 13), None)
     evse_enum = next((e for e in enumerations if e.device_identifier == 2167), None)
 
-    if len(enumerations) not in [1, 2]:
+    if qr_variant != "B" and len(enumerations) not in [1, 2]:
         fatal_error("Unexpected number of devices! Expected 1 or 2 but got {}.".format(len(enumerations)))
 
     if evse_enum is None:
