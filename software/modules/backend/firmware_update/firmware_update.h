@@ -37,6 +37,7 @@ private:
     bool handle_update_chunk(int command, WebServerRequest request, size_t chunk_index, uint8_t *data, size_t chunk_length, bool final, size_t complete_length);
     void reset_fw_info();
     bool handle_fw_info_chunk(size_t chunk_index, uint8_t *data, size_t chunk_length);
+    String check_fw_info(bool fw_info_found, bool detect_downgrade, bool log);
     struct fw_info_t {
         uint32_t magic[2] = {0};
         char firmware_name[61] = {0};

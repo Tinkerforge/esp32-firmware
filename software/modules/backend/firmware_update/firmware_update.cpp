@@ -144,6 +144,43 @@ bool FirmwareUpdate::handle_fw_info_chunk(size_t chunk_index, uint8_t *data, siz
     return checksum_offset == sizeof(checksum) && info.magic[0] == 0x12CE2171 && (info.magic[1] & 0x00FFFFFF) == 0x6E12F0;
 }
 
+String FirmwareUpdate::check_fw_info(bool fw_info_found, bool detect_downgrade, bool log) {
+    if (!fw_info_found && BUILD_REQUIRE_FW_INFO) {
+        if (log) {
+            logger.printfln("Failed to update: Firmware update has no info page!");
+        }
+        return "{\"error\":\"firmware_update.script.no_info_page\"}";
+    }
+    if (fw_info_found) {
+        if (checksum != calculated_checksum) {
+            if (log) {
+                logger.printfln("Failed to update: Firmware info page corrupted! Embedded checksum %x calculated checksum %x", checksum, calculated_checksum);
+            }
+            return "{\"error\":\"firmware_update.script.info_page_corrupted\"}";
+        }
+
+        if (strcmp(DISPLAY_NAME, info.firmware_name) != 0) {
+            if (log) {
+                logger.printfln("Failed to update: Firmware is for a %s but this is a %s!", info.firmware_name, DISPLAY_NAME);
+            }
+            return "{\"error\":\"firmware_update.script.wrong_firmware_type\"}";
+        }
+
+        if (detect_downgrade && compare_version(info.fw_version[0], info.fw_version[1], info.fw_version[2],
+                                                BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH) < 0) {
+            if (log) {
+                logger.printfln("Failed to update: Firmware is a downgrade!");
+            }
+            char buf[128];
+            snprintf(buf, sizeof(buf)/sizeof(buf[0]), "{\"error\":\"firmware_update.script.downgrade\", \"fw\":\"%u.%u.%u\", \"installed\":\"%u.%u.%u\"}",
+                     info.fw_version[0], info.fw_version[1], info.fw_version[2],
+                     BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH);
+            return String(buf);
+        }
+    }
+    return "";
+}
+
 bool FirmwareUpdate::handle_update_chunk(int command, WebServerRequest request, size_t chunk_index, uint8_t *data, size_t chunk_length, bool final, size_t complete_length) {
     // The firmware files are merged with the bootloader, partition table, firmware_info and slot configuration bins.
     // The bootloader starts at offset 0x1000, which is the first byte in the firmware file.
@@ -174,29 +211,12 @@ bool FirmwareUpdate::handle_update_chunk(int command, WebServerRequest request, 
     }
 
     if (chunk_index + chunk_length >= FW_INFO_OFFSET + FW_INFO_LENGTH) {
-        if (!fw_info_found && BUILD_REQUIRE_FW_INFO) {
-            logger.printfln("Failed to update: Firmware update has no info page!");
-            request.send(400, "text/plain", "firmware_update.script.no_info_page");
+        String error = this->check_fw_info(fw_info_found, false, true);
+        if (error != "") {
+            request.send(400, "text/plain", error.c_str());
             Update.abort();
             update_aborted = true;
             return true;
-        }
-        if (fw_info_found) {
-            if (checksum != calculated_checksum) {
-                logger.printfln("Failed to update: Firmware info page corrupted! Embedded checksum %x calculated checksum %x", checksum, calculated_checksum);
-                request.send(400, "text/plain", "firmware_update.script.info_page_corrupted");
-                Update.abort();
-                update_aborted = true;
-                return true;
-            }
-
-            if (strcmp(DISPLAY_NAME, info.firmware_name) != 0) {
-                logger.printfln("Failed to update: Firmware is for a %s but this is a %s!", info.firmware_name, DISPLAY_NAME);
-                request.send(400, "text/plain", "firmware_update.script.wrong_firmware_type");
-                Update.abort();
-                update_aborted = true;
-                return true;
-            }
         }
     }
 
@@ -239,6 +259,33 @@ void FirmwareUpdate::register_urls()
         req.addResponseHeader("Content-Encoding", "gzip");
         req.addResponseHeader("ETag", BUILD_TIMESTAMP_HEX_STR);
         req.send(200, "text/html", recovery_page, recovery_page_len);
+    });
+
+    server.on("/check_firmware", HTTP_POST, [this](WebServerRequest request){
+        request.send(200, "text/plain", "{\"error\":\"firmware_update.script.ok\"}");
+    },[this](WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final){
+        if (index == 0) {
+            this->reset_fw_info();
+        }
+        if (!firmware_update_allowed) {
+            request.send(400, "text/plain", "{\"error\":\"firmware_update.script.vehicle_connected\"}");
+            return false;
+        }
+
+        if (index > FW_INFO_LENGTH) {
+            request.send(400, "text/plain", "Too long!");
+            return false;
+        }
+
+        bool fw_info_found = handle_fw_info_chunk(index + FW_INFO_OFFSET, data, len);
+
+        if (index + len >= FW_INFO_LENGTH) {
+            String error = this->check_fw_info(fw_info_found, true, false);
+            if (error != "") {
+                request.send(400, "text/plain", error.c_str());
+            }
+        }
+        return true;
     });
 
     server.on("/flash_firmware", HTTP_POST, [this](WebServerRequest request){

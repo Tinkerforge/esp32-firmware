@@ -20,7 +20,11 @@
             "abort_reset": "Abbrechen",
             "confirm_reset": "Zurücksetzen auf Auslieferungszustand",
             "reboot": "Neu starten",
-            "reboot_desc": null
+            "reboot_desc": null,
+            "downgrade": "Firmware-Downgrade",
+            "downgrade_modal_text": "",
+            "abort_downgrade": "Abbrechen",
+            "confirm_downgrade": "Downgrade durchführen"
         },
         "script": {
             "flash_success": "Erfolgreich aktualisiert; starte neu...",
@@ -30,7 +34,8 @@
             "vehicle_connected": "Es kann keine Aktualisierung vorgenommen werden, während ein Fahrzeug verbunden ist.",
             "no_info_page": null,
             "info_page_corrupted": "Firmware-Datei ist beschädigt (Checksummenfehler)",
-            "wrong_firmware_type": null
+            "wrong_firmware_type": null,
+            "downgrade": "Firmware-Datei beinhaltet ein Downgrade auf Version %fw%. Installiert ist Version %installed%."
         }
     }
 }

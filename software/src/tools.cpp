@@ -608,3 +608,27 @@ int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose,
 
     return 0;
 }
+
+
+int compare_version(uint8_t left_major, uint8_t left_minor, uint8_t left_patch,
+                    uint8_t right_major, uint8_t right_minor, uint8_t right_patch) {
+    if (left_major > right_major)
+        return 1;
+
+    if (left_major < right_major)
+        return -1;
+
+    if (left_minor > right_minor)
+        return 1;
+
+    if (left_minor < right_minor)
+        return -1;
+
+    if (left_patch > right_patch)
+        return 1;
+
+    if (left_patch < right_patch)
+        return -1;
+
+    return 0;
+}

@@ -43,9 +43,43 @@ function update_version(version: Version) {
     $('#current_spiffs').val(version.spiffs);
 }
 
-function upload(e: JQuery.SubmitEvent, type: string) {
+function check_upload(type: string) {
+    let file_select = <HTMLInputElement>$(`#${type}_file_select`)[0];
+
+    $.ajax({
+        timeout: 0,
+        url: `/check_${type}`,
+        type: 'POST',
+        data: file_select.files[0].slice(0xd000 - 0x1000, 0xd000),
+        contentType: false,
+        processData: false,
+        success: () => {
+            upload(type);
+        },
+        error: (xhr, status, error) => {
+            if (xhr.status == 423)
+                util.add_alert("firmware_update_failed", "alert-danger", __("firmware_update.script.flash_fail"), __("firmware_update.script.vehicle_connected"));
+            else {
+                try {
+                    let e = JSON.parse(xhr.responseText)
+                    let error_message = __/* hide this from the translation checker */(e["error"])
+                    if (e["error"] == "firmware_update.script.downgrade") {
+                        error_message = error_message.replace("%fw%", e["fw"]).replace("%installed%", e["installed"]);
+                        $('#downgrade_text').text(error_message);
+                        $('#downgrade_modal').modal('show');
+                    } else {
+                        util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.flash_fail"), error_message);
+                    }
+                } catch {
+                    util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.flash_fail"), error + ": " + xhr.responseText);
+                }
+            }
+        }
+    });
+}
+
+function upload(type: string) {
     util.pauseWebSockets();
-    e.preventDefault();
 
     let file_select = <HTMLInputElement>$(`#${type}_file_select`)[0];
     let progress = $(`#${type}-progress`);
@@ -116,7 +150,13 @@ function factory_reset() {
 export function init() {
     // Firmware upload
     $('#upload_firmware_form').on("submit", function (e) {
-        upload(e, "firmware");
+        e.preventDefault();
+        check_upload("firmware");
+    });
+
+    $('#downgrade_confirm').on("click", () => {
+        $('#downgrade_modal').modal('hide');
+        upload("firmware");
     });
 
     $('#firmware_file_select').on("change", () => $("#update_firmware_button").prop("disabled", false));
