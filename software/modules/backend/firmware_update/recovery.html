@@ -16,6 +16,11 @@
     <label id="p_firmware"></label>
 </form>
 
+<h3>Force reboot</h3>
+<form>
+    <button type="button" onclick='reboot()'>Forces a reboot. Reload this page afterwards!</button>
+</form>
+
 <h3>Factory reset</h3>
 <form>
     <input id="factory_reset" type="text" placeholder="Type RESET to allow a factory reset" oninput=on_input() size=26>
@@ -67,6 +72,13 @@ function update() {
 
     xhr.open("POST", "/flash_firmware", true);
     xhr.send(firmware);
+}
+
+function reboot() {
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", "/force_reboot");
+    xhr.timeout = 2000;
+    xhr.send();
 }
 
 function reset() {
