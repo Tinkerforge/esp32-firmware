@@ -50,7 +50,7 @@ remove_files(hal_arduino_esp32_brick_target_dir)
 remove_files(hal_arduino_esp32_ethernet_brick_target_dir)
 
 copy_files(generators_uc_dir, bindings_target_dir, include_pattern=r'^.*\.(h|c|inc)$')
-copy_files(os.path.join(generators_uc_dir, 'bindings'), bindings_target_dir, exclude_pattern=r'^__released_files__$')
+copy_files(os.path.join(generators_uc_dir, 'bindings'), bindings_target_dir, exclude_pattern=r'^(__released_files__|bricklet_stream_test\.[ch])$')
 copy_files(os.path.join(generators_uc_dir, 'net_arduino_esp32'), net_arduino_esp32_target_dir, include_pattern=r'^.*\.(h|c|cpp)$')
 copy_files(os.path.join(generators_uc_dir, 'hal_arduino_esp32_brick'), hal_arduino_esp32_brick_target_dir, include_pattern=r'^.*\.(h|c|cpp)$', patch_include=True)
 copy_files(os.path.join(generators_uc_dir, 'hal_arduino_esp32_ethernet_brick'), hal_arduino_esp32_ethernet_brick_target_dir, include_pattern=r'^.*\.(h|c|cpp)$', patch_include=True)
