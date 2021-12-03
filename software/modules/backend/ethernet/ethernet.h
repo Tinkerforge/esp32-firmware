@@ -46,6 +46,7 @@ public:
 private:
     Config ethernet_config;
     Config ethernet_state;
+    Config ethernet_force_reset;
 
     Config ethernet_config_in_use;
 

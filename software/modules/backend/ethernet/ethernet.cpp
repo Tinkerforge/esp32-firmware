@@ -25,6 +25,8 @@
 
 #include <ETH.h>
 
+#include <esp_eth.h>
+
 #include "api.h"
 #include "task_scheduler.h"
 #include "build.h"
@@ -111,6 +113,8 @@ Ethernet::Ethernet()
         {"full_duplex", Config::Bool(false)},
         {"link_speed", Config::Uint8(0)}
     });
+
+    ethernet_force_reset = Config::Null();
 }
 /*
 bool eth_connected = false;
@@ -253,6 +257,14 @@ void Ethernet::register_urls()
 {
     api.addPersistentConfig("ethernet/config", &ethernet_config, {}, 1000);
     api.addPersistentConfig("ethernet/state", &ethernet_state, {}, 1000);
+    api.addCommand("ethernet/force_reset", &ethernet_force_reset, {}, [this](){
+        esp_eth_stop(ETH.eth_handle);
+        pinMode(5, OUTPUT);
+        digitalWrite(5, LOW);
+        delay(100);
+        digitalWrite(5, HIGH);
+        esp_eth_start(ETH.eth_handle);
+    }, true);
 }
 
 void Ethernet::loop()
