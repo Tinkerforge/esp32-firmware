@@ -201,6 +201,22 @@ void Ethernet::setup()
         ARDUINO_EVENT_ETH_GOT_IP);
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+            logger.printfln("Ethernet got IPv6 address: %s.", ETH.localIPv6().toString().c_str());
+        },
+        ARDUINO_EVENT_ETH_GOT_IP6);
+
+    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+            logger.printfln("Ethernet lost IP address.");
+            ethernet_state.get("connection_state")->updateUint(2);
+
+            ethernet_state.get("ip")->get(0)->updateUint(0);
+            ethernet_state.get("ip")->get(1)->updateUint(0);
+            ethernet_state.get("ip")->get(2)->updateUint(0);
+            ethernet_state.get("ip")->get(3)->updateUint(0);
+        },
+        ARDUINO_EVENT_ETH_LOST_IP);
+
+    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
             logger.printfln("Ethernet disconnected");
             ethernet_state.get("connection_state")->updateUint(1);
 

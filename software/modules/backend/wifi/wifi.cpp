@@ -346,6 +346,11 @@ void Wifi::setup()
         ARDUINO_EVENT_WIFI_STA_GOT_IP);
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+            logger.printfln("Wifi got IPv6 address: %s.", WiFi.localIPv6().toString().c_str());
+        },
+        ARDUINO_EVENT_WIFI_STA_GOT_IP6);
+
+    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
         if(!this->was_connected)
             return;
 
