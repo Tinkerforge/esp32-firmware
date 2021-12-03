@@ -505,9 +505,13 @@ int tf_hal_tick(TF_HAL *hal, uint32_t timeout_us) {
 }
 
 int tf_hal_callback_tick(TF_HAL *hal, uint32_t timeout_us) {
+    TF_HALCommon *hal_common = tf_hal_get_common(hal);
+    if (hal_common->tfps_used == 0)
+        return;
+
     uint32_t deadline_us = tf_hal_current_time_us(hal) + timeout_us;
     TF_TFP *tfp = NULL;
-    TF_HALCommon *hal_common = tf_hal_get_common(hal);
+
     uint16_t first_idx = hal_common->callback_tick_index;
 
     do {
