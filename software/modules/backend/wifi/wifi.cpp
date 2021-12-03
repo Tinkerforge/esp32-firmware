@@ -311,9 +311,9 @@ void Wifi::setup()
             uint8_t reason_code = info.wifi_sta_disconnected.reason;
             const char *reason = reason2str(reason_code);
             if (!this->was_connected) {
-                logger.printfln("Failed to connect to %s: %s (%u)", wifi_sta_config_in_use.get("ssid")->asString().c_str(), reason, reason_code);
+                logger.printfln("Wifi failed to connect to %s: %s (%u)", wifi_sta_config_in_use.get("ssid")->asString().c_str(), reason, reason_code);
             } else {
-                logger.printfln("Disconnected from %s: %s (%u)", wifi_sta_config_in_use.get("ssid")->asString().c_str(), reason, reason_code);
+                logger.printfln("Wifi disconnected from %s: %s (%u)", wifi_sta_config_in_use.get("ssid")->asString().c_str(), reason, reason_code);
             }
             this->was_connected = false;
         },
@@ -322,7 +322,7 @@ void Wifi::setup()
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
             this->was_connected = true;
 
-            logger.printfln("Connected to %s", WiFi.SSID().c_str());
+            logger.printfln("Wifi connected to %s", WiFi.SSID().c_str());
         },
         ARDUINO_EVENT_WIFI_STA_CONNECTED);
 
@@ -334,7 +334,7 @@ void Wifi::setup()
             this->was_connected = true;
 
             auto ip = WiFi.localIP();
-            logger.printfln("Got IP address: %u.%u.%u.%u. Connected to BSSID %s", ip[0], ip[1], ip[2], ip[3], WiFi.BSSIDstr().c_str());
+            logger.printfln("Wifi got IP address: %u.%u.%u.%u. Connected to BSSID %s", ip[0], ip[1], ip[2], ip[3], WiFi.BSSIDstr().c_str());
             wifi_state.get("sta_ip")->get(0)->updateUint(ip[0]);
             wifi_state.get("sta_ip")->get(1)->updateUint(ip[1]);
             wifi_state.get("sta_ip")->get(2)->updateUint(ip[2]);
@@ -351,7 +351,7 @@ void Wifi::setup()
 
         this->was_connected = false;
 
-        logger.printfln("Lost IP. Forcing disconnect and reconnect of WiFi");
+        logger.printfln("Wifi lost IP. Forcing disconnect and reconnect of WiFi");
         wifi_state.get("sta_ip")->get(0)->updateUint(0);
         wifi_state.get("sta_ip")->get(1)->updateUint(0);
         wifi_state.get("sta_ip")->get(2)->updateUint(0);
