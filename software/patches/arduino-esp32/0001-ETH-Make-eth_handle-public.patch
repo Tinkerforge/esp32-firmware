@@ -1,0 +1,25 @@
+From 0cd6d432a38a5ff1a89f34778fec9df78236fd08 Mon Sep 17 00:00:00 2001
+From: Erik Fleckstein <erik@tinkerforge.com>
+Date: Fri, 3 Dec 2021 14:02:41 +0100
+Subject: [PATCH] ETH: Make eth_handle public.
+
+---
+ libraries/Ethernet/src/ETH.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libraries/Ethernet/src/ETH.h b/libraries/Ethernet/src/ETH.h
+index 918cd357..824b066d 100644
+--- a/libraries/Ethernet/src/ETH.h
++++ b/libraries/Ethernet/src/ETH.h
+@@ -57,7 +57,7 @@ typedef enum { ETH_PHY_LAN8720, ETH_PHY_TLK110, ETH_PHY_RTL8201, ETH_PHY_DP83848
+ #define ETH_PHY_IP101 ETH_PHY_TLK110
+ 
+ class ETHClass {
+-    private:
++    public:
+         bool initialized;
+         bool staticIP;
+ #if ESP_IDF_VERSION_MAJOR > 3
+-- 
+2.33.1
+

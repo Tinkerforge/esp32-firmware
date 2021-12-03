@@ -1,0 +1,44 @@
+From 31cce72f837d26d2946b2352393386cdb6774b7b Mon Sep 17 00:00:00 2001
+From: Erik Fleckstein <erik@tinkerforge.com>
+Date: Fri, 3 Dec 2021 12:16:43 +0100
+Subject: [PATCH] WiFiGeneric: Add ETH_LOST_IP event.
+
+---
+ libraries/WiFi/src/WiFiGeneric.cpp | 8 +++++++-
+ libraries/WiFi/src/WiFiGeneric.h   | 1 +
+ 2 files changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/libraries/WiFi/src/WiFiGeneric.cpp b/libraries/WiFi/src/WiFiGeneric.cpp
+index 838c23bf..4004262b 100644
+--- a/libraries/WiFi/src/WiFiGeneric.cpp
++++ b/libraries/WiFi/src/WiFiGeneric.cpp
+@@ -354,7 +354,13 @@ static void _arduino_event_cb(void* arg, esp_event_base_t event_base, int32_t ev
+ 	} else if (event_base == ETH_EVENT && event_id == ETHERNET_EVENT_STOP) {
+ 		log_v("Ethernet Stopped");
+     	arduino_event.event_id = ARDUINO_EVENT_ETH_STOP;
+-    } else if (event_base == IP_EVENT && event_id == IP_EVENT_ETH_GOT_IP) {
++    } else if (event_base == IP_EVENT && event_id == IP_EVENT_ETH_LOST_IP) {
++        ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
++        log_v("Ethernet lost ip.");
++        arduino_event.event_id = ARDUINO_EVENT_ETH_LOST_IP;
++    }
++
++    else if (event_base == IP_EVENT && event_id == IP_EVENT_ETH_GOT_IP) {
+         ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
+         log_v("Ethernet got %sip:" IPSTR, event->ip_changed?"new":"", IP2STR(&event->ip_info.ip));
+     	arduino_event.event_id = ARDUINO_EVENT_ETH_GOT_IP;
+diff --git a/libraries/WiFi/src/WiFiGeneric.h b/libraries/WiFi/src/WiFiGeneric.h
+index 7079c032..1eae2887 100644
+--- a/libraries/WiFi/src/WiFiGeneric.h
++++ b/libraries/WiFi/src/WiFiGeneric.h
+@@ -58,6 +58,7 @@ typedef enum {
+ 	ARDUINO_EVENT_ETH_DISCONNECTED,
+ 	ARDUINO_EVENT_ETH_GOT_IP,
+ 	ARDUINO_EVENT_ETH_GOT_IP6,
++	ARDUINO_EVENT_ETH_LOST_IP,
+ 	ARDUINO_EVENT_WPS_ER_SUCCESS,
+ 	ARDUINO_EVENT_WPS_ER_FAILED,
+ 	ARDUINO_EVENT_WPS_ER_TIMEOUT,
+-- 
+2.33.1
+
