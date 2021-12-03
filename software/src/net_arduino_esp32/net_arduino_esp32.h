@@ -13,8 +13,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "bindings/net_common.h"
-#include "bindings/tfp_header.h"
+#include "../bindings/net_common.h"
+#include "../bindings/tfp_header.h"
 
 typedef enum {
     TF_CLIENT_AUTHENTICATION_STATE_DISABLED = 0,
