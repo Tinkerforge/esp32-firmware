@@ -20,7 +20,7 @@
             "password": "<span class=\"form-label pr-2\">Broker-Passwort</span><span class=\"text-muted\">optional</span>",
             "topic_prefix": "<span class=\"form-label pr-2\">Topic-Präfix</span><span class=\"text-muted\">optional</span>",
             "topic_prefix_invalid": "Der Topic-Präfix darf nicht mit $ beginnen, oder ein # oder + enthalten.",
-            "client_name": "<span class=\"form-label pr-2\">Client-ID</span><span class=\"text-muted\">optional</span>",
+            "client_name": "<span class=\"form-label pr-2\">Client-ID</span>",
             "save": "Speichern",
             "reboot_title": "Neu starten um Konfiguration anzuwenden",
             "reboot_content": "Die geänderten MQTT-Einstellungen werden nur nach einem Neustart angewendet. Jetzt neu starten?",

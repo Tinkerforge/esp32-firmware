@@ -46,7 +46,12 @@ Mqtt::Mqtt()
         {"broker_username", Config::Str("", 64)},
         {"broker_password", Config::Str("", 64)},
         {"global_topic_prefix", Config::Str(String(BUILD_HOST_PREFIX) + String("/") + String("ABC"), 64)},
-        {"client_name", Config::Str(String(BUILD_HOST_PREFIX) + String("-") + String("ABC"), 64)}
+        {"client_name", Config::Str(String(BUILD_HOST_PREFIX) + String("-") + String("ABC"), 64, [](Config::ConfString &s) -> String {
+            if (s.value.length() >= 1)
+                return "";
+            return "Client ID must be at least one character long";
+            })
+        }
     });
 
     mqtt_state = Config::Object({
