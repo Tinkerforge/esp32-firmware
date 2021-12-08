@@ -35,20 +35,18 @@ enum class POTI_POS {
     PLUS_150
 };
 
-class PowerCycleTester : public DeviceModule<TF_IndustrialDualRelay,
-                                industrial_dual_relay_bricklet_firmware_bin,
-                                industrial_dual_relay_bricklet_firmware_bin_len,
-                                tf_industrial_dual_relay_create,
-                                tf_industrial_dual_relay_get_bootloader_mode,
-                                tf_industrial_dual_relay_reset> {
+class PowerCycleTester {
 public:
     PowerCycleTester();
     void setup();
     void register_urls();
     void loop();
 
+    void led_green();
+    void led_yellow();
+    void led_red();
+
     void trigger_on_poti_pos(POTI_POS poti_pos, uint32_t delay);
 
-private:
-    void setup_industrial_dual_relay();
+    bool initialized = false;
 };
