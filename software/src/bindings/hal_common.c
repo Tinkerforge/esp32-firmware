@@ -507,7 +507,7 @@ int tf_hal_tick(TF_HAL *hal, uint32_t timeout_us) {
 int tf_hal_callback_tick(TF_HAL *hal, uint32_t timeout_us) {
     TF_HALCommon *hal_common = tf_hal_get_common(hal);
     if (hal_common->tfps_used == 0)
-        return;
+        return TF_E_OK;
 
     uint32_t deadline_us = tf_hal_current_time_us(hal) + timeout_us;
     TF_TFP *tfp = NULL;
