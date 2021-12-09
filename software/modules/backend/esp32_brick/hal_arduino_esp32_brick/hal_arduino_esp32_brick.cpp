@@ -25,7 +25,7 @@ typedef struct TF_Port {
 
 static TF_Port ports[6] = {
     TF_PORT(16, VSPI, 'A'),
-    TF_PORT(13, VSPI, 'B'),
+    TF_PORT(33, VSPI, 'B'),
     TF_PORT(17, VSPI, 'C'),
 
     TF_PORT(25, HSPI, 'D'),
