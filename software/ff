@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+
+import argparse
+import os
+import sys
+import signal
+import subprocess
+import serial
+
+def sigint(self, sig):
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, sigint)
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-p", "--port")
+parser.add_argument("firmware", nargs='?', default=None)
+parser.add_argument("-S", "--no-serial", action="store_true")
+parser.add_argument("-s", "--serial-only", action="store_true")
+args = parser.parse_args()
+
+def get_latest_fw(fw_type=''):
+    files = os.listdir("build")
+    files = [x for x in files if x.endswith("_merged.bin") and (fw_type == '' or x.startswith(fw_type + "_firmware"))]
+    latest = max(files, key=lambda x: int(x.split("_")[-2], 16), default=None)
+    if latest is None:
+        print("Failed to find a firmware containing the string {}".format(fw_type))
+        sys.exit(0)
+    return os.path.join("build", latest)
+
+if args.firmware is None:
+    firmware = get_latest_fw()
+else:
+    if ".bin" in args.firmware:
+        firmware = args.firmware
+    else:
+        firmware = get_latest_fw(args.firmware)
+
+if args.port:
+    if len(args.port) < 3:
+        port = "/dev/ttyUSB" + args.port
+    else:
+        port = args.port
+else:
+    port = "/dev/ttyUSB0"
+
+if not args.serial_only:
+    print("Flashing firmware {} to port {}".format(firmware, port))
+
+    os.system("esptool.py --port {} --chip esp32 --baud 921600 --before default_reset --after hard_reset write_flash --flash_mode dio --flash_freq 40m --flash_size 16MB 0x1000 {}".format(port, firmware))
+
+if not args.no_serial:
+   with serial.Serial(port, 115200, timeout=1) as ser:
+        while ser.is_open:
+            sys.stdout.buffer.write(ser.read())
+            sys.stdout.flush()
