@@ -29,7 +29,7 @@
 - Add reset button for configured current
 - Fix energy meter configuration issue (through EVSE 2.0 Bricklet firmware 2.0.5)
 
-2021-12-03: 1.1.1 (<unknown>)
+2021-12-03: 1.1.1 (7f46460f)
 - Remove authentication log spam
 - Improve translations
 - Migrate to LittleFS

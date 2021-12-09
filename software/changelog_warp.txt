@@ -112,6 +112,6 @@
 - Add warning before downgrades
 - Log more network events
 
-2021-12-09: 1.3.2 (<unknown>)
+2021-12-09: 1.3.2 (d1a0fc04)
 - Fix energy meter communication issue caused by wrong port assignment
 - Don't allow empty client ID in MQTT
