@@ -431,8 +431,14 @@ class Stage3:
         actual_states = set()
         start = time.monotonic()
 
+        error_counter = 0
         while time.monotonic() < start + IEC_STATE_CHECK_DURATION:
-            actual_states.add(self.get_iec_state_function()) # FIXME: missing error handling
+            try:
+                actual_states.add(self.get_iec_state_function()) # FIXME: missing error handling
+            except:
+                error_counter += 1
+                if (error_counter == 3:
+                    raise
             time.sleep(IEC_STATE_CHECK_INTERVAL)
 
         return actual_states == set(expected_state)
