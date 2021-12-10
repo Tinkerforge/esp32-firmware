@@ -348,7 +348,7 @@ def main(stage3):
             fatal_error("Failed to connect via ethernet! Is the router's DHCP cache full?")
         print(" Connected.")
 
-        m = re.search(r"WARP2 Charger V(\d+).(\d+).(\d+)", event_log)
+        m = re.search(r"WARP2 CHARGER V(\d+).(\d+).(\d+)", event_log)
         if not m:
             fatal_error("Failed to find version number in event log!" + event_log)
 
