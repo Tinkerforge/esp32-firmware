@@ -437,7 +437,7 @@ class Stage3:
                 actual_states.add(self.get_iec_state_function()) # FIXME: missing error handling
             except:
                 error_counter += 1
-                if (error_counter == 3:
+                if error_counter == 3:
                     raise
             time.sleep(IEC_STATE_CHECK_INTERVAL)
 
