@@ -67,14 +67,13 @@ struct Config {
 
     struct ConfArray {
         std::vector<Config> value;
-        std::vector<Config> prototype;
-        size_t minElements;
-        size_t maxElements;
-        int variantType;
+        Config *prototype;
+        uint32_t minElements:12, maxElements:12;
+        int8_t variantType;
         String(*validator)(ConfArray &);
 
-        Config *get(size_t i);
-        const Config *get(size_t i) const;
+        Config *get(uint16_t i);
+        const Config *get(uint16_t i) const;
     };
 
     struct ConfObject {
@@ -188,7 +187,7 @@ struct Config {
                        String(*validator)(ConfBool &) = [](ConfBool &){return String("");});
 
     static Config Array(std::initializer_list<Config> arr,
-                        Config prototype,
+                        Config *prototype,
                         size_t minElements,
                         size_t maxElements,
                         int variantType,
@@ -227,11 +226,11 @@ struct Config {
 
     Config *get(String s);
 
-    Config *get(size_t i);
+    Config *get(uint16_t i);
 
     const Config *get(String s) const;
 
-    const Config *get(size_t i) const;
+    const Config *get(uint16_t i) const;
 
     bool isValid();
 
@@ -269,7 +268,7 @@ struct Config {
             return false;
         }
         std::vector<Config> &children = strict_variant::get<Config::ConfArray>(&value)->value;
-        children.push_back(strict_variant::get<Config::ConfArray>(&value)->prototype[0]);
+        children.push_back(*strict_variant::get<Config::ConfArray>(&value)->prototype);
         return true;
     }
 

@@ -46,15 +46,15 @@ EVSEV2Meter::EVSEV2Meter()
         {"energy_rel", Config::Float(0.0)},
         {"energy_abs", Config::Float(0.0)},
         {"phases_active", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false)},
-            Config::Bool(false),
+            new Config{Config::Bool(false)},
             3, 3, Config::type_id<Config::ConfBool>())},
         {"phases_connected", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false)},
-            Config::Bool(false),
+            new Config{Config::Bool(false)},
             3, 3, Config::type_id<Config::ConfBool>())}
     });
 
     detailed_values = Config::Array({},
-        Config::Float(0),
+        new Config{Config::Float(0)},
         0, DETAILED_VALUES_COUNT, Config::type_id<Config::ConfFloat>());
 /*
     error_counters = Config::Object({

@@ -55,11 +55,11 @@ NFC::NFC() : DeviceModule("nfc", "NFC", "NFC", std::bind(&NFC::setup_nfc, this))
 {
     seen_tags = Config::Array(
         {},
-        Config::Object({
+        new Config{Config::Object({
             {"tag_type", Config::Uint8(0)},
-            {"tag_id", Config::Array({}, Config::Uint8(0), 0, 10, Config::type_id<Config::ConfUint>())},
+            {"tag_id", Config::Array({}, new Config{Config::Uint8(0)}, 0, 10, Config::type_id<Config::ConfUint>())},
             {"last_seen", Config::Uint32(0)}
-        }),
+        })},
         0, TAG_LIST_LENGTH,
         Config::type_id<Config::ConfObject>()
     );
@@ -69,11 +69,11 @@ NFC::NFC() : DeviceModule("nfc", "NFC", "NFC", std::bind(&NFC::setup_nfc, this))
         {"require_tag_to_stop", Config::Bool(false)},
         {"authorized_tags", Config::Array(
             {},
-            Config::Object({
+            new Config{Config::Object({
                 {"tag_name", Config::Str("", 32)},
                 {"tag_type", Config::Uint(0, 0, 4)},
-                {"tag_id", Config::Array({}, Config::Uint8(0), 0, 10, Config::type_id<Config::ConfUint>())}
-            }),
+                {"tag_id", Config::Array({}, new Config{Config::Uint8(0)}, 0, 10, Config::type_id<Config::ConfUint>())}
+            })},
             0, AUTHORIZED_TAG_LIST_LENGTH,
             Config::type_id<Config::ConfObject>())
         }

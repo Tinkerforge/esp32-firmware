@@ -40,11 +40,11 @@ Proxy::Proxy()
 {
     devices = Config::Array(
         {},
-        Config::Object({
+        new Config{Config::Object({
             {"uid", Config::Str("", 7)},
             {"port", Config::Str("", 1)},
             {"name", Config::Str("", 50)},
-        }),
+        })},
         0, 12, Config::type_id<Config::ConfObject>()
     );
 

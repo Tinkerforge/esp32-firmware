@@ -46,7 +46,7 @@ Ethernet::Ethernet()
                 Config::Uint8(0),
                 Config::Uint8(0),
                 },
-                Config::Uint8(0),
+                new Config{Config::Uint8(0)},
                 4,
                 4,
                 Config::type_id<Config::ConfUint>()
@@ -57,7 +57,7 @@ Ethernet::Ethernet()
                 Config::Uint8(0),
                 Config::Uint8(0),
                 },
-                Config::Uint8(0),
+                new Config{Config::Uint8(0)},
                 4,
                 4,
                 Config::type_id<Config::ConfUint>()
@@ -68,7 +68,7 @@ Ethernet::Ethernet()
                 Config::Uint8(0),
                 Config::Uint8(0),
                 },
-                Config::Uint8(0),
+                new Config{Config::Uint8(0)},
                 4,
                 4,
                 Config::type_id<Config::ConfUint>()
@@ -79,7 +79,7 @@ Ethernet::Ethernet()
                 Config::Uint8(0),
                 Config::Uint8(0),
                 },
-                Config::Uint8(0),
+                new Config{Config::Uint8(0)},
                 4,
                 4,
                 Config::type_id<Config::ConfUint>()
@@ -90,7 +90,7 @@ Ethernet::Ethernet()
                 Config::Uint8(0),
                 Config::Uint8(0),
                 },
-                Config::Uint8(0),
+                new Config{Config::Uint8(0)},
                 4,
                 4,
                 Config::type_id<Config::ConfUint>()
@@ -105,7 +105,7 @@ Ethernet::Ethernet()
                 Config::Uint8(0),
                 Config::Uint8(0),
                 },
-                Config::Uint8(0),
+                new Config{Config::Uint8(0)},
                 4,
                 4,
                 Config::type_id<Config::ConfUint>()

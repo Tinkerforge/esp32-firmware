@@ -66,20 +66,20 @@ EVSE::EVSE() : DeviceModule("evse", "EVSE", "EVSE", std::bind(&EVSE::setup_evse,
         {"adc_values", Config::Array({
                 Config::Uint16(0),
                 Config::Uint16(0),
-            }, Config::Uint16(0), 2, 2, Config::type_id<Config::ConfUint>())
+            }, new Config{Config::Uint16(0)}, 2, 2, Config::type_id<Config::ConfUint>())
         },
         {"voltages", Config::Array({
                 Config::Int16(0),
                 Config::Int16(0),
                 Config::Int16(0),
-            }, Config::Int16(0), 3, 3, Config::type_id<Config::ConfInt>())
+            }, new Config{Config::Int16(0)}, 3, 3, Config::type_id<Config::ConfInt>())
         },
         {"resistances", Config::Array({
                 Config::Uint32(0),
                 Config::Uint32(0),
-            }, Config::Uint32(0), 2, 2, Config::type_id<Config::ConfUint>())
+            }, new Config{Config::Uint32(0)}, 2, 2, Config::type_id<Config::ConfUint>())
         },
-        {"gpio", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false),Config::Bool(false), Config::Bool(false)}, Config::Bool(false), 5, 5, Config::type_id<Config::ConfBool>())},
+        {"gpio", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false),Config::Bool(false), Config::Bool(false)}, new Config{Config::Bool(false)}, 5, 5, Config::type_id<Config::ConfBool>())},
         {"hardware_version", Config::Uint8(0)},
         {"charging_time", Config::Uint32(0)},
     });
@@ -139,7 +139,7 @@ EVSE::EVSE() : DeviceModule("evse", "EVSE", "EVSE", std::bind(&EVSE::setup_evse,
                 Config::Int16(0),
                 Config::Int16(0),
                 Config::Int16(0),
-            }, Config::Int16(0), 14, 14, Config::type_id<Config::ConfInt>())},
+            }, new Config{Config::Int16(0)}, 14, 14, Config::type_id<Config::ConfInt>())},
     });
 
     evse_button_state = Config::Object({

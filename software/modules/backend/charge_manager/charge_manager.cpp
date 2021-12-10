@@ -78,10 +78,10 @@ ChargeManager::ChargeManager()
                     {"name", Config::Str("Lokale Wallbox", 32)} // FIXME: needs to be translated
                 })
             },
-            Config::Object({
+            new Config{Config::Object({
                 {"host", Config::Str("", 64)},
                 {"name", Config::Str("", 32)}
-            }),
+            })},
             0, MAX_CLIENTS, Config::type_id<Config::ConfObject>()
         )}
     }, [](Config::ConfObject &conf) -> String {
@@ -102,7 +102,7 @@ ChargeManager::ChargeManager()
         {"uptime", Config::Uint32(0)},
         {"chargers", Config::Array(
             {},
-            Config::Object({
+            new Config{Config::Object({
                 {"name", Config::Str("", 32)},
                 {"last_update", Config::Uint32(0)},
                 {"uptime", Config::Uint32(0)},
@@ -117,7 +117,7 @@ ChargeManager::ChargeManager()
 
                 {"state", Config::Uint8(0)}, //0 - no vehicle, 1 - user blocked, 2 - manager blocked, 3, car blocked, 4 - charging, 5 - error, 6 - charged
                 {"error", Config::Uint8(0)} //0 - OK, 1 - Unreachable, 2 - FW mismatch, 3 - not managed
-            }),
+            })},
             0, MAX_CLIENTS, Config::type_id<Config::ConfObject>()
         )}
     });

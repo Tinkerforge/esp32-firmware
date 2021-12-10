@@ -62,7 +62,7 @@ Wifi::Wifi()
                 Config::Uint8(0),
                 Config::Uint8(1),
                 },
-                Config::Uint8(0),
+                new Config{Config::Uint8(0)},
                 4,
                 4,
                 Config::type_id<Config::ConfUint>()
@@ -73,7 +73,7 @@ Wifi::Wifi()
                 Config::Uint8(0),
                 Config::Uint8(1),
                 },
-                Config::Uint8(0),
+                new Config{Config::Uint8(0)},
                 4,
                 4,
                 Config::type_id<Config::ConfUint>()
@@ -84,7 +84,7 @@ Wifi::Wifi()
                 Config::Uint8(255),
                 Config::Uint8(0),
                 },
-                Config::Uint8(0),
+                new Config{Config::Uint8(0)},
                 4,
                 4,
                 Config::type_id<Config::ConfUint>()
@@ -101,7 +101,7 @@ Wifi::Wifi()
                 Config::Uint8(0),
                 Config::Uint8(0)
                 },
-                Config::Uint8(0),
+                new Config{Config::Uint8(0)},
                 6,
                 6,
                 Config::type_id<Config::ConfUint>()
@@ -121,7 +121,7 @@ Wifi::Wifi()
                 Config::Uint8(0),
                 Config::Uint8(0),
                 },
-                Config::Uint8(0),
+                new Config{Config::Uint8(0)},
                 4,
                 4,
                 Config::type_id<Config::ConfUint>()
@@ -132,7 +132,7 @@ Wifi::Wifi()
                 Config::Uint8(0),
                 Config::Uint8(0),
                 },
-                Config::Uint8(0),
+                new Config{Config::Uint8(0)},
                 4,
                 4,
                 Config::type_id<Config::ConfUint>()
@@ -143,7 +143,7 @@ Wifi::Wifi()
                 Config::Uint8(0),
                 Config::Uint8(0),
                 },
-                Config::Uint8(0),
+                new Config{Config::Uint8(0)},
                 4,
                 4,
                 Config::type_id<Config::ConfUint>()
@@ -154,7 +154,7 @@ Wifi::Wifi()
                 Config::Uint8(0),
                 Config::Uint8(0),
                 },
-                Config::Uint8(0),
+                new Config{Config::Uint8(0)},
                 4,
                 4,
                 Config::type_id<Config::ConfUint>()
@@ -165,7 +165,7 @@ Wifi::Wifi()
                 Config::Uint8(0),
                 Config::Uint8(0),
                 },
-                Config::Uint8(0),
+                new Config{Config::Uint8(0)},
                 4,
                 4,
                 Config::type_id<Config::ConfUint>()
@@ -182,7 +182,7 @@ Wifi::Wifi()
                 Config::Uint8(0),
                 Config::Uint8(0),
                 },
-                Config::Uint8(0),
+                new Config{Config::Uint8(0)},
                 4,
                 4,
                 Config::type_id<Config::ConfUint>()

@@ -68,7 +68,7 @@ EVSEV2::EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE 2.0", std::bind(&EVSEV
                 Config::Uint16(0),
                 Config::Uint16(0),
                 Config::Uint16(0),
-            }, Config::Uint16(0), 7, 7, Config::type_id<Config::ConfUint>())
+            }, new Config{Config::Uint16(0)}, 7, 7, Config::type_id<Config::ConfUint>())
         },
         {"voltages", Config::Array({
                 Config::Int16(0),
@@ -78,12 +78,12 @@ EVSEV2::EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE 2.0", std::bind(&EVSEV
                 Config::Int16(0),
                 Config::Int16(0),
                 Config::Int16(0),
-            }, Config::Int16(0), 7, 7, Config::type_id<Config::ConfInt>())
+            }, new Config{Config::Int16(0)}, 7, 7, Config::type_id<Config::ConfInt>())
         },
         {"resistances", Config::Array({
                 Config::Uint32(0),
                 Config::Uint32(0),
-            }, Config::Uint32(0), 2, 2, Config::type_id<Config::ConfUint>())
+            }, new Config{Config::Uint32(0)}, 2, 2, Config::type_id<Config::ConfUint>())
         },
         {"gpio", Config::Array({
             Config::Bool(false), Config::Bool(false),  Config::Bool(false),Config::Bool(false),
@@ -92,7 +92,7 @@ EVSEV2::EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE 2.0", std::bind(&EVSEV
             Config::Bool(false), Config::Bool(false),  Config::Bool(false),Config::Bool(false),
             Config::Bool(false), Config::Bool(false),  Config::Bool(false),Config::Bool(false),
             Config::Bool(false), Config::Bool(false),  Config::Bool(false),Config::Bool(false),
-            }, Config::Bool(false), 24, 24, Config::type_id<Config::ConfBool>())},
+            }, new Config{Config::Bool(false)}, 24, 24, Config::type_id<Config::ConfBool>())},
         {"charging_time", Config::Uint32(0)}
     });
 
@@ -122,10 +122,10 @@ EVSEV2::EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE 2.0", std::bind(&EVSEV
         {"energy_rel", Config::Float(0)},
         {"energy_abs", Config::Float(0)},
         {"phases_active", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false)},
-            Config::Bool(false),
+            new Config{Config::Bool(false)},
             3, 3, Config::type_id<Config::ConfBool>())},
         {"phases_connected", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false)},
-            Config::Bool(false),
+            new Config{Config::Bool(false)},
             3, 3, Config::type_id<Config::ConfBool>())}
     });
 
@@ -138,7 +138,7 @@ EVSEV2::EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE 2.0", std::bind(&EVSEV
                 Config::Uint32(0),
                 Config::Uint32(0),
                 Config::Uint32(0),
-            }, Config::Uint32(0), 6, 6, Config::type_id<Config::ConfUint>())}
+            }, new Config{Config::Uint32(0)}, 6, 6, Config::type_id<Config::ConfUint>())}
     });
 
     evse_dc_fault_current_state = Config::Object({

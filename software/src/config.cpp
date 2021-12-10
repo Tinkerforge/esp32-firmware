@@ -158,7 +158,7 @@ struct json_length_visitor {
     }
     size_t operator()(Config::ConfArray &x)
     {
-        return strict_variant::apply_visitor(json_length_visitor{}, x.prototype[0].value) * x.maxElements + JSON_ARRAY_SIZE(x.maxElements);
+        return strict_variant::apply_visitor(json_length_visitor{}, x.prototype->value) * x.maxElements + JSON_ARRAY_SIZE(x.maxElements);
     }
     size_t operator()(Config::ConfObject &x)
     {
@@ -247,7 +247,7 @@ struct from_json {
 
         x.value.clear();
         for (size_t i = 0; i < arr.size(); ++i) {
-            x.value.push_back(x.prototype[0]);
+            x.value.push_back(*x.prototype);
             String inner_error = strict_variant::apply_visitor(from_json{arr[i], force_same_keys}, x.value[i].value);
             if (inner_error != "")
                 return String("[") + i + "]" + inner_error;
@@ -363,7 +363,7 @@ struct from_update {
 
         x.value.clear();
         for (size_t i = 0; i < arr->elements.size(); ++i) {
-            x.value.push_back(x.prototype[0]);
+            x.value.push_back(*x.prototype);
             String inner_error = strict_variant::apply_visitor(from_update{&arr->elements[i]}, x.value[i].value);
             if (inner_error != "")
                 return String("[") + i + "]" + inner_error;
@@ -500,12 +500,12 @@ Config Config::Bool(bool b,
 }
 
 Config Config::Array(std::initializer_list<Config> arr,
-                        Config prototype,
+                        Config *prototype,
                         size_t minElements,
                         size_t maxElements,
                         int variantType,
                         String(*validator)(ConfArray &)) {
-    return Config{ConfArray{arr, {prototype}, minElements, maxElements, variantType, validator}, true};
+    return Config{ConfArray{arr, prototype, minElements, maxElements, (int8_t)variantType, validator}, true};
 }
 
 Config Config::Object(std::initializer_list<std::pair<String, Config>> obj,
@@ -550,7 +550,7 @@ Config *Config::get(String s)
     return strict_variant::get<Config::ConfObject>(&value)->get(s);
 }
 
-Config *Config::get(size_t i)
+Config *Config::get(uint16_t i)
 {
     if (!this->is<Config::ConfArray>()) {
         logger.printfln("Config index %u not in this node: is not an array!", i);
@@ -572,7 +572,7 @@ const Config *Config::get(String s) const
     return strict_variant::get<Config::ConfObject>(&value)->get(s);
 }
 
-const Config *Config::get(size_t i) const
+const Config *Config::get(uint16_t i) const
 {
     if (!this->is<Config::ConfArray>()) {
         logger.printfln("Config index %u not in this node: is not an array!", i);
@@ -872,7 +872,7 @@ Config *Config::ConfObject::get(String s)
     return nullptr;
 }
 
-Config *Config::ConfArray::get(size_t i)
+Config *Config::ConfArray::get(uint16_t i)
 {
     if (i >= this->value.size()) {
         logger.printfln("Config index %u out of range!", i);
@@ -894,7 +894,7 @@ const Config *Config::ConfObject::get(String s) const
     return nullptr;
 }
 
-const Config *Config::ConfArray::get(size_t i) const
+const Config *Config::ConfArray::get(uint16_t i) const
 {
     if (i >= this->value.size()) {
         logger.printfln("Config index %u out of range!", i);
