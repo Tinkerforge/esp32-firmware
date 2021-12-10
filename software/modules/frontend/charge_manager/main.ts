@@ -32,6 +32,7 @@ interface Charger {
     supported_current: number,
     allowed_current: number,
     wants_to_charge: boolean,
+    wants_to_charge_low_priority: boolean,
     is_charging: boolean,
     last_sent_config: number,
     allocated_current: number,

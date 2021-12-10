@@ -109,6 +109,7 @@ ChargeManager::ChargeManager()
                 {"supported_current", Config::Uint16(0)},
                 {"allowed_current", Config::Uint16(0)},
                 {"wants_to_charge", Config::Bool(false)},
+                {"wants_to_charge_low_priority", Config::Bool(false)},
                 {"is_charging", Config::Bool(false)},
 
                 {"last_sent_config", Config::Uint32(0)},
@@ -194,6 +195,7 @@ void ChargeManager::start_manager_task()
             target.get("uptime")->updateUint(uptime);
 
             target.get("wants_to_charge")->updateBool((charging_time == 0 && charge_release == 3 && vehicle_state == 1) || vehicle_state == 2); // CHARGE_RELEASE_CHARGE_MANAGEMENT
+            target.get("wants_to_charge_low_priority")->updateBool(charging_time != 0 && charge_release == 3 && vehicle_state == 1); // CHARGE_RELEASE_CHARGE_MANAGEMENT
             target.get("is_charging")->updateBool(vehicle_state == 2); //VEHICLE_STATE_CHARGING
             target.get("allowed_current")->updateUint(allowed_charging_current);
             target.get("supported_current")->updateUint(supported_current);
@@ -470,6 +472,49 @@ void ChargeManager::distribute_current()
                       charger_cfg.get("host")->asString().c_str(),
                       current_array[idx_array[i]],
                       available_current);
+        }
+    }
+
+    if (available_current > 0) {
+        LOCAL_LOG("stage 0: %u mA still available. Attempting to wake up chargers that already charged their vehicle once.", available_current);
+
+        uint16_t current_to_set = charge_manager_config_in_use.get("minimum_current")->asUint();
+        for (int i = 0; i < chargers.size(); ++i) {
+            auto &charger = chargers[idx_array[i]];
+
+            if (!charger.get("wants_to_charge_low_priority")->asBool()) {
+                continue;
+            }
+
+            auto &charger_cfg = configs[idx_array[i]];
+
+            uint16_t supported_current = charger.get("supported_current")->asUint();
+            if (supported_current < current_to_set) {
+                LOCAL_LOG("stage 0: Can't unblock %s (%s): It only supports %u mA, but %u mA is the configured minimum current.",
+                        charger_cfg.get("name")->asString().c_str(),
+                        charger_cfg.get("host")->asString().c_str(),
+                        supported_current,
+                        current_to_set);
+                continue;
+            }
+
+            if (available_current < current_to_set) {
+                LOCAL_LOG("stage 0: %u mA left, but %u mA required to unblock another charger. Blocking all following chargers.",available_current, current_to_set);
+                current_to_set = 0;
+            }
+
+            if (current_to_set > 0) {
+                ++chargers_allocated_current_to;
+            }
+
+            current_array[idx_array[i]] = current_to_set;
+            available_current -= current_to_set;
+
+            LOCAL_LOG("stage 0: Calculated target for %s (%s) of %u mA. %u mA left.",
+                    charger_cfg.get("name")->asString().c_str(),
+                    charger_cfg.get("host")->asString().c_str(),
+                    current_to_set,
+                    available_current);
         }
     }
 
