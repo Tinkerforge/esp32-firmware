@@ -407,8 +407,8 @@ def main(stage3):
             else:
                 fatal_error("Failed to connect via ethernet!")
             print(" Connected.")
-            print("Factory reset triggered.. Waiting 60 seconds")
-            time.sleep(60)
+            print("Factory reset triggered.. Waiting 10 seconds")
+            time.sleep(10)
         else:
             print("Flashed firmware is up-to-date.")
 
