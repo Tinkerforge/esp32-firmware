@@ -284,7 +284,7 @@ function save_evse_gpio_configuration() {
 }
 
 interface EVSEButtonConfiguration {
-    button: boolean
+    button: number
 }
 
 function update_evse_button_configuration(b: EVSEButtonConfiguration) {
