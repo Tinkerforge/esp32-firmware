@@ -487,8 +487,17 @@ void EVSE::update_all_data()
         return;
     }
 
+    // We don't allow firmware updates when a vehicle is connected,
+    // to be sure a potential EVSE firmware update does not interrupt a
+    // charge and/or does strange stuff with the vehicle while updating.
+    // However if we are in an error state, either after the EVSE update
+    // the error is still there (this is fine for us) or it is cleared,
+    // then the EVSE could potentially start to charge, which is okay,
+    // as the ESP firmware is already running, so we can for example
+    // track the charge.
+    firmware_update_allowed = vehicle_state == 0 || vehicle_state == 3;
+
     // get_state
-    firmware_update_allowed = vehicle_state == 0;
 
     evse_state.get("iec61851_state")->updateUint(iec61851_state);
     evse_state.get("vehicle_state")->updateUint(vehicle_state);
