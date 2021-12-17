@@ -29,6 +29,7 @@
 #define BUTTON 0
 
 TF_HAL hal;
+extern EventLog logger;
 extern uint32_t uid_numeric;
 extern char uid[7];
 extern char passphrase[20];
@@ -43,10 +44,11 @@ ESP32EthernetBrick::ESP32EthernetBrick()
 
 void ESP32EthernetBrick::setup()
 {
+    read_efuses(&uid_numeric, uid, passphrase);
+    logger.printfln("ESP32 Ethernet Brick UID: %s", uid);
+
     check(tf_hal_create(&hal), "hal create");
     tf_hal_set_timeout(&hal, 100000);
-
-    read_efuses(&uid_numeric, uid, passphrase);
 
     pinMode(GREEN_LED, OUTPUT);
     pinMode(BLUE_LED, OUTPUT);
