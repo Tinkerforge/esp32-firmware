@@ -391,3 +391,9 @@ body {
 .bg-disabled {
     opacity: .65;
 }
+
+@media (max-width: 370px) {
+    .navbar-toggler.mr-3 {
+        margin-right: .5rem !important;
+    }
+}

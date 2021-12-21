@@ -70,7 +70,7 @@
             "charging_current_max_outgoing": "Typ-2-Ladekabel",
             "charging_current_managed": "Lastmanagement",
             "reset_configured_current": "Zurücksetzen",
-            "low_level_state": "Low-Level-Zustand",
+            "low_level_state": "Low-Level-Zu&shy;stand",
             "low_level_state_show": "Anzeigen / Verstecken",
             "led_state": "LED-Zustand",
             "led_state_off": "Aus",
@@ -112,7 +112,7 @@
             "dc_fault_current_6_ma": "Gleichstromfehler",
             "dc_fault_current_system": "Systemfehler",
             "dc_fault_current_unknown": "Unbekannter Fehler",
-            "dc_fault_current_calibration": "Kalibrierungsfehler",
+            "dc_fault_current_calibration": "Kalibrierungs&shy;fehler",
             "dc_fault_current_reset": "Zurücksetzen",
 
             "reset_dc_fault_title": "Zurücksetzen des DC-Fehlerstromschutzmoduls",
