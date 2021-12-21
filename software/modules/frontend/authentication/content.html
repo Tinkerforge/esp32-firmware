@@ -52,6 +52,28 @@
         </div>
     </form>
 
+    <div class="modal fade" id="authentication_confirm" tabindex="-1" role="dialog" aria-hidden="true">
+        <div id="authentication_confirm_content"
+            class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <form-label class="modal-title" data-i18n="authentication.content.confirm_title"></form-label>
+                    <button type="button" class="close" data-dismiss="modal"
+                        aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" data-i18n="authentication.content.confirm_content"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                        data-dismiss="modal" data-i18n="authentication.content.confirm_abort"></button>
+                    <button id="authentication_confirm_button" type="button"
+                        class="btn btn-danger" data-i18n="authentication.content.confirm_confirm"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="authentication_reboot" tabindex="-1" role="dialog" aria-hidden="true">
         <div id="authentication_reboot_content"
             class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">

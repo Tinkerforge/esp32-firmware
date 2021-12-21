@@ -97,8 +97,16 @@ export function init() {
             return;
         }
 
-        save_authentication_config();
+        if ($('#authentication_enable').is(':checked'))
+            $('#authentication_confirm').modal('show');
+        else
+            save_authentication_config();
     }, false);
+
+    $('#authentication_confirm_button').on("click", () => {
+        $('#authentication_confirm').modal('hide');
+        save_authentication_config();
+    });
 
     (<HTMLButtonElement>document.getElementById("authentication_reboot_button")).addEventListener("click", () => {
         $('#authentication_reboot').modal('hide');

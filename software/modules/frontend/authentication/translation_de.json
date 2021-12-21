@@ -18,7 +18,11 @@
             "abort": "Abbrechen",
             "reboot": "Neu starten",
             "username_invalid": "Der Benutzername darf nicht leer sein.",
-            "password_invalid": "Das Passwort darf nicht leer sein."
+            "password_invalid": "Das Passwort darf nicht leer sein.",
+            "confirm_title": "Anmeldung aktivieren?",
+            "confirm_content": "Soll die Anmeldung wirklich aktiviert werden? Falls das Passwort vergessen wird, muss die Wallbox auf den Werkszustand zurückgesetzt werden. <a href=\"https://www.warp-charger.com/#documents\">Siehe Betriebsanleitung für Details.</a>",
+            "confirm_abort": "Abbrechen",
+            "confirm_confirm": "Aktivieren"
         },
         "script": {
             "save_failed": "Speichern der Zugangsdaten fehlgeschlagen."
