@@ -316,6 +316,12 @@ void Wifi::setup()
                 logger.printfln("Wifi disconnected from %s: %s (%u)", wifi_sta_config_in_use.get("ssid")->asString().c_str(), reason, reason_code);
             }
             this->was_connected = false;
+
+            wifi_state.get("sta_ip")->get(0)->updateUint(0);
+            wifi_state.get("sta_ip")->get(1)->updateUint(0);
+            wifi_state.get("sta_ip")->get(2)->updateUint(0);
+            wifi_state.get("sta_ip")->get(3)->updateUint(0);
+            wifi_state.get("sta_bssid")->updateString("");
         },
         ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
 
