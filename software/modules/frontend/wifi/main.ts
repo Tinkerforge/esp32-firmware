@@ -423,6 +423,8 @@ export function init() {
     // Use bootstrap form validation
     let form = <HTMLFormElement>$('#wifi_sta_form')[0];
     form.addEventListener('submit', function (event: Event) {
+        $('#wifi_sta_ssid').prop("required", $('#wifi_sta_enable_sta').is(':checked'));
+
         form.classList.add('was-validated');
         event.preventDefault();
         event.stopPropagation();

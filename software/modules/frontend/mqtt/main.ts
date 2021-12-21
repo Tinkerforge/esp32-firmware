@@ -103,6 +103,8 @@ export function init() {
 
     let form = <HTMLFormElement>$('#mqtt_config_form')[0];
     form.addEventListener('submit', function (event: Event) {
+        $('#mqtt_broker_host').prop("required", $('#mqtt_enable').is(':checked'));
+
         form.classList.add('was-validated');
         event.preventDefault();
         event.stopPropagation();
