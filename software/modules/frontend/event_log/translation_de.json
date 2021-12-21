@@ -10,7 +10,7 @@
             "event_log": "Ereignis-Log",
             "event_log_desc": "Ereignis-Log",
             "event_log_desc_muted": "{{{empty_text}}}",
-            "debug_report": "Debug-Report und Ereignis-Log herunterladen",
+            "debug_report": "Debug-Report + Ereignis-Log",
             "debug_report_desc": "Debug-Report",
             "debug_report_desc_muted": null,
             "event_log_placeholder": "Lade Ereignis-Log..."
