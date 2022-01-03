@@ -16,7 +16,7 @@
         "content": {
             "charge_manager": "Lastmanager",
             "enable_charge_manager": "Lastmanager aktivieren",
-            "enable_charge_manager_desc": "<a href=\"https://www.warp-charger.com/#documents\">siehe Betriebsanleitung für Details</a>",
+            "enable_charge_manager_desc": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
             "enable_watchdog": "Watchdog aktivieren",
             "enable_watchdog_desc": "Setzt den verfügbaren Strom auf die Voreinstellung, wenn er nicht spätestens alle 30 Sekunden aktualisiert wurde.",
             "verbose": "Stromverteilung protokollieren",

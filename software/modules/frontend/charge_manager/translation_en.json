@@ -16,7 +16,7 @@
         "content": {
             "charge_manager": "Charge Manager",
             "enable_charge_manager": "Enable charge manager",
-            "enable_charge_manager_desc": "<a href=\"https://www.warp-charger.com/#documents\">see manual for details</a>",
+            "enable_charge_manager_desc": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
             "enable_watchdog": "Enable watchdog",
             "enable_watchdog_desc": "Sets the available current to the default value if it is not updated every 30 seconds.",
             "verbose": "Log current distribution",

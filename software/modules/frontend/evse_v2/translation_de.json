@@ -40,7 +40,7 @@
             "charge_release_managed": "Lastmanagement",
             "allowed_charging_current": "Erlaubter Ladestrom",
             "error_state": "Fehlerzustand",
-            "error_state_desc": "<a href=\"https://www.warp-charger.com/#documents\">siehe Betriebsanleitung für Details</a>",
+            "error_state_desc": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
             "error_ok": "OK",
             "error_switch": "Schalter",
             "error_contactor": "Schütz",
@@ -103,7 +103,7 @@
 
             "settings": "Einstellungen",
             "charge_management_description": "Lastmanagement",
-            "charge_management_description_muted": "<a href=\"https://www.warp-charger.com/#documents\">siehe Betriebsanleitung für Details</a>",
+            "charge_management_description_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
             "charge_management_enable": "Erlaubt anderen Wallboxen diese zu steuern",
 
             "dc_fault_current_state": "DC-Fehlerstrom&shy;zustand",
@@ -116,12 +116,12 @@
             "dc_fault_current_reset": "Zurücksetzen",
 
             "reset_dc_fault_title": "Zurücksetzen des DC-Fehlerstromschutzmoduls",
-            "reset_dc_fault_content": "Durch das Zurücksetzen des Moduls kann wieder geladen werden. <b>Es muss sichergestellt sein, dass der Grund für das Auslösen des Moduls behoben wurde!</b> <a href=\"https://www.warp-charger.com/#documents\">Siehe Betriebsanleitung für Details.</a> Soll das DC-Fehlerstromschutzmodul wirklich zurückgesetzt werden?",
+            "reset_dc_fault_content": "Durch das Zurücksetzen des Moduls kann wieder geladen werden. <b>Es muss sichergestellt sein, dass der Grund für das Auslösen des Moduls behoben wurde!</b> <a href=\"{{{manual_url}}}\">Siehe Betriebsanleitung für Details.</a> Soll das DC-Fehlerstromschutzmodul wirklich zurückgesetzt werden?",
             "abort": "Abbrechen",
             "reset": "Zurücksetzen",
 
             "gpio_shutdown": "Abschalteingang",
-            "gpio_shutdown_muted": "<a href=\"https://www.warp-charger.com/#documents\">siehe Betriebsanleitung für Details</a>",
+            "gpio_shutdown_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
             "gpio_shutdown_not_configured": "Nicht konfiguriert",
             "gpio_shutdown_on_open": "Abschalten wenn geöffnet",
             "gpio_shutdown_on_close": "Abschalten wenn geschlossen",

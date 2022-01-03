@@ -224,6 +224,7 @@ def main():
     name = env.GetProjectOption("name")
     host_prefix = env.GetProjectOption("host_prefix")
     display_name = env.GetProjectOption("display_name")
+    manual_url = env.GetProjectOption("manual_url")
     require_fw_info = env.GetProjectOption("require_fw_info")
     version = get_changelog_version(name)
 
@@ -346,6 +347,7 @@ def main():
             data = json.dumps(translation[language], indent=4, ensure_ascii=False)
             data = data.replace('{{{empty_text}}}', '\u200b') # Zero Width Space to work around a bug in the translation library: empty strings are replaced with "null"
             data = data.replace('{{{display_name}}}', display_name)
+            data = data.replace('{{{manual_url}}}', manual_url)
 
             f.write('export const translation_{0}: {{[index: string]:any}} = '.format(language))
             f.write(data + ';\n')

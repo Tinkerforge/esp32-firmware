@@ -53,7 +53,7 @@
             "dns2_invalid": "The alternative DNS server IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1, or be empty.",
 
             "ap_settings": "WiFi Access Point Settings",
-            "ap_enable": "<span class=\"form-label pr-2\">Access point</span><span class=\"text-muted\"><a href=\"https://www.warp-charger.com/#documents\">see manual for details</a></span></label>",
+            "ap_enable": "<span class=\"form-label pr-2\">Access point</span><span class=\"text-muted\"><a href=\"{{{manual_url}}}\">see manual for details</a></span></label>",
             "ap_enabled": "enabled",
             "ap_fallback_only": "as fallback only",
             "ap_disabled": "disabled",

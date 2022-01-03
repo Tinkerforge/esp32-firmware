@@ -40,7 +40,7 @@
             "charge_release_managed": "Managed",
             "allowed_charging_current": "Allowed charging current",
             "error_state": "Error state",
-            "error_state_desc": "<a href=\"https://www.warp-charger.com/#documents\">see manual for details</a>",
+            "error_state_desc": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
             "error_ok": "OK",
             "error_switch": "Switch error",
             "error_contactor": "Contactor error",
@@ -103,7 +103,7 @@
 
             "settings": "Settings",
             "charge_management_description": "Charge management",
-            "charge_management_description_muted": "<a href=\"https://www.warp-charger.com/#documents\">see manual for details</a>",
+            "charge_management_description_muted": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
             "charge_management_enable": "Enables other chargers to control this one",
 
             "dc_fault_current_state": "DC fault protector state",
@@ -116,12 +116,12 @@
             "dc_fault_current_reset": "Reset",
 
             "reset_dc_fault_title": "Reset the DC fault protector",
-            "reset_dc_fault_content": "Resetting the DC fault protector restores the ability to charge. <b>Ensure that the reason why the DC fault protector triggered is resolved!</b> <a href=\"https://www.warp-charger.com/#documents\">See manual for details.</a> Really reset the DC fault protector?",
+            "reset_dc_fault_content": "Resetting the DC fault protector restores the ability to charge. <b>Ensure that the reason why the DC fault protector triggered is resolved!</b> <a href=\"{{{manual_url}}}\">See manual for details.</a> Really reset the DC fault protector?",
             "abort": "Abort",
             "reset": "Reset",
 
             "gpio_shutdown": "Shutdown input",
-            "gpio_shutdown_muted": "<a href=\"https://www.warp-charger.com/#documents\">see manual for details</a>",
+            "gpio_shutdown_muted": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
             "gpio_shutdown_not_configured": "Not configured",
             "gpio_shutdown_on_open": "Shut down on open",
             "gpio_shutdown_on_close": "Shut down on close",
