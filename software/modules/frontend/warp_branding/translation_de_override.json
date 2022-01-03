@@ -21,7 +21,7 @@
     },
     "mqtt": {
         "content": {
-            "enable_mqtt_desc": "Hierdurch kann die Wallbox über den konfigurierten MQTT-Broker kontrolliert werden. <a href=\"https://warp-charger.com/api.html\">MQTT-API-Dokumentation</a>"
+            "enable_mqtt_desc": "Hierdurch kann die Wallbox über den konfigurierten MQTT-Broker kontrolliert werden. <a href=\"{{{apidoc_url}}}\">MQTT-API-Dokumentation</a>"
         }
     },
     "util": {

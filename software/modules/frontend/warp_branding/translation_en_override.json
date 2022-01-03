@@ -16,7 +16,7 @@
     },
     "mqtt": {
         "content": {
-            "enable_mqtt_desc": "This allows controlling the charger over the configured MQTT broker. <a href=\"https://warp-charger.com/api.html\">MQTT API documentation (german only)</a>"
+            "enable_mqtt_desc": "This allows controlling the charger over the configured MQTT broker. <a href=\"{{{apidoc_url}}}\">MQTT API documentation (German only)</a>"
         }
     },
     "util": {
