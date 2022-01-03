@@ -28,7 +28,7 @@ $container-max-widths: (
         xl: 1230px
 );
 
-@import "modules/branding";
+{{{module_pre_imports}}}
 
 @import "../../node_modules/bootstrap/scss/mixins";
 @import "../../node_modules/bootstrap/scss/root";
@@ -397,3 +397,5 @@ body {
         margin-right: .5rem !important;
     }
 }
+
+{{{module_post_imports}}}

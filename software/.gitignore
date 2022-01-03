@@ -19,6 +19,7 @@ web/node_modules/
 web/assets/
 web/dist/
 web/src/main.ts
+web/src/main.scss
 web/src/index.html
 web/src/img/modules/
 web/src/scss/modules/
