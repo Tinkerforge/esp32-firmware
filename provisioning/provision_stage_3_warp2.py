@@ -690,6 +690,8 @@ class Stage3:
             time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
 
             if not self.check_iec_state(state):
+                if state == 'D' and self.get_iec_state_function() == 'E':
+                    fatal_error('Wallbox not in IEC state {0}. If the DC fault protector has triggered, please check whether the CP wire is (wronly) placed in the DC fault protector ring.'.format(state))
                 fatal_error('Wallbox not in IEC state {0}'.format(state))
 
             if self.has_evse_error_function():
