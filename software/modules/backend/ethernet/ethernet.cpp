@@ -39,7 +39,7 @@ Ethernet::Ethernet()
 {
     ethernet_config = Config::Object({
         {"enable_ethernet", Config::Bool(true)},
-        {"hostname", Config::Str("", 32)},
+        {"hostname", Config::Str("", 0, 32)},
         {"ip", Config::Array({
                 Config::Uint8(0),
                 Config::Uint8(0),

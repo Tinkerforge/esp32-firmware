@@ -47,14 +47,10 @@ Wifi::Wifi()
     wifi_ap_config = Config::Object({
         {"enable_ap", Config::Bool(true)},
         {"ap_fallback_only", Config::Bool(false)},
-        {"ssid", Config::Str("", 32)},
+        {"ssid", Config::Str("", 0, 32)},
         {"hide_ssid", Config::Bool(false)},
-        {"passphrase", Config::Str("this-will-be-replaced-in-setup", 64, [](Config::ConfString &s) {
-                return (s.value.length() >= 8 && s.value.length() <= 63) || //FIXME: check if there are only ASCII characters here.
-                    (s.value.length() == 64) ? String("") : String("passphrase must be of length 8 to 63, or 64 if PSK."); //FIXME: check if there are only hex digits here.
-            })
-        },
-        {"hostname", Config::Str("", 32)},
+        {"passphrase", Config::Str("this-will-be-replaced-in-setup", 8, 64)},//FIXME: check if there are only ASCII characters or hex digits (for PSK) here.
+        {"hostname", Config::Str("", 0, 32)},
         {"channel", Config::Uint(1, 1, 13)},
         {"ip", Config::Array({
                 Config::Uint8(10),
@@ -90,9 +86,9 @@ Wifi::Wifi()
                 Config::type_id<Config::ConfUint>()
             )},
     });
-    wifi_sta_config = Config::Object({
+    wifi_sta_config = ConfigRoot{Config::Object({
         {"enable_sta", Config::Bool(false)},
-        {"ssid", Config::Str("", 32)},
+        {"ssid", Config::Str("", 0, 32)},
         {"bssid", Config::Array({
                 Config::Uint8(0),
                 Config::Uint8(0),
@@ -108,13 +104,8 @@ Wifi::Wifi()
             )
         },
         {"bssid_lock", Config::Bool(false)},
-        {"passphrase", Config::Str("", 64, [](Config::ConfString &s) {
-                return s.value.length() == 0 ||
-                    (s.value.length() >= 8 && s.value.length() <= 63) || //FIXME: check if there are only ASCII characters here.
-                    (s.value.length() == 64) ? String("") : String("passphrase must be of length zero, or 8 to 63, or 64 if PSK."); //FIXME: check if there are only hex digits here.
-            })
-        },
-        {"hostname", Config::Str("", 32)},
+        {"passphrase", Config::Str("", 8, 64)},
+        {"hostname", Config::Str("", 0, 32)},
         {"ip", Config::Array({
                 Config::Uint8(0),
                 Config::Uint8(0),
@@ -170,12 +161,18 @@ Wifi::Wifi()
                 4,
                 Config::type_id<Config::ConfUint>()
             )},
-    });
+    }), [](Config &conf) -> String {
+        const String &value = conf.get("passphrase")->asString();
+        return value.length() == 0 ||
+                (value.length() >= 8 && value.length() <= 63) || //FIXME: check if there are only ASCII characters here.
+                (value.length() == 64) ? String("") : String("passphrase must be of length zero, or 8 to 63, or 64 if PSK."); //FIXME: check if there are only hex digits here.
+        }
+    };
 
     wifi_state = Config::Object({
         {"connection_state", Config::Int(0)},
         {"ap_state", Config::Int(0)},
-        {"ap_bssid", Config::Str("", 20)},
+        {"ap_bssid", Config::Str("", 0, 20)},
         {"sta_ip", Config::Array({
                 Config::Uint8(0),
                 Config::Uint8(0),
@@ -188,7 +185,7 @@ Wifi::Wifi()
                 Config::type_id<Config::ConfUint>()
             )},
         {"sta_rssi", Config::Int8(0)},
-        {"sta_bssid", Config::Str("", 20)}
+        {"sta_bssid", Config::Str("", 0, 20)}
     });
 
     wifi_scan_config = Config::Null();

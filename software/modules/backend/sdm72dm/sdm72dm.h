@@ -61,8 +61,8 @@ public:
     };
 
     struct UserData {
-        Config *value_to_write;
-        Config *state;
+        ConfigRoot *value_to_write;
+        ConfigRoot *state;
         uint8_t expected_request_id;
         UserDataDone done;
     };
@@ -72,10 +72,10 @@ private:
     void setupRS485();
     void checkRS485State();
 
-    Config config;
-    Config state;
-    Config energy_meter_reset;
-    Config error_counters;
+    ConfigRoot config;
+    ConfigRoot state;
+    ConfigRoot energy_meter_reset;
+    ConfigRoot error_counters;
 
     TF_RS485 rs485;
     int modbus_read_state = 0;

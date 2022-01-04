@@ -153,8 +153,8 @@ public:
     bool device_found = false;
     bool initialized = false;
 
-    Config device_reflash;
-    Config device_reset;
+    ConfigRoot device_reflash;
+    ConfigRoot device_reset;
 
     DeviceT device;
 

@@ -35,34 +35,30 @@ extern EventLog logger;
 struct Config {
     struct ConfString {
         String value;
-        size_t maxChars;
-        String(*validator)(ConfString &);
+        uint16_t minChars;
+        uint16_t maxChars;
     };
 
     struct ConfFloat {
         float value;
         float min;
         float max;
-        String(*validator)(ConfFloat &);
     };
 
     struct ConfInt {
         int32_t value;
         int32_t min;
         int32_t max;
-        String(*validator)(ConfInt &);
     };
 
     struct ConfUint {
         uint32_t value;
         uint32_t min;
         uint32_t max;
-        String(*validator)(ConfUint &);
     };
 
     struct ConfBool {
         bool value;
-        String(*validator)(ConfBool &);
     };
 
     struct ConfArray {
@@ -70,7 +66,6 @@ struct Config {
         Config *prototype;
         uint32_t minElements:12, maxElements:12;
         int8_t variantType;
-        String(*validator)(ConfArray &);
 
         Config *get(uint16_t i);
         const Config *get(uint16_t i) const;
@@ -78,7 +73,6 @@ struct Config {
 
     struct ConfObject {
         std::vector<std::pair<String, Config>> value;
-        String(*validator)(ConfObject &);
 
         Config *get(String s);
         const Config *get(String s) const;
@@ -142,70 +136,31 @@ struct Config {
     }
 
     static Config Str(String s,
-                      size_t maxChars = 0,
-                      String(*validator)(ConfString &) = [](ConfString &s){
-                          if(s.maxChars == 0 || s.value.length() <= s.maxChars)
-                            return String("");
-
-                          return String(String("String of maximum length ") + s.maxChars + " was expected, but got " + s.value.length());
-                    });
+                      uint16_t minChars = 0,
+                      uint16_t maxChars = 0);
 
     static Config Float(float d,
                         float min = std::numeric_limits<float>::lowest(),
-                        float max = std::numeric_limits<float>::max(),
-                        String(*validator)(ConfFloat &) = [](ConfFloat &f) {
-                            if(f.value < f.min)
-                                return String(String("Float value ") + f.value + " was less than the allowed minimum of " + f.min);
-                            if(f.value > f.max)
-                                return String(String("Float value ") + f.value + " was more than the allowed maximum of " + f.max);
-                            return String("");
-                        });
+                        float max = std::numeric_limits<float>::max());
 
     static Config Int(int32_t i,
                       int32_t min = std::numeric_limits<int32_t>::lowest(),
-                      int32_t max = std::numeric_limits<int32_t>::max(),
-                      String(*validator)(ConfInt &) = [](ConfInt &f) {
-                        if(f.value < f.min)
-                            return String(String("Integer value ") + f.value + " was less than the allowed minimum of " + f.min);
-                        if(f.value > f.max)
-                            return String(String("Integer value ") + f.value + " was more than the allowed maximum of " + f.max);
-                        return String("");
-                      });
+                      int32_t max = std::numeric_limits<int32_t>::max());
 
     static Config Uint(uint32_t u,
                        uint32_t min = std::numeric_limits<uint32_t>::lowest(),
-                       uint32_t max = std::numeric_limits<uint32_t>::max(),
-                       String(*validator)(ConfUint &) = [](ConfUint &f) {
-                            if(f.value < f.min)
-                                return String(String("Unsigned integer value ") + f.value + " was less than the allowed minimum of " + f.min);
-                            if(f.value > f.max)
-                                return String(String("Unsigned integer value ") + f.value + " was more than the allowed maximum of " + f.max);
-                            return String("");
-                        });
+                       uint32_t max = std::numeric_limits<uint32_t>::max());
 
-    static Config Bool(bool b,
-                       String(*validator)(ConfBool &) = [](ConfBool &){return String("");});
+    static Config Bool(bool b);
 
     static Config Array(std::initializer_list<Config> arr,
                         Config *prototype,
                         size_t minElements,
                         size_t maxElements,
-                        int variantType,
-                        String(*validator)(ConfArray &) = [](ConfArray &arr){
-                            if(arr.maxElements > 0 && arr.value.size() > arr.maxElements)
-                                return String(String("Array had ") + arr.value.size() + " entries, but only " + arr.maxElements + " are allowed.");
-                            if(arr.minElements > 0 && arr.value.size() < arr.minElements)
-                                return String(String("Array had ") + arr.value.size() + " entries, but at least " + arr.maxElements + " are required.");
+                        int variantType);
 
-                            if(arr.variantType < 0)
-                                return String("");
-                            for(int i = 0; i < arr.value.size(); ++i)
-                                if(arr.value[i].value.which() != arr.variantType)
-                                    return String(String("[") + i + "] has wrong type");
-                            return String("");
-                        });
-    static Config Object(std::initializer_list<std::pair<String, Config>> obj,
-                         String(*validator)(ConfObject &) = [](ConfObject &){return String("");});
+    static Config Object(std::initializer_list<std::pair<String, Config>> obj);
+
     static Config Null();
 
     static Config Uint8(uint8_t u);
@@ -231,34 +186,6 @@ struct Config {
     const Config *get(String s) const;
 
     const Config *get(uint16_t i) const;
-
-    bool isValid();
-
-    template<typename T, typename ConfigT>
-    bool set(String s, T val) {
-        Config *toChange = get(s);
-        if (!toChange->is<ConfigT>()) {
-            logger.printfln("Config key %s not found! Can't set to [see serial console]", s.c_str());
-            Serial.println(val);
-            delay(100);
-            return false;
-        }
-        *toChange->as<T, ConfigT>() = val;
-        return isValid();
-    }
-
-    template<typename T, typename ConfigT>
-    bool set(size_t idx, T val) {
-        Config *toChange = get(idx);
-        if (!toChange->is<ConfigT>()) {
-            logger.printfln("Config idx %u not found! Can't set to [see serial console]", idx);
-            Serial.println(val);
-            delay(100);
-            return false;
-        }
-        *toChange->as<T, ConfigT>() = val;
-        return isValid();
-    }
 
     bool add()
     {
@@ -438,16 +365,6 @@ struct Config {
 */
     size_t json_size();
 
-    String update_from_file(File file);
-
-    String update_from_cstr(char *c, size_t payload_len);
-
-    String update_from_string(String s);
-
-    String update_from_json(JsonVariant root);
-
-    String update(ConfUpdate *val);
-
     void save_to_file(File file);
 
     void write_to_stream(Print &output);
@@ -457,6 +374,31 @@ struct Config {
     String to_string();
     String to_string_except(std::initializer_list<String> keys_to_censor);
     String to_string_except(const std::vector<String> &keys_to_censor);
+};
+
+struct ConfigRoot : public Config {
+public:
+    ConfigRoot() = default;
+
+    ConfigRoot(Config cfg) : Config(cfg), validator(nullptr) {
+
+    }
+
+    ConfigRoot(Config cfg, String(*validator)(Config &)) : Config(cfg), validator(validator) {
+
+    }
+
+    String(*validator)(Config &);
+
+    String update_from_file(File file);
+
+    String update_from_cstr(char *c, size_t payload_len);
+
+    String update_from_string(String s);
+
+    String update_from_json(JsonVariant root);
+
+    String update(Config::ConfUpdate *val);
 };
 
 /*void test() {

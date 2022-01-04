@@ -30,7 +30,7 @@
 
 struct StateRegistration {
     String path;
-    Config *config;
+    ConfigRoot *config;
     std::vector<String> keys_to_censor;
     uint32_t interval;
     uint32_t last_update;
@@ -38,7 +38,7 @@ struct StateRegistration {
 
 struct CommandRegistration {
     String path;
-    Config *config;
+    ConfigRoot *config;
     std::function<void(void)> callback;
     std::vector<String> keys_to_censor_in_debug_report;
     bool is_action;
@@ -64,16 +64,16 @@ public:
 
     Config *getState(String path, bool log_if_not_found = true);
 
-    void addCommand(String path, Config *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(void)> callback, bool is_action);
-    void addState(String path, Config *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms);
-    bool addPersistentConfig(String path, Config *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms);
+    void addCommand(String path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(void)> callback, bool is_action);
+    void addState(String path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms);
+    bool addPersistentConfig(String path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms);
     //void addTemporaryConfig(String path, Config *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms, std::function<void(void)> callback);
 
     void blockCommand(String path, String reason);
     void unblockCommand(String path);
     String getCommandBlockedReason(String path);
 
-    bool restorePersistentConfig(String path, Config *config);
+    bool restorePersistentConfig(String path, ConfigRoot *config);
 
     void registerDebugUrl(WebServer *server);
 

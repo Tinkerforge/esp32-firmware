@@ -48,10 +48,10 @@ public:
     bool hardware_available = false;
 
 private:
-    Config state;
-    Config detailed_values;
-    Config energy_meter_reset;
-    Config error_counters;
+    ConfigRoot state;
+    ConfigRoot detailed_values;
+    ConfigRoot energy_meter_reset;
+    ConfigRoot error_counters;
 
     int samples_last_interval = 0;
     int samples_per_interval = -1;

@@ -34,11 +34,11 @@ extern EventLog logger;
 
 Authentication::Authentication()
 {
-    authentication_config = Config::Object({
+    authentication_config = ConfigRoot{Config::Object({
         {"enable_auth", Config::Bool(false)},
-        {"username", Config::Str("", 64)},
-        {"password", Config::Str("", 64)},
-    }, [](Config::ConfObject &update) {
+        {"username", Config::Str("", 0, 64)},
+        {"password", Config::Str("", 0, 64)},
+    }), [](Config &update) {
         if (update.get("enable_auth")->asBool() && update.get("password")->asString() == "")
             return String("Authentication can not be enabled if no password is set.");
 
@@ -49,7 +49,7 @@ Authentication::Authentication()
             update.get("password")->updateString("");
 
         return String("");
-    });
+    }};
 }
 
 void Authentication::setup()

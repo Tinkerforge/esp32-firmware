@@ -54,14 +54,14 @@ private:
     void check_for_scan_completion();
     String get_scan_results();
 
-    Config wifi_ap_config;
-    Config wifi_sta_config;
-    Config wifi_state;
+    ConfigRoot wifi_ap_config;
+    ConfigRoot wifi_sta_config;
+    ConfigRoot wifi_state;
 
-    Config wifi_scan_config;
+    ConfigRoot wifi_scan_config;
 
-    Config wifi_ap_config_in_use;
-    Config wifi_sta_config_in_use;
+    ConfigRoot wifi_ap_config_in_use;
+    ConfigRoot wifi_sta_config_in_use;
 
     bool soft_ap_running = false;
     uint32_t connect_attempt_interval_ms;

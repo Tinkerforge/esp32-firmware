@@ -33,5 +33,5 @@ public:
     bool initialized = false;
 
 private:
-    Config debug_state;
+    ConfigRoot debug_state;
 };

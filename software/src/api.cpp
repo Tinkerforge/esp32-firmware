@@ -55,7 +55,7 @@ void API::setup()
     }, 250, 250);
 }
 
-void API::addCommand(String path, Config *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(void)> callback, bool is_action)
+void API::addCommand(String path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(void)> callback, bool is_action)
 {
     commands.push_back({path, config, callback, keys_to_censor_in_debug_report, is_action, ""});
 
@@ -64,7 +64,7 @@ void API::addCommand(String path, Config *config, std::initializer_list<String> 
     }
 }
 
-void API::addState(String path, Config *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms)
+void API::addState(String path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms)
 {
     states.push_back({path, config, keys_to_censor, interval_ms, millis()});
 
@@ -73,7 +73,7 @@ void API::addState(String path, Config *config, std::initializer_list<String> ke
     }
 }
 
-bool API::addPersistentConfig(String path, Config *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms)
+bool API::addPersistentConfig(String path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms)
 {
     if (path.length() > 29) {
         logger.printfln("The maximum allowed config path length is 29 bytes. Got %u bytes instead.", path.length());
@@ -148,7 +148,7 @@ void API::addTemporaryConfig(String path, Config *config, std::initializer_list<
 }
 */
 
-bool API::restorePersistentConfig(String path, Config *config)
+bool API::restorePersistentConfig(String path, ConfigRoot *config)
 {
     path.replace('/', '_');
     String filename = String("/") + path;

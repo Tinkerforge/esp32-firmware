@@ -53,10 +53,10 @@ private:
     bool is_tag_authorized(uint8_t tag_type, uint8_t *tag_id, uint8_t tag_id_len, uint32_t last_seen, uint8_t *tag_idx);
     bool is_tag_equal(uint8_t tag_type, uint8_t *tag_id, uint8_t tag_id_len, uint32_t last_seen, Config *other_tag);
 
-    Config config;
-    Config config_in_use;
-    Config seen_tags;
-    Config state;
+    ConfigRoot config;
+    ConfigRoot config_in_use;
+    ConfigRoot seen_tags;
+    ConfigRoot state;
 
     uint32_t last_action_ms = 0;
 

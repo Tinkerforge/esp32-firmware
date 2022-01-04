@@ -37,7 +37,7 @@ public:
     void register_urls();
     void loop();
 
-    Config evse_energy_meter_state;
+    ConfigRoot evse_energy_meter_state;
 
     // Called in evse_v2_meter setup
     void update_all_data();
@@ -55,28 +55,28 @@ private:
 
     bool debug = false;
 
-    Config evse_state;
-    Config evse_hardware_configuration;
-    Config evse_low_level_state;
-    Config evse_max_charging_current;
-    Config evse_auto_start_charging;
-    Config evse_auto_start_charging_update;
-    Config evse_current_limit;
-    Config evse_stop_charging;
-    Config evse_start_charging;
-    Config evse_energy_meter_values;
+    ConfigRoot evse_state;
+    ConfigRoot evse_hardware_configuration;
+    ConfigRoot evse_low_level_state;
+    ConfigRoot evse_max_charging_current;
+    ConfigRoot evse_auto_start_charging;
+    ConfigRoot evse_auto_start_charging_update;
+    ConfigRoot evse_current_limit;
+    ConfigRoot evse_stop_charging;
+    ConfigRoot evse_start_charging;
+    ConfigRoot evse_energy_meter_values;
 
-    Config evse_dc_fault_current_state;
-    Config evse_reset_dc_fault_current;
-    Config evse_gpio_configuration;
-    Config evse_button_configuration;
-    Config evse_button_configuration_update;
-    Config evse_managed;
-    Config evse_managed_update;
-    Config evse_managed_current;
-    Config evse_button_state;
-    Config evse_control_pilot_configuration;
-    Config evse_control_pilot_configuration_update;
+    ConfigRoot evse_dc_fault_current_state;
+    ConfigRoot evse_reset_dc_fault_current;
+    ConfigRoot evse_gpio_configuration;
+    ConfigRoot evse_button_configuration;
+    ConfigRoot evse_button_configuration_update;
+    ConfigRoot evse_managed;
+    ConfigRoot evse_managed_update;
+    ConfigRoot evse_managed_current;
+    ConfigRoot evse_button_state;
+    ConfigRoot evse_control_pilot_configuration;
+    ConfigRoot evse_control_pilot_configuration_update;
 
     uint32_t last_current_update = 0;
     bool shutdown_logged = false;

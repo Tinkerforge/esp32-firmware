@@ -44,11 +44,11 @@ public:
     EthernetState get_connection_state();
 
 private:
-    Config ethernet_config;
-    Config ethernet_state;
-    Config ethernet_force_reset;
+    ConfigRoot ethernet_config;
+    ConfigRoot ethernet_state;
+    ConfigRoot ethernet_force_reset;
 
-    Config ethernet_config_in_use;
+    ConfigRoot ethernet_config_in_use;
 
     uint32_t connect_attempt_interval_ms;
 };

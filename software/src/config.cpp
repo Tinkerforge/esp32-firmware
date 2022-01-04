@@ -36,42 +36,72 @@ struct printer {
   }
 };
 
-struct recursive_validator {
-    bool operator()(Config::ConfString &x) { return x.validator(x); }
-    bool operator()(Config::ConfFloat &x) { return x.validator(x); }
-    bool operator()(Config::ConfInt &x) { return x.validator(x); }
-    bool operator()(Config::ConfUint &x) { return x.validator(x); }
-    bool operator()(Config::ConfBool &x) { return x.validator(x); }
-    bool operator()(std::nullptr_t x) { return true; }
-    bool operator()(Config::ConfArray &x)
-    {
-        // Intentionally do the recursive validation first.
-        // This ensures, that the array's validator may assume, that its
-        // entries itself are valid. Then only dependencies between (valid) entries
-        // have to be validated.
-        for (Config &elem : x.value)
-            if (!strict_variant::apply_visitor(recursive_validator{}, elem.value))
-                return false;
+struct default_validator {
+    String operator()(Config::ConfString &x) {
+        if (x.value.length() < x.minChars)
+            return String(String("String of minimum length ") + x.minChars + " was expected, but got " + x.value.length());
 
-        if (!x.validator(x))
-            return false;
+        if(x.maxChars == 0 || x.value.length() <= x.maxChars)
+            return String("");
 
-        return true;
+        return String(String("String of maximum length ") + x.maxChars + " was expected, but got " + x.value.length());
     }
-    bool operator()(Config::ConfObject &x)
-    {
-        // Intentionally do the recursive validation first.
-        // This ensures, that the object's validator may assume, that its
-        // entries itself are valid. Then only dependencies between (valid) entries
-        // have to be validated.
-        for (std::pair<String, Config> &elem : x.value)
-            if (!strict_variant::apply_visitor(recursive_validator{}, elem.second.value))
-                return false;
 
-        if (!x.validator(x))
-            return false;
+    String operator()(Config::ConfFloat &x) {
+        if(x.value < x.min)
+            return String(String("Float value ") + x.value + " was less than the allowed minimum of " + x.min);
+        if(x.value > x.max)
+            return String(String("Float value ") + x.value + " was more than the allowed maximum of " + x.max);
+        return String("");
+    }
 
-        return true;
+    String operator()(Config::ConfInt &x) {
+        if(x.value < x.min)
+            return String(String("Integer value ") + x.value + " was less than the allowed minimum of " + x.min);
+        if(x.value > x.max)
+            return String(String("Integer value ") + x.value + " was more than the allowed maximum of " + x.max);
+        return String("");
+    }
+
+    String operator()(Config::ConfUint &x) {
+        if(x.value < x.min)
+            return String(String("Unsigned integer value ") + x.value + " was less than the allowed minimum of " + x.min);
+        if(x.value > x.max)
+            return String(String("Unsigned integer value ") + x.value + " was more than the allowed maximum of " + x.max);
+        return String("");
+    }
+
+    String operator()(Config::ConfBool &x) { return String(""); }
+    String operator()(std::nullptr_t x) { return String(""); }
+
+    String operator()(Config::ConfArray &x) {
+        if(x.maxElements > 0 && x.value.size() > x.maxElements)
+            return String(String("Array had ") + x.value.size() + " entries, but only " + x.maxElements + " are allowed.");
+        if(x.minElements > 0 && x.value.size() < x.minElements)
+            return String(String("Array had ") + x.value.size() + " entries, but at least " + x.maxElements + " are required.");
+
+        if(x.variantType >= 0)
+            for(int i = 0; i < x.value.size(); ++i)
+                if(x.value[i].value.which() != x.variantType)
+                    return String(String("[") + i + "] has wrong type");
+
+        for (Config &elem : x.value) {
+            String err = strict_variant::apply_visitor(default_validator{}, elem.value);
+            if (err != "")
+                return err;
+        }
+
+        return String("");
+    }
+
+    String operator()(Config::ConfObject &x) {
+        for (std::pair<String, Config> &elem : x.value) {
+            String err = strict_variant::apply_visitor(default_validator{}, elem.second.value);
+            if (err != "")
+                return err;
+        }
+
+        return String("");
     }
 };
 
@@ -179,17 +209,17 @@ struct from_json {
     String operator()(Config::ConfString &x)
     {
         if (json_node.isNull())
-            return x.validator(x);
+            return String("");
 
         if (!json_node.is<String>())
             return "JSON node was not a string.";
         x.value = json_node.as<String>();
-        return x.validator(x);
+        return String("");
     }
     String operator()(Config::ConfFloat &x)
     {
         if (json_node.isNull())
-            return x.validator(x);
+            return String("");
 
         if (!json_node.is<float>())
             return "JSON node was not a float.";
@@ -201,44 +231,44 @@ struct from_json {
             return "JSON node was an integer. Please use f.e. 123.0 to set a float node to an integer value.";
 
         x.value = json_node.as<float>();
-        return x.validator(x);
+        return String("");
     }
     String operator()(Config::ConfInt &x)
     {
         if (json_node.isNull())
-            return x.validator(x);
+            return String("");
 
         if (!json_node.is<int32_t>())
             return "JSON node was not a signed integer.";
         x.value = json_node.as<int32_t>();
-        return x.validator(x);
+        return String("");
     }
     String operator()(Config::ConfUint &x)
     {
         if (json_node.isNull())
-            return x.validator(x);
+            return String("");
 
         if (!json_node.is<uint32_t>())
             return "JSON node was not an unsigned integer.";
         x.value = json_node.as<uint32_t>();
-        return x.validator(x);
+        return String("");
     }
     String operator()(Config::ConfBool &x)
     {
         if (json_node.isNull())
-            return x.validator(x);
+            return String("");
 
         if (!json_node.is<bool>())
             return "JSON node was not a boolean.";
         x.value = json_node.as<bool>();
-        return x.validator(x);
+        return String("");
     }
     String operator()(std::nullptr_t x) {
         return json_node.isNull() ? "" : "JSON null node was not null";
     }
     String operator()(Config::ConfArray &x) {
         if (json_node.isNull())
-            return x.validator(x);
+            return String("");
 
         if (!json_node.is<JsonArray>())
             return "JSON node was not an array.";
@@ -253,12 +283,12 @@ struct from_json {
                 return String("[") + i + "]" + inner_error;
         }
 
-        return x.validator(x);
+        return String("");
     }
     String operator()(Config::ConfObject &x)
     {
         if (json_node.isNull())
-            return x.validator(x);
+            return String("");
 
         if (!json_node.is<JsonObject>())
             return "JSON node was not an object.";
@@ -277,7 +307,7 @@ struct from_json {
                 return String("[\"") + x.value[i].first + "\"]" + inner_error;
         }
 
-        return x.validator(x);
+        return String("");
     }
 
     JsonVariant json_node;
@@ -288,17 +318,17 @@ struct from_update {
     String operator()(Config::ConfString &x)
     {
         if (Config::containsNull(update))
-            return x.validator(x);
+            return String("");
 
         if (update->get<String>() == nullptr)
             return "ConfUpdate node was not a string.";
         x.value = *(update->get<String>());
-        return x.validator(x);
+        return String("");
     }
     String operator()(Config::ConfFloat &x)
     {
         if (Config::containsNull(update))
-            return x.validator(x);
+            return String("");
 
         if (update->get<float>() == nullptr)
             return "ConfUpdate node was not a float.";
@@ -310,22 +340,22 @@ struct from_update {
             return "ConfUpdate node was an integer. Please use f.e. 123.0 to set a float node to an integer value.";
 
         x.value = *(update->get<float>());
-        return x.validator(x);
+        return String("");
     }
     String operator()(Config::ConfInt &x)
     {
         if (Config::containsNull(update))
-            return x.validator(x);
+            return String("");
 
         if (update->get<int32_t>() == nullptr)
             return "ConfUpdate node was not a signed integer.";
         x.value = *(update->get<int32_t>());
-        return x.validator(x);
+        return String("");
     }
     String operator()(Config::ConfUint &x)
     {
         if (Config::containsNull(update))
-            return x.validator(x);
+            return String("");
 
         uint32_t new_val = 0;
         if (update->get<uint32_t>() == nullptr) {
@@ -337,24 +367,24 @@ struct from_update {
             new_val = *(update->get<uint32_t>());
         }
         x.value = new_val;
-        return x.validator(x);
+        return String("");
     }
     String operator()(Config::ConfBool &x)
     {
         if (Config::containsNull(update))
-            return x.validator(x);
+            return String("");
 
         if (update->get<bool>() == nullptr)
             return "ConfUpdate node was not a boolean.";
         x.value = *(update->get<bool>());
-        return x.validator(x);
+        return String("");
     }
     String operator()(std::nullptr_t x) {
         return Config::containsNull(update) ? "" : "JSON null node was not null";
     }
     String operator()(Config::ConfArray &x) {
         if (Config::containsNull(update))
-            return x.validator(x);
+            return String("");
 
         if (update->get<Config::ConfUpdateArray>() == nullptr)
             return "ConfUpdate node was not an array.";
@@ -369,12 +399,12 @@ struct from_update {
                 return String("[") + i + "]" + inner_error;
         }
 
-        return x.validator(x);
+        return String("");
     }
     String operator()(Config::ConfObject &x)
     {
         if (Config::containsNull(update))
-            return x.validator(x);
+            return String("");
 
         if (update->get<Config::ConfUpdateObject>() == nullptr) {
             Serial.println(update->which());
@@ -402,7 +432,7 @@ struct from_update {
                 return String("[\"") + x.value[i].first + "\"]" + inner_error;
         }
 
-        return x.validator(x);
+        return String("");
     }
 
     Config::ConfUpdate *update;
@@ -468,49 +498,43 @@ struct set_updated_false {
 };
 
 Config Config::Str(String s,
-                   size_t maxChars,
-                   String(*validator)(ConfString &)) {
-    return Config{ConfString{s, maxChars == 0 ? s.length() : maxChars, validator}, true};
+                   uint16_t minChars,
+                   uint16_t maxChars) {
+    return Config{ConfString{s, minChars, maxChars == 0 ? s.length() : maxChars}, true};
 }
 
 Config Config::Float(float d,
                      float min,
-                     float max,
-                     String(*validator)(ConfFloat &)) {
-    return Config{ConfFloat{d, min, max, validator}, true};
+                     float max) {
+    return Config{ConfFloat{d, min, max}, true};
 }
 
 Config Config::Int(int32_t i,
                       int32_t min,
-                      int32_t max,
-                      String(*validator)(ConfInt &)) {
-    return Config{ConfInt{i, min, max, validator}, true};
+                      int32_t max) {
+    return Config{ConfInt{i, min, max}, true};
 }
 
 Config Config::Uint(uint32_t u,
                        uint32_t min,
-                       uint32_t max,
-                       String(*validator)(ConfUint &)) {
-    return Config{ConfUint{u, min, max, validator}, true};
+                       uint32_t max) {
+    return Config{ConfUint{u, min, max}, true};
 }
 
-Config Config::Bool(bool b,
-                       String(*validator)(ConfBool &)) {
-    return Config{ConfBool{b, validator}, true};
+Config Config::Bool(bool b) {
+    return Config{ConfBool{b}, true};
 }
 
 Config Config::Array(std::initializer_list<Config> arr,
                         Config *prototype,
                         size_t minElements,
                         size_t maxElements,
-                        int variantType,
-                        String(*validator)(ConfArray &)) {
-    return Config{ConfArray{arr, prototype, minElements, maxElements, (int8_t)variantType, validator}, true};
+                        int variantType) {
+    return Config{ConfArray{arr, prototype, minElements, maxElements, (int8_t)variantType}, true};
 }
 
-Config Config::Object(std::initializer_list<std::pair<String, Config>> obj,
-                         String(*validator)(ConfObject &)) {
-    return Config{ConfObject{obj, validator}, true};
+Config Config::Object(std::initializer_list<std::pair<String, Config>> obj) {
+    return Config{ConfObject{obj}, true};
 }
 
 Config Config::Null() { return Config{nullptr, true}; }
@@ -655,88 +679,6 @@ size_t Config::json_size() {
     return strict_variant::apply_visitor(json_length_visitor{}, value);
 }
 
-String Config::update_from_file(File file)
-{
-    ConfVariant copy = value;
-    DynamicJsonDocument doc(json_size());
-    DeserializationError error = deserializeJson(doc, file);
-    if (error)
-        return String("Failed to read file: ") + String(error.c_str());
-
-    String err = strict_variant::apply_visitor(from_json{doc.as<JsonVariant>(), false}, copy);
-
-    if (err == "") {
-        value = copy;
-        this->updated = true;
-    }
-
-    return err;
-}
-
-String Config::update_from_cstr(char *c, size_t len)
-{
-    ConfVariant copy = value;
-    DynamicJsonDocument doc(json_size());
-    DeserializationError error = deserializeJson(doc, c, len);
-
-    if (error) {
-        return String("Failed to deserialize string: ") + String(error.c_str());
-    }
-
-    String err = strict_variant::apply_visitor(from_json{doc.as<JsonVariant>(), true}, copy);
-
-    if (err == "") {
-        value = copy;
-        this->updated = true;
-    }
-
-    return err;
-}
-
-String Config::update_from_string(String s)
-{
-    ConfVariant copy = value;
-    DynamicJsonDocument doc(json_size());
-    DeserializationError error = deserializeJson(doc, s);
-
-    if (error) {
-        return String("Failed to deserialize string: ") + String(error.c_str());
-    }
-
-    String err = strict_variant::apply_visitor(from_json{doc.as<JsonVariant>(), true}, copy);
-
-    if (err == "") {
-        value = copy;
-        this->updated = true;
-    }
-
-    return err;
-}
-
-String Config::update_from_json(JsonVariant root)
-{
-    ConfVariant copy = value;
-    String err = strict_variant::apply_visitor(from_json{root, true}, copy);
-    if (err == "") {
-        value = copy;
-        this->updated = true;
-    }
-
-    return err;
-}
-
-String Config::update(ConfUpdate *val)
-{
-    ConfVariant copy = value;
-    String err = strict_variant::apply_visitor(from_update{val}, copy);
-    if (err == "") {
-        value = copy;
-        this->updated = true;
-    }
-
-    return err;
-}
-
 void Config::save_to_file(File file)
 {
     DynamicJsonDocument doc(json_size());
@@ -846,10 +788,6 @@ void Config::write_to_stream_except(Print &output, const std::vector<String> &ke
     serializeJson(doc, output);
 }
 
-bool Config::isValid() {
-    return strict_variant::apply_visitor(recursive_validator{}, value);
-}
-
 bool Config::was_updated() {
     return updated || strict_variant::apply_visitor(is_updated{}, value);
 }
@@ -902,4 +840,89 @@ const Config *Config::ConfArray::get(uint16_t i) const
         return nullptr;
     }
     return &this->value[i];
+}
+
+
+String ConfigRoot::update_from_file(File file)
+{
+
+    DynamicJsonDocument doc(this->json_size());
+    DeserializationError error = deserializeJson(doc, file);
+    if (error)
+        return String("Failed to read file: ") + String(error.c_str());
+
+    return this->update_from_json(doc.as<JsonVariant>());
+}
+
+String ConfigRoot::update_from_cstr(char *c, size_t len)
+{
+    DynamicJsonDocument doc(this->json_size());
+    DeserializationError error = deserializeJson(doc, c, len);
+
+    if (error) {
+        return String("Failed to deserialize string: ") + String(error.c_str());
+    }
+
+    return this->update_from_json(doc.as<JsonVariant>());
+}
+
+String ConfigRoot::update_from_string(String s)
+{
+    DynamicJsonDocument doc(this->json_size());
+    DeserializationError error = deserializeJson(doc, s);
+
+    if (error) {
+        return String("Failed to deserialize string: ") + String(error.c_str());
+    }
+
+    return this->update_from_json(doc.as<JsonVariant>());
+}
+
+String ConfigRoot::update_from_json(JsonVariant root)
+{
+    Config::ConfVariant copy = this->value;
+    String err = strict_variant::apply_visitor(from_json{root, false}, copy);
+
+    if (err != "")
+        return err;
+
+    err = strict_variant::apply_visitor(default_validator{}, copy);
+
+    if (err != "")
+        return err;
+
+    if (this->validator != nullptr) {
+        err = this->validator(*this);
+        if (err != "")
+            return err;
+    }
+
+    this->value = copy;
+    this->updated = true;
+
+    return err;
+}
+
+String ConfigRoot::update(Config::ConfUpdate *val)
+{
+    Config::ConfVariant copy = this->value;
+    String err = strict_variant::apply_visitor(from_update{val}, copy);
+    if (err != "")
+        return err;
+
+    err = strict_variant::apply_visitor(default_validator{}, copy);
+
+    if (err != "")
+        return err;
+
+    if (this->validator != nullptr) {
+        err = this->validator(*this);
+        if (err != "")
+            return err;
+    }
+
+    this->value = copy;
+    this->updated = true;
+
+    return err;
 }

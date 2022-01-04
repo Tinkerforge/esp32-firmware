@@ -33,6 +33,6 @@ public:
 
 private:
     TF_Net net;
-    Config devices;
-    Config error_counters;
+    ConfigRoot devices;
+    ConfigRoot error_counters;
 };

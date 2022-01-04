@@ -46,22 +46,22 @@ private:
 
     bool debug = false;
 
-    Config evse_state;
-    Config evse_hardware_configuration;
-    Config evse_low_level_state;
-    Config evse_max_charging_current;
-    Config evse_auto_start_charging;
-    Config evse_auto_start_charging_update;
-    Config evse_current_limit;
-    Config evse_stop_charging;
-    Config evse_start_charging;
-    Config evse_managed;
-    Config evse_managed_update;
-    Config evse_managed_current;
-    Config evse_user_calibration;
-    Config evse_button_state;
-    Config evse_reflash;
-    Config evse_reset;
+    ConfigRoot evse_state;
+    ConfigRoot evse_hardware_configuration;
+    ConfigRoot evse_low_level_state;
+    ConfigRoot evse_max_charging_current;
+    ConfigRoot evse_auto_start_charging;
+    ConfigRoot evse_auto_start_charging_update;
+    ConfigRoot evse_current_limit;
+    ConfigRoot evse_stop_charging;
+    ConfigRoot evse_start_charging;
+    ConfigRoot evse_managed;
+    ConfigRoot evse_managed_update;
+    ConfigRoot evse_managed_current;
+    ConfigRoot evse_user_calibration;
+    ConfigRoot evse_button_state;
+    ConfigRoot evse_reflash;
+    ConfigRoot evse_reset;
 
     uint32_t last_current_update = 0;
     bool shutdown_logged = false;

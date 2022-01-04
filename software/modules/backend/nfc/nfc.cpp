@@ -70,7 +70,7 @@ NFC::NFC() : DeviceModule("nfc", "NFC", "NFC", std::bind(&NFC::setup_nfc, this))
         {"authorized_tags", Config::Array(
             {},
             new Config{Config::Object({
-                {"tag_name", Config::Str("", 32)},
+                {"tag_name", Config::Str("", 0, 32)},
                 {"tag_type", Config::Uint(0, 0, 4)},
                 {"tag_id", Config::Array({}, new Config{Config::Uint8(0)}, 0, 10, Config::type_id<Config::ConfUint>())}
             })},

@@ -41,17 +41,12 @@ Mqtt::Mqtt()
     // The real UID will be patched in later
     mqtt_config = Config::Object({
         {"enable_mqtt", Config::Bool(false)},
-        {"broker_host", Config::Str("", 128)},
+        {"broker_host", Config::Str("", 0, 128)},
         {"broker_port", Config::Uint16(1883)},
-        {"broker_username", Config::Str("", 64)},
-        {"broker_password", Config::Str("", 64)},
-        {"global_topic_prefix", Config::Str(String(BUILD_HOST_PREFIX) + String("/") + String("ABC"), 64)},
-        {"client_name", Config::Str(String(BUILD_HOST_PREFIX) + String("-") + String("ABC"), 64, [](Config::ConfString &s) -> String {
-            if (s.value.length() >= 1)
-                return "";
-            return "Client ID must be at least one character long";
-            })
-        }
+        {"broker_username", Config::Str("", 0, 64)},
+        {"broker_password", Config::Str("", 0, 64)},
+        {"global_topic_prefix", Config::Str(String(BUILD_HOST_PREFIX) + String("/") + String("ABC"), 0, 64)},
+        {"client_name", Config::Str(String(BUILD_HOST_PREFIX) + String("-") + String("ABC"), 1, 64)}
     });
 
     mqtt_state = Config::Object({

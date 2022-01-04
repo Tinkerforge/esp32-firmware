@@ -55,9 +55,9 @@ int8_t button_pin = -1;
 // filled by board module
 bool factory_reset_requested = false;
 
-Config version;
-Config modules;
-Config reboot;
+ConfigRoot version;
+ConfigRoot modules;
+ConfigRoot reboot;
 
 bool firmware_update_allowed = true;
 
@@ -71,7 +71,8 @@ void register_default_urls() {
         req.send(200, "text/html", index_html_gz, index_html_gz_len);
     });
 
-    reboot = Config::Null();
+    reboot = ConfigRoot{Config::Null()};
+
     api.addCommand("reboot", &reboot, {}, []() {
         ESP.restart();
     }, true);

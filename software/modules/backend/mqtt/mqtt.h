@@ -63,10 +63,10 @@ public:
     void onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain);
     void onMqttDisconnect();
 
-    Config mqtt_config;
-    Config mqtt_state;
+    ConfigRoot mqtt_config;
+    ConfigRoot mqtt_state;
 
-    Config mqtt_config_in_use;
+    ConfigRoot mqtt_config_in_use;
 
     std::vector<MqttCommand> commands;
     esp_mqtt_client_handle_t client;

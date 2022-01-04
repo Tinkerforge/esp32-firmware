@@ -31,5 +31,5 @@ public:
     bool initialized = false;
 
 private:
-    Config authentication_config;
+    ConfigRoot authentication_config;
 };

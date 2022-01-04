@@ -64,7 +64,7 @@ static char distribution_log[DISTRIBUTION_LOG_LEN] = {0};
 
 ChargeManager::ChargeManager()
 {
-    charge_manager_config = Config::Object({
+    charge_manager_config = ConfigRoot{Config::Object({
         {"enable_charge_manager", Config::Bool(false)},
         {"enable_watchdog", Config::Bool(false)},
         {"default_available_current", Config::Uint32(0)},
@@ -74,17 +74,17 @@ ChargeManager::ChargeManager()
         {"chargers", Config::Array(
             {
                 Config::Object({
-                    {"host", Config::Str("127.0.0.1", 64)},
-                    {"name", Config::Str("Lokale Wallbox", 32)} // FIXME: needs to be translated
+                    {"host", Config::Str("127.0.0.1", 0, 64)},
+                    {"name", Config::Str("Lokale Wallbox", 0, 32)} // FIXME: needs to be translated
                 })
             },
             new Config{Config::Object({
-                {"host", Config::Str("", 64)},
-                {"name", Config::Str("", 32)}
+                {"host", Config::Str("", 0, 64)},
+                {"name", Config::Str("", 0, 32)}
             })},
             0, MAX_CLIENTS, Config::type_id<Config::ConfObject>()
         )}
-    }, [](Config::ConfObject &conf) -> String {
+    }), [](Config &conf) -> String {
         uint32_t default_available_current = conf.get("default_available_current")->asUint();
         uint32_t maximum_available_current = conf.get("maximum_available_current")->asUint();
 
@@ -95,7 +95,7 @@ ChargeManager::ChargeManager()
         if (default_available_current > maximum_available_current)
             return "default_available_current can not be greater than maximum_available_current";
         return "";
-    });
+    }};
 
     charge_manager_state = Config::Object({
         {"state", Config::Uint8(0)}, // 0 - not configured, 1 - active, 2 - shutdown
@@ -103,7 +103,7 @@ ChargeManager::ChargeManager()
         {"chargers", Config::Array(
             {},
             new Config{Config::Object({
-                {"name", Config::Str("", 32)},
+                {"name", Config::Str("", 0, 32)},
                 {"last_update", Config::Uint32(0)},
                 {"uptime", Config::Uint32(0)},
                 {"supported_current", Config::Uint16(0)},
@@ -122,13 +122,13 @@ ChargeManager::ChargeManager()
         )}
     });
 
-    charge_manager_available_current = Config::Object({
+    charge_manager_available_current = ConfigRoot{Config::Object({
         {"current", Config::Uint32(0)},
-    }, [](Config::ConfObject &conf) -> String {
+    }), [](Config &conf) -> String {
         if (conf.get("current")->asUint() > max_avail_current)
             return String("Current too large: maximum available current is configured to ") + String(max_avail_current);
         return "";
-    });
+    }};
 }
 
 uint8_t get_charge_state(uint8_t vehicle_state, uint8_t iec61851_state, uint8_t charge_release, uint32_t charging_time, uint16_t target_allocated_current) {
