@@ -43,34 +43,6 @@ bool deadline_elapsed(uint32_t deadline_ms)
     return ((uint32_t)(now - deadline_ms)) < (UINT32_MAX / 2);
 }
 
-String update_config(Config &cfg, String config_name, JsonVariant &json)
-{
-    String error = cfg.update_from_json(json);
-
-    String tmp_path = String("/") + config_name + ".json.tmp";
-    String path = String("/") + config_name + ".json";
-
-    if (error == "") {
-        if (SPIFFS.exists(tmp_path)) {
-            SPIFFS.remove(tmp_path);
-        }
-
-        File file = SPIFFS.open(tmp_path, "w");
-        cfg.save_to_file(file);
-        file.close();
-
-        if (SPIFFS.exists(path)) {
-            SPIFFS.remove(path);
-        }
-
-        SPIFFS.rename(tmp_path, path);
-    } else {
-        logger.printfln("Failed to update %s: %s", path.c_str(), error.c_str());
-    }
-
-    return error;
-}
-
 void read_efuses(uint32_t *ret_uid_numeric, char *ret_uid_string, char *ret_passphrase_string)
 {
     uint32_t blocks[8] = {0};
