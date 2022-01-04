@@ -371,8 +371,8 @@ def main():
     })
 
     specialize_template(os.path.join("web", "main.scss.template"), os.path.join("web", "src", "main.scss"), {
-        '{{{module_pre_imports}}}': '\n'.join(['@import "modules/pre_{0}";'.format(x.under) for x in pre_scss_entries]),
-        '{{{module_post_imports}}}': '\n'.join(['@import "modules/post_{0}";'.format(x.under) for x in post_scss_entries])
+        '{{{module_pre_imports}}}': '\n'.join(['@import "scss/modules/pre_{0}";'.format(x.under) for x in pre_scss_entries]),
+        '{{{module_post_imports}}}': '\n'.join(['@import "scss/modules/post_{0}";'.format(x.under) for x in post_scss_entries])
     })
 
     # Check translation completeness

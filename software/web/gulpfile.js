@@ -81,7 +81,7 @@ gulp.task("sass", function () {
     const cssnano = require("cssnano");
 
     return gulp
-        .src("src/scss/*.scss")
+        .src("src/main.scss")
         .pipe(sass()) // Compile sass to css
         .pipe(
             postcss([
