@@ -16,7 +16,8 @@
             "event_log_placeholder": "Lade Ereignis-Log..."
         },
         "script": {
-            "load_event_report_error": "Konnte Ereignis-Log nicht laden"
+            "load_event_log_error": "Konnte Ereignis-Log nicht laden",
+            "load_debug_report_error": "Konnte Debug-Report nicht laden"
         }
     }
 }

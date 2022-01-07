@@ -16,7 +16,8 @@
             "event_log_placeholder": "Loading event log..."
         },
         "script": {
-            "load_event_report_error": "Failed to load event log"
+            "load_event_log_error": "Failed to load event log",
+            "load_debug_report_error": "Failed to load debug report"
         }
     }
 }

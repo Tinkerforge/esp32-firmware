@@ -25,8 +25,11 @@ declare function __(s: string): string;
 
 function load_event_log() {
     $.get("/event_log")
-               .done((result) => {$('#event_log_content').html(result)})
-               .fail((xhr, status, error) => util.add_alert("event_log_load_failed", "alert-danger", __("event_log.script.load_event_report_error"), error + ": " + xhr.responseText))
+               .done((result) => {
+                   $('#event_log_content').html(result);
+                   util.remove_alert("event_log_load_failed");
+                })
+               .fail((xhr, status, error) => util.add_alert("event_log_load_failed", "alert-danger", __("event_log.script.load_event_log_error"), error + ": " + xhr.responseText))
 }
 
 let update_event_log_interval: number = null;
@@ -53,20 +56,22 @@ export function init() {
         let debug_log = t + "\nScroll down for event log!\n\n";
         $.get({url: "/debug_report", dataType: "text"})
                 .fail((xhr, status, error) => {
-                    util.add_alert("event_log_load_failed", "alert-danger", __("event_log.script.load_event_report_error"), error + ": " + xhr.responseText)
+                    util.add_alert("debug_report_load_failed", "alert-danger", __("event_log.script.load_debug_report_error"), error + ": " + xhr.responseText)
                     window.clearTimeout(timeout);
                     $('#debug_report_spinner').prop("hidden", true);
                 })
                 .done((result) => {
+                    util.remove_alert("debug_report_load_failed");
                     debug_log += result + "\n\n";
 
                     $.get("/event_log")
                         .fail((xhr, status, error) => {
-                            util.add_alert("event_log_load_failed", "alert-danger", __("event_log.script.load_event_report_error"), error + ": " + xhr.responseText)
+                            util.add_alert("debug_report_load_failed", "alert-danger", __("event_log.script.load_debug_report_error"), error + ": " + xhr.responseText)
                             window.clearTimeout(timeout);
                             $('#debug_report_spinner').prop("hidden", true);
                         })
                         .done((result) => {
+                            util.remove_alert("debug_report_load_failed");
                             debug_log += result + "\n";
                             util.downloadToFile(debug_log, "debug-report-" + t + ".txt", "text/plain");
                             window.clearTimeout(timeout);
