@@ -226,10 +226,10 @@ void Wifi::apply_soft_ap_config_and_start()
     logger.printfln("    IP: %u.%u.%u.%u", myIP[0], myIP[1], myIP[2], myIP[3]);
 }
 
-void Wifi::apply_sta_config_and_connect()
+bool Wifi::apply_sta_config_and_connect()
 {
     if (get_connection_state() == WifiState::CONNECTED) {
-        return;
+        return false;
     }
 
     WiFi.persistent(false);
@@ -265,6 +265,7 @@ void Wifi::apply_sta_config_and_connect()
 
     WiFi.begin(ssid.c_str(), passphrase.c_str(), 0, bssid_lock ? bssid : nullptr, true);
     WiFi.setSleep(false);
+    return true;
 }
 
 const char *reason2str(uint8_t reason)
@@ -406,8 +407,24 @@ void Wifi::setup()
 
     if (enable_sta) {
         task_scheduler.scheduleWithFixedDelay("wifi_connect", [this](){
-            apply_sta_config_and_connect();
-        }, 0, 9000);
+            static int backoff = 1;
+            static int backoff_counter = 0;
+
+            if (backoff_counter > 0) {
+                --backoff_counter;
+                return;
+            }
+
+            if (!apply_sta_config_and_connect()) {
+                // We are already connected. Reset exponential backoff
+                backoff = 1;
+                backoff_counter = 0;
+            } else {
+                if (backoff <= 32)
+                    backoff *= 2;
+                backoff_counter = backoff;
+            }
+        }, 0, 5000);
     }
 
     /*use mdns for host name resolution*/
