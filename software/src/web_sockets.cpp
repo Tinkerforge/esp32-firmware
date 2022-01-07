@@ -234,7 +234,7 @@ static void work(void *arg)
 
         auto result = httpd_ws_send_frame_async(wi.hd, wi.fd, &ws_pkt);
         if (result != ESP_OK) {
-            printf("failed to send frame: %d\n", result);
+            printf("failed to send %s frame to fd %d: %d\n", wi.payload_len == 0 ? "HTTPD_WS_TYPE_PING" : "HTTPD_WS_TYPE_TEXT", wi.fd, result);
         }
 
         wi.clear();
