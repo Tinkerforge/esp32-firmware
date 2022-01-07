@@ -500,7 +500,7 @@ struct set_updated_false {
 Config Config::Str(String s,
                    uint16_t minChars,
                    uint16_t maxChars) {
-    return Config{ConfString{s, minChars, maxChars == 0 ? s.length() : maxChars}, true};
+    return Config{ConfString{s, minChars, maxChars == 0 ? (uint16_t)s.length() : maxChars}, true};
 }
 
 Config Config::Float(float d,
