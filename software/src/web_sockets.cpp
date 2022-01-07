@@ -208,6 +208,8 @@ bool client_not_alive_cb(wss_keep_alive_t h, int fd)
         current++;
     }
 
+    // Sometimes the deletion is not complete, but leaves an invalid socket. Also remove those.
+    httpd_sess_delete_invalid(hd);
     wss_close_fd(h, fd);
     return true;
 }
