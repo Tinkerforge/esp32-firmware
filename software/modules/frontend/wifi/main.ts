@@ -45,6 +45,7 @@ function wifi_symbol(rssi: number) {
     return '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-wifi"><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>';
 }
 
+
 function update_wifi_scan_results(data: WifiInfo[]) {
     $("#wifi_config_scan_spinner").prop('hidden', true);
     $("#wifi_scan_results").prop('hidden', false);
@@ -92,12 +93,18 @@ function scan_wifi() {
         method: 'PUT',
         contentType: 'application/json',
         data: JSON.stringify(null),
-        error: (xhr, status, error) => util.add_alert("wifi_scan_failed", "alert-danger", __("wifi.script.scan_wifi_failed"), error + ": " + xhr.responseText),
+        error: (xhr, status, error) => {
+            util.add_alert("wifi_scan_failed", "alert-danger", __("wifi.script.scan_wifi_init_failed"), error + ": " + xhr.responseText);
+            $('#scan_wifi_dropdown').dropdown('hide');
+        },
         success: () => {
             scan_timeout = window.setTimeout(function () {
                     scan_timeout = null;
                     $.get("/wifi/scan_results").done(function (data: WifiInfo[]) {
                         update_wifi_scan_results(data);
+                    }).fail((xhr, status, error) => {
+                        util.add_alert("wifi_scan_failed", "alert-danger", __("wifi.script.scan_wifi_results_failed"), error + ": " + xhr.responseText);
+                        $('#scan_wifi_dropdown').dropdown('hide');
                     });
                 }, 10000);
         }
