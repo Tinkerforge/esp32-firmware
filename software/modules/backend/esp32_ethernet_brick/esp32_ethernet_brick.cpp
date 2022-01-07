@@ -30,8 +30,8 @@
 
 TF_HAL hal;
 extern EventLog logger;
-extern uint32_t uid_numeric;
-extern char uid[7];
+extern uint32_t local_uid_num;
+extern char local_uid_str[7];
 extern char passphrase[20];
 extern int8_t blue_led_pin;
 extern int8_t green_led_pin;
@@ -44,8 +44,8 @@ ESP32EthernetBrick::ESP32EthernetBrick()
 
 void ESP32EthernetBrick::setup()
 {
-    read_efuses(&uid_numeric, uid, passphrase);
-    logger.printfln("ESP32 Ethernet Brick UID: %s", uid);
+    read_efuses(&local_uid_num, local_uid_str, passphrase);
+    logger.printfln("ESP32 Ethernet Brick UID: %s", local_uid_str);
 
     check(tf_hal_create(&hal), "hal create");
     tf_hal_set_timeout(&hal, 100000);
@@ -57,7 +57,6 @@ void ESP32EthernetBrick::setup()
     green_led_pin = GREEN_LED;
     blue_led_pin = BLUE_LED;
     button_pin = BUTTON;
-
 }
 
 void ESP32EthernetBrick::register_urls()

@@ -33,7 +33,7 @@
 
 extern API api;
 extern TaskScheduler task_scheduler;
-extern char uid[7];
+extern char local_uid_str[7];
 
 Ethernet::Ethernet()
 {
@@ -158,7 +158,7 @@ void WiFiEvent(WiFiEvent_t event)
 
 void Ethernet::setup()
 {
-    String default_hostname = String(BUILD_HOST_PREFIX) + String("-") + String(uid);
+    String default_hostname = String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str);
 
     if (!api.restorePersistentConfig("ethernet/config", &ethernet_config)) {
         ethernet_config.get("hostname")->updateString(default_hostname);

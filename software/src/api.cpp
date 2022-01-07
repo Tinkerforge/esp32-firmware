@@ -194,14 +194,14 @@ void API::registerDebugUrl(WebServer *server)
         result += ",\n \"devices\": [";
 
         uint16_t i = 0;
-        char uid[7] = {0};
+        char uid_str[7] = {0};
         char port_name;
         uint16_t device_id;
 
-        while (tf_hal_get_device_info(&hal, i, uid, &port_name, &device_id) == TF_E_OK) {
+        while (tf_hal_get_device_info(&hal, i, uid_str, &port_name, &device_id) == TF_E_OK) {
             char buf[100] = {0};
 
-            snprintf(buf, sizeof(buf), "%c{\"UID\":\"%s\", \"DID\":%u, \"port\":\"%c\"}", i == 0 ? ' ' : ',', uid, device_id, port_name);
+            snprintf(buf, sizeof(buf), "%c{\"UID\":\"%s\", \"DID\":%u, \"port\":\"%c\"}", i == 0 ? ' ' : ',', uid_str, device_id, port_name);
             result += buf;
             ++i;
         }

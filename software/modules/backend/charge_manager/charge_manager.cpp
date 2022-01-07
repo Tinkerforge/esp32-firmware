@@ -39,7 +39,7 @@
 
 extern API api;
 extern TaskScheduler task_scheduler;
-extern char uid[7];
+extern char local_uid_str[7];
 
 // Keep in sync with cm_networing.h
 #define MAX_CLIENTS 10
@@ -243,7 +243,7 @@ int idx_array[MAX_CLIENTS] = {0};
 
 void ChargeManager::setup()
 {
-    String default_hostname = String(BUILD_HOST_PREFIX) + String("-") + String(uid);
+    String default_hostname = String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str);
     if (!api.restorePersistentConfig("charge_manager/config", &charge_manager_config)) {
         charge_manager_config.get("chargers")->get(0)->get("name")->updateString(default_hostname);
         charge_manager_config.get("maximum_available_current")->updateUint(0);

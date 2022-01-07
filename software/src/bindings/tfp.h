@@ -22,13 +22,13 @@
 extern "C" {
 #endif
 
-typedef bool (*TF_CallbackHandler)(void *device, uint8_t fid, TF_PacketBuffer *payload);
+typedef bool (*TF_TFP_CallbackHandler)(void *device, uint8_t fid, TF_PacketBuffer *payload);
 
 typedef struct TF_TFP {
     TF_SPITFP *spitfp;
     void *device;
 
-    uint32_t uid;
+    uint32_t uid_num;
 
     uint32_t error_count_frame;
     uint32_t error_count_unexpected;
@@ -38,12 +38,12 @@ typedef struct TF_TFP {
     uint8_t waiting_for_sequence_number; // 0 if waiting for nothing
     bool send_enumerate_request;
 
-    TF_CallbackHandler cb_handler;
+    TF_TFP_CallbackHandler cb_handler;
 
     uint16_t device_id;
 } TF_TFP;
 
-void tf_tfp_create(TF_TFP *tfp, uint32_t uid, uint16_t device_id, TF_SPITFP *spitfp) TF_ATTRIBUTE_NONNULL_ALL;
+void tf_tfp_create(TF_TFP *tfp, uint32_t uid_num, uint16_t device_id, TF_SPITFP *spitfp) TF_ATTRIBUTE_NONNULL_ALL;
 
 void tf_tfp_prepare_send(TF_TFP *tfp, uint8_t fid, uint8_t payload_size, bool response_expected) TF_ATTRIBUTE_NONNULL_ALL;
 uint8_t *tf_tfp_get_send_payload_buffer(TF_TFP *tfp) TF_ATTRIBUTE_NONNULL_ALL;

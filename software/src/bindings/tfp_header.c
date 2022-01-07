@@ -23,7 +23,7 @@ static void parse_header(TF_TFPHeader *header) {
 }
 
 void tf_tfp_header_read(TF_TFPHeader *header, TF_PacketBuffer *buf) {
-    header->uid = tf_packet_buffer_read_uint32_t(buf);
+    header->uid_num = tf_packet_buffer_read_uint32_t(buf);
     header->length = tf_packet_buffer_read_uint8_t(buf);
     header->fid = tf_packet_buffer_read_uint8_t(buf);
     header->seq_num = tf_packet_buffer_read_uint8_t(buf);
@@ -33,7 +33,7 @@ void tf_tfp_header_read(TF_TFPHeader *header, TF_PacketBuffer *buf) {
 }
 
 void tf_tfp_header_peek(TF_TFPHeader *header, TF_PacketBuffer *buf) {
-    header->uid = tf_packet_buffer_peek_uint32_t(buf, 0);
+    header->uid_num = tf_packet_buffer_peek_uint32_t(buf, 0);
     header->length = tf_packet_buffer_peek_uint8_t(buf, 4);
     header->fid = tf_packet_buffer_peek_uint8_t(buf, 5);
     header->seq_num = tf_packet_buffer_peek_uint8_t(buf, 6);
@@ -43,13 +43,13 @@ void tf_tfp_header_peek(TF_TFPHeader *header, TF_PacketBuffer *buf) {
 }
 
 void tf_tfp_header_peek_plain(TF_TFPHeader *header, uint8_t *buf) {
-    uint32_t uid = 0;
+    uint32_t uid_num = 0;
 
     for (int i = 0; i < 4; ++i) {
-        *(((uint8_t *)&uid) + i) = buf[i];
+        *(((uint8_t *)&uid_num) + i) = buf[i];
     }
 
-    header->uid = tf_leconvert_uint32_from(uid);
+    header->uid_num = tf_leconvert_uint32_from(uid_num);
     header->length = buf[4];
     header->fid = buf[5];
     header->seq_num = buf[6];
@@ -59,9 +59,9 @@ void tf_tfp_header_peek_plain(TF_TFPHeader *header, uint8_t *buf) {
 }
 
 void tf_tfp_header_write(TF_TFPHeader *header, uint8_t buf[8]) {
-    uint32_t uid = tf_leconvert_uint32_to(header->uid);
+    uint32_t uid_num = tf_leconvert_uint32_to(header->uid_num);
 
-    memcpy(buf, &uid, sizeof(uid));
+    memcpy(buf, &uid_num, sizeof(uid_num));
 
     buf[4] = header->length;
     buf[5] = header->fid;
@@ -70,11 +70,11 @@ void tf_tfp_header_write(TF_TFPHeader *header, uint8_t buf[8]) {
 }
 
 void tf_tfp_header_print(TF_TFPHeader *header) {
-    char buf[8] = {0};
+    char uid_str[7] = {0};
 
-    tf_base58_encode(header->uid, buf);
+    tf_base58_encode(header->uid_num, uid_str);
 
-    printf("UID %s Len %u FID %u SeqNum %u RespExp %s Opt %u Err %u Flags %u\n", buf,
+    printf("UID %s Len %u FID %u SeqNum %u RespExp %s Opt %u Err %u Flags %u\n", uid_str,
            header->length,
            header->fid,
            header->seq_num,

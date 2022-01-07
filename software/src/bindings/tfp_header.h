@@ -28,7 +28,7 @@ extern "C" {
 #define TF_TFP_HEADER_LENGTH 8
 
 typedef struct TF_TFPHeader {
-    uint32_t uid;
+    uint32_t uid_num;
     uint8_t length;
     uint8_t fid;
     uint8_t seq_num;

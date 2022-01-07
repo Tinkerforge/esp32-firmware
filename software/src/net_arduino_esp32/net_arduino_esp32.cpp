@@ -36,7 +36,7 @@ static void add_open_request(TF_Net *net, uint32_t client_id, TF_TFPHeader *head
     }
 
     net->open_requests[net->open_request_count].client_id = client_id;
-    net->open_requests[net->open_request_count].uid = header->uid;
+    net->open_requests[net->open_request_count].uid_num = header->uid_num;
     net->open_requests[net->open_request_count].fid = header->fid;
     net->open_requests[net->open_request_count].seq_num = header->seq_num;
 
@@ -520,8 +520,8 @@ static void reassemble_packets(TF_Net *net) {
         }
 
         // Handle Brick Daemon packets without copy
-        if (header.uid == 1) {
-            uint8_t len =  header.length;
+        if (header.uid_num == 1) {
+            uint8_t len = header.length;
             handle_brickd_packet(net, i, &header, buf);
             drop_packet(client, len);
             continue;
@@ -608,7 +608,7 @@ int tf_net_get_packet(TF_Net *net, uint8_t packet_id, uint8_t *buf) {
     memcpy(buf, client->read_buf, client->available_packet.length);
 
     // If we output a packet that is a request, keep track over the request to be able to unicast the response.
-    if (client->available_packet.uid != 0 && client->available_packet.response_expected) {
+    if (client->available_packet.uid_num != 0 && client->available_packet.response_expected) {
         add_open_request(net, client->id, &client->available_packet);
     }
 
@@ -637,7 +637,7 @@ void tf_net_send_packet(TF_Net *net, TF_TFPHeader *header, uint8_t *buf) {
         for (; request_idx < net->open_request_count; ++request_idx) {
             TF_Request *req = &net->open_requests[request_idx];
 
-            if (req->fid == header->fid && req->seq_num == header->seq_num && req->uid == header->uid) {
+            if (req->fid == header->fid && req->seq_num == header->seq_num && req->uid_num == header->uid_num) {
                 request = req;
                 break;
             }

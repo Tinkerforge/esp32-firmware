@@ -55,14 +55,14 @@ typedef struct TF_HAL TF_HAL;
 
 void tf_hal_set_timeout(TF_HAL *hal, uint32_t timeout_us) TF_ATTRIBUTE_NONNULL_ALL;
 uint32_t tf_hal_get_timeout(TF_HAL *hal) TF_ATTRIBUTE_NONNULL_ALL;
-int tf_hal_get_device_info(TF_HAL *hal, uint16_t index, char ret_uid[7], char *ret_port_name, uint16_t *ret_device_id) TF_ATTRIBUTE_NONNULL(1);
+int tf_hal_get_device_info(TF_HAL *hal, uint16_t index, char ret_uid_str[7], char *ret_port_name, uint16_t *ret_device_id) TF_ATTRIBUTE_NONNULL(1);
 int tf_hal_callback_tick(TF_HAL *hal, uint32_t timeout_us) TF_ATTRIBUTE_NONNULL_ALL;
 int tf_hal_tick(TF_HAL *hal, uint32_t timeout_us) TF_ATTRIBUTE_NONNULL_ALL;
 
 bool tf_hal_deadline_elapsed(TF_HAL *hal, uint32_t deadline_us) TF_ATTRIBUTE_NONNULL_ALL;
 int tf_hal_get_error_counters(TF_HAL *hal, char port_name, uint32_t *ret_spitfp_error_count_checksum, uint32_t *ret_spitfp_error_count_frame, uint32_t *ret_tfp_error_count_frame, uint32_t *ret_tfp_error_count_unexpected) TF_ATTRIBUTE_NONNULL(1);
-TF_TFP *tf_hal_get_tfp(TF_HAL *hal, const uint32_t *uid, const uint8_t *port_id, const uint16_t *device_id, bool skip_already_in_use);
-int tf_hal_get_attachable_tfp(TF_HAL *hal, TF_TFP **tfp_ptr, const char *uid_or_port_name, uint16_t device_id);
+TF_TFP *tf_hal_get_tfp(TF_HAL *hal, const uint32_t *uid_num, const uint8_t *port_id, const uint16_t *device_id, bool skip_already_in_use);
+int tf_hal_get_attachable_tfp(TF_HAL *hal, TF_TFP **tfp_ptr, const char *uid_str_or_port_name, uint16_t device_id);
 
 #define TF_LOG_LEVEL_NONE 0
 #define TF_LOG_LEVEL_ERROR 1

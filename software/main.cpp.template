@@ -46,8 +46,8 @@ API api;
 // declared and initialized by board module
 extern TF_HAL hal;
 // initialized by board module
-uint32_t uid_numeric = 0;
-char uid[7] = {0};
+uint32_t local_uid_num = 0;
+char local_uid_str[7] = {0};
 char passphrase[20] = {0};
 int8_t blue_led_pin = -1;
 int8_t green_led_pin = -1;
@@ -138,7 +138,7 @@ void setup(void) {
 }
 
 void loop(void) {
-    //prioritize proxy performance over web interface and wifi responsitivity
+    // Prioritize proxy performance over web interface and WiFi responsitivity
     tf_hal_tick(&hal, 1000);
     tf_hal_tick(&hal, 1000);
     tf_hal_tick(&hal, 1000);

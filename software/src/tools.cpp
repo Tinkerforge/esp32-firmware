@@ -520,7 +520,7 @@ public:
 private:
     TF_TFP *tfp;
     void *device;
-    TF_CallbackHandler cb_handler;
+    TF_TFP_CallbackHandler cb_handler;
 };
 
 int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose, const uint8_t *firmware, size_t firmware_len, EventLog *logger, bool force)

@@ -34,7 +34,7 @@ static uint8_t tf_tfp_build_header(TF_TFP *tfp, uint8_t *header_buf, uint8_t len
 
     tfp->next_sequence_number = sequence_number + 1;
 
-    header.uid = tfp->uid;
+    header.uid_num = tfp->uid_num;
     header.length = length;
     header.fid = function_id;
     header.seq_num = sequence_number;
@@ -77,7 +77,7 @@ static bool tf_tfp_dispatch_packet(TF_TFP *tfp, TF_TFPHeader *header, TF_PacketB
 
     // Search TFP for the received callback
     bool result = false;
-    TF_TFP *other_tfp = tf_hal_get_tfp(tfp->spitfp->hal, &header->uid, NULL, NULL, false);
+    TF_TFP *other_tfp = tf_hal_get_tfp(tfp->spitfp->hal, &header->uid_num, NULL, NULL, false);
 
     if (other_tfp != NULL) {
         result = other_tfp->cb_handler(other_tfp->device, header->fid, packet);
@@ -132,7 +132,7 @@ static bool tf_tfp_filter_received_packet(TF_TFP *tfp, bool remove_interesting, 
 
     // We could do this before parsing the header, but in this order it's possible to remove the unwanted packet from the buffer.
     bool packet_uninteresting = (tfp->waiting_for_fid == 0)
-                             || (tfp->uid != 0 && header.uid != tfp->uid)
+                             || (tfp->uid_num != 0 && header.uid_num != tfp->uid_num)
                              || (header.fid != tfp->waiting_for_fid)
                              || (header.seq_num != tfp->waiting_for_sequence_number);
 
@@ -144,8 +144,8 @@ static bool tf_tfp_filter_received_packet(TF_TFP *tfp, bool remove_interesting, 
                 tf_hal_log_debug("tfp->waiting_for_fid == 0\n");
             }
 
-            if (tfp->uid != 0 && header.uid != tfp->uid) {
-                tf_hal_log_debug("tfp->uid != 0 && header.uid (%d) != tfp->uid (%d)\n", header.uid, tfp->uid);
+            if (tfp->uid_num != 0 && header.uid_num != tfp->uid_num) {
+                tf_hal_log_debug("tfp->uid_num != 0 && header.uid_num (%d) != tfp->uid_num (%d)\n", header.uid_num, tfp->uid_num);
             }
 
             if (header.fid != tfp->waiting_for_fid) {
@@ -192,11 +192,11 @@ static bool empty_cb_handler(void *device, uint8_t fid, TF_PacketBuffer *payload
     return false;
 }
 
-void tf_tfp_create(TF_TFP *tfp, uint32_t uid, uint16_t device_id, TF_SPITFP *spitfp) {
+void tf_tfp_create(TF_TFP *tfp, uint32_t uid_num, uint16_t device_id, TF_SPITFP *spitfp) {
     memset(tfp, 0, sizeof(TF_TFP));
 
     tfp->spitfp = spitfp;
-    tfp->uid = uid;
+    tfp->uid_num = uid_num;
     tfp->device_id = device_id;
     tfp->next_sequence_number = 1;
     tfp->cb_handler = empty_cb_handler;

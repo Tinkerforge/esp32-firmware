@@ -30,7 +30,7 @@
 extern EventLog logger;
 
 extern TaskScheduler task_scheduler;
-extern char uid[7];
+extern char local_uid_str[7];
 extern API api;
 
 #define MQTT_RECV_BUFFER_SIZE 4096
@@ -247,8 +247,8 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 void Mqtt::setup()
 {
     if (!api.restorePersistentConfig("mqtt/config", &mqtt_config)) {
-        mqtt_config.get("global_topic_prefix")->updateString(String(BUILD_HOST_PREFIX) + String("/") + String(uid));
-        mqtt_config.get("client_name")->updateString(String(BUILD_HOST_PREFIX) + String("-") + String(uid));
+        mqtt_config.get("global_topic_prefix")->updateString(String(BUILD_HOST_PREFIX) + String("/") + String(local_uid_str));
+        mqtt_config.get("client_name")->updateString(String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str));
     }
 
     if (!mqtt_config.get("enable_mqtt")->asBool()) {

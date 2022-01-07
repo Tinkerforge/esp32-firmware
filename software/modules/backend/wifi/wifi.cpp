@@ -37,7 +37,7 @@ extern EventLog logger;
 
 extern TaskScheduler task_scheduler;
 extern WebServer server;
-extern char uid[7];
+extern char local_uid_str[7];
 extern char passphrase[20];
 
 extern API api;
@@ -321,7 +321,7 @@ const char *reason2str(uint8_t reason)
 
 void Wifi::setup()
 {
-    String default_hostname = String(BUILD_HOST_PREFIX) + String("-") + String(uid);
+    String default_hostname = String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str);
     String default_passphrase = String(passphrase);
 
     if (!api.restorePersistentConfig("wifi/sta_config", &wifi_sta_config)) {
