@@ -184,6 +184,30 @@ bool client_not_alive_cb(wss_keep_alive_t h, int fd)
 {
     //logger.printfln("Client not alive, closing fd %d", fd);
     httpd_sess_trigger_close(wss_keep_alive_get_user_ctx(h), fd);
+
+    // Seems like we have to do everything by ourselves...
+    // In the case that the client is really dead (for example: someone pulled the ethernet cable)
+    // We manually have to delete the session, thus closing the fd.
+    // If we don't do this, httpd_get_client_list will still return the fd
+    // and httpd_ws_get_fd_info will return that this fd is active.
+    // We then will attempt to send data to the fd, running into a timeout.
+    // The httpd task will then block forever, as other tasks will generate data
+    // faster than we are able to throw it away via send timeouts.
+    // Unfortunately there is no API to throw away a web socket connection, so
+    // we have to poke around in the internal structures here.
+    struct httpd_data *hd = (struct httpd_data *)server.httpd;
+
+    struct sock_db *current = hd->hd_sd;
+    struct sock_db *end = hd->hd_sd + hd->config.max_open_sockets - 1;
+
+    while (current <= end) {
+        if (current->fd == fd) {
+            httpd_sess_delete(hd, current);
+            break;
+        }
+        current++;
+    }
+
     wss_close_fd(h, fd);
     return true;
 }
