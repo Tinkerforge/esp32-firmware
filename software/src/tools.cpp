@@ -43,7 +43,7 @@ bool deadline_elapsed(uint32_t deadline_ms)
     return ((uint32_t)(now - deadline_ms)) < (UINT32_MAX / 2);
 }
 
-void read_efuses(uint32_t *ret_uid_numeric, char *ret_uid_string, char *ret_passphrase_string)
+void read_efuses(uint32_t *ret_uid_num, char *ret_uid_str, char *ret_passphrase)
 {
     uint32_t blocks[8] = {0};
 
@@ -52,7 +52,6 @@ void read_efuses(uint32_t *ret_uid_numeric, char *ret_uid_string, char *ret_pass
     }
 
     uint32_t passphrase[4] = {0};
-    uint32_t uid = 0;
 
     /*
     EFUSE_BLK_3 is 256 bit (32 byte, 8 blocks) long and organized as follows:
@@ -88,13 +87,13 @@ void read_efuses(uint32_t *ret_uid_numeric, char *ret_uid_string, char *ret_pass
     passphrase[1] = ((blocks[2] & 0xFFFF0000) >> 16) | ((blocks[5] & 0x000000FF) << 16);
     passphrase[2] = ((blocks[5] & 0x00FFFF00) >> 8)  | ((blocks[6] & 0x000000FF) << 16);
     passphrase[3] =  (blocks[6] & 0xFFFFFF00) >> 8;
-    uid = blocks[7];
+    *ret_uid_num = blocks[7];
 
     char buf[7] = {0};
 
     for (int i = 0; i < 4; ++i) {
         if (i != 0) {
-            ret_passphrase_string[i * 5 - 1] = '-';
+            ret_passphrase[i * 5 - 1] = '-';
         }
 
         tf_base58_encode(passphrase[i], buf);
@@ -102,11 +101,11 @@ void read_efuses(uint32_t *ret_uid_numeric, char *ret_uid_string, char *ret_pass
         if (strnlen(buf, sizeof(buf) / sizeof(buf[0])) != 4) {
             logger.printfln("efuse error: malformed passphrase!");
         } else {
-            memcpy(ret_passphrase_string + i * 5, buf, 4);
+            memcpy(ret_passphrase + i * 5, buf, 4);
         }
     }
 
-    tf_base58_encode(uid, ret_uid_string);
+    tf_base58_encode(*ret_uid_num, ret_uid_str);
 }
 
 int check(int rc, const char *msg)

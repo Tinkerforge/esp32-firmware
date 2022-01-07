@@ -28,7 +28,7 @@
 
 bool deadline_elapsed(uint32_t deadline_ms);
 
-void read_efuses(uint32_t *ret_uid_numeric, char *ret_uid_string, char *ret_passphrase_string);
+void read_efuses(uint32_t *ret_uid_num, char *ret_uid_str, char *ret_passphrase);
 
 int check(int rc, const char *msg);
 
