@@ -492,6 +492,8 @@ int tf_hal_tick(TF_HAL *hal, uint32_t timeout_us) {
                 result = tf_tfp_send_packet(&hal_common->tfps[i], false, deadline_us, &ignored_error_code, &ignored_length);
                 (void)! tf_tfp_finish_send(&hal_common->tfps[i], result, deadline_us); // ignore result for now: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66425#c34
                 dispatched = true;
+
+                break;
             }
 
             if (!device_found || (device_found && dispatched)) {
