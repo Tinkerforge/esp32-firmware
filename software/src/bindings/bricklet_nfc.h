@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-01-07.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -799,6 +799,7 @@ int tf_nfc_callback_tick(TF_NFC *nfc, uint32_t timeout_us);
  * * Card Emulation (Cardemu): Emulates a tag for other readers
  * * Peer to Peer (P2P): Exchange data with other readers
  * * Reader: Reads and writes tags
+ * * Simple: Automatically reads tag IDs
  * 
  * If you change a mode, the Bricklet will reconfigure the hardware for this mode.
  * Therefore, you can only use functions corresponding to the current mode. For

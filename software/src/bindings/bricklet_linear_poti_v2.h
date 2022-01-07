@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-01-07.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -340,7 +340,7 @@ int tf_linear_poti_v2_callback_tick(TF_LinearPotiV2 *linear_poti_v2, uint32_t ti
  * \ingroup TF_LinearPotiV2
  *
  * Returns the position of the linear potentiometer. The value is
- * between 0 (slider down) and 100 (slider up).
+ * between 0% (slider down) and 100% (slider up).
  * 
  * 
  * If you want to get the value periodically, it is recommended to use the
