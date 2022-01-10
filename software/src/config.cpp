@@ -880,24 +880,24 @@ String ConfigRoot::update_from_string(String s)
 
 String ConfigRoot::update_from_json(JsonVariant root)
 {
-    Config::ConfVariant copy = this->value;
-    String err = strict_variant::apply_visitor(from_json{root, false}, copy);
+    Config copy = *this;
+    String err = strict_variant::apply_visitor(from_json{root, false}, copy.value);
 
     if (err != "")
         return err;
 
-    err = strict_variant::apply_visitor(default_validator{}, copy);
+    err = strict_variant::apply_visitor(default_validator{}, copy.value);
 
     if (err != "")
         return err;
 
     if (this->validator != nullptr) {
-        err = this->validator(*this);
+        err = this->validator(copy);
         if (err != "")
             return err;
     }
 
-    this->value = copy;
+    this->value = copy.value;
     this->updated = true;
 
     return err;
@@ -905,23 +905,23 @@ String ConfigRoot::update_from_json(JsonVariant root)
 
 String ConfigRoot::update(Config::ConfUpdate *val)
 {
-    Config::ConfVariant copy = this->value;
-    String err = strict_variant::apply_visitor(from_update{val}, copy);
+    Config copy = *this;
+    String err = strict_variant::apply_visitor(from_update{val}, copy.value);
     if (err != "")
         return err;
 
-    err = strict_variant::apply_visitor(default_validator{}, copy);
+    err = strict_variant::apply_visitor(default_validator{}, copy.value);
 
     if (err != "")
         return err;
 
     if (this->validator != nullptr) {
-        err = this->validator(*this);
+        err = this->validator(copy);
         if (err != "")
             return err;
     }
 
-    this->value = copy;
+    this->value = copy.value;
     this->updated = true;
 
     return err;
