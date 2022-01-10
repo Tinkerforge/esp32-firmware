@@ -42,7 +42,7 @@
 - Improve active/connected phase detection (through EVSE 2.0 Bricklet firmware 2.0.6)
 - Improve vehicle connected detection in case of error on startup  (through EVSE 2.0 Bricklet firmware 2.0.6)
 
-2022-01-10: 1.1.2 (<unknown>)
+2022-01-10: 1.1.2 (d365e548)
 - Don't allow empty client ID in MQTT
 - Add waking up chargers that already charged once  (charge management)
 - Increase active phase threshold to 300 mA (through EVSE 2.0 Bricklet firmware 2.0.7)

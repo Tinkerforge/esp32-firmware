@@ -116,7 +116,7 @@
 - Fix energy meter communication issue caused by wrong port assignment
 - Don't allow empty client ID in MQTT
 
-2022-01-10: 1.3.3 (<unknown>)
+2022-01-10: 1.3.3 (d365e548)
 - Add waking up chargers that already charged once  (charge management)
 - Allow firmware update if vehicle state is error
 - Make web interface usable for screens with 320 to 360 px width
