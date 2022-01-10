@@ -61,8 +61,8 @@ public:
     };
 
     struct UserData {
-        ConfigRoot *value_to_write;
-        ConfigRoot *state;
+        Config *value_to_write;
+        Config *state;
         uint8_t expected_request_id;
         UserDataDone done;
     };
