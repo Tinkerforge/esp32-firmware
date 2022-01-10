@@ -89,7 +89,7 @@ public:
 
         char uid[7] = {0};
 
-        tf_base58_encode(tfp->uid, uid);
+        tf_base58_encode(tfp->uid_num, uid);
 
         result = init_function(&device, uid, &hal);
 
