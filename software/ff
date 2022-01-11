@@ -10,6 +10,19 @@ import serial
 def sigint(self, sig):
     sys.exit(0)
 
+colors = {"off":"\x1b[00m",
+          "blue":   "\x1b[34m",
+          "cyan":   "\x1b[36m",
+          "green":  "\x1b[32m",
+          "red":    "\x1b[31m",
+          "gray": "\x1b[90m"}
+
+def red(s):
+    return colors["red"]+s+colors["off"]
+
+def green(s):
+    return colors["green"]+s+colors["off"]
+
 signal.signal(signal.SIGINT, sigint)
 
 parser = argparse.ArgumentParser()
@@ -17,6 +30,7 @@ parser.add_argument("-p", "--port")
 parser.add_argument("firmware", nargs='?', default=None)
 parser.add_argument("-S", "--no-serial", action="store_true")
 parser.add_argument("-s", "--serial-only", action="store_true")
+parser.add_argument("-e", "--erase", action="store_true")
 args = parser.parse_args()
 
 def get_latest_fw(fw_type=''):
@@ -44,8 +58,12 @@ if args.port:
 else:
     port = "/dev/ttyUSB0"
 
+if args.erase:
+    print(red("Erasing flash on port {}".format(port)))
+    os.system("esptool.py --port {} --chip esp32 erase_flash".format(port))
+
 if not args.serial_only:
-    print("Flashing firmware {} to port {}".format(firmware, port))
+    print(green("Flashing firmware {} to port {}".format(firmware, port)))
 
     os.system("esptool.py --port {} --chip esp32 --baud 921600 --before default_reset --after hard_reset write_flash --flash_mode dio --flash_freq 40m --flash_size 16MB 0x1000 {}".format(port, firmware))
 
