@@ -438,19 +438,16 @@ export function init() {
         save_btn.prop("disabled", false);
     });
 
-
-    let form = <HTMLFormElement>$('#evse_status_charging_current_form')[0];
-
-    form.addEventListener('submit', function (event: Event) {
+    $('#evse_status_charging_current_form').on('submit', function (this: HTMLFormElement, event: Event) {
         event.preventDefault();
         event.stopPropagation();
 
-        if (form.checkValidity() === false) {
+        if (this.checkValidity() === false) {
             return;
         }
 
         set_charging_current(Math.round(<number>input.val() * 1000));
-    }, false);
+    });
 
     $("#debug_start").on("click", debug_start);
     $("#debug_stop").on("click", debug_stop);

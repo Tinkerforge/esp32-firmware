@@ -365,14 +365,11 @@ export function init() {
         save_btn.prop("disabled", false);
     });
 
-
-    let form = <HTMLFormElement>$('#evse_status_charging_current_form')[0];
-
-    form.addEventListener('submit', function (event: Event) {
+    $('#evse_status_charging_current_form').on('submit', function (event: Event) {
         event.preventDefault();
         event.stopPropagation();
 
-        if (form.checkValidity() === false) {
+        if (this.checkValidity() === false) {
             return;
         }
 

@@ -264,24 +264,21 @@ function nfc_save_reboot() {
 }
 
 export function init() {
-    (<HTMLButtonElement>document.getElementById("nfc_reboot_button")).addEventListener("click", nfc_save_reboot);
+    $("#nfc_reboot_button").on("click", nfc_save_reboot);
 
-    let form = <HTMLFormElement>$('#nfc_config_form')[0];
-    form.addEventListener('input', function (event: Event) {
-        $('#nfc_save_button').prop("disabled", false);
-    }, false);
+    $('#nfc_config_form').on('input', (event: Event) => $('#nfc_save_button').prop("disabled", false));
 
-    form.addEventListener('submit', function (event: Event) {
-        form.classList.add('was-validated');
+    $('#nfc_config_form').on('submit', function (this: HTMLFormElement, event: Event) {
+        this.classList.add('was-validated');
         event.preventDefault();
         event.stopPropagation();
 
-        if (form.checkValidity() === false) {
+        if (this.checkValidity() === false) {
             return;
         }
 
         save_nfc_config();
-    }, false);
+    });
 
     $('#nfc_add_tag_form').on("submit", (event: Event) => {
         let btns = $('#nfc_seen_tags > button');

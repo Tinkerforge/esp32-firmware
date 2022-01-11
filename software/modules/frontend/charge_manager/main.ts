@@ -277,26 +277,23 @@ function charge_manager_save_reboot() {
 }
 
 export function init() {
-    (<HTMLButtonElement>document.getElementById("charge_manager_reboot_button")).addEventListener("click", charge_manager_save_reboot);
+    $("#charge_manager_reboot_button").on("click", charge_manager_save_reboot);
 
-    let form = <HTMLFormElement>$('#charge_manager_config_form')[0];
-    form.addEventListener('input', function (event: Event) {
-        $('#charge_manager_save_button').prop("disabled", false);
-    }, false);
+    $('#charge_manager_config_form').on('input', () => $('#charge_manager_save_button').prop("disabled", false));
 
-    form.addEventListener('submit', function (event: Event) {
+    $('#charge_manager_config_form').on('submit', function (this: HTMLFormElement, event: Event) {
         $('#charge_manager_default_available_current').prop("max", $('#charge_manager_maximum_available_current').val());
 
-        form.classList.add('was-validated');
+        this.classList.add('was-validated');
         event.preventDefault();
         event.stopPropagation();
 
-        if (form.checkValidity() === false) {
+        if (this.checkValidity() === false) {
             return;
         }
 
         save_charge_manager_config();
-    }, false);
+    });
 
     $('#charge_manager_add_charger_form').on("submit", (event: Event) => {
         let form = <HTMLFormElement>$('#charge_manager_add_charger_form')[0];
@@ -322,26 +319,21 @@ export function init() {
 
     $("#charge_manager_status_available_current_minimum").on("click", () => set_available_current(0));
 
-    let input = $('#charge_manager_status_available_current');
-    let save_btn = $('#charge_manager_status_available_current_save');
-    input.on("input", () => {
-        save_btn.html(feather.icons.save.toSvg());
-        save_btn.prop("disabled", false);
+    $('#charge_manager_status_available_current').on("input", () => {
+        $('#charge_manager_status_available_current_save').html(feather.icons.save.toSvg());
+        $('#charge_manager_status_available_current_save').prop("disabled", false);
     });
 
-
-    let form2 = <HTMLFormElement>$('#charge_manager_status_available_current_form')[0];
-
-    form2.addEventListener('submit', function (event: Event) {
+    $('#charge_manager_status_available_current_form').on('submit', function (this: HTMLFormElement, event: Event) {
         event.preventDefault();
         event.stopPropagation();
 
-        if (form.checkValidity() === false) {
+        if (this.checkValidity() === false) {
             return;
         }
 
-        set_available_current(Math.round(<number>input.val() * 1000));
-    }, false);
+        set_available_current(Math.round(<number>$('#charge_manager_status_available_current').val() * 1000));
+    });
 }
 
 export function addEventListeners(source: EventSource) {

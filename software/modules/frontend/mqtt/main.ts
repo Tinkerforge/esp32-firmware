@@ -95,28 +95,25 @@ export function addEventListeners(source: EventSource) {
 }
 
 export function init() {
-    let show_button = <HTMLButtonElement>document.getElementById("mqtt_show_password");
-    show_button.addEventListener("change", util.toggle_password_fn("#mqtt_broker_password"));
+    $("#mqtt_show_password").on("change", util.toggle_password_fn("#mqtt_broker_password"));
 
-    let clear_button = <HTMLButtonElement>document.getElementById("mqtt_clear_password");
-    clear_button.addEventListener("change", util.clear_password_fn("#mqtt_broker_password"));
+    $("#mqtt_clear_password").on("change", util.clear_password_fn("#mqtt_broker_password"));
 
-    let form = <HTMLFormElement>$('#mqtt_config_form')[0];
-    form.addEventListener('submit', function (event: Event) {
+    $('#mqtt_config_form').on('submit', function (this: HTMLFormElement, event: Event) {
         $('#mqtt_broker_host').prop("required", $('#mqtt_enable').is(':checked'));
 
-        form.classList.add('was-validated');
+        this.classList.add('was-validated');
         event.preventDefault();
         event.stopPropagation();
 
-        if (form.checkValidity() === false) {
+        if (this.checkValidity() === false) {
             return;
         }
 
         save_mqtt_config();
-    }, false);
+    });
 
-    (<HTMLButtonElement>document.getElementById("mqtt_reboot_button")).addEventListener("click", () => {
+    $("#mqtt_reboot_button").on("click", () => {
         $('#mqtt_reboot').modal('hide');
         util.reboot();
     });

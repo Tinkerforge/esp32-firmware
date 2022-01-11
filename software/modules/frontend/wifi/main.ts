@@ -79,8 +79,7 @@ function update_wifi_scan_results(data: WifiInfo[]) {
     $("#scan_wifi_button").dropdown('update')
 
     $.each(data, (i, v: WifiInfo) => {
-        let button = document.getElementById(`wifi_scan_result_${i}`);
-        button.addEventListener("click", () => connect_to_ap(v.ssid, v.bssid, v.encryption, <boolean>tups[2*i+1]));
+        $(`wifi_scan_result_${i}`).on("click", () => connect_to_ap(v.ssid, v.bssid, v.encryption, <boolean>tups[2*i+1]));
     });
 
     feather.replace();
@@ -407,52 +406,44 @@ export function addEventListeners(source: EventSource) {
 }
 
 export function init() {
-    (<HTMLButtonElement>document.getElementById("scan_wifi_button")).addEventListener("click", scan_wifi);
+    $("#scan_wifi_button").on("click", scan_wifi);
 
-    (<HTMLButtonElement>document.getElementById("wifi_reboot_button")).addEventListener("click", wifi_save_reboot);
+    $("#wifi_reboot_button").on("click", wifi_save_reboot);
 
-    let sta_show_button = <HTMLButtonElement>document.getElementById("wifi_sta_show_passphrase");
-    sta_show_button.addEventListener("change", util.toggle_password_fn("#wifi_sta_passphrase"));
+    $("#wifi_sta_show_passphrase").on("change", util.toggle_password_fn("#wifi_sta_passphrase"));
 
-    let sta_clear_button = <HTMLButtonElement>document.getElementById("wifi_sta_clear_passphrase");
-    sta_clear_button.addEventListener("change", util.clear_password_fn("#wifi_sta_passphrase"));
+    $("#wifi_sta_clear_passphrase").on("change", util.clear_password_fn("#wifi_sta_passphrase"));
 
-    let ap_show_button = <HTMLButtonElement>document.getElementById("wifi_ap_show_passphrase");
-    ap_show_button.addEventListener("change", util.toggle_password_fn("#wifi_ap_passphrase"));
+    $("#wifi_ap_show_passphrase").on("change", util.toggle_password_fn("#wifi_ap_passphrase"));
 
-    let ap_clear_button = <HTMLButtonElement>document.getElementById("wifi_ap_clear_passphrase");
-    ap_clear_button.addEventListener("change", util.clear_password_fn("#wifi_ap_passphrase"));
+    $("#wifi_ap_clear_passphrase").on("change", util.clear_password_fn("#wifi_ap_passphrase"));
 
-
-    let ap_ip_config = <HTMLInputElement>document.getElementById("wifi_sta_show_static");
-    ap_ip_config.addEventListener("change", () => wifi_cfg_toggle_static_ip_collapse(ap_ip_config.value));
+    $("#wifi_sta_show_static").on("change", function(this: HTMLInputElement) {wifi_cfg_toggle_static_ip_collapse(this.value);});
 
     // Use bootstrap form validation
-    let form = <HTMLFormElement>$('#wifi_sta_form')[0];
-    form.addEventListener('submit', function (event: Event) {
+    $('#wifi_sta_form').on('submit', function (this: HTMLFormElement, event: Event) {
         $('#wifi_sta_ssid').prop("required", $('#wifi_sta_enable_sta').is(':checked'));
 
-        form.classList.add('was-validated');
+        this.classList.add('was-validated');
         event.preventDefault();
         event.stopPropagation();
 
-        if (form.checkValidity() === false) {
+        if (this.checkValidity() === false) {
             return;
         }
         save_wifi_sta_config(() => $('#wifi_reboot').modal('show'));
-    }, false);
+    });
 
-    let form2 = <HTMLFormElement>$('#wifi_ap_form')[0];
-    form2.addEventListener('submit', function (event: Event) {
-        form2.classList.add('was-validated');
+    $('#wifi_ap_form').on('submit', function (this: HTMLFormElement, event: Event) {
+        this.classList.add('was-validated');
         event.preventDefault();
         event.stopPropagation();
 
-        if (form2.checkValidity() === false) {
+        if (this.checkValidity() === false) {
             return;
         }
         save_wifi_ap_config(() => $('#wifi_reboot').modal('show'));
-    }, false);
+    });
 
     $('#scan_wifi_dropdown').on('hidden.bs.dropdown', function (e) {
         $("#wifi_scan_title").html(__("wifi.content.sta_scanning"));

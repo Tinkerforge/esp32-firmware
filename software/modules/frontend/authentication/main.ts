@@ -62,16 +62,13 @@ function save_authentication_config() {
 }
 
 export function init() {
-    let show_button = <HTMLButtonElement>document.getElementById("authentication_show_password");
-    show_button.addEventListener("change", util.toggle_password_fn("#authentication_password"));
+    $("#authentication_show_password").on("change", util.toggle_password_fn("#authentication_password"));
 
-    let auth_button = <HTMLButtonElement>document.getElementById("authentication_enable");
-    auth_button.addEventListener("change", (ev: Event) => {
-        let x = <HTMLInputElement>ev.target;
-        $('#authentication_username').prop("disabled", !x.checked);
-        $('#authentication_password').prop("disabled", !x.checked);
-        $('#authentication_show_password').prop("disabled", !x.checked);
-        if (!x.checked) {
+    $("#authentication_enable").on("change", function(this: HTMLInputElement, ev: Event) {
+        $('#authentication_username').prop("disabled", !this.checked);
+        $('#authentication_password').prop("disabled", !this.checked);
+        $('#authentication_show_password').prop("disabled", !this.checked);
+        if (!this.checked) {
             $('#authentication_show_password').prop("checked", false);
         }
 
@@ -82,18 +79,17 @@ export function init() {
             // If the field is not required, a password is currently stored.
             // if auth is to be enabled, the stored password can be used (-> unchanged if empty)
             // if auth is to be disabled, the stored password will be cleared
-            auth_placeholder = x.checked ?  __("util.unchanged") : __("util.to_be_cleared");
+            auth_placeholder = this.checked ?  __("util.unchanged") : __("util.to_be_cleared");
 
         $('#authentication_password').attr("placeholder", auth_placeholder);
     });
 
-    let form = <HTMLFormElement>$('#authentication_config_form')[0];
-    form.addEventListener('submit', function (event: Event) {
-        form.classList.add('was-validated');
+    $('#authentication_config_form').on('submit', function (this: HTMLFormElement, event: Event) {
+        this.classList.add('was-validated');
         event.preventDefault();
         event.stopPropagation();
 
-        if (form.checkValidity() === false) {
+        if (this.checkValidity() === false) {
             return;
         }
 
@@ -101,14 +97,14 @@ export function init() {
             $('#authentication_confirm').modal('show');
         else
             save_authentication_config();
-    }, false);
+    });
 
     $('#authentication_confirm_button').on("click", () => {
         $('#authentication_confirm').modal('hide');
         save_authentication_config();
     });
 
-    (<HTMLButtonElement>document.getElementById("authentication_reboot_button")).addEventListener("click", () => {
+    $("#authentication_reboot_button").on("click", () => {
         $('#authentication_reboot').modal('hide');
         util.reboot();
     });

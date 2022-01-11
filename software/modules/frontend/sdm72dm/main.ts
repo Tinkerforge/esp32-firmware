@@ -187,8 +187,7 @@ function init_chart() {
         ]
     });
 
-    let input = <HTMLInputElement>document.getElementById("meter_chart_time_select");
-    meter_chart_change_time(input.value);
+    meter_chart_change_time($("#meter_chart_time_select").val().toString());
 }
 
 let allowed_current = 32000;
@@ -430,12 +429,10 @@ function update_evse_v2_detailed_values(v: number[]) {
 }
 
 export function init() {
-    let input = <HTMLInputElement>document.getElementById("meter_chart_time_select");
-    input.addEventListener(
-        "change", () => meter_chart_change_time(input.value)
-    );
+    // No => here: we want "this" to be the changed element
+    $("#meter_chart_time_select").on("change", function(this: HTMLInputElement){meter_chart_change_time(this.value);});
 
-    (<HTMLButtonElement>document.getElementById("energy_meter_reset_statistics_button")).addEventListener("click", energy_meter_reset_statistics);
+    $("#energy_meter_reset_statistics_button").on("click", energy_meter_reset_statistics);
 
     // The energy meter tab layout is generated when it is shown first.
     // We have to create the chart then, to make sure it is scaled correctly.

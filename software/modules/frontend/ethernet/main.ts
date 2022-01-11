@@ -146,23 +146,22 @@ export function addEventListeners(source: EventSource) {
 }
 
 export function init() {
-    (<HTMLButtonElement>document.getElementById("ethernet_reboot_button")).addEventListener("click", ethernet_save_reboot);
+    $("#ethernet_reboot_button").on("click", ethernet_save_reboot);
 
-    let ip_config = <HTMLInputElement>document.getElementById("ethernet_show_static");
-    ip_config.addEventListener("change", () => ethernet_cfg_toggle_static_ip_collapse(ip_config.value));
+    // No => here: we want "this" to be the changed element
+    $("#ethernet_show_static").on("change", function(this: HTMLInputElement) {ethernet_cfg_toggle_static_ip_collapse(this.value);});
 
     // Use bootstrap form validation
-    let form = <HTMLFormElement>$('#ethernet_form')[0];
-    form.addEventListener('submit', function (event: Event) {
-        form.classList.add('was-validated');
+    $('#ethernet_form').on('submit', function (this: HTMLFormElement, event: Event) {
+        this.classList.add('was-validated');
         event.preventDefault();
         event.stopPropagation();
 
-        if (form.checkValidity() === false) {
+        if (this.checkValidity() === false) {
             return;
         }
         save_ethernet_config(() => $('#ethernet_reboot').modal('show'));
-    }, false);
+    });
 }
 
 export function updateLockState(module_init: any) {
