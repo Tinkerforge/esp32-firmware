@@ -365,7 +365,7 @@ export function init() {
         save_btn.prop("disabled", false);
     });
 
-    $('#evse_status_charging_current_form').on('submit', function (event: Event) {
+    $('#evse_status_charging_current_form').on('submit', function (this: HTMLFormElement, event: Event) {
         event.preventDefault();
         event.stopPropagation();
 
@@ -374,9 +374,9 @@ export function init() {
         }
 
         set_charging_current(Math.round(<number>input.val() * 1000));
-    }, false);
+    });
 
-    $('#user_calibration_upload').on("change",(evt) => {
+    $('#user_calibration_upload').on("change",(evt: Event) => {
         let files = (<HTMLInputElement>evt.target).files;
         if (files.length < 1) {
             return;
