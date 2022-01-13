@@ -79,7 +79,7 @@ function update_wifi_scan_results(data: WifiInfo[]) {
     $("#scan_wifi_button").dropdown('update')
 
     $.each(data, (i, v: WifiInfo) => {
-        $(`wifi_scan_result_${i}`).on("click", () => connect_to_ap(v.ssid, v.bssid, v.encryption, <boolean>tups[2*i+1]));
+        $(`#wifi_scan_result_${i}`).on("click", () => connect_to_ap(v.ssid, v.bssid, v.encryption, <boolean>tups[2*i+1]));
     });
 
     feather.replace();
