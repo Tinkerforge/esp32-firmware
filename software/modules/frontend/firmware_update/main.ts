@@ -163,7 +163,7 @@ export function init() {
 
     $('#spiffs_factory_reset').on("click", factory_reset_modal);
     $('#factory_reset_confirm').on("click", factory_reset);
-    $('#reboot').on("click", util.reboot);
+    $('#firmware_update_reboot').on("click", util.reboot);
 
     bsCustomFileInput.init();
 }
