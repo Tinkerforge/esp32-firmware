@@ -193,6 +193,39 @@ def stop_blink(stage3):
     blink_count = 0
     stage3.set_led_strip_color((0, 0, 255))
 
+def handle_electrical_test_report(action, serial_number, timeout):
+    timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S_%f')
+
+    if serial_number != None:
+        command = action + '_' + serial_number + '_' + timestamp
+    else:
+        command = action + '_' + timestamp
+
+    command_responses = [command + '_success', command + '_failure']
+
+    with open(os.path.join('electrical_test_automation', 'monitor', command), 'w') as f:
+        pass
+
+    start = time.monotonic()
+    command_response = None
+
+    while command_response == None and start + timeout > time.monotonic():
+        for name in os.listdir(os.path.join('electrical_test_automation', 'monitor')):
+            if name in command_responses:
+                command_response = name
+                break
+
+    if command_response == None:
+        fatal_error('Electrical test report {0} did not complete in time, please check manually'.format(action))
+
+    try:
+        os.remove(os.path.join('electrical_test_automation', 'monitor', command_response))
+    except FileNotFoundError:
+        pass
+
+    if command_response.endswith('_failure'):
+        fatal_error('Electrical test report {0} failed, please perform this step manually'.format(action))
+
 class ContentTypeRemover(urllib.request.BaseHandler):
     def http_request(self, req):
         if req.has_header('Content-type'):
@@ -499,6 +532,12 @@ def main(stage3):
 
     with open("{}_{}_report_stage_2.json".format(ssid, now().replace(":", "-")), "w") as f:
         json.dump(result, f, indent=4)
+
+    print('Uploading empty electrical test report for next test')
+    handle_electrical_test_report('upload', None, 180)
+
+    print('Downloading complete electrical test report from this text')
+    handle_electrical_test_report('download', qr_serial, 300)
 
     print('Done!')
 
