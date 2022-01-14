@@ -20,7 +20,10 @@
             "abort_reset": "Abort",
             "confirm_reset": "Reset to factory defaults",
             "reboot": "Reboot",
-            "reboot_desc": null
+            "reboot_desc": null,
+            "downgrade": "Firmware downgrade",
+            "abort_downgrade": "Abort",
+            "confirm_downgrade": "Downgrade firmware"
         },
         "script": {
             "flash_success": "Successfully updated; restarting...",

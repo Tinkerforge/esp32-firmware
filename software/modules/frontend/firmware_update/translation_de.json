@@ -22,7 +22,6 @@
             "reboot": "Neu starten",
             "reboot_desc": null,
             "downgrade": "Firmware-Downgrade",
-            "downgrade_modal_text": "",
             "abort_downgrade": "Abbrechen",
             "confirm_downgrade": "Downgrade durchführen"
         },
