@@ -370,11 +370,6 @@ function save_wifi_ap_config(continuation = function () { }) {
     });
 }
 
-function wifi_save_reboot() {
-    $('#wifi_reboot').modal('hide');
-    util.reboot();
-}
-
 export function addEventListeners(source: EventSource) {
     source.addEventListener('wifi/state', function (e: util.SSE) {
         update_wifi_state(<WifiState>(JSON.parse(e.data)));
@@ -408,8 +403,6 @@ export function addEventListeners(source: EventSource) {
 export function init() {
     $("#scan_wifi_button").on("click", scan_wifi);
 
-    $("#wifi_reboot_button").on("click", wifi_save_reboot);
-
     $("#wifi_sta_show_passphrase").on("change", util.toggle_password_fn("#wifi_sta_passphrase"));
 
     $("#wifi_sta_clear_passphrase").on("change", util.clear_password_fn("#wifi_sta_passphrase"));
@@ -431,7 +424,7 @@ export function init() {
         if (this.checkValidity() === false) {
             return;
         }
-        save_wifi_sta_config(() => $('#wifi_reboot').modal('show'));
+        save_wifi_sta_config(util.getShowRebootModalFn(__("wifi.script.sta_reboot_content_changed")));
     });
 
     $('#wifi_ap_form').on('submit', function (this: HTMLFormElement, event: Event) {
@@ -442,7 +435,7 @@ export function init() {
         if (this.checkValidity() === false) {
             return;
         }
-        save_wifi_ap_config(() => $('#wifi_reboot').modal('show'));
+        save_wifi_ap_config(util.getShowRebootModalFn(__("wifi.script.ap_reboot_content_changed")));
     });
 
     $('#scan_wifi_dropdown').on('hidden.bs.dropdown', function (e) {

@@ -32,12 +32,7 @@
             "type_2": "NFC Forum Typ 2",
             "type_3": "NFC Forum Typ 3",
             "type_4": "NFC Forum Typ 4",
-            "add_tag_description": "Das neue Tag kann zum Anlernen an die rechte Seite der Wallbox gehalten werden. Alternativ können Tag-ID und Tag-Typ manuell angegeben werden.",
-
-            "reboot_title": "Neu starten um Konfiguration anzuwenden",
-            "reboot_content": "Die geänderten NFC-Einstellungen werden nur nach einem Neustart angewendet. Jetzt neu starten?",
-            "abort": "Abbrechen",
-            "reboot": "Neu starten"
+            "add_tag_description": "Das neue Tag kann zum Anlernen an die rechte Seite der Wallbox gehalten werden. Alternativ können Tag-ID und Tag-Typ manuell angegeben werden."
         },
         "script": {
             "add_tag": "Tag hinzufügen",
@@ -45,7 +40,8 @@
             "tag_name": "Tag-Name",
             "tag_type": "Tag-Typ",
             "last_seen_unknown": "placeholder",
-            "save_failed": "Aktualisieren der NFC-Einstellungen fehlgeschlagen"
+            "save_failed": "Aktualisieren der NFC-Einstellungen fehlgeschlagen",
+            "reboot_content_changed": "NFC-Einstellungen"
         }
     }
 }

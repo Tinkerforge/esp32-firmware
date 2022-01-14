@@ -72,7 +72,7 @@ function save_mqtt_config() {
         method: 'PUT',
         contentType: 'application/json',
         data: JSON.stringify(payload),
-        success: () => $('#mqtt_reboot').modal('show'),
+        success: util.getShowRebootModalFn(__("mqtt.content.reboot_content_changed")),
         error: (xhr, status, error) => util.add_alert("mqtt_config_update_failed", "alert-danger", __("mqtt.script.save_failed"), error + ": " + xhr.responseText)
     });
 }
@@ -111,11 +111,6 @@ export function init() {
         }
 
         save_mqtt_config();
-    });
-
-    $("#mqtt_reboot_button").on("click", () => {
-        $('#mqtt_reboot').modal('hide');
-        util.reboot();
     });
 }
 

@@ -32,12 +32,7 @@
             "type_2": "NFC Forum Type 2",
             "type_3": "NFC Forum Type 3",
             "type_4": "NFC Forum Type 4",
-            "add_tag_description": "Hold the new tag to the right side of the charger. Tag ID and type can also be typed in manually.",
-
-            "reboot_title": "Restart to apply configuration",
-            "reboot_content": "The modified NFC configuration will only be applied after a restart. Reboot now?",
-            "abort": "Abort",
-            "reboot": "Reboot"
+            "add_tag_description": "Hold the new tag to the right side of the charger. Tag ID and type can also be typed in manually."
         },
         "script": {
             "add_tag": "Add tag",
@@ -45,7 +40,8 @@
             "tag_name": "Tag name",
             "tag_type": "Tag type",
             "last_seen_unknown": "placeholder",
-            "save_failed": "Failed to update the NFC configuration"
+            "save_failed": "Failed to update the NFC configuration",
+            "reboot_content_changed": "NFC configuration"
         }
     }
 }

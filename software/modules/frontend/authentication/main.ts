@@ -56,7 +56,7 @@ function save_authentication_config() {
         method: 'PUT',
         contentType: 'application/json',
         data: JSON.stringify(payload),
-        success: () => $('#authentication_reboot').modal('show'),
+        success: util.getShowRebootModalFn(__("authentication.script.reboot_content_changed")),
         error: (xhr, status, error) => util.add_alert("authentication_config_update_failed", "alert-danger", __("authentication.script.save_failed"), error + ": " + xhr.responseText)
     });
 }
@@ -102,11 +102,6 @@ export function init() {
     $('#authentication_confirm_button').on("click", () => {
         $('#authentication_confirm').modal('hide');
         save_authentication_config();
-    });
-
-    $("#authentication_reboot_button").on("click", () => {
-        $('#authentication_reboot').modal('hide');
-        util.reboot();
     });
 }
 

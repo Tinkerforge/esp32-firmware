@@ -22,11 +22,6 @@
             "static": "static",
             "save": "Save",
 
-            "reboot_title": "Restart to apply configuration",
-            "reboot_content": "The modified LAN configuration will only be applied after a restart. Reboot now?",
-            "abort": "Abort",
-            "reboot": "Reboot",
-
             "static_ip": "IP address",
             "subnet": "Subnet mask",
             "gateway": "Gateway",
@@ -39,7 +34,8 @@
             "dns2_invalid": "The alternative DNS server IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1, or be empty."
         },
         "script": {
-            "config_failed": "Failed to save connection configuration."
+            "config_failed": "Failed to save connection configuration.",
+            "reboot_content_changed": "connection configuration"
         }
     }
 }

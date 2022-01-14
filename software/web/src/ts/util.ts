@@ -304,3 +304,11 @@ export function downloadToFile(content: BlobPart, filename: string, contentType:
 
     URL.revokeObjectURL(a.href);
 };
+
+export function getShowRebootModalFn(changed_value_name: string) {
+    return () => {
+        $('#reboot_content_changed').html(changed_value_name);
+        $('#reboot').modal('show');
+        //$('#ethernet_reboot').modal('show');
+    }
+}

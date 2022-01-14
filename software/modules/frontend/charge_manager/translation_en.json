@@ -32,10 +32,6 @@
             "add_charger_modal_abort": "Discard",
             "add_charger_modal_save": "Save",
 
-            "reboot_title": "Restart to apply configuration",
-            "reboot_content": "The modified Charge manager configuration will only be applied after a restart. Reboot now?",
-            "abort": "Abort",
-            "reboot": "Reboot",
             "save": "Save",
 
             "managed_boxes": "Managed chargers"
@@ -77,7 +73,9 @@
             "save_failed": "Failed to save the charge manager configuration",
             "set_available_current_failed": "Failed to set the available current",
             "add_charger": "Add charger",
-            "add_charger_disabled": "Only up to 10 chargers are supported."
+            "add_charger_disabled": "Only up to 10 chargers are supported.",
+
+            "reboot_content_changed": "charge manager configuration"
         }
     }
 }

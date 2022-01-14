@@ -130,11 +130,6 @@ function save_ethernet_config(continuation = function () { }) {
     });
 }
 
-function ethernet_save_reboot() {
-    $('#ethernet_reboot').modal('hide');
-    util.reboot();
-}
-
 export function addEventListeners(source: EventSource) {
     source.addEventListener('ethernet/state', function (e: util.SSE) {
         update_ethernet_state(<EthernetState>(JSON.parse(e.data)));
@@ -146,8 +141,6 @@ export function addEventListeners(source: EventSource) {
 }
 
 export function init() {
-    $("#ethernet_reboot_button").on("click", ethernet_save_reboot);
-
     // No => here: we want "this" to be the changed element
     $("#ethernet_show_static").on("change", function(this: HTMLInputElement) {ethernet_cfg_toggle_static_ip_collapse(this.value);});
 
@@ -160,7 +153,7 @@ export function init() {
         if (this.checkValidity() === false) {
             return;
         }
-        save_ethernet_config(() => $('#ethernet_reboot').modal('show'));
+        save_ethernet_config(util.getShowRebootModalFn(__("ethernet.script.reboot_content_changed")));
     });
 }
 

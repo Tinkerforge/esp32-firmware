@@ -21,14 +21,11 @@
             "topic_prefix": "<span class=\"form-label pr-2\">Topic prefix</span><span class=\"text-muted\">optional</span>",
             "topic_prefix_invalid": "The topic prefix can not start with $ or contain a # or +.",
             "client_name": "<span class=\"form-label pr-2\">Client ID</span>",
-            "save": "Save",
-            "reboot_title": "Reboot to apply configuration",
-            "reboot_content": "The changed MQTT configuration will only be applied after rebooting. Reboot now?",
-            "abort": "Abort",
-            "reboot": "Reboot"
+            "save": "Save"
         },
         "script": {
-            "save_failed": "Failed to save the MQTT configuration."
+            "save_failed": "Failed to save the MQTT configuration.",
+            "reboot_content_changed": "MQTT settings"
         }
     }
 }

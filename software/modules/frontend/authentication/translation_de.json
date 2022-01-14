@@ -13,10 +13,6 @@
             "username": "Benutzername",
             "password": "Passwort",
             "save": "Speichern",
-            "reboot_title": "Neu starten um Konfiguration anzuwenden",
-            "reboot_content": "Die geänderten Zugangsdaten werden nur nach einem Neustart angewendet. Jetzt neu starten?",
-            "abort": "Abbrechen",
-            "reboot": "Neu starten",
             "username_invalid": "Der Benutzername darf nicht leer sein.",
             "password_invalid": "Das Passwort darf nicht leer sein.",
             "confirm_title": "Anmeldung aktivieren?",
@@ -25,7 +21,8 @@
             "confirm_confirm": "Aktivieren"
         },
         "script": {
-            "save_failed": "Speichern der Zugangsdaten fehlgeschlagen."
+            "save_failed": "Speichern der Zugangsdaten fehlgeschlagen.",
+            "reboot_content_changed": "Zugangsdaten"
         }
     }
 }

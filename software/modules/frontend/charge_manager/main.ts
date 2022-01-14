@@ -265,20 +265,13 @@ function save_charge_manager_config() {
         data: JSON.stringify(payload),
         success: () => {
             $('#charge_manager_save_button').prop("disabled", true);
-            $('#charge_manager_reboot').modal('show');
+            util.getShowRebootModalFn(__("charge_manager.script.reboot_content_changed"))();
         },
         error: (xhr, status, error) => util.add_alert("charge_manager_config_update_failed", "alert-danger", __("charge_manager.script.save_failed"), error + ": " + xhr.responseText)
     });
 }
 
-function charge_manager_save_reboot() {
-    $('#charge_manager_reboot').modal('hide');
-    util.reboot();
-}
-
 export function init() {
-    $("#charge_manager_reboot_button").on("click", charge_manager_save_reboot);
-
     $('#charge_manager_config_form').on('input', () => $('#charge_manager_save_button').prop("disabled", false));
 
     $('#charge_manager_config_form').on('submit', function (this: HTMLFormElement, event: Event) {

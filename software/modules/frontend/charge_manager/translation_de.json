@@ -32,10 +32,6 @@
             "add_charger_modal_abort": "Verwerfen",
             "add_charger_modal_save": "Hinzufügen",
 
-            "reboot_title": "Neu starten um Konfiguration anzuwenden",
-            "reboot_content": "Die geänderten Lastmanagement-Einstellungen werden nur nach einem Neustart angewendet. Jetzt neu starten?",
-            "abort": "Abbrechen",
-            "reboot": "Neu starten",
             "save": "Speichern",
 
             "managed_boxes": "Kontrollierte Wallboxen"
@@ -77,7 +73,9 @@
             "save_failed": "Speichern der Lastmanager-Konfiguration fehlgeschlagen",
             "set_available_current_failed": "Setzen des verfügbaren Stroms fehlgeschlagen",
             "add_charger": "Wallbox hinzufügen",
-            "add_charger_disabled": "Es werden nur bis zu 10 Wallboxen unterstützt."
+            "add_charger_disabled": "Es werden nur bis zu 10 Wallboxen unterstützt.",
+
+            "reboot_content_changed": "Lastmanagement-Einstellungen"
         }
     }
 }

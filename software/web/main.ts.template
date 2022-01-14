@@ -88,4 +88,9 @@ $(window).on('pageshow', (ev) => {
         $('a[data-toggle="tab"]').not(<Element>event.target).removeClass("active");
         $('a[data-toggle="tab"]').not(<Element>event.target).trigger("hidden.bs.tab");
     });
+
+    $("#reboot_button").on("click", () => {
+        $('#reboot').modal('hide');
+        util.reboot();
+    });
 });

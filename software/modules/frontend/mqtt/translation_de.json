@@ -21,14 +21,11 @@
             "topic_prefix": "<span class=\"form-label pr-2\">Topic-Präfix</span><span class=\"text-muted\">optional</span>",
             "topic_prefix_invalid": "Der Topic-Präfix darf nicht mit $ beginnen, oder ein # oder + enthalten.",
             "client_name": "<span class=\"form-label pr-2\">Client-ID</span>",
-            "save": "Speichern",
-            "reboot_title": "Neu starten um Konfiguration anzuwenden",
-            "reboot_content": "Die geänderten MQTT-Einstellungen werden nur nach einem Neustart angewendet. Jetzt neu starten?",
-            "abort": "Abbrechen",
-            "reboot": "Neu starten"
+            "save": "Speichern"
         },
         "script": {
-            "save_failed": "Speichern der MQTT-Einstellungen fehlgeschlagen."
+            "save_failed": "Speichern der MQTT-Einstellungen fehlgeschlagen.",
+            "reboot_content_changed": "MQTT-Einstellungen"
         }
     }
 }

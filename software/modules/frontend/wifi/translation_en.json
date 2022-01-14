@@ -36,11 +36,6 @@
             "sta_static": "static",
             "save": "Save",
 
-            "reboot_title": "Restart to apply configuration",
-            "reboot_content": "The modified WiFi configuration will only be applied after a restart. Reboot now?",
-            "abort": "Abort",
-            "reboot": "Reboot",
-
             "static_ip": "IP address",
             "subnet": "Subnet mask",
             "gateway": "Gateway",
@@ -84,7 +79,9 @@
 
             "sta_config_failed": "Failed to save connection configuration.",
             "ap_config_failed": "Failed to save access point configuration.",
-            "no_ap_configured": "No connection configured"
+            "no_ap_configured": "No connection configured",
+            "sta_reboot_content_changed": "connection configuration",
+            "ap_reboot_content_changed": "access point configuration"
         }
     }
 }

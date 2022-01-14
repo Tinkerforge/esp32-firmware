@@ -13,10 +13,6 @@
             "username": "Username",
             "password": "Password",
             "save": "Save",
-            "reboot_title": "Reboot to apply configuration",
-            "reboot_content": "The changed credentials will only be applied after rebooting. Reboot now?",
-            "abort": "Abort",
-            "reboot": "Reboot",
             "username_invalid": "An empty username is not allowed.",
             "password_invalid": "An empty password is not allowed.",
             "confirm_title": "Enable authentication?",
@@ -25,7 +21,8 @@
             "confirm_confirm": "Enable"
         },
         "script": {
-            "save_failed": "Failed to save the credentials."
+            "save_failed": "Failed to save the credentials.",
+            "reboot_content_changed": "credentials"
         }
     }
 }
