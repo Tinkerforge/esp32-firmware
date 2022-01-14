@@ -24,6 +24,11 @@
             "enable_mqtt_desc": "This allows controlling the charger over the configured MQTT broker. <a href=\"{{{apidoc_url}}}\">MQTT API documentation (German only)</a>"
         }
     },
+    "network": {
+        "content": {
+            "enable_mdns_desc": "mDNS allows other devices in this network to find the charger."
+        }
+    },
     "util": {
         "event_connection_lost_title": "Charger connection lost!"
     },

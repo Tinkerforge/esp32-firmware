@@ -29,6 +29,11 @@
             "enable_mqtt_desc": "Hierdurch kann der Brick über den konfigurierten MQTT-Broker kontrolliert werden. <a href=\"{{{apidoc_url}}}\">MQTT-API-Dokumentation</a>"
         }
     },
+    "network": {
+        "content": {
+            "enable_mdns_desc": "mDNS erlaubt es anderen Geräten in diesem Netzwerk, den Brick zu finden."
+        }
+    },
     "util": {
         "event_connection_lost_title": "Verbindung zum Brick verloren!"
     },

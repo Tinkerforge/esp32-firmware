@@ -30,6 +30,7 @@
 #include "api.h"
 #include "task_scheduler.h"
 #include "build.h"
+#include "modules.h"
 
 extern API api;
 extern TaskScheduler task_scheduler;
@@ -39,7 +40,6 @@ Ethernet::Ethernet()
 {
     ethernet_config = Config::Object({
         {"enable_ethernet", Config::Bool(true)},
-        {"hostname", Config::Str("", 0, 32)},
         {"ip", Config::Array({
                 Config::Uint8(0),
                 Config::Uint8(0),
@@ -116,53 +116,10 @@ Ethernet::Ethernet()
 
     ethernet_force_reset = Config::Null();
 }
-/*
-bool eth_connected = false;
-
-void WiFiEvent(WiFiEvent_t event)
-{
-  switch (event) {
-    case SYSTEM_EVENT_ETH_START:
-      Serial.println("ETH Started");
-      //set eth hostname here
-      ETH.setHostname("esp32-ethernet");
-      break;
-    case SYSTEM_EVENT_ETH_CONNECTED:
-      Serial.println("ETH Connected");
-      break;
-    case SYSTEM_EVENT_ETH_GOT_IP:
-      Serial.print("ETH MAC: ");
-      Serial.print(ETH.macAddress());
-      Serial.print(", IPv4: ");
-      Serial.print(ETH.localIP());
-      if (ETH.fullDuplex()) {
-        Serial.print(", FULL_DUPLEX");
-      }
-      Serial.print(", ");
-      Serial.print(ETH.linkSpeed());
-      Serial.println("Mbps");
-      eth_connected = true;
-      break;
-    case SYSTEM_EVENT_ETH_DISCONNECTED:
-      Serial.println("ETH Disconnected");
-      eth_connected = false;
-      break;
-    case SYSTEM_EVENT_ETH_STOP:
-      Serial.println("ETH Stopped");
-      eth_connected = false;
-      break;
-    default:
-      break;
-  }
-}*/
 
 void Ethernet::setup()
 {
-    String default_hostname = String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str);
-
-    if (!api.restorePersistentConfig("ethernet/config", &ethernet_config)) {
-        ethernet_config.get("hostname")->updateString(default_hostname);
-    }
+    api.restorePersistentConfig("ethernet/config", &ethernet_config);
 
     ethernet_config_in_use = ethernet_config;
 
@@ -177,7 +134,7 @@ void Ethernet::setup()
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
             logger.printfln("Ethernet started");
-            ETH.setHostname(ethernet_config_in_use.get("hostname")->asString().c_str());
+            ETH.setHostname(network.config.get("hostname")->asCStr());
             ethernet_state.get("connection_state")->updateUint(1);
         },
         ARDUINO_EVENT_ETH_START);

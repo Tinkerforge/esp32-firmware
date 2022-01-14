@@ -116,7 +116,6 @@ interface WifiSTAConfig {
     bssid: number[],
     bssid_lock: boolean,
     passphrase: string,
-    hostname: string,
     ip: number[],
     gateway: number[],
     subnet: number[],
@@ -146,7 +145,6 @@ function update_wifi_sta_config(config: WifiSTAConfig) {
     $('#wifi_sta_bssid').val(config.bssid.map((x)=> (x < 16 ? '0' : '') + x.toString(16).toUpperCase()).join(":"));
     $('#wifi_sta_bssid_lock').prop("checked", config.bssid_lock);
     $('#wifi_sta_passphrase').val(config.passphrase);
-    $('#wifi_sta_hostname').val(config.hostname);
     if(config.ip.join(".") == "0.0.0.0") {
         $('#wifi_sta_show_static').val("hide");
         wifi_cfg_toggle_static_ip_collapse("hide");
@@ -167,7 +165,6 @@ interface WifiAPConfig {
     ssid: string,
     hide_ssid: boolean,
     passphrase: string,
-    hostname: string,
     channel: number,
     ip: number[],
     gateway: number[],
@@ -186,7 +183,6 @@ function update_wifi_ap_config(config: WifiAPConfig) {
     $('#wifi_ap_ssid').val(config.ssid);
     $('#wifi_ap_hide_ssid').prop("checked", config.hide_ssid);
     $('#wifi_ap_passphrase').val(config.passphrase);
-    $('#wifi_ap_hostname').val(config.hostname);
     $('#wifi_ap_channel').val(config.channel);
     $('#wifi_ap_ip').val(config.ip.join("."));
     $('#wifi_ap_gateway').val(config.gateway.join("."));
@@ -323,7 +319,6 @@ function save_wifi_sta_config(continuation = function () { }) {
 
     let payload: WifiSTAConfig = {
         enable_sta: $('#wifi_sta_enable_sta').is(':checked'),
-        hostname: $('#wifi_sta_hostname').val().toString(),
         ssid: $('#wifi_sta_ssid').val().toString(),
         bssid: $('#wifi_sta_bssid').val().toString().split(':').map(x => parseInt(x, 16)),
         bssid_lock: $('#wifi_sta_bssid_lock').is(':checked'),
@@ -353,7 +348,6 @@ function save_wifi_ap_config(continuation = function () { }) {
         ssid: $('#wifi_ap_ssid').val().toString(),
         hide_ssid: $('#wifi_ap_hide_ssid').is(':checked'),
         passphrase: util.passwordUpdate('#wifi_ap_passphrase'),
-        hostname: $('#wifi_ap_hostname').val().toString(),
         channel: parseInt($('#wifi_ap_channel').val().toString()),
         ip: parse_ip($('#wifi_ap_ip').val().toString()),
         subnet: parse_ip($('#wifi_ap_subnet').val().toString()),

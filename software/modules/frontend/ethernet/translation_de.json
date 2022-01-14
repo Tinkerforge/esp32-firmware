@@ -15,8 +15,6 @@
             "enable": "Verbindung aktiviert",
             "enable_desc": null,
 
-            "hostname": "Hostname",
-            "hostname_invalid": "Der Hostname darf nur aus den Groß- und Kleinbuchstaben A-Z und a-z, sowie den Ziffern 0-9 und Bindestrichen bestehen. Zum Beispiel warp-A1c",
             "ip_configuration": "IP-Konfiguration",
             "dhcp": "automatisch (DHCP)",
             "static": "statisch",

@@ -19,8 +19,6 @@
 
 #include "wifi.h"
 
-#include <ESPmDNS.h>
-
 #include <esp_wifi.h>
 
 #include "task_scheduler.h"
@@ -50,7 +48,6 @@ Wifi::Wifi()
         {"ssid", Config::Str("", 0, 32)},
         {"hide_ssid", Config::Bool(false)},
         {"passphrase", Config::Str("this-will-be-replaced-in-setup", 8, 64)},//FIXME: check if there are only ASCII characters or hex digits (for PSK) here.
-        {"hostname", Config::Str("", 0, 32)},
         {"channel", Config::Uint(1, 1, 13)},
         {"ip", Config::Array({
                 Config::Uint8(10),
@@ -105,7 +102,6 @@ Wifi::Wifi()
         },
         {"bssid_lock", Config::Bool(false)},
         {"passphrase", Config::Str("", 8, 64)},
-        {"hostname", Config::Str("", 0, 32)},
         {"ip", Config::Array({
                 Config::Uint8(0),
                 Config::Uint8(0),
@@ -211,9 +207,6 @@ void Wifi::apply_soft_ap_config_and_start()
 
     logger.printfln("Soft AP started.");
     logger.printfln("    SSID: %s", wifi_ap_config_in_use.get("ssid")->asString().c_str());
-    logger.printfln("    hostname: %s", wifi_ap_config_in_use.get("hostname")->asString().c_str());
-
-    WiFi.softAPsetHostname(wifi_ap_config_in_use.get("hostname")->asString().c_str());
 
     WiFi.softAP(wifi_ap_config_in_use.get("ssid")->asString().c_str(),
                 wifi_ap_config_in_use.get("passphrase")->asString().c_str(),
@@ -258,8 +251,6 @@ bool Wifi::apply_sta_config_and_connect()
     } else {
         WiFi.config((uint32_t)0, (uint32_t)0, (uint32_t)0);
     }
-
-    WiFi.setHostname(wifi_sta_config_in_use.get("hostname")->asString().c_str());
 
     logger.printfln("Connecting to %s", wifi_sta_config_in_use.get("ssid")->asString().c_str());
 
@@ -321,16 +312,13 @@ const char *reason2str(uint8_t reason)
 
 void Wifi::setup()
 {
-    String default_hostname = String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str);
+    String default_ssid = String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str);
     String default_passphrase = String(passphrase);
 
-    if (!api.restorePersistentConfig("wifi/sta_config", &wifi_sta_config)) {
-        wifi_sta_config.get("hostname")->updateString(default_hostname);
-    }
+    api.restorePersistentConfig("wifi/sta_config", &wifi_sta_config);
 
     if (!api.restorePersistentConfig("wifi/ap_config", &wifi_ap_config)) {
-        wifi_ap_config.get("hostname")->updateString(default_hostname);
-        wifi_ap_config.get("ssid")->updateString(default_hostname);
+        wifi_ap_config.get("ssid")->updateString(default_ssid);
         wifi_ap_config.get("passphrase")->updateString(default_passphrase);
     }
 
@@ -408,6 +396,10 @@ void Wifi::setup()
     bool enable_sta = wifi_sta_config_in_use.get("enable_sta")->asBool();
     bool ap_fallback_only = wifi_ap_config_in_use.get("ap_fallback_only")->asBool();
 
+    // For some reason WiFi.setHostname only writes a temporary buffer that is passed to the IDF when calling WiFi.mode.
+    // As we have the same hostname for STA and AP, it is sufficient to set the hostname here once and never call WiFi.softAPsetHostname.
+    WiFi.setHostname(network.config.get("hostname")->asCStr());
+
     if (enable_sta && enable_ap) {
         WiFi.mode(WIFI_AP_STA);
     } else if (enable_ap) {
@@ -459,13 +451,6 @@ void Wifi::setup()
                 backoff_counter = backoff;
             }
         }, 0, 5000);
-    }
-
-    /*use mdns for host name resolution*/
-    if (!MDNS.begin(wifi_ap_config_in_use.get("hostname")->asString().c_str())) {
-        logger.printfln("Error setting up mDNS responder!");
-    } else {
-        logger.printfln("mDNS responder started");
     }
 
     task_scheduler.scheduleWithFixedDelay("wifi_rssi", [this](){

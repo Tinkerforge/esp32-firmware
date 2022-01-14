@@ -15,8 +15,6 @@
             "enable": "Connection enabled",
             "enable_desc": "Automatically connects to the configured network on start-up if activated.",
 
-            "hostname": "Hostname",
-            "hostname_invalid": "The hostname must contain only upper and lower case letters A-Z and a-z the digits 0-9 or dashes. For example warp-A1c",
             "ip_configuration": "IP configuration",
             "dhcp": "automatic (DHCP)",
             "static": "static",

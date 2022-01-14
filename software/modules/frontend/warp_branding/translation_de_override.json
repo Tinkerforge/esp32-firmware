@@ -24,6 +24,11 @@
             "wrong_firmware_type": "Firmware-Datei passt nicht zu diesem Wallbox-Typ"
         }
     },
+    "network": {
+        "content": {
+            "enable_mdns_desc": "mDNS erlaubt es anderen Geräten in diesem Netzwerk, die Wallbox zu finden."
+        }
+    },
     "mqtt": {
         "content": {
             "enable_mqtt_desc": "Hierdurch kann die Wallbox über den konfigurierten MQTT-Broker kontrolliert werden. <a href=\"{{{apidoc_url}}}\">MQTT-API-Dokumentation</a>"

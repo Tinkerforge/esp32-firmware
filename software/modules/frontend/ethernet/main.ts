@@ -29,7 +29,6 @@ declare function __(s: string): string;
 
 interface EthernetConfig {
     enable_ethernet: boolean,
-    hostname: string,
     ip: number[],
     gateway: number[],
     subnet: number[],
@@ -48,7 +47,6 @@ function update_ethernet_config(config: EthernetConfig) {
 
     $('#ethernet_enable').prop("checked", config.enable_ethernet);
 
-    $('#ethernet_hostname').val(config.hostname);
     if(config.ip.join(".") == "0.0.0.0") {
         $('#ethernet_show_static').val("hide");
         ethernet_cfg_toggle_static_ip_collapse("hide");
@@ -112,7 +110,6 @@ function save_ethernet_config(continuation = function () { }) {
 
     let payload: EthernetConfig = {
         enable_ethernet: $('#ethernet_enable').is(':checked'),
-        hostname: $('#ethernet_hostname').val().toString(),
         ip: dhcp ? [0, 0, 0, 0] : parse_ip($('#ethernet_ip').val().toString()),
         subnet: dhcp ? [0, 0, 0, 0] : parse_ip($('#ethernet_subnet').val().toString()),
         gateway: dhcp ? [0, 0, 0, 0] : parse_ip($('#ethernet_gateway').val().toString()),
