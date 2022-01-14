@@ -260,7 +260,7 @@ def main(stage3):
         qr_cee = match.group(2)
 
         print("Accessories QR code data:")
-        print("    {:1.1f} m".format(qr_supply_cable)
+        print("    {} m".format(qr_supply_cable))
         print("    CEE: {}".format(qr_cee))
 
         result["accessories_qr_code"] = match.group(0)
