@@ -113,7 +113,7 @@ function update_nfc_config(cfg: NFCConfig, force: boolean) {
                 <span id="nfc_add_tag_disabled" hidden>${__("nfc.script.add_tag_disabled")}</span>
             </div>
             <div class="card-footer">
-                <small style="visibility: hidden;">Zuletzt gesehen: blah</small>
+                <small style="visibility: hidden;">${__("nfc.script.last_seen_unknown")}</small>
             </div>
         </div>
     </div>`;
