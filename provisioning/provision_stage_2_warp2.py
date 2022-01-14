@@ -214,46 +214,11 @@ def main(stage3):
     firmware_path = os.readlink(os.path.join(firmware_directory, "brick_warp2_charger_firmware_latest.bin"))
     firmware_path = os.path.join(firmware_directory, firmware_path)
 
-    #T:WARP2-CP-22KW-50;V:2.1;S:5000000001;B:2021-09;O:SO/2020123;I:17/42;E:1;C:0;;;;;;
-    pattern = r'^T:WARP2-C(B|S|P)-(11|22)KW-(50|75);V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2});O:(SO/B?[0-9]+);I:(\d+/\d+);E:(\d+);C:([01]);;;*$'
-    qr_code = my_input("Scan the docket QR code")
-    match = re.match(pattern, qr_code)
-    while not match:
-        qr_code = my_input("Scan the docket QR code", red)
-        match = re.match(pattern, qr_code)
-
-    docket_variant = match.group(1)
-    docket_power = match.group(2)
-    docket_cable_len = match.group(3)
-    docket_hw_version = match.group(4)
-    docket_serial = match.group(5)
-    docket_built = match.group(6)
-    docket_order = match.group(7)
-    docket_item = match.group(8)
-    docket_supply_cable_extension = int(match.group(9))
-    docket_has_cee = match.group(10) == "1"
-
-    print("Docket QR code data:")
-    print("    WARP Charger {}".format({"B": "Basic", "S": "Smart", "P": "Pro"}[docket_variant]))
-    print("    {} kW".format(docket_power))
-    print("    {:1.1f} m".format(int(docket_cable_len) / 10.0))
-    print("    CEE: {}".format("Yes" if docket_has_cee else "No"))
-    print("    HW Version: {}".format(docket_hw_version))
-    print("    Serial: {}".format(docket_serial))
-    print("    Build month: {}".format(docket_built))
-    print("    Order: {}".format(docket_order))
-    print("    Item: {}".format(docket_item))
-    print("    Supply Cable Extension: {}".format(docket_supply_cable_extension))
-
-    result["order"] = docket_order
-    result["order_item"] = docket_item
-    result["supply_cable_extension"] = docket_supply_cable_extension
-    result["docket_qr_code"] = match.group(0)
-
-    #T:WARP2-CP-22KW-50;V:2.1;S:5000000001;B:2021-09;;
-    pattern = r'^T:WARP2-C(B|S|P)-(11|22)KW-(50|75);V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2});;;*$'
+    # T:WARP2-CP-22KW-50;V:2.1;S:5000000001;B:2021-09;A:0;;;
+    pattern = r'^T:WARP2-C(B|S|P)-(11|22)KW-(50|75);V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2});A:(0|1);;;*$'
     qr_code = my_input("Scan the wallbox QR code")
     match = re.match(pattern, qr_code)
+
     while not match:
         qr_code = my_input("Scan the wallbox QR code", red)
         match = re.match(pattern, qr_code)
@@ -264,14 +229,7 @@ def main(stage3):
     qr_hw_version = match.group(4)
     qr_serial = match.group(5)
     qr_built = match.group(6)
-
-    if docket_variant != qr_variant or \
-       docket_power != qr_power or \
-       docket_cable_len != qr_cable_len or \
-       docket_hw_version != qr_hw_version or \
-       docket_serial != qr_serial or \
-       docket_built != qr_built:
-        fatal_error("Docket and wallbox QR code do not match!")
+    qr_accessories = match.group(7)
 
     print("Wallbox QR code data:")
     print("    WARP Charger {}".format({"B": "Basic", "S": "Smart", "P": "Pro"}[qr_variant]))
@@ -280,19 +238,43 @@ def main(stage3):
     print("    HW Version: {}".format(qr_hw_version))
     print("    Serial: {}".format(qr_serial))
     print("    Build month: {}".format(qr_built))
+    print("    Accessories: {}".format(qr_accessories))
 
     result["serial"] = qr_serial
     result["qr_code"] = match.group(0)
+
+    if qr_accessories == '0':
+        qr_supply_cable = 0
+        qr_cee = False
+    else:
+        # E:2.5;C:1;;;
+        pattern = r'^E:(\d+\.\d+);C:(0|1);;;*$'
+        qr_code = my_input("Scan the accessories QR code")
+        match = re.match(pattern, qr_code)
+
+        while not match:
+            qr_code = my_input("Scan the accessories QR code", red)
+            match = re.match(pattern, qr_code)
+
+        qr_supply_cable = match.group(1)
+        qr_cee = match.group(2)
+
+        print("Accessories QR code data:")
+        print("    {:1.1f} m".format(qr_supply_cable)
+        print("    CEE: {}".format(qr_cee))
+
+        result["accessories_qr_code"] = match.group(0)
 
     if qr_variant != "B":
         pattern = r"^WIFI:S:(esp32|warp|warp2)-([{BASE58}]{{3,6}});T:WPA;P:([{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}});;$".format(BASE58=BASE58)
         qr_code = getpass.getpass(green("Scan the ESP Brick QR code"))
         match = re.match(pattern, qr_code)
+
         while not match:
             qr_code = getpass.getpass(red("Scan the ESP Brick QR code"))
             match = re.match(pattern, qr_code)
 
-        if docket_supply_cable_extension != 0 or docket_has_cee:
+        if qr_supply_cable != 0 or qr_cee:
             stage3.power_on('CEE')
         else:
             stage3.power_on({"B": "Basic", "S": "Smart", "P": "Pro"}[qr_variant])
@@ -465,7 +447,7 @@ def main(stage3):
             fatal_error("Failed to configure NFC tags!")
         result["nfc_tags_configured"] = True
     else:
-        if docket_supply_cable_extension != 0 or docket_has_cee:
+        if qr_supply_cable != 0 or qr_cee:
             stage3.power_on('CEE')
         else:
             stage3.power_on({"B": "Basic", "S": "Smart", "P": "Pro"}[qr_variant])
