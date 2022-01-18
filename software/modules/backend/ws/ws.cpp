@@ -67,6 +67,11 @@ void WS::addCommand(const CommandRegistration &reg)
 
 }
 
+void WS::addRawCommand(const RawCommandRegistration &reg)
+{
+
+}
+
 void WS::addState(const StateRegistration &reg)
 {
 

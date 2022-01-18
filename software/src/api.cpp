@@ -111,6 +111,15 @@ bool API::addPersistentConfig(String path, ConfigRoot *config, std::initializer_
     return true;
 }
 
+void API::addRawCommand(String path, std::function<String(char *, size_t)> callback, bool is_action)
+{
+    raw_commands.push_back({path, callback, is_action});
+
+    for (auto *backend : this->backends) {
+        backend->addRawCommand(raw_commands[raw_commands.size() - 1]);
+    }
+}
+
 void API::blockCommand(String path, String reason)
 {
     for (auto &reg : commands) {

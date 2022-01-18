@@ -45,10 +45,17 @@ struct CommandRegistration {
     String blockedReason;
 };
 
+struct RawCommandRegistration {
+    String path;
+    std::function<String(char *, size_t)> callback;
+    bool is_action;
+};
+
 class IAPIBackend {
 public:
     virtual void addCommand(const CommandRegistration &reg) = 0;
     virtual void addState(const StateRegistration &reg) = 0;
+    virtual void addRawCommand(const RawCommandRegistration &reg) = 0;
     virtual void pushStateUpdate(String payload, String path) = 0;
     virtual void wifiAvailable() = 0;
 };
@@ -69,6 +76,7 @@ public:
     bool addPersistentConfig(String path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms);
     //void addTemporaryConfig(String path, Config *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms, std::function<void(void)> callback);
 
+    void addRawCommand(String path, std::function<String(char *, size_t)> callback, bool is_action);
     void blockCommand(String path, String reason);
     void unblockCommand(String path);
     String getCommandBlockedReason(String path);
@@ -83,6 +91,7 @@ public:
 
     std::vector<StateRegistration> states;
     std::vector<CommandRegistration> commands;
+    std::vector<RawCommandRegistration> raw_commands;
 
     std::vector<IAPIBackend *> backends;
 };

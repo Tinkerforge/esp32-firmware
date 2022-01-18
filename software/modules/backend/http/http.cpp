@@ -97,6 +97,28 @@ void Http::addState(const StateRegistration &reg)
     });
 }
 
+void Http::addRawCommand(const RawCommandRegistration &reg)
+{
+    server.on((String("/") + reg.path).c_str(), HTTP_PUT, [reg](WebServerRequest request) {
+        int bytes_written = request.receive(recv_buf, 4096);
+        if (bytes_written == -1) {
+            // buffer was not large enough
+            request.send(413);
+            return;
+        } else if (bytes_written <= 0) {
+            logger.printfln("Failed to receive raw command payload: error code %d", bytes_written);
+            request.send(400);
+        }
+
+        String message = reg.callback(recv_buf, bytes_written);
+        if (message == "") {
+            request.send(200, "text/html", "");
+        } else {
+            request.send(400, "text/html", message.c_str());
+        }
+    });
+}
+
 void Http::pushStateUpdate(String payload, String path)
 {
 

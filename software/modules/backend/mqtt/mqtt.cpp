@@ -100,6 +100,21 @@ void Mqtt::addState(const StateRegistration &reg)
 
 }
 
+void Mqtt::addRawCommand(const RawCommandRegistration &reg)
+{
+    if (mqtt_state.get("connection_state")->asInt() != (int)MqttConnectionState::CONNECTED)
+        return;
+
+    subscribe(reg.path, MQTT_RECV_BUFFER_SIZE, [reg](char *payload, size_t payload_len){
+        String error = reg.callback(payload, payload_len);
+        if(error == "") {
+            return;
+        }
+
+        logger.printfln("MQTT: Failed to update %s from MQTT payload: %s", reg.path.c_str(), error.c_str());
+    }, reg.is_action);
+}
+
 void Mqtt::publish(String payload, String path)
 {
     String prefix = mqtt_config_in_use.get("global_topic_prefix")->asString();
@@ -128,6 +143,9 @@ void Mqtt::onMqttConnect()
     this->commands.clear();
     for (auto &reg : api.commands) {
         this->addCommand(reg);
+    }
+    for (auto &reg : api.raw_commands) {
+        this->addRawCommand(reg);
     }
     for (auto &reg : api.states) {
         publish(reg.config->to_string_except(reg.keys_to_censor), reg.path);
