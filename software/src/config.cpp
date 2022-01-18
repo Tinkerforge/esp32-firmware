@@ -209,7 +209,7 @@ struct from_json {
     String operator()(Config::ConfString &x)
     {
         if (json_node.isNull())
-            return String("");
+            return permit_null_updates ? String("") : String("Null updates not permitted.");
 
         if (!json_node.is<String>())
             return "JSON node was not a string.";
@@ -219,7 +219,7 @@ struct from_json {
     String operator()(Config::ConfFloat &x)
     {
         if (json_node.isNull())
-            return String("");
+            return permit_null_updates ? String("") : String("Null updates not permitted.");
 
         if (!json_node.is<float>())
             return "JSON node was not a float.";
@@ -236,7 +236,7 @@ struct from_json {
     String operator()(Config::ConfInt &x)
     {
         if (json_node.isNull())
-            return String("");
+            return permit_null_updates ? String("") : String("Null updates not permitted.");
 
         if (!json_node.is<int32_t>())
             return "JSON node was not a signed integer.";
@@ -246,7 +246,7 @@ struct from_json {
     String operator()(Config::ConfUint &x)
     {
         if (json_node.isNull())
-            return String("");
+            return permit_null_updates ? String("") : String("Null updates not permitted.");
 
         if (!json_node.is<uint32_t>())
             return "JSON node was not an unsigned integer.";
@@ -256,7 +256,7 @@ struct from_json {
     String operator()(Config::ConfBool &x)
     {
         if (json_node.isNull())
-            return String("");
+            return permit_null_updates ? String("") : String("Null updates not permitted.");
 
         if (!json_node.is<bool>())
             return "JSON node was not a boolean.";
@@ -268,7 +268,7 @@ struct from_json {
     }
     String operator()(Config::ConfArray &x) {
         if (json_node.isNull())
-            return String("");
+            return permit_null_updates ? String("") : String("Null updates not permitted.");
 
         if (!json_node.is<JsonArray>())
             return "JSON node was not an array.";
@@ -278,7 +278,7 @@ struct from_json {
         x.value.clear();
         for (size_t i = 0; i < arr.size(); ++i) {
             x.value.push_back(*x.prototype);
-            String inner_error = strict_variant::apply_visitor(from_json{arr[i], force_same_keys}, x.value[i].value);
+            String inner_error = strict_variant::apply_visitor(from_json{arr[i], force_same_keys, permit_null_updates}, x.value[i].value);
             if (inner_error != "")
                 return String("[") + i + "]" + inner_error;
         }
@@ -288,7 +288,7 @@ struct from_json {
     String operator()(Config::ConfObject &x)
     {
         if (json_node.isNull())
-            return String("");
+            return permit_null_updates ? String("") : String("Null updates not permitted.");
 
         if (!json_node.is<JsonObject>())
             return "JSON node was not an object.";
@@ -302,7 +302,7 @@ struct from_json {
             if (!force_same_keys && !obj.containsKey(x.value[i].first))
                 continue;
 
-            String inner_error = strict_variant::apply_visitor(from_json{obj[x.value[i].first], force_same_keys}, x.value[i].second.value);
+            String inner_error = strict_variant::apply_visitor(from_json{obj[x.value[i].first], force_same_keys, permit_null_updates}, x.value[i].second.value);
             if (inner_error != "")
                 return String("[\"") + x.value[i].first + "\"]" + inner_error;
         }
@@ -312,6 +312,7 @@ struct from_json {
 
     JsonVariant json_node;
     bool force_same_keys;
+    bool permit_null_updates;
 };
 
 struct from_update {
@@ -881,7 +882,7 @@ String ConfigRoot::update_from_string(String s)
 String ConfigRoot::update_from_json(JsonVariant root)
 {
     Config copy = *this;
-    String err = strict_variant::apply_visitor(from_json{root, false}, copy.value);
+    String err = strict_variant::apply_visitor(from_json{root, !this->permit_null_updates, this->permit_null_updates}, copy.value);
 
     if (err != "")
         return err;

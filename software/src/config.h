@@ -405,6 +405,7 @@ public:
     }
 
     std::function<String(Config &)> validator;
+    bool permit_null_updates = true;
 
     String update_from_file(File file);
 
