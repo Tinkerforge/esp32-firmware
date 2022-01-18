@@ -88,7 +88,7 @@ static esp_err_t ws_handler(httpd_req_t *req)
 {
     if (req->method == HTTP_GET) {
         auto request = WebServerRequest{req};
-        if (server.username != "" && server.password != "" && !authenticate(request, server.username.c_str(), server.password.c_str())) {
+        if (server.auth_fn && !server.auth_fn(request)) {
             if (server.on_not_authorized) {
                 server.on_not_authorized(request);
                 return ESP_OK;
