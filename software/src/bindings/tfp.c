@@ -134,7 +134,7 @@ static bool tf_tfp_filter_received_packet(TF_TFP *tfp, bool remove_interesting, 
     bool packet_uninteresting = (tfp->waiting_for_fid == 0)
                              || (tfp->uid_num != 0 && header.uid_num != tfp->uid_num)
                              || (header.fid != tfp->waiting_for_fid)
-                             || (header.seq_num != tfp->waiting_for_sequence_number);
+                             || (header.seq_num != tfp->waiting_for_seq_num);
 
     if (packet_uninteresting) {
         if (!tf_tfp_dispatch_packet(tfp, &header, buf)) {
@@ -153,8 +153,8 @@ static bool tf_tfp_filter_received_packet(TF_TFP *tfp, bool remove_interesting, 
             }
 
 
-            if (header.seq_num != tfp->waiting_for_sequence_number) {
-                tf_hal_log_debug("header.seq_num (%d) != tfp->waiting_for_sequence_number (%d)\n", header.seq_num, tfp->waiting_for_sequence_number);
+            if (header.seq_num != tfp->waiting_for_seq_num) {
+                tf_hal_log_debug("header.seq_num (%d) != tfp->waiting_for_seq_num (%d)\n", header.seq_num, tfp->waiting_for_seq_num);
             }
 
             tf_packet_buffer_remove(buf, header.length);
@@ -211,10 +211,10 @@ void tf_tfp_prepare_send(TF_TFP *tfp, uint8_t fid, uint8_t payload_size, bool re
 
     if (response_expected) {
         tfp->waiting_for_fid = fid;
-        tfp->waiting_for_sequence_number = tf_tfp_seq_num;
+        tfp->waiting_for_seq_num = tf_tfp_seq_num;
     } else {
         tfp->waiting_for_fid = 0;
-        tfp->waiting_for_sequence_number = 0;
+        tfp->waiting_for_seq_num = 0;
     }
 }
 
@@ -233,7 +233,7 @@ void tf_tfp_inject_packet(TF_TFP *tfp, TF_TFPHeader *header, uint8_t *packet) {
     memcpy(buf, packet, header->length);
 
     tfp->waiting_for_fid = 0;
-    tfp->waiting_for_sequence_number = 0;
+    tfp->waiting_for_seq_num = 0;
 }
 
 static int tf_tfp_send_getter(TF_TFP *tfp, uint32_t deadline_us, uint8_t *error_code, uint8_t *length) {
@@ -258,7 +258,7 @@ static int tf_tfp_send_getter(TF_TFP *tfp, uint32_t deadline_us, uint8_t *error_
         if (result & TF_TICK_PACKET_RECEIVED) {
             if (tf_tfp_filter_received_packet(tfp, false, error_code, length)) {
                 tfp->waiting_for_fid = 0;
-                tfp->waiting_for_sequence_number = 0;
+                tfp->waiting_for_seq_num = 0;
                 packet_received = true;
             }
         }
