@@ -364,7 +364,7 @@ void WebServerRequest::addResponseHeader(const char *field, const char *value)
 void WebServerRequest::requestAuthentication()
 {
     String payload = "Digest ";
-    payload.concat(requestDigestAuthentication("esp32-lib"));
+    payload.concat(requestDigestAuthentication(nullptr));
     addResponseHeader("WWW-Authenticate", payload.c_str());
     send(401);
 }

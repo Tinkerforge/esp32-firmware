@@ -78,7 +78,7 @@ static String stringMD5(const String& in){
 String requestDigestAuthentication(const char * realm){
   String header = "realm=\"";
   if(realm == NULL)
-    header.concat("esp32-lib");
+    header.concat(DEFAULT_REALM);
   else
     header.concat(realm);
   header.concat( "\", qop=\"auth\", nonce=\"");
@@ -163,7 +163,7 @@ bool checkDigestAuthentication(AuthFields fields, const char * method, const cha
     if(realm != NULL && !fields.realm.equals(realm)){
         logger.printfln("AUTH FAIL: realm");
         return false;
-    } else if (realm == NULL && !fields.realm.equals("esp32-lib") && !fields.realm.equals("asyncesp")) {
+    } else if (realm == NULL && !fields.realm.equals(DEFAULT_REALM) && !fields.realm.equals("asyncesp")) {
         logger.printfln("AUTH FAIL: realm");
         return false;
     }
