@@ -416,6 +416,8 @@ public:
     String update_from_json(JsonVariant root);
 
     String update(Config::ConfUpdate *val);
+
+    String validate();
 };
 
 /*void test() {

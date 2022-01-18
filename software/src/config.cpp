@@ -927,3 +927,11 @@ String ConfigRoot::update(Config::ConfUpdate *val)
 
     return err;
 }
+
+String ConfigRoot::validate()
+{
+    if (this->validator != nullptr) {
+        return this->validator(*this);
+    }
+    return "";
+}
