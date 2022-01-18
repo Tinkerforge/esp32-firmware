@@ -47,13 +47,15 @@
                 </label>
             </div>
                 <div class="col-lg-8 col-xl-4 input-group">
-                    <input id="status_charging_current" class="form-control" type="number" min="6" placeholder="..." step="any" required>
+                    <input id="status_charging_current" class="form-control no-spin" type="number" min="6" placeholder="..." step="any" required inputmode="numeric">
                     <div class="input-group-append">
-                        <div class="input-group-text form-control">A</div>
-                        <button id="status_charging_current_save" class="form-control btn btn-primary rounded-right" type="submit" disabled><span data-feather="check"></span></button>
+                        <div class="input-group-text form-control pl-2 pr-2">A</div>
+                        <button id="status_charging_current_minus" class="form-control btn btn-primary pl-1 pr-1" type="button" style="margin-right: .125rem !important;"><span data-feather="minus"></span></button>
+                        <button id="status_charging_current_plus" class="form-control btn btn-primary  pl-1 pr-1 rounded-right" type="button"><span data-feather="plus"></span></button>
                     </div>
-                    <div class="flex-wrap">
-                        <button id="status_charging_current_minimum" class="btn btn-primary ml-2 mr-2" type="button"  data-i18n="evse.status.charging_current_minimum"></button><button id="status_charging_current_maximum" class="btn btn-primary" type="button" data-i18n="evse.status.charging_current_maximum"></button>
+                    <div class="flex-wrap btn-group" role="group">
+                        <button id="status_charging_current_minimum" class="btn btn-primary ml-2" type="button"  style="margin-right: .125rem !important;" data-i18n="evse.status.charging_current_minimum"></button>
+                        <button id="status_charging_current_maximum" class="btn btn-primary" type="button" data-i18n="evse.status.charging_current_maximum"></button>
                     </div>
                 </div>
         </div>

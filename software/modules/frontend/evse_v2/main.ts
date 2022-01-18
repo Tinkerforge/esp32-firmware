@@ -152,6 +152,9 @@ function update_allowed_current_status() {
     $('#evse_status_allowed_charging_current').val(status_string);
 }
 
+
+let status_charging_current_dirty = false;
+
 function update_evse_max_charging_current(state: EVSEMaxChargingCurrent) {
     $('#max_current_configured').val(util.toLocaleFixed(state.max_current_configured / 1000.0, 3) + " A");
     $('#max_current_incoming_cable').val(util.toLocaleFixed(state.max_current_incoming_cable / 1000.0, 3) + " A");
@@ -164,7 +167,7 @@ function update_evse_max_charging_current(state: EVSEMaxChargingCurrent) {
     $("#status_charging_current_maximum").on("click", () => set_charging_current(theoretical_maximum));
     $('#status_charging_current_maximum').html(theoretical_maximum_str);
 
-    if($('#status_charging_current_save').prop("disabled")) {
+    if(!status_charging_current_dirty) {
         let shown_current = Math.min(state.max_current_configured, theoretical_maximum);
         util.setNumericInput("status_charging_current", shown_current / 1000.0, 3);
     }
@@ -174,17 +177,20 @@ function update_evse_max_charging_current(state: EVSEMaxChargingCurrent) {
 }
 
 function set_charging_current(current: number) {
-    $('#status_charging_current_save').prop("disabled", true);
+    if (status_plus_minus_timeout != null) {
+        window.clearTimeout(status_plus_minus_timeout);
+        status_plus_minus_timeout = null;
+    }
+
+    status_charging_current_dirty = false;
+    util.setNumericInput("status_charging_current", current / 1000, 3);
+
     $.ajax({
         url: '/evse/current_limit',
         method: 'PUT',
         contentType: 'application/json',
         data: JSON.stringify({"current": current}),
-        success: () => {
-            $('#status_charging_current_save').html(feather.icons.check.toSvg());
-        },
         error: (xhr, status, error) => {
-            $('#status_charging_current_save').prop("disabled", false);
             util.add_alert("evse_set_charging_current_failed", "alert-danger", __("evse.script.set_charging_current_failed"), error + ": " + xhr.responseText);
         }
     });
@@ -405,6 +411,7 @@ function debug_stop() {
         });
 }
 
+let status_plus_minus_timeout = null;
 
 export function init() {
     $("#status_charging_current_minimum").on("click", () => set_charging_current(6000));
@@ -432,11 +439,6 @@ export function init() {
     $('#status_auto_start_charging').on("change", () => set_auto_start_charging($('#status_auto_start_charging').prop('checked')));
 
     let input = $('#status_charging_current');
-    let save_btn = $('#status_charging_current_save');
-    input.on("input", () => {
-        save_btn.html(feather.icons.save.toSvg());
-        save_btn.prop("disabled", false);
-    });
 
     $('#evse_status_charging_current_form').on('submit', function (this: HTMLFormElement, event: Event) {
         event.preventDefault();
@@ -495,6 +497,72 @@ export function init() {
         contentType: 'application/json',
         data: "null"})
     );
+
+    $('#status_charging_current_minus').on("click", () => {
+        let val: number = input.val();
+        let target = (val % 1 === 0) ? (Math.floor(val) - 1) : Math.floor(val);
+
+        if (target < $('#status_charging_current').prop("min"))
+            return;
+
+        if (status_plus_minus_timeout != null) {
+            window.clearTimeout(status_plus_minus_timeout);
+            status_plus_minus_timeout = null;
+        }
+
+        util.setNumericInput("status_charging_current", target, 3);
+
+        status_plus_minus_timeout = window.setTimeout(() => {
+            set_charging_current(target * 1000);
+        }, 2000);
+    });
+
+    $('#status_charging_current_plus').on("click", () => {
+        let val: number = input.val();
+        let target = Math.floor(val) + 1;
+
+        if (target > $('#status_charging_current').prop("max"))
+            return;
+
+        if (status_plus_minus_timeout != null) {
+            window.clearTimeout(status_plus_minus_timeout);
+            status_plus_minus_timeout = null;
+        }
+
+        util.setNumericInput("status_charging_current", target, 3);
+
+        status_plus_minus_timeout = window.setTimeout(() => {
+            set_charging_current(target * 1000);
+        }, 2000);
+    });
+
+    $('#status_charging_current').on("input", () => {
+        status_charging_current_dirty = true;
+
+        let val: number = input.val();
+        let target = val;
+
+        if (target > parseInt($('#status_charging_current').prop("max"))) {
+            return;
+        }
+
+        if (target < parseInt($('#status_charging_current').prop("min"))) {
+            return;
+        }
+
+        if (status_plus_minus_timeout != null) {
+            window.clearTimeout(status_plus_minus_timeout);
+            status_plus_minus_timeout = null;
+        }
+
+        status_plus_minus_timeout = window.setTimeout(() => {
+            // Use round here instead of float, as non-representable floats * 1000 create
+            // confusing behaviour otherwise.
+            // For example 8.123 (represented as 8.1229999...3 * 1000 is 8122.999...3, with floor results in 8122 instead of 8123.
+            // This is only a problem here, as all other occurences only work on non-fractional numbers.
+            set_charging_current(Math.round(target * 1000));
+        }, 2000);
+    });
 }
 
 //From sdm72dm/main.ts
