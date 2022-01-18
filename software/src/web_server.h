@@ -77,8 +77,6 @@ private:
 using wshCallback = std::function<void(WebServerRequest)>;
 using wshUploadCallback = std::function<bool(WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final)>;
 
-bool authenticate(WebServerRequest req, const char *username, const char *password);
-
 struct WebServerHandler {
     WebServerHandler(String uri, httpd_method_t method, wshCallback callback, wshUploadCallback uploadCallback) : uri(uri), method(method), callback(callback), uploadCallback(uploadCallback) {}
 
