@@ -214,6 +214,22 @@ struct Config {
         return true;
     }
 
+    bool remove(size_t i)
+    {
+        if (!this->is<Config::ConfArray>()) {
+            logger.printfln("Tried to add to a node that is not an array!");
+            delay(100);
+            return false;
+        }
+        std::vector<Config> &children = strict_variant::get<Config::ConfArray>(&value)->value;
+
+        if (children.size() <= i)
+            return false;
+
+        children.erase(children.begin() + i);
+        return true;
+    }
+
     ssize_t count()
     {
         if (!this->is<Config::ConfArray>()) {
