@@ -89,95 +89,110 @@ String requestDigestAuthentication(const char * realm){
   return header;
 }
 
-bool checkDigestAuthentication(const char * header, const char * method, const char * username, const char * password, const char * realm, bool passwordIsHash, const char * nonce, const char * opaque, const char * uri){
-  if(username == NULL || password == NULL || header == NULL || method == NULL){
-    logger.printfln("AUTH FAIL: missing requred fields");
-    return false;
-  }
+AuthFields parseDigestAuth(const char *header) {
+    AuthFields result;
+    result.success = false;
 
-  String myHeader = String(header);
-  int nextBreak = myHeader.indexOf(",");
-  if(nextBreak < 0){
-    logger.printfln("AUTH FAIL: no variables");
-    return false;
-  }
-
-  String myUsername = String();
-  String myRealm = String();
-  String myNonce = String();
-  String myUri = String();
-  String myResponse = String();
-  String myQop = String();
-  String myNc = String();
-  String myCnonce = String();
-
-  myHeader += ", ";
-  do {
-    String avLine = myHeader.substring(0, nextBreak);
-    avLine.trim();
-    myHeader = myHeader.substring(nextBreak+1);
-    nextBreak = myHeader.indexOf(",");
-
-    int eqSign = avLine.indexOf("=");
-    if(eqSign < 0){
-      logger.printfln("AUTH FAIL: no = sign");
-      return false;
-    }
-    String varName = avLine.substring(0, eqSign);
-    avLine = avLine.substring(eqSign + 1);
-    if(avLine.startsWith("\"")){
-      avLine = avLine.substring(1, avLine.length() - 1);
+    if (header == nullptr) {
+        logger.printfln("AUTH FAIL: missing requred fields");
+        return result;
     }
 
-    if(varName.equals("username")){
-      if(!avLine.equals(username)){
+    String myHeader = String(header);
+    int nextBreak = myHeader.indexOf(",");
+    if(nextBreak < 0){
+        logger.printfln("AUTH FAIL: no variables");
+        return result;
+    }
+
+    myHeader += ", ";
+    do {
+        String avLine = myHeader.substring(0, nextBreak);
+        avLine.trim();
+        myHeader = myHeader.substring(nextBreak+1);
+        nextBreak = myHeader.indexOf(",");
+
+        int eqSign = avLine.indexOf("=");
+        if(eqSign < 0){
+            logger.printfln("AUTH FAIL: no = sign");
+            return result;
+        }
+
+        String varName = avLine.substring(0, eqSign);
+        avLine = avLine.substring(eqSign + 1);
+        if(avLine.startsWith("\"")){
+            avLine = avLine.substring(1, avLine.length() - 1);
+        }
+
+        if(varName.equals("username")){
+            result.username = avLine;
+        } else if(varName.equals("realm")){
+            result.realm = avLine;
+        } else if(varName.equals("nonce")){
+            result.nonce = avLine;
+        } else if(varName.equals("opaque")){
+            result.opaque = avLine;
+        } else if(varName.equals("uri")){
+            result.uri = avLine;
+        } else if(varName.equals("response")){
+            result.response = avLine;
+        } else if(varName.equals("qop")){
+            result.qop = avLine;
+        } else if(varName.equals("nc")){
+            result.nc = avLine;
+        } else if(varName.equals("cnonce")){
+            result.cnonce = avLine;
+        }
+    } while(nextBreak > 0);
+
+    result.success = true;
+    return result;
+}
+
+bool checkDigestAuthentication(AuthFields fields, const char * method, const char * username, const char * password, const char * realm, bool passwordIsHash, const char * nonce, const char * opaque, const char * uri){
+    if(username == NULL || password == NULL || method == NULL) {
+        logger.printfln("AUTH FAIL: missing requred fields");
+        return false;
+    }
+
+    if(!fields.username.equals(username)){
         logger.printfln("AUTH FAIL: username");
         return false;
-      }
-      myUsername = avLine;
-    } else if(varName.equals("realm")){
-      if(realm != NULL && !avLine.equals(realm)){
+    }
+
+    if(realm != NULL && !fields.realm.equals(realm)){
         logger.printfln("AUTH FAIL: realm");
         return false;
-      } else if (realm == NULL && !avLine.equals("esp32-lib") && !avLine.equals("asyncesp")) {
+    } else if (realm == NULL && !fields.realm.equals("esp32-lib") && !fields.realm.equals("asyncesp")) {
         logger.printfln("AUTH FAIL: realm");
         return false;
-      }
-      myRealm = avLine;
-    } else if(varName.equals("nonce")){
-      if(nonce != NULL && !avLine.equals(nonce)){
+    }
+
+    if(nonce != NULL && !fields.nonce.equals(nonce)){
         logger.printfln("AUTH FAIL: nonce");
         return false;
-      }
-      myNonce = avLine;
-    } else if(varName.equals("opaque")){
-      if(opaque != NULL && !avLine.equals(opaque)){
+    }
+
+    if(opaque != NULL && !fields.opaque.equals(opaque)){
         logger.printfln("AUTH FAIL: opaque");
         return false;
-      }
-    } else if(varName.equals("uri")){
-      if(uri != NULL && !avLine.equals(uri)){
+    }
+    if(uri != NULL && !fields.uri.equals(uri)){
         logger.printfln("AUTH FAIL: uri");
         return false;
-      }
-      myUri = avLine;
-    } else if(varName.equals("response")){
-      myResponse = avLine;
-    } else if(varName.equals("qop")){
-      myQop = avLine;
-    } else if(varName.equals("nc")){
-      myNc = avLine;
-    } else if(varName.equals("cnonce")){
-      myCnonce = avLine;
     }
-  } while(nextBreak > 0);
 
-  String ha1 = (passwordIsHash) ? String(password) : stringMD5(myUsername + ":" + myRealm + ":" + String(password));
-  String ha2 = String(method) + ":" + myUri;
-  String response = ha1 + ":" + myNonce + ":" + myNc + ":" + myCnonce + ":" + myQop + ":" + stringMD5(ha2);
+    String ha1 = (passwordIsHash) ? String(password) : stringMD5(fields.username + ":" + fields.realm + ":" + String(password));
+    String ha2 = String(method) + ":" + fields.uri;
+    String response = ha1 + ":" + fields.nonce + ":" + fields.nc + ":" + fields.cnonce + ":" + fields.qop + ":" + stringMD5(ha2);
 
-  if(myResponse.equals(stringMD5(response))){
-    return true;
+    if(fields.response.equals(stringMD5(response))){
+        return true;
+    }
+
+    logger.printfln("AUTH FAIL: password");
+    return false;
+}
   }
 
   logger.printfln("AUTH FAIL: password");
