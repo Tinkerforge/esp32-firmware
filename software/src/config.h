@@ -384,11 +384,11 @@ public:
 
     }
 
-    ConfigRoot(Config cfg, String(*validator)(Config &)) : Config(cfg), validator(validator) {
+    ConfigRoot(Config cfg, std::function<String(Config &)> validator) : Config(cfg), validator(validator) {
 
     }
 
-    String(*validator)(Config &);
+    std::function<String(Config &)> validator;
 
     String update_from_file(File file);
 
