@@ -87,25 +87,7 @@ bool API::addPersistentConfig(String path, ConfigRoot *config, std::initializer_
 
     addState(path, config, keys_to_censor, interval_ms);
     addCommand(path + String("_update"), config, keys_to_censor, [path, config]() {
-        String path_copy = path;
-        path_copy.replace('/', '_');
-        String cfg_path = String("/") + path_copy;
-        String tmp_path = String("/.") + path_copy; //max len is 31 - len("/.") = 29
-
-        if (LittleFS.exists(tmp_path)) {
-            LittleFS.remove(tmp_path);
-        }
-
-        File file = LittleFS.open(tmp_path, "w");
-
-        config->save_to_file(file);
-        file.close();
-
-        if (LittleFS.exists(cfg_path)) {
-            LittleFS.remove(cfg_path);
-        }
-
-        LittleFS.rename(tmp_path, cfg_path);
+        API::writeConfig(path, config);
     }, false);
 
     return true;
@@ -118,6 +100,28 @@ void API::addRawCommand(String path, std::function<String(char *, size_t)> callb
     for (auto *backend : this->backends) {
         backend->addRawCommand(raw_commands[raw_commands.size() - 1]);
     }
+}
+
+void API::writeConfig(String path, ConfigRoot *config) {
+    String path_copy = path;
+    path_copy.replace('/', '_');
+    String cfg_path = String("/") + path_copy;
+    String tmp_path = String("/.") + path_copy; //max len is 31 - len("/.") = 29
+
+    if (LittleFS.exists(tmp_path)) {
+        LittleFS.remove(tmp_path);
+    }
+
+    File file = LittleFS.open(tmp_path, "w");
+
+    config->save_to_file(file);
+    file.close();
+
+    if (LittleFS.exists(cfg_path)) {
+        LittleFS.remove(cfg_path);
+    }
+
+    LittleFS.rename(tmp_path, cfg_path);
 }
 
 void API::blockCommand(String path, String reason)

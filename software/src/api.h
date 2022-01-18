@@ -77,6 +77,9 @@ public:
     //void addTemporaryConfig(String path, Config *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms, std::function<void(void)> callback);
 
     void addRawCommand(String path, std::function<String(char *, size_t)> callback, bool is_action);
+
+    static void writeConfig(String path, ConfigRoot *config);
+
     void blockCommand(String path, String reason);
     void unblockCommand(String path);
     String getCommandBlockedReason(String path);
