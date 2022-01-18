@@ -97,10 +97,8 @@ public:
     WebServerHandler *on(const char *uri, httpd_method_t method, wshCallback callback, wshUploadCallback uploadCallback);
     void onNotAuthorized(wshCallback callback);
 
-    void setAuthentication(String username, String password)
-    {
-        this->username = username;
-        this->password = password;
+    void setAuthentication(std::function<bool(WebServerRequest)> auth_fn) {
+        this->auth_fn = auth_fn;
     }
 
     bool initialized = false;
@@ -110,6 +108,5 @@ public:
     int handler_count = 0;
     wshCallback on_not_authorized;
 
-    String username;
-    String password;
+    std::function<bool(WebServerRequest)> auth_fn;
 };

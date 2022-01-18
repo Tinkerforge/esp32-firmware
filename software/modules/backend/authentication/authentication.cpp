@@ -28,6 +28,8 @@
 
 #include "login.html.h"
 
+#include "digest_auth.h"
+
 extern WebServer server;
 extern API api;
 extern EventLog logger;
@@ -60,7 +62,24 @@ void Authentication::setup()
         String user = authentication_config.get("username")->asString();
         String pass = authentication_config.get("password")->asString();
 
-        server.setAuthentication(user.c_str(), pass.c_str());
+        server.setAuthentication([user, pass](WebServerRequest req) -> bool {
+            String auth = req.header("Authorization");
+            if (auth == "") {
+                return false;
+            }
+
+            if (!auth.startsWith("Digest ")) {
+                return false;
+            }
+
+            auth = auth.substring(7);
+            AuthFields fields = parseDigestAuth(auth.c_str());
+
+            if (fields.username != user)
+                return false;
+
+            return checkDigestAuthentication(fields, req.methodString(), user.c_str(), pass.c_str(), DEFAULT_REALM, false, nullptr, nullptr, nullptr);
+        });
         logger.printfln("Web interface authentication enabled.");
     }
 
