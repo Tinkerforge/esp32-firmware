@@ -193,8 +193,11 @@ bool checkDigestAuthentication(AuthFields fields, const char * method, const cha
     logger.printfln("AUTH FAIL: password");
     return false;
 }
+
+String generateDigestHash(const char * username, const char * password, const char * realm){
+  if(username == NULL || password == NULL || realm == NULL){
+    return "";
   }
 
-  logger.printfln("AUTH FAIL: password");
-  return false;
+  return stringMD5(String(username) + ':' + realm + ':' + password);
 }
