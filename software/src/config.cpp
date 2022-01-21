@@ -224,12 +224,6 @@ struct from_json {
         if (!json_node.is<float>())
             return "JSON node was not a float.";
 
-        // We don't allow setting float config values from an integer
-        // to make sure, no additional rounding occurres.
-        // To set a float config value to an integer value, for example 123.0 has to be used.
-        if (json_node.is<uint32_t>() || json_node.is<int32_t>())
-            return "JSON node was an integer. Please use f.e. 123.0 to set a float node to an integer value.";
-
         x.value = json_node.as<float>();
         return String("");
     }
@@ -333,12 +327,6 @@ struct from_update {
 
         if (update->get<float>() == nullptr)
             return "ConfUpdate node was not a float.";
-
-        // We don't allow setting float config values from an integer
-        // to make sure, no additional rounding occurres.
-        // To set a float config value to an integer value, for example 123.0 has to be used.
-        if (update->get<uint32_t>() != nullptr || update->get<int32_t>() != nullptr)
-            return "ConfUpdate node was an integer. Please use f.e. 123.0 to set a float node to an integer value.";
 
         x.value = *(update->get<float>());
         return String("");
