@@ -30,7 +30,8 @@ class NFC : public DeviceModule<TF_NFC,
                                 nfc_bricklet_firmware_bin_len,
                                 tf_nfc_create,
                                 tf_nfc_get_bootloader_mode,
-                                tf_nfc_reset> {
+                                tf_nfc_reset,
+                                tf_nfc_destroy> {
 public:
     NFC();
     void setup();

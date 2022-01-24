@@ -47,7 +47,8 @@ class SDM72DM : public DeviceModule<TF_RS485,
                                     rs485_bricklet_firmware_bin_len,
                                     tf_rs485_create,
                                     tf_rs485_get_bootloader_mode,
-                                    tf_rs485_reset> {
+                                    tf_rs485_reset,
+                                    tf_rs485_destroy> {
 public:
     SDM72DM();
     void setup();

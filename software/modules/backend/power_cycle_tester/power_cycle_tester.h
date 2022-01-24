@@ -22,7 +22,6 @@
 #include "bindings/bricklet_industrial_dual_relay.h"
 
 #include "config.h"
-#include "device_module.h"
 #include "industrial_dual_relay_firmware.h"
 
 enum class POTI_POS {

@@ -46,7 +46,8 @@ template <typename DeviceT,
           const size_t firmware_len,
           int (*init_function)(DeviceT *, const char *, TF_HAL *),
           int (*get_bootloader_mode_function)(DeviceT *, uint8_t *),
-          int (*reset_function)(DeviceT *)>
+          int (*reset_function)(DeviceT *),
+          int (*destroy_function)(DeviceT *)>
 class DeviceModule {
 public:
     DeviceModule(const char *url_prefix,
@@ -70,6 +71,8 @@ public:
 
     bool setup_device()
     {
+        destroy_function(&device);
+
         uint16_t device_id = get_device_id();
         TF_TFP *tfp = tf_hal_get_tfp(&hal, nullptr, nullptr, &device_id, false);
 

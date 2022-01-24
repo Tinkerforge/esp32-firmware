@@ -30,7 +30,8 @@ class EVSE : public DeviceModule<TF_EVSE,
                                  evse_bricklet_firmware_bin_len,
                                  tf_evse_create,
                                  tf_evse_get_bootloader_mode,
-                                 tf_evse_reset> {
+                                 tf_evse_reset,
+                                 tf_evse_destroy> {
 public:
     EVSE();
     void setup();
