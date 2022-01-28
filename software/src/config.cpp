@@ -106,28 +106,28 @@ struct default_validator {
 };
 
 struct to_json {
-    void operator()(Config::ConfString &x) {
+    void operator()(const Config::ConfString &x) {
         insertHere.set(x.value);
     }
-    void operator()(Config::ConfFloat &x) {
+    void operator()(const Config::ConfFloat &x) {
         insertHere.set(x.value);
     }
-    void operator()(Config::ConfInt &x) {
+    void operator()(const Config::ConfInt &x) {
         insertHere.set(x.value);
     }
-    void operator()(Config::ConfUint &x) {
+    void operator()(const Config::ConfUint &x) {
         insertHere.set(x.value);
     }
-    void operator()(Config::ConfBool &x) {
+    void operator()(const Config::ConfBool &x) {
         insertHere.set(x.value);
     }
-    void operator()(std::nullptr_t x) {
+    void operator()(const std::nullptr_t x) {
         insertHere.set(x);
     }
-    void operator()(Config::ConfArray &x) {
+    void operator()(const Config::ConfArray &x) {
         JsonArray arr = insertHere.as<JsonArray>();
         for (size_t i = 0; i < x.value.size(); ++i) {
-            Config &child = x.value[i];
+            const Config &child = x.value[i];
 
             if (child.is<Config::ConfObject>()) {
                 arr.createNestedObject();
@@ -140,12 +140,12 @@ struct to_json {
             strict_variant::apply_visitor(to_json{arr[i], keys_to_censor}, x.value[i].value);
         }
     }
-    void operator()(Config::ConfObject &x)
+    void operator()(const Config::ConfObject &x)
     {
         JsonObject obj = insertHere.as<JsonObject>();
         for (size_t i = 0; i < x.value.size(); ++i) {
-            String &key = x.value[i].first;
-            Config &child = x.value[i].second;
+            const String &key = x.value[i].first;
+            const Config &child = x.value[i].second;
 
             if (child.is<Config::ConfObject>()) {
                 obj.createNestedObject(key);
@@ -168,29 +168,29 @@ struct to_json {
 };
 
 struct json_length_visitor {
-    size_t operator()(Config::ConfString &x) {
+    size_t operator()(const Config::ConfString &x) {
         return x.maxChars + 1;
     }
-    size_t operator()(Config::ConfFloat &x) {
+    size_t operator()(const Config::ConfFloat &x) {
         return 0;
     }
-    size_t operator()(Config::ConfInt &x) {
+    size_t operator()(const Config::ConfInt &x) {
         return 0;
     }
-    size_t operator()(Config::ConfUint &x) {
+    size_t operator()(const Config::ConfUint &x) {
         return 0;
     }
-    size_t operator()(Config::ConfBool &x) {
+    size_t operator()(const Config::ConfBool &x) {
         return 0;
     }
     size_t operator()(std::nullptr_t x) {
         return 10; // TODO: is this still necessary?
     }
-    size_t operator()(Config::ConfArray &x)
+    size_t operator()(const Config::ConfArray &x)
     {
         return strict_variant::apply_visitor(json_length_visitor{}, x.prototype->value) * x.maxElements + JSON_ARRAY_SIZE(x.maxElements);
     }
-    size_t operator()(Config::ConfObject &x)
+    size_t operator()(const Config::ConfObject &x)
     {
         size_t sum = 0;
         for (size_t i = 0; i < x.value.size(); ++i) {
@@ -664,7 +664,7 @@ size_t Config::fillInt64Array(int32_t *arr, size_t elements) {
     return fillArray<int32_t, Config::ConfInt>(arr, elements);
 }
 
-size_t Config::json_size() {
+size_t Config::json_size() const {
     return strict_variant::apply_visitor(json_length_visitor{}, value);
 }
 
@@ -701,11 +701,11 @@ void Config::write_to_stream(Print &output)
     serializeJson(doc, output);
 }
 
-String Config::to_string() {
+String Config::to_string() const {
     return this->to_string_except({});
 }
 
-String Config::to_string_except(std::initializer_list<String> keys_to_censor)
+String Config::to_string_except(std::initializer_list<String> keys_to_censor) const
 {
     DynamicJsonDocument doc(json_size());
 
@@ -724,7 +724,7 @@ String Config::to_string_except(std::initializer_list<String> keys_to_censor)
     return result;
 }
 
-String Config::to_string_except(const std::vector<String> &keys_to_censor)
+String Config::to_string_except(const std::vector<String> &keys_to_censor) const
 {
     DynamicJsonDocument doc(json_size());
 

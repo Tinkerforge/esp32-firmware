@@ -379,7 +379,7 @@ struct Config {
         }
     }
 */
-    size_t json_size();
+    size_t json_size() const;
 
     void save_to_file(File file);
 
@@ -387,9 +387,9 @@ struct Config {
     void write_to_stream_except(Print &output, std::initializer_list<String> keys_to_censor);
     void write_to_stream_except(Print &output, const std::vector<String> &keys_to_censor);
 
-    String to_string();
-    String to_string_except(std::initializer_list<String> keys_to_censor);
-    String to_string_except(const std::vector<String> &keys_to_censor);
+    String to_string() const;
+    String to_string_except(std::initializer_list<String> keys_to_censor) const;
+    String to_string_except(const std::vector<String> &keys_to_censor) const;
 };
 
 struct ConfigRoot : public Config {
