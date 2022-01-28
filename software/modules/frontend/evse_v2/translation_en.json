@@ -3,7 +3,8 @@
         "status": {
             "evse": "Vehicle state",
             "not_connected": "Disconnected",
-            "connected": "Connected",
+            "waiting_for_charge_release": "Waiting for release",
+            "ready_to_charge": "Ready",
             "charging": "Charging",
             "error": "Error",
             "configured_charging_current": "Configured charging current",
@@ -33,11 +34,6 @@
             "contactor_live": "Live",
             "contactor_ok": "OK",
             "contactor_error": "Error",
-            "charge_release": "Charge release",
-            "charge_release_automatic": "Automatic",
-            "charge_release_manual": "Manual",
-            "charge_release_deactivated": "Deactivated",
-            "charge_release_managed": "Managed",
             "allowed_charging_current": "Allowed charging current",
             "error_state": "Error state",
             "error_state_desc": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
@@ -63,13 +59,12 @@
             "jumper_config": "switch configured",
             "jumper_config_software": "Software",
             "jumper_config_unconfigured": "Unconfigured",
+            "evse_version": "EVSE version",
+            "energy_meter_type": "Energy meter type",
             "charging_current": "Charging current limits",
             "charging_current_muted": "Minimum of the charging current limits",
-            "charging_current_configured": "Configured",
-            "charging_current_max_incoming": "Supply cable",
-            "charging_current_max_outgoing": "Type 2 cable",
-            "charging_current_managed": "Managed",
-            "reset_configured_current": "Reset",
+            "reset_configured_current": "Release",
+            "reset_external_slot": "Release",
             "low_level_state": "Low Level State",
             "low_level_state_show": "Show / Hide",
             "led_state": "LED state",
@@ -104,7 +99,11 @@
             "settings": "Settings",
             "charge_management_description": "Charge management",
             "charge_management_description_muted": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
-            "charge_management_enable": "Enables other chargers to control this one",
+            "charge_management_enable": "Enables other WARP chargers to control this one",
+
+            "external_description": "External control",
+            "external_description_muted": "<a href=\"https://www.warp-charger.com/evcc.html?v=2\">see setup tutorial for details</a>",
+            "external_enable": "Enables an external control system (for example <a href=\"https://evcc.io/\">EVCC</a>) to control this charger",
 
             "dc_fault_current_state": "DC fault protector state",
             "dc_fault_current_state_desc": "{{{empty_text}}}",
@@ -145,7 +144,23 @@
             "reset_description_muted": "{{{empty_text}}}",
             "reset_evse": "Restart",
             "reflash_evse": "Reflash",
-            "charging_time": "Charging for"
+            "charging_time": "Charging for",
+
+            "control_pilot": "Control Pilot",
+            "control_pilot_muted": "Simulates unplugging and plugging the charging cable",
+            "control_pilot_disconnected": "Disconnected",
+            "control_pilot_connected": "Connected",
+            "control_pilot_automatic": "Automatic",
+
+            "slot_0": "Supply cable",
+            "slot_1": "Type 2 charging cable",
+            "slot_2": "Shutdown input",
+            "slot_3": "Configurable input",
+            "slot_4": "Auto start / button",
+            "slot_5": "Configuration",
+            "slot_6": "User",
+            "slot_7": "Charge manager",
+            "slot_8": "External control"
         },
         "script": {
             "error_code": "Error code",
@@ -168,16 +183,18 @@
             "debug_done": "Done",
 
             "by": "by",
-            "configuration": "configuration",
-            "management": "charge management",
-            "outgoing": "charging cable",
-            "incoming": "supply cable",
 
             "save_failed": "(De)Activating the charge mananagement failed",
             "managed_current_ignored": "ignored; Charge management deactivated",
 
+            "slot_disabled": "not active",
+            "slot_blocks": "blocks",
+            "slot_no_limit": "no limit",
+
             "reset_dc_fault_current_failed": "Reset of the DC fault protector failed",
-            "gpio_configuration_failed": "Updating the GPIO configuration failed"
+            "gpio_configuration_failed": "Updating the GPIO configuration failed",
+            "reset_external_slot_failed": "Releasing the external current limit failed",
+            "control_pilot_configuration_failed": "Updating the control pilot configuration failed"
         }
     }
 }

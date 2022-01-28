@@ -37,46 +37,52 @@ extern Config modules;
 
 extern API api;
 
-#define DETAILED_VALUES_COUNT 85
+#define ALL_VALUES_COUNT 85
 
 EVSEV2Meter::EVSEV2Meter()
 {
     state = Config::Object({
+        {"state", Config::Uint8(0)}, // 0 - no energy meter, 1 - initialization error, 2 - meter available
+        {"type", Config::Uint8(0)} // 0 - not available, 1 - sdm72, 2 - sdm630, 3 - sdm72v2
+    });
+
+    values = Config::Object({
         {"power", Config::Float(0.0)},
         {"energy_rel", Config::Float(0.0)},
         {"energy_abs", Config::Float(0.0)},
-        {"phases_active", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false)},
+    });
+
+    phases = Config::Object({
+        {"phases_connected", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false)},
             new Config{Config::Bool(false)},
             3, 3, Config::type_id<Config::ConfBool>())},
-        {"phases_connected", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false)},
+        {"phases_active", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false)},
             new Config{Config::Bool(false)},
             3, 3, Config::type_id<Config::ConfBool>())}
     });
 
-    detailed_values = Config::Array({},
+    all_values = Config::Array({},
         new Config{Config::Float(0)},
-        0, DETAILED_VALUES_COUNT, Config::type_id<Config::ConfFloat>());
-/*
-    error_counters = Config::Object({
-        {"meter", Config::Uint32(0)},
-        {"bricklet", Config::Uint32(0)},
-        {"bricklet_reset", Config::Uint32(0)},
-    });
-*/
-    energy_meter_reset = Config::Null();
+        0, ALL_VALUES_COUNT, Config::type_id<Config::ConfFloat>());
+
+    reset = Config::Null();
 }
 
 void EVSEV2Meter::setupEVSE(bool update_module_initialized)
 {
     evse_v2.update_all_data();
 
-    if (!evse_v2.evse_energy_meter_state.get("available")->asBool()) {
+    uint8_t meter_type = evse_v2.evse_hardware_configuration.get("energy_meter_type")->asUint();
+
+    if (meter_type == 0) {
         task_scheduler.scheduleOnce("setup_evsev2_meter", [this](){
             this->setupEVSE(true);
         }, 3000);
         return;
     }
 
+    state.get("state")->updateUint(2);
+    state.get("type")->updateUint(meter_type);
     hardware_available = true;
 
     for (int i = 0; i < power_history.size(); ++i) {
@@ -85,25 +91,21 @@ void EVSEV2Meter::setupEVSE(bool update_module_initialized)
         power_history.push(-1);
     }
 
-    for (int i = 0; i < DETAILED_VALUES_COUNT; ++i) {
-        detailed_values.add();
+    for (int i = 0; i < ALL_VALUES_COUNT; ++i) {
+        all_values.add();
     }
 
     task_scheduler.scheduleWithFixedDelay("update_evse_meter_values", [this](){
-        float power, energy_rel, energy_abs;
-        bool phases_active[3], phases_connected[3];
-        if (tf_evse_v2_get_energy_meter_values(&evse_v2.device, &power, &energy_rel, &energy_abs, phases_active, phases_connected) != TF_E_OK)
-            return;
-
-        state.get("power")->updateFloat(power);
-        state.get("energy_rel")->updateFloat(energy_rel);
-        state.get("energy_abs")->updateFloat(energy_abs);
+        float power = evse_v2.evse_energy_meter_values.get("power")->asFloat();
+        values.get("power")->updateFloat(power);
+        values.get("energy_rel")->updateFloat(evse_v2.evse_energy_meter_values.get("energy_rel")->asFloat());
+        values.get("energy_abs")->updateFloat(evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat());
 
         for(int i = 0; i < 3; ++i)
-            state.get("phases_active")->get(i)->updateBool(phases_active[i]);
+            phases.get("phases_active")->get(i)->updateBool(evse_v2.evse_energy_meter_values.get("phases_active")->get(i)->asBool());
 
         for(int i = 0; i < 3; ++i)
-            state.get("phases_connected")->get(i)->updateBool(phases_connected[i]);
+            phases.get("phases_connected")->get(i)->updateBool(evse_v2.evse_energy_meter_values.get("phases_connected")->get(i)->asBool());
 
         int16_t val = (int16_t)min((float)INT16_MAX, power);
         interval_samples.push(val);
@@ -123,14 +125,14 @@ void EVSEV2Meter::setupEVSE(bool update_module_initialized)
         samples_last_interval = 0;
     }, 1000 * 60 * HISTORY_MINUTE_INTERVAL, 1000 * 60 * HISTORY_MINUTE_INTERVAL);
 
-    task_scheduler.scheduleWithFixedDelay("update_evse_meter_detailed_values", [this](){
+    task_scheduler.scheduleWithFixedDelay("update_all_energy_meter_values", [this](){
         uint16_t len;
-        float result[DETAILED_VALUES_COUNT] = {0};
-        if (tf_evse_v2_get_energy_meter_detailed_values(&evse_v2.device, result, &len) != TF_E_OK)
+        float result[ALL_VALUES_COUNT] = {0};
+        if (tf_evse_v2_get_all_energy_meter_values(&evse_v2.device, result, &len) != TF_E_OK)
             return;
 
-        for(int i = 0; i < DETAILED_VALUES_COUNT; ++i) {
-            detailed_values.get(i)->updateFloat(result[i]);
+        for(int i = 0; i < ALL_VALUES_COUNT; ++i) {
+            all_values.get(i)->updateFloat(result[i]);
         }
     }, 1000, 1000);
 
@@ -156,15 +158,17 @@ void EVSEV2Meter::setup()
 void EVSEV2Meter::register_urls()
 {
     api.addState("meter/state", &state, {}, 1000);
-    api.addState("meter/detailed_values", &detailed_values, {}, 1000);
-    //api.addState("meter/error_counters", &error_counters, {}, 1000); TODO: use api.getstate
+    api.addState("meter/values", &values, {}, 1000);
+    api.addState("meter/phases", &phases, {}, 1000);
+    api.addState("meter/all_values", &all_values, {}, 1000);
+    api.addState("meter/error_counters", &evse_v2.evse_energy_meter_errors, {}, 1000);
 
-    api.addCommand("meter/reset", &energy_meter_reset, {}, [this](){
+    api.addCommand("meter/reset", &reset, {}, [this](){
         if(!initialized) {
             return;
         }
 
-        tf_evse_v2_reset_energy_meter(&evse_v2.device);
+        tf_evse_v2_reset_energy_meter_relative_energy(&evse_v2.device);
     }, true);
 
     server.on("/meter/history", HTTP_GET, [this](WebServerRequest request) {

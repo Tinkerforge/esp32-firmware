@@ -3,7 +3,8 @@
         "status": {
             "evse": "Fahrzeugstatus",
             "not_connected": "Getrennt",
-            "connected": "Verbunden",
+            "waiting_for_charge_release": "Warte auf Freigabe",
+            "ready_to_charge": "Ladebereit",
             "charging": "Lädt",
             "error": "Fehler",
             "configured_charging_current": "Konfigurierter Ladestrom",
@@ -33,11 +34,6 @@
             "contactor_live": "Stromführend",
             "contactor_ok": "OK",
             "contactor_error": "Fehler",
-            "charge_release": "Ladefreigabe",
-            "charge_release_automatic": "Automatisch",
-            "charge_release_manual": "Manuell",
-            "charge_release_deactivated": "Deaktiviert",
-            "charge_release_managed": "Lastmanagement",
             "allowed_charging_current": "Erlaubter Ladestrom",
             "error_state": "Fehlerzustand",
             "error_state_desc": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
@@ -63,13 +59,12 @@
             "jumper_config": "durch Schalter konfiguriert",
             "jumper_config_software": "Software",
             "jumper_config_unconfigured": "Unkonfiguriert",
+            "evse_version": "EVSE-Version",
+            "energy_meter_type": "Stromzählertyp",
             "charging_current": "Ladestromgrenzen",
             "charging_current_muted": "Minimum der Ladestromgrenzen",
-            "charging_current_configured": "Konfiguriert",
-            "charging_current_max_incoming": "Zuleitung",
-            "charging_current_max_outgoing": "Typ-2-Ladekabel",
-            "charging_current_managed": "Lastmanagement",
-            "reset_configured_current": "Zurücksetzen",
+            "reset_configured_current": "Freigeben",
+            "reset_external_slot": "Freigeben",
             "low_level_state": "Low-Level-Zu&shy;stand",
             "low_level_state_show": "Anzeigen / Verstecken",
             "led_state": "LED-Zustand",
@@ -104,7 +99,11 @@
             "settings": "Einstellungen",
             "charge_management_description": "Lastmanagement",
             "charge_management_description_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
-            "charge_management_enable": "Erlaubt anderen Wallboxen diese zu steuern",
+            "charge_management_enable": "Erlaubt anderen WARP Chargern diese Wallbox zu steuern",
+
+            "external_description": "Externe Steuerung",
+            "external_description_muted": "<a href=\"https://www.warp-charger.com/evcc.html?v=2\">siehe Einrichtungs-Tutorial für Details</a>",
+            "external_enable": "Erlaubt einer externen Steuerung (z.B. <a href=\"https://evcc.io/\">EVCC</a>) diese Wallbox zu steuern",
 
             "dc_fault_current_state": "DC-Fehlerstrom&shy;zustand",
             "dc_fault_current_state_desc": "{{{empty_text}}}",
@@ -151,7 +150,17 @@
             "control_pilot_muted": "Täuscht Abziehen und Anstecken des Ladekabels vor",
             "control_pilot_disconnected": "Getrennt",
             "control_pilot_connected": "Verbunden",
-            "control_pilot_automatic": "Automatisch"
+            "control_pilot_automatic": "Automatisch",
+
+            "slot_0": "Zuleitung",
+            "slot_1": "Typ-2-Ladekabel",
+            "slot_2": "Abschalteingang",
+            "slot_3": "Konfigurierbarer Eingang",
+            "slot_4": "Autostart bzw. Taster",
+            "slot_5": "Konfiguration",
+            "slot_6": "Benutzer",
+            "slot_7": "Lastmanagement",
+            "slot_8": "Externe Steuerung"
         },
         "script": {
             "error_code": "Fehlercode",
@@ -174,16 +183,28 @@
             "debug_done": "Abgeschlossen.",
 
             "by": "durch",
-            "configuration": "Konfiguration",
-            "management": "Lastmanagement",
-            "outgoing": "Ladekabel",
-            "incoming": "Zuleitung",
 
             "save_failed": "(De-)Aktivieren des Lastmanagements fehlgeschlagen",
             "managed_current_ignored": "ignoriert; Lastmanagement deaktiviert",
 
             "reset_dc_fault_current_failed": "Zurücksetzen des DC-Fehlerstromschutzmoduls fehlgeschlagen",
-            "gpio_configuration_failed": "Speichern der GPIO-Konfiguration fehlgeschlagen"
+            "gpio_configuration_failed": "Speichern der GPIO-Konfiguration fehlgeschlagen",
+            "control_pilot_configuration_failed": "Speichern der Control-Pilot-Konfiguration fehlgeschlagen",
+            "reset_external_slot_failed": "Freigeben der externen Stromgrenze fehlgeschlagen",
+
+            "slot_disabled": "nicht aktiv",
+            "slot_blocks": "blockiert",
+            "slot_no_limit": "freigegeben",
+
+            "slot_0": "Zuleitung",
+            "slot_1": "Ladekabel",
+            "slot_2": "Abschalteingang",
+            "slot_3": "konfigurierbaren Eingang",
+            "slot_4": "Autostart bzw. Taster",
+            "slot_5": "Konfiguration",
+            "slot_6": "Benutzer",
+            "slot_7": "Lastmanagement",
+            "slot_8": "externe Steuerung"
         }
     }
 }

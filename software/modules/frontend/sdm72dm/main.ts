@@ -26,33 +26,57 @@ declare function __(s: string): string;
 import Chartist = require("chartist");
 import ctAxisTitle = require("chartist-plugin-axistitle");
 
-// Duplicated in evse/main.ts
 interface MeterState {
+    state: number,
+    type: number
+}
+
+// Duplicated in evse/main.ts
+interface MeterValues {
     power: number,
     energy_rel: number,
-    energy_abs: number,
-    phases_active: boolean[]
+    energy_abs: number
+}
+
+interface MeterPhases {
+    phases_active: boolean[],
     phases_connected: boolean[]
 }
 
-function update_meter_state(state: MeterState) {
-    $('#status_meter_power').val(util.toLocaleFixed(state.power, 0) + " W");
-    $('#meter_power').val(util.toLocaleFixed(state.power, 0) + " W");
-
-    $('#meter_energy_rel').val(util.toLocaleFixed(state.energy_rel, 3) + " kWh");
-
-    $('#meter_energy_abs').val(util.toLocaleFixed(state.energy_abs, 3) + " kWh");
-
-
-    if(state.phases_active === undefined)
-        return;
-
-    for(let i = 0; i < 3; ++i) {
-        util.update_button_group(`btn_group_meter_phase_active_${i}`, state.phases_active[i] ? 0 : 1);
-        util.update_button_group(`btn_group_meter_phase_connected_${i}`, state.phases_connected[i] ? 0 : 1);
-    }
+interface WARP2MeterErrorCounters {
+    local_timeout: number,
+    global_timeout: number,
+    illegal_function: number,
+    illegal_data_access: number,
+    illegal_data_value: number,
+    slave_device_failure: number,
 }
 
+interface WARP1MeterErrorCounters {
+    meter: number,
+    bricklet: number,
+    bricklet_reset: number,
+}
+
+function update_meter_state(state: MeterState) {
+    show_module(state.state == 2);
+}
+
+function update_meter_values(values: MeterValues) {
+    $('#status_meter_power').val(util.toLocaleFixed(values.power, 0) + " W");
+    $('#meter_power').val(util.toLocaleFixed(values.power, 0) + " W");
+
+    $('#meter_energy_rel').val(util.toLocaleFixed(values.energy_rel, 3) + " kWh");
+
+    $('#meter_energy_abs').val(util.toLocaleFixed(values.energy_abs, 3) + " kWh");
+}
+
+function update_meter_phases(phases: MeterPhases) {
+    for(let i = 0; i < 3; ++i) {
+        util.update_button_group(`btn_group_meter_phase_active_${i}`, phases.phases_active[i] ? 0 : 1);
+        util.update_button_group(`btn_group_meter_phase_connected_${i}`, phases.phases_connected[i] ? 0 : 1);
+    }
+}
 
 let graph_update_interval: number = null;
 let status_interval: number = null;
@@ -414,8 +438,7 @@ function build_evse_v2_detailed_values_view() {
     }
 }
 
-
-function update_evse_v2_detailed_values(v: number[]) {
+function update_evse_v2_all_values(v: number[]) {
     let entry_idx = 0;
     let subentry_idx = 0;
     for(let i = 0; i < v.length; ++i) {
@@ -459,13 +482,60 @@ export function init() {
     status_interval = window.setInterval(update_status_chart, 60*1000);
 }
 
+function show_module(module_available: boolean) {
+    $('#sidebar-meter').prop('hidden', !module_available);
+    $('#status-meter').prop('hidden', !module_available);
+
+    if(!module_available) {
+        if (graph_update_interval != null) {
+            clearInterval(graph_update_interval);
+            graph_update_interval = null;
+        }
+
+        if (status_interval != null) {
+            clearInterval(status_interval);
+            status_interval = null;
+        }
+
+        $('#meter_phases_active').prop('hidden', true);
+        $('#meter_phases_connected').prop('hidden', true);
+        $('#meter_detailed_values_container').prop('hidden', true);
+    } else {
+        if (status_interval == null) {
+            status_interval = window.setInterval(update_status_chart, 60*1000);
+        }
+    }
+
+}
+
+let all_values_avail = false;
+let phases_avail = false;
+
 export function addEventListeners(source: EventSource) {
     source.addEventListener('meter/state', function (e: util.SSE) {
         update_meter_state(<MeterState>(JSON.parse(e.data)));
     }, false);
 
-    source.addEventListener('meter/detailed_values', function (e: util.SSE) {
-        update_evse_v2_detailed_values(<number[]>(JSON.parse(e.data)));
+    source.addEventListener('meter/values', function (e: util.SSE) {
+        update_meter_values(<MeterValues>(JSON.parse(e.data)));
+    }, false);
+
+    source.addEventListener('meter/phases', function (e: util.SSE) {
+        if (!phases_avail) {
+            phases_avail = true;
+            $('#meter_phases_active').prop('hidden', false);
+            $('#meter_phases_connected').prop('hidden', false);
+        }
+        update_meter_phases(<MeterPhases>(JSON.parse(e.data)));
+    }, false);
+
+    source.addEventListener('meter/all_values', function (e: util.SSE) {
+        if (!all_values_avail) {
+            all_values_avail = true;
+            build_evse_v2_detailed_values_view();
+            $('#meter_detailed_values_container').prop('hidden', false);
+        }
+        update_evse_v2_all_values(<number[]>(JSON.parse(e.data)));
     }, false);
 
     source.addEventListener("evse/max_charging_current", function (e: util.SSE) {
@@ -475,7 +545,7 @@ export function addEventListeners(source: EventSource) {
 }
 
 export function updateLockState(module_init: any) {
-    let module_available = module_init.sdm72dm || module_init.evse_v2_meter;
+    /*let module_available = module_init.sdm72dm || module_init.evse_v2_meter;
     $('#sidebar-meter').prop('hidden', !module_available);
     $('#status-meter').prop('hidden', !module_available);
 
@@ -500,5 +570,5 @@ export function updateLockState(module_init: any) {
 
     $('#meter_phases_active').prop('hidden', !module_init.evse_v2_meter);
     $('#meter_phases_connected').prop('hidden', !module_init.evse_v2_meter);
-    $('#meter_detailed_values_container').prop('hidden', !module_init.evse_v2_meter);
+    $('#meter_detailed_values_container').prop('hidden', !module_init.evse_v2_meter);*/
 }

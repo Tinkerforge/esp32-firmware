@@ -35,7 +35,7 @@
 #define MAX_CLIENTS 10
 
 // Increment when changing packet structs
-#define PROTOCOL_VERSION 2
+#define PROTOCOL_VERSION 3
 
 #define CM_NETWORKING_ERROR_NO_ERROR 0
 #define CM_NETWORKING_ERROR_UNREACHABLE 1
@@ -58,9 +58,8 @@ struct response_packet {
     packet_header header;
 
     uint8_t iec61851_state;
-    uint8_t vehicle_state;
+    uint8_t charger_state;
     uint8_t error_state;
-    uint8_t charge_release;
     uint32_t uptime;
     uint32_t charging_time;
     uint16_t allowed_charging_current;
@@ -83,9 +82,8 @@ public:
                           const std::vector<String> &names,
                           std::function<void(uint8_t, // client_id
                                              uint8_t, // iec61851_state
-                                             uint8_t, // vehicle_state
+                                             uint8_t, // charger_state
                                              uint8_t, // error_state
-                                             uint8_t, // charge_release
                                              uint32_t,// uptime
                                              uint32_t,// charging_time
                                              uint16_t,// allowed_charging_current
@@ -97,9 +95,8 @@ public:
 
     void register_client(std::function<void(uint16_t)> client_callback);
     bool send_client_update(uint8_t iec61851_state,
-                            uint8_t vehicle_state,
+                            uint8_t charger_state,
                             uint8_t error_state,
-                            uint8_t charge_release,
                             uint32_t uptime,
                             uint32_t charging_time,
                             uint16_t allowed_charging_current,

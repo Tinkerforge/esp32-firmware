@@ -25,6 +25,16 @@
 #include "device_module.h"
 #include "evse_v2_firmware.h"
 
+#define CHARGING_SLOT_INCOMING_CABLE 0
+#define CHARGING_SLOT_OUTGOING_CABLE 1
+#define CHARGING_SLOT_SHUTDOWN_INPUT 2
+#define CHARGING_SLOT_GP_INPUT 3
+#define CHARGING_SLOT_AUTOSTART_BUTTON 4
+#define CHARGING_SLOT_GLOBAL 5
+#define CHARGING_SLOT_USER 6
+#define CHARGING_SLOT_CHARGE_MANAGER 7
+#define CHARGING_SLOT_EXTERNAL 8
+
 class EVSEV2 : public DeviceModule<TF_EVSEV2,
                                  evse_v2_bricklet_firmware_bin,
                                  evse_v2_bricklet_firmware_bin_len,
@@ -38,12 +48,10 @@ public:
     void register_urls();
     void loop();
 
-    ConfigRoot evse_energy_meter_state;
 
     // Called in evse_v2_meter setup
     void update_all_data();
 
-private:
     void setup_evse();
     bool flash_firmware();
     bool flash_plugin(int regular_plugin_upto);
@@ -51,33 +59,47 @@ private:
     String get_evse_debug_header();
     String get_evse_debug_line();
     void set_managed_current(uint16_t current);
-    String get_evse_monitor_header();
-    String get_evse_monitor_line();
+
+    void apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear);
+    void apply_defaults();
 
     bool debug = false;
 
     ConfigRoot evse_state;
     ConfigRoot evse_hardware_configuration;
     ConfigRoot evse_low_level_state;
-    ConfigRoot evse_max_charging_current;
-    ConfigRoot evse_auto_start_charging;
-    ConfigRoot evse_auto_start_charging_update;
-    ConfigRoot evse_current_limit;
+    ConfigRoot evse_energy_meter_values;
+    ConfigRoot evse_energy_meter_errors;
+    ConfigRoot evse_button_state;
+    ConfigRoot evse_slots;
+    ConfigRoot evse_indicator_led;
+    ConfigRoot evse_reset_dc_fault_current_state;
     ConfigRoot evse_stop_charging;
     ConfigRoot evse_start_charging;
-    ConfigRoot evse_energy_meter_values;
-
-    ConfigRoot evse_dc_fault_current_state;
-    ConfigRoot evse_reset_dc_fault_current;
     ConfigRoot evse_gpio_configuration;
+    ConfigRoot evse_gpio_configuration_update;
     ConfigRoot evse_button_configuration;
     ConfigRoot evse_button_configuration_update;
-    ConfigRoot evse_managed;
-    ConfigRoot evse_managed_update;
-    ConfigRoot evse_managed_current;
-    ConfigRoot evse_button_state;
     ConfigRoot evse_control_pilot_configuration;
     ConfigRoot evse_control_pilot_configuration_update;
+    ConfigRoot evse_auto_start_charging;
+    ConfigRoot evse_auto_start_charging_update;
+    ConfigRoot evse_global_current;
+    ConfigRoot evse_global_current_update;
+    ConfigRoot evse_management_enabled;
+    ConfigRoot evse_management_enabled_update;
+    ConfigRoot evse_user_slot_enabled;
+    ConfigRoot evse_user_slot_enabled_update;
+    ConfigRoot evse_external_enabled;
+    ConfigRoot evse_external_enabled_update;
+    ConfigRoot evse_external_defaults;
+    ConfigRoot evse_external_defaults_update;
+    ConfigRoot evse_management_current;
+    ConfigRoot evse_management_current_update;
+    ConfigRoot evse_external_current;
+    ConfigRoot evse_external_current_update;
+    ConfigRoot evse_external_clear_on_disconnect;
+    ConfigRoot evse_external_clear_on_disconnect_update;
 
     uint32_t last_current_update = 0;
     bool shutdown_logged = false;

@@ -131,25 +131,25 @@ ChargeManager::ChargeManager()
     }};
 }
 
-uint8_t get_charge_state(uint8_t vehicle_state, uint8_t iec61851_state, uint8_t charge_release, uint32_t charging_time, uint16_t target_allocated_current) {
-    if (vehicle_state == 0) // VEHICLE_STATE_NOT_CONNECTED
+uint8_t get_charge_state(uint8_t charger_state, uint16_t supported_current, uint32_t charging_time, uint16_t target_allocated_current) {
+    if (charger_state == 0) // not connected
         return 0;
-    if (vehicle_state == 2) // VEHICLE_STATE_CHARGING
+    if (charger_state == 3) // charging
         return 4;
-    if (vehicle_state == 3) // VEHICLE_STATE_ERROR
+    if (charger_state == 4) // error
         return 5;
-    if (vehicle_state == 1 && iec61851_state == 0 && charge_release != 3) // VEHICLE_STATE_CONNECTED, IEC61851_STATE_A
+    if (charger_state == 1 && supported_current == 0) // connected but blocked, supported current == 0 means another slot blocks
         return 1;
-    if (charge_release == 3 && target_allocated_current == 0) { // CHARGE_RELEASE_CHARGE_MANAGEMENT
+    if (charger_state == 1 && supported_current != 0) { // blocked by charge management (as supported current != 0)
         if (charging_time == 0)
-            return 2;
+            return 2; // Not charged this session
         else
-            return 6;
+            return 6; // Charged at least once
     }
-    if (charge_release == 3 && target_allocated_current > 0)
-        return 3;
+    if (charger_state == 2)
+        return 3; // Waiting for the car to start charging
 
-    logger.printfln("Unknown state!");
+    logger.printfln("Unknown state! cs %u sc %u ct %u tac %u", charger_state, supported_current, charging_time, target_allocated_current);
     return 5;
 }
 
@@ -167,9 +167,8 @@ void ChargeManager::start_manager_task()
     cm_networking.register_manager(hosts, names, [this, chargers](
             uint8_t client_id,
             uint8_t iec61851_state,
-            uint8_t vehicle_state,
+            uint8_t charger_state,
             uint8_t error_state,
-            uint8_t charge_release,
             uint32_t uptime,
             uint32_t charging_time,
             uint16_t allowed_charging_current,
@@ -194,9 +193,18 @@ void ChargeManager::start_manager_task()
 
             target.get("uptime")->updateUint(uptime);
 
-            target.get("wants_to_charge")->updateBool((charging_time == 0 && charge_release == 3 && vehicle_state == 1) || vehicle_state == 2); // CHARGE_RELEASE_CHARGE_MANAGEMENT
-            target.get("wants_to_charge_low_priority")->updateBool(charging_time != 0 && charge_release == 3 && vehicle_state == 1); // CHARGE_RELEASE_CHARGE_MANAGEMENT
-            target.get("is_charging")->updateBool(vehicle_state == 2); //VEHICLE_STATE_CHARGING
+            // A charger wants to charge if:
+            // - the charging time is 0 (it has not charged this vehicle yet), no other slot blocks and we are still in charger state 1 (i.e. blocked by a slot, so the charge management slot)
+            // - OR the charger waits for the vehicle to start charging
+            // - OR the charger is already charging
+            bool wants_to_charge = (charging_time == 0 && supported_current != 0 && charger_state == 1) || charger_state == 2 || charger_state == 3;
+            target.get("wants_to_charge")->updateBool(wants_to_charge);
+
+            // A charger wants to charge and has low priority if it has already charged this vehicle and only the charge manager slot blocks.
+            bool low_prio = charging_time != 0 && supported_current != 0 && charger_state == 1;
+            target.get("wants_to_charge_low_priority")->updateBool(low_prio);
+
+            target.get("is_charging")->updateBool(charger_state == 3);
             target.get("allowed_current")->updateUint(allowed_charging_current);
             target.get("supported_current")->updateUint(supported_current);
             target.get("last_update")->updateUint(millis());
@@ -212,11 +220,10 @@ void ChargeManager::start_manager_task()
 
             current_error = target.get("error")->asUint();
             if (current_error == 0 || current_error >= CHARGE_MANAGER_CLIENT_ERROR_START)
-                target.get("state")->updateUint(get_charge_state(vehicle_state,
-                                                                iec61851_state,
-                                                                charge_release,
-                                                                charging_time,
-                                                                target.get("allocated_current")->asUint()));
+                target.get("state")->updateUint(get_charge_state(charger_state,
+                                                                 supported_current,
+                                                                 charging_time,
+                                                                 target.get("allocated_current")->asUint()));
             charge_manager_state.get("uptime")->updateUint(millis());
     }, [this](uint8_t client_id, uint8_t error){
         Config &target = charge_manager_state.get("chargers")->asArray()[client_id];

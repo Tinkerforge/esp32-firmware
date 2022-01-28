@@ -49,9 +49,10 @@ public:
 
 private:
     ConfigRoot state;
-    ConfigRoot detailed_values;
-    ConfigRoot energy_meter_reset;
-    ConfigRoot error_counters;
+    ConfigRoot values;
+    ConfigRoot phases;
+    ConfigRoot all_values;
+    ConfigRoot reset;
 
     int samples_last_interval = 0;
     int samples_per_interval = -1;

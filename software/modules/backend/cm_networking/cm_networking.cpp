@@ -84,9 +84,8 @@ void CMNetworking::register_manager(const std::vector<String> &hosts,
                                     const std::vector<String> &names,
                                     std::function<void(uint8_t, // client_id
                                                         uint8_t, // iec61851_state
-                                                        uint8_t, // vehicle_state
+                                                        uint8_t, // charger_state
                                                         uint8_t, // error_state
-                                                        uint8_t, // charge_release
                                                         uint32_t,// uptime
                                                         uint32_t,// charging_time
                                                         uint16_t,// allowed_charging_current
@@ -177,9 +176,8 @@ void CMNetworking::register_manager(const std::vector<String> &hosts,
 
         manager_callback(charger_idx,
                          response.iec61851_state,
-                         response.vehicle_state,
+                         response.charger_state,
                          response.error_state,
-                         response.charge_release,
                          response.uptime,
                          response.charging_time,
                          response.allowed_charging_current,
@@ -277,9 +275,8 @@ void CMNetworking::register_client(std::function<void(uint16_t)> client_callback
 }
 
 bool CMNetworking::send_client_update(uint8_t iec61851_state,
-                            uint8_t vehicle_state,
+                            uint8_t charger_state,
                             uint8_t error_state,
-                            uint8_t charge_release,
                             uint32_t uptime,
                             uint32_t charging_time,
                             uint16_t allowed_charging_current,
@@ -301,9 +298,8 @@ bool CMNetworking::send_client_update(uint8_t iec61851_state,
     response.header.version = PROTOCOL_VERSION;
 
     response.iec61851_state = iec61851_state;
-    response.vehicle_state = vehicle_state;
+    response.charger_state = charger_state;
     response.error_state = error_state;
-    response.charge_release = charge_release;
     response.uptime = uptime;
     response.charging_time = charging_time;
     response.allowed_charging_current = allowed_charging_current;

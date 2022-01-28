@@ -407,4 +407,9 @@ body {
     -moz-appearance:textfield !important;
 }
 
+.input-indicator {
+    padding-left: calc(0.75rem - 5px);
+    border-left: 5px solid;
+}
+
 {{{module_post_imports}}}

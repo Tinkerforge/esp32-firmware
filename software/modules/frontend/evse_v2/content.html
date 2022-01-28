@@ -28,22 +28,6 @@
 
     <div class="form-group row">
         <div class="col-lg-3 col-xl-2">
-            <label for="btn_group_charge_release" class="col-form-label">
-                <span class="form-label" data-i18n="evse.content.charge_release"></span>
-            </label>
-        </div>
-        <div class="col-lg-9 col-xl-6">
-            <div id="btn_group_charge_release" class="btn-group flex-wrap" role="group" style="width: 100%;">
-                <button type="button" class="btn btn-outline-success" disabled data-i18n="evse.content.charge_release_automatic"></button>
-                <button type="button" class="btn btn-outline-warning" disabled data-i18n="evse.content.charge_release_manual"></button>
-                <button type="button" class="btn btn-outline-danger" disabled data-i18n="evse.content.charge_release_deactivated"></button>
-                <button type="button" class="btn btn-outline-warning" disabled data-i18n="evse.content.charge_release_managed"></button>
-            </div>
-        </div>
-    </div>
-
-    <div class="form-group row">
-        <div class="col-lg-3 col-xl-2">
             <label for="allowed_charging_current" class="col-form-label">
                 <span class="form-label pr-2" data-i18n="evse.content.allowed_charging_current"></span>
                 <span class="text-muted" data-i18n="evse.content.charging_current_muted"></span>
@@ -157,104 +141,6 @@
     </div>
 
     <div
-        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <span class="h3" data-i18n="evse.content.configuration"></span>
-    </div>
-
-    <div class="form-group row">
-        <div class="col-lg-3 col-xl-2">
-            <label for="btn_group_has_lock_switch" class="col-form-label">
-                <span class="form-label" data-i18n="evse.content.has_lock_switch"></span>
-            </label>
-        </div>
-        <div class="col-lg-9 col-xl-6">
-            <div id="btn_group_has_lock_switch" class="btn-group flex-wrap" role="group">
-                <button type="button" class="btn btn-outline-secondary" disabled data-i18n="evse.content.lock_no"></button>
-                <button type="button" class="btn btn-outline-primary" disabled data-i18n="evse.content.lock_yes"></button>
-            </div>
-        </div>
-    </div>
-
-    <div class="form-group row">
-        <div class="col-lg-3 col-xl-2">
-            <label for="btn_group_jumper_config" class="col-form-label">
-                <span class="form-label pr-2" data-i18n="evse.content.jumper_config_max_current"></span>
-                <span class="text-muted" data-i18n="evse.content.jumper_config"></span>
-            </label>
-        </div>
-        <div class="col-lg-9 col-xl-6">
-            <div id="btn_group_jumper_config" class="btn-group flex-wrap" role="group" style="width: 100%;">
-                <button type="button" class="btn btn-outline-primary" disabled>6 A</button>
-                <button type="button" class="btn btn-outline-primary" disabled>10 A</button>
-                <button type="button" class="btn btn-outline-primary" disabled>13 A</button>
-                <button type="button" class="btn btn-outline-primary" disabled>16 A</button>
-                <button type="button" class="btn btn-outline-primary" disabled>20 A</button>
-                <button type="button" class="btn btn-outline-primary" disabled>25 A</button>
-                <button type="button" class="btn btn-outline-primary" disabled>32 A</button>
-                <button type="button" class="btn btn-outline-danger" disabled data-i18n="evse.content.jumper_config_software"></button>
-                <button type="button" class="btn btn-outline-danger" disabled data-i18n="evse.content.jumper_config_unconfigured"></button>
-            </div>
-        </div>
-    </div>
-
-    <div
-    class="d-flex flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <span class="h3" data-i18n="evse.content.charging_current"></span>
-    </div>
-
-    <div class="form-group row">
-        <div class="col-lg-3 col-xl-2">
-            <label for="max_current_configured" class="col-form-label">
-                <span class="form-label" data-i18n="evse.content.charging_current_configured"></span>
-            </label>
-        </div>
-        <div class="col-lg-9 col-xl-6 input-group">
-            <input id="max_current_configured" class="form-control" type="text"
-                placeholder="..." readonly>
-            <div class="input-group-append">
-                <button id="reset_current_configured" class="btn btn-primary form-control rounded-right" type="button" data-i18n="evse.content.reset_configured_current"></button>
-            </div>
-        </div>
-    </div>
-
-    <div class="form-group row">
-        <div class="col-lg-3 col-xl-2">
-            <label for="max_current_incoming_cable" class="col-form-label">
-                <span class="form-label" data-i18n="evse.content.charging_current_max_incoming"></span>
-            </label>
-        </div>
-        <div class="col-lg-9 col-xl-6">
-            <input id="max_current_incoming_cable" class="form-control" type="text"
-                placeholder="..." readonly>
-        </div>
-    </div>
-
-    <div class="form-group row">
-        <div class="col-lg-3 col-xl-2">
-            <label for="max_current_outgoing_cable" class="col-form-label">
-                <span class="form-label" data-i18n="evse.content.charging_current_max_outgoing"></span>
-            </label>
-        </div>
-        <div class="col-lg-9 col-xl-6">
-            <input id="max_current_outgoing_cable" class="form-control" type="text"
-                placeholder="..." readonly>
-        </div>
-    </div>
-
-    <div class="form-group row">
-        <div class="col-lg-3 col-xl-2">
-            <label for="max_current_managed" class="col-form-label">
-                <span class="form-label pr-2" data-i18n="evse.content.charging_current_managed"></span>
-                <span class="text-muted" id="evse_charging_current_managed_ignored"></span>
-            </label>
-        </div>
-        <div class="col-lg-9 col-xl-6">
-            <input id="max_current_managed" class="form-control" type="text"
-                placeholder="..." readonly>
-        </div>
-    </div>
-
-    <div
     class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <span class="h3" data-i18n="evse.content.settings"></span>
     </div>
@@ -270,6 +156,21 @@
             <div class="borderless-form-control custom-control custom-switch">
                 <input type="checkbox" class="custom-control-input" id="evse_charge_management">
                 <label class="custom-control-label" for="evse_charge_management" data-i18n="evse.content.charge_management_enable"></label>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <div class="col-lg-3 col-xl-2">
+            <label for="evse_external" class="col-form-label">
+                <span class="form-label pr-2" data-i18n="evse.content.external_description"></span>
+                <span class="text-muted" data-i18n="evse.content.external_description_muted"></span>
+            </label>
+        </div>
+        <div class="col-lg-9 col-xl-6">
+            <div class="borderless-form-control custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="evse_external">
+                <label class="custom-control-label" for="evse_external" data-i18n="evse.content.external_enable"></label>
             </div>
         </div>
     </div>
@@ -335,6 +236,188 @@
                 <option value="1" data-i18n="evse.content.gpio_out_high"></option>
                 <option value="2" data-i18n="evse.content.todo" disabled></option>
             </select>
+        </div>
+    </div>
+
+    <div
+    class="d-flex flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <span class="h3" data-i18n="evse.content.charging_current"></span>
+    </div>
+
+    <div class="form-group row">
+        <div class="col-lg-3 col-xl-2">
+            <label for="slot_0" class="col-form-label">
+                <span class="form-label" data-i18n="evse.content.slot_0"></span>
+            </label>
+        </div>
+        <div class="col-lg-9 col-xl-6">
+            <input id="slot_0" class="form-control input-indicator" type="text"
+                placeholder="..." readonly>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <div class="col-lg-3 col-xl-2">
+            <label for="slot_1" class="col-form-label">
+                <span class="form-label" data-i18n="evse.content.slot_1"></span>
+            </label>
+        </div>
+        <div class="col-lg-9 col-xl-6">
+            <input id="slot_1" class="form-control input-indicator" type="text"
+                placeholder="..." readonly>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <div class="col-lg-3 col-xl-2">
+            <label for="slot_2" class="col-form-label">
+                <span class="form-label" data-i18n="evse.content.slot_2"></span>
+            </label>
+        </div>
+        <div class="col-lg-9 col-xl-6">
+            <input id="slot_2" class="form-control input-indicator" type="text"
+                placeholder="..." readonly>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <div class="col-lg-3 col-xl-2">
+            <label for="slot_3" class="col-form-label">
+                <span class="form-label" data-i18n="evse.content.slot_3"></span>
+            </label>
+        </div>
+        <div class="col-lg-9 col-xl-6">
+            <input id="slot_3" class="form-control input-indicator" type="text"
+                placeholder="..." readonly>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <div class="col-lg-3 col-xl-2">
+            <label for="slot_4" class="col-form-label">
+                <span class="form-label" data-i18n="evse.content.slot_4"></span>
+            </label>
+        </div>
+        <div class="col-lg-9 col-xl-6">
+            <input id="slot_4" class="form-control input-indicator" type="text"
+                placeholder="..." readonly>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <div class="col-lg-3 col-xl-2">
+            <label for="slot_5" class="col-form-label">
+                <span class="form-label" data-i18n="evse.content.slot_5"></span>
+            </label>
+        </div>
+        <div class="col-lg-9 col-xl-6 input-group">
+            <input id="slot_5" class="form-control input-indicator" type="text"
+                placeholder="..." readonly>
+            <div class="input-group-append">
+                <button id="reset_current_configured" class="btn btn-primary form-control rounded-right" type="button" data-i18n="evse.content.reset_configured_current"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <div class="col-lg-3 col-xl-2">
+            <label for="slot_6" class="col-form-label">
+                <span class="form-label" data-i18n="evse.content.slot_6"></span>
+            </label>
+        </div>
+        <div class="col-lg-9 col-xl-6">
+            <input id="slot_6" class="form-control input-indicator" type="text"
+                placeholder="..." readonly>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <div class="col-lg-3 col-xl-2">
+            <label for="slot_7" class="col-form-label">
+                <span class="form-label" data-i18n="evse.content.slot_7"></span>
+            </label>
+        </div>
+        <div class="col-lg-9 col-xl-6">
+            <input id="slot_7" class="form-control input-indicator" type="text"
+                placeholder="..." readonly>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <div class="col-lg-3 col-xl-2">
+            <label for="slot_8" class="col-form-label">
+                <span class="form-label" data-i18n="evse.content.slot_8"></span>
+            </label>
+        </div>
+        <div class="col-lg-9 col-xl-6 input-group">
+            <input id="slot_8" class="form-control input-indicator" type="text"
+                placeholder="..." readonly>
+            <div class="input-group-append">
+                <button id="reset_external_slot" class="btn btn-primary form-control rounded-right" type="button" data-i18n="evse.content.reset_external_slot"></button>
+            </div>
+        </div>
+    </div>
+
+    <div
+        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <span class="h3" data-i18n="evse.content.configuration"></span>
+    </div>
+
+    <div class="form-group row">
+        <div class="col-lg-3 col-xl-2">
+            <label for="btn_group_has_lock_switch" class="col-form-label">
+                <span class="form-label" data-i18n="evse.content.has_lock_switch"></span>
+            </label>
+        </div>
+        <div class="col-lg-9 col-xl-6">
+            <div id="btn_group_has_lock_switch" class="btn-group flex-wrap" role="group">
+                <button type="button" class="btn btn-outline-secondary" disabled data-i18n="evse.content.lock_no"></button>
+                <button type="button" class="btn btn-outline-primary" disabled data-i18n="evse.content.lock_yes"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <div class="col-lg-3 col-xl-2">
+            <label for="btn_group_jumper_config" class="col-form-label">
+                <span class="form-label pr-2" data-i18n="evse.content.jumper_config_max_current"></span>
+                <span class="text-muted" data-i18n="evse.content.jumper_config"></span>
+            </label>
+        </div>
+        <div class="col-lg-9 col-xl-6">
+            <div id="btn_group_jumper_config" class="btn-group flex-wrap" role="group" style="width: 100%;">
+                <button type="button" class="btn btn-outline-primary" disabled>6 A</button>
+                <button type="button" class="btn btn-outline-primary" disabled>10 A</button>
+                <button type="button" class="btn btn-outline-primary" disabled>13 A</button>
+                <button type="button" class="btn btn-outline-primary" disabled>16 A</button>
+                <button type="button" class="btn btn-outline-primary" disabled>20 A</button>
+                <button type="button" class="btn btn-outline-primary" disabled>25 A</button>
+                <button type="button" class="btn btn-outline-primary" disabled>32 A</button>
+                <button type="button" class="btn btn-outline-danger" disabled data-i18n="evse.content.jumper_config_software"></button>
+                <button type="button" class="btn btn-outline-danger" disabled data-i18n="evse.content.jumper_config_unconfigured"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <div class="col-lg-3 col-xl-2">
+            <label for="evse_version" class="col-form-label">
+                <span class="form-label" data-i18n="evse.content.evse_version"></span>
+            </label>
+        </div>
+        <div class="col-lg-9 col-xl-6">
+            <input id="evse_version" class="form-control" type="text" placeholder="..." readonly>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <div class="col-lg-3 col-xl-2">
+            <label for="energy_meter_type" class="col-form-label">
+                <span class="form-label" data-i18n="evse.content.energy_meter_type"></span>
+            </label>
+        </div>
+        <div class="col-lg-9 col-xl-6">
+            <input id="energy_meter_type" class="form-control" type="text" placeholder="..." readonly>
         </div>
     </div>
 
