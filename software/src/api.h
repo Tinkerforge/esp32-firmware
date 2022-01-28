@@ -97,4 +97,7 @@ public:
     std::vector<RawCommandRegistration> raw_commands;
 
     std::vector<IAPIBackend *> backends;
+
+private:
+    bool already_registered(const String &path, const char *api_type);
 };

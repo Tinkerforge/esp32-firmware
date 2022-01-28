@@ -57,6 +57,9 @@ void API::setup()
 
 void API::addCommand(String path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(void)> callback, bool is_action)
 {
+    if (already_registered(path, "command"))
+        return;
+
     commands.push_back({path, config, callback, keys_to_censor_in_debug_report, is_action, ""});
 
     for (auto *backend : this->backends) {
@@ -66,6 +69,9 @@ void API::addCommand(String path, ConfigRoot *config, std::initializer_list<Stri
 
 void API::addState(String path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms)
 {
+    if (already_registered(path, "state"))
+        return;
+
     states.push_back({path, config, keys_to_censor, interval_ms, millis()});
 
     for (auto *backend : this->backends) {
@@ -95,6 +101,9 @@ bool API::addPersistentConfig(String path, ConfigRoot *config, std::initializer_
 
 void API::addRawCommand(String path, std::function<String(char *, size_t)> callback, bool is_action)
 {
+    if (already_registered(path, "raw command"))
+        return;
+
     raw_commands.push_back({path, callback, is_action});
 
     for (auto *backend : this->backends) {
@@ -315,4 +324,28 @@ void API::wifiAvailable()
             backend->wifiAvailable();
         }
     }, 0);
+}
+
+bool API::already_registered(const String &path, const char *api_type)
+{
+    for (auto &reg : this->states) {
+        if (reg.path != path)
+            continue;
+        logger.printfln("Can't register %s %s. Already registered as state!", api_type, path.c_str());
+        return true;
+    }
+    for (auto &reg : this->commands) {
+        if (reg.path != path)
+            continue;
+        logger.printfln("Can't register %s %s. Already registered as command!", api_type, path.c_str());
+        return true;
+    }
+    for (auto &reg : this->raw_commands) {
+        if (reg.path != path)
+            continue;
+        logger.printfln("Can't register %s %s. Already registered as raw command!", api_type, path.c_str());
+        return true;
+    }
+
+    return false;
 }
