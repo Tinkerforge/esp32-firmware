@@ -40,6 +40,7 @@ def get_nested_keys(d, path=""):
 def main():
     translation = {}
     used_placeholders = []
+    template_literals = {}
 
     for root, dirs, files in os.walk("./src"):
         for name in files:
@@ -53,6 +54,12 @@ def main():
                 placeholders.remove("s: string")
             except:
                 pass
+
+            template_literal_keys = [x for x in placeholders if x[0] == '`' and x[-1] == '`' and '${' in x and '}' in x]
+            placeholders = [x for x in placeholders if x not in template_literal_keys]
+
+            template_literals.update({x[1:-1]: [] for x in template_literal_keys})
+
             incorrect_placeholders = [x for x in placeholders if not x[0] == '"' or not x[-1] == '"']
             if len(incorrect_placeholders) != 0:
                 print("Found incorrect placeholders", incorrect_placeholders)
@@ -101,6 +108,19 @@ def main():
             print("\t" + x)
 
     unused = get_nested_keys(translation)
+    for k, v in template_literals.items():
+        prefix = k.split('${')[0]
+        suffix = k.split('}')[1]
+        to_remove = []
+        for x in unused:
+            lang, rest = x.split(".", 1)
+            if rest.startswith(prefix) and rest.endswith(suffix):
+                replacement = rest.replace(prefix, "").replace(suffix, "")
+                v.append((lang, replacement))
+                to_remove.append(x)
+
+        unused = [x for x in unused if not x in to_remove]
+
     if len(unused) > 0:
         print("Unused placeholders:")
         for x in sorted(unused):
