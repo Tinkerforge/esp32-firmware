@@ -119,13 +119,28 @@ static bool tf_tfp_filter_received_packet(TF_TFP *tfp, bool remove_interesting, 
     // Patch "position" of enumerate and get_identity packets if "connected_uid" is
     // just a null-terminator I.e. the device is attached to us directly
     if ((header.fid == 253 && header.length == 34) || (header.fid == 255 && header.length == 33)) {
-        uint8_t connected_uid;
+        char connected_uid_first_char;
 
-        tf_packet_buffer_peek_offset(buf, &connected_uid, 8);
+        tf_packet_buffer_peek_offset(buf, (uint8_t *)&connected_uid_first_char, 8);
 
-        if (connected_uid == 0) {
+        if (connected_uid_first_char == '\0') {
+#if TF_LOCAL_ENABLE != 0
+            TF_Local *local = tf_hal_get_local(tfp->spitfp->hal, NULL, NULL, NULL, false);
+
+            if (local != NULL) {
+                for (uint8_t i = 0; i < sizeof(local->uid_str); ++i) {
+                    tf_packet_buffer_poke_offset(buf, local->uid_str[i], 8 + i);
+                }
+
+                tf_packet_buffer_poke_offset(buf, '\0', 8 + sizeof(local->uid_str));
+            } else {
+                tf_packet_buffer_poke_offset(buf, '0', 8);
+                tf_packet_buffer_poke_offset(buf, '\0', 9);
+            }
+#else
             tf_packet_buffer_poke_offset(buf, '0', 8);
             tf_packet_buffer_poke_offset(buf, '\0', 9);
+#endif
             tf_packet_buffer_poke_offset(buf, (uint8_t)tf_hal_get_port_name(tfp->spitfp->hal, tfp->spitfp->port_id), 16);
         }
     }

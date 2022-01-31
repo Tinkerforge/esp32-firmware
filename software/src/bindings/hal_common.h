@@ -23,6 +23,10 @@
 
 #include "net_common.h"
 
+#if TF_LOCAL_ENABLE != 0
+#include "local.h"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -49,6 +53,10 @@ typedef struct TF_HALCommon {
     uint8_t empty_buf[TF_SPITFP_MAX_MESSAGE_LENGTH];
 
     TF_Net *net;
+
+#if TF_LOCAL_ENABLE != 0
+    TF_Local *local;
+#endif
 } TF_HALCommon;
 
 typedef struct TF_HAL TF_HAL;
@@ -63,6 +71,11 @@ bool tf_hal_deadline_elapsed(TF_HAL *hal, uint32_t deadline_us) TF_ATTRIBUTE_NON
 int tf_hal_get_error_counters(TF_HAL *hal, char port_name, uint32_t *ret_spitfp_error_count_checksum, uint32_t *ret_spitfp_error_count_frame, uint32_t *ret_tfp_error_count_frame, uint32_t *ret_tfp_error_count_unexpected) TF_ATTRIBUTE_NONNULL(1);
 TF_TFP *tf_hal_get_tfp(TF_HAL *hal, const uint32_t *uid_num, const uint8_t *port_id, const uint16_t *device_id, bool skip_already_in_use);
 int tf_hal_get_attachable_tfp(TF_HAL *hal, TF_TFP **tfp_ptr, const char *uid_str_or_port_name, uint16_t device_id);
+
+#if TF_LOCAL_ENABLE != 0
+TF_Local *tf_hal_get_local(TF_HAL *hal, const uint32_t *uid_num, const char *position, const uint16_t *device_id, bool skip_already_in_use);
+int tf_hal_get_attachable_local(TF_HAL *hal, TF_Local **local_ptr, const char *uid_str_or_position, uint16_t device_id);
+#endif
 
 #define TF_LOG_LEVEL_NONE 0
 #define TF_LOG_LEVEL_ERROR 1
@@ -101,8 +114,12 @@ int tf_hal_common_create(TF_HAL *hal) TF_ATTRIBUTE_NONNULL_ALL TF_ATTRIBUTE_WARN
 int tf_hal_common_prepare(TF_HAL *hal, uint8_t port_count, uint32_t port_discovery_timeout_us) TF_ATTRIBUTE_NONNULL_ALL TF_ATTRIBUTE_WARN_UNUSED_RESULT;
 void tf_hal_enumerate_handler(TF_HAL *hal, uint8_t port_id, TF_PacketBuffer *payload) TF_ATTRIBUTE_NONNULL_ALL;
 void tf_hal_set_net(TF_HAL *hal, TF_Net *net);
+#if TF_LOCAL_ENABLE != 0
+void tf_hal_set_local(TF_HAL *hal, TF_Local *local);
+#endif
 
 // BEGIN - To be implemented by the specific HAL
+
 int tf_hal_chip_select(TF_HAL *hal, uint8_t port_id, bool enable) TF_ATTRIBUTE_NONNULL_ALL TF_ATTRIBUTE_WARN_UNUSED_RESULT;
 int tf_hal_transceive(TF_HAL *hal, uint8_t port_id, const uint8_t *write_buffer, uint8_t *read_buffer, uint32_t length) TF_ATTRIBUTE_NONNULL_ALL TF_ATTRIBUTE_WARN_UNUSED_RESULT;
 uint32_t tf_hal_current_time_us(TF_HAL *hal) TF_ATTRIBUTE_NONNULL_ALL;
