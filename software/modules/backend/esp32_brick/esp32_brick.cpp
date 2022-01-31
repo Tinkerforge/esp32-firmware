@@ -25,6 +25,16 @@
 #include "hal_arduino_esp32_brick/hal_arduino_esp32_brick.h"
 #include "task_scheduler.h"
 
+#if TF_LOCAL_ENABLE != 0
+
+#include "build.h"
+#include "bindings/local.h"
+// FIXME: for now hardcode DEVICE_IDENTIFIER define here until bindings are ready
+//#include "bindings/brick_esp32.h"
+#define TF_ESP32_DEVICE_IDENTIFIER 113
+
+#endif
+
 extern TaskScheduler task_scheduler;
 
 #define GREEN_LED 4
@@ -41,6 +51,12 @@ extern int8_t green_led_pin;
 extern int8_t button_pin;
 extern bool factory_reset_requested;
 
+#if TF_LOCAL_ENABLE != 0
+
+static TF_Local local;
+
+#endif
+
 ESP32Brick::ESP32Brick()
 {
 
@@ -53,6 +69,15 @@ void ESP32Brick::setup()
 
     check(tf_hal_create(&hal), "hal create");
     tf_hal_set_timeout(&hal, 100000);
+
+#if TF_LOCAL_ENABLE != 0
+    uint8_t hw_version[3] = { 1, 0, 0 };
+    uint8_t fw_version[3] = { BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH };
+
+    check(tf_local_create(&local, local_uid_str, '0', hw_version, fw_version, TF_ESP32_DEVICE_IDENTIFIER, &hal), "local create");
+
+    tf_hal_set_local(&hal, &local);
+#endif
 
     pinMode(GREEN_LED, OUTPUT);
     pinMode(BLUE_LED, OUTPUT);
