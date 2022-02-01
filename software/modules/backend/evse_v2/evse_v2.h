@@ -35,6 +35,12 @@
 #define CHARGING_SLOT_CHARGE_MANAGER 7
 #define CHARGING_SLOT_EXTERNAL 8
 
+#define IEC_STATE_A 0
+#define IEC_STATE_B 1
+#define IEC_STATE_C 2
+#define IEC_STATE_D 3
+#define IEC_STATE_EF 4
+
 class EVSEV2 : public DeviceModule<TF_EVSEV2,
                                  evse_v2_bricklet_firmware_bin,
                                  evse_v2_bricklet_firmware_bin_len,
@@ -59,6 +65,8 @@ public:
     String get_evse_debug_header();
     String get_evse_debug_line();
     void set_managed_current(uint16_t current);
+
+    void set_user_current(uint16_t current);
 
     void apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear);
     void apply_defaults();

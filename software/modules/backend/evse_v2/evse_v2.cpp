@@ -592,6 +592,10 @@ void EVSEV2::set_managed_current(uint16_t current)
     this->shutdown_logged = false;
 }
 
+void EVSEV2::set_user_current(uint16_t current) {
+    is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_USER, current));
+}
+
 void EVSEV2::register_urls()
 {
     if (!device_found)
