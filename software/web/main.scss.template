@@ -412,4 +412,8 @@ body {
     border-left: 5px solid;
 }
 
+#status_wifi_sta_rssi .feather {
+    vertical-align: bottom;
+}
+
 {{{module_post_imports}}}
