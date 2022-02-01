@@ -60,7 +60,7 @@ def specialize_template(template_filename, destination_filename, replacements, c
     lines = []
     replaced = set()
 
-    with open(template_filename, 'r') as f:
+    with open(template_filename, 'r', encoding='utf-8') as f:
         for line in f.readlines():
             for key in replacements:
                 replaced_line = line.replace(key, replacements[key])
@@ -75,7 +75,7 @@ def specialize_template(template_filename, destination_filename, replacements, c
     if check_completeness and replaced != set(replacements.keys()):
         raise Exception('Not all replacements for {0} have been applied. Missing are {1}'.format(template_filename, ', '.join(set(replacements.keys() - replaced))))
 
-    with open(destination_filename, 'w') as f:
+    with open(destination_filename, 'w', encoding='utf-8') as f:
         f.writelines(lines)
 
     if remove_template:
@@ -98,7 +98,7 @@ class ChangedDirectory(object):
 def get_changelog_version(name):
     versions = []
 
-    with open(os.path.join('changelog_{}.txt'.format(name)), 'r') as f:
+    with open(os.path.join('changelog_{}.txt'.format(name)), 'r', encoding='utf-8') as f:
         for i, line in enumerate(f.readlines()):
             line = line.rstrip()
 
@@ -197,7 +197,7 @@ def collect_translation(path, override=False):
 
         language = m.group(1)
 
-        with open(translation_path, 'r') as f:
+        with open(translation_path, 'r', encoding='utf-8') as f:
             try:
                 translation[language] = json.loads(f.read())
             except:
@@ -234,7 +234,7 @@ def main():
 
     write_firmware_info(display_name, *version, timestamp)
 
-    with open(os.path.join('src', 'build.h'), 'w') as f:
+    with open(os.path.join('src', 'build.h'), 'w', encoding='utf-8') as f:
         f.write('#pragma once\n')
         f.write('#define BUILD_TIMESTAMP {}\n'.format(timestamp))
         f.write('#define BUILD_TIMESTAMP_HEX_STR "{:x}"\n'.format(timestamp))
@@ -245,7 +245,7 @@ def main():
         f.write('#define BUILD_HOST_PREFIX "{}"\n'.format(host_prefix))
         f.write('#define BUILD_REQUIRE_FW_INFO {}\n'.format(require_fw_info))
 
-    with open(os.path.join('src', 'firmware_basename'), 'w') as f:
+    with open(os.path.join('src', 'firmware_basename'), 'w', encoding='utf-8') as f:
         f.write('{}_firmware_{}_{:x}'.format(name, '_'.join(version), timestamp))
 
     # Embed backend modules
@@ -311,15 +311,15 @@ def main():
                 shutil.copy(img_source_path, img_target_path)
 
         if os.path.exists(os.path.join(mod_path, 'navbar.html')):
-            with open(os.path.join(mod_path, 'navbar.html')) as f:
+            with open(os.path.join(mod_path, 'navbar.html'), encoding='utf-8') as f:
                 navbar_entries.append(f.read())
 
         if os.path.exists(os.path.join(mod_path, 'content.html')):
-            with open(os.path.join(mod_path, 'content.html')) as f:
+            with open(os.path.join(mod_path, 'content.html'), encoding='utf-8') as f:
                 content_entries.append(f.read())
 
         if os.path.exists(os.path.join(mod_path, 'status.html')):
-            with open(os.path.join(mod_path, 'status.html')) as f:
+            with open(os.path.join(mod_path, 'status.html'), encoding='utf-8') as f:
                 status_entries.append(f.read())
 
         if os.path.exists(os.path.join(mod_path, 'main.ts')):
@@ -342,7 +342,7 @@ def main():
     assert len(translation) > 0
 
     for language in sorted(translation):
-        with open(os.path.join('web', 'src', 'ts', 'translation_{0}.ts'.format(language)), 'w') as f:
+        with open(os.path.join('web', 'src', 'ts', 'translation_{0}.ts'.format(language)), 'w', encoding='utf-8') as f:
             data = json.dumps(translation[language], indent=4, ensure_ascii=False)
             data = data.replace('{{{empty_text}}}', '\u200b') # Zero Width Space to work around a bug in the translation library: empty strings are replaced with "null"
             data = data.replace('{{{display_name}}}', display_name)
@@ -401,7 +401,7 @@ def main():
     new_digest = h.hexdigest()
 
     try:
-        with open('src/index.html.h.digest', 'r') as f:
+        with open('src/index.html.h.digest', 'r', encoding='utf-8') as f:
             old_digest = f.read().strip()
     except FileNotFoundError:
         old_digest = None
@@ -426,7 +426,7 @@ def main():
 
         shutil.copy2("web/dist/index.html.h", "src/index.html.h")
 
-        with open('src/index.html.h.digest', 'w') as f:
+        with open('src/index.html.h.digest', 'w', encoding='utf-8') as f:
             f.write(new_digest)
 
 main()
