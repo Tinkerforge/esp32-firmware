@@ -50,8 +50,8 @@ function save_network_config() {
 }
 
 export function init() {
-    $('#network').on('hide.bs.collapse', () => $('#network-chevron').removeClass("rotated-chevron"));
-    $('#network').on('show.bs.collapse', () => $('#network-chevron').addClass("rotated-chevron"));
+    $('#network-group').on('hide.bs.collapse', () => $('#network-chevron').removeClass("rotated-chevron"));
+    $('#network-group').on('show.bs.collapse', () => $('#network-chevron').addClass("rotated-chevron"));
 
     // Use bootstrap form validation
     $('#network_form').on('submit', function (this: HTMLFormElement, event: Event) {
