@@ -19,6 +19,7 @@
             "tfp_unexpected": "TFP Unexpected"
         },
         "script": {
+            "no_bricklets": "No Bricklets connected.",
             "unknown_device": "unknown device"
         }
     }

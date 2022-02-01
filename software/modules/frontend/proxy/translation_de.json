@@ -19,6 +19,7 @@
             "tfp_unexpected": "TFP un&shy;erwartet"
         },
         "script": {
+            "no_bricklets": "Keine Bricklets angeschlossen.",
             "unknown_device": "unbekanntes Gerät"
         }
     }

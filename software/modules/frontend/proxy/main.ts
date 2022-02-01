@@ -31,7 +31,7 @@ interface Device {
 
 function update_devices(devices: Device[]) {
     if (devices.length == 0) {
-        $("#bricklets_content").html("No bricklets found.");
+        $("#bricklets_content").html("<tr><td colspan=\"3\">" + __("proxy.script.no_bricklets") + "</td></tr>");
         return;
     }
 
