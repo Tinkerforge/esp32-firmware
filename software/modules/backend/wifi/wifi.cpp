@@ -202,10 +202,10 @@ void Wifi::apply_soft_ap_config_and_start()
         WiFi.softAPConfig(ip, gateway, subnet);
         ++counter;
     }
-    logger.printfln("Had to configure softAP IP address %d times.", counter);
+    logger.printfln("Had to configure soft AP IP address %d times.", counter);
     delay(2000);
 
-    logger.printfln("Soft AP started.");
+    logger.printfln("Wifi soft AP started");
     logger.printfln("    SSID: %s", wifi_ap_config_in_use.get("ssid")->asString().c_str());
 
     WiFi.softAP(wifi_ap_config_in_use.get("ssid")->asString().c_str(),
@@ -216,7 +216,8 @@ void Wifi::apply_soft_ap_config_and_start()
 
     soft_ap_running = true;
     IPAddress myIP = WiFi.softAPIP();
-    logger.printfln("    IP: %u.%u.%u.%u", myIP[0], myIP[1], myIP[2], myIP[3]);
+    logger.printfln("    MAC address: %s", WiFi.softAPmacAddress().c_str());
+    logger.printfln("    IP address: %u.%u.%u.%u", myIP[0], myIP[1], myIP[2], myIP[3]);
 }
 
 bool Wifi::apply_sta_config_and_connect()
@@ -252,7 +253,7 @@ bool Wifi::apply_sta_config_and_connect()
         WiFi.config((uint32_t)0, (uint32_t)0, (uint32_t)0);
     }
 
-    logger.printfln("Connecting to %s", wifi_sta_config_in_use.get("ssid")->asString().c_str());
+    logger.printfln("Wifi connecting to %s", wifi_sta_config_in_use.get("ssid")->asString().c_str());
 
     WiFi.begin(ssid.c_str(), passphrase.c_str(), 0, bssid_lock ? bssid : nullptr, true);
     WiFi.setSleep(false);
@@ -360,6 +361,7 @@ void Wifi::setup()
             this->was_connected = true;
 
             auto ip = WiFi.localIP();
+            logger.printfln("Wifi MAC address: %s", WiFi.macAddress().c_str());
             logger.printfln("Wifi got IP address: %u.%u.%u.%u. Connected to BSSID %s", ip[0], ip[1], ip[2], ip[3], WiFi.BSSIDstr().c_str());
             wifi_state.get("sta_ip")->get(0)->updateUint(ip[0]);
             wifi_state.get("sta_ip")->get(1)->updateUint(ip[1]);
