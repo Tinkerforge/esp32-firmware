@@ -259,7 +259,7 @@ def main():
 
         if os.path.exists(os.path.join(mod_path, "prepare.py")):
             with ChangedDirectory(mod_path):
-                subprocess.run(["python3", "prepare.py"])
+                subprocess.run([sys.executable, "prepare.py"])
 
         shutil.copytree(os.path.join(mod_path), os.path.join("src", "modules", backend_module.under), ignore=shutil.ignore_patterns('*ignored'))
 
@@ -377,7 +377,7 @@ def main():
 
     # Check translation completeness
     with ChangedDirectory('web'):
-        subprocess.run(["python3", "check_translation_completeness.py"], check=True)
+        subprocess.run([sys.executable, "check_translation_completeness.py"], check=True)
 
     # Generate web interface
     h = hashlib.sha256()
