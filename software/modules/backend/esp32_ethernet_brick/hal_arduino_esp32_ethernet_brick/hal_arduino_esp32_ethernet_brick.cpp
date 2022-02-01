@@ -15,6 +15,7 @@
 
 typedef struct TF_Port {
     char port_name;
+
     TF_PortCommon port_common;
 } TF_Port;
 
@@ -39,8 +40,8 @@ static const int MOSI_PIN = 33;
 static const int MISO_PIN = 35;
 
 static void select_demux(uint8_t port_id) {
-    // As we always alternate between select_demux and deselect_demux, we can assume, that all three pins are high.
-    // clearing the pins we want to set to 0 is sufficient.
+    // As we always alternate between select_demux and deselect_demux, we can assume,
+    // that all three pins are high. Clearing the pins we want to set to 0 is sufficient.
 
     // invert to use the W1TC (write 1 to clear) register
     uint8_t inv = ~port_id;
