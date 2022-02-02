@@ -21,12 +21,14 @@ import $ from "jquery";
 
 import * as util from "../util";
 
+import YaMD5 from 'yamd5.js';
+
 declare function __(s: string): string;
 
 interface AuthenticationConfig {
     enable_auth: boolean,
     username: string,
-    password: string
+    digest_hash: string
 }
 
 function update_authentication_config(config: AuthenticationConfig) {
@@ -45,10 +47,13 @@ function update_authentication_config(config: AuthenticationConfig) {
 }
 
 function save_authentication_config() {
+    let username = $('#authentication_username').val().toString();
+    let password = util.passwordUpdate('#authentication_password');
+
     let payload: AuthenticationConfig = {
         enable_auth: $('#authentication_enable').is(':checked'),
-        username: $('#authentication_username').val().toString(),
-        password: util.passwordUpdate('#authentication_password'),
+        username: username,
+        digest_hash: password == null ? null : YaMD5.YaMD5.hashStr(username + ":esp32-lib:" + password)
     };
 
     $.ajax({

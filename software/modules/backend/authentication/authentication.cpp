@@ -35,17 +35,17 @@ Authentication::Authentication()
 {
     authentication_config = ConfigRoot{Config::Object({
         {"enable_auth", Config::Bool(false)},
-        {"username", Config::Str("", 0, 64)},
-        {"password", Config::Str("", 0, 64)},
+        {"username", Config::Str("", 0, 32)},
+        {"digest_hash", Config::Str("", 0, 32)},
     }), [](Config &update) {
-        if (update.get("enable_auth")->asBool() && update.get("password")->asString() == "")
-            return String("Authentication can not be enabled if no password is set.");
+        if (update.get("enable_auth")->asBool() && update.get("digest_hash")->asString() == "")
+            return String("Authentication can not be enabled if no password/digest hash is set.");
 
         if (update.get("enable_auth")->asBool() && update.get("username")->asString() == "")
             return String("Authentication can not be enabled if no username is set.");
 
-        if (!update.get("enable_auth")->asBool() && update.get("password")->asString() != "")
-            update.get("password")->updateString("");
+        if (!update.get("enable_auth")->asBool() && update.get("digest_hash")->asString() != "")
+            update.get("digest_hash")->updateString("");
 
         return String("");
     }};
@@ -57,9 +57,9 @@ void Authentication::setup()
 
     if (authentication_config.get("enable_auth")->asBool()) {
         String user = authentication_config.get("username")->asString();
-        String pass = authentication_config.get("password")->asString();
+        String digest_hash = authentication_config.get("digest_hash")->asString();
 
-        server.setAuthentication([user, pass](WebServerRequest req) -> bool {
+        server.setAuthentication([user, digest_hash](WebServerRequest req) -> bool {
             String auth = req.header("Authorization");
             if (auth == "") {
                 return false;
@@ -75,7 +75,7 @@ void Authentication::setup()
             if (fields.username != user)
                 return false;
 
-            return checkDigestAuthentication(fields, req.methodString(), user.c_str(), pass.c_str(), DEFAULT_REALM, false, nullptr, nullptr, nullptr);
+            return checkDigestAuthentication(fields, req.methodString(), user.c_str(), digest_hash.c_str(), DEFAULT_REALM, true, nullptr, nullptr, nullptr);
         });
         logger.printfln("Web interface authentication enabled.");
     }
@@ -85,7 +85,7 @@ void Authentication::setup()
 
 void Authentication::register_urls()
 {
-    api.addPersistentConfig("authentication/config", &authentication_config, {"password"}, 10000);
+    api.addPersistentConfig("authentication/config", &authentication_config, {"digest_hash"}, 10000);
 }
 
 void Authentication::loop()

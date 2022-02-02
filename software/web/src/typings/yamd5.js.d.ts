@@ -1,0 +1,1 @@
+declare module 'yamd5.js';
