@@ -420,7 +420,7 @@ def main():
         with ChangedDirectory('web'):
             if not os.path.isdir("node_modules"):
                 print("Web interface dependencies not installed. Installing now.")
-                subprocess.run(["npm", "install", "--save-dev"])
+                subprocess.run(["npm", "ci"])
 
             subprocess.run(["npx", "gulp"])
 

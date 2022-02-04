@@ -56,7 +56,7 @@ if old_digest != new_digest or not os.path.exists('login.html.h'):
     with ChangedDirectory('login_page_ignored'):
         if not os.path.isdir("node_modules"):
             print("Authentication web interface dependencies not installed. Installing now.")
-            subprocess.run(["npm", "install", "--save-dev"])
+            subprocess.run(["npm", "ci"])
 
         subprocess.run(["npx", "gulp"])
 
