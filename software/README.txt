@@ -3,6 +3,9 @@ Build instructions
 
 - Install nodejs and npm (left as exercise for the reader)
 - Install platformio: pip install -U platformio
-- The firmwares are organized as platformio environments: "platformio run -e warp" builds the WARP1 firmware, "platformio run -e warp2" the one for WARP2.
-- The built firmwares can be found in build/ folder.
-- You can also run "platformio run -e warp -t upload -t monitor" to build and upload the firmware to a connected ESP32 and start the serial monitor
+- Change to the "other hardware" branch: git checkout warp_on_other_hardware
+- Get the Time lib: cd esp32-firmware/software/modules/backend/enplus ; git clone https://github.com/PaulStoffregen/Time.git
+- Maybe you have to install some npm modules: npm install cheerio ; npm install postcss
+- Cd back to esp32-firmware/software
+- Build the firmware: pio run --environment warp8enplus
+- Find the *_merged.bin firmware file in the esp32-firmware/software/build directory.
