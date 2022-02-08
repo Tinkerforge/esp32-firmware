@@ -418,9 +418,11 @@ def main():
         with ChangedDirectory('web'):
             if not os.path.isdir("node_modules"):
                 print("Web interface dependencies not installed. Installing now.")
-                subprocess.run(["npm", "ci"])
+                subprocess.run(["npm", "ci"], shell=sys.platform == 'win32')
 
-            subprocess.run(["npx", "gulp"])
+            environ = dict(os.environ)
+            environ['PYTHON_EXECUTABLE'] = sys.executable
+            subprocess.run(["npx", "gulp"], env=environ, shell=sys.platform == 'win32')
 
         shutil.copy2("web/dist/index.html.h", "src/index.html.h")
 

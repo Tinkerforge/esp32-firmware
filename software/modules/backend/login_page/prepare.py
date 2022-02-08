@@ -1,4 +1,5 @@
 import os
+import sys
 import shutil
 import subprocess
 import hashlib
@@ -55,10 +56,12 @@ if old_digest != new_digest or not os.path.exists('login.html.h'):
 
     with ChangedDirectory('login_page_ignored'):
         if not os.path.isdir("node_modules"):
-            print("Authentication web interface dependencies not installed. Installing now.")
-            subprocess.run(["npm", "ci"])
+            print("Login page web interface dependencies not installed. Installing now.")
+            subprocess.run(["npm", "ci"], shell=sys.platform == 'win32')
 
-        subprocess.run(["npx", "gulp"])
+        environ = dict(os.environ)
+        environ['PYTHON_EXECUTABLE'] = sys.executable
+        subprocess.run(["npx", "gulp"], env=environ, shell=sys.platform == 'win32')
 
     shutil.copy2("login_page_ignored/dist/login.html.h", "login.html.h")
 
