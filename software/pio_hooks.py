@@ -257,7 +257,7 @@ def main():
 
         if os.path.exists(os.path.join(mod_path, "prepare.py")):
             with ChangedDirectory(mod_path):
-                subprocess.run([sys.executable, "prepare.py"])
+                subprocess.check_call([sys.executable, "prepare.py"])
 
         shutil.copytree(os.path.join(mod_path), os.path.join("src", "modules", backend_module.under), ignore=shutil.ignore_patterns('*ignored'))
 
@@ -375,7 +375,7 @@ def main():
 
     # Check translation completeness
     with ChangedDirectory('web'):
-        subprocess.run([sys.executable, "check_translation_completeness.py"], check=True)
+        subprocess.check_call([sys.executable, "check_translation_completeness.py"])
 
     # Generate web interface
     h = hashlib.sha256()
@@ -418,11 +418,11 @@ def main():
         with ChangedDirectory('web'):
             if not os.path.isdir("node_modules"):
                 print("Web interface dependencies not installed. Installing now.")
-                subprocess.run(["npm", "ci"], shell=sys.platform == 'win32')
+                subprocess.check_call(["npm", "ci"], shell=sys.platform == 'win32')
 
             environ = dict(os.environ)
             environ['PYTHON_EXECUTABLE'] = sys.executable
-            subprocess.run(["npx", "gulp"], env=environ, shell=sys.platform == 'win32')
+            subprocess.check_call(["npx", "gulp"], env=environ, shell=sys.platform == 'win32')
 
         shutil.copy2("web/dist/index.html.h", "src/index.html.h")
 

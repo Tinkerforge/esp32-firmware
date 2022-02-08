@@ -57,11 +57,11 @@ if old_digest != new_digest or not os.path.exists('login.html.h'):
     with ChangedDirectory('login_page_ignored'):
         if not os.path.isdir("node_modules"):
             print("Login page web interface dependencies not installed. Installing now.")
-            subprocess.run(["npm", "ci"], shell=sys.platform == 'win32')
+            subprocess.check_call(["npm", "ci"], shell=sys.platform == 'win32')
 
         environ = dict(os.environ)
         environ['PYTHON_EXECUTABLE'] = sys.executable
-        subprocess.run(["npx", "gulp"], env=environ, shell=sys.platform == 'win32')
+        subprocess.check_call(["npx", "gulp"], env=environ, shell=sys.platform == 'win32')
 
     shutil.copy2("login_page_ignored/dist/login.html.h", "login.html.h")
 

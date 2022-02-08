@@ -36,13 +36,13 @@ env.AddPostAction(
                       "Copying $BUILD_DIR/${PROGNAME}.bin")
 )
 
-def run(*args): # hide subprocess.run return value
-    subprocess.run(args)
+def check_call(*args): # hide subprocess.check_call return value
+    subprocess.check_call(args)
     return None
 
 env.AddPostAction(
     "$BUILD_DIR/${PROGNAME}.bin",
-    env.VerboseAction(lambda env, **kwargs: run(
+    env.VerboseAction(lambda env, **kwargs: check_call(
         sys.executable,
         env.subst("$PROJECT_PACKAGES_DIR/tool-esptoolpy/esptool.py"),
         "--chip", "esp32",
