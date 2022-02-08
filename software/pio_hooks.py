@@ -378,6 +378,37 @@ def main():
         subprocess.check_call([sys.executable, "check_translation_completeness.py"])
 
     # Generate web interface
+    with ChangedDirectory('web'):
+        with open('package-lock.json', 'rb') as f:
+            new_node_digest = hashlib.sha256(f.read()).hexdigest()
+
+        try:
+            with open('package-lock.json.digest', 'r', encoding='utf-8') as f:
+                old_node_digest = f.read().strip()
+        except FileNotFoundError:
+            old_node_digest = None
+
+        if old_node_digest != new_node_digest or not os.path.exists('node_modules/.complete'):
+            print("Web interface dependencies not up-to-date. Updating now.")
+
+            try:
+                os.remove('package-lock.json.digest')
+            except FileNotFoundError:
+                pass
+
+            try:
+                shutil.rmtree('node_modules')
+            except FileNotFoundError:
+                pass
+
+            subprocess.check_call(["npm", "ci"], shell=sys.platform == 'win32')
+
+            with open('node_modules/.complete', 'wb') as f:
+                pass
+
+            with open('package-lock.json.digest', 'w', encoding='utf-8') as f:
+                f.write(new_node_digest)
+
     h = hashlib.sha256()
 
     for name in sorted(os.listdir('web')):
@@ -396,29 +427,30 @@ def main():
             with open(path, 'rb') as f:
                 h.update(f.read())
 
-    new_digest = h.hexdigest()
+    new_html_digest = h.hexdigest()
 
     try:
         with open('src/index.html.h.digest', 'r', encoding='utf-8') as f:
-            old_digest = f.read().strip()
+            old_html_digest = f.read().strip()
     except FileNotFoundError:
-        old_digest = None
+        old_html_digest = None
 
-    if old_digest != new_digest or not os.path.exists('src/index.html.h'):
-        try:
-            os.remove('src/index.html.h')
-        except FileNotFoundError:
-            pass
-
+    if old_html_digest != new_html_digest or not os.path.exists('src/index.html.h'):
         try:
             os.remove('src/index.html.h.digest')
         except FileNotFoundError:
             pass
 
+        try:
+            os.remove('src/index.html.h')
+        except FileNotFoundError:
+            pass
+
         with ChangedDirectory('web'):
-            if not os.path.isdir("node_modules"):
-                print("Web interface dependencies not installed. Installing now.")
-                subprocess.check_call(["npm", "ci"], shell=sys.platform == 'win32')
+            try:
+                shutil.rmtree('dist')
+            except FileNotFoundError:
+                pass
 
             environ = dict(os.environ)
             environ['PYTHON_EXECUTABLE'] = sys.executable
@@ -427,6 +459,6 @@ def main():
         shutil.copy2("web/dist/index.html.h", "src/index.html.h")
 
         with open('src/index.html.h.digest', 'w', encoding='utf-8') as f:
-            f.write(new_digest)
+            f.write(new_html_digest)
 
 main()

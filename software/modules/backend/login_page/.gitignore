@@ -1,5 +1,6 @@
-login_page_ignored/assets
-login_page_ignored/dist
-login_page_ignored/node_modules
+login_page_ignored/assets/
+login_page_ignored/dist/
+login_page_ignored/node_modules/
+login_page_ignored/package-lock.json.digest
 login.html.h
 login.html.h.digest

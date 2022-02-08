@@ -12,12 +12,13 @@ src/index.html.h
 src/index.html.h.digest
 src/main.cpp
 src/modules.h
-src/modules
+src/modules/
 src/build.h
 src/firmware_basename
 web/node_modules/
 web/assets/
 web/dist/
+web/package-lock.json.digest
 web/src/main.ts
 web/src/main.scss
 web/src/index.html
