@@ -1,5 +1,3 @@
-#!/bin/python
-
 Import("env")
 
 from collections import namedtuple
