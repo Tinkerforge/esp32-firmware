@@ -19,6 +19,7 @@
 
 #include "wifi.h"
 
+#include <WiFi.h>
 #include <esp_wifi.h>
 
 #include "task_scheduler.h"
@@ -26,7 +27,6 @@
 #include "api.h"
 #include "event_log.h"
 #include "web_server.h"
-#include "WiFi.h"
 
 #include "modules.h"
 #include "build.h"
