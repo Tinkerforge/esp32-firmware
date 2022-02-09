@@ -257,7 +257,7 @@ def main():
 
         if os.path.exists(os.path.join(mod_path, "prepare.py")):
             with ChangedDirectory(mod_path):
-                subprocess.check_call([sys.executable, "prepare.py"])
+                subprocess.check_call([sys.executable, "-u", "prepare.py"])
 
         shutil.copytree(os.path.join(mod_path), os.path.join("src", "modules", backend_module.under), ignore=shutil.ignore_patterns('*ignored'))
 
@@ -375,7 +375,7 @@ def main():
 
     # Check translation completeness
     with ChangedDirectory('web'):
-        subprocess.check_call([sys.executable, "check_translation_completeness.py"])
+        subprocess.check_call([sys.executable, "-u", "check_translation_completeness.py"])
 
     # Generate web interface
     with ChangedDirectory('web'):

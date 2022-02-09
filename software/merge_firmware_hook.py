@@ -44,6 +44,7 @@ env.AddPostAction(
     "$BUILD_DIR/${PROGNAME}.bin",
     env.VerboseAction(lambda env, **kwargs: check_call(
         sys.executable,
+        "-u",
         env.subst("$PROJECT_PACKAGES_DIR/tool-esptoolpy/esptool.py"),
         "--chip", "esp32",
         "merge_bin",
