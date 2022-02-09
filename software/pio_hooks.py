@@ -256,6 +256,8 @@ def main():
             print("Backend module {} not found.".format(backend_module.space, mod_path))
 
         if os.path.exists(os.path.join(mod_path, "prepare.py")):
+            print('Preparing backend module:', backend_module.space)
+
             environ = dict(os.environ)
             environ['PYTHONEXE'] = env.subst('$PYTHONEXE')
 
@@ -377,10 +379,14 @@ def main():
     })
 
     # Check translation completeness
+    print('Checking translation completeness')
+
     with ChangedDirectory('web'):
         subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "check_translation_completeness.py"])
 
     # Generate web interface
+    print('Checking web interface dependencies')
+
     with ChangedDirectory('web'):
         with open('package-lock.json', 'rb') as f:
             new_node_digest = hashlib.sha256(f.read()).hexdigest()
@@ -411,6 +417,8 @@ def main():
 
             with open('package-lock.json.digest', 'w', encoding='utf-8') as f:
                 f.write(new_node_digest)
+
+    print('Generating web interface')
 
     h = hashlib.sha256()
 

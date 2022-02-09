@@ -18,6 +18,8 @@ class ChangedDirectory(object):
         os.chdir(self.previous_path)
 
 # ensure node_modules is up-to-date
+print('Checking login page web interface dependencies')
+
 with ChangedDirectory('login_page_ignored'):
     with open('package-lock.json', 'rb') as f:
         new_node_digest = hashlib.sha256(f.read()).hexdigest()
@@ -50,6 +52,8 @@ with ChangedDirectory('login_page_ignored'):
             f.write(new_node_digest)
 
 # build web interface
+print('Generating login page web interface')
+
 h = hashlib.sha256()
 
 for name in sorted(os.listdir('login_page_ignored')):
