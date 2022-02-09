@@ -1,7 +1,12 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3 -u
 
-import os
 import sys
+import os
+
+if sys.hexversion < 0x3000000:
+    # Debian: python[2] -> python3
+    sys.exit(os.system('{}3 {}'.format(sys.executable.rstrip('23'), __file__)))
+
 from urllib.request import urlretrieve
 from zipfile import ZipFile
 
