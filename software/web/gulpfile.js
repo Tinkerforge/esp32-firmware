@@ -95,7 +95,7 @@ gulp.task("sass", function () {
 });
 
 // Embed css and js into html
-gulp.task("embed", run('"' + process.env.PYTHON_EXECUTABLE + '" -u embed_css_and_js.py'));
+gulp.task("embed", run('"' + process.env.PYTHONEXE + '" -u embed_css_and_js.py'));
 
 gulp.task("gzip", function () {
     const gzip = require('gulp-gzip');
@@ -104,7 +104,7 @@ gulp.task("gzip", function () {
         .pipe(gulp.dest('dist'));
 });
 
-gulp.task("generate_header", run('"' + process.env.PYTHON_EXECUTABLE + '" -u xxd.py dist/index.html.gz dist/index.html.h index_html_gz'));
+gulp.task("generate_header", run('"' + process.env.PYTHONEXE + '" -u xxd.py dist/index.html.gz dist/index.html.h index_html_gz'));
 
 gulp.task("debug",
     gulp.series(gulp.parallel("copy-html"), gulp.parallel("sass"), "bundle-js")

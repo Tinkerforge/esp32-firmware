@@ -43,7 +43,7 @@ def check_call(*args): # hide subprocess.check_call return value
 env.AddPostAction(
     "$BUILD_DIR/${PROGNAME}.bin",
     env.VerboseAction(lambda env, **kwargs: check_call(
-        sys.executable,
+        env.subst('$PYTHONEXE'),
         "-u",
         env.subst("$PROJECT_PACKAGES_DIR/tool-esptoolpy/esptool.py"),
         "--chip", "esp32",

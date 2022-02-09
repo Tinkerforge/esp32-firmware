@@ -256,8 +256,11 @@ def main():
             print("Backend module {} not found.".format(backend_module.space, mod_path))
 
         if os.path.exists(os.path.join(mod_path, "prepare.py")):
+            environ = dict(os.environ)
+            environ['PYTHONEXE'] = env.subst('$PYTHONEXE')
+
             with ChangedDirectory(mod_path):
-                subprocess.check_call([sys.executable, "-u", "prepare.py"])
+                subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py"], env=environ)
 
         shutil.copytree(os.path.join(mod_path), os.path.join("src", "modules", backend_module.under), ignore=shutil.ignore_patterns('*ignored'))
 
@@ -375,7 +378,7 @@ def main():
 
     # Check translation completeness
     with ChangedDirectory('web'):
-        subprocess.check_call([sys.executable, "-u", "check_translation_completeness.py"])
+        subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "check_translation_completeness.py"])
 
     # Generate web interface
     with ChangedDirectory('web'):
@@ -453,7 +456,7 @@ def main():
                 pass
 
             environ = dict(os.environ)
-            environ['PYTHON_EXECUTABLE'] = sys.executable
+            environ['PYTHONEXE'] = env.subst('$PYTHONEXE')
             subprocess.check_call(["npx", "gulp"], env=environ, shell=sys.platform == 'win32')
 
         shutil.copy2("web/dist/index.html.h", "src/index.html.h")

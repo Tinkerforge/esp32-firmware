@@ -93,9 +93,7 @@ if old_html_digest != new_html_digest or not os.path.exists('login.html.h'):
         except FileNotFoundError:
             pass
 
-        environ = dict(os.environ)
-        environ['PYTHON_EXECUTABLE'] = sys.executable
-        subprocess.check_call(["npx", "gulp"], env=environ, shell=sys.platform == 'win32')
+        subprocess.check_call(["npx", "gulp"], shell=sys.platform == 'win32')
 
     shutil.copy2("login_page_ignored/dist/login.html.h", "login.html.h")
 
