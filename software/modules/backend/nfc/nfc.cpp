@@ -51,6 +51,11 @@ extern TaskScheduler task_scheduler;
 
 extern API api;
 
+// in bytes
+#define NFC_TAG_ID_LENGTH 10
+// For hex strings: two chars per byte plus a separator between groups
+#define NFC_TAG_ID_STRING_LENGTH (NFC_TAG_ID_LENGTH * 2 + NFC_TAG_ID_LENGTH - 1)
+
 NFC::NFC() : DeviceModule("nfc", "NFC", "NFC", std::bind(&NFC::setup_nfc, this))
 {
     seen_tags = Config::Array(
@@ -70,13 +75,19 @@ NFC::NFC() : DeviceModule("nfc", "NFC", "NFC", std::bind(&NFC::setup_nfc, this))
         {"authorized_tags", Config::Array(
             {},
             new Config{Config::Object({
-                {"tag_name", Config::Str("", 0, 32)},
+                {"user_id", Config::Uint8(0)},
                 {"tag_type", Config::Uint(0, 0, 4)},
                 {"tag_id", Config::Array({}, new Config{Config::Uint8(0)}, 0, 10, Config::type_id<Config::ConfUint>())}
             })},
             0, AUTHORIZED_TAG_LIST_LENGTH,
             Config::type_id<Config::ConfObject>())
         }
+    });
+
+    last_tag = Config::Object({
+        {"user_id", Config::Uint8(0)},
+        {"tag_type", Config::Uint(0, 0, 4)},
+        {"tag_id", Config::Array({}, new Config{Config::Uint8(0)}, 0, 10, Config::type_id<Config::ConfUint>())}
     });
 }
 
@@ -94,10 +105,8 @@ void NFC::setup_nfc()
         return;
     }
 
-    uint8_t tag_id[10] = {0};
-    uint8_t tag_id_len = 0;
-    // clear tag list; tag_id and len can't currently be nullptr, the generator has a bug so that it assumes those are writable.
-    result = tf_nfc_simple_get_tag_id(&device, 255, nullptr, tag_id, &tag_id_len, nullptr);
+    // Clear tag list
+    result = tf_nfc_simple_get_tag_id(&device, 255, nullptr, nullptr, nullptr, nullptr);
     if (result != TF_E_OK) {
         if (!is_in_bootloader(result)) {
             logger.printfln("Clearing NFC tag list failed (rc %d). Disabling NFC support.", result);
@@ -138,7 +147,7 @@ bool NFC::is_tag_equal(uint8_t tag_type, uint8_t *tag_id, uint8_t tag_id_len, ui
     return true;
 }
 
-bool NFC::is_tag_authorized(uint8_t tag_type, uint8_t *tag_id, uint8_t tag_id_len, uint32_t last_seen, uint8_t *tag_idx)
+uint8_t NFC::get_user_id(uint8_t tag_type, uint8_t *tag_id, uint8_t tag_id_len, uint32_t last_seen, uint8_t *tag_idx)
 {
     if (last_seen >= TOKEN_LIFETIME_MS)
         return false;
@@ -148,15 +157,14 @@ bool NFC::is_tag_authorized(uint8_t tag_type, uint8_t *tag_id, uint8_t tag_id_le
         Config *auth_tag = auth_tags->get(auth_tag_idx);
         if (is_tag_equal(tag_type, tag_id, tag_id_len, last_seen, auth_tag)) {
             *tag_idx = auth_tag_idx;
-            return true;
+            return auth_tag->get("user_id")->asUint();
         }
     }
-    return false;
+    return 0;
 }
 
 void set_led(int16_t mode)
 {
-
     static int16_t last_mode = -1;
     static uint32_t last_set = 0;
 
@@ -195,17 +203,31 @@ void set_led(int16_t mode)
 void NFC::handle_event(tag_info_t *tag, bool found)
 {
     uint8_t idx = 0;
-    bool authorized = is_tag_authorized(tag->tag_type, tag->tag_id, tag->tag_id_len, tag->last_seen, &idx);
+    uint8_t user_id = get_user_id(tag->tag_type, tag->tag_id, tag->tag_id_len, tag->last_seen, &idx);
 
-    if (authorized) {
+    if (user_id != 0) {
         if (found) {
             // Found a new authorized tag. Create/overwrite auth token. Overwrite blink state even if we previously saw a not authorized tag.
             auth_token = idx;
             auth_token_seen = millis();
             blink_state = IND_ACK;
+            if (users.trigger_charge_action(user_id)) {
+                last_tag.get("user_id")->updateUint(user_id);
+                last_tag.get("tag_type")->updateUint(tag->tag_type);
+
+                while (last_tag.get("tag_id")->count() < tag->tag_id_len)
+                    last_tag.get("tag_id")->add();
+
+                while (last_tag.get("tag_id")->count() > tag->tag_id_len)
+                    last_tag.get("tag_id")->removeLast();
+
+                for (int j = 0; j < tag->tag_id_len; ++j) {
+                    last_tag.get("tag_id")->get(j)->updateUint(tag->tag_id[j]);
+                }
+            }
         } else if (auth_token == idx) {
             // Lost an authorized tag. If we still have it's auth token, extend the token's validity.
-            auth_token_seen = millis();
+            //auth_token_seen = millis();
         }
     } else if (found) {
         // Found a not authorized tag. Blink NACK but only if we did not see an authorized token
@@ -218,53 +240,32 @@ void NFC::handle_event(tag_info_t *tag, bool found)
 void NFC::handle_evse()
 {
     static Config *evse_state = api.getState("evse/state", false);
+    static Config *evse_slots = api.getState("evse/slots", false);
 
-    static bool block_api_call = false;
-    static uint32_t block_api_until = 0;
-
-    if (evse_state == nullptr)
+    if (evse_state == nullptr || evse_slots == nullptr)
         return;
 
-    if (block_api_call && !deadline_elapsed(block_api_until)) {
-        return;
-    }
-    block_api_call = false;
-
-    if (deadline_elapsed(auth_token_seen + TOKEN_LIFETIME_MS)) {
-        auth_token = -1;
-    }
-
-    bool waiting_for_start = config_in_use.get("require_tag_to_start")->asBool()
-                          && evse_state->get("charge_release")->asUint() == 1
-                          && evse_state->get("vehicle_state")->asUint() == 1
-                          && evse_state->get("iec61851_state")->asUint() == 0;
+    bool waiting_for_start = (evse_state->get("iec61851_state")->asUint() == 1) && (evse_slots->get(CHARGING_SLOT_USER)->get("max_current")->asUint() == 0);
 
     if (blink_state != -1) {
         set_led(blink_state);
         blink_state = -1;
     } else
         set_led(waiting_for_start ? IND_NAG : -1);
+}
 
-    if (waiting_for_start && auth_token >= 0) {
-        api.callCommand("evse/start_charging", nullptr);
-        block_api_call = true;
-        block_api_until = millis() + 3000;
+const char *lookup = "0123456789ABCDEF";
 
-        auth_token = -1;
-        return;
+void tag_id_bytes_to_string(uint8_t *tag_id, uint8_t tag_id_len, char buf[NFC_TAG_ID_STRING_LENGTH + 1]) {
+    for(int i = 0; i < tag_id_len; ++i) {
+        uint8_t b = tag_id[i];
+        uint8_t hi = b & 0xF0 >> 4;
+        uint8_t lo = b & 0x0F;
+        buf[i] = lookup[hi];
+        buf[i + 1] = lookup[lo];
+        buf[i + 2] = ':';
     }
-
-    bool waiting_for_stop = config_in_use.get("require_tag_to_stop")->asBool()
-                          && evse_state->get("vehicle_state")->asUint() == 2;
-
-    if (waiting_for_stop && auth_token >= 0) {
-        api.callCommand("evse/stop_charging", nullptr);
-        block_api_call = true;
-        block_api_until = millis() + 3000;
-
-        auth_token = -1;
-        return;
-    }
+    buf[tag_id_len * 3 - 1] = '\0';
 }
 
 void NFC::update_seen_tags()

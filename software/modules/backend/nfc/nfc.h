@@ -51,13 +51,14 @@ private:
     void handle_evse();
     void setup_nfc();
     void check_nfc_state();
-    bool is_tag_authorized(uint8_t tag_type, uint8_t *tag_id, uint8_t tag_id_len, uint32_t last_seen, uint8_t *tag_idx);
+    uint8_t get_user_id(uint8_t tag_type, uint8_t *tag_id, uint8_t tag_id_len, uint32_t last_seen, uint8_t *tag_idx);
     bool is_tag_equal(uint8_t tag_type, uint8_t *tag_id, uint8_t tag_id_len, uint32_t last_seen, Config *other_tag);
 
     ConfigRoot config;
     ConfigRoot config_in_use;
     ConfigRoot seen_tags;
     ConfigRoot state;
+    ConfigRoot last_tag;
 
     uint32_t last_action_ms = 0;
 
