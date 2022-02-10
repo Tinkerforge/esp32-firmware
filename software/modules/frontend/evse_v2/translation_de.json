@@ -99,7 +99,11 @@
             "settings": "Einstellungen",
             "charge_management_description": "Lastmanagement",
             "charge_management_description_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
-            "charge_management_enable": "Erlaubt anderen WARP Chargern diese Wallbox zu steuern",
+            "charge_management_enable": "Verlange die Freigabe eines Lastmanagers (von diesem oder einem anderen WARP Charger) zum Laden",
+
+            "user_slot_description": "Benutzerfreigabe",
+            "user_slot_description_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
+            "user_slot_enable": "Verlange eine Benutzerautorisierung (z.B. per NFC-Tag) zur Freigabe der Ladung",
 
             "external_description": "Externe Steuerung",
             "external_description_muted": "<a href=\"https://www.warp-charger.com/evcc.html?v=2\">siehe Einrichtungs-Tutorial für Details</a>",
