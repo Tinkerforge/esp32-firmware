@@ -74,6 +74,8 @@ void register_default_urls() {
     reboot = ConfigRoot{Config::Null()};
 
     api.addCommand("reboot", &reboot, {}, []() {
+        logger.printfln("Reboot requested by API.");
+        delay(1500);
         ESP.restart();
     }, true);
 

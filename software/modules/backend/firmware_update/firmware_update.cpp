@@ -299,6 +299,7 @@ void FirmwareUpdate::register_urls()
         }
 
         if(!Update.hasError()) {
+            logger.printfln("Firmware flashed successfully! Rebooting in one second.");
             task_scheduler.scheduleOnce("flash_firmware_reboot", [](){ESP.restart();}, 1000);
         }
 
@@ -315,6 +316,7 @@ void FirmwareUpdate::register_urls()
 
     server.on("/flash_spiffs", HTTP_POST, [this](WebServerRequest request){
         if(!Update.hasError()) {
+            logger.printfln("SPFFS flashed successfully! Rebooting in one second.");
             task_scheduler.scheduleOnce("flash_spiffs_reboot", [](){ESP.restart();}, 1000);
         }
 

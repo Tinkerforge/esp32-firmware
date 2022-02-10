@@ -65,8 +65,7 @@ static inline uint32_t _crc32_ieee_802_3_recalculate_bytes_helper(word_t data, u
 // To reduce the number of databus accesses and thus speed up the calculation,
 // the algorithm is tuned to work with words as much as possible.
 void crc32_ieee_802_3_recalculate(const void *data, size_t length, uint32_t *crc) {
-    logger.printfln("crc of chunk starting at %p with len %u", data, length);
-	const word_t *word_ptr = (word_t *)((uintptr_t)data & WORD_ALIGNMENT_MASK);
+    const word_t *word_ptr = (word_t *)((uintptr_t)data & WORD_ALIGNMENT_MASK);
 	size_t temp_length;
 	uint32_t temp_crc = COMPLEMENT_CRC(*crc);
 	word_t word;
