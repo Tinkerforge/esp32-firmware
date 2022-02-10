@@ -26,6 +26,8 @@ import feather from "../../../web/src/ts/feather";
 
 declare function __(s: string): string;
 
+const MAX_AUTHORIZED_TAGS = 8;
+
 let authorized_tag_count = -1;
 
 function toHexBytes(lst: number[]) {
@@ -114,8 +116,8 @@ function update_nfc_config(cfg: NFCConfig = API.get('nfc/config'), force: boolea
         }
     }
 
-    $('#nfc_add_tag').prop("hidden", cfg.authorized_tags.length >= 8);
-    $('#nfc_add_tag_disabled').prop("hidden", cfg.authorized_tags.length < 8);
+    $('#nfc_add_tag').prop("hidden", cfg.authorized_tags.length >= MAX_AUTHORIZED_TAGS);
+    $('#nfc_add_tag_disabled').prop("hidden", cfg.authorized_tags.length < MAX_AUTHORIZED_TAGS);
 
     for (let i = 0; i < cfg.authorized_tags.length; i++) {
         const s = cfg.authorized_tags[i];
