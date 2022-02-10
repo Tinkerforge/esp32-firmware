@@ -1,0 +1,34 @@
+<div class="tab-pane fade" role="tabpanel" aria-labelledby="sidebar-charge_tracker" id="charge_tracker">
+    <div
+        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 mb-3 border-bottom">
+        <h1 class="h2" data-i18n="charge_tracker.content.charge_tracker"></h1>
+    </div>
+
+    <div class="form-group row">
+        <div class="col-sm-4">
+            <label for="charge_tracker_last_charges" class="col-form-label">
+                <span class="form-label" data-i18n="charge_tracker.content.last_charges"></span>
+            </label>
+        </div>
+        <div class="col-sm-4">
+            <ul class="list-group" id="charge_tracker_last_charges">
+            </ul>
+        </div>
+    </div>
+    <div class="form-group row">
+        <div class="col-sm-4">
+            <label for="charge_tracker_download" class="col-form-label">
+                <span class="form-label" data-i18n="charge_tracker.content.charge_tracker_download"></span>
+            </label>
+        </div>
+        <div class="col-sm-4">
+            <button type="button" id="charge_tracker_download" class="form-control btn btn-primary mb-1 d-flex align-items-center justify-content-center">
+                <span data-i18n="charge_tracker.content.charge_tracker_download" class="mr-2"></span>
+                <span data-feather="download"></span>
+                <span id="charge_tracker_download_spinner" class="ml-2 spinner-border spinner-border-sm" role="status" hidden>
+                    <span class="sr-only">Loading...</span>
+                </span>
+            </button>
+        </div>
+    </div>
+</div>

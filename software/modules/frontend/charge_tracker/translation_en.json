@@ -1,0 +1,15 @@
+{
+    "charge_tracker": {
+        "status": {
+            "charge_tracker": "Charge tracker"
+        },
+        "navbar": {
+            "charge_tracker": "Charge tracker"
+        },
+        "content": {
+            "charge_tracker": "Charge tracker"
+        },
+        "script": {
+        }
+    }
+}

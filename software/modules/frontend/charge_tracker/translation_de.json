@@ -1,0 +1,17 @@
+{
+    "charge_tracker": {
+        "status": {
+            "charge_tracker": "Ladetracker"
+        },
+        "navbar": {
+            "charge_tracker": "Ladetracker"
+        },
+        "content": {
+            "charge_tracker": "Ladetracker"
+        },
+        "script": {
+            "csv_header": "Startzeit, Benutzer, geladene Energie in kWh, Ladedauer in s, , Zählerstand Start, Zählerstand Ende",
+            "unknown_user": "Unbekannter Nutzer"
+        }
+    }
+}
