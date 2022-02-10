@@ -240,7 +240,7 @@ EVSEV2::EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE 2.0", std::bind(&EVSEV
     evse_external_clear_on_disconnect_update = evse_external_clear_on_disconnect;
 }
 
-void EVSEV2::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear) {
+bool EVSEV2::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear) {
     uint16_t old_current;
     bool old_enabled;
     bool old_clear;
@@ -248,18 +248,19 @@ void EVSEV2::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bo
     if (rc != TF_E_OK) {
         is_in_bootloader(rc);
         logger.printfln("Failed to apply slot default (read failed). rc %d", rc);
-        return;
+        return false;
     }
 
     if ((old_current == current) && (old_enabled == enabled) && (old_clear == clear))
-        return;
+        return false;
 
     rc = tf_evse_v2_set_charging_slot_default(&device, slot, current, enabled, clear);
     if (rc != TF_E_OK) {
         is_in_bootloader(rc);
         logger.printfln("Failed to apply slot default (write failed). rc %d", rc);
-        return;
+        return false;
     }
+    return true;
 }
 
 void EVSEV2::apply_defaults() {
@@ -285,8 +286,8 @@ void EVSEV2::apply_defaults() {
         logger.printfln("Failed to apply defaults (global read failed). rc %d", rc);
         return;
     }
-    this->apply_slot_default(CHARGING_SLOT_GLOBAL, global_current, true, false);
-    tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_GLOBAL, global_current, true, false);
+    if (this->apply_slot_default(CHARGING_SLOT_GLOBAL, global_current, true, false))
+        tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_GLOBAL, global_current, true, false);
 
     // Slot 6 (user) depends on user config.
     // It can be enabled per API (is stored in the EVSEs flash, not ours).
@@ -298,8 +299,8 @@ void EVSEV2::apply_defaults() {
         logger.printfln("Failed to apply defaults (cm read failed). rc %d", rc);
         return;
     }
-    this->apply_slot_default(CHARGING_SLOT_USER, 0, user_slot_enabled, true);
-    tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_USER, 0, user_slot_enabled, true);
+    if (this->apply_slot_default(CHARGING_SLOT_USER, 0, user_slot_enabled, true))
+        tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_USER, 0, user_slot_enabled, true);
 
     // Slot 7 (charge manager) can be enabled per API (is stored in the EVSEs flash, not ours).
     // Set clear to true and current to 0 in any case: If disabled those are ignored anyway.
@@ -310,8 +311,8 @@ void EVSEV2::apply_defaults() {
         logger.printfln("Failed to apply defaults (cm read failed). rc %d", rc);
         return;
     }
-    this->apply_slot_default(CHARGING_SLOT_CHARGE_MANAGER, 0, cm_enabled, true);
-    tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_CHARGE_MANAGER, 0, cm_enabled, true);
+    if (this->apply_slot_default(CHARGING_SLOT_CHARGE_MANAGER, 0, cm_enabled, true))
+        tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_CHARGE_MANAGER, 0, cm_enabled, true);
 
     // Slot 8 (external) is controlled via API, no need to change anything here
 }
@@ -779,6 +780,11 @@ void EVSEV2::register_urls()
     api.addCommand("evse/user_slot_enabled_update", &evse_user_slot_enabled_update, {}, [this](){
         //TODO: enabling the user slot if it is already enabled should not throw away the set current.
         bool enabled = evse_user_slot_enabled_update.get("enabled")->asBool();
+
+        if (enabled) {
+            users.stop_charging(0, true);
+        }
+
         if (enabled)
             tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_USER, 0, true, true);
         else

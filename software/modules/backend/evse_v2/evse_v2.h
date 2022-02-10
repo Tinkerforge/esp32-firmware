@@ -68,7 +68,7 @@ public:
 
     void set_user_current(uint16_t current);
 
-    void apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear);
+    bool apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear);
     void apply_defaults();
 
     bool debug = false;
