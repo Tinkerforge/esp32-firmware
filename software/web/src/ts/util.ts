@@ -152,14 +152,14 @@ export function toggle_password_fn(input_name: string) {
     }
 }
 
-export function clear_password_fn(input_name: string) {
+export function clear_password_fn(input_name: string, to_be_cleared: string = __("util.to_be_cleared"), unchanged: string = __("util.unchanged")) {
     return (ev: Event) => {
         let x = <HTMLInputElement>ev.target;
         if (x.checked) {
             $(input_name).val('');
-            $(input_name).attr('placeholder', __("util.to_be_cleared"));
+            $(input_name).attr('placeholder', to_be_cleared);
         } else {
-            $(input_name).attr('placeholder', __("util.unchanged"));
+            $(input_name).attr('placeholder', unchanged);
         }
 
         $(input_name).prop("disabled", x.checked);
