@@ -17,14 +17,16 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "jquery";
+import $ from "../../../web/src/ts/jq";
+
+import * as API from "../../../web/src/ts/api";
 
 export function init() {
     $('#system').on('hide.bs.collapse', () => $('#system-chevron').removeClass("rotated-chevron"));
     $('#system').on('show.bs.collapse', () => $('#system-chevron').addClass("rotated-chevron"));
 }
 
-export function addEventListeners(source: EventSource) {
+export function addEventListeners(source: API.ApiEventTarget) {
 
 }
 

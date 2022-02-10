@@ -17,21 +17,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "jquery";
+import $ from "../../../web/src/ts/jq";
 
-import * as util from "../util";
+import YaMD5 from '../../../web/src/ts/yamd5';
 
-import YaMD5 from 'yamd5.js';
+import * as util from "../../../web/src/ts/util";
+import * as API from "../../../web/src/ts/api";
 
 declare function __(s: string): string;
 
-interface AuthenticationConfig {
-    enable_auth: boolean,
-    username: string,
-    digest_hash: string
-}
-
-function update_authentication_config(config: AuthenticationConfig) {
+function update_authentication_config() {
+    let config = API.get('authentication/config');
     $('#authentication_enable').prop("checked", config.enable_auth);
 
     $('#authentication_username').val(config.username);
@@ -50,20 +46,13 @@ function save_authentication_config() {
     let username = $('#authentication_username').val().toString();
     let password = util.passwordUpdate('#authentication_password');
 
-    let payload: AuthenticationConfig = {
-        enable_auth: $('#authentication_enable').is(':checked'),
-        username: username,
-        digest_hash: password == null ? null : YaMD5.YaMD5.hashStr(username + ":esp32-lib:" + password)
-    };
-
-    $.ajax({
-        url: '/authentication/config_update',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify(payload),
-        success: util.getShowRebootModalFn(__("authentication.script.reboot_content_changed")),
-        error: (xhr, status, error) => util.add_alert("authentication_config_update_failed", "alert-danger", __("authentication.script.save_failed"), error + ": " + xhr.responseText)
-    });
+    API.save('authentication/config', {
+            enable_auth: $('#authentication_enable').is(':checked'),
+            username: username,
+            digest_hash: password == null ? null : YaMD5.YaMD5.hashStr(username + ":esp32-lib:" + password)
+        },
+        __("authentication.script.save_failed"),
+        __("authentication.script.reboot_content_changed"));
 }
 
 export function init() {
@@ -110,10 +99,8 @@ export function init() {
     });
 }
 
-export function addEventListeners(source: EventSource) {
-    source.addEventListener('authentication/config', function (e: util.SSE) {
-        update_authentication_config(<AuthenticationConfig>(JSON.parse(e.data)));
-    }, false);
+export function addEventListeners(source: API.ApiEventTarget) {
+    source.addEventListener('authentication/config', update_authentication_config);
 }
 
 export function updateLockState(module_init: any) {

@@ -17,19 +17,16 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "jquery";
+import $ from "../../../web/src/ts/jq";
 
-import * as util from "../util";
+import * as util from "../../../web/src/ts/util";
+import * as API from "../../../web/src/ts/api";
 
 declare function __(s: string): string;
 
-interface Device {
-    uid: string,
-    port: string,
-    name: string
-}
+function update_devices() {
+    let devices = API.get('proxy/devices');
 
-function update_devices(devices: Device[]) {
     if (devices.length == 0) {
         $("#bricklets_content").html("<tr><td colspan=\"3\">" + __("proxy.script.no_bricklets") + "</td></tr>");
         return;
@@ -50,14 +47,10 @@ function update_devices(devices: Device[]) {
     $("#bricklets_content").html(result);
 }
 
-interface ErrorCounter {
-    SpiTfpChecksum: number,
-    SpiTfpFrame: number,
-    TfpFrame: number,
-    TfpUnexpected: number
-}
 
-function update_error_counters(error_counters: {[index:string]: ErrorCounter}) {
+function update_error_counters() {
+    let error_counters = API.get('proxy/error_counters');
+
     if (Object.keys(error_counters).length == 0) {
         $("#bricklets_error_counters").html("");
         return;
@@ -82,14 +75,9 @@ function update_error_counters(error_counters: {[index:string]: ErrorCounter}) {
     $("#bricklets_error_counters").html(result);
 }
 
-export function addEventListeners(source: EventSource) {
-    source.addEventListener('proxy/devices', function (e: util.SSE) {
-        update_devices(<Device[]>(JSON.parse(e.data)));
-    }, false);
-
-    source.addEventListener('proxy/error_counters', function (e: util.SSE) {
-        update_error_counters(JSON.parse(e.data));
-    }, false);
+export function addEventListeners(source: API.ApiEventTarget) {
+    source.addEventListener('proxy/devices', update_devices);
+    source.addEventListener('proxy/error_counters', update_error_counters);
 }
 
 export function init() {

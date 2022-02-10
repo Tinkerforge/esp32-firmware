@@ -17,53 +17,20 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "jquery";
+import $ from "../../../web/src/ts/jq";
 
-import * as util from "../util";
+import feather from "../../../web/src/ts/feather";
 
-import feather = require("feather-icons");
+import * as util from "../../../web/src/ts/util";
+import * as API from "../../../web/src/ts/api";
 
 declare function __(s: string): string;
 
-interface Charger {
-    name: string,
-    last_update: number,
-    uptime: number,
-    supported_current: number,
-    allowed_current: number,
-    wants_to_charge: boolean,
-    wants_to_charge_low_priority: boolean,
-    is_charging: boolean,
-    last_sent_config: number,
-    allocated_current: number,
-    state: number,
-    error: number
-}
-
-interface ChargeManagerState {
-    state: number,
-    uptime: number,
-    chargers: Charger[]
-}
-
-interface ChargerConfig {
-    host: string,
-    name: string
-}
-
-interface ChargeManagerConfig {
-    enable_charge_manager: boolean,
-    enable_watchdog: boolean,
-    verbose: boolean,
-    default_available_current: number,
-    maximum_available_current: number,
-    minimum_current: number,
-    chargers: ChargerConfig[]
-}
-
 let charger_state_count = -1;
 
-function update_charge_manager_state(state: ChargeManagerState) {
+function update_charge_manager_state() {
+    let state = API.get('charge_manager/state');
+
     if (state.chargers.length != charger_state_count) {
         let charger_content = "";
         let charger_status = "";
@@ -150,13 +117,13 @@ function set_available_current(current: number) {
     });
 }
 
-function update_available_current(current: number) {
+function update_available_current(current: number = API.get('charge_manager/available_current').current) {
     if($('#charge_manager_status_available_current_save').prop("disabled")) {
         util.setNumericInput("charge_manager_status_available_current", current / 1000, 3);
     }
 }
 
-function update_charge_manager_config(config: ChargeManagerConfig, force: boolean) {
+function update_charge_manager_config(config: ChargeManagerConfig = API.get('charge_manager/config'), force: boolean) {
     $('#charge_manager_status_available_current').prop("max", config.maximum_available_current / 1000.0);
     $("#charge_manager_status_available_current_maximum").on("click", () => set_available_current(config.default_available_current));
     $('#charge_manager_status_available_current_maximum').html(util.toLocaleFixed(config.default_available_current / 1000.0, 0) + " A");
@@ -229,6 +196,9 @@ function update_charge_manager_config(config: ChargeManagerConfig, force: boolea
         $(`#charge_manager_config_charger_${i}_host`).val(s.host);
     }
 }
+
+type ChargeManagerConfig = API.getType['charge_manager/config'];
+type ChargerConfig = ChargeManagerConfig["chargers"][0];
 
 function collect_charge_manager_config(new_charger: ChargerConfig = null, remove_charger: number = null) : ChargeManagerConfig {
     let chargers: ChargerConfig[] = [];
@@ -329,18 +299,12 @@ export function init() {
     });
 }
 
-export function addEventListeners(source: EventSource) {
-    source.addEventListener('charge_manager/state', function (e: util.SSE) {
-        update_charge_manager_state(<ChargeManagerState>(JSON.parse(e.data)));
-    }, false);
+export function addEventListeners(source: API.ApiEventTarget) {
+    source.addEventListener('charge_manager/state', update_charge_manager_state);
 
-    source.addEventListener('charge_manager/config', function (e: util.SSE) {
-        update_charge_manager_config(<ChargeManagerConfig>(JSON.parse(e.data)), false);
-    }, false);
+    source.addEventListener('charge_manager/config', () => update_charge_manager_config(undefined, false));
 
-    source.addEventListener('charge_manager/available_current', function (e: util.SSE) {
-        update_available_current(JSON.parse(e.data)["current"]);
-    }, false);
+    source.addEventListener('charge_manager/available_current', () => update_available_current());
 }
 
 export function updateLockState(module_init: any) {

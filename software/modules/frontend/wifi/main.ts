@@ -17,23 +17,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "jquery";
+import $ from "../../../web/src/ts/jq";
 
-import "bootstrap";
+import feather from "../../../web/src/ts/feather";
 
-import feather = require("feather-icons");
-
-import * as util from "../util";
+import * as util from "../../../web/src/ts/util";
+import * as API from "../../../web/src/ts/api";
 
 declare function __(s: string): string;
-
-interface WifiInfo {
-    ssid: string,
-    bssid: string,
-    rssi: number,
-    channel: number,
-    encryption: number
-}
 
 function wifi_symbol(rssi: number) {
     if(rssi >= -60)
@@ -46,7 +37,9 @@ function wifi_symbol(rssi: number) {
     return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-wifi"><title>RSSI: ${rssi}</title><path stroke="#cccccc" d="M1.42 9a16 16 0 0 1 21.16 0"></path><path stroke="#cccccc" d="M5 12.55a11 11 0 0 1 14.08 0"></path><path stroke="#cccccc" d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>`;
 }
 
-function update_wifi_scan_results(data: WifiInfo[]) {
+type WifiInfo = Exclude<API.getType['wifi/scan_results'], string>[0];
+
+function update_wifi_scan_results(data: Readonly<WifiInfo[]>) {
     $("#wifi_config_scan_spinner").prop('hidden', true);
     $("#wifi_scan_results").prop('hidden', false);
     $("#wifi_scan_title").html(__("wifi.script.select_ap"));
@@ -110,20 +103,10 @@ function scan_wifi() {
     });
 }
 
-interface WifiSTAConfig {
-    enable_sta: boolean,
-    ssid: string,
-    bssid: number[],
-    bssid_lock: boolean,
-    passphrase: string,
-    ip: number[],
-    gateway: number[],
-    subnet: number[],
-    dns: number[],
-    dns2: number[],
-}
 
-function update_wifi_sta_config(config: WifiSTAConfig) {
+function update_wifi_sta_config() {
+    let config = API.get('wifi/sta_config');
+
     // Remove the was-validated class to fix a visual bug
     // where saving the config triggers an update
     // that fills the elements, but clears the passphrase field.
@@ -159,19 +142,10 @@ function update_wifi_sta_config(config: WifiSTAConfig) {
     $('#wifi_sta_dns2').val(config.dns2.join("."));
 }
 
-interface WifiAPConfig {
-    enable_ap: boolean,
-    ap_fallback_only: boolean,
-    ssid: string,
-    hide_ssid: boolean,
-    passphrase: string,
-    channel: number,
-    ip: number[],
-    gateway: number[],
-    subnet: number[]
-}
 
-function update_wifi_ap_config(config: WifiAPConfig) {
+function update_wifi_ap_config() {
+    let config = API.get('wifi/ap_config');
+
     // Remove the was-validated class to fix a visual bug
     // where saving the config triggers an update
     // that fills the elements, but clears the passphrase field.
@@ -199,16 +173,10 @@ function update_wifi_ap_config(config: WifiAPConfig) {
     $('#wifi_save_ap_fallback_only').prop("checked", config.ap_fallback_only);
 }
 
-interface WifiState {
-    connection_state: number,
-    ap_state: number,
-    ap_bssid: string,
-    sta_ip: number[],
-    sta_rssi: number,
-    sta_bssid: string
-}
 
-function update_wifi_state(state: WifiState) {
+function update_wifi_state() {
+    let state = API.get('wifi/state');
+
     let sta_button_dict: { [idx: number]: string } = {
         0: "#wifi_sta_not_configured",
         1: "#wifi_sta_not_connected",
@@ -314,70 +282,49 @@ function parse_ip(ip_str: string) {
     return result;
 }
 
-function save_wifi_sta_config(continuation = function () { }) {
+function save_wifi_sta_config() {
     let dhcp = $('#wifi_sta_show_static').val() != "show";
 
-    let payload: WifiSTAConfig = {
-        enable_sta: $('#wifi_sta_enable_sta').is(':checked'),
-        ssid: $('#wifi_sta_ssid').val().toString(),
-        bssid: $('#wifi_sta_bssid').val().toString().split(':').map(x => parseInt(x, 16)),
-        bssid_lock: $('#wifi_sta_bssid_lock').is(':checked'),
-        passphrase: util.passwordUpdate('#wifi_sta_passphrase'),
-        ip: dhcp ? [0, 0, 0, 0] : parse_ip($('#wifi_sta_ip').val().toString()),
-        subnet: dhcp ? [0, 0, 0, 0] : parse_ip($('#wifi_sta_subnet').val().toString()),
-        gateway: dhcp ? [0, 0, 0, 0] : parse_ip($('#wifi_sta_gateway').val().toString()),
-        dns: dhcp ? [0, 0, 0, 0] : parse_ip($('#wifi_sta_dns').val().toString()),
-        dns2: dhcp ? [0, 0, 0, 0] : parse_ip($('#wifi_sta_dns2').val().toString())
-    };
-
-    $.ajax({
-        url: '/wifi/sta_config_update',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify(payload),
-        success: continuation,
-        error: (xhr, status, error) => util.add_alert("wifi_sta_config_failed", "alert-danger", __("wifi.script.sta_config_failed"), error + ": " + xhr.responseText)
-    });
+    API.save('wifi/sta_config', {
+            enable_sta: $('#wifi_sta_enable_sta').is(':checked'),
+            ssid: $('#wifi_sta_ssid').val().toString(),
+            bssid: $('#wifi_sta_bssid').val().toString().split(':').map(x => parseInt(x, 16)),
+            bssid_lock: $('#wifi_sta_bssid_lock').is(':checked'),
+            passphrase: util.passwordUpdate('#wifi_sta_passphrase'),
+            ip: dhcp ? [0, 0, 0, 0] : parse_ip($('#wifi_sta_ip').val().toString()),
+            subnet: dhcp ? [0, 0, 0, 0] : parse_ip($('#wifi_sta_subnet').val().toString()),
+            gateway: dhcp ? [0, 0, 0, 0] : parse_ip($('#wifi_sta_gateway').val().toString()),
+            dns: dhcp ? [0, 0, 0, 0] : parse_ip($('#wifi_sta_dns').val().toString()),
+            dns2: dhcp ? [0, 0, 0, 0] : parse_ip($('#wifi_sta_dns2').val().toString())
+        },
+        __("wifi.script.sta_config_failed"),
+        __("wifi.script.sta_reboot_content_changed"));
 }
 
-function save_wifi_ap_config(continuation = function () { }) {
-
-    let payload: WifiAPConfig = {
-        enable_ap: $('#wifi_ap_enable_ap').val() != 2,
-        ap_fallback_only: $('#wifi_ap_enable_ap').val() == 1,
-        ssid: $('#wifi_ap_ssid').val().toString(),
-        hide_ssid: $('#wifi_ap_hide_ssid').is(':checked'),
-        passphrase: util.passwordUpdate('#wifi_ap_passphrase'),
-        channel: parseInt($('#wifi_ap_channel').val().toString()),
-        ip: parse_ip($('#wifi_ap_ip').val().toString()),
-        subnet: parse_ip($('#wifi_ap_subnet').val().toString()),
-        gateway: parse_ip($('#wifi_ap_gateway').val().toString()),
-    };
-
-    $.ajax({
-        url: '/wifi/ap_config_update',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify(payload),
-        success: continuation,
-        error: (xhr, status, error) => util.add_alert("wifi_ap_config_failed", "alert-danger", __("wifi.script.ap_config_failed"), error + ": " + xhr.responseText),
-    });
+function save_wifi_ap_config() {
+    API.save('wifi/ap_config', {
+            enable_ap: $('#wifi_ap_enable_ap').val() != 2,
+            ap_fallback_only: $('#wifi_ap_enable_ap').val() == 1,
+            ssid: $('#wifi_ap_ssid').val().toString(),
+            hide_ssid: $('#wifi_ap_hide_ssid').is(':checked'),
+            passphrase: util.passwordUpdate('#wifi_ap_passphrase'),
+            channel: parseInt($('#wifi_ap_channel').val().toString()),
+            ip: parse_ip($('#wifi_ap_ip').val().toString()),
+            subnet: parse_ip($('#wifi_ap_subnet').val().toString()),
+            gateway: parse_ip($('#wifi_ap_gateway').val().toString()),
+        },
+        __("wifi.script.ap_config_failed"),
+        __("wifi.script.ap_reboot_content_changed"));
 }
 
-export function addEventListeners(source: EventSource) {
-    source.addEventListener('wifi/state', function (e: util.SSE) {
-        update_wifi_state(<WifiState>(JSON.parse(e.data)));
-    }, false);
+export function addEventListeners(source: API.ApiEventTarget) {
+    source.addEventListener('wifi/state', update_wifi_state);
 
-    source.addEventListener('wifi/sta_config', function (e: util.SSE) {
-        update_wifi_sta_config(<WifiSTAConfig>(JSON.parse(e.data)));
-    }, false);
+    source.addEventListener('wifi/sta_config', update_wifi_sta_config);
 
-    source.addEventListener('wifi/ap_config', function (e: util.SSE) {
-        update_wifi_ap_config(<WifiAPConfig>(JSON.parse(e.data)));
-    }, false);
+    source.addEventListener('wifi/ap_config', update_wifi_ap_config);
 
-    source.addEventListener('wifi/scan_results', function (e: util.SSE) {
+    source.addEventListener('wifi/scan_results', (e) => {
         if (e.data == "scan in progress")
             return;
 
@@ -390,7 +337,8 @@ export function addEventListeners(source: EventSource) {
             return;
         }
 
-        update_wifi_scan_results(JSON.parse(e.data));
+        if (typeof e.data !== "string")
+            update_wifi_scan_results(e.data);
     }, false);
 }
 
@@ -418,7 +366,7 @@ export function init() {
         if (this.checkValidity() === false) {
             return;
         }
-        save_wifi_sta_config(util.getShowRebootModalFn(__("wifi.script.sta_reboot_content_changed")));
+        save_wifi_sta_config();
     });
 
     $('#wifi_ap_form').on('submit', function (this: HTMLFormElement, event: Event) {
@@ -429,7 +377,7 @@ export function init() {
         if (this.checkValidity() === false) {
             return;
         }
-        save_wifi_ap_config(util.getShowRebootModalFn(__("wifi.script.ap_reboot_content_changed")));
+        save_wifi_ap_config();
     });
 
     $('#scan_wifi_dropdown').on('hidden.bs.dropdown', function (e) {

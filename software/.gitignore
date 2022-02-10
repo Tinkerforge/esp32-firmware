@@ -25,5 +25,6 @@ web/src/index.html
 web/src/img/modules/
 web/src/scss/modules/
 web/src/ts/modules/
+web/src/ts/api_defs.ts
 web/src/ts/translation_*.ts
 packages/

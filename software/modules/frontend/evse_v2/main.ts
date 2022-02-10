@@ -17,37 +17,26 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "jquery";
+import $ from "../../../web/src/ts/jq";
 
-import * as util from "../util";
+import feather from "../../../web/src/ts/feather";
 
-import feather = require("feather-icons");
+import * as util from "../../../web/src/ts/util";
+import * as API from "../../../web/src/ts/api";
 
 declare function __(s: string): string;
 
-interface EVSEState {
-    iec61851_state: number,
-    charger_state: number,
-    contactor_state: number,
-    contactor_error: number,
-    allowed_charging_current: number,
-    error_state: number,
-    lock_state: number,
-    dc_fault_current_state: number,
-}
+function update_evse_status_start_charging_button() {
+    let state = API.get('evse/state');
+    let slots = API.get('evse/slots');
 
-let last_iec_state = 0;
-let last_slot_4_current = 0;
-function update_evse_status_start_charging_button(iec_state, slot_4_current) {
-    if (iec_state != null)
-        last_iec_state = iec_state;
-    if (slot_4_current != null)
-        last_slot_4_current = slot_4_current
     // It is not helpful to enable the button if auto start is active, but we are blocked for some other reason.
-    $('#status_start_charging').prop("disabled", last_iec_state != 1 || last_slot_4_current != 0);
+    $('#status_start_charging').prop("disabled", state.iec61851_state != 1 || slots[4].max_current != 0);
 }
 
-function update_evse_state(state: EVSEState) {
+function update_evse_state() {
+    let state = API.get('evse/state');
+
     util.update_button_group("btn_group_iec_state", state.iec61851_state);
 
     util.update_button_group("btn_group_evse_state", state.charger_state);
@@ -74,18 +63,12 @@ function update_evse_state(state: EVSEState) {
     } else {
         $("#evse_state_charging_text").html(__("evse.status.charging"));
     }
-
-    update_evse_status_start_charging_button(state.iec61851_state, null);
 }
 
-interface EVSEHardwareConfiguration {
-    jumper_configuration: number,
-    has_lock_switch: boolean,
-    evse_version: number,
-    energy_meter_type: number,
-}
 
-function update_evse_hardware_configuration(cfg: EVSEHardwareConfiguration) {
+function update_evse_hardware_configuration() {
+    let cfg = API.get('evse/hardware_configuration');
+
     util.update_button_group("btn_group_has_lock_switch", cfg.has_lock_switch ? 1 : 0);
     util.update_button_group("btn_group_jumper_config", cfg.jumper_configuration);
     $('#evse_version').val(cfg.evse_version);
@@ -94,19 +77,11 @@ function update_evse_hardware_configuration(cfg: EVSEHardwareConfiguration) {
     $('#evse_row_lock_switch').prop('hidden', !cfg.has_lock_switch);
 }
 
-interface EVSELowLevelState {
-    led_state: number,
-    cp_pwm_duty_cycle: number,
-    adc_values: Uint16Array,
-    voltages: Int16Array,
-    resistances: Uint32Array,
-    gpio: boolean[],
-    charging_time: number,
-    time_since_state_change: number,
-    uptime: number,
-}
 
-function update_evse_low_level_state(state: EVSELowLevelState) {
+function update_evse_low_level_state() {
+    let state = API.get('evse/low_level_state');
+    let last_iec_state = API.get('evse/state').iec61851_state;
+
     util.update_button_group("btn_group_led_state", state.led_state);
 
     for(let i = 0; i < 24; ++i) {
@@ -159,11 +134,10 @@ function set_charging_current(current: number) {
     });
 }
 
-interface EVSEAutoStart {
-    auto_start_charging: boolean
-}
 
-function update_evse_auto_start_charging(x: EVSEAutoStart) {
+function update_evse_auto_start_charging() {
+    let x = API.get('evse/auto_start_charging');
+
     $('#status_auto_start_charging').prop("checked", x.auto_start_charging);
 }
 
@@ -197,80 +171,59 @@ function stop_charging() {
     });
 }
 
-interface EVSEManagementEnabled {
-    enabled: boolean;
+
+function update_evse_managed() {
+    let x = API.get('evse/management_enabled');
+    $('#evse_charge_management').prop("checked", x.enabled);
 }
 
-function update_evse_managed(m: EVSEManagementEnabled) {
-    $('#evse_charge_management').prop("checked", m.enabled);
-    $('#evse_charging_current_managed_ignored').html(m.enabled ? "" : __("evse.script.managed_current_ignored"));
+
+function update_evse_user_slot() {
+    let x = API.get('evse/user_slot_enabled');
+    $('#evse_user_slot').prop("checked", x.enabled);
 }
 
-interface EVSEGPIOConfiguration {
-    shutdown_input: number,
-    input: number,
-    output: number
+
+function update_evse_external() {
+    let x = API.get('evse/external_enabled');
+    $('#evse_external').prop("checked", x.enabled);
 }
 
-function update_evse_gpio_configuration(g: EVSEGPIOConfiguration) {
+
+function update_evse_gpio_configuration() {
+    let g = API.get('evse/gpio_configuration');
     $('#evse_gpio_shutdown').val(g.shutdown_input);
     $('#evse_gpio_in').val(g.input);
     $('#evse_gpio_out').val(g.output);
 }
 
 function save_evse_gpio_configuration() {
-    let payload: EVSEGPIOConfiguration = {
-        shutdown_input: parseInt($('#evse_gpio_shutdown').val().toString()),
-        input: parseInt($('#evse_gpio_in').val().toString()),
-        output: parseInt($('#evse_gpio_out').val().toString())
-    }
-
-    $.ajax({
-        url: '/evse/gpio_configuration_update',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify(payload),
-        error: (xhr, status, error) => util.add_alert("evse_gpio_configuration_failed", "alert-danger", __("evse.script.gpio_configuration_failed"), error + ": " + xhr.responseText),
-    });
+    API.save('evse/gpio_configuration', {
+            shutdown_input: parseInt($('#evse_gpio_shutdown').val().toString()),
+            input: parseInt($('#evse_gpio_in').val().toString()),
+            output: parseInt($('#evse_gpio_out').val().toString())
+        }, __("evse.script.gpio_configuration_failed"));
 }
 
-interface EVSEButtonConfiguration {
-    button: number
-}
-
-function update_evse_button_configuration(b: EVSEButtonConfiguration) {
+function update_evse_button_configuration() {
+    let b = API.get('evse/button_configuration');
     $('#evse_button_configuration').val(b.button);
 }
 
-interface EVSEControlPilotConfiguration {
-    control_pilot: number
-}
-
-function update_evse_control_pilot_configuration(g: EVSEControlPilotConfiguration) {
+function update_evse_control_pilot_configuration() {
+    let g = API.get('evse/control_pilot_configuration');
     $('#evse_control_pilot').val(g.control_pilot);
 }
 
 function save_evse_control_pilot_configuration() {
-    let payload: EVSEControlPilotConfiguration = {
+    API.save('evse/control_pilot_configuration', {
         control_pilot: parseInt($('#evse_control_pilot').val().toString())
-    }
-
-    $.ajax({
-        url: '/evse/control_pilot_configuration_update',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify(payload),
-        error: (xhr, status, error) => util.add_alert("evse_control_pilot_configuration_failed", "alert-danger", __("evse.script.control_pilot_configuration_failed"), error + ": " + xhr.responseText),
-    });
+    }, __("evse.script.control_pilot_configuration_failed"));
 }
 
-interface EVSESlot {
-    max_current: number,
-    active: boolean,
-    clear_on_disconnect: boolean
-}
+function update_evse_slots() {
+    let slots = API.get('evse/slots');
 
-function update_evse_slots(slots: EVSESlot[]) {
     let real_maximum = 32000;
     for(let i = 0; i < slots.length; ++i) {
         let s = slots[i];
@@ -323,8 +276,6 @@ function update_evse_slots(slots: EVSESlot[]) {
     status_string += status_list.join(", ");
 
     $('#evse_status_allowed_charging_current').val(status_string);
-
-    update_evse_status_start_charging_button(null, slots[4].max_current);
 }
 
 let debug_log = "";
@@ -418,7 +369,7 @@ function debug_stop() {
         });
 }
 
-let status_plus_minus_timeout = null;
+let status_plus_minus_timeout: number = null;
 
 export function init() {
     $("#status_charging_current_minimum").on("click", () => set_charging_current(6000));
@@ -495,35 +446,22 @@ export function init() {
 
     $('#evse_charge_management').on("change", () => {
         let enable = $('#evse_charge_management').is(":checked");
-        $.ajax({
-            url: '/evse/management_enabled_update',
-            method: 'PUT',
-            contentType: 'application/json',
-            data: JSON.stringify({"enabled": enable}),
-            error: (xhr, status, error) => util.add_alert("evse_managed_update_failed", "alert-danger", __("evse.script.save_failed"), error + ": " + xhr.responseText)
-        });
+        API.save('evse/management_enabled', {"enabled": enable}, __("evse.script.save_failed"));
+    });
+
+    $('#evse_user_slot').on("change", () => {
+        let enable = $('#evse_user_slot').is(":checked");
+        API.save('evse/user_slot_enabled', {"enabled": enable}, __("evse.script.save_failed"));
     });
 
     $('#evse_external').on("change", () => {
         let enable = $('#evse_external').is(":checked");
-        $.ajax({
-            url: '/evse/external_enabled_update',
-            method: 'PUT',
-            contentType: 'application/json',
-            data: JSON.stringify({"enabled": enable}),
-            error: (xhr, status, error) => util.add_alert("evse_external_update_failed", "alert-danger", __("evse.script.save_failed"), error + ": " + xhr.responseText)
-        });
+        API.save('evse/external_enabled', {"enabled": enable}, __("evse.script.save_failed"));
     });
 
     $('#evse_button_configuration').on("change", () => {
         let val = parseInt($('#evse_button_configuration').val().toString());
-        $.ajax({
-            url: '/evse/button_configuration_update',
-            method: 'PUT',
-            contentType: 'application/json',
-            data: JSON.stringify({"button": val}),
-            error: (xhr, status, error) => util.add_alert("evse_button_configuration_update_failed", "alert-danger", __("evse.script.save_failed"), error + ": " + xhr.responseText)
-        });
+        API.save('evse/button_configuration',  {"button": val}, __("evse.script.save_failed"));
     });
 
     $('#evse_gpio_shutdown').on("change", save_evse_gpio_configuration);
@@ -547,7 +485,7 @@ export function init() {
     );
 
     $('#status_charging_current_minus').on("click", () => {
-        let val: number = input.val();
+        let val: number = parseInt(input.val().toString());
         let target = (val % 1 === 0) ? (Math.floor(val) - 1) : Math.floor(val);
 
         if (target < $('#status_charging_current').prop("min"))
@@ -566,7 +504,7 @@ export function init() {
     });
 
     $('#status_charging_current_plus').on("click", () => {
-        let val: number = input.val();
+        let val = parseFloat(input.val().toString());
         let target = Math.floor(val) + 1;
 
         if (target > $('#status_charging_current').prop("max"))
@@ -587,7 +525,7 @@ export function init() {
     $('#status_charging_current').on("input", () => {
         status_charging_current_dirty = true;
 
-        let val: number = input.val();
+        let val = parseFloat(input.val().toString());
         let target = val;
 
         if (target > parseInt($('#status_charging_current').prop("max"))) {
@@ -613,49 +551,39 @@ export function init() {
     });
 }
 
-export function addEventListeners(source: EventSource) {
-    source.addEventListener('evse/state', function (e: util.SSE) {
-        update_evse_state(<EVSEState>(JSON.parse(e.data)));
+export function addEventListeners(source: API.ApiEventTarget) {
+    source.addEventListener('evse/state', update_evse_state);
+
+    source.addEventListener('evse/low_level_state', update_evse_low_level_state);
+    source.addEventListener('evse/state', update_evse_low_level_state);
+
+    source.addEventListener('evse/hardware_configuration', update_evse_hardware_configuration);
+
+    source.addEventListener('evse/auto_start_charging', update_evse_auto_start_charging);
+
+    source.addEventListener("evse/management_enabled", update_evse_managed);
+
+    source.addEventListener("evse/user_slot_enabled", update_evse_user_slot);
+
+    source.addEventListener("evse/external_enabled", update_evse_external);
+
+    source.addEventListener("evse/gpio_configuration", update_evse_gpio_configuration);
+
+    source.addEventListener("evse/button_configuration", update_evse_button_configuration);
+
+    source.addEventListener("evse/control_pilot_configuration", update_evse_control_pilot_configuration);
+
+    source.addEventListener("evse/slots", update_evse_slots);
+
+    source.addEventListener("evse/state", update_evse_status_start_charging_button);
+    source.addEventListener("evse/slots", update_evse_status_start_charging_button);
+
+    source.addEventListener("evse/debug_header", function (e) {
+        debug_log += e.data + "\n";
     }, false);
 
-    source.addEventListener('evse/low_level_state', function (e: util.SSE) {
-        update_evse_low_level_state(<EVSELowLevelState>(JSON.parse(e.data)));
-    }, false);
-
-    source.addEventListener('evse/hardware_configuration', function (e: util.SSE) {
-        update_evse_hardware_configuration(<EVSEHardwareConfiguration>(JSON.parse(e.data)));
-    }, false);
-
-    source.addEventListener('evse/auto_start_charging', function (e: util.SSE) {
-        update_evse_auto_start_charging(<EVSEAutoStart>(JSON.parse(e.data)));
-    }, false);
-
-    source.addEventListener("evse/management_enabled", function (e: util.SSE) {
-        update_evse_managed(<EVSEManagementEnabled>(JSON.parse(e.data)));
-    }, false);
-
-    source.addEventListener("evse/gpio_configuration", function (e: util.SSE) {
-        update_evse_gpio_configuration(<EVSEGPIOConfiguration>(JSON.parse(e.data)));
-    }, false);
-
-    source.addEventListener("evse/button_configuration", function (e: util.SSE) {
-        update_evse_button_configuration(<EVSEButtonConfiguration>(JSON.parse(e.data)));
-    }, false);
-
-    source.addEventListener("evse/control_pilot_configuration", function (e: util.SSE) {
-        update_evse_control_pilot_configuration(<EVSEControlPilotConfiguration>(JSON.parse(e.data)));
-    }, false);
-
-    source.addEventListener("evse/debug_header", function (e: util.SSE) {
-        debug_log += e.data.slice(1, -1) + "\n";
-    }, false);
-
-    source.addEventListener("evse/debug", function (e: util.SSE) {
-        debug_log += e.data.slice(1, -1) + "\n";
-    }, false);
-
-    source.addEventListener("evse/slots", function(e: util.SSE) {
-        update_evse_slots(<EVSESlot[]>(JSON.parse(e.data)));
+    source.addEventListener("evse/debug", function (e) {
+        debug_log += e.data + "\n";
     }, false);
 }
 

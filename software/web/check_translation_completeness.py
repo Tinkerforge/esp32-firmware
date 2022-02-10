@@ -2,6 +2,7 @@ import json
 import os
 import re
 import sys
+import os
 
 START_PATTERN = "{[index: string]:any} = "
 END_PATTERN = "};"
@@ -37,53 +38,74 @@ def get_nested_keys(d, path=""):
             r.append(path + "." + k)
     return r
 
+
+translation = {}
+used_placeholders = []
+template_literals = {}
+
+def parse_ts_file(path, name):
+    global translation
+    global used_placeholders
+    global template_literals
+
+    with open(path) as f:
+        content = f.read()
+
+    placeholders = re.findall('__\(([^\)]*)', content)
+    try:
+        placeholders.remove("s: string")
+    except:
+        pass
+
+    template_literal_keys = [x for x in placeholders if x[0] == '`' and x[-1] == '`' and '${' in x and '}' in x]
+    placeholders = [x for x in placeholders if x not in template_literal_keys]
+
+    template_literals.update({x[1:-1]: [] for x in template_literal_keys})
+
+    incorrect_placeholders = [x for x in placeholders if not x[0] == '"' or not x[-1] == '"']
+    if len(incorrect_placeholders) != 0:
+        print("Found incorrect placeholders", incorrect_placeholders)
+
+    used_placeholders += [x[1:-1] for x in placeholders]
+
+    if not name.startswith("translation_") or not name.endswith(".ts"):
+        return
+
+    language = name[len('translation_'):-len('.ts')]
+    start = content.find(START_PATTERN)
+    while start >= 0:
+        content = content[start+len(START_PATTERN):]
+        end = content.find(END_PATTERN)
+        json_dict = content[:end+1]
+        json_dict = re.sub(",\s*\}", "}", json_dict)
+        json_dict = json_dict.replace("{{{empty_text}}}", '""')
+        try:
+            merge(translation, {language: json.loads(json_dict)})
+        except Exception as e:
+            print("error:", e, json_dict)
+
+        content = content[end+len(END_PATTERN):]
+        start = content.find(START_PATTERN)
+
 def main():
-    translation = {}
-    used_placeholders = []
-    template_literals = {}
+    global translation
+    global used_placeholders
+    global template_literals
 
     for root, dirs, files in os.walk("./src"):
         for name in files:
             if not name.endswith(".ts"):
                 continue
-            with open(os.path.join(root, name)) as f:
-                content = f.read()
+            parse_ts_file(os.path.join(root, name), name)
 
-            placeholders = re.findall('__\(([^\)]*)', content)
-            try:
-                placeholders.remove("s: string")
-            except:
-                pass
-
-            template_literal_keys = [x for x in placeholders if x[0] == '`' and x[-1] == '`' and '${' in x and '}' in x]
-            placeholders = [x for x in placeholders if x not in template_literal_keys]
-
-            template_literals.update({x[1:-1]: [] for x in template_literal_keys})
-
-            incorrect_placeholders = [x for x in placeholders if not x[0] == '"' or not x[-1] == '"']
-            if len(incorrect_placeholders) != 0:
-                print("Found incorrect placeholders", incorrect_placeholders)
-
-            used_placeholders += [x[1:-1] for x in placeholders]
-
-            if not name.startswith("translation_") or not name.endswith(".ts"):
-                continue
-
-            language = name[len('translation_'):-len('.ts')]
-            start = content.find(START_PATTERN)
-            while start >= 0:
-                content = content[start+len(START_PATTERN):]
-                end = content.find(END_PATTERN)
-                json_dict = content[:end+1]
-                json_dict = re.sub(",\s*\}", "}", json_dict)
-                json_dict = json_dict.replace("{{{empty_text}}}", '""')
-                try:
-                    merge(translation, {language: json.loads(json_dict)})
-                except Exception as e:
-                    print("error:", e, json_dict)
-
-                content = content[end+len(END_PATTERN):]
-                start = content.find(START_PATTERN)
+    for frontend_module in sys.argv[1:]:
+        folder = os.path.join("..", "modules", "frontend", frontend_module)
+        if os.path.exists(os.path.join(folder, "main.ts")):
+            parse_ts_file(os.path.join("..", "modules", "frontend", frontend_module, "main.ts"), "main.ts")
+        if os.path.exists(os.path.join(folder, "translation_de.ts")):
+            parse_ts_file(os.path.join("..", "modules", "frontend", frontend_module, "translation_de.ts"), "translation_de.ts")
+        if os.path.exists(os.path.join(folder, "translation_en.ts")):
+            parse_ts_file(os.path.join("..", "modules", "frontend", frontend_module, "translation_en.ts"), "translation_en.ts")
 
     assert len(translation) > 0
 

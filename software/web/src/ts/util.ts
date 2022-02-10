@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as API from "./api";
 
 declare function __(s: string): string;
 
@@ -171,9 +172,9 @@ let ws: WebSocket = null;
 
 const RECONNECT_TIME = 12000;
 
-let eventTarget: EventTarget = null;
+let eventTarget: API.ApiEventTarget = null;
 
-export function setupEventSource(first: boolean, keep_as_first: boolean, continuation: (ws: WebSocket, eventTarget: EventTarget) => void) {
+export function setupEventSource(first: boolean, keep_as_first: boolean, continuation: (ws: WebSocket, eventTarget: API.ApiEventTarget) => void) {
     if (!first) {
         add_alert("event_connection_lost", "alert-warning",  __("util.event_connection_lost_title"), __("util.event_connection_lost"))
     }
@@ -182,7 +183,7 @@ export function setupEventSource(first: boolean, keep_as_first: boolean, continu
         ws.close();
     }
     ws = new WebSocket('ws://' + location.host + '/ws');
-    eventTarget = new EventTarget();
+    eventTarget = new API.ApiEventTarget();
 
     if (wsReconnectTimeout != null) {
         clearTimeout(wsReconnectTimeout);
@@ -200,6 +201,7 @@ export function setupEventSource(first: boolean, keep_as_first: boolean, continu
         }
         wsReconnectTimeout = window.setTimeout(wsReconnectCallback, RECONNECT_TIME);
 
+        let topics = [];
         for (let item of e.data.split("\n")) {
             if (item == "")
                 continue;
@@ -208,7 +210,13 @@ export function setupEventSource(first: boolean, keep_as_first: boolean, continu
                 console.log("Received malformed event", obj);
                 return;
             }
-            eventTarget.dispatchEvent(new MessageEvent(obj["topic"], {"data": JSON.stringify(obj["payload"])}));
+
+            topics.push(obj["topic"]);
+            API.update(obj["topic"], obj["payload"]);
+        }
+
+        for (let topic of topics) {
+            API.trigger(topic, eventTarget);
         }
     }
 

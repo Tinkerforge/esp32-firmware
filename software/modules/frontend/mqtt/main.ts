@@ -17,28 +17,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "jquery";
+import $ from "../../../web/src/ts/jq";
 
-import * as util from "../util";
+import * as util from "../../../web/src/ts/util";
+import * as API from "../../../web/src/ts/api";
 
 declare function __(s: string): string;
 
-interface MqttConfig {
-    enable_mqtt: boolean,
-    broker_host: string,
-    broker_port: number,
-    broker_username: string,
-    broker_password: string,
-    global_topic_prefix: string
-    client_name: string
-}
 
-interface MqttState {
-    connection_state: number
-    last_error: number
-}
+function update_mqtt_config() {
+    let config = API.get('mqtt/config');
 
-function update_mqtt_config(config: MqttConfig) {
     // Remove the was-validated class to fix a visual bug
     // where saving the config triggers an update
     // that fills the elements, but clears the passphrase field.
@@ -57,41 +46,32 @@ function update_mqtt_config(config: MqttConfig) {
 }
 
 function save_mqtt_config() {
-    let payload: MqttConfig = {
-        enable_mqtt: $('#mqtt_enable').is(':checked'),
-        broker_host: $('#mqtt_broker_host').val().toString(),
-        broker_port: parseInt($('#mqtt_broker_port').val().toString(), 10),
-        broker_username: $('#mqtt_broker_username').val().toString(),
-        broker_password: util.passwordUpdate('#mqtt_broker_password'),
-        global_topic_prefix: $('#mqtt_topic_prefix').val().toString(),
-        client_name: $('#mqtt_client_name').val().toString(),
-    };
-
-    $.ajax({
-        url: '/mqtt/config_update',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify(payload),
-        success: util.getShowRebootModalFn(__("mqtt.content.reboot_content_changed")),
-        error: (xhr, status, error) => util.add_alert("mqtt_config_update_failed", "alert-danger", __("mqtt.script.save_failed"), error + ": " + xhr.responseText)
-    });
+    API.save('mqtt/config',{
+            enable_mqtt: $('#mqtt_enable').is(':checked'),
+            broker_host: $('#mqtt_broker_host').val().toString(),
+            broker_port: parseInt($('#mqtt_broker_port').val().toString(), 10),
+            broker_username: $('#mqtt_broker_username').val().toString(),
+            broker_password: util.passwordUpdate('#mqtt_broker_password'),
+            global_topic_prefix: $('#mqtt_topic_prefix').val().toString(),
+            client_name: $('#mqtt_client_name').val().toString(),
+        },
+        __("mqtt.script.save_failed"),
+        __("mqtt.script.reboot_content_changed"));
 }
 
-function update_mqtt_state(state: MqttState) {
+function update_mqtt_state() {
+    let state = API.get('mqtt/state');
+
     util.update_button_group("btn_group_mqtt_state", state.connection_state);
     if(state.connection_state == 3) {
         $('#mqtt_status_error').html(" " + state.last_error);
     }
 }
 
-export function addEventListeners(source: EventSource) {
-    source.addEventListener('mqtt/config', function (e: util.SSE) {
-        update_mqtt_config(<MqttConfig>(JSON.parse(e.data)));
-    }, false);
+export function addEventListeners(source: API.ApiEventTarget) {
+    source.addEventListener('mqtt/config', update_mqtt_config);
 
-    source.addEventListener('mqtt/state', function (e: util.SSE) {
-        update_mqtt_state(<MqttState>(JSON.parse(e.data)));
-    }, false);
+    source.addEventListener('mqtt/state', update_mqtt_state);
 }
 
 export function init() {

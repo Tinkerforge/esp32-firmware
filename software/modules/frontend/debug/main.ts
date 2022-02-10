@@ -17,17 +17,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "jquery";
+import $ from "../../../web/src/ts/jq";
 
-import * as util from "../util";
+import * as util from "../../../web/src/ts/util";
+import * as API from "../../../web/src/ts/api";
 
-interface DebugState {
-    uptime: number,
-    free_heap: number,
-    largest_free_heap_block: number
-}
-
-function update_debug_state(state: DebugState) {
+function update_debug_state() {
+    let state = API.get('debug/state');
     $('#debug_uptime').val(util.format_timespan(Math.round(state.uptime / 1000)));
     $('#debug_heap_free').val(state.free_heap);
     $('#debug_heap_block').val(state.largest_free_heap_block);
@@ -37,10 +33,8 @@ export function init() {
 
 }
 
-export function addEventListeners(source: EventSource) {
-    source.addEventListener('debug/state', function (e: util.SSE) {
-        update_debug_state(<DebugState>(JSON.parse(e.data)));
-    }, false);
+export function addEventListeners(source: API.ApiEventTarget) {
+    source.addEventListener('debug/state', update_debug_state);
 }
 
 export function updateLockState(module_init: any) {

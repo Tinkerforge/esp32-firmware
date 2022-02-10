@@ -1,0 +1,15 @@
+{{{imports}}}
+
+export interface Modules {
+    {{{module_interface}}}
+}
+
+export interface ConfigMap {
+    {{{config_map_entries}}}
+    'modules': Modules
+};
+
+export let api_cache: {[key in keyof ConfigMap]: ConfigMap[key]} = {
+    {{{api_cache_entries}}}
+    'modules': null
+};

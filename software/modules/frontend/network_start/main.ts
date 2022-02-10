@@ -17,36 +17,26 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "jquery";
+import $ from "../../../web/src/ts/jq";
 
-import * as util from "../util";
+import * as util from "../../../web/src/ts/util";
+import * as API from "../../../web/src/ts/api";
 
 declare function __(s: string): string;
 
-interface NetworkConfig {
-    hostname: string,
-    enable_mdns: boolean,
-}
-
-function update_network_config(config: NetworkConfig) {
+function update_network_config() {
+    let config = API.get('network/config');
     $('#network_hostname').val(config.hostname);
     $('#network_enable_mdns').prop("checked", config.enable_mdns);
 }
 
 function save_network_config() {
-    let payload: NetworkConfig = {
-        hostname: $('#network_hostname').val().toString(),
-        enable_mdns: $('#network_enable_mdns').is(':checked')
-    };
-
-    $.ajax({
-        url: '/network/config_update',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify(payload),
-        success: util.getShowRebootModalFn(__("network.script.reboot_content_changed")),
-        error: (xhr, status, error) => util.add_alert("network_config_update_failed", "alert-danger", __("network.script.save_failed"), error + ": " + xhr.responseText)
-    });
+    API.save('network/config', {
+            hostname: $('#network_hostname').val().toString(),
+            enable_mdns: $('#network_enable_mdns').is(':checked')
+        },
+        __("network.script.save_failed"),
+        __("network.script.reboot_content_changed"));
 }
 
 export function init() {
@@ -66,10 +56,8 @@ export function init() {
     });
 }
 
-export function addEventListeners(source: EventSource) {
-    source.addEventListener('network/config', function (e: util.SSE) {
-        update_network_config(<NetworkConfig>(JSON.parse(e.data)));
-    }, false);
+export function addEventListeners(source: API.ApiEventTarget) {
+    source.addEventListener('network/config', update_network_config);
 }
 
 export function updateLockState(module_init: any) {

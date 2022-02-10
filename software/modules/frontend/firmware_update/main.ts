@@ -17,22 +17,20 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "jquery";
+import $ from "../../../web/src/ts/jq";
 
-import * as util from "../util";
+import * as util from "../../../web/src/ts/util";
+import * as API from "../../../web/src/ts/api";
 
 declare function __(s: string): string;
 
-import bsCustomFileInput from "bs-custom-file-input";
-
-interface Version {
-    firmware: string,
-    spiffs: string
-}
+import bsCustomFileInput from "../../../web/src/ts/bs-custom-file-input";
 
 let last_version: string = null;
 
-function update_version(version: Version) {
+function update_version() {
+    let version = API.get('version');
+
     if (last_version == null) {
         last_version = version.firmware;
     } else if (last_version != version.firmware) {
@@ -168,10 +166,8 @@ export function init() {
     bsCustomFileInput.init();
 }
 
-export function addEventListeners(source: EventSource) {
-    source.addEventListener('version', function (e: util.SSE) {
-        update_version(<Version>(JSON.parse(e.data)));
-    }, false);
+export function addEventListeners(source: API.ApiEventTarget) {
+    source.addEventListener('version', update_version);
 }
 
 export function updateLockState(module_init: any) {

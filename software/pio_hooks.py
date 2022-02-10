@@ -293,6 +293,15 @@ def main():
     frontend_modules = [FlavoredName(x).get() for x in env.GetProjectOption("frontend_modules").splitlines()]
     translation = collect_translation('web')
 
+    # API
+    api_imports = []
+    api_config_map_entries = []
+    api_cache_entries = []
+    top_level_counter = 0
+    exported_interface_pattern = re.compile("export interface ([A-Za-z0-9$_]+)")
+    exported_type_pattern = re.compile("export type ([A-Za-z0-9$_]+)")
+    api_path_pattern = re.compile("//APIPath:([^\n]*)\n")
+
     recreate_dir(os.path.join('web', 'src', 'ts', 'modules'))
     recreate_dir(os.path.join('web', 'src', 'img', 'modules'))
     recreate_dir(os.path.join('web', 'src', 'scss', 'modules'))
@@ -326,8 +335,29 @@ def main():
                 status_entries.append(f.read())
 
         if os.path.exists(os.path.join(mod_path, 'main.ts')):
-            main_ts_entries.append(frontend_module)
-            shutil.copy(os.path.join(mod_path, 'main.ts'), os.path.join("web", "src", "ts", "modules", frontend_module.under + ".ts"))
+            main_ts_entries.append(frontend_module.under)
+
+        if os.path.exists(os.path.join(mod_path, 'api.ts')):
+            with open(os.path.join(mod_path, 'api.ts'), encoding='utf-8') as f:
+                content = f.read()
+
+            api_path = frontend_module.under + "/"
+
+            api_match = api_path_pattern.match(content)
+            if api_match is not None:
+                api_path = api_match.group(1).strip()
+
+            api_exports = exported_interface_pattern.findall(content) + exported_type_pattern.findall(content)
+            if len(api_exports) != 0:
+                api_module = api_path[:-1] if api_path.endswith("/") else api_path
+                if len(api_module) == 0:
+                    api_module = "top_level_{}".format(top_level_counter)
+                    top_level_counter += 1
+
+                api_imports.append("import * as {} from '../../../modules/frontend/{}/api';".format(api_module, frontend_module.under))
+
+                api_config_map_entries += ["'{}{}': {}.{},".format(api_path, x, api_module, x) for x in api_exports]
+                api_cache_entries += ["'{}{}': null,".format(api_path, x) for x in api_exports]
 
         for phase, scss_entries in [('pre', pre_scss_entries), ('post', post_scss_entries)]:
             if os.path.exists(os.path.join(mod_path, phase + '.scss')):
@@ -366,9 +396,8 @@ def main():
     })
 
     specialize_template(os.path.join("web", "main.ts.template"), os.path.join("web", "src", "main.ts"), {
-        '{{{module_imports}}}': '\n'.join(['import * as {0} from "./ts/modules/{0}";'.format(x.under) for x in main_ts_entries]),
-        '{{{module_interface}}}': ',\n    '.join('{}: boolean'.format(x.under) for x in backend_modules),
-        '{{{modules}}}': ', '.join([x.under for x in main_ts_entries]),
+        '{{{module_imports}}}': '\n'.join(['import * as {0} from "../../modules/frontend/{0}/main";'.format(x) for x in main_ts_entries]),
+        '{{{modules}}}': ', '.join([x for x in main_ts_entries]),
         '{{{translation_imports}}}': '\n'.join(['import {{translation_{0}}} from "./ts/translation_{0}";'.format(x) for x in sorted(translation)]),
         '{{{translation_adds}}}': '\n'.join(["    translator.add('{0}', translation_{0});".format(x) for x in sorted(translation)])
     })
@@ -378,11 +407,18 @@ def main():
         '{{{module_post_imports}}}': '\n'.join(['@import "scss/modules/post_{0}";'.format(x.under) for x in post_scss_entries])
     })
 
+    specialize_template(os.path.join("web", "api_defs.ts.template"), os.path.join("web", "src", "ts", "api_defs.ts"), {
+        '{{{imports}}}': '\n'.join(api_imports),
+        '{{{module_interface}}}': ',\n    '.join('{}: boolean'.format(x.under) for x in backend_modules),
+        '{{{config_map_entries}}}': '\n    '.join(api_config_map_entries),
+        '{{{api_cache_entries}}}': '\n    '.join(api_cache_entries),
+    })
+
     # Check translation completeness
     print('Checking translation completeness')
 
     with ChangedDirectory('web'):
-        subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "check_translation_completeness.py"])
+        subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "check_translation_completeness.py"] + [x.under for x in frontend_modules])
 
     # Generate web interface
     print('Checking web interface dependencies')
@@ -437,6 +473,14 @@ def main():
 
             with open(path, 'rb') as f:
                 h.update(f.read())
+
+    for root, dirs, files in sorted(os.walk('modules/frontend')):
+        for name in files:
+            path = os.path.join(root, name)
+
+            with open(path, 'rb') as f:
+                h.update(f.read())
+
 
     new_html_digest = h.hexdigest()
 

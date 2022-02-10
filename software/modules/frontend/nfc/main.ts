@@ -17,33 +17,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "jquery";
+import $ from "../../../web/src/ts/jq";
 
-import * as util from "../util";
+import * as util from "../../../web/src/ts/util";
+import * as API from "../../../web/src/ts/api";
 
-import feather = require("feather-icons");
+import feather from "../../../web/src/ts/feather";
 
 declare function __(s: string): string;
-
-interface NFCState {
-    detected_tags: boolean[],
-}
-
-function update_nfc_state(state: NFCState) {
-
-}
-
-interface AuthorizedTag {
-    tag_name: string,
-    tag_type: number,
-    tag_id: number[]
-}
-
-interface NFCConfig {
-    require_tag_to_start: boolean,
-    require_tag_to_stop: boolean,
-    authorized_tags: AuthorizedTag[]
-}
 
 let authorized_tag_count = -1;
 
@@ -58,7 +39,10 @@ function fromHexBytes(s: string) {
     return s.split(":").map((x) => parseInt(x, 16));
 }
 
-function update_nfc_config(cfg: NFCConfig, force: boolean) {
+type NFCConfig = API.getType['nfc/config'];
+type AuthorizedTag = NFCConfig['authorized_tags'][0];
+
+function update_nfc_config(cfg: NFCConfig = API.get('nfc/config'), force: boolean) {
     if (!force && !$('#nfc_save_button').prop('disabled'))
         return;
 
@@ -80,8 +64,10 @@ function update_nfc_config(cfg: NFCConfig, force: boolean) {
 
                         <div class="card-body">
                             <div class="form-group">
-                                <label for="nfc_authorized_tag_${i}_tag_name" class="form-label">${__("nfc.script.tag_name")}</label>
-                                <input type="text" class="form-control" id="nfc_authorized_tag_${i}_tag_name" class="form-label">
+                                <label for="nfc_authorized_tag_${i}_user_id" class="form-label">${__("nfc.script.user_id")}</label>
+                                <select id="nfc_authorized_tag_${i}_user_id" class="form-control custom-select nfc-user-select">
+
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label for="nfc_authorized_tag_${i}_tag_type" class="form-label">${__("nfc.script.tag_type")}</label>
@@ -133,7 +119,7 @@ function update_nfc_config(cfg: NFCConfig, force: boolean) {
 
     for (let i = 0; i < cfg.authorized_tags.length; i++) {
         const s = cfg.authorized_tags[i];
-        $(`#nfc_authorized_tag_${i}_tag_name`).val(s.tag_name);
+        $(`#nfc_authorized_tag_${i}_user_id`).val(s.user_id);
         $(`#nfc_authorized_tag_${i}_tag_type`).val(s.tag_type);
         $(`#nfc_authorized_tag_${i}_tag_id`).html(toHexBytes(s.tag_id));
     }
@@ -146,7 +132,7 @@ function collect_nfc_config(new_tag: AuthorizedTag = null, remove_tag: number = 
             continue;
         let c: AuthorizedTag = {
             tag_type: parseInt($(`#nfc_authorized_tag_${i}_tag_type`).val().toString()),
-            tag_name: $(`#nfc_authorized_tag_${i}_tag_name`).val().toString(),
+            user_id: parseInt($(`#nfc_authorized_tag_${i}_user_id`).val().toString()),
             tag_id: fromHexBytes($(`#nfc_authorized_tag_${i}_tag_id`).html().toString())
         }
         tags.push(c);
@@ -177,15 +163,13 @@ function save_nfc_config() {
     });
 }
 
-interface NFCSeenTag {
-    tag_type: number,
-    tag_id: number[]
-    last_seen: number
-}
 
 let unauth_tag_list_length = 0;
-function update_nfc_seen_tags(seen_tags: NFCSeenTag[]) {
+function update_nfc_seen_tags() {
+    let seen_tags = API.get('nfc/seen_tags');
     let current_nfc_config = collect_nfc_config(null, null);
+
+    type NFCSeenTag = API.getType['nfc/seen_tags'][0];
 
     let unauth_seen_tags: NFCSeenTag[] = [];
 
@@ -258,13 +242,19 @@ outer_loop:
     $('#nfc_config_tag_no_seen').prop("hidden", unauth_tag_list_length != 0);
 }
 
-function nfc_save_reboot() {
-    $('#nfc_reboot').modal('hide');
-    util.reboot();
+function update_users_config() {
+    let cfg = API.get('users/config');
+    let nfc_config = API.get('nfc/config');
+
+    let options = cfg.users.map((x) => `<option value=${x.id}>${x.id == 0 ? "nicht zugeordnet" : x.display_name}</option>`).join("");
+    $('.nfc-user-select').empty().append(options);
+    for (let i = 0; i < nfc_config.authorized_tags.length; i++) {
+        const s = nfc_config.authorized_tags[i];
+        $(`#nfc_authorized_tag_${i}_user_id`).val(s.user_id);
+    }
 }
 
 export function init() {
-    $("#nfc_reboot_button").on("click", nfc_save_reboot);
 
     $('#nfc_config_form').on('input', (event: Event) => $('#nfc_save_button').prop("disabled", false));
 
@@ -299,7 +289,7 @@ export function init() {
         $('#nfc_save_button').prop("disabled", false);
 
         let new_config = collect_nfc_config({
-            tag_name: $('#nfc_config_tag_new_name').val().toString(),
+            user_id: parseInt($('#nfc_config_tag_new_user_id').val().toString()),
             tag_id: fromHexBytes($('#nfc_config_tag_new_tag_id').val().toString()),
             tag_type: parseInt($('#nfc_config_tag_new_tag_type').val().toString())
         }, null);
@@ -313,18 +303,13 @@ export function init() {
     })
 }
 
-export function addEventListeners(source: EventSource) {
-    source.addEventListener('nfc/state', function (e: util.SSE) {
-        update_nfc_state(<NFCState>(JSON.parse(e.data)));
-    }, false);
+export function addEventListeners(source: API.ApiEventTarget) {
+    source.addEventListener('nfc/config', () => update_nfc_config(undefined, false));
 
-    source.addEventListener('nfc/config', function (e: util.SSE) {
-        update_nfc_config(<NFCConfig>(JSON.parse(e.data)), false);
-    }, false);
+    source.addEventListener('nfc/seen_tags', update_nfc_seen_tags);
 
-    source.addEventListener('nfc/seen_tags', function (e: util.SSE) {
-        update_nfc_seen_tags(<NFCSeenTag[]>(JSON.parse(e.data)));
-    }, false);
+    source.addEventListener('nfc/config', update_users_config);
+    source.addEventListener('users/config', update_users_config);
 }
 
 export function updateLockState(module_init: any) {

@@ -17,52 +17,24 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "jquery";
+import $ from "../../../web/src/ts/jq";
 
-import * as util from "../util";
+import * as util from "../../../web/src/ts/util";
+import * as API from "../../../web/src/ts/api";
 
 declare function __(s: string): string;
 
-import Chartist = require("chartist");
-import ctAxisTitle = require("chartist-plugin-axistitle");
+import Chartist from "../../../web/src/ts/chartist"
+import ctAxisTitle from "../../../web/src/ts/chartist-plugin-axistitle";
 
-interface MeterState {
-    state: number,
-    type: number
-}
-
-// Duplicated in evse/main.ts
-interface MeterValues {
-    power: number,
-    energy_rel: number,
-    energy_abs: number
-}
-
-interface MeterPhases {
-    phases_active: boolean[],
-    phases_connected: boolean[]
-}
-
-interface WARP2MeterErrorCounters {
-    local_timeout: number,
-    global_timeout: number,
-    illegal_function: number,
-    illegal_data_access: number,
-    illegal_data_value: number,
-    slave_device_failure: number,
-}
-
-interface WARP1MeterErrorCounters {
-    meter: number,
-    bricklet: number,
-    bricklet_reset: number,
-}
-
-function update_meter_state(state: MeterState) {
+function update_meter_state() {
+    let state = API.get('meter/state');
     show_module(state.state == 2);
 }
 
-function update_meter_values(values: MeterValues) {
+function update_meter_values() {
+    let values = API.get('meter/values');
+
     $('#status_meter_power').val(util.toLocaleFixed(values.power, 0) + " W");
     $('#meter_power').val(util.toLocaleFixed(values.power, 0) + " W");
 
@@ -71,7 +43,16 @@ function update_meter_values(values: MeterValues) {
     $('#meter_energy_abs').val(util.toLocaleFixed(values.energy_abs, 3) + " kWh");
 }
 
-function update_meter_phases(phases: MeterPhases) {
+function update_meter_phases() {
+    if (!phases_avail) {
+        phases_avail = true;
+        $('#meter_phases_active').prop('hidden', false);
+        $('#meter_phases_connected').prop('hidden', false);
+    }
+
+
+    let phases = API.get('meter/phases');
+
     for(let i = 0; i < 3; ++i) {
         util.update_button_group(`btn_group_meter_phase_active_${i}`, phases.phases_active[i] ? 0 : 1);
         util.update_button_group(`btn_group_meter_phase_connected_${i}`, phases.phases_connected[i] ? 0 : 1);
@@ -438,7 +419,15 @@ function build_evse_v2_detailed_values_view() {
     }
 }
 
-function update_evse_v2_all_values(v: number[]) {
+function update_evse_v2_all_values() {
+    if (!all_values_avail) {
+        all_values_avail = true;
+        build_evse_v2_detailed_values_view();
+        $('#meter_detailed_values_container').prop('hidden', false);
+    }
+
+    let v = API.get('meter/all_values');
+
     let entry_idx = 0;
     let subentry_idx = 0;
     for(let i = 0; i < v.length; ++i) {
@@ -511,32 +500,14 @@ function show_module(module_available: boolean) {
 let all_values_avail = false;
 let phases_avail = false;
 
-export function addEventListeners(source: EventSource) {
-    source.addEventListener('meter/state', function (e: util.SSE) {
-        update_meter_state(<MeterState>(JSON.parse(e.data)));
-    }, false);
+export function addEventListeners(source: API.ApiEventTarget) {
+    source.addEventListener('meter/state', update_meter_state);
 
-    source.addEventListener('meter/values', function (e: util.SSE) {
-        update_meter_values(<MeterValues>(JSON.parse(e.data)));
-    }, false);
+    source.addEventListener('meter/values', update_meter_values);
 
-    source.addEventListener('meter/phases', function (e: util.SSE) {
-        if (!phases_avail) {
-            phases_avail = true;
-            $('#meter_phases_active').prop('hidden', false);
-            $('#meter_phases_connected').prop('hidden', false);
-        }
-        update_meter_phases(<MeterPhases>(JSON.parse(e.data)));
-    }, false);
+    source.addEventListener('meter/phases', update_meter_phases);
 
-    source.addEventListener('meter/all_values', function (e: util.SSE) {
-        if (!all_values_avail) {
-            all_values_avail = true;
-            build_evse_v2_detailed_values_view();
-            $('#meter_detailed_values_container').prop('hidden', false);
-        }
-        update_evse_v2_all_values(<number[]>(JSON.parse(e.data)));
-    }, false);
+    source.addEventListener('meter/all_values', update_evse_v2_all_values);
 
     source.addEventListener("evse/max_charging_current", function (e: util.SSE) {
         let parsed = JSON.parse(e.data);

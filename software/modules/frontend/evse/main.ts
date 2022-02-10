@@ -17,26 +17,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "jquery";
+import $ from "../../../web/src/ts/jq";
 
-import * as util from "../util";
+import * as util from "../../../web/src/ts/util";
 
-import feather = require("feather-icons");
+import feather from "../../../web/src/ts/feather";
 
 declare function __(s: string): string;
-
-interface EVSEState {
-    iec61851_state: number,
-    vehicle_state: number,
-    contactor_state: number,
-    contactor_error: number,
-    charge_release: number,
-    allowed_charging_current: number,
-    error_state: number,
-    lock_state: number,
-    time_since_state_change: number
-    uptime: number
-}
 
 function update_evse_state(state: EVSEState) {
     util.update_button_group("btn_group_iec_state", state.iec61851_state);
@@ -69,28 +56,12 @@ function update_evse_state(state: EVSEState) {
     }
 }
 
-interface EVSEHardwareConfiguration {
-    jumper_configuration: number,
-    has_lock_switch: boolean,
-}
-
 function update_evse_hardware_configuration(cfg: EVSEHardwareConfiguration) {
     util.update_button_group("btn_group_has_lock_switch", cfg.has_lock_switch ? 1 : 0);
     util.update_button_group("btn_group_jumper_config", cfg.jumper_configuration);
     $('#evse_row_lock_switch').prop('hidden', !cfg.has_lock_switch);
 }
 
-interface EVSELowLevelState {
-    low_level_mode_enabled: boolean,
-    led_state: number,
-    cp_pwm_duty_cycle: number,
-    adc_values: Uint16Array,
-    voltages: Int16Array,
-    resistances: Uint32Array,
-    gpio: boolean[],
-    hardware_version: number,
-    charging_time: number
-}
 
 function update_evse_low_level_state(state: EVSELowLevelState) {
     util.update_button_group("btn_group_hardware_version", state.hardware_version - 14);
@@ -114,12 +85,6 @@ function update_evse_low_level_state(state: EVSELowLevelState) {
     $('#charging_time').val(util.format_timespan(Math.floor(state.charging_time / 1000)));
 }
 
-interface EVSEMaxChargingCurrent {
-    max_current_configured: number,
-    max_current_incoming_cable: number,
-    max_current_outgoing_cable: number,
-    max_current_managed: number
-}
 
 let last_max_charging_current: EVSEMaxChargingCurrent = null;
 let last_managed: EVSEManaged = null;
@@ -194,9 +159,6 @@ function set_charging_current(current: number) {
     });
 }
 
-interface EVSEAutoStart {
-    auto_start_charging: boolean
-}
 
 function update_evse_auto_start_charging(x: EVSEAutoStart) {
     $('#status_auto_start_charging').prop("checked", x.auto_start_charging);
@@ -232,14 +194,6 @@ function stop_charging() {
     });
 }
 
-interface EVSEUserCalibration {
-    user_calibration_active: boolean,
-    voltage_diff: number,
-    voltage_mul: number,
-    voltage_div: number,
-    resistance_2700: number,
-    resistance_880: number[],
-}
 
 function update_evse_user_calibration(c: EVSEUserCalibration) {
     util.update_button_group("btn_group_user_calibration_enabled", c.user_calibration_active ? 1 : 0);
@@ -250,9 +204,6 @@ function update_evse_user_calibration(c: EVSEUserCalibration) {
     $('#resistance_880').val(c.resistance_880.join(", "));
 }
 
-interface EVSEManaged {
-    managed: boolean;
-}
 
 function update_evse_managed(m: EVSEManaged) {
     $('#evse_charge_management').prop("checked", m.managed);
@@ -513,14 +464,7 @@ export function init() {
     });
 }
 
-//From sdm72dm/main.ts
-interface MeterState {
-    power: number,
-    energy_rel: number,
-    energy_abs: number,
-}
-
-export function addEventListeners(source: EventSource) {
+export function addEventListeners(source: API.ApiEventTarget) {
     source.addEventListener('evse/state', function (e: util.SSE) {
         update_evse_state(<EVSEState>(JSON.parse(e.data)));
     }, false);

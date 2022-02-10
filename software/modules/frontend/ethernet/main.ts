@@ -17,26 +17,18 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "jquery";
+import $ from "../../../web/src/ts/jq";
 
-import "bootstrap";
+import feather from "../../../web/src/ts/feather";
 
-import feather = require("feather-icons");
-
-import * as util from "../util";
+import * as util from "../../../web/src/ts/util";
+import * as API from "../../../web/src/ts/api";
 
 declare function __(s: string): string;
 
-interface EthernetConfig {
-    enable_ethernet: boolean,
-    ip: number[],
-    gateway: number[],
-    subnet: number[],
-    dns: number[],
-    dns2: number[],
-}
+function update_ethernet_config() {
+    let config = API.get('ethernet/config');
 
-function update_ethernet_config(config: EthernetConfig) {
     // Remove the was-validated class to fix a visual bug
     // where saving the config triggers an update
     // that fills the elements, but clears the passphrase field.
@@ -61,14 +53,9 @@ function update_ethernet_config(config: EthernetConfig) {
     $('#ethernet_dns2').val(config.dns2.join("."));
 }
 
-interface EthernetState {
-    connection_state: number,
-    ip: number[],
-    full_duplex: boolean,
-    link_speed: number,
-}
+function update_ethernet_state() {
+    let state = API.get('ethernet/state');
 
-function update_ethernet_state(state: EthernetState) {
     util.update_button_group("btn_group_ethernet_state", state.connection_state);
 
     if (state.ip.join(".") != "0.0.0.0") {
@@ -105,36 +92,25 @@ function parse_ip(ip_str: string) {
     return result;
 }
 
-function save_ethernet_config(continuation = function () { }) {
+function save_ethernet_config() {
     let dhcp = $('#ethernet_show_static').val() != "show";
 
-    let payload: EthernetConfig = {
-        enable_ethernet: $('#ethernet_enable').is(':checked'),
-        ip: dhcp ? [0, 0, 0, 0] : parse_ip($('#ethernet_ip').val().toString()),
-        subnet: dhcp ? [0, 0, 0, 0] : parse_ip($('#ethernet_subnet').val().toString()),
-        gateway: dhcp ? [0, 0, 0, 0] : parse_ip($('#ethernet_gateway').val().toString()),
-        dns: dhcp ? [0, 0, 0, 0] : parse_ip($('#ethernet_dns').val().toString()),
-        dns2: dhcp ? [0, 0, 0, 0] : parse_ip($('#ethernet_dns2').val().toString())
-    };
-
-    $.ajax({
-        url: '/ethernet/config_update',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify(payload),
-        success: continuation,
-        error: (xhr, status, error) => util.add_alert("ethernet_config_failed", "alert-danger", __("ethernet.script.config_failed"), error + ": " + xhr.responseText)
-    });
+    API.save('ethernet/config',{
+            enable_ethernet: $('#ethernet_enable').is(':checked'),
+            ip: dhcp ? [0, 0, 0, 0] : parse_ip($('#ethernet_ip').val().toString()),
+            subnet: dhcp ? [0, 0, 0, 0] : parse_ip($('#ethernet_subnet').val().toString()),
+            gateway: dhcp ? [0, 0, 0, 0] : parse_ip($('#ethernet_gateway').val().toString()),
+            dns: dhcp ? [0, 0, 0, 0] : parse_ip($('#ethernet_dns').val().toString()),
+            dns2: dhcp ? [0, 0, 0, 0] : parse_ip($('#ethernet_dns2').val().toString())
+        },
+        __("ethernet.script.config_failed"),
+        __("ethernet.script.reboot_content_changed"));
 }
 
-export function addEventListeners(source: EventSource) {
-    source.addEventListener('ethernet/state', function (e: util.SSE) {
-        update_ethernet_state(<EthernetState>(JSON.parse(e.data)));
-    }, false);
+export function addEventListeners(source: API.ApiEventTarget) {
+    source.addEventListener('ethernet/state', update_ethernet_state);
 
-    source.addEventListener('ethernet/config', function (e: util.SSE) {
-        update_ethernet_config(<EthernetConfig>(JSON.parse(e.data)));
-    }, false);
+    source.addEventListener('ethernet/config', update_ethernet_config);
 }
 
 export function init() {
@@ -150,7 +126,7 @@ export function init() {
         if (this.checkValidity() === false) {
             return;
         }
-        save_ethernet_config(util.getShowRebootModalFn(__("ethernet.script.reboot_content_changed")));
+        save_ethernet_config();
     });
 }
 

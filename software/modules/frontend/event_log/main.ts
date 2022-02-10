@@ -17,9 +17,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "jquery";
+import $ from "../../../web/src/ts/jq";
 
-import * as util from "../util";
+import * as util from "../../../web/src/ts/util";
+import * as API from "../../../web/src/ts/api";
 
 declare function __(s: string): string;
 
@@ -81,7 +82,7 @@ export function init() {
     });
 }
 
-export function addEventListeners(source: EventSource) {}
+export function addEventListeners(source: API.ApiEventTarget) {}
 
 export function updateLockState(module_init: any) {
     $('#sidebar-event-log').prop('hidden', !module_init.event_log);

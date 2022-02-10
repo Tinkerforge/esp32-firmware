@@ -19,7 +19,7 @@
 
             "add_tag_modal_title": "Berechtigtes Tag hinzufügen",
             "add_tag_modal_seen_tags": "Zuletzt erkannte Tags",
-            "add_tag_modal_name": "Tag-Name",
+            "add_tag_modal_user_id": "Zugeordneter Benutzer",
             "add_tag_modal_tag_id": "Tag-ID",
             "add_tag_modal_tag_type": "Tag-Typ",
             "add_tag_modal_abort": "Verwerfen",
@@ -37,7 +37,7 @@
         "script": {
             "add_tag": "Tag hinzufügen",
             "add_tag_disabled": "Es werden nur bis zu 8 Tags unterstützt.",
-            "tag_name": "Tag-Name",
+            "user_id": "Zugeordneter Benutzer",
             "tag_type": "Tag-Typ",
             "last_seen_unknown": "placeholder",
             "save_failed": "Aktualisieren der NFC-Einstellungen fehlgeschlagen",
