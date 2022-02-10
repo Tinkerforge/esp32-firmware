@@ -159,7 +159,7 @@ struct to_json {
         }
 
         for (const String &key : keys_to_censor)
-            if (obj.containsKey(key))
+            if (obj.containsKey(key) && !(obj[key].is<String>() && obj[key].as<String>().length() == 0))
                 obj[key] = nullptr;
     }
 
