@@ -215,6 +215,9 @@ function generate_user_ui(user: User, password: string) {
     });
 }
 
+// The first run of this function must always create the GUI,
+// it will be empty after a web interface reboot otherwise.
+let gui_created = false;
 function update_users_config(force: boolean) {
     let cfg = API.get('users/config');
 
@@ -223,8 +226,11 @@ function update_users_config(force: boolean) {
     $('#users_next_user_id').val(cfg.next_user_id);
     $('#users_authentication_enable').prop("checked", cfg.http_auth_enabled);
 
-    if (!force && !$('#users_save_button').prop('disabled'))
+    if (!force && !$('#users_save_button').prop('disabled') && gui_created)
         return;
+
+    $('#users_save_button').prop('disabled', true);
+    gui_created = true;
 
     if (cfg.users.length != authorized_users_count) {
         let authorized_users = "";
