@@ -241,8 +241,7 @@ export function postReboot(alert_title: string, alert_text: string) {
     // Wait 3 seconds before starting the reload/reconnect logic, to make sure the reboot has actually started yet.
     // Else it sometimes happens, that we reconnect _before_ the reboot starts.
     window.setTimeout(() => whenLoggedInElseReload(() =>
-        setupEventSource(true, true, (ws, eventSource) =>
-                window.setTimeout(() => {
+        setupEventSource(true, true, (ws, eventSource) => {
                 // It is a bit of a hack to use version here, but
                 // as opposed to keep-alive, version was already there in the first version.
                 // so this will even work if downgrading to an version older than
@@ -251,7 +250,7 @@ export function postReboot(alert_title: string, alert_text: string) {
                 eventSource.addEventListener('version', function (e) {
                     console.log("reloading");
                     window.location.reload();
-                }, false);}, 5000))
+                }, false);})
     ), 3000);
 }
 
