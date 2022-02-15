@@ -277,7 +277,7 @@ def main(stage3):
     result["qr_code"] = match.group(0)
 
     if qr_accessories == '0':
-        qr_supply_cable = 0
+        qr_supply_cable = 0.0
         qr_cee = False
     else:
         # E:2.5;C:1;;;
@@ -289,8 +289,8 @@ def main(stage3):
             qr_code = my_input("Scan the accessories QR code", red)
             match = re.match(pattern, qr_code)
 
-        qr_supply_cable = match.group(1)
-        qr_cee = match.group(2)
+        qr_supply_cable = float(match.group(1))
+        qr_cee = bool(int(match.group(2)))
 
         print("Accessories QR code data:")
         print("    {} m".format(qr_supply_cable))
