@@ -302,9 +302,10 @@ def main():
     exported_type_pattern = re.compile("export type ([A-Za-z0-9$_]+)")
     api_path_pattern = re.compile("//APIPath:([^\n]*)\n")
 
-    recreate_dir(os.path.join('web', 'src', 'ts', 'modules'))
-    recreate_dir(os.path.join('web', 'src', 'img', 'modules'))
     recreate_dir(os.path.join('web', 'src', 'scss', 'modules'))
+
+    favicon_path = None
+    logo_module = None
 
     for frontend_module in frontend_modules:
         mod_path = os.path.join("modules", "frontend", frontend_module.under)
@@ -313,14 +314,21 @@ def main():
             print("Frontend module {} not found.".format(frontend_module.space, mod_path))
             sys.exit(1)
 
-        if os.path.exists(os.path.join(mod_path, 'img')):
-            for img_name in os.listdir(os.path.join(mod_path, 'img')):
-                img_source_path = os.path.join(mod_path, 'img', img_name)
-                img_target_path = os.path.join('web', 'src', 'img', 'modules', img_name)
+        if os.path.exists(os.path.join(mod_path, 'logo.png')):
+            if logo_module != None:
+                print('Logo module collision ' + frontend_module.under + ' vs ' + logo_module)
+                sys.exit(1)
 
-                assert not os.path.exists(img_target_path), 'img collision ' + img_source_path + ' -> ' + img_target_path
+            logo_module = frontend_module.under
 
-                shutil.copy(img_source_path, img_target_path)
+        potential_favicon_path = os.path.join(mod_path, 'favicon.png')
+
+        if os.path.exists(potential_favicon_path):
+            if favicon_path != None:
+                print('Favicon path collision ' + potential_favicon_path + ' vs ' + favicon_path)
+                sys.exit(1)
+
+            favicon_path = potential_favicon_path
 
         if os.path.exists(os.path.join(mod_path, 'navbar.html')):
             with open(os.path.join(mod_path, 'navbar.html'), encoding='utf-8') as f:
@@ -372,7 +380,9 @@ def main():
     for path in glob.glob(os.path.join('web', 'src', 'ts', 'translation_*.ts')):
         os.remove(path)
 
-    assert len(translation) > 0
+    if len(translation) == 0:
+        print('Translation missing')
+        sys.exit(1)
 
     for language in sorted(translation):
         with open(os.path.join('web', 'src', 'ts', 'translation_{0}.ts'.format(language)), 'w', encoding='utf-8') as f:
@@ -385,11 +395,20 @@ def main():
             f.write('export const translation_{0}: {{[index: string]:any}} = '.format(language))
             f.write(data + ';\n')
 
-    with open(os.path.join('web', 'src', 'img', 'modules', 'favicon.png'), 'rb') as f:
+    if favicon_path == None:
+        print('Favison missing')
+        sys.exit(1)
+
+    if logo_module == None:
+        print('Logo missing')
+        sys.exit(1)
+
+    with open(favicon_path, 'rb') as f:
         favicon = b64encode(f.read()).decode('ascii')
 
     specialize_template(os.path.join("web", "index.html.template"), os.path.join("web", "src", "index.html"), {
         '{{{favicon}}}': favicon,
+        '{{{logo_module}}}': logo_module,
         '{{{navbar}}}': '\n                        '.join(navbar_entries),
         '{{{content}}}': '\n                    '.join(content_entries),
         '{{{status}}}': '\n                            '.join(status_entries)
