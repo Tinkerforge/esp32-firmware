@@ -498,14 +498,6 @@ def main():
             with open(path, 'rb') as f:
                 h.update(f.read())
 
-    for root, dirs, files in sorted(os.walk('modules/frontend')):
-        for name in files:
-            path = os.path.join(root, name)
-
-            with open(path, 'rb') as f:
-                h.update(f.read())
-
-
     new_html_digest = h.hexdigest()
 
     try:
