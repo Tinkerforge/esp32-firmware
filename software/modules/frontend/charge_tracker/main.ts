@@ -65,6 +65,7 @@ function update_last_charges() {
             let display_name = __("charge_tracker.script.unknown_user")
 
             if (user.user_id != 0) {
+                display_name = __("charge_tracker.script.deleted_user")
                 let filtered = users_config.users.filter(x => x.id == user.user_id);
                 if (filtered.length == 1)
                     display_name = filtered[0].display_name

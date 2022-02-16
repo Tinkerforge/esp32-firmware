@@ -22,6 +22,7 @@
             "csv_header_meter_start": "Zählerstand Start",
             "csv_header_meter_end": "Zählerstand Ende",
             "unknown_user": "Unbekannter Nutzer",
+            "deleted_user": "Gelöschter Nutzer",
             "unknown_charge_start": "Unbekannter Startzeitpunkt",
             "no_running_charge": "keine"
         }
