@@ -603,3 +603,8 @@ int compare_version(uint8_t left_major, uint8_t left_minor, uint8_t left_patch,
 
     return 0;
 }
+
+bool clock_synced(struct timeval *out_tv_now) {
+    gettimeofday(out_tv_now, nullptr);
+    return out_tv_now->tv_sec > ((2016 - 1970) * 365 * 24  * 60 * 60);
+}

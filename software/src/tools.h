@@ -21,6 +21,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <time.h>
 
 #include "config.h"
 
@@ -40,3 +41,5 @@ int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose,
 
 int compare_version(uint8_t left_major, uint8_t left_minor, uint8_t left_patch,
                     uint8_t right_major, uint8_t right_minor, uint8_t right_patch);
+
+bool clock_synced(struct timeval *out_tv_now);
