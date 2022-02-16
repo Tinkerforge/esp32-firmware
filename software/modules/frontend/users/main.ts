@@ -335,35 +335,6 @@ function update_users_config(force: boolean) {
     }
 }
 
-function update_charge_info() {
-    let ci = API.get('users/charge_info');
-    let evse_ll = API.get('evse/low_level_state');
-    let mv = API.get('meter/values');
-    let uc = API.get('users/config');
-
-    if (ci.id == -1) {
-        $('#users_status_charging_user').val("");
-        $('#users_status_charging_time').val("");
-        $('#users_status_charged_energy').val("");
-        $('#users_status_energy_rate').val("");
-        return;
-    }
-
-    let user_display_name = uc.users.filter((x) => x.id == ci.id)[0].display_name;
-    let energy_charged = mv.energy_abs - ci.meter_start;
-    let time_charging = evse_ll.uptime - ci.evse_uptime_start
-    if (evse_ll.uptime < ci.evse_uptime_start)
-        time_charging += 0xFFFFFFFF;
-
-    time_charging = Math.floor(time_charging / 1000);
-    let mean_power = energy_charged / time_charging * 3600;
-
-    $('#users_status_charging_user').val(ci.id == 0 ? "unbekannter Nutzer" : user_display_name);
-    $('#users_status_charging_time').val(util.format_timespan(time_charging));
-    $('#users_status_charged_energy').val(util.toLocaleFixed(energy_charged, 3) + " kWh");
-    $('#users_status_energy_rate').val(util.toLocaleFixed(mean_power, 3) + " kW");
-}
-
 export function init() {
     $('#users_config_form').on('input', () => $('#users_save_button').prop("disabled", false));
 
@@ -423,11 +394,6 @@ export function init() {
 
 export function addEventListeners(source: API.ApiEventTarget) {
     source.addEventListener('users/config', () => update_users_config(false));
-
-    source.addEventListener('users/charge_info', update_charge_info);
-    source.addEventListener('evse/low_level_state', update_charge_info);
-    source.addEventListener('meter/values', update_charge_info);
-    source.addEventListener('users/config', update_charge_info);
 }
 
 export function updateLockState(module_init: any) {

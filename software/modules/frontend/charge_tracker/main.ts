@@ -23,7 +23,39 @@ import * as util from "../../../web/src/ts/util";
 
 import * as API from "../../../web/src/ts/api";
 
+import feather from "../../../web/src/ts/feather";
+
 declare function __(s: string): string;
+
+// Creates a date and time string that will be understood by Excel, Libreoffice, etc.
+// (At least for de and en locales)
+function timestamp_min_to_date(timestamp_minutes: number) {
+    if (timestamp_minutes == 0) {
+        return __('charge_tracker.script.unknown_charge_start');
+    }
+    let date_fmt: any = { year: 'numeric', month: '2-digit', day: '2-digit'};
+    let time_fmt: any = {hour: '2-digit', minute:'2-digit' };
+    let fmt = Object.assign({}, date_fmt, time_fmt);
+
+    let date = new Date(timestamp_minutes * 60000);
+    let result = date.toLocaleString([], fmt);
+
+    let date_result = date.toLocaleDateString([], date_fmt);
+    let time_result = date.toLocaleTimeString([], time_fmt);
+
+    // By default there is a comma between the date and time part of the string.
+    // This comma (even if the whole date is marked as string for CSV) prevents office programs
+    // to understand that this is a date.
+    // Remove this (and only this) comma without assuming anything about the localized string.
+    if (result == date_result + ", " + time_result) {
+        return date_result + " " + time_result;
+    }
+    if (result == time_result + ", " + date_result) {
+        return time_result + " " + date_result;
+    }
+
+    return result;
+}
 
 function update_last_charges() {
     let charges = API.get('charge_tracker/last_charges');
@@ -38,8 +70,22 @@ function update_last_charges() {
                     display_name = filtered[0].display_name
             }
 
-            return `<li class="list-group-item">${user.timestamp_minutes + ": " + user.energy_charged + " kWh geladen von " + display_name + " in " + util.format_timespan(user.charge_duration)}</li>`
+            return `<div class="list-group-item">
+            <div class="row">
+                <div class="col">
+                    <div class="mb-2"><span class="mr-1" data-feather="user"></span><span>${display_name}</span></div>
+                    <div><span class="mr-1" data-feather="calendar"></span><span>${timestamp_min_to_date(user.timestamp_minutes)}</span></div>
+                </div>
+                <div class="col-auto">
+                    <div class="mb-2"><span class="mr-1" data-feather="battery-charging"></span>${util.toLocaleFixed(user.energy_charged, 3)} kWh</div>
+                    <div><span class="mr-1" data-feather="clock"></span>${util.format_timespan(user.charge_duration)}</div>
+                </div>
+            </div>
+            </div>`
         }).join(""));
+    feather.replace();
+}
+
 }
 
 async function downloadChargeRecords() {
@@ -93,12 +139,45 @@ async function downloadChargeRecords() {
         .catch(err => console.log(err));
 }
 
+function update_charge_info() {
+    let ci = API.get('users/charge_info');
+    let evse_ll = API.get('evse/low_level_state');
+    let mv = API.get('meter/values');
+    let uc = API.get('users/config');
+
+    $('#charge_tracker_current_charge').prop("hidden", ci.id == -1);
+
+    if (ci.id == -1) {
+        return;
+    }
+
+    let user_display_name = uc.users.filter((x) => x.id == ci.id)[0].display_name;
+    let energy_charged = mv.energy_abs - ci.meter_start;
+    let time_charging = evse_ll.uptime - ci.evse_uptime_start
+    if (evse_ll.uptime < ci.evse_uptime_start)
+        time_charging += 0xFFFFFFFF;
+
+    time_charging = Math.floor(time_charging / 1000);
+    let mean_power = energy_charged / time_charging * 3600;
+
+    $('#users_status_charging_user').html(ci.id == 0 ? "unbekannter Nutzer" : user_display_name);
+    $('#users_status_charging_time').html(util.format_timespan(time_charging));
+    $('#users_status_charged_energy').html(util.toLocaleFixed(energy_charged, 3) + " kWh");
+    $('#users_status_energy_rate').html(util.toLocaleFixed(mean_power, 3) + " kW");
+    $('#users_status_charging_start').html(timestamp_min_to_date(ci.timestamp_minutes));
+}
+
 export function init() {
     $('#charge_tracker_download').on("click", downloadChargeRecords);
 }
 
 export function addEventListeners(source: API.ApiEventTarget) {
     source.addEventListener('charge_tracker/last_charges', update_last_charges);
+
+    source.addEventListener('users/charge_info', update_charge_info);
+    source.addEventListener('evse/low_level_state', update_charge_info);
+    source.addEventListener('meter/values', update_charge_info);
+    source.addEventListener('users/config', update_charge_info);
 }
 
 export function updateLockState(module_init: any) {

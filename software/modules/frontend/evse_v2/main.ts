@@ -55,14 +55,6 @@ function update_evse_state() {
     util.update_button_group("btn_group_dc_fault_current_state", state.dc_fault_current_state);
 
     $('#evse_reset_dc_fault_current').prop('disabled', state.dc_fault_current_state == 0);
-
-    if (state.iec61851_state == 2) {
-        $("#evse_state_charging_text").html(__("evse.script.charging_for") + " ");
-    } else if ($('#evse_state_charging_charge_time').html() != "") {
-        $("#evse_state_charging_text").html(__("evse.script.last_charge_took") + " ");
-    } else {
-        $("#evse_state_charging_text").html(__("evse.status.charging"));
-    }
 }
 
 
@@ -106,9 +98,6 @@ function update_evse_low_level_state() {
     $('#charging_time').val(util.format_timespan(Math.floor(state.charging_time / 1000)));
     $('#uptime').val(util.format_timespan(Math.floor(state.uptime / 1000)));
     $('#time_since_state_change').val(util.format_timespan(Math.floor(state.time_since_state_change / 1000)));
-
-    if (last_iec_state == 2)
-        $('#evse_state_charging_charge_time').html(util.format_timespan(Math.floor(state.time_since_state_change / 1000)));
 }
 
 let status_charging_current_dirty = false;

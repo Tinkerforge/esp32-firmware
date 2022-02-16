@@ -1,17 +1,29 @@
 {
     "charge_tracker": {
         "status": {
-            "charge_tracker": "Ladetracker"
+            "charge_tracker": "Ladetracker",
+            "last_charges": "Letzte Ladevorgänge",
+            "running_charge": "Laufende Ladung"
         },
         "navbar": {
             "charge_tracker": "Ladetracker"
         },
         "content": {
-            "charge_tracker": "Ladetracker"
+            "charge_tracker": "Ladetracker",
+            "charge_tracker_download": "Ladelog herunterladen",
+            "charge_tracker_download_desc": "enthält alle aufgezeichneten Ladevorgänge als CSV-Datei",
+            "charge_tracker_download_btn": "Ladelog herunterladen"
         },
         "script": {
-            "csv_header": "Startzeit, Benutzer, geladene Energie in kWh, Ladedauer in s, , Zählerstand Start, Zählerstand Ende",
-            "unknown_user": "Unbekannter Nutzer"
+            "csv_header_start": "Startzeit",
+            "csv_header_user": "Benutzer",
+            "csv_header_energy": "geladene Energie in kWh",
+            "csv_header_duration": "Ladedauer in s",
+            "csv_header_meter_start": "Zählerstand Start",
+            "csv_header_meter_end": "Zählerstand Ende",
+            "unknown_user": "Unbekannter Nutzer",
+            "unknown_charge_start": "Unbekannter Startzeitpunkt",
+            "no_running_charge": "keine"
         }
     }
 }
