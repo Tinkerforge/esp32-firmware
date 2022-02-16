@@ -33,12 +33,11 @@ void EventLog::get_timestamp(char buf[TIMESTAMP_LEN + 1]) {
     struct timeval tv_now;
     struct tm timeinfo;
 
-    gettimeofday(&tv_now, NULL);
-    localtime_r(&tv_now.tv_sec, &timeinfo);
-    if (timeinfo.tm_year > (2016 - 1900)) {
-        // We are synced
+    if (clock_synced(&tv_now)) {
+        localtime_r(&tv_now.tv_sec, &timeinfo);
+
         written = strftime(buf, TIMESTAMP_LEN + 1, "%F %T", &timeinfo);
-        written += snprintf(buf + written, TIMESTAMP_LEN + 1 - written, ",%03d", tv_now.tv_usec / 1000);
+        written += snprintf(buf + written, TIMESTAMP_LEN + 1 - written, ",%03ld", tv_now.tv_usec / 1000);
     } else {
         written = snprintf(buf, TIMESTAMP_LEN + 1, "%lu", millis());
     }
