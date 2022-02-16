@@ -1,6 +1,11 @@
 {
     "main": {
         "title": "{{{display_name}}} Webinterface",
+        "navbar_login": "Anmeldung",
+        "content_login": "Anmeldung",
+        "login_username": "Benutzername",
+        "login_password": "Passwort",
+        "login_button": "Anmelden",
         "navbar_status": "Status",
         "content_status": "Status",
         "reboot_title": "Neu starten um Konfiguration anzuwenden",

@@ -1,6 +1,11 @@
 {
     "main": {
         "title": "{{{display_name}}} Web Interface",
+        "navbar_login": "Sign In",
+        "content_login": "Sign In",
+        "login_username": "Username",
+        "login_password": "Password",
+        "login_button": "Sign In",
         "navbar_status": "Status",
         "content_status": "Status",
         "reboot_title": "Reboot to apply configuration",

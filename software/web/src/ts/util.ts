@@ -237,7 +237,7 @@ export function resumeWebSockets() {
 export function postReboot(alert_title: string, alert_text: string) {
     ws.close();
     clearTimeout(wsReconnectTimeout);
-    add_alert("reboot", "alert-success",alert_title, alert_text);
+    add_alert("reboot", "alert-success", alert_title, alert_text);
     // Wait 3 seconds before starting the reload/reconnect logic, to make sure the reboot has actually started yet.
     // Else it sometimes happens, that we reconnect _before_ the reboot starts.
     window.setTimeout(() => whenLoggedInElseReload(() =>
@@ -256,17 +256,23 @@ export function postReboot(alert_title: string, alert_text: string) {
 
 let loginReconnectTimeout: number = null;
 
-export function ifLoggedInElseReload(continuation: () => void) {
-    $.ajax({url: "/login_state", timeout:3000}).done(function(data, statusText, xhr){
+export function ifLoggedInElse(if_continuation: () => void, else_continuation: () => void) {
+    $.ajax({url: "/login_state", timeout:3000}).done(function(data, statusText, xhr) {
         if (data == "Logged in") {
-            continuation();
+            if_continuation();
         } else {
-            window.location.href = window.location.href
+            else_continuation();
         }
     }).fail(function(xhr, statusText, errorThrown) {
         if (xhr.status == 404) {
-            continuation();
+            if_continuation();
         }
+    });
+}
+
+export function ifLoggedInElseReload(continuation: () => void) {
+    ifLoggedInElse(continuation, function() {
+        window.location.reload();
     });
 }
 

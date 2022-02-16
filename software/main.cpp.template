@@ -61,18 +61,29 @@ ConfigRoot reboot;
 
 bool firmware_update_allowed = true;
 
-void register_default_urls() {
-    server.on("/", HTTP_GET, [](WebServerRequest req) {
-        req.addResponseHeader("Content-Encoding", "gzip");
-        req.addResponseHeader("ETag", BUILD_TIMESTAMP_HEX_STR);
-        req.addResponseHeader("X-Clacks-Overhead", "GNU Terry Pratchett");
+static bool is_safari(const String &user_agent) {
+    return user_agent.indexOf("Safari/") >= 0 &&
+           user_agent.indexOf("Version/") >= 0 &&
+           user_agent.indexOf("Chrome/") == -1 &&
+           user_agent.indexOf("Chromium/") == -1;
+}
 
-        if (req.header("If-None-Match") == BUILD_TIMESTAMP_HEX_STR) {
-            req.send(304);
-            return;
-        }
+static void send_index_html(WebServerRequest &request) {
+    request.addResponseHeader("Content-Encoding", "gzip");
+    request.addResponseHeader("ETag", BUILD_TIMESTAMP_HEX_STR);
+    request.addResponseHeader("X-Clacks-Overhead", "GNU Terry Pratchett");
 
-        req.send(200, "text/html", index_html_gz, index_html_gz_len);
+    if (request.header("If-None-Match") == BUILD_TIMESTAMP_HEX_STR) {
+        request.send(304);
+        return;
+    }
+
+    request.send(200, "text/html", index_html_gz, index_html_gz_len);
+}
+
+static void register_default_urls(void) {
+    server.on("/", HTTP_GET, [](WebServerRequest request) {
+        send_index_html(request);
     });
 
     reboot = ConfigRoot{Config::Null()};
@@ -95,7 +106,35 @@ void register_default_urls() {
         request.send(200, "text/html", String(millis()).c_str());
     });
 
-    //This is a hack to allow running without the authentication module. Remove after 1.3 beta
+    server.onNotAuthorized([](WebServerRequest request) {
+        if (request.uri() == "/") {
+            // Safari does not support an unauthenticated login page and an authenticated main page on the same url,
+            // as it does not proactively send the credentials if the same url is known to have an unauthenticated
+            // version.
+            if (is_safari(request.header("User-Agent"))) {
+                request.requestAuthentication();
+                return;
+            }
+
+            send_index_html(request);
+        } else if (request.uri() == "/login_state") {
+            // Same reasoning as above. If we don't force Safari, it does not send credentials, which breaks the login_state check.
+            if (is_safari(request.header("User-Agent"))) {
+                request.requestAuthentication();
+                return;
+            }
+
+            request.send(200, "text/plain", "Not logged in");
+        } else {
+            request.requestAuthentication();
+            return;
+        }
+    });
+
+    server.on("/credential_check", HTTP_GET, [](WebServerRequest request) {
+        request.send(200, "text/plain", "Credentials okay");
+    });
+
     server.on("/login_state", HTTP_GET, [](WebServerRequest request) {
         request.send(200, "text/plain", "Logged in");
     });
