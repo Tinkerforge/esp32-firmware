@@ -155,7 +155,7 @@ function save_nfc_config() {
         data: JSON.stringify(payload),
         success: () => {
             $('#nfc_save_button').prop("disabled", true);
-            $('#nfc_reboot').modal('show');
+            util.getShowRebootModalFn(__("nfc.script.reboot_content_changed"))();
         },
         error: (xhr, status, error) => util.add_alert("nfc_config_update_failed", "alert-danger", __("nfc.script.save_failed"), error + ": " + xhr.responseText)
     });
