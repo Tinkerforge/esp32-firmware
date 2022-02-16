@@ -38,7 +38,6 @@ public:
     void register_urls();
     void loop();
 
-private:
     struct tag_info_t {
         uint8_t tag_type;
         uint8_t tag_id_len;

@@ -382,6 +382,14 @@ void Users::register_urls()
 
         user_config.get("users")->remove(idx);
         API::writeConfig("users/config", &user_config);
+
+        Config *tags = nfc.config.get("authorized_tags");
+
+        for(int i = 0; i < tags->count(); ++i) {
+            if(tags->get(i)->get("user_id")->asUint() == del.get("id")->asUint())
+                tags->get(i)->get("user_id")->updateUint(0);
+        }
+        API::writeConfig("nfc/config", &nfc.config);
     }, true);
 
     api.addState("users/charge_info", &charge_info, {}, 1000);
