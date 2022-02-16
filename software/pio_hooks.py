@@ -427,8 +427,8 @@ def main():
     })
 
     specialize_template(os.path.join("web", "main.scss.template"), os.path.join("web", "src", "main.scss"), {
-        '{{{module_pre_imports}}}': '\n'.join(['@import "./{0}";'.format(x) for x in pre_scss_paths]),
-        '{{{module_post_imports}}}': '\n'.join(['@import "./{0}";'.format(x) for x in post_scss_paths])
+        '{{{module_pre_imports}}}': '\n'.join(['@import "{0}";'.format(x.replace('\\', '/')) for x in pre_scss_paths]),
+        '{{{module_post_imports}}}': '\n'.join(['@import "{0}";'.format(x.replace('\\', '/')) for x in post_scss_paths])
     })
 
     specialize_template(os.path.join("web", "api_defs.ts.template"), os.path.join("web", "src", "ts", "api_defs.ts"), {
