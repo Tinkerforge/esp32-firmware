@@ -301,8 +301,8 @@ def main():
     content_entries = []
     status_entries = []
     main_ts_entries = []
-    pre_scss_entries = []
-    post_scss_entries = []
+    pre_scss_paths = []
+    post_scss_paths = []
     frontend_modules = [FlavoredName(x).get() for x in env.GetProjectOption("frontend_modules").splitlines()]
     translation = collect_translation('web')
 
@@ -314,8 +314,6 @@ def main():
     exported_interface_pattern = re.compile("export interface ([A-Za-z0-9$_]+)")
     exported_type_pattern = re.compile("export type ([A-Za-z0-9$_]+)")
     api_path_pattern = re.compile("//APIPath:([^\n]*)\n")
-
-    recreate_dir(os.path.join('web', 'src', 'scss', 'modules'))
 
     favicon_path = None
     logo_module = None
@@ -380,10 +378,11 @@ def main():
                 api_config_map_entries += ["'{}{}': {}.{},".format(api_path, x, api_module, x) for x in api_exports]
                 api_cache_entries += ["'{}{}': null,".format(api_path, x) for x in api_exports]
 
-        for phase, scss_entries in [('pre', pre_scss_entries), ('post', post_scss_entries)]:
-            if os.path.exists(os.path.join(mod_path, phase + '.scss')):
-                scss_entries.append(frontend_module)
-                shutil.copy(os.path.join(mod_path, phase + '.scss'), os.path.join("web", "src", "scss", "modules", phase + "_" + frontend_module.under + ".scss"))
+        for phase, scss_paths in [('pre', pre_scss_paths), ('post', post_scss_paths)]:
+            scss_path = os.path.join(mod_path, phase + '.scss')
+
+            if os.path.exists(scss_path):
+                scss_paths.append(scss_path)
 
         update_translation(translation, collect_translation(mod_path))
         update_translation(translation, collect_translation(mod_path, override=True), override=True)
@@ -435,8 +434,8 @@ def main():
     })
 
     specialize_template(os.path.join("web", "main.scss.template"), os.path.join("web", "src", "main.scss"), {
-        '{{{module_pre_imports}}}': '\n'.join(['@import "scss/modules/pre_{0}";'.format(x.under) for x in pre_scss_entries]),
-        '{{{module_post_imports}}}': '\n'.join(['@import "scss/modules/post_{0}";'.format(x.under) for x in post_scss_entries])
+        '{{{module_pre_imports}}}': '\n'.join(['@import "../../{0}";'.format(x) for x in pre_scss_paths]),
+        '{{{module_post_imports}}}': '\n'.join(['@import "../../{0}";'.format(x) for x in post_scss_paths])
     })
 
     specialize_template(os.path.join("web", "api_defs.ts.template"), os.path.join("web", "src", "ts", "api_defs.ts"), {
