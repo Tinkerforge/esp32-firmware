@@ -16,5 +16,6 @@ export interface config {
 export interface charge_info {
     id: number,
     meter_start: number,
-    evse_uptime_start: number
+    evse_uptime_start: number,
+    timestamp_minutes: number
 }

@@ -150,7 +150,8 @@ Users::Users()
     charge_info = Config::Object({
         {"id", Config::Int16(-1)},
         {"meter_start", Config::Float(0)},
-        {"evse_uptime_start", Config::Uint32(0)}
+        {"evse_uptime_start", Config::Uint32(0)},
+        {"timestamp_minutes", Config::Uint32(0)}
     });
 
     http_auth_update = ConfigRoot(Config::Object({
@@ -228,6 +229,7 @@ void Users::setup()
             charge_info.get("id")->updateInt(info.user_id);
             charge_info.get("meter_start")->updateFloat(info.meter_start);
             charge_info.get("evse_uptime_start")->updateUint(info.evse_uptime_on_start);
+            charge_info.get("timestamp_minutes")->updateUint(info.timestamp_minutes);
         }
     }
 
@@ -487,6 +489,15 @@ bool Users::trigger_charge_action(uint8_t user_id)
     return false;
 }
 
+uint32_t timestamp_minutes() {
+    struct timeval tv_now;
+
+    if (!clock_synced(&tv_now))
+        return 0;
+
+    return tv_now.tv_sec / 60;
+}
+
 bool Users::start_charging(uint8_t user_id, uint16_t current_limit)
 {
     // TODO: use api.getState("evse/state") or similar here instead of ifdefing everything
@@ -497,13 +508,16 @@ bool Users::start_charging(uint8_t user_id, uint16_t current_limit)
 
         uint32_t evse_uptime = evse_v2.evse_low_level_state.get("uptime")->asUint();
         float meter_start = evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat();
+        uint32_t timestamp = timestamp_minutes();
 
-        write_user_slot_info(user_id, evse_uptime, 0, meter_start);
-        charge_tracker.startCharge(0, meter_start, user_id);
+        write_user_slot_info(user_id, evse_uptime, timestamp, meter_start);
+        charge_tracker.startCharge(timestamp, meter_start, user_id);
         evse_v2.set_user_current(current_limit);
         charge_info.get("id")->updateInt(user_id);
         charge_info.get("meter_start")->updateFloat(meter_start);
         charge_info.get("evse_uptime_start")->updateUint(evse_uptime);
+        charge_info.get("timestamp_minutes")->updateUint(timestamp);
+
 
         return true;
     #endif
@@ -523,7 +537,18 @@ bool Users::stop_charging(uint8_t user_id, bool force)
             // The user is then autorized at the other end of the charging cable.
             if (!force && success && info.user_id != user_id)
                 return false;
-            charge_tracker.endCharge(0, evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat());
+
+            uint32_t charge_duration = 0;
+            if (success) {
+                uint32_t now_seconds = evse_v2.evse_low_level_state.get("uptime")->asUint() / 1000;
+                uint32_t start_seconds = info.evse_uptime_on_start / 1000;
+                if (now_seconds < start_seconds) {
+                    now_seconds += (0xFFFFFFFF / 1000);
+                }
+                charge_duration = now_seconds - start_seconds;
+            }
+
+            charge_tracker.endCharge(charge_duration, evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat());
         }
         zero_user_slot_info();
         evse_v2.set_user_current(0);
