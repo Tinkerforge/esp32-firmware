@@ -86,6 +86,10 @@ function update_last_charges() {
     feather.replace();
 }
 
+function to_csv_line(vals: string[]) {
+    let line = vals.map(entry => '"' + entry.replace(/\"/, '""') + '"');
+
+    return line.join(",") + "\r\n";
 }
 
 async function downloadChargeRecords() {
@@ -110,7 +114,17 @@ async function downloadChargeRecords() {
     fetch('/charge_record')
         .then(response => response.arrayBuffer())
         .then(buffer => {
-            let result = __("charge_tracker.script.csv_header") + "\n";
+            let line = [
+                __("charge_tracker.script.csv_header_start"),
+                __("charge_tracker.script.csv_header_user"),
+                __("charge_tracker.script.csv_header_energy"),
+                __("charge_tracker.script.csv_header_duration"),
+                "",
+                __("charge_tracker.script.csv_header_meter_start"),
+                __("charge_tracker.script.csv_header_meter_end"),
+            ];
+
+            let result = to_csv_line(line);
             let users_config = API.get('users/config');
 
             for(let i = 0; i < buffer.byteLength; i += 16) {
@@ -119,7 +133,7 @@ async function downloadChargeRecords() {
                 let timestamp_minutes = view.getUint32(0, true);
                 let meter_start = view.getFloat32(4, true);
                 let user_id = view.getUint8(8);
-                let charge_duration = view.getUint32(8, true) & 0x00FFFFFF;
+                let charge_duration = view.getUint32(9, true) & 0x00FFFFFF;
                 let meter_end = view.getFloat32(12, true);
 
                 let filtered = users_config.users.filter(x => x.id == user_id);
@@ -132,9 +146,19 @@ async function downloadChargeRecords() {
                 else
                     display_name = users[user_id];
 
-                result += timestamp_minutes + "," + display_name + "," + (meter_end - meter_start).toFixed(3)  + "," + charge_duration + ",," + meter_start.toFixed(3) + "," + meter_end.toFixed(3) + "\n";
+                let line = [
+                    timestamp_min_to_date(timestamp_minutes),
+                    display_name,
+                    util.toLocaleFixed(meter_end - meter_start, 3),
+                    charge_duration.toString(),
+                    "",
+                    util.toLocaleFixed(meter_start, 3),
+                    util.toLocaleFixed(meter_end, 3)
+                ];
+
+                result += to_csv_line(line);
             }
-            util.downloadToFile(result, "charge_records.csv", "text/csv");
+            util.downloadToFile(result, "charge_records.csv", "text/csv; charset=utf-8; header=present");
         })
         .catch(err => console.log(err));
 }
