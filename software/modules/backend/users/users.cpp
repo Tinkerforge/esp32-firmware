@@ -138,6 +138,9 @@ Users::Users()
     del = ConfigRoot(Config::Object({
         {"id", Config::Uint8(0)}
     }), [this](Config &del) -> String {
+        if (del.get("id")->asUint() == 0)
+            return "The anonymous user can't be deleted.";
+
         for(int i = 0; i < user_config.get("users")->count(); ++i) {
             if (user_config.get("users")->get(i)->get("id")->asUint() == del.get("id")->asUint()) {
                 return "";
