@@ -54,3 +54,6 @@
 - Fix web server hang if a client can not be reached anymore
 - Hide unfinished control pilot configuration for now
 - Reimplement exponential backoff for WiFi connection attempts
+
+<unknown>: 1.9.90 (<unknown>)
+- 2.0.0 Beta 1
