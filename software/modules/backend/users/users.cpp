@@ -318,8 +318,9 @@ void Users::register_urls()
         if (doc["roles"] != nullptr)
             user->get("roles")->updateUint((uint32_t) doc["roles"]);
 
+        bool display_name_changed = false;
         if (doc["display_name"] != nullptr)
-            user->get("display_name")->updateString(doc["display_name"]);
+            display_name_changed = user->get("display_name")->updateString(doc["display_name"]);
 
         if (doc["username"] != nullptr)
             user->get("username")->updateString(doc["username"]);
@@ -335,7 +336,9 @@ void Users::register_urls()
             return err;
 
         API::writeConfig("users/config", &user_config);
-        this->rename_user(user->get("id")->asUint(), user->get("display_name")->asCStr());
+
+        if (display_name_changed)
+            this->rename_user(user->get("id")->asUint(), user->get("display_name")->asCStr());
 
         return "";
     }, true);
@@ -444,14 +447,11 @@ void Users::rename_user(uint8_t user_id, const char *name)
 {
     File f = LittleFS.open("/users/usernames", "r+");
     uint8_t buf[32] = {0};
-    logger.printfln("%s", f.seek(user_id * USERNAME_LENGTH, SeekMode::SeekSet) ? "true" : "false");
-    logger.printfln("%u", f.write(buf, USERNAME_LENGTH));
+    f.seek(user_id * USERNAME_LENGTH, SeekMode::SeekSet);
+    f.write(buf, USERNAME_LENGTH);
 
-    logger.printfln("%s", f.seek(user_id * USERNAME_LENGTH, SeekMode::SeekSet) ? "true" : "false");
-    logger.printfln("%u", f.write((const uint8_t *)name, strnlen(name, USERNAME_LENGTH)));
-    logger.printfln("set %u to %s", user_id, name);
-    f.flush();
-    f.close();
+    f.seek(user_id * USERNAME_LENGTH, SeekMode::SeekSet);
+    f.write((const uint8_t *)name, strnlen(name, USERNAME_LENGTH));
 }
 
 bool Users::trigger_charge_action(uint8_t user_id)
