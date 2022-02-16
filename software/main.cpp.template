@@ -61,13 +61,17 @@ ConfigRoot reboot;
 
 bool firmware_update_allowed = true;
 
-WebServerHandler *main_page_handler;
-
 void register_default_urls() {
-    main_page_handler = server.on("/", HTTP_GET, [](WebServerRequest req) {
+    server.on("/", HTTP_GET, [](WebServerRequest req) {
         req.addResponseHeader("Content-Encoding", "gzip");
         req.addResponseHeader("ETag", BUILD_TIMESTAMP_HEX_STR);
         req.addResponseHeader("X-Clacks-Overhead", "GNU Terry Pratchett");
+
+        if (req.header("If-None-Match") == BUILD_TIMESTAMP_HEX_STR) {
+            req.send(304);
+            return;
+        }
+
         req.send(200, "text/html", index_html_gz, index_html_gz_len);
     });
 
