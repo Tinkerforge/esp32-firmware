@@ -250,6 +250,7 @@ void ChargeTracker::setup()
         return;
     }
 
+    bool charging = currentlyCharging();
     size_t records_in_last_file = completeRecordsInLastFile();
 
     if (records_in_last_file < CHARGE_RECORD_LAST_CHARGES_SIZE && LittleFS.exists(chargeRecordFilename(this->last_charge_record - 1))) {
@@ -262,6 +263,7 @@ void ChargeTracker::setup()
 
     size_t records_to_read = min(records_in_last_file, (size_t)CHARGE_RECORD_LAST_CHARGES_SIZE);
     File f = LittleFS.open(chargeRecordFilename(this->last_charge_record));
+    f.seek(-(records_to_read * CHARGE_RECORD_SIZE) - (charging ? sizeof(ChargeStart) : 0), SeekMode::SeekEnd);
 
     this->readNRecords(&f, records_to_read);
 }
