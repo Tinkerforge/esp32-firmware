@@ -111,6 +111,7 @@ function update_nfc_config(cfg: NFCConfig = API.get('nfc/config'), force: boolea
                 update_nfc_config(collect_nfc_config(null, i), true)
             });
         }
+        update_users_config();
     }
 
     $('#nfc_add_tag').prop("hidden", cfg.authorized_tags.length >= MAX_AUTHORIZED_TAGS);
