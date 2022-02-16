@@ -21,17 +21,44 @@
 
 #include "web_server.h"
 
+#include "time.h"
+
+#include "tools.h"
+
 extern WebServer server;
+
+void EventLog::get_timestamp(char buf[TIMESTAMP_LEN + 1]) {
+    int written = 0;
+
+    struct timeval tv_now;
+    struct tm timeinfo;
+
+    gettimeofday(&tv_now, NULL);
+    localtime_r(&tv_now.tv_sec, &timeinfo);
+    if (timeinfo.tm_year > (2016 - 1900)) {
+        // We are synced
+        written = strftime(buf, TIMESTAMP_LEN + 1, "%F %T", &timeinfo);
+        written += snprintf(buf + written, TIMESTAMP_LEN + 1 - written, ",%03d", tv_now.tv_usec / 1000);
+    } else {
+        written = snprintf(buf, TIMESTAMP_LEN + 1, "%lu", millis());
+    }
+
+    for(int i = written; i < TIMESTAMP_LEN; ++i)
+        buf[i] = ' ';
+
+    buf[TIMESTAMP_LEN] = '\0';
+}
 
 void EventLog::write(const char *buf, size_t len)
 {
     std::lock_guard<std::mutex> lock{event_buf_mutex};
     String t = String(millis());
-    size_t to_write = 12 + len + 1; // 12 for the longest timestamp (-2^31) and a space; 1 for the \n
+    size_t to_write = TIMESTAMP_LEN + len + 1; // 12 for the longest timestamp (-2^31) and a space; 1 for the \n
 
-    Serial.print(t);
-    for (int i = 0; i < 12 - t.length(); ++i)
-        Serial.print(' ');
+    char timestamp_buf[TIMESTAMP_LEN + 1] = {0};
+    this->get_timestamp(timestamp_buf);
+
+    Serial.print(timestamp_buf);
     Serial.print(buf);
 
     if (buf[len - 1] != '\n') {
@@ -42,11 +69,9 @@ void EventLog::write(const char *buf, size_t len)
         drop(to_write - event_buf.free());
     }
 
-    for (int i = 0; i < t.length(); ++i) {
-        event_buf.push(t[i]);
+    for (int i = 0; i < TIMESTAMP_LEN; ++i) {
+        event_buf.push(timestamp_buf[i]);
     }
-    for (int i = 0; i < 12 - t.length(); ++i)
-        event_buf.push(' ');
 
     for (int i = 0; i < len; ++i) {
         event_buf.push(buf[i]);

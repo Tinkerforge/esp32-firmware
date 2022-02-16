@@ -29,6 +29,9 @@
 
 #include "bindings/macros.h"
 
+// Length of a timestamp with a space at the end. For example "2022-02-11 12:34:56,789"
+#define TIMESTAMP_LEN 25
+
 class EventLog {
 public:
     std::mutex event_buf_mutex;
@@ -41,6 +44,8 @@ public:
     void drop(size_t count);
 
     void register_urls();
+
+    void get_timestamp(char buf[TIMESTAMP_LEN + 1]);
 
     bool sending_response = false;
 };
