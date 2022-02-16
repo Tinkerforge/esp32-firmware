@@ -48,9 +48,6 @@ function update_nfc_config(cfg: NFCConfig = API.get('nfc/config'), force: boolea
     if (!force && !$('#nfc_save_button').prop('disabled'))
         return;
 
-    $('#nfc_require_tag_to_start').prop("checked", cfg.require_tag_to_start);
-    $('#nfc_require_tag_to_stop').prop("checked", cfg.require_tag_to_stop);
-
     if (cfg.authorized_tags.length != authorized_tag_count) {
         let authorized_tags = "";
         for (let i = 0; i < cfg.authorized_tags.length; i++) {
@@ -143,8 +140,6 @@ function collect_nfc_config(new_tag: AuthorizedTag = null, remove_tag: number = 
         tags.push(new_tag);
 
     return {
-        require_tag_to_start: $('#nfc_require_tag_to_start').prop("checked"),
-        require_tag_to_stop: $('#nfc_require_tag_to_stop').prop("checked"),
         authorized_tags: tags
     };
 }
@@ -316,5 +311,4 @@ export function addEventListeners(source: API.ApiEventTarget) {
 
 export function updateLockState(module_init: any) {
     $('#sidebar-nfc').prop('hidden', !module_init.nfc);
-    $('#nfc_require_tag_to_stop_desc').html(module_init.evse_v2 ? __("nfc.content.require_tag_to_stop_desc") :  __("nfc.content.warp1_require_tag_to_stop_desc"))
 }

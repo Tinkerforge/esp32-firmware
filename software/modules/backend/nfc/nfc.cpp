@@ -70,8 +70,6 @@ NFC::NFC() : DeviceModule("nfc", "NFC", "NFC", std::bind(&NFC::setup_nfc, this))
     );
 
     config = Config::Object({
-        {"require_tag_to_start", Config::Bool(false)},
-        {"require_tag_to_stop", Config::Bool(false)},
         {"authorized_tags", Config::Array(
             {},
             new Config{Config::Object({
@@ -387,39 +385,6 @@ void NFC::register_urls()
 
     api.addState("nfc/seen_tags", &seen_tags, {}, 1000);
     api.addPersistentConfig("nfc/config", &config, {}, 1000);
-
-    bool nfc_start = config_in_use.get("require_tag_to_start")->asBool();
-
-    if (nfc_start) {
-        api.blockCommand("evse/auto_start_charging_update", "nfc.script.nfc_controls_autostart");
-        api.callCommand("evse/auto_start_charging_update", Config::ConfUpdateObject{{
-            {"auto_start_charging", false}
-        }});
-    }
-
-#ifdef MODULE_EVSE_V2_AVAILABLE
-    bool nfc_stop = config_in_use.get("require_tag_to_stop")->asBool();
-    if (nfc_start || nfc_stop) {
-        api.blockCommand("evse/button_configuration_update", "nfc.script.nfc_controls_button");
-
-        auto button_configuration = api.getState("evse/button_configuration", false);
-        uint32_t btn_cfg = 2;
-
-        if (button_configuration == nullptr)
-            logger.printfln("No EVSE found. Disabling NFC unlock.");
-        else
-            btn_cfg = button_configuration->get("button")->asUint();
-
-        if (nfc_start)
-            btn_cfg &= ~1;
-        if (nfc_stop)
-            btn_cfg &= ~2;
-
-        api.callCommand("evse/button_configuration_update", Config::ConfUpdateObject{{
-            {"button", btn_cfg}
-        }});
-    }
-#endif
 
     this->DeviceModule::register_urls();
 }

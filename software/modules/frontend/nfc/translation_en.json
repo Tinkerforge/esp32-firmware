@@ -9,11 +9,6 @@
         "content": {
             "nfc": "NFC Unlock",
 
-            "require_tag_to_start": "Start with tag",
-            "require_tag_to_start_desc": "If enabled, an authorized tag is required to start charging. The web interface can still be used to charge without tag.",
-            "require_tag_to_stop": "Stop with tag",
-            "require_tag_to_stop_desc": "If enabled, an authorized tag is required to stop charging. The web interface can still be used to stop charging. <b>Warning: The stop function of the front panel button will be deactivated!</b>",
-            "warp1_require_tag_to_stop_desc": "If enabled, an authorized tag is required to stop charging. The web interface can still be used to stop charging. <b>Warning: The stop function of the front panel button can not be deactivated for WARP 1 chargers!</b>",
             "save": "Save",
             "authorized_tags": "Authorized tags",
 

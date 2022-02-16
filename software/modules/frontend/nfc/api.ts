@@ -5,8 +5,6 @@ interface AuthorizedTag {
 }
 
 export interface config {
-    require_tag_to_start: boolean,
-    require_tag_to_stop: boolean,
     authorized_tags: AuthorizedTag[]
 }
 
