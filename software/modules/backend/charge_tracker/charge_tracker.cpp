@@ -99,23 +99,33 @@ void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end)
     std::lock_guard<std::mutex> lock{records_mutex};
     ChargeEnd ce;
 
-    File file = LittleFS.open(chargeRecordFilename(this->last_charge_record), "a");
-    if ((file.size() % CHARGE_RECORD_SIZE) != sizeof(ChargeStart)) {
-        logger.printfln("Can't track end of charge: Last charge start was not tracked or file is damaged! Offset is %u bytes. Expected %u", file.size() % CHARGE_RECORD_SIZE, sizeof(ChargeStart));
-        // TODO: How to handle this case? Add a charge start with the same meter value as the last end?
-        // This would also mean that all the size checks of startCharge have to be duplicated!
-        // If we check in ::setup() whether a charge is running, this can never happen.
-        return;
+    {
+        File file = LittleFS.open(chargeRecordFilename(this->last_charge_record), "a");
+        if ((file.size() % CHARGE_RECORD_SIZE) != sizeof(ChargeStart)) {
+            logger.printfln("Can't track end of charge: Last charge start was not tracked or file is damaged! Offset is %u bytes. Expected %u", file.size() % CHARGE_RECORD_SIZE, sizeof(ChargeStart));
+            // TODO: How to handle this case? Add a charge start with the same meter value as the last end?
+            // This would also mean that all the size checks of startCharge have to be duplicated!
+            // If we check in ::setup() whether a charge is running, this can never happen.
+            return;
+        }
+
+        ce.charge_duration = charge_duration_seconds;
+        ce.meter_end = meter_end;
+
+        uint8_t buf[sizeof(ChargeEnd)] = {0};
+        memcpy(buf, &ce, sizeof(ce));
+
+        file.write(buf, sizeof(ce));
     }
-
-    ce.charge_duration = charge_duration_seconds;
-    ce.meter_end = meter_end;
-
-    uint8_t buf[sizeof(ChargeEnd)] = {0};
-    memcpy(buf, &ce, sizeof(ce));
-
-    file.write(buf, sizeof(ce));
     logger.printfln("Tracked end of charge.");
+
+    // We've just written the charge record in the file. It is always safe to read it back again.
+    if (last_charges.count() == CHARGE_RECORD_LAST_CHARGES_SIZE)
+        last_charges.remove(0);
+
+    File f = LittleFS.open(chargeRecordFilename(this->last_charge_record));
+    f.seek(-CHARGE_RECORD_SIZE, SeekMode::SeekEnd);
+    this->readNRecords(&f, 1);
 }
 
 void ChargeTracker::removeOldRecords()
