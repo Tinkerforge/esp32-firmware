@@ -246,7 +246,7 @@ def main():
     with open(os.path.join('src', 'firmware_basename'), 'w', encoding='utf-8') as f:
         f.write('{}_firmware_{}_{:x}'.format(name, '_'.join(version), timestamp))
 
-    # Embed backend modules
+    # Handle backend modules
     recreate_dir(os.path.join("src", "modules"))
     backend_modules = [FlavoredName(x).get() for x in env.GetProjectOption("backend_modules").splitlines()]
     for backend_module in backend_modules:
@@ -264,7 +264,20 @@ def main():
             with ChangedDirectory(mod_path):
                 subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py"], env=environ)
 
-        shutil.copytree(os.path.join(mod_path), os.path.join("src", "modules", backend_module.under), ignore=shutil.ignore_patterns('*ignored'))
+        mod_dst_dir = os.path.join("src", "modules", backend_module.under)
+
+        for root, dirs, files in os.walk(mod_path):
+            for name in files:
+                if not name.endswith('.c') and not name.endswith('.cpp') and not name.endswith('.h') and not name.endswith('.hpp'):
+                    continue
+
+                path = os.path.join(root, name)
+                dst_path = os.path.join(mod_dst_dir, os.path.relpath(path, mod_path))
+
+                os.makedirs(os.path.dirname(dst_path), exist_ok=True)
+
+                with open(dst_path, 'w') as f:
+                    f.write('#include "../{0}"\n'.format(path))
 
     specialize_template("main.cpp.template", os.path.join("src", "main.cpp"), {
         '{{{module_includes}}}': '\n'.join(['#include "modules/{0}/{0}.h"'.format(x.under) for x in backend_modules]),
@@ -283,7 +296,7 @@ def main():
         '{{{module_extern_decls}}}': '\n'.join(['extern {} {};'.format(x.camel, x.under) for x in backend_modules]),
     })
 
-    # Embed frontend modules
+    # Handle frontend modules
     navbar_entries = []
     content_entries = []
     status_entries = []
