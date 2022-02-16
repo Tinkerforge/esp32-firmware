@@ -347,7 +347,8 @@ export function init() {
             return;
         }
 
-        await save_users_config();
+        $('#users_save_spinner').prop('hidden', false);
+        await save_users_config().finally(() => $('#users_save_spinner').prop('hidden', true));
     });
 
     $('#users_add_user_form').on("submit", (event: Event) => {

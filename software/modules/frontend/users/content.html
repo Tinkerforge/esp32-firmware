@@ -42,7 +42,12 @@
 
         <div class="form-group row">
             <div class="col-lg-12 col-xl-8 text-right">
-                <button id="users_save_button" type="submit" form="users_config_form" class="btn btn-primary" data-i18n="users.content.save" disabled></button>
+                <button id="users_save_button" type="submit" form="users_config_form" class="btn btn-primary" disabled>
+                    <span data-i18n="users.content.save"></span>
+                    <span id="users_save_spinner" class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden>
+                        <span class="sr-only">Saving...</span>
+                    </span>
+                </button>
             </div>
         </div>
     </form>
