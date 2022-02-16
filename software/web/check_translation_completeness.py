@@ -99,13 +99,16 @@ def main():
             parse_ts_file(os.path.join(root, name), name)
 
     for frontend_module in sys.argv[1:]:
-        folder = os.path.join("..", "modules", "frontend", frontend_module)
+        folder = os.path.join("src", "modules", frontend_module)
+
         if os.path.exists(os.path.join(folder, "main.ts")):
-            parse_ts_file(os.path.join("..", "modules", "frontend", frontend_module, "main.ts"), "main.ts")
+            parse_ts_file(os.path.join(folder, "main.ts"), "main.ts")
+
         if os.path.exists(os.path.join(folder, "translation_de.ts")):
-            parse_ts_file(os.path.join("..", "modules", "frontend", frontend_module, "translation_de.ts"), "translation_de.ts")
+            parse_ts_file(os.path.join(folder, "translation_de.ts"), "translation_de.ts")
+
         if os.path.exists(os.path.join(folder, "translation_en.ts")):
-            parse_ts_file(os.path.join("..", "modules", "frontend", frontend_module, "translation_en.ts"), "translation_en.ts")
+            parse_ts_file(os.path.join(folder, "translation_en.ts"), "translation_en.ts")
 
     assert len(translation) > 0
 

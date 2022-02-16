@@ -19,17 +19,15 @@ software/:
 Software
 --------
 
-See software/readme.txt for build instructions.
+See software/README.txt for build instructions.
 More documentation of how the software and the build process work
 will follow in the future. For now in brief:
 
 * The software is built with https://platformio.org/
 * In software/platformio.ini backend (i.e. firmware) and frontend (i.e. web interface) modules
   can be selected to be compiled in the firmware.
-* Custom hooks are run in the build process to move the selected modules in
-  software/src/modules and software/web/src/modules to compile them in
-* The hooks also compile the web interface from Typescript and Sass into Javascript and CSS,
+* Custom hooks compile the web interface from Typescript and Sass into Javascript and CSS,
   place everything in one HTML file, zip it and create a C header that is then compiled in the firmware
-* After the firmware is built in the software/build folder, the hooks use merge_bins.py
-  to merge the firmware, bootloader, partition table, etc into one bin file that can be flashed
+* After the firmware is built in the software/build folder, the custom hooks
+  merge the firmware, bootloader, partition table, etc into one bin file that can be flashed
   on the ESP32 Brick at offset 0x1000 or can be uploaded to a running WARP Charger.

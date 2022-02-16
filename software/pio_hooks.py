@@ -48,12 +48,6 @@ class FlavoredName(object):
 
             return self.cache[key]
 
-def recreate_dir(path):
-    if os.path.exists(path):
-        shutil.rmtree(path)
-
-    os.makedirs(path)
-
 def specialize_template(template_filename, destination_filename, replacements, check_completeness=True, remove_template=False):
     lines = []
     replaced = set()
@@ -225,7 +219,13 @@ def main():
     manual_url = env.GetProjectOption("manual_url")
     apidoc_url = env.GetProjectOption("apidoc_url")
     require_fw_info = env.GetProjectOption("require_fw_info")
+    src_filter = env.GetProjectOption("src_filter")
     version = get_changelog_version(name)
+
+    if src_filter[0] == '+<empty.c>':
+        src_filter = None
+    else:
+        src_filter = ['+<*>', '-<empty.c>']
 
     if not os.path.isdir("build"):
         os.makedirs("build")
@@ -247,13 +247,15 @@ def main():
         f.write('{}_firmware_{}_{:x}'.format(name, '_'.join(version), timestamp))
 
     # Handle backend modules
-    recreate_dir(os.path.join("src", "modules"))
+    excluded_backend_modules = list(os.listdir('src/modules'))
     backend_modules = [FlavoredName(x).get() for x in env.GetProjectOption("backend_modules").splitlines()]
     for backend_module in backend_modules:
-        mod_path = os.path.join("modules", "backend", backend_module.under)
+        mod_path = os.path.join('src', 'modules', backend_module.under)
 
         if not os.path.exists(mod_path) or not os.path.isdir(mod_path):
             print("Backend module {} not found.".format(backend_module.space, mod_path))
+
+        excluded_backend_modules.remove(backend_module.under)
 
         if os.path.exists(os.path.join(mod_path, "prepare.py")):
             print('Preparing backend module:', backend_module.space)
@@ -264,20 +266,11 @@ def main():
             with ChangedDirectory(mod_path):
                 subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py"], env=environ)
 
-        mod_dst_dir = os.path.join("src", "modules", backend_module.under)
+    if src_filter != None:
+        for excluded_backend_module in excluded_backend_modules:
+            src_filter.append('-<modules/{0}/*>'.format(excluded_backend_module))
 
-        for root, dirs, files in os.walk(mod_path):
-            for name in files:
-                if not name.endswith('.c') and not name.endswith('.cpp') and not name.endswith('.h') and not name.endswith('.hpp'):
-                    continue
-
-                path = os.path.join(root, name)
-                dst_path = os.path.join(mod_dst_dir, os.path.relpath(path, mod_path))
-
-                os.makedirs(os.path.dirname(dst_path), exist_ok=True)
-
-                with open(dst_path, 'w') as f:
-                    f.write('#include "../{0}"\n'.format(path))
+        env.Replace(SRC_FILTER=[' '.join(src_filter)])
 
     specialize_template("main.cpp.template", os.path.join("src", "main.cpp"), {
         '{{{module_includes}}}': '\n'.join(['#include "modules/{0}/{0}.h"'.format(x.under) for x in backend_modules]),
@@ -319,7 +312,7 @@ def main():
     logo_module = None
 
     for frontend_module in frontend_modules:
-        mod_path = os.path.join("modules", "frontend", frontend_module.under)
+        mod_path = os.path.join('web', 'src', 'modules', frontend_module.under)
 
         if not os.path.exists(mod_path) or not os.path.isdir(mod_path):
             print("Frontend module {} not found.".format(frontend_module.space, mod_path))
@@ -373,7 +366,7 @@ def main():
                     api_module = "top_level_{}".format(top_level_counter)
                     top_level_counter += 1
 
-                api_imports.append("import * as {} from '../../../modules/frontend/{}/api';".format(api_module, frontend_module.under))
+                api_imports.append("import * as {} from './modules/{}/api';".format(api_module, frontend_module.under))
 
                 api_config_map_entries += ["'{}{}': {}.{},".format(api_path, x, api_module, x) for x in api_exports]
                 api_cache_entries += ["'{}{}': null,".format(api_path, x) for x in api_exports]
@@ -382,7 +375,7 @@ def main():
             scss_path = os.path.join(mod_path, phase + '.scss')
 
             if os.path.exists(scss_path):
-                scss_paths.append(scss_path)
+                scss_paths.append(os.path.relpath(scss_path, 'web/src'))
 
         update_translation(translation, collect_translation(mod_path))
         update_translation(translation, collect_translation(mod_path, override=True), override=True)
@@ -427,15 +420,15 @@ def main():
     })
 
     specialize_template(os.path.join("web", "main.ts.template"), os.path.join("web", "src", "main.ts"), {
-        '{{{module_imports}}}': '\n'.join(['import * as {0} from "../../modules/frontend/{0}/main";'.format(x) for x in main_ts_entries]),
+        '{{{module_imports}}}': '\n'.join(['import * as {0} from "./modules/{0}/main";'.format(x) for x in main_ts_entries]),
         '{{{modules}}}': ', '.join([x for x in main_ts_entries]),
         '{{{translation_imports}}}': '\n'.join(['import {{translation_{0}}} from "./ts/translation_{0}";'.format(x) for x in sorted(translation)]),
         '{{{translation_adds}}}': '\n'.join(["    translator.add('{0}', translation_{0});".format(x) for x in sorted(translation)])
     })
 
     specialize_template(os.path.join("web", "main.scss.template"), os.path.join("web", "src", "main.scss"), {
-        '{{{module_pre_imports}}}': '\n'.join(['@import "../../{0}";'.format(x) for x in pre_scss_paths]),
-        '{{{module_post_imports}}}': '\n'.join(['@import "../../{0}";'.format(x) for x in post_scss_paths])
+        '{{{module_pre_imports}}}': '\n'.join(['@import "./{0}";'.format(x) for x in pre_scss_paths]),
+        '{{{module_post_imports}}}': '\n'.join(['@import "./{0}";'.format(x) for x in post_scss_paths])
     })
 
     specialize_template(os.path.join("web", "api_defs.ts.template"), os.path.join("web", "src", "ts", "api_defs.ts"), {
