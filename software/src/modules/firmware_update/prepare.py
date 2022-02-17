@@ -18,9 +18,6 @@ if 'software' not in sys.modules:
 
 from software import util
 import gzip
-import io
 
 with open('recovery.html', 'rb') as f:
-    src_file = io.BytesIO(gzip.compress(f.read()))
-
-util.embed_file(src_file, 'recovery_html', 'char')
+    util.embed_data_with_digest(f.read(), '.', 'recovery_html', 'char', data_filter=gzip.compress)

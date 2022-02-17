@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "index.html.h"
+#include "index_html.embedded.h"
 {{{module_includes}}}
 
 #include "api.h"
@@ -78,7 +78,7 @@ static void send_index_html(WebServerRequest &request) {
         return;
     }
 
-    request.send(200, "text/html", index_html_gz, index_html_gz_len);
+    request.send(200, "text/html", index_html_data, index_html_length);
 }
 
 static void register_default_urls(void) {

@@ -16,8 +16,11 @@ import re
 import hashlib
 import json
 import glob
+import io
+import gzip
 from base64 import b64encode
 from zlib import crc32
+from util import embed_data
 
 NameFlavors = namedtuple('NameFlavors', 'space lower camel headless under upper dash camel_abbrv lower_no_space camel_constant_safe')
 
@@ -452,38 +455,40 @@ def main():
     # Generate web interface
     print('Checking web interface dependencies')
 
-    with ChangedDirectory('web'):
-        with open('package-lock.json', 'rb') as f:
-            new_node_digest = hashlib.sha256(f.read()).hexdigest()
+    with open('web/package-lock.json', 'rb') as f:
+        new_node_digest = hashlib.sha256(f.read()).hexdigest()
+
+    try:
+        with open('web/package-lock.json.digest', 'r', encoding='utf-8') as f:
+            old_node_digest = f.read().strip()
+    except FileNotFoundError:
+        old_node_digest = None
+
+    if old_node_digest == new_node_digest and os.path.exists('web/node_modules/tinkerforge.marker'):
+        print('Web interface dependencies are up-to-date')
+    else:
+        print('Web interface dependencies are not up-to-date, updating now')
 
         try:
-            with open('package-lock.json.digest', 'r', encoding='utf-8') as f:
-                old_node_digest = f.read().strip()
+            os.remove('web/package-lock.json.digest')
         except FileNotFoundError:
-            old_node_digest = None
+            pass
 
-        if old_node_digest != new_node_digest or not os.path.exists('node_modules/.complete'):
-            print("Web interface dependencies not up-to-date. Updating now.")
+        try:
+            shutil.rmtree('web/node_modules')
+        except FileNotFoundError:
+            pass
 
-            try:
-                os.remove('package-lock.json.digest')
-            except FileNotFoundError:
-                pass
-
-            try:
-                shutil.rmtree('node_modules')
-            except FileNotFoundError:
-                pass
-
+        with ChangedDirectory('web'):
             subprocess.check_call(["npm", "ci"], shell=sys.platform == 'win32')
 
-            with open('node_modules/.complete', 'wb') as f:
-                pass
+        with open('web/node_modules/tinkerforge.marker', 'wb') as f:
+            pass
 
-            with open('package-lock.json.digest', 'w', encoding='utf-8') as f:
-                f.write(new_node_digest)
+        with open('web/package-lock.json.digest', 'w', encoding='utf-8') as f:
+            f.write(new_node_digest)
 
-    print('Generating web interface')
+    print('Checking web interface')
 
     h = hashlib.sha256()
 
@@ -503,38 +508,45 @@ def main():
             with open(path, 'rb') as f:
                 h.update(f.read())
 
+    with open('web/package-lock.json.digest', 'rb') as f:
+        h.update(f.read())
+
     new_html_digest = h.hexdigest()
 
     try:
-        with open('src/index.html.h.digest', 'r', encoding='utf-8') as f:
+        with open('src/index_html.digest', 'r', encoding='utf-8') as f:
             old_html_digest = f.read().strip()
     except FileNotFoundError:
         old_html_digest = None
 
-    if old_html_digest != new_html_digest or not os.path.exists('src/index.html.h'):
-        try:
-            os.remove('src/index.html.h.digest')
-        except FileNotFoundError:
-            pass
+    if old_html_digest == new_html_digest and os.path.exists('src/index_html.embedded.h') and os.path.exists('src/index_html.embedded.cpp'):
+        print('Web interface is up-to-date')
+    else:
+        print('Web interface is not up-to-date, building now')
 
         try:
-            os.remove('src/index.html.h')
+            shutil.rmtree('web/build')
         except FileNotFoundError:
             pass
 
         with ChangedDirectory('web'):
-            try:
-                shutil.rmtree('dist')
-            except FileNotFoundError:
-                pass
+            subprocess.check_call(['npx', 'gulp'], shell=sys.platform == 'win32')
 
-            environ = dict(os.environ)
-            environ['PYTHONEXE'] = env.subst('$PYTHONEXE')
-            subprocess.check_call(["npx", "gulp"], env=environ, shell=sys.platform == 'win32')
+        with open('web/build/main.css', 'r', encoding='utf-8') as f:
+            css = f.read()
 
-        shutil.copy2("web/dist/index.html.h", "src/index.html.h")
+        with open('web/build/bundle.js', 'r', encoding='utf-8') as f:
+            js = f.read()
 
-        with open('src/index.html.h.digest', 'w', encoding='utf-8') as f:
+        with open('web/build/index.html', 'r', encoding='utf-8') as f:
+            html = f.read()
+
+        html = html.replace('<link href=css/main.css rel=stylesheet>', '<style rel=stylesheet>{0}</style>'.format(css))
+        html = html.replace('<script src=js/bundle.js></script>', '<script>{0}</script>'.format(js))
+
+        embed_data(gzip.compress(html.encode('utf-8')), 'src', 'index_html', 'char')
+
+        with open('src/index_html.digest', 'w', encoding='utf-8') as f:
             f.write(new_html_digest)
 
 main()
