@@ -17,9 +17,8 @@ def embed_data_internal(data, cpp_path, h_path, var_name, var_type):
 
     with open(cpp_path + '.tmp', 'w', encoding='utf-8') as f:
         f.write('// WARNING: This file is generated\n\n')
-        f.write('#include <stddef.h>\n')
         f.write('#include <stdint.h>\n\n')
-        f.write('extern const {0} {1}_data[] = {{\n'.format(var_type, var_name))
+        f.write('const {0} {1}_data[] = {{\n'.format(var_type, var_name))
 
         written = 0
         data_file = io.BytesIO(data)
@@ -32,17 +31,15 @@ def embed_data_internal(data, cpp_path, h_path, var_name, var_type):
             written += len(b)
             b = next_b
 
-        f.write('};\n\n')
-        f.write('extern const size_t {0}_length = {1};\n'.format(var_name, written))
+        f.write('};\n')
 
     os.replace(cpp_path + '.tmp', cpp_path)
 
     with open(h_path + '.tmp', 'w', encoding='utf-8') as f:
         f.write('// WARNING: This file is generated\n\n')
-        f.write('#include <stddef.h>\n')
         f.write('#include <stdint.h>\n\n')
-        f.write('extern const {0} {1}_data[];\n'.format(var_type, var_name))
-        f.write('extern const size_t {0}_length;\n'.format(var_name))
+        f.write('extern const {0} {1}_data[];\n\n'.format(var_type, var_name))
+        f.write('#define {0}_length {1}\n'.format(var_name, written))
 
     os.replace(h_path + '.tmp', h_path)
 
