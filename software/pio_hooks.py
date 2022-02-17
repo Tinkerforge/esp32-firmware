@@ -511,6 +511,9 @@ def main():
     with open('web/package-lock.json.digest', 'rb') as f:
         h.update(f.read())
 
+    with open('util.py', 'rb') as f:
+        h.update(f.read())
+
     new_html_digest = h.hexdigest()
 
     try:

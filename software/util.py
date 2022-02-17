@@ -60,7 +60,8 @@ def embed_data_with_digest(data, dst_dir, var_name, var_type, data_filter=lambda
     except FileNotFoundError:
         old_digest = None
 
-    new_digest = hashlib.sha256(data).hexdigest()
+    with open(__file__, 'rb') as f:
+        new_digest = hashlib.sha256(data + f.read()).hexdigest()
 
     if old_digest == new_digest and os.path.exists(cpp_path) and os.path.exists(h_path):
         return
