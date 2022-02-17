@@ -242,14 +242,17 @@ def main():
 
     with open(os.path.join('src', 'build.h'), 'w', encoding='utf-8') as f:
         f.write('#pragma once\n')
-        f.write('#define BUILD_TIMESTAMP {}\n'.format(timestamp))
-        f.write('#define BUILD_TIMESTAMP_HEX_STR "{:x}"\n'.format(timestamp))
         f.write('#define BUILD_VERSION_MAJOR {}\n'.format(version[0]))
         f.write('#define BUILD_VERSION_MINOR {}\n'.format(version[1]))
         f.write('#define BUILD_VERSION_PATCH {}\n'.format(version[2]))
-        f.write('#define BUILD_VERSION_FULL_STR "{}.{}.{}-{:x}"\n'.format(*version, timestamp))
         f.write('#define BUILD_HOST_PREFIX "{}"\n'.format(host_prefix))
         f.write('#define BUILD_REQUIRE_FW_INFO {}\n'.format(require_fw_info))
+
+    with open(os.path.join('src', 'build_timestamp.h'), 'w', encoding='utf-8') as f:
+        f.write('#pragma once\n')
+        f.write('#define BUILD_TIMESTAMP {}\n'.format(timestamp))
+        f.write('#define BUILD_TIMESTAMP_HEX_STR "{:x}"\n'.format(timestamp))
+        f.write('#define BUILD_VERSION_FULL_STR "{}.{}.{}-{:x}"\n'.format(*version, timestamp))
 
     with open(os.path.join('src', 'firmware_basename'), 'w', encoding='utf-8') as f:
         f.write('{}_firmware_{}_{:x}'.format(name, '_'.join(version), timestamp))

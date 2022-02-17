@@ -30,7 +30,7 @@
 #include "event_log.h"
 #include "task_scheduler.h"
 #include "web_server.h"
-#include "build.h"
+#include "build_timestamp.h"
 
 const char* DISPLAY_NAME = "{{{display_name}}}";
 

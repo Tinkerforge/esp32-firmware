@@ -10,6 +10,7 @@ src/**/*.embedded.cpp
 src/main.cpp
 src/modules.h
 src/build.h
+src/build_timestamp.h
 src/firmware_basename
 web/node_modules/
 web/build/

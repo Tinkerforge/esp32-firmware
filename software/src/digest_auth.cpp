@@ -26,7 +26,7 @@
 
 #include "mbedtls/md5.h"
 #include "event_log.h"
-#include "build.h"
+#include "build_timestamp.h"
 
 extern EventLog logger;
 
