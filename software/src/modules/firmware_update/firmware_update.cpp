@@ -257,7 +257,7 @@ void FirmwareUpdate::register_urls()
 {
     server.on("/recovery", HTTP_GET, [](WebServerRequest req) {
         req.addResponseHeader("Content-Encoding", "gzip");
-        req.addResponseHeader("ETag", BUILD_TIMESTAMP_HEX_STR);
+        req.addResponseHeader("ETag", "dontcachemeplease");
         // Intentionally don't handle the If-None-Match header:
         // This makes sure that a cached version is never used.
         req.send(200, "text/html", recovery_page, recovery_page_len);
