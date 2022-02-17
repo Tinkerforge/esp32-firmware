@@ -38,78 +38,43 @@ extern char local_uid_str[7];
 
 Ethernet::Ethernet()
 {
-    ethernet_config = Config::Object({
+    ethernet_config = ConfigRoot(Config::Object({
         {"enable_ethernet", Config::Bool(true)},
-        {"ip", Config::Array({
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                },
-                new Config{Config::Uint8(0)},
-                4,
-                4,
-                Config::type_id<Config::ConfUint>()
-            )},
-        {"gateway", Config::Array({
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                },
-                new Config{Config::Uint8(0)},
-                4,
-                4,
-                Config::type_id<Config::ConfUint>()
-            )},
-        {"subnet", Config::Array({
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                },
-                new Config{Config::Uint8(0)},
-                4,
-                4,
-                Config::type_id<Config::ConfUint>()
-            )},
-        {"dns", Config::Array({
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                },
-                new Config{Config::Uint8(0)},
-                4,
-                4,
-                Config::type_id<Config::ConfUint>()
-            )},
-        {"dns2", Config::Array({
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                },
-                new Config{Config::Uint8(0)},
-                4,
-                4,
-                Config::type_id<Config::ConfUint>()
-            )},
+        {"ip", Config::Str("0.0.0.0", 7, 15)},
+        {"gateway", Config::Str("0.0.0.0", 7, 15)},
+        {"subnet", Config::Str("0.0.0.0", 7, 15)},
+        {"dns", Config::Str("0.0.0.0", 7, 15)},
+        {"dns2", Config::Str("0.0.0.0", 7, 15)},
+    }), [](Config &cfg) -> String {
+        const char *ip = cfg.get("ip")->asCStr();
+        const char *gateway = cfg.get("gateway")->asCStr();
+        const char *subnet = cfg.get("subnet")->asCStr();
+        const char *dns = cfg.get("dns")->asCStr();
+        const char *dns2 = cfg.get("dns2")->asCStr();
+
+        IPAddress unused;
+
+        if (!unused.fromString(ip))
+            return "Failed to parse \"ip\": Expected format is dotted decimal, i.e. 10.0.0.1";
+
+        if (!unused.fromString(gateway))
+            return "Failed to parse \"gateway\": Expected format is dotted decimal, i.e. 10.0.0.1";
+
+        if (!unused.fromString(subnet))
+            return "Failed to parse \"subnet\": Expected format is dotted decimal, i.e. 10.0.0.1";
+
+        if (!unused.fromString(dns))
+            return "Failed to parse \"dns\": Expected format is dotted decimal, i.e. 10.0.0.1";
+
+        if (!unused.fromString(dns2))
+            return "Failed to parse \"dns2\": Expected format is dotted decimal, i.e. 10.0.0.1";
+
+        return "";
     });
 
     ethernet_state = Config::Object({
         {"connection_state", Config::Uint(0)},
-        {"ip", Config::Array({
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                },
-                new Config{Config::Uint8(0)},
-                4,
-                4,
-                Config::type_id<Config::ConfUint>()
-            )},
+        {"ip", Config::Str("0.0.0.0", 7, 15)},
         {"full_duplex", Config::Bool(false)},
         {"link_speed", Config::Uint8(0)}
     });
@@ -151,12 +116,10 @@ void Ethernet::setup()
             ethernet_state.get("full_duplex")->updateBool(ETH.fullDuplex());
             ethernet_state.get("link_speed")->updateUint(ETH.linkSpeed());
 
-            auto ip = ETH.localIP();
-            logger.printfln("Ethernet got IP address: %u.%u.%u.%u.", ip[0], ip[1], ip[2], ip[3]);
-            ethernet_state.get("ip")->get(0)->updateUint(ip[0]);
-            ethernet_state.get("ip")->get(1)->updateUint(ip[1]);
-            ethernet_state.get("ip")->get(2)->updateUint(ip[2]);
-            ethernet_state.get("ip")->get(3)->updateUint(ip[3]);
+            auto ip = ETH.localIP().toString();
+            logger.printfln("Ethernet got IP address: %s", ip.c_str());
+            ethernet_state.get("ip")->updateString(ip);
+
             api.wifiAvailable();
         },
         ARDUINO_EVENT_ETH_GOT_IP);
@@ -170,10 +133,7 @@ void Ethernet::setup()
             logger.printfln("Ethernet lost IP address.");
             ethernet_state.get("connection_state")->updateUint(2);
 
-            ethernet_state.get("ip")->get(0)->updateUint(0);
-            ethernet_state.get("ip")->get(1)->updateUint(0);
-            ethernet_state.get("ip")->get(2)->updateUint(0);
-            ethernet_state.get("ip")->get(3)->updateUint(0);
+            ethernet_state.get("ip")->updateString("0.0.0.0");
         },
         ARDUINO_EVENT_ETH_LOST_IP);
 
@@ -181,10 +141,7 @@ void Ethernet::setup()
             logger.printfln("Ethernet disconnected");
             ethernet_state.get("connection_state")->updateUint(1);
 
-            ethernet_state.get("ip")->get(0)->updateUint(0);
-            ethernet_state.get("ip")->get(1)->updateUint(0);
-            ethernet_state.get("ip")->get(2)->updateUint(0);
-            ethernet_state.get("ip")->get(3)->updateUint(0);
+            ethernet_state.get("ip")->updateString("0.0.0.0");
         },
         ARDUINO_EVENT_ETH_DISCONNECTED);
 
@@ -194,12 +151,13 @@ void Ethernet::setup()
         },
         ARDUINO_EVENT_ETH_STOP);
 
-    uint8_t ip[4], subnet[4], gateway[4], dns[4], dns2[4];
-    ethernet_config_in_use.get("ip")->fillUint8Array(ip, 4);
-    ethernet_config_in_use.get("subnet")->fillUint8Array(subnet, 4);
-    ethernet_config_in_use.get("gateway")->fillUint8Array(gateway, 4);
-    ethernet_config_in_use.get("dns")->fillUint8Array(dns, 4);
-    ethernet_config_in_use.get("dns2")->fillUint8Array(dns2, 4);
+    IPAddress ip, subnet, gateway, dns, dns2;
+
+    ip.fromString(ethernet_config_in_use.get("ip")->asCStr());
+    subnet.fromString(ethernet_config_in_use.get("subnet")->asCStr());
+    gateway.fromString(ethernet_config_in_use.get("gateway")->asCStr());
+    dns.fromString(ethernet_config_in_use.get("dns")->asCStr());
+    dns2.fromString(ethernet_config_in_use.get("dns2")->asCStr());
 
     ETH.begin(ETH_ADDR, ETH_POWER_PIN, ETH_PHY_MDC, ETH_PHY_MDIO, ETH_TYPE);
 

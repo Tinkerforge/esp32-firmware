@@ -128,18 +128,18 @@ function update_wifi_sta_config() {
     $('#wifi_sta_bssid').val(config.bssid.map((x)=> (x < 16 ? '0' : '') + x.toString(16).toUpperCase()).join(":"));
     $('#wifi_sta_bssid_lock').prop("checked", config.bssid_lock);
     $('#wifi_sta_passphrase').val(config.passphrase);
-    if(config.ip.join(".") == "0.0.0.0") {
+    if(config.ip == "0.0.0.0") {
         $('#wifi_sta_show_static').val("hide");
         wifi_cfg_toggle_static_ip_collapse("hide");
     } else {
         $('#wifi_sta_show_static').val("show");
         wifi_cfg_toggle_static_ip_collapse("show");
     }
-    $('#wifi_sta_ip').val(config.ip.join("."));
-    $('#wifi_sta_gateway').val(config.gateway.join("."));
-    $('#wifi_sta_subnet').val(config.subnet.join("."));
-    $('#wifi_sta_dns').val(config.dns.join("."));
-    $('#wifi_sta_dns2').val(config.dns2.join("."));
+    $('#wifi_sta_ip').val(config.ip);
+    $('#wifi_sta_gateway').val(config.gateway);
+    $('#wifi_sta_subnet').val(config.subnet);
+    $('#wifi_sta_dns').val(config.dns);
+    $('#wifi_sta_dns2').val(config.dns2);
 }
 
 
@@ -158,9 +158,9 @@ function update_wifi_ap_config() {
     $('#wifi_ap_hide_ssid').prop("checked", config.hide_ssid);
     $('#wifi_ap_passphrase').val(config.passphrase);
     $('#wifi_ap_channel').val(config.channel);
-    $('#wifi_ap_ip').val(config.ip.join("."));
-    $('#wifi_ap_gateway').val(config.gateway.join("."));
-    $('#wifi_ap_subnet').val(config.subnet.join("."));
+    $('#wifi_ap_ip').val(config.ip);
+    $('#wifi_ap_gateway').val(config.gateway);
+    $('#wifi_ap_subnet').val(config.subnet);
 
     if(config.enable_ap && config.ap_fallback_only)
         $('#wifi_ap_enable_ap').val(1);
@@ -240,8 +240,8 @@ function update_wifi_state() {
 
     $('#wifi_ap_bssid').html(state.ap_bssid);
 
-    if (state.sta_ip.join(".") != "0.0.0.0") {
-        $('#status_wifi_sta_ip').html(state.sta_ip.join("."));
+    if (state.sta_ip != "0.0.0.0") {
+        $('#status_wifi_sta_ip').html(state.sta_ip);
         $('#status_wifi_sta_rssi').html(wifi_symbol(state.sta_rssi));
     }
 }
@@ -270,18 +270,6 @@ function connect_to_ap(ssid: string, bssid: string, encryption: number, enable_b
     return;
 }
 
-function parse_ip(ip_str: string) {
-    let splt = ip_str.split('.');
-    if (splt.length != 4)
-        return [0, 0, 0, 0];
-
-    let result: number[] = [];
-
-    for (let i = 0; i < 4; ++i)
-        result.push(parseInt(splt[i], 10));
-    return result;
-}
-
 function save_wifi_sta_config() {
     let dhcp = $('#wifi_sta_show_static').val() != "show";
 
@@ -291,11 +279,11 @@ function save_wifi_sta_config() {
             bssid: $('#wifi_sta_bssid').val().toString().split(':').map(x => parseInt(x, 16)),
             bssid_lock: $('#wifi_sta_bssid_lock').is(':checked'),
             passphrase: util.passwordUpdate('#wifi_sta_passphrase'),
-            ip: dhcp ? [0, 0, 0, 0] : parse_ip($('#wifi_sta_ip').val().toString()),
-            subnet: dhcp ? [0, 0, 0, 0] : parse_ip($('#wifi_sta_subnet').val().toString()),
-            gateway: dhcp ? [0, 0, 0, 0] : parse_ip($('#wifi_sta_gateway').val().toString()),
-            dns: dhcp ? [0, 0, 0, 0] : parse_ip($('#wifi_sta_dns').val().toString()),
-            dns2: dhcp ? [0, 0, 0, 0] : parse_ip($('#wifi_sta_dns2').val().toString())
+            ip: dhcp ? "0.0.0.0": $('#wifi_sta_ip').val().toString(),
+            subnet: dhcp ? "0.0.0.0": $('#wifi_sta_subnet').val().toString(),
+            gateway: dhcp ? "0.0.0.0": $('#wifi_sta_gateway').val().toString(),
+            dns: dhcp ? "0.0.0.0": $('#wifi_sta_dns').val().toString(),
+            dns2: dhcp ? "0.0.0.0": $('#wifi_sta_dns2').val().toString()
         },
         __("wifi.script.sta_config_failed"),
         __("wifi.script.sta_reboot_content_changed"));
@@ -309,9 +297,9 @@ function save_wifi_ap_config() {
             hide_ssid: $('#wifi_ap_hide_ssid').is(':checked'),
             passphrase: util.passwordUpdate('#wifi_ap_passphrase'),
             channel: parseInt($('#wifi_ap_channel').val().toString()),
-            ip: parse_ip($('#wifi_ap_ip').val().toString()),
-            subnet: parse_ip($('#wifi_ap_subnet').val().toString()),
-            gateway: parse_ip($('#wifi_ap_gateway').val().toString()),
+            ip: $('#wifi_ap_ip').val().toString(),
+            subnet: $('#wifi_ap_subnet').val().toString(),
+            gateway: $('#wifi_ap_gateway').val().toString(),
         },
         __("wifi.script.ap_config_failed"),
         __("wifi.script.ap_reboot_content_changed"));

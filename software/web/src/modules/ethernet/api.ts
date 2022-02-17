@@ -1,15 +1,15 @@
 export interface config {
     enable_ethernet: boolean,
-    ip: number[],
-    gateway: number[],
-    subnet: number[],
-    dns: number[],
-    dns2: number[],
+    ip: string,
+    gateway: string,
+    subnet: string,
+    dns: string,
+    dns2: string,
 }
 
 export interface state {
     connection_state: number,
-    ip: number[],
+    ip: string,
     full_duplex: boolean,
     link_speed: number,
 }

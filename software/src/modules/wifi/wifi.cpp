@@ -42,48 +42,35 @@ extern API api;
 
 Wifi::Wifi()
 {
-    wifi_ap_config = Config::Object({
+    wifi_ap_config = ConfigRoot(Config::Object({
         {"enable_ap", Config::Bool(true)},
         {"ap_fallback_only", Config::Bool(false)},
         {"ssid", Config::Str("", 0, 32)},
         {"hide_ssid", Config::Bool(false)},
         {"passphrase", Config::Str("this-will-be-replaced-in-setup", 8, 64)},//FIXME: check if there are only ASCII characters or hex digits (for PSK) here.
         {"channel", Config::Uint(1, 1, 13)},
-        {"ip", Config::Array({
-                Config::Uint8(10),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(1),
-                },
-                new Config{Config::Uint8(0)},
-                4,
-                4,
-                Config::type_id<Config::ConfUint>()
-            )},
-        {"gateway", Config::Array({
-                Config::Uint8(10),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(1),
-                },
-                new Config{Config::Uint8(0)},
-                4,
-                4,
-                Config::type_id<Config::ConfUint>()
-            )},
-        {"subnet", Config::Array({
-                Config::Uint8(255),
-                Config::Uint8(255),
-                Config::Uint8(255),
-                Config::Uint8(0),
-                },
-                new Config{Config::Uint8(0)},
-                4,
-                4,
-                Config::type_id<Config::ConfUint>()
-            )},
+        {"ip", Config::Str("10.0.0.1", 7, 15)},
+        {"gateway", Config::Str("10.0.0.1", 7, 15)},
+        {"subnet", Config::Str("255.255.255.0", 7, 15)}
+    }), [](Config &cfg) -> String {
+        const char *ip = cfg.get("ip")->asCStr();
+        const char *gateway = cfg.get("gateway")->asCStr();
+        const char *subnet = cfg.get("subnet")->asCStr();
+
+        IPAddress unused;
+        if (!unused.fromString(ip))
+            return "Failed to parse \"ip\": Expected format is dotted decimal, i.e. 10.0.0.1";
+
+        if (!unused.fromString(gateway))
+            return "Failed to parse \"gateway\": Expected format is dotted decimal, i.e. 10.0.0.1";
+
+        if (!unused.fromString(subnet))
+            return "Failed to parse \"subnet\": Expected format is dotted decimal, i.e. 10.0.0.1";
+
+        return "";
     });
-    wifi_sta_config = ConfigRoot{Config::Object({
+
+    wifi_sta_config = ConfigRoot(Config::Object({
         {"enable_sta", Config::Bool(false)},
         {"ssid", Config::Str("", 0, 32)},
         {"bssid", Config::Array({
@@ -102,84 +89,47 @@ Wifi::Wifi()
         },
         {"bssid_lock", Config::Bool(false)},
         {"passphrase", Config::Str("", 8, 64)},
-        {"ip", Config::Array({
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                },
-                new Config{Config::Uint8(0)},
-                4,
-                4,
-                Config::type_id<Config::ConfUint>()
-            )},
-        {"gateway", Config::Array({
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                },
-                new Config{Config::Uint8(0)},
-                4,
-                4,
-                Config::type_id<Config::ConfUint>()
-            )},
-        {"subnet", Config::Array({
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                },
-                new Config{Config::Uint8(0)},
-                4,
-                4,
-                Config::type_id<Config::ConfUint>()
-            )},
-        {"dns", Config::Array({
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                },
-                new Config{Config::Uint8(0)},
-                4,
-                4,
-                Config::type_id<Config::ConfUint>()
-            )},
-        {"dns2", Config::Array({
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                },
-                new Config{Config::Uint8(0)},
-                4,
-                4,
-                Config::type_id<Config::ConfUint>()
-            )},
-    }), [](Config &conf) -> String {
-        const String &value = conf.get("passphrase")->asString();
-        return value.length() == 0 ||
-                (value.length() >= 8 && value.length() <= 63) || //FIXME: check if there are only ASCII characters here.
-                (value.length() == 64) ? String("") : String("passphrase must be of length zero, or 8 to 63, or 64 if PSK."); //FIXME: check if there are only hex digits here.
-        }
-    };
+        {"ip", Config::Str("0.0.0.0", 7, 15)},
+        {"gateway", Config::Str("0.0.0.0", 7, 15)},
+        {"subnet", Config::Str("0.0.0.0", 7, 15)},
+        {"dns", Config::Str("0.0.0.0", 7, 15)},
+        {"dns2", Config::Str("0.0.0.0", 7, 15)},
+    }), [](Config &cfg) -> String {
+        const String &value = cfg.get("passphrase")->asString();
+        if (value.length() > 0 && value.length() < 8)
+            return "Passphrase too short. Must be at least 8 characters, or zero if open network.";
+        // Fixme: Check if only hex if exactly 64 bytes long: then it's a PSK instead of a passphrase.
+
+        const char *ip = cfg.get("ip")->asCStr();
+        const char *gateway = cfg.get("gateway")->asCStr();
+        const char *subnet = cfg.get("subnet")->asCStr();
+        const char *dns = cfg.get("dns")->asCStr();
+        const char *dns2 = cfg.get("dns2")->asCStr();
+
+        IPAddress unused;
+        if (!unused.fromString(ip))
+            return "Failed to parse \"ip\": Expected format is dotted decimal, i.e. 10.0.0.1";
+
+        if (!unused.fromString(gateway))
+            return "Failed to parse \"gateway\": Expected format is dotted decimal, i.e. 10.0.0.1";
+
+        if (!unused.fromString(subnet))
+            return "Failed to parse \"subnet\": Expected format is dotted decimal, i.e. 10.0.0.1";
+
+        if (!unused.fromString(dns))
+            return "Failed to parse \"dns\": Expected format is dotted decimal, i.e. 10.0.0.1";
+
+        if (!unused.fromString(dns2))
+            return "Failed to parse \"dns2\": Expected format is dotted decimal, i.e. 10.0.0.1";
+
+        return "";
+    });
 
     wifi_state = Config::Object({
         {"connection_state", Config::Int(0)},
         {"ap_state", Config::Int(0)},
         {"ap_bssid", Config::Str("", 0, 20)},
-        {"sta_ip", Config::Array({
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                },
-                new Config{Config::Uint8(0)},
-                4,
-                4,
-                Config::type_id<Config::ConfUint>()
-            )},
+        {"sta_ip", Config::Str("0.0.0.0", 7, 15)},
         {"sta_rssi", Config::Int8(0)},
         {"sta_bssid", Config::Str("", 0, 20)}
     });
@@ -189,22 +139,17 @@ Wifi::Wifi()
 
 void Wifi::apply_soft_ap_config_and_start()
 {
-    uint8_t ip[4];
-    uint8_t gateway[4];
-    uint8_t subnet[4];
-
-    wifi_ap_config_in_use.get("ip")->fillArray<uint8_t, Config::ConfUint>(ip, 4);
-    wifi_ap_config_in_use.get("gateway")->fillArray<uint8_t, Config::ConfUint>(gateway, 4);
-    wifi_ap_config_in_use.get("subnet")->fillArray<uint8_t, Config::ConfUint>(subnet, 4);
+    IPAddress ip, gateway, subnet;
+    ip.fromString(wifi_ap_config_in_use.get("ip")->asCStr());
+    gateway.fromString(wifi_ap_config_in_use.get("gateway")->asCStr());
+    subnet.fromString(wifi_ap_config_in_use.get("subnet")->asCStr());
 
     int counter = 0;
-    while((ip[0] != WiFi.softAPIP()[0]) || (ip[1] != WiFi.softAPIP()[1]) || (ip[2] != WiFi.softAPIP()[2]) || (ip[3] != WiFi.softAPIP()[3])) {
+    while(ip != WiFi.softAPIP()) {
         WiFi.softAPConfig(ip, gateway, subnet);
         ++counter;
     }
     logger.printfln("Had to configure soft AP IP address %d times.", counter);
-    delay(2000);
-
     logger.printfln("Wifi soft AP started");
     logger.printfln("    SSID: %s", wifi_ap_config_in_use.get("ssid")->asString().c_str());
 
@@ -217,7 +162,7 @@ void Wifi::apply_soft_ap_config_and_start()
     soft_ap_running = true;
     IPAddress myIP = WiFi.softAPIP();
     logger.printfln("    MAC address: %s", WiFi.softAPmacAddress().c_str());
-    logger.printfln("    IP address: %u.%u.%u.%u", myIP[0], myIP[1], myIP[2], myIP[3]);
+    logger.printfln("    IP address: %s", myIP.toString().c_str());
 }
 
 bool Wifi::apply_sta_config_and_connect()
@@ -238,12 +183,13 @@ bool Wifi::apply_sta_config_and_connect()
     String passphrase = wifi_sta_config_in_use.get("passphrase")->asString();
     bool bssid_lock = wifi_sta_config_in_use.get("bssid_lock")->asBool();
 
-    uint8_t ip[4], subnet[4], gateway[4], dns[4], dns2[4];
-    wifi_sta_config_in_use.get("ip")->fillUint8Array(ip, 4);
-    wifi_sta_config_in_use.get("subnet")->fillUint8Array(subnet, 4);
-    wifi_sta_config_in_use.get("gateway")->fillUint8Array(gateway, 4);
-    wifi_sta_config_in_use.get("dns")->fillUint8Array(dns, 4);
-    wifi_sta_config_in_use.get("dns2")->fillUint8Array(dns2, 4);
+    IPAddress ip, subnet, gateway, dns, dns2;
+
+    ip.fromString(wifi_sta_config_in_use.get("ip")->asCStr());
+    subnet.fromString(wifi_sta_config_in_use.get("subnet")->asCStr());
+    gateway.fromString(wifi_sta_config_in_use.get("gateway")->asCStr());
+    dns.fromString(wifi_sta_config_in_use.get("dns")->asCStr());
+    dns2.fromString(wifi_sta_config_in_use.get("dns2")->asCStr());
 
     WiFi.begin(ssid.c_str(), passphrase.c_str(), 0, bssid_lock ? bssid : nullptr, false);
 
@@ -338,10 +284,7 @@ void Wifi::setup()
             }
             this->was_connected = false;
 
-            wifi_state.get("sta_ip")->get(0)->updateUint(0);
-            wifi_state.get("sta_ip")->get(1)->updateUint(0);
-            wifi_state.get("sta_ip")->get(2)->updateUint(0);
-            wifi_state.get("sta_ip")->get(3)->updateUint(0);
+            wifi_state.get("sta_ip")->updateString("0.0.0.0");
             wifi_state.get("sta_bssid")->updateString("");
         },
         ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
@@ -360,13 +303,10 @@ void Wifi::setup()
             // or else MQTT will never attempt to connect.
             this->was_connected = true;
 
-            auto ip = WiFi.localIP();
+            auto ip = WiFi.localIP().toString();
             logger.printfln("Wifi MAC address: %s", WiFi.macAddress().c_str());
-            logger.printfln("Wifi got IP address: %u.%u.%u.%u. Connected to BSSID %s", ip[0], ip[1], ip[2], ip[3], WiFi.BSSIDstr().c_str());
-            wifi_state.get("sta_ip")->get(0)->updateUint(ip[0]);
-            wifi_state.get("sta_ip")->get(1)->updateUint(ip[1]);
-            wifi_state.get("sta_ip")->get(2)->updateUint(ip[2]);
-            wifi_state.get("sta_ip")->get(3)->updateUint(ip[3]);
+            logger.printfln("Wifi got IP address: %s. Connected to BSSID %s", ip.c_str(), WiFi.BSSIDstr().c_str());
+            wifi_state.get("sta_ip")->updateString(ip);
             wifi_state.get("sta_bssid")->updateString(WiFi.BSSIDstr());
 
             api.wifiAvailable();
@@ -385,10 +325,7 @@ void Wifi::setup()
         this->was_connected = false;
 
         logger.printfln("Wifi lost IP. Forcing disconnect and reconnect of WiFi");
-        wifi_state.get("sta_ip")->get(0)->updateUint(0);
-        wifi_state.get("sta_ip")->get(1)->updateUint(0);
-        wifi_state.get("sta_ip")->get(2)->updateUint(0);
-        wifi_state.get("sta_ip")->get(3)->updateUint(0);
+        wifi_state.get("sta_ip")->updateString("0.0.0.0");
         wifi_state.get("sta_bssid")->updateString("");
 
         WiFi.disconnect(false, true);

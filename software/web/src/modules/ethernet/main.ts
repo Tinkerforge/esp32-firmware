@@ -39,18 +39,18 @@ function update_ethernet_config() {
 
     $('#ethernet_enable').prop("checked", config.enable_ethernet);
 
-    if(config.ip.join(".") == "0.0.0.0") {
+    if(config.ip == "0.0.0.0") {
         $('#ethernet_show_static').val("hide");
         ethernet_cfg_toggle_static_ip_collapse("hide");
     } else {
         $('#ethernet_show_static').val("show");
         ethernet_cfg_toggle_static_ip_collapse("show");
     }
-    $('#ethernet_ip').val(config.ip.join("."));
-    $('#ethernet_gateway').val(config.gateway.join("."));
-    $('#ethernet_subnet').val(config.subnet.join("."));
-    $('#ethernet_dns').val(config.dns.join("."));
-    $('#ethernet_dns2').val(config.dns2.join("."));
+    $('#ethernet_ip').val(config.ip);
+    $('#ethernet_gateway').val(config.gateway);
+    $('#ethernet_subnet').val(config.subnet);
+    $('#ethernet_dns').val(config.dns);
+    $('#ethernet_dns2').val(config.dns2);
 }
 
 function update_ethernet_state() {
@@ -58,8 +58,8 @@ function update_ethernet_state() {
 
     util.update_button_group("btn_group_ethernet_state", state.connection_state);
 
-    if (state.ip.join(".") != "0.0.0.0") {
-        $('#status_ethernet_ip').html(state.ip.join("."));
+    if (state.ip != "0.0.0.0") {
+        $('#status_ethernet_ip').html(state.ip);
     } else {
         $('#status_ethernet_ip').html("");
     }
@@ -80,28 +80,16 @@ function ethernet_cfg_toggle_static_ip_collapse(value: string) {
     }
 }
 
-function parse_ip(ip_str: string) {
-    let splt = ip_str.split('.');
-    if (splt.length != 4)
-        return [0, 0, 0, 0];
-
-    let result: number[] = [];
-
-    for (let i = 0; i < 4; ++i)
-        result.push(parseInt(splt[i], 10));
-    return result;
-}
-
 function save_ethernet_config() {
     let dhcp = $('#ethernet_show_static').val() != "show";
 
     API.save('ethernet/config',{
             enable_ethernet: $('#ethernet_enable').is(':checked'),
-            ip: dhcp ? [0, 0, 0, 0] : parse_ip($('#ethernet_ip').val().toString()),
-            subnet: dhcp ? [0, 0, 0, 0] : parse_ip($('#ethernet_subnet').val().toString()),
-            gateway: dhcp ? [0, 0, 0, 0] : parse_ip($('#ethernet_gateway').val().toString()),
-            dns: dhcp ? [0, 0, 0, 0] : parse_ip($('#ethernet_dns').val().toString()),
-            dns2: dhcp ? [0, 0, 0, 0] : parse_ip($('#ethernet_dns2').val().toString())
+            ip: dhcp ? "0.0.0.0" : $('#ethernet_ip').val().toString(),
+            subnet: dhcp ? "0.0.0.0" : $('#ethernet_subnet').val().toString(),
+            gateway: dhcp ? "0.0.0.0" : $('#ethernet_gateway').val().toString(),
+            dns: dhcp ? "0.0.0.0" : $('#ethernet_dns').val().toString(),
+            dns2: dhcp ? "0.0.0.0" : $('#ethernet_dns2').val().toString()
         },
         __("ethernet.script.config_failed"),
         __("ethernet.script.reboot_content_changed"));

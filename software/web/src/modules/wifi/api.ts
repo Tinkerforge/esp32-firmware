@@ -14,11 +14,11 @@ export interface sta_config {
     bssid: number[],
     bssid_lock: boolean,
     passphrase: string,
-    ip: number[],
-    gateway: number[],
-    subnet: number[],
-    dns: number[],
-    dns2: number[],
+    ip: string,
+    gateway: string,
+    subnet: string,
+    dns: string,
+    dns2: string,
 }
 
 export interface ap_config {
@@ -28,16 +28,16 @@ export interface ap_config {
     hide_ssid: boolean,
     passphrase: string,
     channel: number,
-    ip: number[],
-    gateway: number[],
-    subnet: number[]
+    ip: string,
+    gateway: string,
+    subnet: string
 }
 
 export interface state {
     connection_state: number,
     ap_state: number,
     ap_bssid: string,
-    sta_ip: number[],
+    sta_ip: string,
     sta_rssi: number,
     sta_bssid: string
 }
