@@ -30,7 +30,7 @@
 #include "build.h"
 
 #include "./crc32.h"
-#include "./recovery_page.h"
+#include "./recovery_html.embedded.h"
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -260,7 +260,7 @@ void FirmwareUpdate::register_urls()
         req.addResponseHeader("ETag", "dontcachemeplease");
         // Intentionally don't handle the If-None-Match header:
         // This makes sure that a cached version is never used.
-        req.send(200, "text/html", recovery_page, recovery_page_len);
+        req.send(200, "text/html", recovery_html_data, recovery_html_length);
     });
 
     server.on("/check_firmware", HTTP_POST, [this](WebServerRequest request){

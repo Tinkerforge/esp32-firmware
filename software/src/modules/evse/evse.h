@@ -23,11 +23,11 @@
 
 #include "config.h"
 #include "device_module.h"
-#include "evse_firmware.h"
+#include "evse_bricklet_firmware_bin.embedded.h"
 
 class EVSE : public DeviceModule<TF_EVSE,
-                                 evse_bricklet_firmware_bin,
-                                 evse_bricklet_firmware_bin_len,
+                                 evse_bricklet_firmware_bin_data,
+                                 evse_bricklet_firmware_bin_length,
                                  tf_evse_create,
                                  tf_evse_get_bootloader_mode,
                                  tf_evse_reset,

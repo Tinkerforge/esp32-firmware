@@ -4,10 +4,8 @@ build/
 data/spiffs.json
 data/wifi_sta_config.json
 data/wifi_soft_ap_config.json
-src/modules/**/*_firmware.h
-src/modules/**/*_firmware.cpp
-src/modules/firmware_update/recovery_page.h
-src/modules/firmware_update/recovery_page.cpp
+src/modules/**/*.embedded.h
+src/modules/**/*.embedded.cpp
 src/index.html.h
 src/index.html.h.digest
 src/main.cpp

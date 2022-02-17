@@ -23,7 +23,7 @@
 
 #include "config.h"
 #include "device_module.h"
-#include "evse_v2_firmware.h"
+#include "evse_v2_bricklet_firmware_bin.embedded.h"
 
 #define CHARGING_SLOT_INCOMING_CABLE 0
 #define CHARGING_SLOT_OUTGOING_CABLE 1
@@ -42,12 +42,12 @@
 #define IEC_STATE_EF 4
 
 class EVSEV2 : public DeviceModule<TF_EVSEV2,
-                                 evse_v2_bricklet_firmware_bin,
-                                 evse_v2_bricklet_firmware_bin_len,
-                                 tf_evse_v2_create,
-                                 tf_evse_v2_get_bootloader_mode,
-                                 tf_evse_v2_reset,
-                                 tf_evse_v2_destroy>  {
+                                   evse_v2_bricklet_firmware_bin_data,
+                                   evse_v2_bricklet_firmware_bin_length,
+                                   tf_evse_v2_create,
+                                   tf_evse_v2_get_bootloader_mode,
+                                   tf_evse_v2_reset,
+                                   tf_evse_v2_destroy>  {
 public:
     EVSEV2();
     void setup();

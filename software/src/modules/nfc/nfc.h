@@ -23,7 +23,7 @@
 
 #include "config.h"
 #include "device_module.h"
-#include "nfc_firmware.h"
+#include "nfc_bricklet_firmware_bin.embedded.h"
 
 
 // in bytes
@@ -32,8 +32,8 @@
 #define NFC_TAG_ID_STRING_LENGTH (NFC_TAG_ID_LENGTH * 3)
 
 class NFC : public DeviceModule<TF_NFC,
-                                nfc_bricklet_firmware_bin,
-                                nfc_bricklet_firmware_bin_len,
+                                nfc_bricklet_firmware_bin_data,
+                                nfc_bricklet_firmware_bin_length,
                                 tf_nfc_create,
                                 tf_nfc_get_bootloader_mode,
                                 tf_nfc_reset,

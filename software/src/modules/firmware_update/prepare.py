@@ -1,29 +1,26 @@
-# This file is duplicated for every module that embeds a firmware.
-# When editing this file, keep the copies in sync!
 import os
-import re
 import sys
+import importlib.util
+import importlib.machinery
+
+software_dir = os.path.realpath(os.path.join('..', '..', '..', os.path.dirname(__file__)))
+
+def create_software_module():
+    software_spec = importlib.util.spec_from_file_location('software', os.path.join(software_dir, '__init__.py'))
+    software_module = importlib.util.module_from_spec(software_spec)
+
+    software_spec.loader.exec_module(software_module)
+
+    sys.modules['software'] = software_module
+
+if 'software' not in sys.modules:
+    create_software_module()
+
+from software import util
 import gzip
 import io
 
-with open("recovery.html", "rb") as f:
-    compressed = gzip.compress(f.read())
+with open('recovery.html', 'rb') as f:
+    src_file = io.BytesIO(gzip.compress(f.read()))
 
-bin_file = io.BytesIO(compressed)
-
-with open("recovery_page.cpp", "w") as cpp:
-    cpp.write("extern const char recovery_page[] = {\n")
-    written = 0
-    b = bin_file.read(12)
-    while len(b) != 0:
-        # read first to prevent trailing , after last byte
-        next_b = bin_file.read(12)
-        cpp.write("    " + ", ".join(["0x{:02x}".format(x) for x in b]) + (",\n" if len(next_b) != 0 else "\n"))
-        written += len(b)
-        b = next_b
-
-    cpp.write("};\n")
-
-with open("recovery_page.h", "w") as h:
-    h.write("extern const char recovery_page[];\n")
-    h.write("const unsigned int recovery_page_len = {};\n".format(written))
+util.embed_file(src_file, 'recovery_html', 'char')

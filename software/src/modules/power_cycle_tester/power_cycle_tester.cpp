@@ -51,8 +51,6 @@ PowerCycleTester::PowerCycleTester()
 
 }
 
-
-
 void PowerCycleTester::setup()
 {
     logger.printfln("Waiting for 2 seconds...");

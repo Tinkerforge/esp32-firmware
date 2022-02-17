@@ -1,11 +1,16 @@
 Import("env")
 
+import sys
+
+if sys.hexversion < 0x3060000:
+    print('Python >= 3.6 required')
+    sys.exit(1)
+
 from collections import namedtuple
 import functools
 import os
 import shutil
 import subprocess
-import sys
 import time
 import re
 import hashlib

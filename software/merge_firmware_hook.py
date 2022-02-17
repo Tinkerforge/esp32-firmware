@@ -1,7 +1,12 @@
 Import("env")
 
-import os
 import sys
+
+if sys.hexversion < 0x3060000:
+    print('Python >= 3.6 required')
+    sys.exit(1)
+
+import os
 import re
 import shutil
 import subprocess
