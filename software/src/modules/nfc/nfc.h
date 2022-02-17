@@ -28,8 +28,8 @@
 
 // in bytes
 #define NFC_TAG_ID_LENGTH 10
-// For hex strings: two chars per byte plus a separator between each byte plus a null-terminator
-#define NFC_TAG_ID_STRING_LENGTH (NFC_TAG_ID_LENGTH * 3)
+// For hex strings: two chars per byte plus a separator between each byte
+#define NFC_TAG_ID_STRING_LENGTH (NFC_TAG_ID_LENGTH * 3 - 1)
 
 class NFC : public DeviceModule<TF_NFC,
                                 nfc_bricklet_firmware_bin_data,
@@ -47,7 +47,7 @@ public:
     struct tag_info_t {
         uint32_t last_seen;
         uint8_t tag_type;
-        char tag_id[NFC_TAG_ID_STRING_LENGTH];
+        char tag_id[NFC_TAG_ID_STRING_LENGTH + 1]; // allow null terminator here
     };
 
     void update_seen_tags();
