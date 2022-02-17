@@ -169,14 +169,6 @@ static esp_err_t ws_handler(httpd_req_t *req)
     } else if (ws_pkt.type == HTTPD_WS_TYPE_TEXT) {
         // If it was a TEXT message, print it
         logger.printfln("Received packet with message: %s", ws_pkt.payload);
-        /*ret = httpd_ws_send_frame(req, &ws_pkt);
-        if (ret != ESP_OK) {
-            logger.printfln("httpd_ws_send_frame failed with %d", ret);
-        }
-        logger.printfln("ws_handler: httpd_handle_t=%p, sockfd=%d, client_info:%d", req->handle,
-                 httpd_req_to_sockfd(req), httpd_ws_get_fd_info(req->handle, httpd_req_to_sockfd(req)));
-        free(buf);
-        return ret;*/
     } else if (ws_pkt.type == HTTPD_WS_TYPE_CLOSE) {
         // If it was a CLOSE, remove it from the keep-alive list
         free(buf);
