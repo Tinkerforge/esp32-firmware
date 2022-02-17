@@ -112,7 +112,7 @@ async function downloadChargeRecords() {
         })
         .catch(err => console.log(err));
 
-    fetch('/charge_record')
+    await fetch('/charge_record')
         .then(response => response.arrayBuffer())
         .then(buffer => {
             let line = [
@@ -193,7 +193,10 @@ function update_charge_info() {
 }
 
 export function init() {
-    $('#charge_tracker_download').on("click", downloadChargeRecords);
+    $('#charge_tracker_download').on("click", () =>{
+        $('#charge_tracker_download_spinner').prop("hidden", false);
+        downloadChargeRecords().finally(() => $('#charge_tracker_download_spinner').prop("hidden", true));
+    });
 }
 
 export function addEventListeners(source: API.ApiEventTarget) {
