@@ -21,7 +21,7 @@ gulp.task("bundle-js", function () {
         cache: {},
         packageCache: {},
     })
-        .plugin(tsify) // Compile typescript
+        .plugin(tsify, {files: []}) // Compile typescript
         .bundle()
         .on("error", fancy_log)
         .pipe(source("bundle.js")) //Collect in bundle.js
