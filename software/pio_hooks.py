@@ -366,7 +366,7 @@ def main():
                     api_module = "top_level_{}".format(top_level_counter)
                     top_level_counter += 1
 
-                api_imports.append("import * as {} from './modules/{}/api';".format(api_module, frontend_module.under))
+                api_imports.append("import * as {} from '../modules/{}/api';".format(api_module, frontend_module.under))
 
                 api_config_map_entries += ["'{}{}': {}.{},".format(api_path, x, api_module, x) for x in api_exports]
                 api_cache_entries += ["'{}{}': null,".format(api_path, x) for x in api_exports]
