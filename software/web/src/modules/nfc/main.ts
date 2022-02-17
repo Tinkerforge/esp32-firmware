@@ -30,17 +30,6 @@ const MAX_AUTHORIZED_TAGS = 8;
 
 let authorized_tag_count = -1;
 
-function toHexBytes(lst: number[]) {
-    return lst.map((x) => {
-        let r = x.toString(16).toUpperCase();
-        return r.length == 1 ? "0" + r: r;
-    }).slice(0, 7).join(":");
-}
-
-function fromHexBytes(s: string) {
-    return s.split(":").map((x) => parseInt(x, 16));
-}
-
 type NFCConfig = API.getType['nfc/config'];
 type AuthorizedTag = NFCConfig['authorized_tags'][0];
 
@@ -121,7 +110,7 @@ function update_nfc_config(cfg: NFCConfig = API.get('nfc/config'), force: boolea
         const s = cfg.authorized_tags[i];
         $(`#nfc_authorized_tag_${i}_user_id`).val(s.user_id);
         $(`#nfc_authorized_tag_${i}_tag_type`).val(s.tag_type);
-        $(`#nfc_authorized_tag_${i}_tag_id`).html(toHexBytes(s.tag_id));
+        $(`#nfc_authorized_tag_${i}_tag_id`).html(s.tag_id);
     }
 }
 
@@ -133,7 +122,7 @@ function collect_nfc_config(new_tag: AuthorizedTag = null, remove_tag: number = 
         let c: AuthorizedTag = {
             tag_type: parseInt($(`#nfc_authorized_tag_${i}_tag_type`).val().toString()),
             user_id: parseInt($(`#nfc_authorized_tag_${i}_user_id`).val().toString()),
-            tag_id: fromHexBytes($(`#nfc_authorized_tag_${i}_tag_id`).html().toString())
+            tag_id: $(`#nfc_authorized_tag_${i}_tag_id`).html().toString()
         }
         tags.push(c);
     }
@@ -176,7 +165,7 @@ function update_nfc_seen_tags() {
 
 outer_loop:
     for(let i = 0; i < seen_tags.length; ++i) {
-        if (seen_tags[i].tag_id.every((x) => x == 0))
+        if (seen_tags[i].tag_id == "")
             break;
 
         for (let auth_tag_idx = 0; auth_tag_idx < current_nfc_config.authorized_tags.length; ++auth_tag_idx) {
@@ -184,10 +173,7 @@ outer_loop:
             if (auth_tag.tag_type != seen_tags[i].tag_type)
                 continue;
 
-            if (auth_tag.tag_id.length != seen_tags[i].tag_id.length)
-                continue;
-
-            if (auth_tag.tag_id.some((y, j, _array) => y != seen_tags[i].tag_id[j]))
+            if (auth_tag.tag_id != seen_tags[i].tag_id)
                 continue;
 
             auth_seen_tags.push(seen_tags[i]);
@@ -227,12 +213,12 @@ outer_loop:
     }
 
     for(let i = 0; i < unauth_tag_list_length; ++i) {
-        $(`#nfc_seen_tag_${i}_id`).text(toHexBytes(unauth_seen_tags[i].tag_id));
+        $(`#nfc_seen_tag_${i}_id`).text(unauth_seen_tags[i].tag_id);
         $(`#nfc_seen_tag_${i}_type`).text(__(`nfc.content.type_${unauth_seen_tags[i].tag_type}`));
         $(`#nfc_seen_tag_${i}_last_seen`).text(__("nfc.content.last_seen") + util.format_timespan(Math.floor(unauth_seen_tags[i].last_seen / 1000)) + __("nfc.content.last_seen_suffix"));
 
         $(`#nfc_seen_tag_${i}`).on("click", () => {
-            $(`#nfc_config_tag_new_tag_id`).val(toHexBytes(unauth_seen_tags[i].tag_id));
+            $(`#nfc_config_tag_new_tag_id`).val(unauth_seen_tags[i].tag_id);
             $(`#nfc_config_tag_new_tag_type`).val(unauth_seen_tags[i].tag_type);
         });
     }
@@ -288,7 +274,7 @@ export function init() {
 
         let new_config = collect_nfc_config({
             user_id: parseInt($('#nfc_config_tag_new_user_id').val().toString()),
-            tag_id: fromHexBytes($('#nfc_config_tag_new_tag_id').val().toString()),
+            tag_id: $('#nfc_config_tag_new_tag_id').val().toString(),
             tag_type: parseInt($('#nfc_config_tag_new_tag_type').val().toString())
         }, null);
 

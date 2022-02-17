@@ -1,7 +1,7 @@
 interface AuthorizedTag {
     user_id: number,
     tag_type: number,
-    tag_id: number[]
+    tag_id: string
 }
 
 export interface config {
@@ -10,7 +10,7 @@ export interface config {
 
 interface SeenTag {
     tag_type: number,
-    tag_id: number[]
+    tag_id: string
     last_seen: number
 }
 

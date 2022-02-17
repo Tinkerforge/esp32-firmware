@@ -462,6 +462,7 @@ void Users::rename_user(uint8_t user_id, const char *name)
     f.write((const uint8_t *)name, strnlen(name, USERNAME_LENGTH));
 }
 
+// Only returns true if the triggered action was a charge start.
 bool Users::trigger_charge_action(uint8_t user_id)
 {
     bool user_enabled = evse_v2.evse_slots.get(CHARGING_SLOT_USER)->get("active")->asBool();
@@ -492,8 +493,8 @@ bool Users::trigger_charge_action(uint8_t user_id)
     switch (iec_state) {
         case IEC_STATE_B: // State B: The user wants to start charging.
             return this->start_charging(user_id, current_limit);
-        case IEC_STATE_C: // State C: The user wants to stop charging
-            return this->stop_charging(user_id, false);
+        case IEC_STATE_C: // State C: The user wants to stop charging.
+            this->stop_charging(user_id, false);
         default: //Don't do anything in state A, D, and E/F
             break;
     }

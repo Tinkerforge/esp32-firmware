@@ -25,6 +25,12 @@
 #include "device_module.h"
 #include "nfc_firmware.h"
 
+
+// in bytes
+#define NFC_TAG_ID_LENGTH 10
+// For hex strings: two chars per byte plus a separator between each byte plus a null-terminator
+#define NFC_TAG_ID_STRING_LENGTH (NFC_TAG_ID_LENGTH * 3)
+
 class NFC : public DeviceModule<TF_NFC,
                                 nfc_bricklet_firmware_bin,
                                 nfc_bricklet_firmware_bin_len,
@@ -39,10 +45,9 @@ public:
     void loop();
 
     struct tag_info_t {
-        uint8_t tag_type;
-        uint8_t tag_id_len;
-        uint8_t tag_id[10];
         uint32_t last_seen;
+        uint8_t tag_type;
+        char tag_id[NFC_TAG_ID_STRING_LENGTH];
     };
 
     void update_seen_tags();
@@ -50,8 +55,7 @@ public:
     void handle_evse();
     void setup_nfc();
     void check_nfc_state();
-    uint8_t get_user_id(uint8_t tag_type, uint8_t *tag_id, uint8_t tag_id_len, uint32_t last_seen, uint8_t *tag_idx);
-    bool is_tag_equal(uint8_t tag_type, uint8_t *tag_id, uint8_t tag_id_len, uint32_t last_seen, Config *other_tag);
+    uint8_t get_user_id(tag_info_t *tag, uint8_t *tag_idx);
 
     ConfigRoot config;
     ConfigRoot config_in_use;
