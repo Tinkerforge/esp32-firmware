@@ -152,7 +152,15 @@ static esp_err_t ws_handler(httpd_req_t *req)
         }
     }
 
-    if (ws_pkt.type == HTTPD_WS_TYPE_PONG) {
+    if (ws_pkt.type == HTTPD_WS_TYPE_PING) {
+        // We use a patched version of esp-idf that does not handle ping frames in a strange way.
+        // We have to send the pong ourselves.
+        ws_pkt.type = HTTPD_WS_TYPE_PONG;
+        httpd_ws_send_frame(req, &ws_pkt);
+        free(buf);
+        WebSockets *ws = (WebSockets *)req->user_ctx;
+        return wss_keep_alive_client_is_active(ws->keep_alive, httpd_req_to_sockfd(req));
+    } else if (ws_pkt.type == HTTPD_WS_TYPE_PONG) {
         // If it was a PONG, update the keep-alive
         //logger.printfln("Received PONG message");
         free(buf);
