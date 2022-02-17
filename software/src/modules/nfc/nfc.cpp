@@ -64,7 +64,7 @@ NFC::NFC() : DeviceModule("nfc", "NFC", "NFC", std::bind(&NFC::setup_nfc, this))
         Config::type_id<Config::ConfObject>()
     );
 
-    config = Config::Object({
+    config = ConfigRoot(Config::Object({
         {"authorized_tags", Config::Array(
             {},
             new Config{Config::Object({
@@ -75,6 +75,24 @@ NFC::NFC() : DeviceModule("nfc", "NFC", "NFC", std::bind(&NFC::setup_nfc, this))
             0, AUTHORIZED_TAG_LIST_LENGTH,
             Config::type_id<Config::ConfObject>())
         }
+    }), [this](Config &cfg) -> String {
+        Config *tags = cfg.get("authorized_tags");
+        for(int tag = 0; tag < tags->count(); ++tag) {
+            String id_copy = tags->get(tag)->get("tag_id")->asString();
+            id_copy.toUpperCase();
+            tags->get(tag)->get("tag_id")->updateString(id_copy);
+
+            for(int i = 0; i < id_copy.length(); ++i) {
+                char c = id_copy.charAt(i);
+                if ((i % 3 != 2) && ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')))
+                    continue;
+                if (i % 3 == 2 && c == ':')
+                    continue;
+                return "Tag ID contains unexpected character. Expected format is hex bytes separated by colons. For example \"01:23:ab:3d\".";
+            }
+        }
+
+        return "";
     });
 
     last_tag = Config::Object({
