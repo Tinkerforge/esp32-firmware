@@ -230,7 +230,7 @@ function update_users_config() {
     let cfg = API.get('users/config');
     let nfc_config = API.get('nfc/config');
 
-    let options = cfg.users.map((x) => `<option value=${x.id}>${x.id == 0 ? __("user.script.not_assigned") : x.display_name}</option>`).join("");
+    let options = cfg.users.map((x) => `<option value=${x.id}>${x.id == 0 ? __("nfc.script.not_assigned") : x.display_name}</option>`).join("");
     $('.nfc-user-select').empty().append(options);
     for (let i = 0; i < nfc_config.authorized_tags.length; i++) {
         const s = nfc_config.authorized_tags[i];
