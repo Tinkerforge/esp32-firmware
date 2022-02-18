@@ -223,7 +223,6 @@ function update_users_config(force: boolean) {
 
     next_user_id = cfg.next_user_id;
 
-    $('#users_next_user_id').val(cfg.next_user_id);
     $('#users_authentication_enable').prop("checked", cfg.http_auth_enabled);
 
     if (!force && !$('#users_save_button').prop('disabled') && gui_created)
