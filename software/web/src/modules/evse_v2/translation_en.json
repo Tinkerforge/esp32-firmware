@@ -99,7 +99,12 @@
             "settings": "Settings",
             "charge_management_description": "Charge management",
             "charge_management_description_muted": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
-            "charge_management_enable": "Enables other WARP chargers to control this one",
+            "charge_management_enable": "Require the clearance of a charge manager (of this or another WARP charger) to charge",
+
+            "user_slot_description": "User authorization",
+            "user_slot_description_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
+            "user_slot_enable": "Require an user authorization (via NFC card) to charge",
+
 
             "external_description": "External control",
             "external_description_muted": "<a href=\"https://www.warp-charger.com/evcc.html?v=2\">see setup tutorial for details</a>",
@@ -164,8 +169,6 @@
         },
         "script": {
             "error_code": "Error code",
-            "charging_for": "Charging for",
-            "last_charge_took": "Last charge took",
             "set_charging_current_failed": "Failed to set charging current",
             "auto_start_charging_update": "Failed to set auto charge.",
             "start_charging_failed": "Failed to start charging",
@@ -185,7 +188,6 @@
             "by": "by",
 
             "save_failed": "(De)Activating the charge mananagement failed",
-            "managed_current_ignored": "ignored; Charge management deactivated",
 
             "slot_disabled": "not active",
             "slot_blocks": "blocks",
@@ -194,7 +196,17 @@
             "reset_dc_fault_current_failed": "Reset of the DC fault protector failed",
             "gpio_configuration_failed": "Updating the GPIO configuration failed",
             "reset_external_slot_failed": "Releasing the external current limit failed",
-            "control_pilot_configuration_failed": "Updating the control pilot configuration failed"
+            "control_pilot_configuration_failed": "Updating the control pilot configuration failed",
+
+            "slot_0": "Supply cable",
+            "slot_1": "Charging cable",
+            "slot_2": "Shutdown input",
+            "slot_3": "General purpose input",
+            "slot_4": "Auto-Start/Button",
+            "slot_5": "Configuration",
+            "slot_6": "User",
+            "slot_7": "Charge management",
+            "slot_8": "External control"
         }
     }
 }

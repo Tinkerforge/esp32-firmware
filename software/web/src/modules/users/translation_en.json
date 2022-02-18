@@ -1,50 +1,42 @@
 {
     "users": {
         "status": {
-            "users": "Users"
+
         },
         "navbar": {
-            "users": "Users"
+            "users": "User management"
         },
         "content": {
-            "users": "Users",
+            "users": "User management",
 
-            "enable_authentication": "Enable authentication",
-            "enable_authentication_desc": "If activated, it is required to login as one of the configured users to use the web interface or HTTP API..",
+            "enable_authentication": "Enable login",
+            "enable_authentication_desc": "When active, a successful login as one of the configured users is required to open the Web interface or call the HTTP API.",
 
-            "require_tag_to_start": "Start with tag",
-            "require_tag_to_start_desc": "If enabled, an authorized tag is required to start charging. The web interface can still be used to charge without tag.",
-            "require_tag_to_stop": "Stop with tag",
-            "require_tag_to_stop_desc": "If enabled, an authorized tag is required to stop charging. The web interface can still be used to stop charging. <b>Warning: The stop function of the front panel button will be deactivated!</b>",
-            "warp1_require_tag_to_stop_desc": "If enabled, an authorized tag is required to stop charging. The web interface can still be used to stop charging. <b>Warning: The stop function of the front panel button can not be deactivated for WARP 1 chargers!</b>",
             "save": "Save",
-            "authorized_tags": "Authorized tags",
+            "authorized_users": "Authorized users",
 
-            "add_tag_modal_title": "Add authorized tag",
-            "add_tag_modal_seen_tags": "Last seen tags",
-            "add_tag_modal_name": "Tag name",
-            "add_tag_modal_tag_id": "Tag ID",
-            "add_tag_modal_tag_type": "Tag type",
-            "add_tag_modal_abort": "Discard",
-            "add_tag_modal_save": "Add",
-            "last_seen": "Seen ",
-            "last_seen_suffix": " ago",
-            "select_type": "Select tag type...",
-            "type_0": "Mifare Classic",
-            "type_1": "NFC Forum Type 1",
-            "type_2": "NFC Forum Type 2",
-            "type_3": "NFC Forum Type 3",
-            "type_4": "NFC Forum Type 4",
-            "add_tag_description": "Hold the new tag to the right side of the charger. Tag ID and type can also be typed in manually."
+            "add_user_modal_title": "Add user",
+            "add_user_modal_username": "Username",
+            "add_user_modal_display_name": "Display name",
+            "add_user_modal_current": "Maximum charge current",
+            "add_user_modal_password": "Password",
+            "add_user_modal_password_desc": "leave blank to disable web interface login for this user",
+            "add_user_modal_abort": "Discard",
+            "add_user_modal_save": "Add"
         },
         "script": {
-            "add_tag": "Add tag",
-            "add_tag_disabled": "Only up to 8 tags are supported.",
-            "tag_name": "Tag name",
-            "tag_type": "Tag type",
+            "id": "ID",
+            "roles": "Roles",
+            "display_name": "Display name",
+            "current": "Maximum charge current",
+            "password": "Password",
             "last_seen_unknown": "placeholder",
-            "save_failed": "Failed to update the user configuration",
-            "reboot_content_changed": "user configuration"
+            "add_user": "Add user",
+            "add_user_disabled": "Only up to 8 users are supported.",
+            "unchanged": "unchanged",
+            "reboot_content_changed": "User configuration",
+            "login_disabled": "Login disabled",
+            "save_failed": "Failed to save the user configuration."
         }
     }
 }

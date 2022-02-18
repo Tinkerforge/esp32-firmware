@@ -1,9 +1,8 @@
 {
     "charge_tracker": {
         "status": {
-            "charge_tracker": "Ladetracker",
             "last_charges": "Letzte Ladevorgänge",
-            "running_charge": "Laufende Ladung"
+            "current_charge": "Laufende Ladung"
         },
         "navbar": {
             "charge_tracker": "Ladetracker"
@@ -11,7 +10,7 @@
         "content": {
             "charge_tracker": "Ladetracker",
             "charge_tracker_download": "Ladelog herunterladen",
-            "charge_tracker_download_desc": "enthält alle aufgezeichneten Ladevorgänge als CSV-Datei",
+            "charge_tracker_download_desc": "eine CSV-Datei aller aufgezeichneten Ladevorgänge",
             "charge_tracker_download_btn": "Ladelog herunterladen"
         },
         "script": {
@@ -23,8 +22,7 @@
             "csv_header_meter_end": "Zählerstand Ende",
             "unknown_user": "Unbekannter Nutzer",
             "deleted_user": "Gelöschter Nutzer",
-            "unknown_charge_start": "Unbekannter Startzeitpunkt",
-            "no_running_charge": "keine"
+            "unknown_charge_start": "Unbekannter Startzeitpunkt"
         }
     }
 }

@@ -31,7 +31,7 @@ declare function __(s: string): string;
 // (At least for de and en locales)
 function timestamp_min_to_date(timestamp_minutes: number) {
     if (timestamp_minutes == 0) {
-        return __('charge_tracker.script.unknown_charge_start');
+        return __("charge_tracker.script.unknown_charge_start");
     }
     let date_fmt: any = { year: 'numeric', month: '2-digit', day: '2-digit'};
     let time_fmt: any = {hour: '2-digit', minute:'2-digit' };

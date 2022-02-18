@@ -1,7 +1,6 @@
 {
     "nfc": {
         "status": {
-            "nfc": "NFC"
         },
         "navbar": {
             "nfc": "NFC"
@@ -14,7 +13,7 @@
 
             "add_tag_modal_title": "Add authorized tag",
             "add_tag_modal_seen_tags": "Last seen tags",
-            "add_tag_modal_name": "Tag name",
+            "add_tag_modal_user_id": "Assigned user",
             "add_tag_modal_tag_id": "Tag ID",
             "add_tag_modal_tag_type": "Tag type",
             "add_tag_modal_abort": "Discard",
@@ -32,11 +31,12 @@
         "script": {
             "add_tag": "Add tag",
             "add_tag_disabled": "Only up to 8 tags are supported.",
-            "tag_name": "Tag name",
+            "user_id": "Assigned user",
             "tag_type": "Tag type",
             "last_seen_unknown": "placeholder",
             "save_failed": "Failed to update the NFC configuration",
-            "reboot_content_changed": "NFC configuration"
+            "reboot_content_changed": "NFC configuration",
+            "not_assigned": "not assigned"
         }
     }
 }

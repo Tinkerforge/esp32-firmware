@@ -1,7 +1,6 @@
 {
     "nfc": {
         "status": {
-            "nfc": "NFC"
         },
         "navbar": {
             "nfc": "NFC"
@@ -36,7 +35,8 @@
             "tag_type": "Tag-Typ",
             "last_seen_unknown": "placeholder",
             "save_failed": "Aktualisieren der NFC-Einstellungen fehlgeschlagen",
-            "reboot_content_changed": "NFC-Einstellungen"
+            "reboot_content_changed": "NFC-Einstellungen",
+            "not_assigned": "nicht zugeordnet"
         }
     }
 }

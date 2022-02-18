@@ -101,9 +101,9 @@
             "charge_management_description_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
             "charge_management_enable": "Verlange die Freigabe eines Lastmanagers (von diesem oder einem anderen WARP Charger) zum Laden",
 
-            "user_slot_description": "Benutzerfreigabe",
+            "user_slot_description": "Benutzerautorisierung",
             "user_slot_description_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
-            "user_slot_enable": "Verlange eine Benutzerautorisierung (z.B. per NFC-Tag) zur Freigabe der Ladung",
+            "user_slot_enable": "Verlange eine Benutzerautorisierung (z.B. per NFC-Tag) zum Laden",
 
             "external_description": "Externe Steuerung",
             "external_description_muted": "<a href=\"https://www.warp-charger.com/evcc.html?v=2\">siehe Einrichtungs-Tutorial für Details</a>",
@@ -168,8 +168,6 @@
         },
         "script": {
             "error_code": "Fehlercode",
-            "charging_for": "Lädt seit",
-            "last_charge_took": "Letztes Laden dauerte",
             "set_charging_current_failed": "Konnte Ladestrom nicht setzen",
             "auto_start_charging_update": "Lade-Autostart setzen fehlgeschlagen.",
             "start_charging_failed": "Ladestart auslösen fehlgeschlagen",
@@ -189,7 +187,6 @@
             "by": "durch",
 
             "save_failed": "(De-)Aktivieren des Lastmanagements fehlgeschlagen",
-            "managed_current_ignored": "ignoriert; Lastmanagement deaktiviert",
 
             "reset_dc_fault_current_failed": "Zurücksetzen des DC-Fehlerstromschutzmoduls fehlgeschlagen",
             "gpio_configuration_failed": "Speichern der GPIO-Konfiguration fehlgeschlagen",

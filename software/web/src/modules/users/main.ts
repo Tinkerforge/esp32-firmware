@@ -204,7 +204,7 @@ function generate_user_ui(user: User, password: string) {
     $(`#users_authorized_user_${i}_username`).html(user.username);
     $(`#users_authorized_user_${i}_password`).val(password)
     $(`#users_authorized_user_${i}_show_password`).on("change", util.toggle_password_fn(`#users_authorized_user_${i}_password`));
-    $(`#users_authorized_user_${i}_clear_password`).on("change", util.clear_password_fn(`#users_authorized_user_${i}_password`, __('users.script.login_disabled')));
+    $(`#users_authorized_user_${i}_clear_password`).on("change", util.clear_password_fn(`#users_authorized_user_${i}_password`, __("users.script.login_disabled")));
     $(`#users_authorized_user_${i}_clear_password`).prop("checked", (password === ""));
     $(`#users_authorized_user_${i}_clear_password`).trigger("change");
     ++authorized_users_count;
@@ -329,7 +329,7 @@ function update_users_config(force: boolean) {
         $(`#users_authorized_user_${i}_display_name`).val(s.display_name);
         $(`#users_authorized_user_${i}_username`).html(s.username);
         $(`#users_authorized_user_${i}_show_password`).on("change", util.toggle_password_fn(`#users_authorized_user_${i}_password`));
-        $(`#users_authorized_user_${i}_clear_password`).on("change", util.clear_password_fn(`#users_authorized_user_${i}_password`, __('users.script.login_disabled')));
+        $(`#users_authorized_user_${i}_clear_password`).on("change", util.clear_password_fn(`#users_authorized_user_${i}_password`, __("users.script.login_disabled")));
         $(`#users_authorized_user_${i}_clear_password`).prop("checked", (s.digest_hash === ""));
         $(`#users_authorized_user_${i}_clear_password`).trigger("change");
     }
