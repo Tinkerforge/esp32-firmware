@@ -166,7 +166,7 @@ function update_nfc_seen_tags() {
 outer_loop:
     for(let i = 0; i < seen_tags.length; ++i) {
         if (seen_tags[i].tag_id == "")
-            break;
+            continue;
 
         for (let auth_tag_idx = 0; auth_tag_idx < current_nfc_config.authorized_tags.length; ++auth_tag_idx) {
             let auth_tag = current_nfc_config.authorized_tags[auth_tag_idx];

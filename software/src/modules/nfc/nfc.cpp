@@ -34,7 +34,6 @@
 #include "bindings/bricklet_evse_v2.h"
 #endif
 
-#define TAG_LIST_LENGTH 8
 #define AUTHORIZED_TAG_LIST_LENGTH 8
 
 #define IND_ACK 1001
@@ -99,6 +98,26 @@ NFC::NFC() : DeviceModule("nfc", "NFC", "NFC", std::bind(&NFC::setup_nfc, this))
         {"user_id", Config::Uint8(0)},
         {"tag_type", Config::Uint(0, 0, 4)},
         {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)}
+    });
+
+    inject_tag = ConfigRoot(Config::Object({
+        {"tag_type", Config::Uint(0, 0, 4)},
+        {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)}
+    }), [this](Config &cfg) -> String {
+        String id_copy = cfg.get("tag_id")->asString();
+        id_copy.toUpperCase();
+        cfg.get("tag_id")->updateString(id_copy);
+
+        for(int i = 0; i < id_copy.length(); ++i) {
+            char c = id_copy.charAt(i);
+            if ((i % 3 != 2) && ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')))
+                continue;
+            if (i % 3 == 2 && c == ':')
+                continue;
+            return "Tag ID contains unexpected character. Expected format is hex bytes separated by colons. For example \"01:23:ab:3d\".";
+        }
+
+        return "";
     });
 }
 
@@ -261,7 +280,7 @@ void tag_id_bytes_to_string(uint8_t *tag_id, uint8_t tag_id_len, char buf[NFC_TA
 
 void NFC::update_seen_tags()
 {
-    for (int i = 0; i < TAG_LIST_LENGTH; ++i) {
+    for (int i = 0; i < TAG_LIST_LENGTH - 1; ++i) {
         uint8_t buf[10] = {0};
         uint8_t tag_id_len = 0;
         int result = tf_nfc_simple_get_tag_id(&device, i, &new_tags[i].tag_type, buf, &tag_id_len, &new_tags[i].last_seen);
@@ -278,6 +297,21 @@ void NFC::update_seen_tags()
         seen_tags.get(i)->get("tag_id")->updateString(new_tags[i].tag_id);
         seen_tags.get(i)->get("last_seen")->updateUint(new_tags[i].last_seen);
     }
+
+    if (last_tag_injection == 0 || deadline_elapsed(last_tag_injection + 1000*60*60*24)) {
+        last_tag_injection = 0;
+        new_tags[TAG_LIST_LENGTH - 1].tag_type = 0;
+        new_tags[TAG_LIST_LENGTH - 1].tag_id[0] = '\0';
+        new_tags[TAG_LIST_LENGTH - 1].last_seen = 0;
+    } else {
+        new_tags[TAG_LIST_LENGTH - 1].tag_type = inject_tag.get("tag_type")->asUint();
+        strncpy(new_tags[TAG_LIST_LENGTH - 1].tag_id, inject_tag.get("tag_id")->asCStr(), sizeof(new_tags[TAG_LIST_LENGTH - 1].tag_id));
+        new_tags[TAG_LIST_LENGTH - 1].last_seen =  millis() - last_tag_injection;
+    }
+
+    seen_tags.get(TAG_LIST_LENGTH - 1)->get("last_seen")->updateUint(new_tags[TAG_LIST_LENGTH - 1].last_seen);
+    seen_tags.get(TAG_LIST_LENGTH - 1)->get("tag_type")->updateUint(new_tags[TAG_LIST_LENGTH - 1].tag_type);
+    seen_tags.get(TAG_LIST_LENGTH - 1)->get("tag_id")->updateString(new_tags[TAG_LIST_LENGTH - 1].tag_id);
 
     // compare new list with old
     // tags that are not seen anymore are lost
@@ -373,6 +407,13 @@ void NFC::register_urls()
     api.addState("nfc/seen_tags", &seen_tags, {}, 1000);
     api.addState("nfc/last_tag", &last_tag, {}, 1000);
     api.addPersistentConfig("nfc/config", &config, {}, 1000);
+    api.addCommand("nfc/inject_tag", &inject_tag, {}, [this](){
+        last_tag_injection = millis();
+        // 0 is the marker that no injection happened or the last one was handled.
+        // Fake that we were one ms faster.
+        if (last_tag_injection == 0)
+            last_tag_injection -= 1;
+    }, true);
 
     this->DeviceModule::register_urls();
 }

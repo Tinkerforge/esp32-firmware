@@ -31,6 +31,8 @@
 // For hex strings: two chars per byte plus a separator between each byte
 #define NFC_TAG_ID_STRING_LENGTH (NFC_TAG_ID_LENGTH * 3 - 1)
 
+#define TAG_LIST_LENGTH 9
+
 class NFC : public DeviceModule<TF_NFC,
                                 nfc_bricklet_firmware_bin_data,
                                 nfc_bricklet_firmware_bin_length,
@@ -62,13 +64,15 @@ public:
     ConfigRoot seen_tags;
     ConfigRoot state;
     ConfigRoot last_tag;
+    ConfigRoot inject_tag;
+    uint32_t last_tag_injection = 0;
 
     uint32_t last_action_ms = 0;
 
     char uid[7] = {0};
 
-    tag_info_t old_tag_buffer[8] = {};
-    tag_info_t new_tag_buffer[8] = {};
+    tag_info_t old_tag_buffer[TAG_LIST_LENGTH] = {};
+    tag_info_t new_tag_buffer[TAG_LIST_LENGTH] = {};
     tag_info_t *old_tags = old_tag_buffer;
     tag_info_t *new_tags = new_tag_buffer;
 
