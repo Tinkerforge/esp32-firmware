@@ -178,7 +178,7 @@ void create_username_file() {
     const uint8_t buf[512] = {};
 
     for(int i = 0; i < 256 * USERNAME_LENGTH; i += sizeof(buf))
-        logger.printfln("%u", f.write(buf, sizeof(buf)));
+        f.write(buf, sizeof(buf));
 }
 
 void Users::setup()
