@@ -92,11 +92,18 @@ def main():
     global used_placeholders
     global template_literals
 
-    for root, dirs, files in os.walk("./src"):
+    for root, dirs, files in os.walk("./src/ts"):
         for name in files:
             if not name.endswith(".ts"):
                 continue
             parse_ts_file(os.path.join(root, name), name)
+
+    for root, dirs, files in os.walk("./src/typings"):
+        for name in files:
+            if not name.endswith(".ts"):
+                continue
+            parse_ts_file(os.path.join(root, name), name)
+    parse_ts_file(os.path.join("src", "main.ts"), "main.ts")
 
     for frontend_module in sys.argv[1:]:
         folder = os.path.join("src", "modules", frontend_module)
