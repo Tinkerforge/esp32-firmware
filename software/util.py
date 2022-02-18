@@ -50,7 +50,19 @@ def embed_data(data, dst_dir, var_name, var_type):
     embed_data_internal(data, cpp_path, h_path, var_name, var_type)
 
 def embed_data_with_digest(data, dst_dir, var_name, var_type, data_filter=lambda data: data):
-    digest_path = os.path.join(dst_dir, var_name + '.digest')
+    project_dir = os.getenv('PLATFORMIO_PROJECT_DIR')
+
+    if project_dir == None:
+        print('$PLATFORMIO_PROJECT_DIR not set')
+        sys.exit(-1)
+
+    build_dir = os.getenv('PLATFORMIO_BUILD_DIR')
+
+    if build_dir == None:
+        print('$PLATFORMIO_BUILD_DIR not set')
+        sys.exit(-1)
+
+    digest_path = os.path.join(build_dir, os.path.relpath(os.getcwd(), project_dir).replace('\\', '/').replace('/', ',') + ',' + var_name + '.digest')
     cpp_path = os.path.join(dst_dir, var_name + '.embedded.cpp')
     h_path = os.path.join(dst_dir, var_name + '.embedded.h')
 
@@ -64,7 +76,10 @@ def embed_data_with_digest(data, dst_dir, var_name, var_type, data_filter=lambda
         new_digest = hashlib.sha256(data + f.read()).hexdigest()
 
     if old_digest == new_digest and os.path.exists(cpp_path) and os.path.exists(h_path):
+        print('Embedded', var_name, 'is up-to-date')
         return
+
+    print('Embedding', var_name)
 
     try:
         os.remove(digest_path)

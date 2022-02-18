@@ -272,7 +272,8 @@ def main():
             print('Preparing backend module:', backend_module.space)
 
             environ = dict(os.environ)
-            environ['PYTHONEXE'] = env.subst('$PYTHONEXE')
+            environ['PLATFORMIO_PROJECT_DIR'] = env.subst('$PROJECT_DIR')
+            environ['PLATFORMIO_BUILD_DIR'] = env.subst('$BUILD_DIR')
 
             with ChangedDirectory(mod_path):
                 subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py"], env=environ)
@@ -458,11 +459,13 @@ def main():
     # Generate web interface
     print('Checking web interface dependencies')
 
+    node_digest_path = os.path.join(env.subst('$BUILD_DIR'), 'web,package-lock.json.digest')
+
     with open('web/package-lock.json', 'rb') as f:
         new_node_digest = hashlib.sha256(f.read()).hexdigest()
 
     try:
-        with open('web/package-lock.json.digest', 'r', encoding='utf-8') as f:
+        with open(node_digest_path, 'r', encoding='utf-8') as f:
             old_node_digest = f.read().strip()
     except FileNotFoundError:
         old_node_digest = None
@@ -473,7 +476,7 @@ def main():
         print('Web interface dependencies are not up-to-date, updating now')
 
         try:
-            os.remove('web/package-lock.json.digest')
+            os.remove(node_digest_path)
         except FileNotFoundError:
             pass
 
@@ -488,7 +491,7 @@ def main():
         with open('web/node_modules/tinkerforge.marker', 'wb') as f:
             pass
 
-        with open('web/package-lock.json.digest', 'w', encoding='utf-8') as f:
+        with open(node_digest_path, 'w', encoding='utf-8') as f:
             f.write(new_node_digest)
 
     print('Checking web interface')
@@ -511,16 +514,17 @@ def main():
             with open(path, 'rb') as f:
                 h.update(f.read())
 
-    with open('web/package-lock.json.digest', 'rb') as f:
+    with open(node_digest_path, 'rb') as f:
         h.update(f.read())
 
     with open('util.py', 'rb') as f:
         h.update(f.read())
 
+    html_digest_path = os.path.join(env.subst('$BUILD_DIR'), 'src,index.html.digest')
     new_html_digest = h.hexdigest()
 
     try:
-        with open('src/index_html.digest', 'r', encoding='utf-8') as f:
+        with open(html_digest_path, 'r', encoding='utf-8') as f:
             old_html_digest = f.read().strip()
     except FileNotFoundError:
         old_html_digest = None
@@ -552,7 +556,7 @@ def main():
 
         embed_data(gzip.compress(html.encode('utf-8')), 'src', 'index_html', 'char')
 
-        with open('src/index_html.digest', 'w', encoding='utf-8') as f:
+        with open(html_digest_path, 'w', encoding='utf-8') as f:
             f.write(new_html_digest)
 
 main()
