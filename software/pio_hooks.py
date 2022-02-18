@@ -315,7 +315,7 @@ def main():
     api_imports = []
     api_config_map_entries = []
     api_cache_entries = []
-    top_level_counter = 0
+    module_counter = 0
     exported_interface_pattern = re.compile("export interface ([A-Za-z0-9$_]+)")
     exported_type_pattern = re.compile("export type ([A-Za-z0-9$_]+)")
     api_path_pattern = re.compile("//APIPath:([^\n]*)\n")
@@ -373,10 +373,8 @@ def main():
 
             api_exports = exported_interface_pattern.findall(content) + exported_type_pattern.findall(content)
             if len(api_exports) != 0:
-                api_module = api_path[:-1] if api_path.endswith("/") else api_path
-                if len(api_module) == 0:
-                    api_module = "top_level_{}".format(top_level_counter)
-                    top_level_counter += 1
+                api_module = "module_{}".format(module_counter)
+                module_counter += 1
 
                 api_imports.append("import * as {} from '../modules/{}/api';".format(api_module, frontend_module.under))
 
