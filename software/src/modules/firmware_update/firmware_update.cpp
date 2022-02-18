@@ -47,8 +47,8 @@ extern bool factory_reset_requested;
 extern int8_t green_led_pin;
 
 // Newer firmwares contain a firmware info page.
-#define FW_INFO_OFFSET 0xd000 - 0x1000
-#define FW_INFO_LENGTH 0x1000
+#define FIRMWARE_INFO_OFFSET 0xd000 - 0x1000
+#define FIRMWARE_INFO_LENGTH 0x1000
 
 TaskHandle_t xTaskBuffer;
 
@@ -92,26 +92,26 @@ void FirmwareUpdate::setup()
     initialized = true;
 }
 
-void FirmwareUpdate::reset_fw_info() {
+void FirmwareUpdate::reset_firmware_info() {
     calculated_checksum = 0;
-    info = fw_info_t{};
+    info = firmware_info_t{};
     info_offset = 0;
     checksum_offset = 0;
     update_aborted = false;
 }
 
-bool FirmwareUpdate::handle_fw_info_chunk(size_t chunk_index, uint8_t *data, size_t chunk_length)
+bool FirmwareUpdate::handle_firmware_info_chunk(size_t chunk_index, uint8_t *data, size_t chunk_length)
 {
     uint8_t *start = data;
     size_t length = chunk_length;
 
-    if (chunk_index < FW_INFO_OFFSET) {
-        size_t to_skip = FW_INFO_OFFSET - chunk_index;
+    if (chunk_index < FIRMWARE_INFO_OFFSET) {
+        size_t to_skip = FIRMWARE_INFO_OFFSET - chunk_index;
         start += to_skip;
         length -= to_skip;
     }
 
-    length = MIN(length, (FW_INFO_OFFSET + FW_INFO_LENGTH) - chunk_index - 4); // -4 to not calculate the CRC of itself
+    length = MIN(length, (FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH) - chunk_index - 4); // -4 to not calculate the CRC of itself
 
     if (info_offset < sizeof(info)) {
         size_t to_write = MIN(length, sizeof(info) - info_offset);
@@ -122,7 +122,7 @@ bool FirmwareUpdate::handle_fw_info_chunk(size_t chunk_index, uint8_t *data, siz
     logger.printfln("chunk index %u data %p len %u", chunk_index, data, chunk_length);
     crc32_ieee_802_3_recalculate(start, length, &calculated_checksum);
 
-    const size_t checksum_start = FW_INFO_OFFSET + FW_INFO_LENGTH - 4;
+    const size_t checksum_start = FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH - 4;
 
     if (chunk_index + chunk_length < checksum_start)
         return false;
@@ -144,14 +144,14 @@ bool FirmwareUpdate::handle_fw_info_chunk(size_t chunk_index, uint8_t *data, siz
     return checksum_offset == sizeof(checksum) && info.magic[0] == 0x12CE2171 && (info.magic[1] & 0x00FFFFFF) == 0x6E12F0;
 }
 
-String FirmwareUpdate::check_fw_info(bool fw_info_found, bool detect_downgrade, bool log) {
-    if (!fw_info_found && BUILD_REQUIRE_FW_INFO) {
+String FirmwareUpdate::check_firmware_info(bool firmware_info_found, bool detect_downgrade, bool log) {
+    if (!firmware_info_found && BUILD_REQUIRE_FIRMWARE_INFO) {
         if (log) {
             logger.printfln("Failed to update: Firmware update has no info page!");
         }
         return "{\"error\":\"firmware_update.script.no_info_page\"}";
     }
-    if (fw_info_found) {
+    if (firmware_info_found) {
         if (checksum != calculated_checksum) {
             if (log) {
                 logger.printfln("Failed to update: Firmware info page corrupted! Embedded checksum %x calculated checksum %x", checksum, calculated_checksum);
@@ -188,8 +188,7 @@ bool FirmwareUpdate::handle_update_chunk(int command, WebServerRequest request, 
     // So we have to skip the first 0x10000 - 0x1000 bytes, after them the actual firmware starts.
     // Don't skip anything if we flash the LittleFS.
     const size_t firmware_offset = command == U_FLASH ? 0x10000 - 0x1000 : 0;
-
-    static bool fw_info_found = false;
+    static bool firmware_info_found = false;
 
     if (chunk_index == 0 && !Update.begin(complete_length - firmware_offset, command)) {
         logger.printfln("Failed to start update: %s", Update.errorString());
@@ -198,20 +197,22 @@ bool FirmwareUpdate::handle_update_chunk(int command, WebServerRequest request, 
         update_aborted = true;
         return true;
     }
+
     if (chunk_index == 0) {
-        reset_fw_info();
-        fw_info_found = false;
+        reset_firmware_info();
+        firmware_info_found = false;
     }
 
-    if (update_aborted)
+    if (update_aborted) {
         return true;
-
-    if (chunk_index + chunk_length >= FW_INFO_OFFSET && chunk_index < FW_INFO_OFFSET + FW_INFO_LENGTH) {
-        fw_info_found = handle_fw_info_chunk(chunk_index, data, chunk_length);
     }
 
-    if (chunk_index + chunk_length >= FW_INFO_OFFSET + FW_INFO_LENGTH) {
-        String error = this->check_fw_info(fw_info_found, false, true);
+    if (chunk_index + chunk_length >= FIRMWARE_INFO_OFFSET && chunk_index < FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH) {
+        firmware_info_found = handle_firmware_info_chunk(chunk_index, data, chunk_length);
+    }
+
+    if (chunk_index + chunk_length >= FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH) {
+        String error = this->check_firmware_info(firmware_info_found, false, true);
         if (error != "") {
             request.send(400, "text/plain", error.c_str());
             Update.abort();
@@ -267,26 +268,28 @@ void FirmwareUpdate::register_urls()
         request.send(200, "text/plain", "{\"error\":\"firmware_update.script.ok\"}");
     },[this](WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final){
         if (index == 0) {
-            this->reset_fw_info();
+            this->reset_firmware_info();
         }
+
         if (!firmware_update_allowed) {
             request.send(400, "text/plain", "{\"error\":\"firmware_update.script.vehicle_connected\"}");
             return false;
         }
 
-        if (index > FW_INFO_LENGTH) {
+        if (index > FIRMWARE_INFO_LENGTH) {
             request.send(400, "text/plain", "Too long!");
             return false;
         }
 
-        bool fw_info_found = handle_fw_info_chunk(index + FW_INFO_OFFSET, data, len);
+        bool firmware_info_found = handle_firmware_info_chunk(index + FIRMWARE_INFO_OFFSET, data, len);
 
-        if (index + len >= FW_INFO_LENGTH) {
-            String error = this->check_fw_info(fw_info_found, true, false);
+        if (index + len >= FIRMWARE_INFO_LENGTH) {
+            String error = this->check_firmware_info(firmware_info_found, true, false);
             if (error != "") {
                 request.send(400, "text/plain", error.c_str());
             }
         }
+
         return true;
     });
 

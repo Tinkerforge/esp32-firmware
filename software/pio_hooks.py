@@ -160,7 +160,7 @@ def write_firmware_info(display_name, major, minor, patch, build_time):
     buf[72:76] = build_time.to_bytes(4, byteorder='little')
     buf[4092:4096] = crc32(buf[0:4092]).to_bytes(4, byteorder='little')
 
-    with open(os.path.join("build", "fw_info.bin"), "wb") as f:
+    with open(os.path.join(env.subst("$BUILD_DIR"), "firmware_info.bin"), "wb") as f:
         f.write(buf)
 
 def update_translation(translation, update, override=False, parent_key=None):
@@ -226,7 +226,7 @@ def main():
     display_name = env.GetProjectOption("display_name")
     manual_url = env.GetProjectOption("manual_url")
     apidoc_url = env.GetProjectOption("apidoc_url")
-    require_fw_info = env.GetProjectOption("require_fw_info")
+    require_firmware_info = env.GetProjectOption("require_firmware_info")
     src_filter = env.GetProjectOption("src_filter")
     version = get_changelog_version(name)
 
@@ -246,7 +246,7 @@ def main():
         f.write('#define BUILD_VERSION_MINOR {}\n'.format(version[1]))
         f.write('#define BUILD_VERSION_PATCH {}\n'.format(version[2]))
         f.write('#define BUILD_HOST_PREFIX "{}"\n'.format(host_prefix))
-        f.write('#define BUILD_REQUIRE_FW_INFO {}\n'.format(require_fw_info))
+        f.write('#define BUILD_REQUIRE_FIRMWARE_INFO {}\n'.format(require_firmware_info))
 
     with open(os.path.join('src', 'build_timestamp.h'), 'w', encoding='utf-8') as f:
         f.write('#pragma once\n')
@@ -254,7 +254,7 @@ def main():
         f.write('#define BUILD_TIMESTAMP_HEX_STR "{:x}"\n'.format(timestamp))
         f.write('#define BUILD_VERSION_FULL_STR "{}.{}.{}-{:x}"\n'.format(*version, timestamp))
 
-    with open(os.path.join('src', 'firmware_basename'), 'w', encoding='utf-8') as f:
+    with open(os.path.join(env.subst('$BUILD_DIR'), 'firmware_basename'), 'w', encoding='utf-8') as f:
         f.write('{}_firmware_{}_{:x}'.format(name, '_'.join(version), timestamp))
 
     # Handle backend modules

@@ -35,17 +35,17 @@ public:
 
 private:
     bool handle_update_chunk(int command, WebServerRequest request, size_t chunk_index, uint8_t *data, size_t chunk_length, bool final, size_t complete_length);
-    void reset_fw_info();
-    bool handle_fw_info_chunk(size_t chunk_index, uint8_t *data, size_t chunk_length);
-    String check_fw_info(bool fw_info_found, bool detect_downgrade, bool log);
-    struct fw_info_t {
+    void reset_firmware_info();
+    bool handle_firmware_info_chunk(size_t chunk_index, uint8_t *data, size_t chunk_length);
+    String check_firmware_info(bool firmware_info_found, bool detect_downgrade, bool log);
+    struct firmware_info_t {
         uint32_t magic[2] = {0};
         char firmware_name[61] = {0};
         uint8_t fw_version[3] = {0};
         uint32_t fw_build_date = {0};
     };
 
-    fw_info_t info;
+    firmware_info_t info;
     uint32_t info_offset = 0;
     uint32_t calculated_checksum = 0;
     uint32_t checksum = 0;
