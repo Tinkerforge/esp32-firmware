@@ -394,7 +394,6 @@ void Users::register_urls()
 
     api.addState("users/charge_info", &charge_info, {}, 1000);
 
-    api.addState("users/http_auth", &http_auth, {}, 1000);
     api.addCommand("users/http_auth_update", &http_auth_update, {}, [this](){
         user_config.get("http_auth_enabled")->updateBool(http_auth_update.get("enabled")->asBool());
         API::writeConfig("users/config", &user_config);
