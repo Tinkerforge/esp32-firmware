@@ -4,7 +4,6 @@ build/
 data/spiffs.json
 data/wifi_sta_config.json
 data/wifi_soft_ap_config.json
-src/**/*.digest
 src/**/*.embedded.h
 src/**/*.embedded.cpp
 src/main.cpp
@@ -13,7 +12,6 @@ src/build.h
 src/build_timestamp.h
 web/node_modules/
 web/build/
-web/package-lock.json.digest
 web/src/main.ts
 web/src/main.scss
 web/src/index.html
