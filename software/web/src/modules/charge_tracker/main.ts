@@ -74,12 +74,12 @@ function update_last_charges() {
             return `<div class="list-group-item">
             <div class="row">
                 <div class="col">
-                    <div class="mb-2"><span class="mr-1" data-feather="user"></span><span>${display_name}</span></div>
-                    <div><span class="mr-1" data-feather="calendar"></span><span>${timestamp_min_to_date(user.timestamp_minutes)}</span></div>
+                    <div class="mb-2"><span class="mr-1" data-feather="user"></span><span style="vertical-align: middle;">${display_name}</span></div>
+                    <div><span class="mr-1" data-feather="calendar"></span><span style="vertical-align: middle;">${timestamp_min_to_date(user.timestamp_minutes)}</span></div>
                 </div>
                 <div class="col-auto">
-                    <div class="mb-2"><span class="mr-1" data-feather="battery-charging"></span>${util.toLocaleFixed(user.energy_charged, 3)} kWh</div>
-                    <div><span class="mr-1" data-feather="clock"></span>${util.format_timespan(user.charge_duration)}</div>
+                    <div class="mb-2"><span class="mr-1" data-feather="battery-charging"></span><span style="vertical-align: middle;">${util.toLocaleFixed(user.energy_charged, 3)} kWh</span></div>
+                    <div><span class="mr-1" data-feather="clock"></span><span style="vertical-align: middle;">${util.format_timespan(user.charge_duration)}</span></div>
                 </div>
             </div>
             </div>`
