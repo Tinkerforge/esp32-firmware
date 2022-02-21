@@ -29,7 +29,7 @@
 
 #include "bindings/macros.h"
 
-// Length of a timestamp with a space at the end. For example "2022-02-11 12:34:56,789"
+// Length of a timestamp with two spaces at the end. For example "2022-02-11 12:34:56,789"
 #define TIMESTAMP_LEN 25
 
 class EventLog {

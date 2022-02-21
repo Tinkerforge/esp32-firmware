@@ -28,8 +28,6 @@
 extern WebServer server;
 
 void EventLog::get_timestamp(char buf[TIMESTAMP_LEN + 1]) {
-    int written = 0;
-
     struct timeval tv_now;
     struct tm timeinfo;
 
@@ -37,17 +35,19 @@ void EventLog::get_timestamp(char buf[TIMESTAMP_LEN + 1]) {
         localtime_r(&tv_now.tv_sec, &timeinfo);
 
         // ISO 8601 allows omitting the T between date and time. Also  ',' is the preferred decimal sign.
-        written = strftime(buf, TIMESTAMP_LEN + 1, "%F %T", &timeinfo);
-        written += snprintf(buf + written, TIMESTAMP_LEN + 1 - written, ",%03ld", tv_now.tv_usec / 1000);
+        int written = strftime(buf, TIMESTAMP_LEN + 1, "%F %T", &timeinfo);
+        snprintf(buf + written, TIMESTAMP_LEN + 1 - written, ",%03ld  ", tv_now.tv_usec / 1000);
     } else {
         auto now = millis();
         auto secs = now / 1000;
         auto ms = now % 1000;
-        written = snprintf(buf, TIMESTAMP_LEN + 1, "%lu,%lu", secs, ms);
-    }
+        auto to_write = snprintf(nullptr, 0, "%lu", secs) + 6; // + 6 for the decimal sign, fractional part and two spaces
+        auto start = TIMESTAMP_LEN - to_write;
 
-    for(int i = written; i < TIMESTAMP_LEN; ++i)
-        buf[i] = ' ';
+        for(int i = 0; i < TIMESTAMP_LEN; ++i)
+            buf[i] = ' ';
+        snprintf(buf + start, to_write + 1, "%lu,%03lu  ", secs, ms); // + 1 for the null terminator
+    }
 
     buf[TIMESTAMP_LEN] = '\0';
 }
