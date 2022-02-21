@@ -93,7 +93,7 @@ function to_csv_line(vals: string[]) {
     return line.join(",") + "\r\n";
 }
 
-async function downloadChargeRecords() {
+async function downloadChargeLog() {
     let users: string[] = [];
 
     await fetch('/users/all_usernames')
@@ -112,7 +112,7 @@ async function downloadChargeRecords() {
         })
         .catch(err => console.log(err));
 
-    await fetch('/charge_record')
+    await fetch('/charge_tracker/charge_log')
         .then(response => response.arrayBuffer())
         .then(buffer => {
             let line = [
@@ -195,7 +195,7 @@ function update_charge_info() {
 export function init() {
     $('#charge_tracker_download').on("click", () =>{
         $('#charge_tracker_download_spinner').prop("hidden", false);
-        downloadChargeRecords().finally(() => $('#charge_tracker_download_spinner').prop("hidden", true));
+        downloadChargeLog().finally(() => $('#charge_tracker_download_spinner').prop("hidden", true));
     });
 }
 
