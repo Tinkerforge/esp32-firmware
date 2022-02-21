@@ -75,7 +75,6 @@ void NTP::setup()
 
     esp_netif_init();
     if(sntp_enabled()){
-        logger.printfln("Hier!!!!");
         sntp_stop();
     }
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
