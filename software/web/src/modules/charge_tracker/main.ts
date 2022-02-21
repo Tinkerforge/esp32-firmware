@@ -159,7 +159,9 @@ async function downloadChargeLog() {
 
                 result += to_csv_line(line);
             }
-            util.downloadToFile(result, "charge_records.csv", "text/csv; charset=utf-8; header=present");
+
+            let t = (new Date()).toISOString().replace(/:/gi, "-").replace(/\./gi, "-");
+            util.downloadToFile(result, "charge-log-" + t + ".csv", "text/csv; charset=utf-8; header=present");
         })
         .catch(err => console.log(err));
 }
