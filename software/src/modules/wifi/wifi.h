@@ -23,7 +23,7 @@
 
 #include "config.h"
 
-#define MAX_CONNECT_ATTEMPT_INTERVAL_MS 5 * 60 * 1000
+#define MAX_CONNECT_ATTEMPT_INTERVAL_MS (5 * 60 * 1000)
 
 enum class WifiState {
     NOT_CONFIGURED,
