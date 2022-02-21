@@ -249,6 +249,11 @@ function update_evse_slots() {
         util.setNumericInput("status_charging_current", shown_current / 1000.0, 3);
     }
 
+    if (real_maximum == 32000) {
+        $('#evse_status_allowed_charging_current').val(util.toLocaleFixed(real_maximum / 1000.0, 3) + " A");
+        return;
+    }
+
     let status_string = util.toLocaleFixed(real_maximum / 1000.0, 3) + " A " + __("evse.script.by") + " ";
 
     let status_list = [];
