@@ -33,7 +33,10 @@ void ntp_sync_cb(struct timeval *t)
 {
     if (first) {
         first = false;
-        logger.printfln("NTP synchronized!");
+        auto now = millis();
+        auto secs = now / 1000;
+        auto ms = now % 1000;
+        logger.printfln("NTP synchronized at %lu,%03lu!", secs, ms);
     }
 
     char buf[INET6_ADDRSTRLEN] = {0};
