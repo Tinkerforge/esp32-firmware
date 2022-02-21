@@ -78,7 +78,7 @@ function update_last_charges() {
                     <div><span class="mr-1" data-feather="calendar"></span><span style="vertical-align: middle;">${timestamp_min_to_date(user.timestamp_minutes)}</span></div>
                 </div>
                 <div class="col-auto">
-                    <div class="mb-2"><span class="mr-1" data-feather="battery-charging"></span><span style="vertical-align: middle;">${util.toLocaleFixed(user.energy_charged, 3)} kWh</span></div>
+                    <div class="mb-2"><span class="mr-1" data-feather="battery-charging"></span><span style="vertical-align: middle;">${user.energy_charged === null ? "N/A" : util.toLocaleFixed(user.energy_charged, 3)} kWh</span></div>
                     <div><span class="mr-1" data-feather="clock"></span><span style="vertical-align: middle;">${util.format_timespan(user.charge_duration)}</span></div>
                 </div>
             </div>
@@ -150,11 +150,11 @@ async function downloadChargeLog() {
                 let line = [
                     timestamp_min_to_date(timestamp_minutes),
                     display_name,
-                    util.toLocaleFixed(meter_end - meter_start, 3),
+                    (Number.isNaN(meter_start) || Number.isNaN(meter_end)) ? 'N/A' : util.toLocaleFixed(meter_end - meter_start, 3),
                     charge_duration.toString(),
                     "",
-                    util.toLocaleFixed(meter_start, 3),
-                    util.toLocaleFixed(meter_end, 3)
+                    (Number.isNaN(meter_start) || Number.isNaN(meter_end)) ? 'N/A' : util.toLocaleFixed(meter_start, 3),
+                    (Number.isNaN(meter_start) || Number.isNaN(meter_end)) ? 'N/A' : util.toLocaleFixed(meter_end, 3)
                 ];
 
                 result += to_csv_line(line);
@@ -185,12 +185,10 @@ function update_charge_info() {
         time_charging += 0xFFFFFFFF;
 
     time_charging = Math.floor(time_charging / 1000);
-    let mean_power = energy_charged / time_charging * 3600;
 
     $('#users_status_charging_user').html(ci.id == 0 ? "unbekannter Nutzer" : user_display_name);
     $('#users_status_charging_time').html(util.format_timespan(time_charging));
-    $('#users_status_charged_energy').html(util.toLocaleFixed(energy_charged, 3) + " kWh");
-    $('#users_status_energy_rate').html(util.toLocaleFixed(mean_power, 3) + " kW");
+    $('#users_status_charged_energy').html(ci.meter_start == null ? "N/A" : util.toLocaleFixed(energy_charged, 3) + " kWh");
     $('#users_status_charging_start').html(timestamp_min_to_date(ci.timestamp_minutes));
 }
 

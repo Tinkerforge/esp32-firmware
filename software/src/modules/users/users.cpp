@@ -25,6 +25,7 @@
 #include "modules.h"
 
 #include "digest_auth.h"
+#include <cmath>
 
 #define USERNAME_LENGTH 32
 #define MAX_ACTIVE_USERS 8
@@ -516,9 +517,9 @@ bool Users::start_charging(uint8_t user_id, uint16_t current_limit)
         if (charge_tracker.currentlyCharging())
             return false;
 
-
         uint32_t evse_uptime = evse_v2.evse_low_level_state.get("uptime")->asUint();
-        float meter_start = evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat();
+        bool meter_avail = evse_v2.evse_hardware_configuration.get("energy_meter_type")->asUint() != 0;
+        float meter_start = !meter_avail ? NAN : evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat();
         uint32_t timestamp = timestamp_minutes();
 
         write_user_slot_info(user_id, evse_uptime, timestamp, meter_start);
@@ -559,7 +560,8 @@ bool Users::stop_charging(uint8_t user_id, bool force)
                 charge_duration = now_seconds - start_seconds;
             }
 
-            charge_tracker.endCharge(charge_duration, evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat());
+            bool meter_avail = evse_v2.evse_hardware_configuration.get("energy_meter_type")->asUint() != 0;
+            charge_tracker.endCharge(charge_duration, !meter_avail ? NAN : evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat());
         }
         zero_user_slot_info();
         evse_v2.set_user_current(0);
