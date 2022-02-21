@@ -36,10 +36,14 @@ void EventLog::get_timestamp(char buf[TIMESTAMP_LEN + 1]) {
     if (clock_synced(&tv_now)) {
         localtime_r(&tv_now.tv_sec, &timeinfo);
 
+        // ISO 8601 allows omitting the T between date and time. Also  ',' is the preferred decimal sign.
         written = strftime(buf, TIMESTAMP_LEN + 1, "%F %T", &timeinfo);
         written += snprintf(buf + written, TIMESTAMP_LEN + 1 - written, ",%03ld", tv_now.tv_usec / 1000);
     } else {
-        written = snprintf(buf, TIMESTAMP_LEN + 1, "%lu", millis());
+        auto now = millis();
+        auto secs = now / 1000;
+        auto ms = now % 1000;
+        written = snprintf(buf, TIMESTAMP_LEN + 1, "%lu,%lu", secs, ms);
     }
 
     for(int i = written; i < TIMESTAMP_LEN; ++i)
