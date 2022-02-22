@@ -28,7 +28,7 @@ import YaMD5 from "../../ts/yamd5";
 
 declare function __(s: string): string;
 
-const MAX_ACTIVE_USERS = 8;
+const MAX_ACTIVE_USERS = 16;
 
 type UsersConfig = API.getType['users/config'];
 type User = UsersConfig['users'][0];

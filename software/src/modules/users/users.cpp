@@ -28,7 +28,7 @@
 #include <cmath>
 
 #define USERNAME_LENGTH 32
-#define MAX_ACTIVE_USERS 8
+#define MAX_ACTIVE_USERS 16
 
 extern TaskScheduler task_scheduler;
 

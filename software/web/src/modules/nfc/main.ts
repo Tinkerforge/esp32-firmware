@@ -26,7 +26,7 @@ import feather from "../../ts/feather";
 
 declare function __(s: string): string;
 
-const MAX_AUTHORIZED_TAGS = 8;
+const MAX_AUTHORIZED_TAGS = 16;
 
 let authorized_tag_count = -1;
 
