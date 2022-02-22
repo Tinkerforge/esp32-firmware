@@ -280,12 +280,19 @@ void EVSEV2::apply_defaults() {
     // default. In the common case this has no effect. Also set enabled and clear in case this is
     // the first start-up.
     uint16_t global_current;
-    int rc = tf_evse_v2_get_charging_slot(&device, CHARGING_SLOT_GLOBAL, &global_current, nullptr, nullptr);
+    bool global_active;
+    int rc = tf_evse_v2_get_charging_slot(&device, CHARGING_SLOT_GLOBAL, &global_current, &global_active, nullptr);
     if (rc != TF_E_OK) {
         is_in_bootloader(rc);
         logger.printfln("Failed to apply defaults (global read failed). rc %d", rc);
         return;
     }
+    // If this is the first start-up, this slot will not be active.
+    // In the old firmwares, the global current was not persistant
+    // so setting it to 32000 is expected after start-up.
+    if (!global_active)
+        global_current = 32000;
+
     if (this->apply_slot_default(CHARGING_SLOT_GLOBAL, global_current, true, false))
         tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_GLOBAL, global_current, true, false);
 
