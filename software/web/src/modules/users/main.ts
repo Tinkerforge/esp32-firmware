@@ -299,7 +299,7 @@ function update_users_config(force: boolean) {
             </div>
             <div class="card-body">
                 <button id="users_add_user" type="button" class="btn btn-light btn-lg btn-block" style="height: 100%;" data-toggle="modal" data-target="#users_add_user_modal"><span data-feather="user-plus"></span></button>
-                <span id="users_add_user_disabled" hidden>${__("users.script.add_user_disabled")}</span>
+                <span id="users_add_user_disabled" hidden>${__("users.script.add_user_disabled_prefix") + (MAX_ACTIVE_USERS - 1 /* anonymous */) + __("users.script.add_user_disabled_suffix")}</span>
             </div>
             <div class="card-footer">
                 <small style="visibility: hidden;">${__("users.script.last_seen_unknown")}</small>

@@ -28,6 +28,8 @@ declare function __(s: string): string;
 
 let charger_state_count = -1;
 
+const MAX_CONTROLLED_CHARGERS = 10;
+
 function update_charge_manager_state() {
     let state = API.get('charge_manager/state');
 
@@ -172,7 +174,7 @@ function update_charge_manager_config(config: ChargeManagerConfig = API.get('cha
             </div>
             <div class="card-body">
                 <button id="charge_manager_add_charger" type="button" class="btn btn-light btn-lg btn-block" style="height: 100%;" data-toggle="modal" data-target="#charge_manager_add_charger_modal"><span data-feather="plus-circle"></span></button>
-                <span id="charge_manager_add_charger_disabled" hidden>${__("charge_manager.script.add_charger_disabled")}</span>
+                <span id="charge_manager_add_charger_disabled" hidden>${__("charge_manager.script.add_charger_disabled_prefix") + MAX_CONTROLLED_CHARGERS + __("charge_manager.script.add_charger_disabled_suffix")}</span>
             </div>
         </div>
     </div>`;
@@ -187,8 +189,8 @@ function update_charge_manager_config(config: ChargeManagerConfig = API.get('cha
         }
     }
 
-    $('#charge_manager_add_charger').prop("hidden", config.chargers.length >= 10);
-    $('#charge_manager_add_charger_disabled').prop("hidden", config.chargers.length < 10);
+    $('#charge_manager_add_charger').prop("hidden", config.chargers.length >= MAX_CONTROLLED_CHARGERS);
+    $('#charge_manager_add_charger_disabled').prop("hidden", config.chargers.length < MAX_CONTROLLED_CHARGERS);
 
     for (let i = 0; i < config.chargers.length; i++) {
         const s = config.chargers[i];

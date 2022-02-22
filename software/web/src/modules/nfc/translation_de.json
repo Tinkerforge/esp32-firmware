@@ -30,7 +30,8 @@
         },
         "script": {
             "add_tag": "Tag hinzufügen",
-            "add_tag_disabled": "Es werden nur bis zu 8 Tags unterstützt.",
+            "add_tag_disabled_prefix": "Es werden nur bis zu ",
+            "add_tag_disabled_suffix": " Tags unterstützt.",
             "user_id": "Zugeordneter Benutzer",
             "tag_type": "Tag-Typ",
             "last_seen_unknown": "placeholder",

@@ -73,7 +73,8 @@
             "save_failed": "Failed to save the charge manager configuration",
             "set_available_current_failed": "Failed to set the available current",
             "add_charger": "Add charger",
-            "add_charger_disabled": "Only up to 10 chargers are supported.",
+            "add_charger_disabled_prefix": "Only up to ",
+            "add_charger_disabled_suffix": " chargers are supported.",
 
             "reboot_content_changed": "charge manager configuration"
         }

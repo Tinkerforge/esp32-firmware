@@ -84,7 +84,7 @@ function update_nfc_config(cfg: NFCConfig = API.get('nfc/config'), force: boolea
             </div>
             <div class="card-body">
                 <button id="nfc_add_tag" type="button" class="btn btn-light btn-lg btn-block" style="height: 100%;" data-toggle="modal" data-target="#nfc_add_tag_modal"><span data-feather="plus-circle"></span></button>
-                <span id="nfc_add_tag_disabled" hidden>${__("nfc.script.add_tag_disabled")}</span>
+                <span id="nfc_add_tag_disabled" hidden>${__("nfc.script.add_tag_disabled_prefix") + MAX_AUTHORIZED_TAGS + __("nfc.script.add_tag_disabled_suffix")}</span>
             </div>
             <div class="card-footer">
                 <small style="visibility: hidden;">${__("nfc.script.last_seen_unknown")}</small>

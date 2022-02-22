@@ -73,7 +73,8 @@
             "save_failed": "Speichern der Lastmanager-Konfiguration fehlgeschlagen",
             "set_available_current_failed": "Setzen des verfügbaren Stroms fehlgeschlagen",
             "add_charger": "Wallbox hinzufügen",
-            "add_charger_disabled": "Es werden nur bis zu 10 Wallboxen unterstützt.",
+            "add_charger_disabled_prefix": "Es werden nur bis zu ",
+            "add_charger_disabled_suffix": " Wallboxen unterstützt.",
 
             "reboot_content_changed": "Lastmanagement-Einstellungen"
         }

@@ -30,7 +30,8 @@
         },
         "script": {
             "add_tag": "Add tag",
-            "add_tag_disabled": "Only up to 8 tags are supported.",
+            "add_tag_disabled_prefix": "Only up to ",
+            "add_tag_disabled_suffix": " tags are supported.",
             "user_id": "Assigned user",
             "tag_type": "Tag type",
             "last_seen_unknown": "placeholder",
