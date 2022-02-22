@@ -1,0 +1,83 @@
+{
+    "wifi": {
+        "status": {
+            "wifi_connection": "WLAN-Verbindung",
+            "not_configured": "Unkonfiguriert",
+            "not_connected": "Getrennt",
+            "connecting": "Verbinde",
+            "connected": "Verbunden",
+            "wifi_ap": "WLAN-Access-Point",
+            "deactivated": "Deaktiviert",
+            "activated": "Aktiviert",
+            "fallback_inactive": "Fallback inaktiv",
+            "fallback_active": "Fallback aktiv"
+        },
+        "navbar": {
+            "wifi_sta": "WLAN-Verbindung",
+            "wifi_ap": "WLAN-Access-Point"
+        },
+        "content": {
+            "sta_settings": "WLAN-Verbindungs&shy;einstellungen",
+            "sta_enable_sta": "Verbindung aktiviert",
+            "sta_enable_sta_desc": null,
+            "sta_ssid": "Netzwerkname (SSID)",
+            "sta_scan": "Netzwerksuche",
+            "sta_scanning": "Suche Netzwerke...",
+            "sta_bssid": "BSSID",
+            "sta_bssid_lock": "BSSID-Sperre",
+            "sta_bssid_invalid": "Die BSSID muss aus sechs Gruppen mit jeweils einer zweistelligen Hexadezimalzahl, getrennt durch einen Doppelpunkt, bestehen. Zum Beispiel 01:23:45:67:89:AB",
+            "sta_bssid_lock_desc": "Verbinde nur zur konfigurierten BSSID. Bei Einsatz mehrerer Access Points und/oder Repeater mit demselben Netzwerknamen wird so immer derselbe AP oder Repeater verwendet.",
+            "sta_passphrase": "Passphrase",
+            "sta_passphrase_invalid": "Die Passphrase muss zwischen 8 und 63 ASCII-Zeichen lang sein.",
+            "sta_ip_configuration": "IP-Konfiguration",
+            "sta_dhcp": "automatisch (DHCP)",
+            "sta_static": "statisch",
+            "save": "Speichern",
+
+            "static_ip": "IP-Adresse",
+            "subnet": "Subnetzmaske",
+            "gateway": "Gateway",
+            "dns": "<span class=\"form-label pr-2\">DNS-Server</span><span class=\"text-muted\">optional</span>",
+            "dns2": "<span class=\"form-label pr-2\">Alternativer DNS-Server</span><span class=\"text-muted\">optional</span>",
+            "static_ip_invalid": "Die IP-Adresse muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrent durch einen Punkt, bestehen. Zum Beispiel 10.0.0.2",
+            "subnet_invalid": "Die Subnetzmaske muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrent durch einen Punkt, bestehen. Zum Beispiel 255.255.255.0",
+            "gateway_invalid": "Die IP des Gateways muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrent durch einen Punkt, bestehen. Zum Beispiel 10.0.0.1",
+            "dns_invalid": "Die IP des DNS-Servers muss entweder leer bleiben, oder aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrent durch einen Punkt, bestehen. Zum Beispiel 10.0.0.1.",
+            "dns2_invalid": "Die IP des alternativen DNS-Servers muss entweder leer bleiben, oder aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrent durch einen Punkt, bestehen. Zum Beispiel 10.0.0.1.",
+
+            "ap_settings": "WLAN-Access-Point-Einstellungen",
+            "ap_enable": "<span class=\"form-label pr-2\">Access Point</span><span class=\"text-muted\"><a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a></span></label>",
+            "ap_enabled": "aktiviert",
+            "ap_fallback_only": "nur als Fallback",
+            "ap_disabled": "deaktiviert",
+            "ap_ssid": "Netzwerkname (SSID)",
+            "ap_hide_ssid": "Netzwerkname versteckt",
+            "ap_hide_ssid_desc_pre": null,
+            "ap_hide_ssid_desc_post": " erreichbar.",
+            "ap_passphrase": "Passphrase",
+            "ap_passphrase_invalid": "Die Passphrase muss zwischen 8 und 63 ASCII-Zeichen lang sein.",
+            "ap_channel": "<span class=\"form-label pr-2\">Kanal</span><span class=\"text-muted\">ignoriert wenn WLAN-Verbindung aktiv ist</span>",
+            "ap_ip": "IP-Adresse",
+            "ap_subnet": "Subnetzmaske",
+            "ap_gateway": "Gateway",
+            "ap_ip_invalid": "Die IP-Adresse muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrent durch einen Punkt, bestehen. Zum Beispiel 10.0.0.2",
+            "ap_subnet_invalid": "Die Subnetzmaske muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrent durch einen Punkt, bestehen. Zum Beispiel 255.255.255.0",
+            "ap_gateway_invalid": "Die IP des Gateways muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrent durch einen Punkt, bestehen. Zum Beispiel 10.0.0.1",
+
+            "unchanged": "unverändert"
+        },
+        "script": {
+            "scan_wifi_init_failed": "Suche nach Netzwerken fehlgeschlagen. Konnte Scan nicht starten.",
+            "scan_wifi_results_failed": "Suche nach Netzwerken fehlgeschlagen. Konnte Ergebnisse nicht abholen.",
+            "select_ap": "Gefundene Netzwerke",
+            "no_ap_found": "Kein Netzwerk gefunden.",
+            "hidden_ap": "[Versteckter AP]",
+
+            "sta_config_failed": "Speichern der Verbindungseinstellungen fehlgeschlagen.",
+            "ap_config_failed": "Speichern der Access Point-Einstellungen fehlgeschlagen.",
+            "no_ap_configured": "Keine Verbindung konfiguriert",
+            "sta_reboot_content_changed": "Verbindungseinstellungen",
+            "ap_reboot_content_changed": "Access-Point-Einstellungen"
+        }
+    }
+}

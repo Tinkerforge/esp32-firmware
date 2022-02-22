@@ -8,14 +8,16 @@ import Translator from '@andreasremdt/simple-translator';
 
 import * as util from "./ts/util";
 
+import * as API from "./ts/api";
+
 {{{module_imports}}}
 
 {{{translation_imports}}}
 
 interface Module {
     init(): void;
-    addEventListeners(source: EventTarget): void;
-    updateLockState(m: Modules): void;
+    addEventListeners(source: API.ApiEventTarget): void;
+    updateLockState(m: API.Modules): void;
 }
 
 let modules: Module[] = [{{{modules}}}];
@@ -24,20 +26,15 @@ $('.navbar-collapse a').on("click", function () {
     $(".navbar-collapse").collapse('hide');
 });
 
-interface Modules {
-    {{{module_interface}}}
-}
-
-function update_modules(module_init: Modules) {
+function update_modules() {
+    let module_init = API.get('modules');
     for (let m of modules) {
         m.updateLockState(module_init);
     }
 }
 
-export function registerEvents(eventSource: EventTarget) {
-    eventSource.addEventListener('modules', function (e: util.SSE) {
-        update_modules(<Modules>(JSON.parse(e.data)));
-    }, false);
+export function registerEvents(eventSource: API.ApiEventTarget) {
+    eventSource.addEventListener('modules', update_modules);
 
     for (let m of modules) {
         m.addEventListeners(eventSource);
@@ -53,14 +50,79 @@ function init() {
         m.init();
     }
 
-    util.setupEventSource(true, false,  (ws: WebSocket, eventTarget: EventTarget) => registerEvents(eventTarget));
+    util.setupEventSource(true, false,  (ws: WebSocket, eventTarget: API.ApiEventTarget) => registerEvents(eventTarget));
 }
 
-$(window).on('pageshow', (ev) => {
+function login() {
+    let username = (<HTMLInputElement>document.getElementById("main_login_username")).value;
+    let password = (<HTMLInputElement>document.getElementById("main_login_password")).value;
+
+    let xhr = new XMLHttpRequest();
+    let result = false;
+    xhr.onreadystatechange = function () {
+        if(xhr.readyState === XMLHttpRequest.DONE) {
+            let status = xhr.status;
+            if (status == 200) {
+                 window.location.href = "http://" + location.host;
+                 result = true;
+            } else if (status == 401) {
+                console.log("credentials incorrect?");
+            } else {
+                console.log("error: got status ");
+                console.log(status);
+            }
+        }
+    }
+    xhr.open("GET", "http://" + location.host + "/credential_check", false, username, password);
+    xhr.send();
+    return result;
+}
+
+function setup_normal() {
     window.setTimeout(() => $('#nav-list').removeAttr("style"), 200);
     window.setTimeout(() => $('#main').removeAttr("style"), 200);
 
+    $('#sidebar-login').prop('hidden', true);
+    $('#sidebar-status').addClass('active');
+    $('#status').addClass(['show', 'active']);
+
     util.ifLoggedInElseReload(init);
+}
+
+function setup_login() {
+    window.setTimeout(() => $('#nav-list').removeAttr("style"), 200);
+    window.setTimeout(() => $('#main').removeAttr("style"), 200);
+
+    $('#sidebar-status').prop('hidden', true);
+    $('#sidebar-login').addClass('active');
+    $('#login').addClass(['show', 'active']);
+
+    let show_password = <HTMLInputElement>document.getElementById('main_login_show_password');
+    let password = <HTMLInputElement>document.getElementById('main_login_password');
+    show_password.addEventListener("change", () => {
+        if (password.type == 'password')
+            password.type = 'text';
+        else
+            password.type = 'password';
+    });
+
+    let form = <HTMLFormElement>document.getElementById('main_login_form');
+    form.addEventListener('submit', function (event: Event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if(!login()) {
+            password.classList.add("shake");
+            window.setTimeout(() => {
+                password.classList.remove("shake");
+                password.focus();
+            }, 500);
+        }
+    }, false);
+}
+
+$(window).on('pageshow', (ev) => {
+    util.ifLoggedInElse(setup_normal, setup_login);
 
     feather.replace();
 
@@ -87,5 +149,10 @@ $(window).on('pageshow', (ev) => {
     $('a[data-toggle="tab"]').on('show.bs.tab', () => {
         $('a[data-toggle="tab"]').not(<Element>event.target).removeClass("active");
         $('a[data-toggle="tab"]').not(<Element>event.target).trigger("hidden.bs.tab");
+    });
+
+    $("#reboot_button").on("click", () => {
+        $('#reboot').modal('hide');
+        util.reboot();
     });
 });

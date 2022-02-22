@@ -11,7 +11,7 @@ gulp.task("bundle-js", function () {
     const buffer = require("vinyl-buffer");
     const uglify = require("gulp-uglify");
 
-    var files = glob.sync('./src/t*/**/*.ts'); //match typings and ts
+    var files = glob.sync('./src/t*/**/*.ts'); // match typings and ts
     files.push("./src/main.ts");
 
     return browserify({ // Collect js dependencies
@@ -21,10 +21,10 @@ gulp.task("bundle-js", function () {
         cache: {},
         packageCache: {},
     })
-        .plugin(tsify) // Compile typescript
+        .plugin(tsify, {files: []}) // Compile typescript
         .bundle()
         .on("error", fancy_log)
-        .pipe(source("bundle.js")) //Collect in bundle.js
+        .pipe(source("bundle.js")) // Collect in bundle.js
         .pipe(buffer())
         // TODO: for some reason meter_chart_change_time gets removed by the default config
         // This config costs about 5kb
@@ -34,10 +34,10 @@ gulp.task("bundle-js", function () {
                 mangle: { reserved: ["meter_chart_change_time"] },
             }*/)
         )
-        .pipe(gulp.dest("assets/js")); // Write to assets/js/bundle.js(.map)
+        .pipe(gulp.dest("build")); // Write to build/bundle.js(.map)
 });
 
-// Write minified html to assets/index.html
+// Write minified html to build/index.html
 gulp.task("copy-html", function () {
     const htmlmin = require("gulp-html-minifier-terser");
     const inlineimg = require('gulp-inline-image-html');
@@ -71,7 +71,7 @@ gulp.task("copy-html", function () {
                 useShortDoctype: true,
             })
         )
-        .pipe(gulp.dest("assets"));
+        .pipe(gulp.dest("build"));
 });
 
 gulp.task("sass", function () {
@@ -91,30 +91,13 @@ gulp.task("sass", function () {
                 }),
             ])
         )
-        .pipe(gulp.dest("assets/css")); // Write to assets/css/main.css
+        .pipe(gulp.dest("build")); // Write to build/main.css
 });
-
-// Embed css and js into html
-gulp.task("embed", run("python3 embed_css_and_js.py"));
-
-gulp.task("gzip", function () {
-    const gzip = require('gulp-gzip');
-    return gulp.src('dist/index.html')
-        .pipe(gzip({ gzipOptions: { level: 9 } }))
-        .pipe(gulp.dest('dist'));
-});
-
-gulp.task("generate_header", run("python3 xxd.py dist/index.html.gz dist/index.html.h index_html_gz"));
-
-gulp.task("debug",
-    gulp.series(gulp.parallel("copy-html"), gulp.parallel("sass"), "bundle-js")
-);
 
 gulp.task("default",
     gulp.series(
-        "debug",
-        "embed",
-        "gzip",
-        "generate_header",
+        gulp.parallel("copy-html"),
+        gulp.parallel("sass"),
+        "bundle-js"
     )
 );

@@ -1,2 +1,2 @@
-<unknown>: 1.0.0 (<unknown>)
+<unknown>: 2.0.0 (<unknown>)
 - Initial release

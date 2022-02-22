@@ -88,7 +88,7 @@ static esp_err_t ws_handler(httpd_req_t *req)
 {
     if (req->method == HTTP_GET) {
         auto request = WebServerRequest{req};
-        if (server.username != "" && server.password != "" && !authenticate(request, server.username.c_str(), server.password.c_str())) {
+        if (server.auth_fn && !server.auth_fn(request)) {
             if (server.on_not_authorized) {
                 server.on_not_authorized(request);
                 return ESP_OK;
@@ -152,7 +152,15 @@ static esp_err_t ws_handler(httpd_req_t *req)
         }
     }
 
-    if (ws_pkt.type == HTTPD_WS_TYPE_PONG) {
+    if (ws_pkt.type == HTTPD_WS_TYPE_PING) {
+        // We use a patched version of esp-idf that does not handle ping frames in a strange way.
+        // We have to send the pong ourselves.
+        ws_pkt.type = HTTPD_WS_TYPE_PONG;
+        httpd_ws_send_frame(req, &ws_pkt);
+        free(buf);
+        WebSockets *ws = (WebSockets *)req->user_ctx;
+        return wss_keep_alive_client_is_active(ws->keep_alive, httpd_req_to_sockfd(req));
+    } else if (ws_pkt.type == HTTPD_WS_TYPE_PONG) {
         // If it was a PONG, update the keep-alive
         //logger.printfln("Received PONG message");
         free(buf);
@@ -161,14 +169,6 @@ static esp_err_t ws_handler(httpd_req_t *req)
     } else if (ws_pkt.type == HTTPD_WS_TYPE_TEXT) {
         // If it was a TEXT message, print it
         logger.printfln("Received packet with message: %s", ws_pkt.payload);
-        /*ret = httpd_ws_send_frame(req, &ws_pkt);
-        if (ret != ESP_OK) {
-            logger.printfln("httpd_ws_send_frame failed with %d", ret);
-        }
-        logger.printfln("ws_handler: httpd_handle_t=%p, sockfd=%d, client_info:%d", req->handle,
-                 httpd_req_to_sockfd(req), httpd_ws_get_fd_info(req->handle, httpd_req_to_sockfd(req)));
-        free(buf);
-        return ret;*/
     } else if (ws_pkt.type == HTTPD_WS_TYPE_CLOSE) {
         // If it was a CLOSE, remove it from the keep-alive list
         free(buf);
@@ -184,6 +184,32 @@ bool client_not_alive_cb(wss_keep_alive_t h, int fd)
 {
     //logger.printfln("Client not alive, closing fd %d", fd);
     httpd_sess_trigger_close(wss_keep_alive_get_user_ctx(h), fd);
+
+    // Seems like we have to do everything by ourselves...
+    // In the case that the client is really dead (for example: someone pulled the ethernet cable)
+    // We manually have to delete the session, thus closing the fd.
+    // If we don't do this, httpd_get_client_list will still return the fd
+    // and httpd_ws_get_fd_info will return that this fd is active.
+    // We then will attempt to send data to the fd, running into a timeout.
+    // The httpd task will then block forever, as other tasks will generate data
+    // faster than we are able to throw it away via send timeouts.
+    // Unfortunately there is no API to throw away a web socket connection, so
+    // we have to poke around in the internal structures here.
+    struct httpd_data *hd = (struct httpd_data *)server.httpd;
+
+    struct sock_db *current = hd->hd_sd;
+    struct sock_db *end = hd->hd_sd + hd->config.max_open_sockets - 1;
+
+    while (current <= end) {
+        if (current->fd == fd) {
+            httpd_sess_delete(hd, current);
+            break;
+        }
+        current++;
+    }
+
+    // Sometimes the deletion is not complete, but leaves an invalid socket. Also remove those.
+    httpd_sess_delete_invalid(hd);
     wss_close_fd(h, fd);
     return true;
 }
@@ -210,7 +236,7 @@ static void work(void *arg)
 
         auto result = httpd_ws_send_frame_async(wi.hd, wi.fd, &ws_pkt);
         if (result != ESP_OK) {
-            printf("failed to send frame: %d\n", result);
+            printf("failed to send %s frame to fd %d: %d\n", wi.payload_len == 0 ? "HTTPD_WS_TYPE_PING" : "HTTPD_WS_TYPE_TEXT", wi.fd, result);
         }
 
         wi.clear();

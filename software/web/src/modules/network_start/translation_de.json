@@ -1,0 +1,21 @@
+{
+    "network": {
+        "status": {},
+        "navbar": {
+            "network_start": "Netzwerk",
+            "network": "Allgemein"
+        },
+        "content": {
+            "settings": "Netzwerkeinstellungen",
+            "hostname": "Hostname",
+            "hostname_invalid": "Der Hostname darf nur aus den Groß- und Kleinbuchstaben A-Z und a-z, sowie den Ziffern 0-9 und Bindestrichen bestehen. Zum Beispiel warp-A1c",
+            "enable_mdns": "mDNS aktivieren",
+            "enable_mdns_desc": null,
+            "save": "Speichern"
+        },
+        "script": {
+            "save_failed": "Speichern der Netzwerkeinstellungen fehlgeschlagen",
+            "reboot_content_changed": "Netzwerkeinstellungen"
+        }
+    }
+}

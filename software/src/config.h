@@ -214,6 +214,22 @@ struct Config {
         return true;
     }
 
+    bool remove(size_t i)
+    {
+        if (!this->is<Config::ConfArray>()) {
+            logger.printfln("Tried to add to a node that is not an array!");
+            delay(100);
+            return false;
+        }
+        std::vector<Config> &children = strict_variant::get<Config::ConfArray>(&value)->value;
+
+        if (children.size() <= i)
+            return false;
+
+        children.erase(children.begin() + i);
+        return true;
+    }
+
     ssize_t count()
     {
         if (!this->is<Config::ConfArray>()) {
@@ -363,7 +379,7 @@ struct Config {
         }
     }
 */
-    size_t json_size();
+    size_t json_size() const;
 
     void save_to_file(File file);
 
@@ -371,9 +387,9 @@ struct Config {
     void write_to_stream_except(Print &output, std::initializer_list<String> keys_to_censor);
     void write_to_stream_except(Print &output, const std::vector<String> &keys_to_censor);
 
-    String to_string();
-    String to_string_except(std::initializer_list<String> keys_to_censor);
-    String to_string_except(const std::vector<String> &keys_to_censor);
+    String to_string() const;
+    String to_string_except(std::initializer_list<String> keys_to_censor) const;
+    String to_string_except(const std::vector<String> &keys_to_censor) const;
 };
 
 struct ConfigRoot : public Config {
@@ -384,11 +400,12 @@ public:
 
     }
 
-    ConfigRoot(Config cfg, String(*validator)(Config &)) : Config(cfg), validator(validator) {
+    ConfigRoot(Config cfg, std::function<String(Config &)> validator) : Config(cfg), validator(validator) {
 
     }
 
-    String(*validator)(Config &);
+    std::function<String(Config &)> validator;
+    bool permit_null_updates = true;
 
     String update_from_file(File file);
 
@@ -399,6 +416,8 @@ public:
     String update_from_json(JsonVariant root);
 
     String update(Config::ConfUpdate *val);
+
+    String validate();
 };
 
 /*void test() {

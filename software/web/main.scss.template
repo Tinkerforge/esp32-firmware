@@ -398,4 +398,48 @@ body {
     }
 }
 
+.no-spin::-webkit-inner-spin-button, .no-spin::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+
+.no-spin {
+    -moz-appearance:textfield !important;
+}
+
+.input-indicator {
+    padding-left: calc(0.75rem - 5px);
+    border-left: 5px solid;
+}
+
+#status_wifi_sta_rssi .feather {
+    vertical-align: bottom;
+}
+
+@keyframes shake {
+  0% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(1em);
+  }
+  40% {
+    transform: translate(-1em);
+  }
+  60% {
+    transform: translate(1em);
+  }
+  80% {
+    transform: translate(-1em);
+  }
+  100% {
+    transform: translate(0);
+  }
+}
+
+.shake {
+  animation: shake 0.5s infinite;
+  box-shadow: 0 0 0 .2rem rgba(255, 0, 0, 0.5) !important;
+}
+
 {{{module_post_imports}}}

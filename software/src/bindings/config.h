@@ -45,6 +45,21 @@ extern "C" {
 #define TF_IMPLEMENT_GET_DEVICE_DISPLAY_NAME 1
 #endif
 
+// Set this to 1 to enable network support.
+// If a net context is then registered to the HAL,
+// attached Bricklets are controllable via network.
+#ifndef TF_NET_ENABLE
+#define TF_NET_ENABLE 0
+#endif
+
+// Set this to 1 to enable local device support.
+// If a local context is then registered to the HAL,
+// the local device (representing the MCU this program
+// is running on) is exposed as Brick.
+#ifndef TF_LOCAL_ENABLE
+#define TF_LOCAL_ENABLE 0
+#endif
+
 #ifdef __cplusplus
 }
 #endif

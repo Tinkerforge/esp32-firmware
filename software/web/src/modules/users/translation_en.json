@@ -1,0 +1,43 @@
+{
+    "users": {
+        "status": {
+
+        },
+        "navbar": {
+            "users": "User management"
+        },
+        "content": {
+            "users": "User management",
+
+            "enable_authentication": "Enable login",
+            "enable_authentication_desc": "When active, a successful login as one of the configured users is required to open the Web interface or call the HTTP API.",
+
+            "save": "Save",
+            "authorized_users": "Authorized users",
+
+            "add_user_modal_title": "Add user",
+            "add_user_modal_username": "Username",
+            "add_user_modal_display_name": "Display name",
+            "add_user_modal_current": "Maximum charge current",
+            "add_user_modal_password": "Password",
+            "add_user_modal_password_desc": "leave blank to disable web interface login for this user",
+            "add_user_modal_abort": "Discard",
+            "add_user_modal_save": "Add"
+        },
+        "script": {
+            "id": "ID",
+            "roles": "Roles",
+            "display_name": "Display name",
+            "current": "Maximum charge current",
+            "password": "Password",
+            "last_seen_unknown": "placeholder",
+            "add_user": "Add user",
+            "add_user_disabled_prefix": "Only up to ",
+            "add_user_disabled_suffix": " users are supported.",
+            "unchanged": "unchanged",
+            "reboot_content_changed": "User configuration",
+            "login_disabled": "Login disabled",
+            "save_failed": "Failed to save the user configuration."
+        }
+    }
+}

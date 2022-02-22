@@ -1,0 +1,43 @@
+{
+    "nfc": {
+        "status": {
+        },
+        "navbar": {
+            "nfc": "NFC"
+        },
+        "content": {
+            "nfc": "NFC-Freischaltung",
+
+            "save": "Speichern",
+            "authorized_tags": "Berechtigte Tags",
+
+            "add_tag_modal_title": "Berechtigtes Tag hinzufügen",
+            "add_tag_modal_seen_tags": "Zuletzt erkannte Tags",
+            "add_tag_modal_user_id": "Zugeordneter Benutzer",
+            "add_tag_modal_tag_id": "Tag-ID",
+            "add_tag_modal_tag_type": "Tag-Typ",
+            "add_tag_modal_abort": "Verwerfen",
+            "add_tag_modal_save": "Hinzufügen",
+            "last_seen": "Erkannt vor ",
+            "last_seen_suffix": "{{{empty_text}}}",
+            "select_type": "Tag-Typ auswählen...",
+            "type_0": "Mifare Classic",
+            "type_1": "NFC Forum Typ 1",
+            "type_2": "NFC Forum Typ 2",
+            "type_3": "NFC Forum Typ 3",
+            "type_4": "NFC Forum Typ 4",
+            "add_tag_description": "Das neue Tag kann zum Anlernen an die rechte Seite der Wallbox gehalten werden. Alternativ können Tag-ID und Tag-Typ manuell angegeben werden."
+        },
+        "script": {
+            "add_tag": "Tag hinzufügen",
+            "add_tag_disabled_prefix": "Es werden nur bis zu ",
+            "add_tag_disabled_suffix": " Tags unterstützt.",
+            "user_id": "Zugeordneter Benutzer",
+            "tag_type": "Tag-Typ",
+            "last_seen_unknown": "placeholder",
+            "save_failed": "Aktualisieren der NFC-Einstellungen fehlgeschlagen",
+            "reboot_content_changed": "NFC-Einstellungen",
+            "not_assigned": "nicht zugeordnet"
+        }
+    }
+}

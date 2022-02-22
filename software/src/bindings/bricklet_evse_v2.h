@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-01-27.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -62,147 +62,132 @@ typedef struct TF_EVSEV2 {
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_SET_MAX_CHARGING_CURRENT 4
+#define TF_EVSE_V2_FUNCTION_SET_CHARGING_SLOT 4
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_MAX_CHARGING_CURRENT 5
+#define TF_EVSE_V2_FUNCTION_SET_CHARGING_SLOT_MAX_CURRENT 5
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_START_CHARGING 6
+#define TF_EVSE_V2_FUNCTION_SET_CHARGING_SLOT_ACTIVE 6
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_STOP_CHARGING 7
+#define TF_EVSE_V2_FUNCTION_SET_CHARGING_SLOT_CLEAR_ON_DISCONNECT 7
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_SET_CHARGING_AUTOSTART 8
+#define TF_EVSE_V2_FUNCTION_GET_CHARGING_SLOT 8
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_CHARGING_AUTOSTART 9
+#define TF_EVSE_V2_FUNCTION_GET_ALL_CHARGING_SLOTS 9
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_ENERGY_METER_VALUES 10
+#define TF_EVSE_V2_FUNCTION_SET_CHARGING_SLOT_DEFAULT 10
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_ENERGY_METER_DETAILED_VALUES_LOW_LEVEL 11
+#define TF_EVSE_V2_FUNCTION_GET_CHARGING_SLOT_DEFAULT 11
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_ENERGY_METER_STATE 12
+#define TF_EVSE_V2_FUNCTION_GET_ENERGY_METER_VALUES 12
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_RESET_ENERGY_METER 13
+#define TF_EVSE_V2_FUNCTION_GET_ALL_ENERGY_METER_VALUES_LOW_LEVEL 13
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_DC_FAULT_CURRENT_STATE 14
+#define TF_EVSE_V2_FUNCTION_GET_ENERGY_METER_ERRORS 14
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_RESET_DC_FAULT_CURRENT 15
+#define TF_EVSE_V2_FUNCTION_RESET_ENERGY_METER_RELATIVE_ENERGY 15
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_SET_GPIO_CONFIGURATION 16
+#define TF_EVSE_V2_FUNCTION_RESET_DC_FAULT_CURRENT_STATE 16
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_GPIO_CONFIGURATION 17
+#define TF_EVSE_V2_FUNCTION_SET_GPIO_CONFIGURATION 17
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_MANAGED 18
+#define TF_EVSE_V2_FUNCTION_GET_GPIO_CONFIGURATION 18
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_SET_MANAGED 19
+#define TF_EVSE_V2_FUNCTION_GET_DATA_STORAGE 19
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_SET_MANAGED_CURRENT 20
+#define TF_EVSE_V2_FUNCTION_SET_DATA_STORAGE 20
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_DATA_STORAGE 21
+#define TF_EVSE_V2_FUNCTION_GET_INDICATOR_LED 21
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_SET_DATA_STORAGE 22
+#define TF_EVSE_V2_FUNCTION_SET_INDICATOR_LED 22
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_INDICATOR_LED 23
+#define TF_EVSE_V2_FUNCTION_SET_BUTTON_CONFIGURATION 23
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_SET_INDICATOR_LED 24
+#define TF_EVSE_V2_FUNCTION_GET_BUTTON_CONFIGURATION 24
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_SET_BUTTON_CONFIGURATION 25
+#define TF_EVSE_V2_FUNCTION_GET_BUTTON_STATE 25
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_BUTTON_CONFIGURATION 26
+#define TF_EVSE_V2_FUNCTION_SET_CONTROL_PILOT_CONFIGURATION 26
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_BUTTON_STATE 27
+#define TF_EVSE_V2_FUNCTION_GET_CONTROL_PILOT_CONFIGURATION 27
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_SET_CONTROL_PILOT_CONFIGURATION 28
+#define TF_EVSE_V2_FUNCTION_GET_ALL_DATA_1 28
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_CONTROL_PILOT_CONFIGURATION 29
-
-/**
- * \ingroup TF_EVSEV2
- */
-#define TF_EVSE_V2_FUNCTION_GET_ALL_DATA_1 30
-
-/**
- * \ingroup TF_EVSEV2
- */
-#define TF_EVSE_V2_FUNCTION_GET_ALL_DATA_2 31
-
-/**
- * \ingroup TF_EVSEV2
- */
-#define TF_EVSE_V2_FUNCTION_GET_ALL_DATA_3 32
+#define TF_EVSE_V2_FUNCTION_GET_ALL_DATA_2 29
 
 /**
  * \ingroup TF_EVSEV2
@@ -321,22 +306,27 @@ typedef struct TF_EVSEV2 {
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_VEHICLE_STATE_NOT_CONNECTED 0
+#define TF_EVSE_V2_CHARGER_STATE_NOT_CONNECTED 0
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_VEHICLE_STATE_CONNECTED 1
+#define TF_EVSE_V2_CHARGER_STATE_WAITING_FOR_CHARGE_RELEASE 1
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_VEHICLE_STATE_CHARGING 2
+#define TF_EVSE_V2_CHARGER_STATE_READY_TO_CHARGE 2
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_VEHICLE_STATE_ERROR 3
+#define TF_EVSE_V2_CHARGER_STATE_CHARGING 3
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CHARGER_STATE_ERROR 4
 
 /**
  * \ingroup TF_EVSEV2
@@ -461,26 +451,6 @@ typedef struct TF_EVSEV2 {
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CHARGE_RELEASE_AUTOMATIC 0
-
-/**
- * \ingroup TF_EVSEV2
- */
-#define TF_EVSE_V2_CHARGE_RELEASE_MANUAL 1
-
-/**
- * \ingroup TF_EVSEV2
- */
-#define TF_EVSE_V2_CHARGE_RELEASE_DEACTIVATED 2
-
-/**
- * \ingroup TF_EVSEV2
- */
-#define TF_EVSE_V2_CHARGE_RELEASE_MANAGED 3
-
-/**
- * \ingroup TF_EVSEV2
- */
 #define TF_EVSE_V2_DC_FAULT_CURRENT_STATE_NORMAL_CONDITION 0
 
 /**
@@ -562,6 +532,26 @@ typedef struct TF_EVSEV2 {
  * \ingroup TF_EVSEV2
  */
 #define TF_EVSE_V2_CONTROL_PILOT_AUTOMATIC 2
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_ENERGY_METER_TYPE_NOT_AVAILABLE 0
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_ENERGY_METER_TYPE_SDM72 1
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_ENERGY_METER_TYPE_SDM630 2
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_ENERGY_METER_TYPE_SDM72V2 3
 
 /**
  * \ingroup TF_EVSEV2
@@ -734,67 +724,86 @@ int tf_evse_v2_callback_tick(TF_EVSEV2 *evse_v2, uint32_t timeout_us);
  *
  * TODO
  */
-int tf_evse_v2_get_state(TF_EVSEV2 *evse_v2, uint8_t *ret_iec61851_state, uint8_t *ret_vehicle_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint8_t *ret_charge_release, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state, uint32_t *ret_time_since_state_change, uint32_t *ret_uptime);
+int tf_evse_v2_get_state(TF_EVSEV2 *evse_v2, uint8_t *ret_iec61851_state, uint8_t *ret_charger_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state, uint8_t *ret_dc_fault_current_state);
 
 /**
  * \ingroup TF_EVSEV2
  *
  * TODO
  */
-int tf_evse_v2_get_hardware_configuration(TF_EVSEV2 *evse_v2, uint8_t *ret_jumper_configuration, bool *ret_has_lock_switch);
+int tf_evse_v2_get_hardware_configuration(TF_EVSEV2 *evse_v2, uint8_t *ret_jumper_configuration, bool *ret_has_lock_switch, uint8_t *ret_evse_version, uint8_t *ret_energy_meter_type);
 
 /**
  * \ingroup TF_EVSEV2
  *
  * TODO
  */
-int tf_evse_v2_get_low_level_state(TF_EVSEV2 *evse_v2, uint8_t *ret_led_state, uint16_t *ret_cp_pwm_duty_cycle, uint16_t ret_adc_values[7], int16_t ret_voltages[7], uint32_t ret_resistances[2], bool ret_gpio[24], uint32_t *ret_charging_time);
+int tf_evse_v2_get_low_level_state(TF_EVSEV2 *evse_v2, uint8_t *ret_led_state, uint16_t *ret_cp_pwm_duty_cycle, uint16_t ret_adc_values[7], int16_t ret_voltages[7], uint32_t ret_resistances[2], bool ret_gpio[24], uint32_t *ret_charging_time, uint32_t *ret_time_since_state_change, uint32_t *ret_uptime);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * fixed slots:
+ * 0: incoming cable (read-only, configured through slide switch)
+ * 1: outgoing cable (read-only, configured through resistor)
+ * 2: gpio input 0 (shutdown input)
+ * 3: gpio input 1 (input)
+ * 4: button (0A <-> 32A, can be controlled from web interface with start button and physical button if configured)
  */
-int tf_evse_v2_set_max_charging_current(TF_EVSEV2 *evse_v2, uint16_t max_current);
+int tf_evse_v2_set_charging_slot(TF_EVSEV2 *evse_v2, uint8_t slot, uint16_t max_current, bool active, bool clear_on_disconnect);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * * Max Current Configured -> set with {@link tf_evse_v2_set_max_charging_current}
- * * Max Current Incoming Cable -> set with jumper on EVSE
- * * Max Current Outgoing Cable -> set with resistor between PP/PE (if fixed cable is used)
  * 
- * TODO
  */
-int tf_evse_v2_get_max_charging_current(TF_EVSEV2 *evse_v2, uint16_t *ret_max_current_configured, uint16_t *ret_max_current_incoming_cable, uint16_t *ret_max_current_outgoing_cable, uint16_t *ret_max_current_managed);
+int tf_evse_v2_set_charging_slot_max_current(TF_EVSEV2 *evse_v2, uint8_t slot, uint16_t max_current);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * 
  */
-int tf_evse_v2_start_charging(TF_EVSEV2 *evse_v2);
+int tf_evse_v2_set_charging_slot_active(TF_EVSEV2 *evse_v2, uint8_t slot, bool active);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * 
  */
-int tf_evse_v2_stop_charging(TF_EVSEV2 *evse_v2);
+int tf_evse_v2_set_charging_slot_clear_on_disconnect(TF_EVSEV2 *evse_v2, uint8_t slot, bool clear_on_disconnect);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * 
  */
-int tf_evse_v2_set_charging_autostart(TF_EVSEV2 *evse_v2, bool autostart);
+int tf_evse_v2_get_charging_slot(TF_EVSEV2 *evse_v2, uint8_t slot, uint16_t *ret_max_current, bool *ret_active, bool *ret_clear_on_disconnect);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * packed getter
  */
-int tf_evse_v2_get_charging_autostart(TF_EVSEV2 *evse_v2, bool *ret_autostart);
+int tf_evse_v2_get_all_charging_slots(TF_EVSEV2 *evse_v2, uint16_t ret_max_current[20], uint8_t ret_active_and_clear_on_disconnect[20]);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * fixed slots:
+ * 0: incoming cable (read-only, configured through slide switch)
+ * 1: outgoing cable (read-only, configured through resistor)
+ * 2: gpio input 0 (shutdown input)
+ * 3: gpio input 1 (input)
+ */
+int tf_evse_v2_set_charging_slot_default(TF_EVSEV2 *evse_v2, uint8_t slot, uint16_t max_current, bool active, bool clear_on_disconnect);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * 
+ */
+int tf_evse_v2_get_charging_slot_default(TF_EVSEV2 *evse_v2, uint8_t slot, uint16_t *ret_max_current, bool *ret_active, bool *ret_clear_on_disconnect);
 
 /**
  * \ingroup TF_EVSEV2
@@ -808,35 +817,28 @@ int tf_evse_v2_get_energy_meter_values(TF_EVSEV2 *evse_v2, float *ret_power, flo
  *
  * TBD
  */
-int tf_evse_v2_get_energy_meter_detailed_values_low_level(TF_EVSEV2 *evse_v2, uint16_t *ret_values_chunk_offset, float ret_values_chunk_data[15]);
+int tf_evse_v2_get_all_energy_meter_values_low_level(TF_EVSEV2 *evse_v2, uint16_t *ret_values_chunk_offset, float ret_values_chunk_data[15]);
 
 /**
  * \ingroup TF_EVSEV2
  *
  * TODO
  */
-int tf_evse_v2_get_energy_meter_state(TF_EVSEV2 *evse_v2, bool *ret_available, uint32_t ret_error_count[6]);
+int tf_evse_v2_get_energy_meter_errors(TF_EVSEV2 *evse_v2, uint32_t ret_error_count[6]);
 
 /**
  * \ingroup TF_EVSEV2
  *
  * TODO
  */
-int tf_evse_v2_reset_energy_meter(TF_EVSEV2 *evse_v2);
+int tf_evse_v2_reset_energy_meter_relative_energy(TF_EVSEV2 *evse_v2);
 
 /**
  * \ingroup TF_EVSEV2
  *
  * TODO
  */
-int tf_evse_v2_get_dc_fault_current_state(TF_EVSEV2 *evse_v2, uint8_t *ret_dc_fault_current_state);
-
-/**
- * \ingroup TF_EVSEV2
- *
- * TODO
- */
-int tf_evse_v2_reset_dc_fault_current(TF_EVSEV2 *evse_v2, uint32_t password);
+int tf_evse_v2_reset_dc_fault_current_state(TF_EVSEV2 *evse_v2, uint32_t password);
 
 /**
  * \ingroup TF_EVSEV2
@@ -851,27 +853,6 @@ int tf_evse_v2_set_gpio_configuration(TF_EVSEV2 *evse_v2, uint8_t shutdown_input
  * TODO
  */
 int tf_evse_v2_get_gpio_configuration(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_configuration, uint8_t *ret_input_configuration, uint8_t *ret_output_configuration);
-
-/**
- * \ingroup TF_EVSEV2
- *
- * TODO
- */
-int tf_evse_v2_get_managed(TF_EVSEV2 *evse_v2, bool *ret_managed);
-
-/**
- * \ingroup TF_EVSEV2
- *
- * TODO
- */
-int tf_evse_v2_set_managed(TF_EVSEV2 *evse_v2, bool managed, uint32_t password);
-
-/**
- * \ingroup TF_EVSEV2
- *
- * TODO
- */
-int tf_evse_v2_set_managed_current(TF_EVSEV2 *evse_v2, uint16_t current);
 
 /**
  * \ingroup TF_EVSEV2
@@ -941,21 +922,14 @@ int tf_evse_v2_get_control_pilot_configuration(TF_EVSEV2 *evse_v2, uint8_t *ret_
  *
  * TODO
  */
-int tf_evse_v2_get_all_data_1(TF_EVSEV2 *evse_v2, uint8_t *ret_iec61851_state, uint8_t *ret_vehicle_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint8_t *ret_charge_release, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state, uint32_t *ret_time_since_state_change, uint32_t *ret_uptime, uint8_t *ret_jumper_configuration, bool *ret_has_lock_switch);
+int tf_evse_v2_get_all_data_1(TF_EVSEV2 *evse_v2, uint8_t *ret_iec61851_state, uint8_t *ret_charger_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state, uint8_t *ret_dc_fault_current_state, uint8_t *ret_jumper_configuration, bool *ret_has_lock_switch, uint8_t *ret_evse_version, uint8_t *ret_energy_meter_type, float *ret_power, float *ret_energy_relative, float *ret_energy_absolute, bool ret_phases_active[3], bool ret_phases_connected[3], uint32_t ret_error_count[6]);
 
 /**
  * \ingroup TF_EVSEV2
  *
  * TODO
  */
-int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_led_state, uint16_t *ret_cp_pwm_duty_cycle, uint16_t ret_adc_values[7], int16_t ret_voltages[7], uint32_t ret_resistances[2], bool ret_gpio[24], uint32_t *ret_charging_time, uint16_t *ret_max_current_configured, uint16_t *ret_max_current_incoming_cable, uint16_t *ret_max_current_outgoing_cable, uint16_t *ret_max_current_managed, bool *ret_autostart);
-
-/**
- * \ingroup TF_EVSEV2
- *
- * TODO
- */
-int tf_evse_v2_get_all_data_3(TF_EVSEV2 *evse_v2, float *ret_power, float *ret_energy_relative, float *ret_energy_absolute, bool ret_phases_active[3], bool ret_phases_connected[3], bool *ret_available, uint32_t ret_error_count[6], uint8_t *ret_dc_fault_current_state, uint8_t *ret_shutdown_input_configuration, uint8_t *ret_input_configuration, uint8_t *ret_output_configuration, bool *ret_managed, int16_t *ret_indication, uint16_t *ret_duration, uint8_t *ret_button_configuration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed, uint8_t *ret_control_pilot);
+int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_configuration, uint8_t *ret_input_configuration, uint8_t *ret_output_configuration, int16_t *ret_indication, uint16_t *ret_duration, uint8_t *ret_button_configuration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed, uint8_t *ret_control_pilot);
 
 /**
  * \ingroup TF_EVSEV2
@@ -1106,7 +1080,7 @@ int tf_evse_v2_get_identity(TF_EVSEV2 *evse_v2, char ret_uid[8], char ret_connec
  *
  * TBD
  */
-int tf_evse_v2_get_energy_meter_detailed_values(TF_EVSEV2 *evse_v2, float *ret_values, uint16_t *ret_values_length);
+int tf_evse_v2_get_all_energy_meter_values(TF_EVSEV2 *evse_v2, float *ret_values, uint16_t *ret_values_length);
 
 #ifdef __cplusplus
 }

@@ -1,0 +1,38 @@
+<div class="tab-pane fade" role="tabpanel" aria-labelledby="sidebar-network" id="network">
+    <div
+        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2" data-i18n="network.content.settings"></h1>
+    </div>
+    <form id="network_form" class="needs-validation" novalidate>
+        <!--
+            Use custom validation instead of the browser default, that is broken on Chrome
+            See: https://getbootstrap.com/docs/4.5/components/forms/#validation
+        -->
+
+        <div class="form-group row">
+            <label for="network_hostname"
+                class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="network.content.hostname"></label>
+            <div class="col-lg-9 col-xl-6">
+                <input id="network_hostname" class="form-control" type="text"  pattern="[a-zA-Z0-9\-]*" maxlength="32" required>
+                <div class="invalid-feedback"  data-i18n="network.content.hostname_invalid"></div>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-lg-3 col-xl-2">
+                <label for="network_enable_mdns" class="col-form-label form-label" data-i18n="network.content.enable_mdns"></label>
+            </div>
+            <div class="col-lg-9 col-xl-6">
+                <div class="borderless-form-control custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" id="network_enable_mdns">
+                    <label class="custom-control-label" for="network_enable_mdns" data-i18n="network.content.enable_mdns_desc"></label>
+                </div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-lg-12 col-xl-8 text-right">
+                <button id="network_save_button" type="submit" form="network_form" class="btn btn-primary" data-i18n="network.content.save"></button>
+            </div>
+        </div>
+    </form>
+</div>

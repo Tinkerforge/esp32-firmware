@@ -1,8 +1,18 @@
 {
     "main": {
         "title": "{{{display_name}}} Webinterface",
+        "navbar_login": "Anmeldung",
+        "content_login": "Anmeldung",
+        "login_username": "Benutzername",
+        "login_password": "Passwort",
+        "login_button": "Anmelden",
         "navbar_status": "Status",
-        "content_status": "Status"
+        "content_status": "Status",
+        "reboot_title": "Neu starten um Konfiguration anzuwenden",
+        "reboot_content_prefix": "Die geänderten ",
+        "reboot_content_suffix": " werden nur nach einem Neustart angewendet. Jetzt neu starten?",
+        "abort": "Abbrechen",
+        "reboot": "Neu starten"
     },
     "util": {
         "reboot_title": "Starte neu...",

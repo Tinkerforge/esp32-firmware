@@ -34,7 +34,7 @@ static uint8_t tf_tfp_build_header(TF_TFP *tfp, uint8_t *header_buf, uint8_t len
 
     tfp->next_sequence_number = sequence_number + 1;
 
-    header.uid = tfp->uid;
+    header.uid_num = tfp->uid_num;
     header.length = length;
     header.fid = function_id;
     header.seq_num = sequence_number;
@@ -77,7 +77,7 @@ static bool tf_tfp_dispatch_packet(TF_TFP *tfp, TF_TFPHeader *header, TF_PacketB
 
     // Search TFP for the received callback
     bool result = false;
-    TF_TFP *other_tfp = tf_hal_get_tfp(tfp->spitfp->hal, &header->uid, NULL, NULL, false);
+    TF_TFP *other_tfp = tf_hal_get_tfp(tfp->spitfp->hal, &header->uid_num, NULL, NULL, false);
 
     if (other_tfp != NULL) {
         result = other_tfp->cb_handler(other_tfp->device, header->fid, packet);
@@ -119,22 +119,37 @@ static bool tf_tfp_filter_received_packet(TF_TFP *tfp, bool remove_interesting, 
     // Patch "position" of enumerate and get_identity packets if "connected_uid" is
     // just a null-terminator I.e. the device is attached to us directly
     if ((header.fid == 253 && header.length == 34) || (header.fid == 255 && header.length == 33)) {
-        uint8_t connected_uid;
+        char connected_uid_first_char;
 
-        tf_packet_buffer_peek_offset(buf, &connected_uid, 8);
+        tf_packet_buffer_peek_offset(buf, (uint8_t *)&connected_uid_first_char, 8);
 
-        if (connected_uid == 0) {
+        if (connected_uid_first_char == '\0') {
+#if TF_LOCAL_ENABLE != 0
+            TF_Local *local = tf_hal_get_local(tfp->spitfp->hal, NULL, NULL, NULL, false);
+
+            if (local != NULL) {
+                for (uint8_t i = 0; i < sizeof(local->uid_str); ++i) {
+                    tf_packet_buffer_poke_offset(buf, local->uid_str[i], 8 + i);
+                }
+
+                tf_packet_buffer_poke_offset(buf, '\0', 8 + sizeof(local->uid_str));
+            } else {
+                tf_packet_buffer_poke_offset(buf, '0', 8);
+                tf_packet_buffer_poke_offset(buf, '\0', 9);
+            }
+#else
             tf_packet_buffer_poke_offset(buf, '0', 8);
             tf_packet_buffer_poke_offset(buf, '\0', 9);
+#endif
             tf_packet_buffer_poke_offset(buf, (uint8_t)tf_hal_get_port_name(tfp->spitfp->hal, tfp->spitfp->port_id), 16);
         }
     }
 
     // We could do this before parsing the header, but in this order it's possible to remove the unwanted packet from the buffer.
     bool packet_uninteresting = (tfp->waiting_for_fid == 0)
-                             || (tfp->uid != 0 && header.uid != tfp->uid)
+                             || (tfp->uid_num != 0 && header.uid_num != tfp->uid_num)
                              || (header.fid != tfp->waiting_for_fid)
-                             || (header.seq_num != tfp->waiting_for_sequence_number);
+                             || (header.seq_num != tfp->waiting_for_seq_num);
 
     if (packet_uninteresting) {
         if (!tf_tfp_dispatch_packet(tfp, &header, buf)) {
@@ -144,8 +159,8 @@ static bool tf_tfp_filter_received_packet(TF_TFP *tfp, bool remove_interesting, 
                 tf_hal_log_debug("tfp->waiting_for_fid == 0\n");
             }
 
-            if (tfp->uid != 0 && header.uid != tfp->uid) {
-                tf_hal_log_debug("tfp->uid != 0 && header.uid (%d) != tfp->uid (%d)\n", header.uid, tfp->uid);
+            if (tfp->uid_num != 0 && header.uid_num != tfp->uid_num) {
+                tf_hal_log_debug("tfp->uid_num != 0 && header.uid_num (%d) != tfp->uid_num (%d)\n", header.uid_num, tfp->uid_num);
             }
 
             if (header.fid != tfp->waiting_for_fid) {
@@ -153,8 +168,8 @@ static bool tf_tfp_filter_received_packet(TF_TFP *tfp, bool remove_interesting, 
             }
 
 
-            if (header.seq_num != tfp->waiting_for_sequence_number) {
-                tf_hal_log_debug("header.seq_num (%d) != tfp->waiting_for_sequence_number (%d)\n", header.seq_num, tfp->waiting_for_sequence_number);
+            if (header.seq_num != tfp->waiting_for_seq_num) {
+                tf_hal_log_debug("header.seq_num (%d) != tfp->waiting_for_seq_num (%d)\n", header.seq_num, tfp->waiting_for_seq_num);
             }
 
             tf_packet_buffer_remove(buf, header.length);
@@ -192,11 +207,11 @@ static bool empty_cb_handler(void *device, uint8_t fid, TF_PacketBuffer *payload
     return false;
 }
 
-void tf_tfp_create(TF_TFP *tfp, uint32_t uid, uint16_t device_id, TF_SPITFP *spitfp) {
+void tf_tfp_create(TF_TFP *tfp, uint32_t uid_num, uint16_t device_id, TF_SPITFP *spitfp) {
     memset(tfp, 0, sizeof(TF_TFP));
 
     tfp->spitfp = spitfp;
-    tfp->uid = uid;
+    tfp->uid_num = uid_num;
     tfp->device_id = device_id;
     tfp->next_sequence_number = 1;
     tfp->cb_handler = empty_cb_handler;
@@ -211,10 +226,10 @@ void tf_tfp_prepare_send(TF_TFP *tfp, uint8_t fid, uint8_t payload_size, bool re
 
     if (response_expected) {
         tfp->waiting_for_fid = fid;
-        tfp->waiting_for_sequence_number = tf_tfp_seq_num;
+        tfp->waiting_for_seq_num = tf_tfp_seq_num;
     } else {
         tfp->waiting_for_fid = 0;
-        tfp->waiting_for_sequence_number = 0;
+        tfp->waiting_for_seq_num = 0;
     }
 }
 
@@ -233,7 +248,7 @@ void tf_tfp_inject_packet(TF_TFP *tfp, TF_TFPHeader *header, uint8_t *packet) {
     memcpy(buf, packet, header->length);
 
     tfp->waiting_for_fid = 0;
-    tfp->waiting_for_sequence_number = 0;
+    tfp->waiting_for_seq_num = 0;
 }
 
 static int tf_tfp_send_getter(TF_TFP *tfp, uint32_t deadline_us, uint8_t *error_code, uint8_t *length) {
@@ -258,7 +273,7 @@ static int tf_tfp_send_getter(TF_TFP *tfp, uint32_t deadline_us, uint8_t *error_
         if (result & TF_TICK_PACKET_RECEIVED) {
             if (tf_tfp_filter_received_packet(tfp, false, error_code, length)) {
                 tfp->waiting_for_fid = 0;
-                tfp->waiting_for_sequence_number = 0;
+                tfp->waiting_for_seq_num = 0;
                 packet_received = true;
             }
         }

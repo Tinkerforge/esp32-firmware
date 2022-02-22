@@ -1,20 +1,26 @@
-#!/bin/python
-
 Import("env")
+
+import sys
+
+if sys.hexversion < 0x3060000:
+    print('Python >= 3.6 required')
+    sys.exit(1)
 
 from collections import namedtuple
 import functools
 import os
 import shutil
 import subprocess
-import sys
 import time
 import re
 import hashlib
 import json
 import glob
+import io
+import gzip
 from base64 import b64encode
 from zlib import crc32
+from util import embed_data
 
 NameFlavors = namedtuple('NameFlavors', 'space lower camel headless under upper dash camel_abbrv lower_no_space camel_constant_safe')
 
@@ -50,17 +56,11 @@ class FlavoredName(object):
 
             return self.cache[key]
 
-def recreate_dir(path):
-    if os.path.exists(path):
-        shutil.rmtree(path)
-
-    os.makedirs(path)
-
 def specialize_template(template_filename, destination_filename, replacements, check_completeness=True, remove_template=False):
     lines = []
     replaced = set()
 
-    with open(template_filename, 'r') as f:
+    with open(template_filename, 'r', encoding='utf-8') as f:
         for line in f.readlines():
             for key in replacements:
                 replaced_line = line.replace(key, replacements[key])
@@ -75,7 +75,7 @@ def specialize_template(template_filename, destination_filename, replacements, c
     if check_completeness and replaced != set(replacements.keys()):
         raise Exception('Not all replacements for {0} have been applied. Missing are {1}'.format(template_filename, ', '.join(set(replacements.keys() - replaced))))
 
-    with open(destination_filename, 'w') as f:
+    with open(destination_filename, 'w', encoding='utf-8') as f:
         f.writelines(lines)
 
     if remove_template:
@@ -98,7 +98,7 @@ class ChangedDirectory(object):
 def get_changelog_version(name):
     versions = []
 
-    with open(os.path.join('changelog_{}.txt'.format(name)), 'r') as f:
+    with open(os.path.join('changelog_{}.txt'.format(name)), 'r', encoding='utf-8') as f:
         for i, line in enumerate(f.readlines()):
             line = line.rstrip()
 
@@ -160,7 +160,7 @@ def write_firmware_info(display_name, major, minor, patch, build_time):
     buf[72:76] = build_time.to_bytes(4, byteorder='little')
     buf[4092:4096] = crc32(buf[0:4092]).to_bytes(4, byteorder='little')
 
-    with open(os.path.join("build", "fw_info.bin"), "wb") as f:
+    with open(os.path.join(env.subst("$BUILD_DIR"), "firmware_info.bin"), "wb") as f:
         f.write(buf)
 
 def update_translation(translation, update, override=False, parent_key=None):
@@ -197,7 +197,7 @@ def collect_translation(path, override=False):
 
         language = m.group(1)
 
-        with open(translation_path, 'r') as f:
+        with open(translation_path, 'r', encoding='utf-8') as f:
             try:
                 translation[language] = json.loads(f.read())
             except:
@@ -226,42 +226,63 @@ def main():
     display_name = env.GetProjectOption("display_name")
     manual_url = env.GetProjectOption("manual_url")
     apidoc_url = env.GetProjectOption("apidoc_url")
-    require_fw_info = env.GetProjectOption("require_fw_info")
+    require_firmware_info = env.GetProjectOption("require_firmware_info")
+    src_filter = env.GetProjectOption("src_filter")
     version = get_changelog_version(name)
+
+    if src_filter[0] == '+<empty.c>':
+        src_filter = None
+    else:
+        src_filter = ['+<*>', '-<empty.c>']
 
     if not os.path.isdir("build"):
         os.makedirs("build")
 
     write_firmware_info(display_name, *version, timestamp)
 
-    with open(os.path.join('src', 'build.h'), 'w') as f:
+    with open(os.path.join('src', 'build.h'), 'w', encoding='utf-8') as f:
         f.write('#pragma once\n')
-        f.write('#define BUILD_TIMESTAMP {}\n'.format(timestamp))
-        f.write('#define BUILD_TIMESTAMP_HEX_STR "{:x}"\n'.format(timestamp))
         f.write('#define BUILD_VERSION_MAJOR {}\n'.format(version[0]))
         f.write('#define BUILD_VERSION_MINOR {}\n'.format(version[1]))
         f.write('#define BUILD_VERSION_PATCH {}\n'.format(version[2]))
-        f.write('#define BUILD_VERSION_FULL_STR "{}.{}.{}-{:x}"\n'.format(*version, timestamp))
         f.write('#define BUILD_HOST_PREFIX "{}"\n'.format(host_prefix))
-        f.write('#define BUILD_REQUIRE_FW_INFO {}\n'.format(require_fw_info))
+        f.write('#define BUILD_REQUIRE_FIRMWARE_INFO {}\n'.format(require_firmware_info))
 
-    with open(os.path.join('src', 'firmware_basename'), 'w') as f:
+    with open(os.path.join('src', 'build_timestamp.h'), 'w', encoding='utf-8') as f:
+        f.write('#pragma once\n')
+        f.write('#define BUILD_TIMESTAMP {}\n'.format(timestamp))
+        f.write('#define BUILD_TIMESTAMP_HEX_STR "{:x}"\n'.format(timestamp))
+        f.write('#define BUILD_VERSION_FULL_STR "{}.{}.{}-{:x}"\n'.format(*version, timestamp))
+
+    with open(os.path.join(env.subst('$BUILD_DIR'), 'firmware_basename'), 'w', encoding='utf-8') as f:
         f.write('{}_firmware_{}_{:x}'.format(name, '_'.join(version), timestamp))
 
-    # Embed backend modules
-    recreate_dir(os.path.join("src", "modules"))
+    # Handle backend modules
+    excluded_backend_modules = list(os.listdir('src/modules'))
     backend_modules = [FlavoredName(x).get() for x in env.GetProjectOption("backend_modules").splitlines()]
     for backend_module in backend_modules:
-        mod_path = os.path.join("modules", "backend", backend_module.under)
+        mod_path = os.path.join('src', 'modules', backend_module.under)
 
         if not os.path.exists(mod_path) or not os.path.isdir(mod_path):
             print("Backend module {} not found.".format(backend_module.space, mod_path))
 
-        if os.path.exists(os.path.join(mod_path, "prepare.py")):
-            with ChangedDirectory(mod_path):
-                subprocess.run(["python3", "prepare.py"])
+        excluded_backend_modules.remove(backend_module.under)
 
-        shutil.copytree(os.path.join(mod_path), os.path.join("src", "modules", backend_module.under), ignore=shutil.ignore_patterns('*ignored'))
+        if os.path.exists(os.path.join(mod_path, "prepare.py")):
+            print('Preparing backend module:', backend_module.space)
+
+            environ = dict(os.environ)
+            environ['PLATFORMIO_PROJECT_DIR'] = env.subst('$PROJECT_DIR')
+            environ['PLATFORMIO_BUILD_DIR'] = env.subst('$BUILD_DIR')
+
+            with ChangedDirectory(mod_path):
+                subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py"], env=environ)
+
+    if src_filter != None:
+        for excluded_backend_module in excluded_backend_modules:
+            src_filter.append('-<modules/{0}/*>'.format(excluded_backend_module))
+
+        env.Replace(SRC_FILTER=[' '.join(src_filter)])
 
     specialize_template("main.cpp.template", os.path.join("src", "main.cpp"), {
         '{{{module_includes}}}': '\n'.join(['#include "modules/{0}/{0}.h"'.format(x.under) for x in backend_modules]),
@@ -280,56 +301,91 @@ def main():
         '{{{module_extern_decls}}}': '\n'.join(['extern {} {};'.format(x.camel, x.under) for x in backend_modules]),
     })
 
-    # Embed frontend modules
+    # Handle frontend modules
     navbar_entries = []
     content_entries = []
     status_entries = []
     main_ts_entries = []
-    pre_scss_entries = []
-    post_scss_entries = []
+    pre_scss_paths = []
+    post_scss_paths = []
     frontend_modules = [FlavoredName(x).get() for x in env.GetProjectOption("frontend_modules").splitlines()]
     translation = collect_translation('web')
 
-    recreate_dir(os.path.join('web', 'src', 'ts', 'modules'))
-    recreate_dir(os.path.join('web', 'src', 'img', 'modules'))
-    recreate_dir(os.path.join('web', 'src', 'scss', 'modules'))
+    # API
+    api_imports = []
+    api_config_map_entries = []
+    api_cache_entries = []
+    module_counter = 0
+    exported_interface_pattern = re.compile("export interface ([A-Za-z0-9$_]+)")
+    exported_type_pattern = re.compile("export type ([A-Za-z0-9$_]+)")
+    api_path_pattern = re.compile("//APIPath:([^\n]*)\n")
+
+    favicon_path = None
+    logo_module = None
 
     for frontend_module in frontend_modules:
-        mod_path = os.path.join("modules", "frontend", frontend_module.under)
+        mod_path = os.path.join('web', 'src', 'modules', frontend_module.under)
 
         if not os.path.exists(mod_path) or not os.path.isdir(mod_path):
             print("Frontend module {} not found.".format(frontend_module.space, mod_path))
             sys.exit(1)
 
-        if os.path.exists(os.path.join(mod_path, 'img')):
-            for img_name in os.listdir(os.path.join(mod_path, 'img')):
-                img_source_path = os.path.join(mod_path, 'img', img_name)
-                img_target_path = os.path.join('web', 'src', 'img', 'modules', img_name)
+        if os.path.exists(os.path.join(mod_path, 'logo.png')):
+            if logo_module != None:
+                print('Logo module collision ' + frontend_module.under + ' vs ' + logo_module)
+                sys.exit(1)
 
-                assert not os.path.exists(img_target_path), 'img collision ' + img_source_path + ' -> ' + img_target_path
+            logo_module = frontend_module.under
 
-                shutil.copy(img_source_path, img_target_path)
+        potential_favicon_path = os.path.join(mod_path, 'favicon.png')
+
+        if os.path.exists(potential_favicon_path):
+            if favicon_path != None:
+                print('Favicon path collision ' + potential_favicon_path + ' vs ' + favicon_path)
+                sys.exit(1)
+
+            favicon_path = potential_favicon_path
 
         if os.path.exists(os.path.join(mod_path, 'navbar.html')):
-            with open(os.path.join(mod_path, 'navbar.html')) as f:
+            with open(os.path.join(mod_path, 'navbar.html'), encoding='utf-8') as f:
                 navbar_entries.append(f.read())
 
         if os.path.exists(os.path.join(mod_path, 'content.html')):
-            with open(os.path.join(mod_path, 'content.html')) as f:
+            with open(os.path.join(mod_path, 'content.html'), encoding='utf-8') as f:
                 content_entries.append(f.read())
 
         if os.path.exists(os.path.join(mod_path, 'status.html')):
-            with open(os.path.join(mod_path, 'status.html')) as f:
+            with open(os.path.join(mod_path, 'status.html'), encoding='utf-8') as f:
                 status_entries.append(f.read())
 
         if os.path.exists(os.path.join(mod_path, 'main.ts')):
-            main_ts_entries.append(frontend_module)
-            shutil.copy(os.path.join(mod_path, 'main.ts'), os.path.join("web", "src", "ts", "modules", frontend_module.under + ".ts"))
+            main_ts_entries.append(frontend_module.under)
 
-        for phase, scss_entries in [('pre', pre_scss_entries), ('post', post_scss_entries)]:
-            if os.path.exists(os.path.join(mod_path, phase + '.scss')):
-                scss_entries.append(frontend_module)
-                shutil.copy(os.path.join(mod_path, phase + '.scss'), os.path.join("web", "src", "scss", "modules", phase + "_" + frontend_module.under + ".scss"))
+        if os.path.exists(os.path.join(mod_path, 'api.ts')):
+            with open(os.path.join(mod_path, 'api.ts'), encoding='utf-8') as f:
+                content = f.read()
+
+            api_path = frontend_module.under + "/"
+
+            api_match = api_path_pattern.match(content)
+            if api_match is not None:
+                api_path = api_match.group(1).strip()
+
+            api_exports = exported_interface_pattern.findall(content) + exported_type_pattern.findall(content)
+            if len(api_exports) != 0:
+                api_module = "module_{}".format(module_counter)
+                module_counter += 1
+
+                api_imports.append("import * as {} from '../modules/{}/api';".format(api_module, frontend_module.under))
+
+                api_config_map_entries += ["'{}{}': {}.{},".format(api_path, x, api_module, x) for x in api_exports]
+                api_cache_entries += ["'{}{}': null,".format(api_path, x) for x in api_exports]
+
+        for phase, scss_paths in [('pre', pre_scss_paths), ('post', post_scss_paths)]:
+            scss_path = os.path.join(mod_path, phase + '.scss')
+
+            if os.path.exists(scss_path):
+                scss_paths.append(os.path.relpath(scss_path, 'web/src'))
 
         update_translation(translation, collect_translation(mod_path))
         update_translation(translation, collect_translation(mod_path, override=True), override=True)
@@ -339,10 +395,12 @@ def main():
     for path in glob.glob(os.path.join('web', 'src', 'ts', 'translation_*.ts')):
         os.remove(path)
 
-    assert len(translation) > 0
+    if len(translation) == 0:
+        print('Translation missing')
+        sys.exit(1)
 
     for language in sorted(translation):
-        with open(os.path.join('web', 'src', 'ts', 'translation_{0}.ts'.format(language)), 'w') as f:
+        with open(os.path.join('web', 'src', 'ts', 'translation_{0}.ts'.format(language)), 'w', encoding='utf-8') as f:
             data = json.dumps(translation[language], indent=4, ensure_ascii=False)
             data = data.replace('{{{empty_text}}}', '\u200b') # Zero Width Space to work around a bug in the translation library: empty strings are replaced with "null"
             data = data.replace('{{{display_name}}}', display_name)
@@ -352,34 +410,90 @@ def main():
             f.write('export const translation_{0}: {{[index: string]:any}} = '.format(language))
             f.write(data + ';\n')
 
-    with open(os.path.join('web', 'src', 'img', 'modules', 'favicon.png'), 'rb') as f:
+    if favicon_path == None:
+        print('Favison missing')
+        sys.exit(1)
+
+    if logo_module == None:
+        print('Logo missing')
+        sys.exit(1)
+
+    with open(favicon_path, 'rb') as f:
         favicon = b64encode(f.read()).decode('ascii')
 
     specialize_template(os.path.join("web", "index.html.template"), os.path.join("web", "src", "index.html"), {
         '{{{favicon}}}': favicon,
+        '{{{logo_module}}}': logo_module,
         '{{{navbar}}}': '\n                        '.join(navbar_entries),
         '{{{content}}}': '\n                    '.join(content_entries),
         '{{{status}}}': '\n                            '.join(status_entries)
     })
 
     specialize_template(os.path.join("web", "main.ts.template"), os.path.join("web", "src", "main.ts"), {
-        '{{{module_imports}}}': '\n'.join(['import * as {0} from "./ts/modules/{0}";'.format(x.under) for x in main_ts_entries]),
-        '{{{module_interface}}}': ',\n    '.join('{}: boolean'.format(x.under) for x in backend_modules),
-        '{{{modules}}}': ', '.join([x.under for x in main_ts_entries]),
+        '{{{module_imports}}}': '\n'.join(['import * as {0} from "./modules/{0}/main";'.format(x) for x in main_ts_entries]),
+        '{{{modules}}}': ', '.join([x for x in main_ts_entries]),
         '{{{translation_imports}}}': '\n'.join(['import {{translation_{0}}} from "./ts/translation_{0}";'.format(x) for x in sorted(translation)]),
         '{{{translation_adds}}}': '\n'.join(["    translator.add('{0}', translation_{0});".format(x) for x in sorted(translation)])
     })
 
     specialize_template(os.path.join("web", "main.scss.template"), os.path.join("web", "src", "main.scss"), {
-        '{{{module_pre_imports}}}': '\n'.join(['@import "scss/modules/pre_{0}";'.format(x.under) for x in pre_scss_entries]),
-        '{{{module_post_imports}}}': '\n'.join(['@import "scss/modules/post_{0}";'.format(x.under) for x in post_scss_entries])
+        '{{{module_pre_imports}}}': '\n'.join(['@import "{0}";'.format(x.replace('\\', '/')) for x in pre_scss_paths]),
+        '{{{module_post_imports}}}': '\n'.join(['@import "{0}";'.format(x.replace('\\', '/')) for x in post_scss_paths])
+    })
+
+    specialize_template(os.path.join("web", "api_defs.ts.template"), os.path.join("web", "src", "ts", "api_defs.ts"), {
+        '{{{imports}}}': '\n'.join(api_imports),
+        '{{{module_interface}}}': ',\n    '.join('{}: boolean'.format(x.under) for x in backend_modules),
+        '{{{config_map_entries}}}': '\n    '.join(api_config_map_entries),
+        '{{{api_cache_entries}}}': '\n    '.join(api_cache_entries),
     })
 
     # Check translation completeness
+    print('Checking translation completeness')
+
     with ChangedDirectory('web'):
-        subprocess.run(["python3", "check_translation_completeness.py"], check=True)
+        subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "check_translation_completeness.py"] + [x.under for x in frontend_modules])
 
     # Generate web interface
+    print('Checking web interface dependencies')
+
+    node_digest_path = os.path.join(env.subst('$BUILD_DIR'), 'web,package-lock.json.digest')
+
+    with open('web/package-lock.json', 'rb') as f:
+        new_node_digest = hashlib.sha256(f.read()).hexdigest()
+
+    try:
+        with open(node_digest_path, 'r', encoding='utf-8') as f:
+            old_node_digest = f.read().strip()
+    except FileNotFoundError:
+        old_node_digest = None
+
+    if old_node_digest == new_node_digest and os.path.exists('web/node_modules/tinkerforge.marker'):
+        print('Web interface dependencies are up-to-date')
+    else:
+        print('Web interface dependencies are not up-to-date, updating now')
+
+        try:
+            os.remove(node_digest_path)
+        except FileNotFoundError:
+            pass
+
+        try:
+            shutil.rmtree('web/node_modules')
+        except FileNotFoundError:
+            pass
+
+        with ChangedDirectory('web'):
+            subprocess.check_call(["npm", "ci"], shell=sys.platform == 'win32')
+
+        with open('web/node_modules/tinkerforge.marker', 'wb') as f:
+            pass
+
+        with open(node_digest_path, 'w', encoding='utf-8') as f:
+            f.write(new_node_digest)
+
+    print('Checking web interface')
+
     h = hashlib.sha256()
 
     for name in sorted(os.listdir('web')):
@@ -398,35 +512,49 @@ def main():
             with open(path, 'rb') as f:
                 h.update(f.read())
 
-    new_digest = h.hexdigest()
+    with open(node_digest_path, 'rb') as f:
+        h.update(f.read())
+
+    with open('util.py', 'rb') as f:
+        h.update(f.read())
+
+    html_digest_path = os.path.join(env.subst('$BUILD_DIR'), 'src,index.html.digest')
+    new_html_digest = h.hexdigest()
 
     try:
-        with open('src/index.html.h.digest', 'r') as f:
-            old_digest = f.read().strip()
+        with open(html_digest_path, 'r', encoding='utf-8') as f:
+            old_html_digest = f.read().strip()
     except FileNotFoundError:
-        old_digest = None
+        old_html_digest = None
 
-    if old_digest != new_digest or not os.path.exists('src/index.html.h'):
-        try:
-            os.remove('src/index.html.h')
-        except FileNotFoundError:
-            pass
+    if old_html_digest == new_html_digest and os.path.exists('src/index_html.embedded.h') and os.path.exists('src/index_html.embedded.cpp'):
+        print('Web interface is up-to-date')
+    else:
+        print('Web interface is not up-to-date, building now')
 
         try:
-            os.remove('src/index.html.h.digest')
+            shutil.rmtree('web/build')
         except FileNotFoundError:
             pass
 
         with ChangedDirectory('web'):
-            if not os.path.isdir("node_modules"):
-                print("Web interface dependencies not installed. Installing now.")
-                subprocess.run(["npm", "install", "--save-dev"])
+            subprocess.check_call(['npx', 'gulp'], shell=sys.platform == 'win32')
 
-            subprocess.run(["npx", "gulp"])
+        with open('web/build/main.css', 'r', encoding='utf-8') as f:
+            css = f.read()
 
-        shutil.copy2("web/dist/index.html.h", "src/index.html.h")
+        with open('web/build/bundle.js', 'r', encoding='utf-8') as f:
+            js = f.read()
 
-        with open('src/index.html.h.digest', 'w') as f:
-            f.write(new_digest)
+        with open('web/build/index.html', 'r', encoding='utf-8') as f:
+            html = f.read()
+
+        html = html.replace('<link href=css/main.css rel=stylesheet>', '<style rel=stylesheet>{0}</style>'.format(css))
+        html = html.replace('<script src=js/bundle.js></script>', '<script>{0}</script>'.format(js))
+
+        embed_data(gzip.compress(html.encode('utf-8')), 'src', 'index_html', 'char')
+
+        with open(html_digest_path, 'w', encoding='utf-8') as f:
+            f.write(new_html_digest)
 
 main()

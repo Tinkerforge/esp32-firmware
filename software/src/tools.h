@@ -21,6 +21,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <time.h>
 
 #include "config.h"
 
@@ -28,7 +29,7 @@
 
 bool deadline_elapsed(uint32_t deadline_ms);
 
-void read_efuses(uint32_t *ret_uid_numeric, char *ret_uid_string, char *ret_passphrase_string);
+void read_efuses(uint32_t *ret_uid_num, char *ret_uid_str, char *ret_passphrase);
 
 int check(int rc, const char *msg);
 
@@ -40,3 +41,5 @@ int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose,
 
 int compare_version(uint8_t left_major, uint8_t left_minor, uint8_t left_patch,
                     uint8_t right_major, uint8_t right_minor, uint8_t right_patch);
+
+bool clock_synced(struct timeval *out_tv_now);

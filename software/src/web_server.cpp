@@ -59,26 +59,12 @@ struct UserCtx {
     WebServerHandler *handler;
 };
 
-bool authenticate(WebServerRequest req, const char *username, const char *password)
-{
-    String auth = req.header("Authorization");
-    if (auth == "") {
-        return false;
-    }
-
-    if (!auth.startsWith("Digest ")) {
-        return false;
-    }
-
-    auth = auth.substring(7);
-    return checkDigestAuthentication(auth.c_str(), req.methodString(), username, password, nullptr, false, nullptr, nullptr, nullptr);
-}
-
 static esp_err_t low_level_handler(httpd_req_t *req)
 {
     auto ctx = (UserCtx *)req->user_ctx;
     auto request = WebServerRequest{req};
-    if (ctx->server->username != "" && ctx->server->password != "" && !authenticate(request, ctx->server->username.c_str(), ctx->server->password.c_str())) {
+
+    if (ctx->server->auth_fn && !ctx->server->auth_fn(request)) {
         if (ctx->server->on_not_authorized) {
             ctx->server->on_not_authorized(request);
             return ESP_OK;
@@ -123,7 +109,7 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req)
 {
     auto ctx = (UserCtx *)req->user_ctx;
     auto request = WebServerRequest{req};
-    if (ctx->server->username != "" && ctx->server->password != "" && !authenticate(request, ctx->server->username.c_str(), ctx->server->password.c_str())) {
+    if (ctx->server->auth_fn && !ctx->server->auth_fn(request)) {
         if (ctx->server->on_not_authorized) {
             ctx->server->on_not_authorized(request);
             return ESP_OK;
@@ -378,7 +364,7 @@ void WebServerRequest::addResponseHeader(const char *field, const char *value)
 void WebServerRequest::requestAuthentication()
 {
     String payload = "Digest ";
-    payload.concat(requestDigestAuthentication("esp32-lib"));
+    payload.concat(requestDigestAuthentication(nullptr));
     addResponseHeader("WWW-Authenticate", payload.c_str());
     send(401);
 }

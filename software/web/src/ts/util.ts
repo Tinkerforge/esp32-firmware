@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as API from "./api";
 
 declare function __(s: string): string;
 
@@ -151,14 +152,14 @@ export function toggle_password_fn(input_name: string) {
     }
 }
 
-export function clear_password_fn(input_name: string) {
+export function clear_password_fn(input_name: string, to_be_cleared: string = __("util.to_be_cleared"), unchanged: string = __("util.unchanged")) {
     return (ev: Event) => {
         let x = <HTMLInputElement>ev.target;
         if (x.checked) {
             $(input_name).val('');
-            $(input_name).attr('placeholder', __("util.to_be_cleared"));
+            $(input_name).attr('placeholder', to_be_cleared);
         } else {
-            $(input_name).attr('placeholder', __("util.unchanged"));
+            $(input_name).attr('placeholder', unchanged);
         }
 
         $(input_name).prop("disabled", x.checked);
@@ -171,9 +172,9 @@ let ws: WebSocket = null;
 
 const RECONNECT_TIME = 12000;
 
-let eventTarget: EventTarget = null;
+let eventTarget: API.ApiEventTarget = null;
 
-export function setupEventSource(first: boolean, keep_as_first: boolean, continuation: (ws: WebSocket, eventTarget: EventTarget) => void) {
+export function setupEventSource(first: boolean, keep_as_first: boolean, continuation: (ws: WebSocket, eventTarget: API.ApiEventTarget) => void) {
     if (!first) {
         add_alert("event_connection_lost", "alert-warning",  __("util.event_connection_lost_title"), __("util.event_connection_lost"))
     }
@@ -182,7 +183,7 @@ export function setupEventSource(first: boolean, keep_as_first: boolean, continu
         ws.close();
     }
     ws = new WebSocket('ws://' + location.host + '/ws');
-    eventTarget = new EventTarget();
+    eventTarget = new API.ApiEventTarget();
 
     if (wsReconnectTimeout != null) {
         clearTimeout(wsReconnectTimeout);
@@ -200,6 +201,7 @@ export function setupEventSource(first: boolean, keep_as_first: boolean, continu
         }
         wsReconnectTimeout = window.setTimeout(wsReconnectCallback, RECONNECT_TIME);
 
+        let topics = [];
         for (let item of e.data.split("\n")) {
             if (item == "")
                 continue;
@@ -208,7 +210,13 @@ export function setupEventSource(first: boolean, keep_as_first: boolean, continu
                 console.log("Received malformed event", obj);
                 return;
             }
-            eventTarget.dispatchEvent(new MessageEvent(obj["topic"], {"data": JSON.stringify(obj["payload"])}));
+
+            topics.push(obj["topic"]);
+            API.update(obj["topic"], obj["payload"]);
+        }
+
+        for (let topic of topics) {
+            API.trigger(topic, eventTarget);
         }
     }
 
@@ -229,12 +237,11 @@ export function resumeWebSockets() {
 export function postReboot(alert_title: string, alert_text: string) {
     ws.close();
     clearTimeout(wsReconnectTimeout);
-    add_alert("reboot", "alert-success",alert_title, alert_text);
+    add_alert("reboot", "alert-success", alert_title, alert_text);
     // Wait 3 seconds before starting the reload/reconnect logic, to make sure the reboot has actually started yet.
     // Else it sometimes happens, that we reconnect _before_ the reboot starts.
     window.setTimeout(() => whenLoggedInElseReload(() =>
-        setupEventSource(true, true, (ws, eventSource) =>
-                window.setTimeout(() => {
+        setupEventSource(true, true, (ws, eventSource) => {
                 // It is a bit of a hack to use version here, but
                 // as opposed to keep-alive, version was already there in the first version.
                 // so this will even work if downgrading to an version older than
@@ -243,23 +250,29 @@ export function postReboot(alert_title: string, alert_text: string) {
                 eventSource.addEventListener('version', function (e) {
                     console.log("reloading");
                     window.location.reload();
-                }, false);}, 5000))
+                }, false);})
     ), 3000);
 }
 
 let loginReconnectTimeout: number = null;
 
-export function ifLoggedInElseReload(continuation: () => void) {
-    $.ajax({url: "/login_state", timeout:3000}).done(function(data, statusText, xhr){
+export function ifLoggedInElse(if_continuation: () => void, else_continuation: () => void) {
+    $.ajax({url: "/login_state", timeout:3000}).done(function(data, statusText, xhr) {
         if (data == "Logged in") {
-            continuation();
+            if_continuation();
         } else {
-            window.location.href = window.location.href
+            else_continuation();
         }
     }).fail(function(xhr, statusText, errorThrown) {
         if (xhr.status == 404) {
-            continuation();
+            if_continuation();
         }
+    });
+}
+
+export function ifLoggedInElseReload(continuation: () => void) {
+    ifLoggedInElse(continuation, function() {
+        window.location.reload();
     });
 }
 
@@ -304,3 +317,11 @@ export function downloadToFile(content: BlobPart, filename: string, contentType:
 
     URL.revokeObjectURL(a.href);
 };
+
+export function getShowRebootModalFn(changed_value_name: string) {
+    return () => {
+        $('#reboot_content_changed').html(changed_value_name);
+        $('#reboot').modal('show');
+        //$('#ethernet_reboot').modal('show');
+    }
+}

@@ -1,0 +1,23 @@
+{
+    "event_log": {
+        "status": {
+
+        },
+        "navbar": {
+            "event_log": "Ereignis-Log"
+        },
+        "content": {
+            "event_log": "Ereignis-Log",
+            "event_log_desc": "Ereignis-Log",
+            "event_log_desc_muted": "{{{empty_text}}}",
+            "debug_report": "Debug-Report + Ereignis-Log",
+            "debug_report_desc": "Debug-Report",
+            "debug_report_desc_muted": null,
+            "event_log_placeholder": "Lade Ereignis-Log..."
+        },
+        "script": {
+            "load_event_log_error": "Konnte Ereignis-Log nicht laden",
+            "load_debug_report_error": "Konnte Debug-Report nicht laden"
+        }
+    }
+}

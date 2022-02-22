@@ -1,0 +1,28 @@
+{
+    "authentication": {
+        "status": {
+
+        },
+        "navbar": {
+            "authentication": "Zugangsdaten"
+        },
+        "content": {
+            "authentication": "Zugangsdaten",
+            "enable_authentication": "Anmeldung aktiviert",
+            "enable_authentication_desc": "Wenn aktiviert, muss beim Aufrufen des Webinterfaces oder bei Verwendung der HTTP-API eine Anmeldung mit den konfigurierten Zugangsdaten durchgeführt werden.",
+            "username": "Benutzername",
+            "password": "Passwort",
+            "save": "Speichern",
+            "username_invalid": "Der Benutzername darf nicht leer sein.",
+            "password_invalid": "Das Passwort darf nicht leer sein.",
+            "confirm_title": "Anmeldung aktivieren?",
+            "confirm_content": null,
+            "confirm_abort": "Abbrechen",
+            "confirm_confirm": "Aktivieren"
+        },
+        "script": {
+            "save_failed": "Speichern der Zugangsdaten fehlgeschlagen.",
+            "reboot_content_changed": "Zugangsdaten"
+        }
+    }
+}

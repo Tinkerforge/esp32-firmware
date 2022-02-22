@@ -1,0 +1,83 @@
+{
+    "wifi": {
+        "status": {
+            "wifi_connection": "WiFi connection",
+            "not_configured": "Not configured",
+            "not_connected": "Not connected",
+            "connecting": "Connecting",
+            "connected": "Connected",
+            "wifi_ap": "WiFi access point",
+            "deactivated": "Disabled",
+            "activated": "Enabled",
+            "fallback_inactive": "Fallback inactive",
+            "fallback_active": "Fallback active"
+        },
+        "navbar": {
+            "wifi_sta": "WiFi Connection",
+            "wifi_ap": "WiFi Access Point"
+        },
+        "content": {
+            "sta_settings": "WiFi Connection Settings",
+            "sta_enable_sta": "Connection enabled",
+            "sta_enable_sta_desc": "Automatically connects to the configured network on start-up if activated.",
+            "sta_ssid": "Network name (SSID)",
+            "sta_scan": "Search for networks",
+            "sta_scanning": "Searching for networks...",
+            "sta_bssid": "BSSID",
+            "sta_bssid_invalid": "The BSSID must have six groups separated by a colon, each with a two-digit hexadecimal number. For example 01:23:45:67:89:AB",
+            "sta_bssid_lock": "BSSID lock",
+            "sta_bssid_lock_desc": "Connect only to the network with the configured BSSID. Leave disabled if you use multiple access points or repeaters with with the same network name.",
+            "sta_passphrase": "Passphrase",
+            "sta_passphrase_invalid": "The passphrase must be 8-63 ASCII characters.",
+            "sta_ip_configuration": "IP configuration",
+            "sta_dhcp": "automatic (DHCP)",
+            "sta_static": "static",
+            "save": "Save",
+
+            "static_ip": "IP address",
+            "subnet": "Subnet mask",
+            "gateway": "Gateway",
+            "dns": "<span class=\"form-label pr-2\">DNS server</span><span class=\"text-muted\">optional</span>",
+            "dns2": "<span class=\"form-label pr-2\">Alternative DNS server</span><span class=\"text-muted\">optional</span>",
+            "static_ip_invalid": "The IP address must have four groups between 0 and 255 separated with a dot. For example 10.0.0.2",
+            "subnet_invalid": "The subnet mask must have four groups between 0 and 255 separated with a dot. For example 255.255.255.0",
+            "gateway_invalid": "The gateway IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1",
+            "dns_invalid": "The DNS server IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1, or be empty.",
+            "dns2_invalid": "The alternative DNS server IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1, or be empty.",
+
+            "ap_settings": "WiFi Access Point Settings",
+            "ap_enable": "<span class=\"form-label pr-2\">Access point</span><span class=\"text-muted\"><a href=\"{{{manual_url}}}\">see manual for details</a></span></label>",
+            "ap_enabled": "enabled",
+            "ap_fallback_only": "as fallback only",
+            "ap_disabled": "disabled",
+            "ap_ssid": "Network name (SSID)",
+            "ap_hide_ssid": "Network name hidden",
+            "ap_hide_ssid_desc_pre": null,
+            "ap_hide_ssid_desc_post": ".",
+            "ap_passphrase": "Passphrase",
+            "ap_passphrase_invalid": "The passphrase must be 8-63 ASCII characters.",
+            "ap_channel": "<span class=\"form-label pr-2\">Channel</span><span class=\"text-muted\">ignored if WiFi connection is active</span>",
+            "ap_ip": "IP address",
+            "ap_subnet": "Subnet mask",
+            "ap_gateway": "Gateway",
+            "ap_ip_invalid": "The IP address must have four groups between 0 and 255 separated with a dot. For example 10.0.0.2",
+            "ap_subnet_invalid": "The subnet mask must have four groups between 0 and 255 separated with a dot. For example 255.255.255.0",
+            "ap_gateway_invalid": "The gateway IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1",
+
+            "unchanged": "unchanged"
+        },
+        "script": {
+            "scan_wifi_init_failed": "Search for networks failed. Failed to start scan.",
+            "scan_wifi_results_failed": "Search for networks failed. Failed to fetch scan results.",
+            "select_ap": "Found networks",
+            "no_ap_found": "No network found",
+            "hidden_ap": "[Hidden AP]",
+
+            "sta_config_failed": "Failed to save connection configuration.",
+            "ap_config_failed": "Failed to save access point configuration.",
+            "no_ap_configured": "No connection configured",
+            "sta_reboot_content_changed": "connection configuration",
+            "ap_reboot_content_changed": "access point configuration"
+        }
+    }
+}

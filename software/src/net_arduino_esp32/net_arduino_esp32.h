@@ -51,7 +51,7 @@ typedef struct {
 } TF_NetClient;
 
 typedef struct TF_Request {
-    uint32_t uid;
+    uint32_t uid_num;
     uint32_t client_id;
     uint8_t fid;
     uint8_t seq_num;

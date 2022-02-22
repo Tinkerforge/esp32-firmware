@@ -1,0 +1,28 @@
+{
+    "charge_tracker": {
+        "status": {
+            "last_charges": "Last charges",
+            "current_charge": "Current charge"
+        },
+        "navbar": {
+            "charge_tracker": "Charge tracker"
+        },
+        "content": {
+            "charge_tracker": "Charge tracker",
+            "charge_tracker_download": "Download charge log",
+            "charge_tracker_download_desc": "a CSV file of all tracked charges",
+            "charge_tracker_download_btn": "Download charge log"
+        },
+        "script": {
+            "csv_header_start": "Start time",
+            "csv_header_user": "User",
+            "csv_header_energy": "Charged energy in kWh",
+            "csv_header_duration": "Charge duration in s",
+            "csv_header_meter_start": "Meter reading start",
+            "csv_header_meter_end": "Meter reading end",
+            "unknown_user": "Unknown user",
+            "deleted_user": "Deleted user",
+            "unknown_charge_start": "Unknown start time"
+        }
+    }
+}

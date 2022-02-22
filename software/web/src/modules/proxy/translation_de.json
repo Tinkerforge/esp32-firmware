@@ -1,0 +1,26 @@
+{
+    "proxy": {
+        "status": {
+
+        },
+        "navbar": {
+            "bricklets": "Bricklets"
+        },
+        "content": {
+            "bricklets": "Bricklets",
+            "bricklet_table": "Angeschlossene Bricklets",
+            "port": "Port",
+            "UID": "UID",
+            "device_type": "Gerätetyp",
+            "error_counters": "Fehlerzähler",
+            "spitfp_checksum": "SPI-TFP-Prüf&shy;summe",
+            "spitfp_frame": "SPI-TFP-Frame",
+            "tfp_frame": "TFP-Frame",
+            "tfp_unexpected": "TFP un&shy;erwartet"
+        },
+        "script": {
+            "no_bricklets": "Keine Bricklets angeschlossen.",
+            "unknown_device": "unbekanntes Gerät"
+        }
+    }
+}

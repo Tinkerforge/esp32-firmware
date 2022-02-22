@@ -57,6 +57,9 @@ void API::setup()
 
 void API::addCommand(String path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(void)> callback, bool is_action)
 {
+    if (already_registered(path, "command"))
+        return;
+
     commands.push_back({path, config, callback, keys_to_censor_in_debug_report, is_action, ""});
 
     for (auto *backend : this->backends) {
@@ -66,6 +69,9 @@ void API::addCommand(String path, ConfigRoot *config, std::initializer_list<Stri
 
 void API::addState(String path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms)
 {
+    if (already_registered(path, "state"))
+        return;
+
     states.push_back({path, config, keys_to_censor, interval_ms, millis()});
 
     for (auto *backend : this->backends) {
@@ -87,28 +93,44 @@ bool API::addPersistentConfig(String path, ConfigRoot *config, std::initializer_
 
     addState(path, config, keys_to_censor, interval_ms);
     addCommand(path + String("_update"), config, keys_to_censor, [path, config]() {
-        String path_copy = path;
-        path_copy.replace('/', '_');
-        String cfg_path = String("/") + path_copy;
-        String tmp_path = String("/.") + path_copy; //max len is 31 - len("/.") = 29
-
-        if (LittleFS.exists(tmp_path)) {
-            LittleFS.remove(tmp_path);
-        }
-
-        File file = LittleFS.open(tmp_path, "w");
-
-        config->save_to_file(file);
-        file.close();
-
-        if (LittleFS.exists(cfg_path)) {
-            LittleFS.remove(cfg_path);
-        }
-
-        LittleFS.rename(tmp_path, cfg_path);
+        API::writeConfig(path, config);
     }, false);
 
     return true;
+}
+
+void API::addRawCommand(String path, std::function<String(char *, size_t)> callback, bool is_action)
+{
+    if (already_registered(path, "raw command"))
+        return;
+
+    raw_commands.push_back({path, callback, is_action});
+
+    for (auto *backend : this->backends) {
+        backend->addRawCommand(raw_commands[raw_commands.size() - 1]);
+    }
+}
+
+void API::writeConfig(String path, ConfigRoot *config) {
+    String path_copy = path;
+    path_copy.replace('/', '_');
+    String cfg_path = String("/") + path_copy;
+    String tmp_path = String("/.") + path_copy; //max len is 31 - len("/.") = 29
+
+    if (LittleFS.exists(tmp_path)) {
+        LittleFS.remove(tmp_path);
+    }
+
+    File file = LittleFS.open(tmp_path, "w");
+
+    config->save_to_file(file);
+    file.close();
+
+    if (LittleFS.exists(cfg_path)) {
+        LittleFS.remove(cfg_path);
+    }
+
+    LittleFS.rename(tmp_path, cfg_path);
 }
 
 void API::blockCommand(String path, String reason)
@@ -194,14 +216,14 @@ void API::registerDebugUrl(WebServer *server)
         result += ",\n \"devices\": [";
 
         uint16_t i = 0;
-        char uid[7] = {0};
+        char uid_str[7] = {0};
         char port_name;
         uint16_t device_id;
 
-        while (tf_hal_get_device_info(&hal, i, uid, &port_name, &device_id) == TF_E_OK) {
+        while (tf_hal_get_device_info(&hal, i, uid_str, &port_name, &device_id) == TF_E_OK) {
             char buf[100] = {0};
 
-            snprintf(buf, sizeof(buf), "%c{\"UID\":\"%s\", \"DID\":%u, \"port\":\"%c\"}", i == 0 ? ' ' : ',', uid, device_id, port_name);
+            snprintf(buf, sizeof(buf), "%c{\"UID\":\"%s\", \"DID\":%u, \"port\":\"%c\"}", i == 0 ? ' ' : ',', uid_str, device_id, port_name);
             result += buf;
             ++i;
         }
@@ -302,4 +324,28 @@ void API::wifiAvailable()
             backend->wifiAvailable();
         }
     }, 0);
+}
+
+bool API::already_registered(const String &path, const char *api_type)
+{
+    for (auto &reg : this->states) {
+        if (reg.path != path)
+            continue;
+        logger.printfln("Can't register %s %s. Already registered as state!", api_type, path.c_str());
+        return true;
+    }
+    for (auto &reg : this->commands) {
+        if (reg.path != path)
+            continue;
+        logger.printfln("Can't register %s %s. Already registered as command!", api_type, path.c_str());
+        return true;
+    }
+    for (auto &reg : this->raw_commands) {
+        if (reg.path != path)
+            continue;
+        logger.printfln("Can't register %s %s. Already registered as raw command!", api_type, path.c_str());
+        return true;
+    }
+
+    return false;
 }

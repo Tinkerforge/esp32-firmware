@@ -23,14 +23,14 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "index.html.h"
+#include "index_html.embedded.h"
 {{{module_includes}}}
 
 #include "api.h"
 #include "event_log.h"
 #include "task_scheduler.h"
 #include "web_server.h"
-#include "build.h"
+#include "build_timestamp.h"
 
 const char* DISPLAY_NAME = "{{{display_name}}}";
 
@@ -46,8 +46,8 @@ API api;
 // declared and initialized by board module
 extern TF_HAL hal;
 // initialized by board module
-uint32_t uid_numeric = 0;
-char uid[7] = {0};
+uint32_t local_uid_num = 0;
+char local_uid_str[7] = {0};
 char passphrase[20] = {0};
 int8_t blue_led_pin = -1;
 int8_t green_led_pin = -1;
@@ -61,19 +61,36 @@ ConfigRoot reboot;
 
 bool firmware_update_allowed = true;
 
-WebServerHandler *main_page_handler;
+static bool is_safari(const String &user_agent) {
+    return user_agent.indexOf("Safari/") >= 0 &&
+           user_agent.indexOf("Version/") >= 0 &&
+           user_agent.indexOf("Chrome/") == -1 &&
+           user_agent.indexOf("Chromium/") == -1;
+}
 
-void register_default_urls() {
-    main_page_handler = server.on("/", HTTP_GET, [](WebServerRequest req) {
-        req.addResponseHeader("Content-Encoding", "gzip");
-        req.addResponseHeader("ETag", BUILD_TIMESTAMP_HEX_STR);
-        req.addResponseHeader("X-Clacks-Overhead", "GNU Terry Pratchett");
-        req.send(200, "text/html", index_html_gz, index_html_gz_len);
+static void send_index_html(WebServerRequest &request) {
+    request.addResponseHeader("Content-Encoding", "gzip");
+    request.addResponseHeader("ETag", BUILD_TIMESTAMP_HEX_STR);
+    request.addResponseHeader("X-Clacks-Overhead", "GNU Terry Pratchett");
+
+    if (request.header("If-None-Match") == BUILD_TIMESTAMP_HEX_STR) {
+        request.send(304);
+        return;
+    }
+
+    request.send(200, "text/html", index_html_data, index_html_length);
+}
+
+static void register_default_urls(void) {
+    server.on("/", HTTP_GET, [](WebServerRequest request) {
+        send_index_html(request);
     });
 
     reboot = ConfigRoot{Config::Null()};
 
     api.addCommand("reboot", &reboot, {}, []() {
+        logger.printfln("Reboot requested by API.");
+        delay(1500);
         ESP.restart();
     }, true);
 
@@ -89,7 +106,35 @@ void register_default_urls() {
         request.send(200, "text/html", String(millis()).c_str());
     });
 
-    //This is a hack to allow running without the authentication module. Remove after 1.3 beta
+    server.onNotAuthorized([](WebServerRequest request) {
+        if (request.uri() == "/") {
+            // Safari does not support an unauthenticated login page and an authenticated main page on the same url,
+            // as it does not proactively send the credentials if the same url is known to have an unauthenticated
+            // version.
+            if (is_safari(request.header("User-Agent"))) {
+                request.requestAuthentication();
+                return;
+            }
+
+            send_index_html(request);
+        } else if (request.uri() == "/login_state") {
+            // Same reasoning as above. If we don't force Safari, it does not send credentials, which breaks the login_state check.
+            if (is_safari(request.header("User-Agent"))) {
+                request.requestAuthentication();
+                return;
+            }
+
+            request.send(200, "text/plain", "Not logged in");
+        } else {
+            request.requestAuthentication();
+            return;
+        }
+    });
+
+    server.on("/credential_check", HTTP_GET, [](WebServerRequest request) {
+        request.send(200, "text/plain", "Credentials okay");
+    });
+
     server.on("/login_state", HTTP_GET, [](WebServerRequest request) {
         request.send(200, "text/plain", "Logged in");
     });
@@ -138,7 +183,7 @@ void setup(void) {
 }
 
 void loop(void) {
-    //prioritize proxy performance over web interface and wifi responsitivity
+    // Prioritize proxy performance over web interface and WiFi responsitivity
     tf_hal_tick(&hal, 1000);
     tf_hal_tick(&hal, 1000);
     tf_hal_tick(&hal, 1000);

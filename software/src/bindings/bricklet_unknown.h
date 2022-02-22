@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-02-17.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -305,33 +305,33 @@ int tf_unknown_set_response_expected_all(TF_Unknown *unknown, bool response_expe
  * 
  * The callback has seven parameters:
  * 
- *  * ``uid``: The UID of the device.
- *  * ``connected_uid``: UID where the device is connected to. For a Bricklet this
- *    is the UID of the Brick or Bricklet it is connected to. "0" if the Bricklet is
- *    directly connected to the calling hardware. With this information it is possible to
- *    reconstruct the complete network topology.
- *  * ``position``: 'a' - 'h' (position on Brick) or 'i' (position of the Raspberry Pi (Zero) HAT)
- *    or 'z' (Bricklet on :ref:`Isolator Bricklet <isolator_bricklet>`).
- *  * ``hardware_version``: Major, minor and release number for hardware version.
- *  * ``firmware_version``: Major, minor and release number for firmware version.
- *  * ``device_identifier``: A number that represents the device.
- *  * ``enumeration_type``: Type of enumeration.
+ * * ``uid``: The UID of the device.
+ * * ``connected_uid``: UID where the device is connected to. For a Bricklet this
+ *   is the UID of the Brick or Bricklet it is connected to. "0" if the Bricklet is
+ *   directly connected to the calling hardware. With this information it is possible to
+ *   reconstruct the complete network topology.
+ * * ``position``: 'a' - 'h' (position on Brick) or 'i' (position of the Raspberry Pi (Zero) HAT)
+ *   or 'z' (Bricklet on :ref:`Isolator Bricklet <isolator_bricklet>`).
+ * * ``hardware_version``: Major, minor and release number for hardware version.
+ * * ``firmware_version``: Major, minor and release number for firmware version.
+ * * ``device_identifier``: A number that represents the device.
+ * * ``enumeration_type``: Type of enumeration.
  * 
- *  Possible enumeration types are:
+ * Possible enumeration types are:
  * 
- *  * Available: Device is available (enumeration
- *    triggered by user). This enumeration type can
- *    occur multiple times for the same device.
- *  * Connected: Device is newly connected
- *    (automatically send by Brick after establishing a communication connection).
- *    This indicates that the device has potentially lost its previous
- *    configuration and needs to be reconfigured.
- *  * Disconnected: Device is disconnected (only
- *    possible for USB connection). In this case only ``uid`` and
- *    ``enumeration_type`` are valid.
+ * * Available: Device is available (enumeration
+ *   triggered by user). This enumeration type can
+ *   occur multiple times for the same device.
+ * * Connected: Device is newly connected
+ *   (automatically send by Brick after establishing a communication connection).
+ *   This indicates that the device has potentially lost its previous
+ *   configuration and needs to be reconfigured.
+ * * Disconnected: Device is disconnected (only
+ *   possible for USB connection). In this case only ``uid`` and
+ *   ``enumeration_type`` are valid.
  * 
- *  It should be possible to implement plug-and-play functionality with this
- *  (as is done in Brick Viewer).
+ * It should be possible to implement plug-and-play functionality with this
+ * (as is done in Brick Viewer).
  */
 int tf_unknown_register_enumerate_callback(TF_Unknown *unknown, TF_Unknown_EnumerateHandler handler, void *user_data);
 #endif

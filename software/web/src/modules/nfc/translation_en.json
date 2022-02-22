@@ -1,0 +1,43 @@
+{
+    "nfc": {
+        "status": {
+        },
+        "navbar": {
+            "nfc": "NFC"
+        },
+        "content": {
+            "nfc": "NFC Unlock",
+
+            "save": "Save",
+            "authorized_tags": "Authorized tags",
+
+            "add_tag_modal_title": "Add authorized tag",
+            "add_tag_modal_seen_tags": "Last seen tags",
+            "add_tag_modal_user_id": "Assigned user",
+            "add_tag_modal_tag_id": "Tag ID",
+            "add_tag_modal_tag_type": "Tag type",
+            "add_tag_modal_abort": "Discard",
+            "add_tag_modal_save": "Add",
+            "last_seen": "Seen ",
+            "last_seen_suffix": " ago",
+            "select_type": "Select tag type...",
+            "type_0": "Mifare Classic",
+            "type_1": "NFC Forum Type 1",
+            "type_2": "NFC Forum Type 2",
+            "type_3": "NFC Forum Type 3",
+            "type_4": "NFC Forum Type 4",
+            "add_tag_description": "Hold the new tag to the right side of the charger. Tag ID and type can also be typed in manually."
+        },
+        "script": {
+            "add_tag": "Add tag",
+            "add_tag_disabled_prefix": "Only up to ",
+            "add_tag_disabled_suffix": " tags are supported.",
+            "user_id": "Assigned user",
+            "tag_type": "Tag type",
+            "last_seen_unknown": "placeholder",
+            "save_failed": "Failed to update the NFC configuration",
+            "reboot_content_changed": "NFC configuration",
+            "not_assigned": "not assigned"
+        }
+    }
+}
