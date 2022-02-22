@@ -410,12 +410,9 @@ void Users::register_urls()
         }
 
         File f = LittleFS.open("/users/usernames", "r");
-        logger.printfln("username file has size of %u bytes.", f.size());
 
         size_t read = f.read((uint8_t *)buf, len);
-        if (read != len)
-            logger.printfln("zomg! %u", read);
-        request.send(200, "application/octet-stream", buf, len);
+        request.send(200, "application/octet-stream", buf, read);
 
         free(buf);
     });
