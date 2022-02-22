@@ -704,9 +704,9 @@ void EVSEV2::register_urls()
         is_in_bootloader(tf_evse_v2_set_charging_slot_clear_on_disconnect(&device, CHARGING_SLOT_EXTERNAL, evse_external_clear_on_disconnect_update.get("clear_on_disconnect")->asBool()));
     }, false);
 
-
-    api.addCommand("evse/management_current_update", &evse_management_current, {}, [this](){
-        this->set_managed_current(evse_management_current.get("current")->asUint());
+    api.addState("evse/management_current", &evse_management_current, {}, 1000);
+    api.addCommand("evse/management_current_update", &evse_management_current_update, {}, [this](){
+        this->set_managed_current(evse_management_current_update.get("current")->asUint());
     }, false);
 
 
