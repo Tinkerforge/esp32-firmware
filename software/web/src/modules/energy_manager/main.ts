@@ -98,7 +98,7 @@ function update_energy_manager_html_visibility() {
     if((relay_config_if == '0') || (relay_config_if == '1')) {
         update_options(relay_config_is_dd, [{"value": 0, name: "high"}, {"value": 1, name: "low"}]);
     } else if(relay_config_if == '2') {
-        update_options(relay_config_is_dd, [{"value": 2, name: "1phase"}, {"value": 3, name: "2phase"}]);
+        update_options(relay_config_is_dd, [{"value": 2, name: "1phase"}, {"value": 3, name: "3phase"}]);
     } else if(relay_config_if == '3') {
         update_options(relay_config_is_dd, [{"value": 4, name: "greater0"}, {"value": 5, name: "smaller0"}]);
     }
