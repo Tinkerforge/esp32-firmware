@@ -309,9 +309,8 @@ void ChargeTracker::register_urls()
 
         File file = LittleFS.open(chargeRecordFilename(this->last_charge_record));
         size_t file_size = (this->last_charge_record - this->first_charge_record) * CHARGE_RECORD_MAX_FILE_SIZE + file.size();
-        String lalala = String(file_size);
-        logger.printfln("response length is %s", lalala.c_str());
-        request.addResponseHeader("Content-Length", lalala.c_str());
+        String file_size_string = String(file_size);
+        request.addResponseHeader("Content-Length", file_size_string.c_str());
 
         request.beginChunkedResponse(200, "application/octet-stream");
         for(int i = this->first_charge_record; i <= this->last_charge_record; ++i) {
