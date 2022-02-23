@@ -66,11 +66,13 @@ function update_energy_manager_config() {
 
 // Only show the relevant html elements, drop-down boxes and options
 function update_energy_manager_html_visibility() {
+    // Only updates the option elements if there are actual changes.
+    // Otherwise we may overwrite the user-selected element
     function update_options(element: any, options: Array<{value: number, name: string}>) {
         let element_html = element.html();
         let found = true;
         for (let option of options) {
-            if(!element_html.includes(option)) {
+            if(!element_html.includes(__("energy_manager.content." + option.name))) {
                 found = false;
                 break;
             }
