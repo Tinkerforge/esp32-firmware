@@ -803,6 +803,7 @@ void EVSEV2::register_urls()
             this->apply_slot_default(CHARGING_SLOT_USER, 32000, false, false);
     }, false);
 
+    api.addState("evse/external_enabled", &evse_external_enabled, {}, 1000);
     api.addCommand("evse/external_enabled_update", &evse_external_enabled_update, {}, [this](){
         bool enabled = evse_external_enabled_update.get("enabled")->asBool();
         tf_evse_v2_set_charging_slot_active(&device, CHARGING_SLOT_EXTERNAL, enabled);
