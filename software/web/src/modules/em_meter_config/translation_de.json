@@ -1,0 +1,39 @@
+{
+    "em_meter_config": {
+        "status": {
+            "em_meter_config": "Stromzähler"
+        },
+        "navbar": {
+            "em_meter_config": "Stromzähler"
+        },
+        "content": {
+            "em_meter_config": "Stromzähler-Konfiguration",
+            "meter_type": "Stromzähler-Typ",
+            "meter_type_description": "Stromzähler wählen",
+            "meter_type_description_muted": "zum Messen der Strombilanz am Hausanschluss",
+            "type_none": "Kein Stromzähler",
+            "type_sdm630": "SDM630 am WARP Energy Manager",
+            "type_sunspec": "SunSpec-kompatibler Stromzähler per Modbus TCP",
+            "type_modbus_tcp": "Generischer Stromzähler per Modbus TCP",
+            "conf_sdm630": "SDM630 am WARP Energy Manager",
+            "conf_sunspec": "SunSpec-Konfiguration",
+            "conf_modbus_tcp": "Modbus/TCP-Konfiguration",
+
+            "sdm630_no": "Nein",
+            "sdm630_yes": "Ja",
+            "sdm630_details": "Zeige Stromzähler-Detailansicht",
+            "sdm630_available": "SDM630 angeschlossen",
+            "sdm630_statistics": "Statistiken",
+            "sdm630_reset_statistics": "Zurücksetzen",
+            "sdm630_power": "Leistungs&shy;aufnahme",
+            "sdm630_energy": "Strom&shy;verbrauch",
+            "sdm630_energy_since_reset": "seit dem letzten Zurücksetzen",
+            "sdm630_energy_lifetime": "seit Herstellung des Stromzählers",
+
+            "save": "Speichern"
+        },
+        "script": {
+
+        }
+    }
+}

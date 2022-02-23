@@ -1,0 +1,303 @@
+<div class="tab-pane fade" role="tabpanel" aria-labelledby="sidebar-energy-manager" id="energy-manager">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 mb-3 border-bottom">
+        <h1 class="h2" data-i18n="energy_manager.content.energy_manager"></h1>
+    </div>
+
+    <form id="energy_manager_form" class="needs-validation" novalidate>
+        <div class="form-group row">
+            <div class="col-lg-3 col-xl-2">
+                <label for="energy_manager_excess_charging_enable" class="col-form-label form-label" data-i18n="energy_manager.content.excess_charging"></label>
+            </div>
+            <div class="col-lg-9 col-xl-6">
+                <div class="borderless-form-control custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" id="energy_manager_excess_charging_enable">
+                    <label class="custom-control-label" for="energy_manager_excess_charging_enable" data-i18n="energy_manager.content.excess_charging_desc"></label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="energy_manager_phase_switching_config" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="energy_manager.content.phase_switching_config"></label>
+
+            <div class="col-lg-9 col-xl-6">
+                <select id="energy_manager_phase_switching_config" class="custom-select">
+                    <option value="0" selected data-i18n="energy_manager.content.always_1phase"></option>
+                    <option value="1" data-i18n="energy_manager.content.always_3phase"></option>
+                    <option value="2" data-i18n="energy_manager.content.automatic"></option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="energy_manager_mains_power_reception" class="col-lg-3 col-xl-2 col-form-label" data-i18n="energy_manager.content.mains_power_reception"></label>
+            <div class="col-lg-9 col-xl-6">
+                <input id="energy_manager_mains_power_reception" class="form-control" type="number" step="0.1" min="0" max="22" required>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="energy_manager_minimum_charging" class="col-lg-3 col-xl-2 col-form-label" data-i18n="energy_manager.content.minimum_charging"></label>
+            <div class="col-lg-9 col-xl-6">
+                <input id="energy_manager_minimum_charging" class="form-control" type="number" step="0.1" min="0" max="22" required>
+            </div>
+        </div>
+
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <span class="h3" data-i18n="energy_manager.content.relay"></span>
+        </div>
+
+        <div class="form-group row">
+            <label for="energy_manager_relay_config" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="energy_manager.content.relay_config"></label>
+
+            <div class="col-lg-9 col-xl-6">
+                <select id="energy_manager_relay_config" class="custom-select">
+                    <option value="0" selected data-i18n="energy_manager.content.deactivated"></option>
+                    <option value="1" data-i18n="energy_manager.content.rules"></option>
+                    <option value="2" data-i18n="energy_manager.content.extern"></option>
+                </select>
+            </div>
+        </div>
+        <div id="energy_manager_relay_rules" class="collapse">
+            <div class="form-group row">
+                <div class="col-lg-3 col-xl-2"></div>
+                <label for="energy_manager_relay_config_if" class="col-lg-1 col-xl-1 col-form-label form-label" data-i18n="energy_manager.content.rule_if"></label>
+
+                <div class="col-lg-8 col-xl-5">
+                    <select id="energy_manager_relay_config_if" class="custom-select">
+                        <option value="0" selected data-i18n="energy_manager.content.input3"></option>
+                        <option value="1" data-i18n="energy_manager.content.input4"></option>
+                        <option value="2" data-i18n="energy_manager.content.phase_switching"></option>
+                        <option value="3" data-i18n="energy_manager.content.meter"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-lg-3 col-xl-2"></div>
+                <label for="energy_manager_relay_config_is" class="col-lg-1 col-xl-1 col-form-label form-label" data-i18n="energy_manager.content.rule_is"></label>
+
+                <div class="col-lg-8 col-xl-5">
+                    <select id="energy_manager_relay_config_is" class="custom-select">
+                    </select>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-lg-3 col-xl-2"></div>
+                <label for="energy_manager_relay_config_then" class="col-lg-1 col-xl-1 col-form-label form-label" data-i18n="energy_manager.content.rule_then"></label>
+
+                <div class="col-lg-8 col-xl-5">
+                    <select id="energy_manager_relay_config_then" class="custom-select">
+                        <option value="0" selected data-i18n="energy_manager.content.open"></option>
+                        <option value="1" data-i18n="energy_manager.content.closed"></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <span class="h3" data-i18n="energy_manager.content.inputs"></span>
+        </div>
+        <div class="form-group row">
+            <label for="energy_manager_input3_config" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="energy_manager.content.input3_config"></label>
+
+            <div class="col-lg-9 col-xl-6">
+                <select id="energy_manager_input3_config" class="custom-select">
+                    <option value="0" selected data-i18n="energy_manager.content.deactivated"></option>
+                    <option value="1" data-i18n="energy_manager.content.rules"></option>
+                    <option value="2" data-i18n="energy_manager.content.contactor"></option>
+                </select>
+            </div>
+        </div>
+        <div id="energy_manager_input3_rules" class="collapse">
+            <div class="form-group row">
+                <div class="col-lg-3 col-xl-2"></div>
+                <label for="energy_manager_input3_config_if" class="col-lg-1 col-xl-1 col-form-label form-label" data-i18n="energy_manager.content.rule_if"></label>
+
+                <div class="col-lg-8 col-xl-5">
+                    <select id="energy_manager_input3_config_if" class="custom-select">
+                        <option value="0" selected data-i18n="energy_manager.content.high"></option>
+                        <option value="1" data-i18n="energy_manager.content.low"></option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <div class="col-lg-3 col-xl-2"></div>
+                <label for="energy_manager_input3_config_then" class="col-lg-1 col-xl-1 col-form-label form-label" data-i18n="energy_manager.content.rule_then"></label>
+
+                <div class="col-lg-8 col-xl-5">
+                    <select id="energy_manager_input3_config_then" class="custom-select">
+                        <option value="0" selected data-i18n="energy_manager.content.allow_charging"></option>
+                        <option value="1" data-i18n="energy_manager.content.disallow_charging"></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="form-group row">
+            <label for="energy_manager_input4_config" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="energy_manager.content.input4_config"></label>
+
+            <div class="col-lg-9 col-xl-6">
+                <select id="energy_manager_input4_config" class="custom-select">
+                    <option value="0" selected data-i18n="energy_manager.content.deactivated"></option>
+                    <option value="1" data-i18n="energy_manager.content.rules"></option>
+                    <option value="2" data-i18n="energy_manager.content.contactor"></option>
+                </select>
+            </div>
+        </div>
+        <div id="energy_manager_input4_rules" class="collapse">
+            <div class="form-group row">
+                <div class="col-lg-3 col-xl-2"></div>
+                <label for="energy_manager_input4_config_if" class="col-lg-1 col-xl-1 col-form-label form-label" data-i18n="energy_manager.content.rule_if"></label>
+
+                <div class="col-lg-8 col-xl-5">
+                    <select id="energy_manager_input4_config_if" class="custom-select">
+                        <option value="0" selected data-i18n="energy_manager.content.high"></option>
+                        <option value="1" data-i18n="energy_manager.content.low"></option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <div class="col-lg-3 col-xl-2"></div>
+                <label for="energy_manager_input4_config_then" class="col-lg-1 col-xl-1 col-form-label form-label" data-i18n="energy_manager.content.rule_then"></label>
+
+                <div class="col-lg-8 col-xl-5">
+                    <select id="energy_manager_input4_config_then" class="custom-select">
+                        <option value="0" selected data-i18n="energy_manager.content.allow_charging"></option>
+                        <option value="1" data-i18n="energy_manager.content.disallow_charging"></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-lg-12 col-xl-8 text-right">
+                <button id="energy_manager_save_button" type="submit" form="energy_manager_form" class="btn btn-primary" data-i18n="energy_manager.content.save"></button>
+            </div>
+        </div>
+    </form>
+
+
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <span class="h3" data-i18n="energy_manager.content.debug"></span>
+    </div>
+
+    <div class="form-group row">
+        <div class="col-lg-3 col-xl-2">
+            <label class="col-form-label">
+                <span class="form-label pr-2" data-i18n="energy_manager.content.debug_description"></span>
+                <span class="text-muted" data-i18n="energy_manager.content.debug_description_muted"></span>
+            </label>
+        </div>
+        <div class="col-lg-9 col-xl-6">
+            <div class="input-group pb-2">
+                <button id="debug_start" class="btn btn-primary form-control rounded-right mr-2" type="button" data-i18n="energy_manager.content.debug_start"></button>
+                <button id="debug_stop" class="btn btn-primary form-control rounded-left" type="button" data-i18n="energy_manager.content.debug_stop"></button>
+            </div>
+            <input id="debug_label" class="form-control" type="text" placeholder="..." readonly>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom row">
+        <div class="col-lg-12 col-xl-8 align-items-center row pr-0">
+            <span class="h3 col" data-i18n="energy_manager.content.low_level_state"></span>
+            <button class="btn btn-primary col-auto" type="button" data-toggle="collapse" data-target="#low_level_state_collapse" aria-expanded="false" aria-controls="low_level_state_collapse" data-i18n="energy_manager.content.low_level_state_show"></button>
+        </div>
+    </div>
+    <div class="collapse" id="low_level_state_collapse">
+        <div class="form-group row">
+            <div class="col-lg-3 col-xl-2">
+                <label for="state_contactor" class="col-form-label">
+                    <span class="form-label" data-i18n="energy_manager.content.state_contactor"></span>
+                </label>
+            </div>
+            <div class="col-lg-9 col-xl-6">
+                <input id="state_contactor" class="form-control" type="text" placeholder="..." readonly>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-lg-3 col-xl-2">
+                <label for="state_led_r" class="col-form-label">
+                    <span class="form-label" data-i18n="energy_manager.content.state_led"></span>
+                    <span class="text-muted" data-i18n="energy_manager.content.state_led_names"></span>
+                </label>
+            </div>
+            <div class="col-lg-9 col-xl-6 row pr-0">
+                <div class="col-lg-3 col-xl-2">
+                    <input id="state_led_r" class="form-control" type="text" placeholder="..." readonly>
+                </div>
+                <div class="col-lg-3 col-xl-2">
+                    <input id="state_led_g" class="form-control" type="text" placeholder="..." readonly>
+                </div>
+                <div class="col-lg-3 col-xl-2">
+                    <input id="state_led_b" class="form-control" type="text" placeholder="..." readonly>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group row pb-3">
+            <div class="col-lg-3 col-xl-2">
+                <label for="btn_groups_gpios" class="col-form-label">
+                    <span class="form-label pr-2" data-i18n="energy_manager.content.gpios"></span>
+                    <span class="text-muted" data-i18n="energy_manager.content.gpio_names_0"></span>
+                </label>
+            </div>
+            <div id="btn_groups_gpios" class="col-lg-8">
+                <div id="btn_group_gpio0" class="btn-group-vertical flex-wrap mb-1" role="group">
+                    <button type="button" class="btn btn-outline-primary" disabled data-i18n="energy_manager.content.gpio_high"></button>
+                    <button type="button" class="btn btn-outline-secondary" disabled data-i18n="energy_manager.content.gpio_low"></button>
+                </div>
+                <div id="btn_group_gpio1" class="btn-group-vertical flex-wrap mb-1" role="group">
+                    <button type="button" class="btn btn-outline-primary" disabled data-i18n="energy_manager.content.gpio_high"></button>
+                    <button type="button" class="btn btn-outline-secondary" disabled data-i18n="energy_manager.content.gpio_low"></button>
+                </div>
+                <div id="btn_group_gpio2" class="btn-group-vertical flex-wrap mb-1" role="group">
+                    <button type="button" class="btn btn-outline-primary" disabled data-i18n="energy_manager.content.gpio_high"></button>
+                    <button type="button" class="btn btn-outline-secondary" disabled data-i18n="energy_manager.content.gpio_low"></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-lg-3 col-xl-2">
+                <label for="state_input_configuration_0" class="col-form-label">
+                    <span class="form-label" data-i18n="energy_manager.content.state_input_configuration"></span>
+                    <span class="text-muted" data-i18n="energy_manager.content.state_input_configuration_names"></span>
+                </label>
+            </div>
+            <div class="col-lg-9 col-xl-6 row pr-0">
+                <div class="col-lg-3 col-xl-2">
+                    <input id="state_input_configuration_0" class="form-control" type="text" placeholder="..." readonly>
+                </div>
+                <div class="col-lg-3 col-xl-2">
+                    <input id="state_input_configuration_1" class="form-control" type="text" placeholder="..." readonly>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-lg-3 col-xl-2">
+                <label for="state_input_voltage" class="col-form-label">
+                    <span class="form-label" data-i18n="energy_manager.content.state_input_voltage"></span>
+                </label>
+            </div>
+            <div class="col-lg-9 col-xl-6">
+                <input id="state_input_voltage" class="form-control" type="text" placeholder="..." readonly>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-lg-3 col-xl-2">
+                <label for="state_contactor_check" class="col-form-label">
+                    <span class="form-label" data-i18n="energy_manager.content.state_contactor_check"></span>
+                </label>
+            </div>
+            <div class="col-lg-9 col-xl-6">
+                <input id="state_contactor_check" class="form-control" type="text" placeholder="..." readonly>
+            </div>
+        </div>
+    </div>
+</div>

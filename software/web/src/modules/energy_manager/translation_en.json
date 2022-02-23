@@ -1,0 +1,18 @@
+{
+    "energy_manager": {
+        "status": {
+            "energy_manager": "Energy Manager"
+        },
+        "navbar": {
+            "energy_manager": "Energy Manager"
+        },
+        "content": {
+            "energy_manager": "Energy Manager",
+            "uptime": "Uptime",
+            "heap_free": "Free heap bytes",
+            "heap_block": "Largest free heap block"
+        },
+        "script": {
+        }
+    }
+}
