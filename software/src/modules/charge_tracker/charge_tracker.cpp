@@ -58,13 +58,20 @@ ChargeTracker::ChargeTracker()
             {"user_id", Config::Uint8(0)},
             {"energy_charged", Config::Float(0)}
         })}, 0, CHARGE_RECORD_LAST_CHARGES_SIZE, Config::type_id<Config::ConfObject>());
+
+    current_charge = Config::Object({
+        {"user_id", Config::Int16(-1)},
+        {"meter_start", Config::Float(0)},
+        {"evse_uptime_start", Config::Uint32(0)},
+        {"timestamp_minutes", Config::Uint32(0)}
+    });
 }
 
 String ChargeTracker::chargeRecordFilename(uint32_t i) {
     return String(CHARGE_RECORD_FOLDER) + "/charge-record-" + i + ".bin";
 }
 
-void ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id) {
+void ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id, uint32_t evse_uptime) {
     std::lock_guard<std::mutex> lock{records_mutex};
     ChargeStart cs;
     File file = LittleFS.open(chargeRecordFilename(this->last_charge_record), "a", true);
@@ -94,6 +101,11 @@ void ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, u
 
     file.write(buf, sizeof(cs));
     logger.printfln("Tracked start of charge.");
+
+    current_charge.get("user_id")->updateInt(user_id);
+    current_charge.get("meter_start")->updateFloat(meter_start);
+    current_charge.get("evse_uptime_start")->updateUint(evse_uptime);
+    current_charge.get("timestamp_minutes")->updateUint(timestamp_minutes);
 }
 
 void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end) {
@@ -127,6 +139,11 @@ void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end)
     File f = LittleFS.open(chargeRecordFilename(this->last_charge_record));
     f.seek(-CHARGE_RECORD_SIZE, SeekMode::SeekEnd);
     this->readNRecords(&f, 1);
+
+    current_charge.get("user_id")->updateInt(-1);
+    current_charge.get("meter_start")->updateFloat(0);
+    current_charge.get("evse_uptime_start")->updateUint(0);
+    current_charge.get("timestamp_minutes")->updateUint(0);
 }
 
 void ChargeTracker::removeOldRecords()
@@ -308,6 +325,7 @@ void ChargeTracker::register_urls()
     });
 
     api.addState("charge_tracker/last_charges", &last_charges, {}, 1000);
+    api.addState("charge_tracker/current_charge", &current_charge, {}, 1000);
 }
 
 void ChargeTracker::loop()

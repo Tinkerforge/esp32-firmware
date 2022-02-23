@@ -12,10 +12,3 @@ export interface config {
     next_user_id: number,
     http_auth_enabled: boolean
 }
-
-export interface charge_info {
-    id: number,
-    meter_start: number,
-    evse_uptime_start: number,
-    timestamp_minutes: number
-}

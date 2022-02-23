@@ -36,7 +36,7 @@ public:
     uint32_t last_charge_record;
 
     String chargeRecordFilename(uint32_t i);
-    void startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id);
+    void startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id, uint32_t evse_uptime);
     void endCharge(uint32_t charge_duration_seconds, float meter_end);
     void removeOldRecords();
     bool setupRecords();
@@ -47,6 +47,7 @@ public:
     void readNRecords(File *f, size_t records_to_read);
 
     ConfigRoot last_charges;
+    ConfigRoot current_charge;
 
     std::mutex records_mutex;
 };

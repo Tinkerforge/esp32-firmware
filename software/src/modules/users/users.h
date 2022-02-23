@@ -40,7 +40,6 @@ public:
     ConfigRoot user_config;
     ConfigRoot add;
     ConfigRoot del;
-    ConfigRoot charge_info;
     ConfigRoot http_auth;
     ConfigRoot http_auth_update;
 

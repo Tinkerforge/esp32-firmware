@@ -6,3 +6,10 @@ interface Charge {
 }
 
 export type last_charges = Charge[];
+
+export interface current_charge {
+    user_id: number,
+    meter_start: number,
+    evse_uptime_start: number,
+    timestamp_minutes: number
+}

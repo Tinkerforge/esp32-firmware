@@ -166,30 +166,30 @@ async function downloadChargeLog() {
         .catch(err => console.log(err));
 }
 
-function update_charge_info() {
-    let ci = API.get('users/charge_info');
+function update_current_charge() {
+    let cc = API.get('charge_tracker/current_charge');
     let evse_ll = API.get('evse/low_level_state');
     let mv = API.get('meter/values');
     let uc = API.get('users/config');
 
-    $('#charge_tracker_current_charge').prop("hidden", ci.id == -1);
+    $('#charge_tracker_current_charge').prop("hidden", cc.user_id == -1);
 
-    if (ci.id == -1) {
+    if (cc.user_id == -1) {
         return;
     }
 
-    let user_display_name = uc.users.filter((x) => x.id == ci.id)[0].display_name;
-    let energy_charged = mv.energy_abs - ci.meter_start;
-    let time_charging = evse_ll.uptime - ci.evse_uptime_start
-    if (evse_ll.uptime < ci.evse_uptime_start)
+    let user_display_name = uc.users.filter((x) => x.id == cc.user_id)[0].display_name;
+    let energy_charged = mv.energy_abs - cc.meter_start;
+    let time_charging = evse_ll.uptime - cc.evse_uptime_start
+    if (evse_ll.uptime < cc.evse_uptime_start)
         time_charging += 0xFFFFFFFF;
 
     time_charging = Math.floor(time_charging / 1000);
 
-    $('#users_status_charging_user').html(ci.id == 0 ? "unbekannter Nutzer" : user_display_name);
+    $('#users_status_charging_user').html(cc.user_id == 0 ? "unbekannter Nutzer" : user_display_name);
     $('#users_status_charging_time').html(util.format_timespan(time_charging));
-    $('#users_status_charged_energy').html(ci.meter_start == null ? "N/A" : util.toLocaleFixed(energy_charged, 3) + " kWh");
-    $('#users_status_charging_start').html(timestamp_min_to_date(ci.timestamp_minutes));
+    $('#users_status_charged_energy').html(cc.meter_start == null ? "N/A" : util.toLocaleFixed(energy_charged, 3) + " kWh");
+    $('#users_status_charging_start').html(timestamp_min_to_date(cc.timestamp_minutes));
 }
 
 export function init() {
@@ -202,10 +202,10 @@ export function init() {
 export function addEventListeners(source: API.ApiEventTarget) {
     source.addEventListener('charge_tracker/last_charges', update_last_charges);
 
-    source.addEventListener('users/charge_info', update_charge_info);
-    source.addEventListener('evse/low_level_state', update_charge_info);
-    source.addEventListener('meter/values', update_charge_info);
-    source.addEventListener('users/config', update_charge_info);
+    source.addEventListener('charge_tracker/current_charge', update_current_charge);
+    source.addEventListener('evse/low_level_state', update_current_charge);
+    source.addEventListener('meter/values', update_current_charge);
+    source.addEventListener('users/config', update_current_charge);
 }
 
 export function updateLockState(module_init: any) {
