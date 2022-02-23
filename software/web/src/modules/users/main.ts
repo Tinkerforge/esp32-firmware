@@ -92,6 +92,24 @@ function add_user(user: User) {
 
 let authorized_users_count = -1;
 
+function user_unmodified(user: User) {
+    let users_config = API.get('users/config');
+    for(let old_user of users_config.users) {
+        if (old_user.id != user.id)
+            continue;
+        return old_user.current == user.current
+            && old_user.display_name == user.display_name
+            && old_user.roles == user.roles
+            && old_user.username == user.username
+            // digest_hash of old user will only be "" if no password is set. Otherwise it's null.
+            // If the hash of user is "" we clear the password, if it is null we don't modify it.
+            // So checking for equality works.
+            && (old_user.digest_hash == user.digest_hash);
+    }
+
+    return false;
+}
+
 async function save_users_config() {
     let users_config = API.get('users/config');
 
@@ -101,7 +119,7 @@ async function save_users_config() {
     for (let i of nums) {
         let username = $(`#users_authorized_user_${i}_username`).html();
         let password = util.passwordUpdate(`#users_authorized_user_${i}_password`);
-        let digest = password == null ? null : password == "" ? "" : YaMD5.YaMD5.hashStr(username + ":esp32-lib:" + password);
+        let digest = password !== null && password !== "" ? YaMD5.YaMD5.hashStr(username + ":esp32-lib:" + password) : password;
         have.push({
             id: parseInt($(`#users_authorized_user_${i}_id`).val().toString()),
             roles: parseInt($(`#users_authorized_user_${i}_roles`).val().toString()),
@@ -123,7 +141,7 @@ async function save_users_config() {
     }
 
     for(let i of have) {
-        if (to_modify.includes(i.id))
+        if (to_modify.includes(i.id) && !user_unmodified(i))
             await modify_user(i);
     }
 
