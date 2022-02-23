@@ -145,6 +145,7 @@ void NFC::setup_nfc()
     }
 
     initialized = true;
+    api.addFeature("nfc");
 }
 
 void NFC::check_nfc_state()

@@ -84,6 +84,7 @@ Ethernet::Ethernet()
 
 void Ethernet::setup()
 {
+    api.addFeature("ethernet");
     api.restorePersistentConfig("ethernet/config", &ethernet_config);
 
     ethernet_config_in_use = ethernet_config;

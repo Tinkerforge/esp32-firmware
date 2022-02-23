@@ -62,7 +62,7 @@ public:
 
 class API {
 public:
-    API() {}
+    API();
 
     void setup();
     void loop();
@@ -71,6 +71,7 @@ public:
 
     Config *getState(String path, bool log_if_not_found = true);
 
+    void addFeature(const char *name);
     void addCommand(String path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(void)> callback, bool is_action);
     void addState(String path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms);
     bool addPersistentConfig(String path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms);
@@ -97,6 +98,8 @@ public:
     std::vector<RawCommandRegistration> raw_commands;
 
     std::vector<IAPIBackend *> backends;
+
+    ConfigRoot features;
 
 private:
     bool already_registered(const String &path, const char *api_type);

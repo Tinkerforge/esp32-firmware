@@ -330,6 +330,10 @@ void EVSEV2::setup()
     if (!device_found)
         return;
 
+    api.addFeature("evse");
+    api.addFeature("cp_disconnect");
+    api.addFeature("button_config");
+
     task_scheduler.scheduleWithFixedDelay("update_all_data", [this](){
         update_all_data();
     }, 0, 250);

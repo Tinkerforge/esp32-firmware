@@ -30,6 +30,15 @@ extern TF_HAL hal;
 extern TaskScheduler task_scheduler;
 extern EventLog logger;
 
+API::API()
+{
+    features = Config::Array(
+        {},
+        new Config{Config::Str("")},
+        0, 20, Config::type_id<Config::ConfString>()
+    );
+}
+
 void API::setup()
 {
     task_scheduler.scheduleWithFixedDelay("API state update", [this]() {
@@ -265,6 +274,8 @@ void API::registerDebugUrl(WebServer *server)
 
         request.send(200, "application/json; charset=utf-8", result.c_str());
     });
+
+    this->addState("features", &features, {}, 1000);
 }
 
 void API::registerBackend(IAPIBackend *backend)
@@ -315,6 +326,16 @@ Config *API::getState(String path, bool log_if_not_found)
     }
 
     return nullptr;
+}
+
+void API::addFeature(const char *name)
+{
+    for(int i = 0; i < features.count(); ++i)
+        if (features.get(i)->asString() == name)
+            return;
+
+    features.add();
+    features.get(features.count() - 1)->updateString(name);
 }
 
 void API::wifiAvailable()

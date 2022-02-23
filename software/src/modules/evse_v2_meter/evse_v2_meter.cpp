@@ -80,6 +80,11 @@ void EVSEV2Meter::setupEVSE(bool update_module_initialized)
         }, 3000);
         return;
     }
+    api.addFeature("meter");
+    if (meter_type == 2 || meter_type == 3) {
+        api.addFeature("meter_phases");
+        api.addFeature("meter_all_values");
+    }
 
     state.get("state")->updateUint(2);
     state.get("type")->updateUint(meter_type);
