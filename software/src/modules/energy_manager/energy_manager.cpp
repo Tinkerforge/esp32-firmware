@@ -36,6 +36,10 @@ extern WebServer server;
 
 extern API api;
 
+const char* ENERGY_MANAGER_INPUT_CONFIG_STR[]      = {"input3_config",      "input4_config"};
+const char* ENERGY_MANAGER_INPUT_CONFIG_IF_STR[]   = {"input3_config_if",   "input4_config_if"};
+const char* ENERGY_MANAGER_INPUT_CONFIG_THEN_STR[] = {"input3_config_then", "input4_config_then"};
+
 EnergyManager::EnergyManager() : DeviceModule("energy_manager", "Energy Manager", "Energy Manager", std::bind(&EnergyManager::setup_energy_manager, this))
 {
     // States
@@ -89,6 +93,86 @@ void EnergyManager::apply_defaults()
     // TODO: Configure Energy Manager
 }
 
+void EnergyManager::handle_relay_config_if_input(uint8_t input) {
+    if(input > 1) {
+        logger.printfln("Unkown handle_relay_config_if input: %u", input);
+        return;
+    }
+
+    // Check if condition is satisfied and set relay according to configuration
+    uint8_t relay_config_is   = energy_manager_config_in_use.get("relay_config_is")->asUint();
+    uint8_t relay_config_then = energy_manager_config_in_use.get("relay_config_then")->asUint();
+    if(((relay_config_is == RELAY_CONFIG_IS_HIGH) && (all_data.input[input])) ||
+       ((relay_config_is == RELAY_CONFIG_IS_LOW)  && (!all_data.input[input]))) {
+        tf_warp_energy_manager_set_output(&device, relay_config_then == RELAY_CONFIG_THEN_CLOSED);
+    } else {
+        tf_warp_energy_manager_set_output(&device, relay_config_then != RELAY_CONFIG_THEN_CLOSED);
+    }
+}
+
+void EnergyManager::handle_relay_config_if_phase_switching() {
+    // TODO
+}
+
+void EnergyManager::handle_relay_config_if_meter() {
+    // TODO
+}
+
+void EnergyManager::handle_input_config_rule_based(uint8_t input) {
+    bool allowed = true;
+    uint8_t input_config_if = energy_manager_config_in_use.get(ENERGY_MANAGER_INPUT_CONFIG_IF_STR[input])->asUint();
+    uint8_t input_config_then = energy_manager_config_in_use.get(ENERGY_MANAGER_INPUT_CONFIG_THEN_STR[input])->asUint();
+    if(((input_config_if == INPUT_CONFIG_IF_HIGH) && (all_data.input[input])) ||
+       ((input_config_if == INPUT_CONFIG_IF_LOW)  && (!all_data.input[input]))) {
+        allowed = (input_config_then == INPUT_CONFIG_THEN_ALLOW);
+    } else {
+        allowed = (input_config_then != INPUT_CONFIG_THEN_ALLOW);
+    }
+
+    // TODO: Save allowed state to be used by excess charging logic
+}
+
+void EnergyManager::handle_input_config_contactor_check(uint8_t input) {
+    // TODO
+}
+
+void EnergyManager::update_io() {
+    // Handle relay
+    uint8_t relay_config = energy_manager_config_in_use.get("relay_config")->asUint();
+    if(relay_config == RELAY_CONFIG_RULE_BASED) {
+        uint8_t relay_config_if = energy_manager_config_in_use.get("relay_config_if")->asUint();
+        switch(relay_config_if) {
+            case RELAY_CONFIG_IF_INPUT3:          handle_relay_config_if_input(0);          break;
+            case RELAY_CONFIG_IF_INPUT4:          handle_relay_config_if_input(1);          break;
+            case RELAY_CONFIG_IF_PHASE_SWITCHING: handle_relay_config_if_phase_switching(); break;
+            case RELAY_CONFIG_IF_METER:           handle_relay_config_if_meter();           break;
+            default: logger.printfln("Unkown RELAY_CONFIG_IF: %u", relay_config_if);        break;
+        }
+    }
+
+    // We "over-sample" the two imputs compared to the other data in the all_data struct
+    // to make sure that we can always react in a timely manner to input changes
+    int rc = tf_warp_energy_manager_get_input(&device, all_data.input);
+    if (rc != TF_E_OK) {
+        logger.printfln("get_input error %d", rc);
+    }
+
+    // Handle input3 and input4
+    for(uint8_t input = 0; input < 2; input++) {
+        uint8_t input_config = energy_manager_config_in_use.get(ENERGY_MANAGER_INPUT_CONFIG_STR[input])->asUint();
+        switch(input_config) {
+            case INPUT_CONFIG_DEACTIVATED:                                                         break;
+            case INPUT_CONFIG_RULES_BASED:     handle_input_config_rule_based(input);              break;
+            case INPUT_CONFIG_CONTACTOR_CHECK: handle_input_config_contactor_check(input);         break;
+            default: logger.printfln("Unkown INPUT_CONFIG: %u for input %u", input_config, input); break;
+        }
+    }
+}
+
+void EnergyManager::update_energy() {
+
+}
+
 void EnergyManager::setup()
 {
     setup_energy_manager();
@@ -99,8 +183,16 @@ void EnergyManager::setup()
     energy_manager_config_in_use = energy_manager_config;
 
     task_scheduler.scheduleWithFixedDelay("update_all_data", [this](){
-        update_all_data();
+        this->update_all_data();
     }, 0, 250);
+
+    task_scheduler.scheduleWithFixedDelay("update_io", [this](){
+        this->update_io();
+    }, 10, 10);
+
+    task_scheduler.scheduleWithFixedDelay("update_energy", [this](){
+        this->update_energy();
+    }, 250, 250);
 
     initialized = true;
 }

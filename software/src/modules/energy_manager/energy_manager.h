@@ -25,15 +25,45 @@
 #include "device_module.h"
 #include "warp_energy_manager_bricklet_firmware_bin.embedded.h"
 
-#define CHARGING_SLOT_INCOMING_CABLE 0
-#define CHARGING_SLOT_OUTGOING_CABLE 1
-#define CHARGING_SLOT_SHUTDOWN_INPUT 2
-#define CHARGING_SLOT_GP_INPUT 3
-#define CHARGING_SLOT_AUTOSTART_BUTTON 4
-#define CHARGING_SLOT_GLOBAL 5
-#define CHARGING_SLOT_USER 6
-#define CHARGING_SLOT_CHARGE_MANAGER 7
-#define CHARGING_SLOT_EXTERNAL 8
+#define CHARGING_SLOT_INCOMING_CABLE    0
+#define CHARGING_SLOT_OUTGOING_CABLE    1
+#define CHARGING_SLOT_SHUTDOWN_INPUT    2
+#define CHARGING_SLOT_GP_INPUT          3
+#define CHARGING_SLOT_AUTOSTART_BUTTON  4
+#define CHARGING_SLOT_GLOBAL            5
+#define CHARGING_SLOT_USER              6
+#define CHARGING_SLOT_CHARGE_MANAGER    7
+#define CHARGING_SLOT_EXTERNAL          8
+
+#define RELAY_CONFIG_DEACTIVATED        0
+#define RELAY_CONFIG_RULE_BASED         1
+#define RELAY_CONFIG_EXTERNAL           2
+
+#define RELAY_CONFIG_IF_INPUT3          0
+#define RELAY_CONFIG_IF_INPUT4          1
+#define RELAY_CONFIG_IF_PHASE_SWITCHING 2
+#define RELAY_CONFIG_IF_METER           3
+
+#define RELAY_CONFIG_IS_HIGH            0
+#define RELAY_CONFIG_IS_LOW             1
+#define RELAY_CONFIG_IS_1PHASE          2
+#define RELAY_CONFIG_IS_2PHASE          3
+#define RELAY_CONFIG_IS_GOE_0KW         4
+#define RELAY_CONFIG_IS_SOE_0KW         5
+
+#define RELAY_CONFIG_THEN_OPEN          0
+#define RELAY_CONFIG_THEN_CLOSED        1
+
+#define INPUT_CONFIG_DEACTIVATED        0
+#define INPUT_CONFIG_RULES_BASED        1
+#define INPUT_CONFIG_CONTACTOR_CHECK    2
+
+#define INPUT_CONFIG_IF_HIGH            0
+#define INPUT_CONFIG_IF_LOW             1
+
+#define INPUT_CONFIG_THEN_ALLOW         0
+#define INPUT_CONFIG_THEN_DISALLOW      1
+
 
 typedef struct {
     bool contactor_value;
@@ -76,6 +106,14 @@ public:
     void update_all_data();
     void update_all_data_struct();
 
+    void update_io();
+    void update_energy();
+
+    void handle_relay_config_if_input(uint8_t input);
+    void handle_relay_config_if_phase_switching();
+    void handle_relay_config_if_meter();
+    void handle_input_config_rule_based(uint8_t input); 
+    void handle_input_config_contactor_check(uint8_t input);
     void setup_energy_manager();
     bool flash_firmware();
     bool flash_plugin(int regular_plugin_upto);
