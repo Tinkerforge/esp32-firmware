@@ -172,7 +172,7 @@ void Ethernet::setup()
 void Ethernet::register_urls()
 {
     api.addPersistentConfig("ethernet/config", &ethernet_config, {}, 1000);
-    api.addPersistentConfig("ethernet/state", &ethernet_state, {}, 1000);
+    api.addState("ethernet/state", &ethernet_state, {}, 1000);
     api.addCommand("ethernet/force_reset", &ethernet_force_reset, {}, [this](){
         esp_eth_stop(ETH.eth_handle);
         pinMode(5, OUTPUT);
