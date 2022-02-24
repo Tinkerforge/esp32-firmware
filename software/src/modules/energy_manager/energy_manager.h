@@ -126,6 +126,7 @@ public:
     void apply_defaults();
 
     bool debug = false;
+    bool input_charging_allowed[2] = {true, true};
 
     ConfigRoot energy_manager_state;
     ConfigRoot energy_manager_config;

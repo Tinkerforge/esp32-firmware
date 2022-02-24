@@ -129,7 +129,7 @@ void EnergyManager::handle_input_config_rule_based(uint8_t input) {
         allowed = (input_config_then != INPUT_CONFIG_THEN_ALLOW);
     }
 
-    // TODO: Save allowed state to be used by excess charging logic
+    input_charging_allowed[input] = allowed;
 }
 
 void EnergyManager::handle_input_config_contactor_check(uint8_t input) {
@@ -170,7 +170,37 @@ void EnergyManager::update_io() {
 }
 
 void EnergyManager::update_energy() {
+    if(!input_charging_allowed[0] || !input_charging_allowed[1]) {
+        // TODO: Turn charging off if running
+        return;
+    }
 
+    const float power_at_house_connection = all_data.power;
+    const float power_max_from_grid       = energy_manager_config_in_use.get("mains_power_reception")->asFloat();
+    const float power_minimum_charging    = energy_manager_config_in_use.get("minimum_charging")->asFloat();
+    const bool  is_3phase                 = all_data.contactor_value;
+
+    const float power_allowed             = power_max_from_grid - ((power_at_house_connection < 0) ? power_at_house_connection : 0);
+
+    if(power_allowed < power_minimum_charging) {
+        // TODO: Turn charging off if running
+        return;
+    }
+
+    uint32_t ma_allowed;
+    if(is_3phase) { // 3phase
+        ma_allowed = (uint32_t)(1000*power_allowed*10000/(3*230.0));
+    } else { // 1phase
+        ma_allowed = (uint32_t)(1000*power_allowed*10000/(1*230.0));
+    }
+
+    // We can not charge with less than 6A.
+    if(ma_allowed < 6000) {
+        // TODO: Turn charging off if running
+        return;
+    }
+
+    // TODO: Set "ma_allowed" in charge manager
 }
 
 void EnergyManager::setup()
