@@ -489,9 +489,10 @@ def main():
         with open('web/node_modules/tinkerforge.marker', 'wb') as f:
             pass
 
-        with open(node_digest_path, 'w', encoding='utf-8') as f:
+        with open(node_digest_path + '.tmp', 'w', encoding='utf-8') as f:
             f.write(new_node_digest)
 
+        os.replace(node_digest_path + '.tmp', node_digest_path)
     print('Checking web interface')
 
     h = hashlib.sha256()
@@ -554,7 +555,9 @@ def main():
 
         embed_data(gzip.compress(html.encode('utf-8')), 'src', 'index_html', 'char')
 
-        with open(html_digest_path, 'w', encoding='utf-8') as f:
+        with open(html_digest_path + '.tmp', 'w', encoding='utf-8') as f:
             f.write(new_html_digest)
+
+        os.replace(html_digest_path + '.tmp', html_digest_path)
 
 main()
