@@ -457,10 +457,17 @@ def main():
     # Generate web interface
     print('Checking web interface dependencies')
 
-    node_digest_path = os.path.join(env.subst('$BUILD_DIR'), 'web,package-lock.json.digest')
+    h = hashlib.sha256()
 
     with open('web/package-lock.json', 'rb') as f:
-        new_node_digest = hashlib.sha256(f.read()).hexdigest()
+        h.update(f.read())
+
+    # FIXME: Scons runs this script using exec(), resulting in __file__ being not available
+    #with open(__file__, 'rb') as f:
+    #    h.update(f.read())
+
+    new_node_digest = h.hexdigest()
+    node_digest_path = os.path.join(env.subst('$BUILD_DIR'), 'web,package-lock.json.digest')
 
     try:
         with open(node_digest_path, 'r', encoding='utf-8') as f:
@@ -471,7 +478,16 @@ def main():
     if old_node_digest == new_node_digest and os.path.exists('web/node_modules/tinkerforge.marker'):
         print('Web interface dependencies are up-to-date')
     else:
-        print('Web interface dependencies are not up-to-date, updating now')
+        if old_node_digest == None:
+            reason = 'digest file missing'
+        elif old_node_digest != new_node_digest:
+            reason = 'digest mismatch'
+        elif not os.path.exists('web/node_modules/tinkerforge.marker'):
+            reason = 'node_modules marker missing'
+        else:
+            reason = 'unknown'
+
+        print('Web interface dependencies are not up-to-date ({0}), updating now'.format(reason))
 
         try:
             os.remove(node_digest_path)
@@ -493,6 +509,7 @@ def main():
             f.write(new_node_digest)
 
         os.replace(node_digest_path + '.tmp', node_digest_path)
+
     print('Checking web interface')
 
     h = hashlib.sha256()
@@ -519,8 +536,12 @@ def main():
     with open('util.py', 'rb') as f:
         h.update(f.read())
 
-    html_digest_path = os.path.join(env.subst('$BUILD_DIR'), 'src,index.html.digest')
+    # FIXME: Scons runs this script using exec(), resulting in __file__ being not available
+    #with open(__file__, 'rb') as f:
+    #    h.update(f.read())
+
     new_html_digest = h.hexdigest()
+    html_digest_path = os.path.join(env.subst('$BUILD_DIR'), 'src,index.html.digest')
 
     try:
         with open(html_digest_path, 'r', encoding='utf-8') as f:
@@ -531,7 +552,16 @@ def main():
     if old_html_digest == new_html_digest and os.path.exists('src/index_html.embedded.h') and os.path.exists('src/index_html.embedded.cpp'):
         print('Web interface is up-to-date')
     else:
-        print('Web interface is not up-to-date, building now')
+        if old_html_digest == None:
+            reason = 'digest file missing'
+        elif old_html_digest != new_html_digest:
+            reason = 'digest mismatch'
+        elif not os.path.exists('src/index_html.embedded.h') or not os.path.exists('src/index_html.embedded.cpp'):
+            reason = 'embedded file missing'
+        else:
+            reason = 'unknown'
+
+        print('Web interface is not up-to-date ({0}), building now'.format(reason))
 
         try:
             shutil.rmtree('web/build')
