@@ -258,7 +258,14 @@ struct from_json {
         return String("");
     }
     String operator()(std::nullptr_t x) {
-        return json_node.isNull() ? "" : "JSON null node was not null";
+        if (json_node.isNull())
+            return "";
+        if (json_node == "" || json_node == false || json_node == 0)
+            return "";
+        if (json_node.size() == 0 && (json_node.is<JsonArray>() || json_node.is<JsonObject>()))
+            return "";
+
+        return "JSON null node was not null or a falsy value. Use null, \"\", false, 0, [] or {}.";
     }
     String operator()(Config::ConfArray &x) {
         if (json_node.isNull())
