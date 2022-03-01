@@ -478,15 +478,19 @@ bool Users::trigger_charge_action(uint8_t user_id)
     }
 
     uint8_t iec_state = IEC_STATE_A;
+    uint32_t tscs = 0;
     #ifdef MODULE_EVSE_V2_AVAILABLE
         iec_state = evse_v2.evse_state.get("iec61851_state")->asUint();
+        tscs = evse_v2.evse_low_level_state.get("time_since_state_chage")->asUint();
     #endif
 
     switch (iec_state) {
         case IEC_STATE_B: // State B: The user wants to start charging.
             return this->start_charging(user_id, current_limit);
         case IEC_STATE_C: // State C: The user wants to stop charging.
-            this->stop_charging(user_id, false);
+            // Debounce here a bit, an impatient user can otherwise accidentially trigger a stop if a start_charging takes too long.
+            if (tscs > 3000)
+                this->stop_charging(user_id, false);
         default: //Don't do anything in state A, D, and E/F
             break;
     }
