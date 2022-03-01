@@ -272,7 +272,7 @@ struct from_json {
         x.value.clear();
         for (size_t i = 0; i < arr.size(); ++i) {
             x.value.push_back(*x.prototype);
-            String inner_error = strict_variant::apply_visitor(from_json{arr[i], force_same_keys, permit_null_updates}, x.value[i].value);
+            String inner_error = strict_variant::apply_visitor(from_json{arr[i], force_same_keys, permit_null_updates, false}, x.value[i].value);
             if (inner_error != "")
                 return String("[") + i + "]" + inner_error;
         }
@@ -283,6 +283,17 @@ struct from_json {
     {
         if (json_node.isNull())
             return permit_null_updates ? String("") : String("Null updates not permitted.");
+
+        // If a user passes a non-object to an API that expects an object with exactly one member
+        // Try to use the non-object as value for the single member.
+        // This allows calling for example evse/external_current_update with the payload 8000 instead of {"current": 8000}
+        if (!json_node.is<JsonObject>() && is_root && x.value.size() == 1) {
+            String inner_error = strict_variant::apply_visitor(from_json{json_node, force_same_keys, permit_null_updates, false}, x.value[0].second.value);
+            if (inner_error != "")
+                return String("(inferred) [\"") + x.value[0].first + "\"] " + inner_error;
+            else
+                return inner_error;
+        }
 
         if (!json_node.is<JsonObject>())
             return "JSON node was not an object.";
@@ -296,7 +307,7 @@ struct from_json {
             if (!force_same_keys && !obj.containsKey(x.value[i].first))
                 continue;
 
-            String inner_error = strict_variant::apply_visitor(from_json{obj[x.value[i].first], force_same_keys, permit_null_updates}, x.value[i].second.value);
+            String inner_error = strict_variant::apply_visitor(from_json{obj[x.value[i].first], force_same_keys, permit_null_updates, false}, x.value[i].second.value);
             if (inner_error != "")
                 return String("[\"") + x.value[i].first + "\"]" + inner_error;
         }
@@ -307,6 +318,7 @@ struct from_json {
     JsonVariant json_node;
     bool force_same_keys;
     bool permit_null_updates;
+    bool is_root;
 };
 
 struct from_update {
@@ -870,7 +882,7 @@ String ConfigRoot::update_from_string(String s)
 String ConfigRoot::update_from_json(JsonVariant root)
 {
     Config copy = *this;
-    String err = strict_variant::apply_visitor(from_json{root, !this->permit_null_updates, this->permit_null_updates}, copy.value);
+    String err = strict_variant::apply_visitor(from_json{root, !this->permit_null_updates, this->permit_null_updates, true}, copy.value);
 
     if (err != "")
         return err;
