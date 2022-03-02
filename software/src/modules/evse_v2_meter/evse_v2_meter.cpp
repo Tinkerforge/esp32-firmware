@@ -75,7 +75,7 @@ void EVSEV2Meter::setupEVSE(bool update_module_initialized)
     uint8_t meter_type = evse_v2.evse_hardware_configuration.get("energy_meter_type")->asUint();
 
     if (meter_type == 0) {
-        task_scheduler.scheduleOnce("setup_evsev2_meter", [this](){
+        task_scheduler.scheduleOnce([this](){
             this->setupEVSE(true);
         }, 3000);
         return;
@@ -100,7 +100,7 @@ void EVSEV2Meter::setupEVSE(bool update_module_initialized)
         all_values.add();
     }
 
-    task_scheduler.scheduleWithFixedDelay("update_evse_meter_values", [this](){
+    task_scheduler.scheduleWithFixedDelay([this](){
         float power = evse_v2.evse_energy_meter_values.get("power")->asFloat();
         values.get("power")->updateFloat(power);
         values.get("energy_rel")->updateFloat(evse_v2.evse_energy_meter_values.get("energy_rel")->asFloat());
@@ -117,7 +117,7 @@ void EVSEV2Meter::setupEVSE(bool update_module_initialized)
         ++samples_last_interval;
     }, 500, 500);
 
-    task_scheduler.scheduleWithFixedDelay("update_evse_meter_history", [this](){
+    task_scheduler.scheduleWithFixedDelay([this](){
         float interval_sum = 0;
         int16_t val;
         for(int i = 0; i < samples_last_interval; ++i) {
@@ -130,7 +130,7 @@ void EVSEV2Meter::setupEVSE(bool update_module_initialized)
         samples_last_interval = 0;
     }, 1000 * 60 * HISTORY_MINUTE_INTERVAL, 1000 * 60 * HISTORY_MINUTE_INTERVAL);
 
-    task_scheduler.scheduleWithFixedDelay("update_all_energy_meter_values", [this](){
+    task_scheduler.scheduleWithFixedDelay([this](){
         uint16_t len;
         float result[ALL_VALUES_COUNT] = {0};
         if (tf_evse_v2_get_all_energy_meter_values(&evse_v2.device, result, &len) != TF_E_OK)

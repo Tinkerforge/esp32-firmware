@@ -212,15 +212,15 @@ void EnergyManager::setup()
     api.restorePersistentConfig("energy_manager/config", &energy_manager_config);
     energy_manager_config_in_use = energy_manager_config;
 
-    task_scheduler.scheduleWithFixedDelay("update_all_data", [this](){
+    task_scheduler.scheduleWithFixedDelay([this](){
         this->update_all_data();
     }, 0, 250);
 
-    task_scheduler.scheduleWithFixedDelay("update_io", [this](){
+    task_scheduler.scheduleWithFixedDelay([this](){
         this->update_io();
     }, 10, 10);
 
-    task_scheduler.scheduleWithFixedDelay("update_energy", [this](){
+    task_scheduler.scheduleWithFixedDelay([this](){
         this->update_energy();
     }, 250, 250);
 
@@ -309,7 +309,7 @@ void EnergyManager::register_urls()
 
 #ifdef MODULE_WS_AVAILABLE
     server.on("/energy_manager/start_debug", HTTP_GET, [this](WebServerRequest request) {
-        task_scheduler.scheduleOnce("enable energy_manager debug", [this](){
+        task_scheduler.scheduleOnce([this](){
             ws.pushStateUpdate(this->get_energy_manager_debug_header(), "energy_manager/debug_header");
             debug = true;
         }, 0);
@@ -317,7 +317,7 @@ void EnergyManager::register_urls()
     });
 
     server.on("/energy_manager/stop_debug", HTTP_GET, [this](WebServerRequest request){
-        task_scheduler.scheduleOnce("enable energy_manager debug", [this](){
+        task_scheduler.scheduleOnce([this](){
             debug = false;
         }, 0);
         request.send(200);

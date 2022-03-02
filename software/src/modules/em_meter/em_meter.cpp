@@ -84,7 +84,7 @@ void EMMeter::setupEM(bool update_module_initialized)
     uint8_t meter_type = energy_manager.all_data.energy_meter_type;
 
     if (meter_type == 0) {
-        task_scheduler.scheduleOnce("setup_em_meter", [this](){
+        task_scheduler.scheduleOnce([this](){
             this->setupEM(true);
         }, 3000);
         return;
@@ -104,7 +104,7 @@ void EMMeter::setupEM(bool update_module_initialized)
         all_values.add();
     }
 
-    task_scheduler.scheduleWithFixedDelay("update_em_meter_values", [this](){
+    task_scheduler.scheduleWithFixedDelay([this](){
         float power = energy_manager.all_data.power;
         values.get("power")->updateFloat(power);
         values.get("energy_rel")->updateFloat(energy_manager.all_data.energy_relative);
@@ -128,7 +128,7 @@ void EMMeter::setupEM(bool update_module_initialized)
         ++samples_last_interval;
     }, 500, 500);
 
-    task_scheduler.scheduleWithFixedDelay("update_em_meter_history", [this](){
+    task_scheduler.scheduleWithFixedDelay([this](){
         float interval_sum = 0;
         int16_t val;
         for(int i = 0; i < samples_last_interval; ++i) {
@@ -141,7 +141,7 @@ void EMMeter::setupEM(bool update_module_initialized)
         samples_last_interval = 0;
     }, 1000 * 60 * HISTORY_MINUTE_INTERVAL, 1000 * 60 * HISTORY_MINUTE_INTERVAL);
 
-    task_scheduler.scheduleWithFixedDelay("update_all_energy_meter_values", [this](){
+    task_scheduler.scheduleWithFixedDelay([this](){
         uint16_t len;
         float result[ALL_VALUES_COUNT] = {0};
         if (tf_warp_energy_manager_get_energy_meter_detailed_values(&energy_manager.device, result, &len) != TF_E_OK)

@@ -187,7 +187,7 @@ void SDM72DM::setup()
     if (!device_found)
         return;
 
-    task_scheduler.scheduleWithFixedDelay("check_rs485_config", [this](){
+    task_scheduler.scheduleWithFixedDelay([this](){
         this->checkRS485State();
     }, 5 * 60 * 1000, 5 * 60 * 1000);
 }

@@ -41,7 +41,7 @@ API::API()
 
 void API::setup()
 {
-    task_scheduler.scheduleWithFixedDelay("API state update", [this]() {
+    task_scheduler.scheduleWithFixedDelay([this]() {
         for (auto &reg : states) {
             if (!deadline_elapsed(reg.last_update + reg.interval)) {
                 continue;
@@ -298,7 +298,7 @@ String API::callCommand(String path, Config::ConfUpdate payload)
         String error = reg.config->update(&payload);
 
         if (error == "") {
-            task_scheduler.scheduleOnce((String("notify command update for ") + reg.path).c_str(), [reg]() { reg.callback(); }, 0);
+            task_scheduler.scheduleOnce([reg]() { reg.callback(); }, 0);
         }
 
         return error;
@@ -340,7 +340,7 @@ void API::addFeature(const char *name)
 
 void API::wifiAvailable()
 {
-    task_scheduler.scheduleOnce("wifi_available", [this]() {
+    task_scheduler.scheduleOnce([this]() {
         for (auto *backend: this->backends) {
             backend->wifiAvailable();
         }

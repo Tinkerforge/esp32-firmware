@@ -81,7 +81,7 @@ void Http::addCommand(const CommandRegistration &reg)
         String message = reg.config->update_from_json(json);
 
         if (message == "") {
-            task_scheduler.scheduleOnce((String("notify command update for ") + reg.path).c_str(), [reg](){reg.callback();}, 0);
+            task_scheduler.scheduleOnce([reg](){reg.callback();}, 0);
             request.send(200, "text/html", "");
         } else {
             request.send(400, "text/html", message.c_str());

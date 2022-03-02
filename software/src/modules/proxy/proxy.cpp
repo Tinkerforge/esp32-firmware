@@ -121,7 +121,7 @@ void Proxy::register_urls()
     api.addState("proxy/error_counters", &error_counters, {}, 1000);
     api.addState("proxy/devices", &devices, {}, 10000);
 
-    task_scheduler.scheduleWithFixedDelay("update_error_counters", [this](){
+    task_scheduler.scheduleWithFixedDelay([this](){
         for(char c = 'A'; c <= 'F'; ++c) {
             uint32_t spitfp_checksum, spitfp_frame, tfp_frame, tfp_unexpected;
 

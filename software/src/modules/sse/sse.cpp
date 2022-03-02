@@ -45,7 +45,7 @@ void Sse::setup()
     });
 
     server.addHandler(&events);
-    task_scheduler.scheduleWithFixedDelay("SSE_keep_alive", [this](){
+    task_scheduler.scheduleWithFixedDelay([this](){
         events.send("keep-alive", "keep-alive", millis());
     }, 1000, 1000);
 }

@@ -103,7 +103,7 @@ void CMNetworking::register_manager(const std::vector<String> &hosts,
     if (manager_sock < 0)
         return;
 
-    task_scheduler.scheduleWithFixedDelay("charge_manager_receive_task", [this, names, manager_callback, manager_error_callback](){
+    task_scheduler.scheduleWithFixedDelay([this, names, manager_callback, manager_error_callback](){
         static uint8_t last_seen_seq_num[MAX_CLIENTS];
         static bool initialized = false;
         if (!initialized) {
@@ -229,7 +229,7 @@ void CMNetworking::register_client(std::function<void(uint16_t)> client_callback
 
     memset(&source_addr, 0, sizeof(source_addr));
 
-    task_scheduler.scheduleWithFixedDelay("cm_client_receive_task", [this, client_callback](){
+    task_scheduler.scheduleWithFixedDelay([this, client_callback](){
         static uint8_t last_seen_seq_num = 255;
         request_packet recv_buf[2] = {};
 

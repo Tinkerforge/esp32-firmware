@@ -231,7 +231,7 @@ void Users::setup()
     }
 
     #ifdef MODULE_EVSE_V2_AVAILABLE
-    task_scheduler.scheduleWithFixedDelay("users_iec_check", [this](){
+    task_scheduler.scheduleWithFixedDelay([this](){
         static uint8_t last_iec_state = 0;
 
         uint8_t iec_state = evse_v2.evse_state.get("iec61851_state")->asUint();

@@ -158,7 +158,7 @@ void EVSE::setup()
     if (!device_found)
         return;
 
-    task_scheduler.scheduleWithFixedDelay("update_all_data", [this](){
+    task_scheduler.scheduleWithFixedDelay([this](){
         update_all_data();
     }, 0, 250);
 
@@ -167,7 +167,7 @@ void EVSE::setup()
         set_managed_current(current);
     });
 
-    task_scheduler.scheduleWithFixedDelay("evse_send_cm_networking_client", [this](){
+    task_scheduler.scheduleWithFixedDelay([this](){
         cm_networking.send_client_update(
             evse_state.get("iec61851_state")->asUint(),
             evse_state.get("vehicle_state")->asUint(),
@@ -183,7 +183,7 @@ void EVSE::setup()
         );
     }, 1000, 1000);
 
-    task_scheduler.scheduleWithFixedDelay("evse_managed_current_watchdog", [this]() {
+    task_scheduler.scheduleWithFixedDelay([this]() {
         if (!deadline_elapsed(this->last_current_update + 30000))
             return;
         if(!this->shutdown_logged)
@@ -334,7 +334,7 @@ void EVSE::register_urls()
 
 #ifdef MODULE_WS_AVAILABLE
     server.on("/evse/start_debug", HTTP_GET, [this](WebServerRequest request) {
-        task_scheduler.scheduleOnce("enable evse debug", [this](){
+        task_scheduler.scheduleOnce([this](){
             ws.pushStateUpdate(this->get_evse_debug_header(), "evse/debug_header");
             debug = true;
         }, 0);
@@ -342,7 +342,7 @@ void EVSE::register_urls()
     });
 
     server.on("/evse/stop_debug", HTTP_GET, [this](WebServerRequest request){
-        task_scheduler.scheduleOnce("enable evse debug", [this](){
+        task_scheduler.scheduleOnce([this](){
             debug = false;
         }, 0);
         request.send(200);

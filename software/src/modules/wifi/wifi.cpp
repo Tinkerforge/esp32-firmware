@@ -371,7 +371,7 @@ void Wifi::setup()
     }
 
     if (enable_sta) {
-        task_scheduler.scheduleWithFixedDelay("wifi_connect", [this](){
+        task_scheduler.scheduleWithFixedDelay([this](){
             static int backoff = 1;
             static int backoff_counter = 0;
 
@@ -392,7 +392,7 @@ void Wifi::setup()
         }, 0, 5000);
     }
 
-    task_scheduler.scheduleWithFixedDelay("wifi_rssi", [this](){
+    task_scheduler.scheduleWithFixedDelay([this](){
         wifi_state.get("sta_rssi")->updateInt(WiFi.RSSI());
     }, 5000, 5000);
 
@@ -448,7 +448,7 @@ void Wifi::check_for_scan_completion()
 
     if (result == "scan in progress") {
         logger.printfln("Scan in progress...");
-        task_scheduler.scheduleOnce("wifi_scan_check_complete", [this]() {
+        task_scheduler.scheduleOnce([this]() {
             this->check_for_scan_completion();
         }, 500);
         return;
@@ -478,7 +478,7 @@ void Wifi::register_urls()
             WiFi.scanNetworks(true, true);
         }
 
-        task_scheduler.scheduleOnce("wifi_scan_check_complete", [this]() {
+        task_scheduler.scheduleOnce([this]() {
             this->check_for_scan_completion();
         }, 500);
     }, true);

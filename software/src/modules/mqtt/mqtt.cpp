@@ -88,7 +88,7 @@ void Mqtt::addCommand(const CommandRegistration &reg)
 
         String error = reg.config->update_from_cstr(payload, payload_len);
         if(error == "") {
-            task_scheduler.scheduleOnce((String("notify command update for ") + reg.path).c_str(), [reg](){reg.callback();}, 0);
+            task_scheduler.scheduleOnce([reg](){reg.callback();}, 0);
             return;
         }
 
@@ -225,12 +225,12 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 
     switch ((esp_mqtt_event_id_t)event_id) {
         case MQTT_EVENT_CONNECTED:
-            task_scheduler.scheduleOnce("mqtt_connected", [mqtt](){
+            task_scheduler.scheduleOnce([mqtt](){
                 mqtt->onMqttConnect();
             }, 0);
             break;
         case MQTT_EVENT_DISCONNECTED:
-            task_scheduler.scheduleOnce("mqtt_disconnected", [mqtt](){
+            task_scheduler.scheduleOnce([mqtt](){
                 mqtt->onMqttDisconnect();
             }, 0);
             break;

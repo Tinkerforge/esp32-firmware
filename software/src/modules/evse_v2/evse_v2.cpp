@@ -334,7 +334,7 @@ void EVSEV2::setup()
     api.addFeature("cp_disconnect");
     api.addFeature("button_config");
 
-    task_scheduler.scheduleWithFixedDelay("update_all_data", [this](){
+    task_scheduler.scheduleWithFixedDelay([this](){
         update_all_data();
     }, 0, 250);
 }
@@ -618,7 +618,7 @@ void EVSEV2::register_urls()
         set_managed_current(current);
     });
 
-    task_scheduler.scheduleWithFixedDelay("evse_send_cm_networking_client", [this](){
+    task_scheduler.scheduleWithFixedDelay([this](){
         uint16_t supported_current = 32000;
         for(int i = 0; i < CHARGING_SLOT_COUNT; ++i) {
             if (i == CHARGING_SLOT_CHARGE_MANAGER)
@@ -640,7 +640,7 @@ void EVSEV2::register_urls()
         );
     }, 1000, 1000);
 
-    task_scheduler.scheduleWithFixedDelay("evse_managed_current_watchdog", [this]() {
+    task_scheduler.scheduleWithFixedDelay([this]() {
         if (!deadline_elapsed(this->last_current_update + 30000))
             return;
         if (!evse_management_enabled.get("enabled")->asBool()) {
@@ -681,7 +681,7 @@ void EVSEV2::register_urls()
 
 #ifdef MODULE_WS_AVAILABLE
     server.on("/evse/start_debug", HTTP_GET, [this](WebServerRequest request) {
-        task_scheduler.scheduleOnce("enable evse debug", [this](){
+        task_scheduler.scheduleOnce([this](){
             ws.pushStateUpdate(this->get_evse_debug_header(), "evse/debug_header");
             debug = true;
         }, 0);
@@ -689,7 +689,7 @@ void EVSEV2::register_urls()
     });
 
     server.on("/evse/stop_debug", HTTP_GET, [this](WebServerRequest request){
-        task_scheduler.scheduleOnce("enable evse debug", [this](){
+        task_scheduler.scheduleOnce([this](){
             debug = false;
         }, 0);
         request.send(200);
