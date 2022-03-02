@@ -45,14 +45,14 @@ EnergyManager::EnergyManager() : DeviceModule("energy_manager", "Energy Manager"
     // States
     energy_manager_state = Config::Object({
         {"contactor", Config::Bool(false)},
-        {"led_rgb", Config::Array({Config::Uint8(0), Config::Uint8(0), Config::Uint8(0)}, 
+        {"led_rgb", Config::Array({Config::Uint8(0), Config::Uint8(0), Config::Uint8(0)},
             new Config{Config::Uint8(0)}, 3, 3, Config::type_id<Config::ConfUint>())
         },
-        {"gpio_input_state", Config::Array({Config::Bool(false), Config::Bool(false)}, 
+        {"gpio_input_state", Config::Array({Config::Bool(false), Config::Bool(false)},
             new Config{Config::Bool(false)}, 2, 2, Config::type_id<Config::ConfBool>())
         },
         {"gpio_output_state", Config::Bool(false)},
-        {"gpio_input_configuration", Config::Array({Config::Uint8(0), Config::Uint8(0)}, 
+        {"gpio_input_configuration", Config::Array({Config::Uint8(0), Config::Uint8(0)},
             new Config{Config::Uint8(0)}, 2, 2, Config::type_id<Config::ConfUint>())
         },
         {"input_voltage", Config::Uint16(0)},
@@ -61,7 +61,7 @@ EnergyManager::EnergyManager() : DeviceModule("energy_manager", "Energy Manager"
         {"energy_meter_power", Config::Float(0)},
         {"energy_meter_energy_rel", Config::Float(0)},
         {"energy_meter_energy_abs", Config::Float(0)},
-        {"energy_meter_phases_active", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false)},       
+        {"energy_meter_phases_active", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false)},
             new Config{Config::Bool(false)}, 3, 3, Config::type_id<Config::ConfBool>())
         },
         {"energy_meter_phases_connected", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false)},
@@ -384,7 +384,7 @@ void EnergyManager::update_all_data()
 
 void EnergyManager::update_all_data_struct() {
     int rc = tf_warp_energy_manager_get_all_data_1(
-        &device, 
+        &device,
         &all_data.contactor_value,
         &all_data.rgb_value_r,
         &all_data.rgb_value_g,
@@ -402,7 +402,7 @@ void EnergyManager::update_all_data_struct() {
         &all_data.voltage,
         &all_data.contactor_check_state
     );
-    
+
     if (rc != TF_E_OK) {
         logger.printfln("get_all_data_1 error %d", rc);
     }
