@@ -62,17 +62,17 @@ void WS::loop()
 
 }
 
-void WS::addCommand(const CommandRegistration &reg)
+void WS::addCommand(size_t commandIdx, const CommandRegistration &reg)
 {
 
 }
 
-void WS::addRawCommand(const RawCommandRegistration &reg)
+void WS::addState(size_t stateIdx, const StateRegistration &reg)
 {
 
 }
 
-void WS::addState(const StateRegistration &reg)
+void WS::addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg)
 {
 
 }
@@ -84,7 +84,7 @@ static size_t prefix_len = strlen(prefix);
 static size_t infix_len = strlen(infix);
 static size_t suffix_len = strlen(suffix);
 
-bool WS::pushStateUpdate(String payload, String path)
+bool WS::pushStateUpdate(size_t stateIdx, String payload, String path)
 {
     if (!web_sockets.haveActiveClient())
         return true;
@@ -116,6 +116,10 @@ bool WS::pushStateUpdate(String payload, String path)
     web_sockets.sendToAllOwned(to_send, to_send_len);
 
     return true;
+}
+
+void WS::pushRawStateUpdate(String payload, String path) {
+    pushStateUpdate(0, payload, path);
 }
 
 void WS::wifiAvailable()

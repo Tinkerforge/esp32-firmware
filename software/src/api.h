@@ -53,10 +53,11 @@ struct RawCommandRegistration {
 
 class IAPIBackend {
 public:
-    virtual void addCommand(const CommandRegistration &reg) = 0;
-    virtual void addState(const StateRegistration &reg) = 0;
-    virtual void addRawCommand(const RawCommandRegistration &reg) = 0;
-    virtual bool pushStateUpdate(String payload, String path) = 0;
+    virtual void addCommand(size_t commandIdx, const CommandRegistration &reg) = 0;
+    virtual void addState(size_t stateIdx, const StateRegistration &reg) = 0;
+    virtual void addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg) = 0;
+    virtual bool pushStateUpdate(size_t stateIdx, String payload, String path) = 0;
+    virtual void pushRawStateUpdate(String payload, String path) = 0;
     virtual void wifiAvailable() = 0;
 };
 
@@ -83,7 +84,7 @@ public:
 
     void blockCommand(String path, String reason);
     void unblockCommand(String path);
-    String getCommandBlockedReason(String path);
+    String getCommandBlockedReason(size_t commandIdx);
 
     bool restorePersistentConfig(String path, ConfigRoot *config);
 

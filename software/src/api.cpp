@@ -42,7 +42,9 @@ API::API()
 void API::setup()
 {
     task_scheduler.scheduleWithFixedDelay([this]() {
-        for (auto &reg : states) {
+        for (size_t i = 0; i < states.size(); ++i) {
+            auto &reg = states[i];
+
             if (!deadline_elapsed(reg.last_update + reg.interval)) {
                 continue;
             }
@@ -57,7 +59,7 @@ void API::setup()
             String payload = reg.config->to_string_except(reg.keys_to_censor);
 
             for (int i = 0; i < this->backends.size(); ++i) {
-                if (this->backends[i]->pushStateUpdate(payload, reg.path))
+                if (this->backends[i]->pushStateUpdate(i, payload, reg.path))
                     reg.config->set_update_handled(1 << i);
             }
         }
@@ -70,9 +72,10 @@ void API::addCommand(String path, ConfigRoot *config, std::initializer_list<Stri
         return;
 
     commands.push_back({path, config, callback, keys_to_censor_in_debug_report, is_action, ""});
+    auto commandIdx = commands.size() - 1;
 
     for (auto *backend : this->backends) {
-        backend->addCommand(commands[commands.size() - 1]);
+        backend->addCommand(commandIdx, commands[commandIdx]);
     }
 }
 
@@ -82,9 +85,10 @@ void API::addState(String path, ConfigRoot *config, std::initializer_list<String
         return;
 
     states.push_back({path, config, keys_to_censor, interval_ms, millis()});
+    auto stateIdx = states.size() - 1;
 
     for (auto *backend : this->backends) {
-        backend->addState(states[states.size() - 1]);
+        backend->addState(stateIdx, states[stateIdx]);
     }
 }
 
@@ -114,9 +118,10 @@ void API::addRawCommand(String path, std::function<String(char *, size_t)> callb
         return;
 
     raw_commands.push_back({path, callback, is_action});
+    auto rawCommandIdx = raw_commands.size() - 1;
 
     for (auto *backend : this->backends) {
-        backend->addRawCommand(raw_commands[raw_commands.size() - 1]);
+        backend->addRawCommand(rawCommandIdx, raw_commands[rawCommandIdx]);
     }
 }
 
@@ -158,17 +163,9 @@ void API::unblockCommand(String path)
     blockCommand(path, "");
 }
 
-String API::getCommandBlockedReason(String path)
+String API::getCommandBlockedReason(size_t commandIdx)
 {
-    for (auto &reg : commands) {
-        if (reg.path != path) {
-            continue;
-        }
-
-        return reg.blockedReason;
-    }
-
-    return "";
+    return this->commands[commandIdx].blockedReason;
 }
 
 /*

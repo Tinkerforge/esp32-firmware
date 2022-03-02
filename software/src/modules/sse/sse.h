@@ -35,6 +35,7 @@ public:
     void addCommand(CommandRegistration reg);
     void addState(StateRegistration reg);
     bool pushStateUpdate(String payload, String path);
+    void pushRawStateUpdate(String payload, String path);
     void wifiAvailable();
 
     bool initialized = false;

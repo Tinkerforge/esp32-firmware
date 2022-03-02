@@ -682,7 +682,7 @@ void EVSEV2::register_urls()
 #ifdef MODULE_WS_AVAILABLE
     server.on("/evse/start_debug", HTTP_GET, [this](WebServerRequest request) {
         task_scheduler.scheduleOnce([this](){
-            ws.pushStateUpdate(this->get_evse_debug_header(), "evse/debug_header");
+            ws.pushRawStateUpdate(this->get_evse_debug_header(), "evse/debug_header");
             debug = true;
         }, 0);
         request.send(200);
@@ -833,7 +833,7 @@ void EVSEV2::loop()
     static uint32_t last_debug = 0;
     if (debug && deadline_elapsed(last_debug + 50)) {
         last_debug = millis();
-        ws.pushStateUpdate(this->get_evse_debug_line(), "evse/debug");
+        ws.pushRawStateUpdate(this->get_evse_debug_line(), "evse/debug");
     }
 #endif
 }

@@ -456,7 +456,7 @@ void Wifi::check_for_scan_completion()
     logger.printfln("Scan done. %d networks.", WiFi.scanComplete());
 
 #ifdef MODULE_WS_AVAILABLE
-    ws.pushStateUpdate(this->get_scan_results(), "wifi/scan_results");
+    ws.pushRawStateUpdate(this->get_scan_results(), "wifi/scan_results");
 #endif
 }
 

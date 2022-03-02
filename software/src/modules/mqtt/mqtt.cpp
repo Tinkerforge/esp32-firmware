@@ -66,7 +66,7 @@ void Mqtt::subscribe(String topic_suffix, uint32_t max_payload_length, std::func
     esp_mqtt_client_subscribe(client, topic.c_str(), 0);
 }
 
-void Mqtt::addCommand(const CommandRegistration &reg)
+void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)
 {
     auto req_size = reg.config->json_size();
     if (req_size > MQTT_RECV_BUFFER_SIZE) {
@@ -79,8 +79,8 @@ void Mqtt::addCommand(const CommandRegistration &reg)
     if (mqtt_state.get("connection_state")->asInt() != (int)MqttConnectionState::CONNECTED)
         return;
 
-    subscribe(reg.path, reg.config->json_size(), [reg](char *payload, size_t payload_len){
-        String reason = api.getCommandBlockedReason(reg.path);
+    subscribe(reg.path, reg.config->json_size(), [reg, commandIdx](char *payload, size_t payload_len){
+        String reason = api.getCommandBlockedReason(commandIdx);
         if (reason != "") {
             logger.printfln("MQTT: Command %s is blocked: %s", reg.path.c_str(), reason.c_str());
             return;
@@ -96,12 +96,12 @@ void Mqtt::addCommand(const CommandRegistration &reg)
     }, reg.is_action);
 }
 
-void Mqtt::addState(const StateRegistration &reg)
+void Mqtt::addState(size_t stateIdx, const StateRegistration &reg)
 {
     this->states.push_back({reg.path, 0});
 }
 
-void Mqtt::addRawCommand(const RawCommandRegistration &reg)
+void Mqtt::addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg)
 {
     if (mqtt_state.get("connection_state")->asInt() != (int)MqttConnectionState::CONNECTED)
         return;
@@ -123,21 +123,20 @@ void Mqtt::publish(String payload, String path)
     esp_mqtt_client_publish(this->client, topic.c_str(), payload.c_str(), payload.length(), 0, true/*, false*/);
 }
 
-bool Mqtt::pushStateUpdate(String payload, String path)
+bool Mqtt::pushStateUpdate(size_t stateIdx, String payload, String path)
 {
-    for(auto &state : this->states) {
-        if (path != state.topic)
-            continue;
+    auto &state = this->states[stateIdx];
 
-        if (!deadline_elapsed(state.last_send_ms + mqtt_config_in_use.get("interval")->asUint() * 1000))
-            return false;
+    if (!deadline_elapsed(state.last_send_ms + mqtt_config_in_use.get("interval")->asUint() * 1000))
+        return false;
 
-        this->publish(payload, path);
-        state.last_send_ms = millis();
-        return true;
-    }
-
+    this->publish(payload, path);
+    state.last_send_ms = millis();
     return true;
+}
+
+void Mqtt::pushRawStateUpdate(String payload, String path) {
+    this->publish(payload, path);
 }
 
 void Mqtt::wifiAvailable()
@@ -154,11 +153,13 @@ void Mqtt::onMqttConnect()
     this->mqtt_state.get("connection_state")->updateInt((int)MqttConnectionState::CONNECTED);
 
     this->commands.clear();
-    for (auto &reg : api.commands) {
-        this->addCommand(reg);
+    for (size_t i = 0; i < api.commands.size(); ++i) {
+        auto &reg = api.commands[i];
+        this->addCommand(i, reg);
     }
-    for (auto &reg : api.raw_commands) {
-        this->addRawCommand(reg);
+    for (size_t i = 0; i < api.raw_commands.size(); ++i) {
+        auto &reg = api.raw_commands[i];
+        this->addRawCommand(i, reg);
     }
     for (auto &reg : api.states) {
         publish(reg.config->to_string_except(reg.keys_to_censor), reg.path);
