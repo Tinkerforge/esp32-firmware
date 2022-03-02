@@ -153,8 +153,8 @@ async function downloadChargeLog() {
                     (Number.isNaN(meter_start) || Number.isNaN(meter_end)) ? 'N/A' : util.toLocaleFixed(meter_end - meter_start, 3),
                     charge_duration.toString(),
                     "",
-                    (Number.isNaN(meter_start) || Number.isNaN(meter_end)) ? 'N/A' : util.toLocaleFixed(meter_start, 3),
-                    (Number.isNaN(meter_start) || Number.isNaN(meter_end)) ? 'N/A' : util.toLocaleFixed(meter_end, 3)
+                    Number.isNaN(meter_start) ? 'N/A' : util.toLocaleFixed(meter_start, 3),
+                    Number.isNaN(meter_end) ? 'N/A' : util.toLocaleFixed(meter_end, 3)
                 ];
 
                 result += to_csv_line(line);
