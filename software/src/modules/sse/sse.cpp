@@ -66,8 +66,9 @@ void Sse::addState(StateRegistration reg) {
 
 }
 
-void Sse::pushStateUpdate(String payload, String path) {
+bool Sse::pushStateUpdate(String payload, String path) {
     events.send(payload.c_str(), path.c_str(), millis());
+    return true;
 }
 
 void Sse::wifiAvailable()

@@ -467,7 +467,7 @@ struct is_updated {
     }
     bool operator()(const Config::ConfArray &x) const {
         for (const Config &c : x.value) {
-            if (c.updated || strict_variant::apply_visitor(is_updated{}, c.value))
+            if (((c.updated & api_backend_flag) != 0) || strict_variant::apply_visitor(is_updated{api_backend_flag}, c.value))
                 return true;
         }
         return false;
@@ -475,11 +475,12 @@ struct is_updated {
     bool operator()(const Config::ConfObject &x) const
     {
         for (const std::pair<String, Config> &c : x.value) {
-            if (c.second.updated || strict_variant::apply_visitor(is_updated{}, c.second.value))
+            if (((c.second.updated & api_backend_flag) != 0) || strict_variant::apply_visitor(is_updated{api_backend_flag}, c.second.value))
                 return true;
         }
         return false;
     }
+    uint8_t api_backend_flag;
 };
 
 struct set_updated_false {
@@ -492,17 +493,18 @@ struct set_updated_false {
     void operator()(Config::ConfArray &x)
     {
         for (Config &c : x.value) {
-            c.updated = false;
-            strict_variant::apply_visitor(set_updated_false{}, c.value);
+            c.updated &= ~api_backend_flag;
+            strict_variant::apply_visitor(set_updated_false{api_backend_flag}, c.value);
         }
     }
     void operator()(Config::ConfObject &x)
     {
         for (std::pair<String, Config> &c : x.value) {
-            c.second.updated = false;
-            strict_variant::apply_visitor(set_updated_false{}, c.second.value);
+            c.second.updated &= ~api_backend_flag;
+            strict_variant::apply_visitor(set_updated_false{api_backend_flag}, c.second.value);
         }
     }
+    uint8_t api_backend_flag;
 };
 
 Config Config::Str(String s,
@@ -796,14 +798,14 @@ void Config::write_to_stream_except(Print &output, const std::vector<String> &ke
     serializeJson(doc, output);
 }
 
-bool Config::was_updated() {
-    return updated || strict_variant::apply_visitor(is_updated{}, value);
+bool Config::was_updated(uint8_t api_backend_flag) {
+    return ((updated & api_backend_flag) != 0) || strict_variant::apply_visitor(is_updated{api_backend_flag}, value);
 }
 
-void Config::set_update_handled()
+void Config::set_update_handled(uint8_t api_backend_flag)
 {
     updated = false;
-    strict_variant::apply_visitor(set_updated_false{}, value);
+    strict_variant::apply_visitor(set_updated_false{api_backend_flag}, value);
 }
 
 Config *Config::ConfObject::get(String s)
@@ -853,7 +855,6 @@ const Config *Config::ConfArray::get(uint16_t i) const
 
 String ConfigRoot::update_from_file(File file)
 {
-
     DynamicJsonDocument doc(this->json_size());
     DeserializationError error = deserializeJson(doc, file);
     if (error)

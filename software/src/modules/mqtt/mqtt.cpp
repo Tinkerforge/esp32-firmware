@@ -122,9 +122,10 @@ void Mqtt::publish(String payload, String path)
     esp_mqtt_client_publish(this->client, topic.c_str(), payload.c_str(), payload.length(), 0, true/*, false*/);
 }
 
-void Mqtt::pushStateUpdate(String payload, String path)
+bool Mqtt::pushStateUpdate(String payload, String path)
 {
     this->publish(payload, path);
+    return true;
 }
 
 void Mqtt::wifiAvailable()

@@ -119,9 +119,9 @@ void Http::addRawCommand(const RawCommandRegistration &reg)
     });
 }
 
-void Http::pushStateUpdate(String payload, String path)
+bool Http::pushStateUpdate(String payload, String path)
 {
-
+    return true;
 }
 
 void Http::wifiAvailable()

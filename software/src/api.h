@@ -56,7 +56,7 @@ public:
     virtual void addCommand(const CommandRegistration &reg) = 0;
     virtual void addState(const StateRegistration &reg) = 0;
     virtual void addRawCommand(const RawCommandRegistration &reg) = 0;
-    virtual void pushStateUpdate(String payload, String path) = 0;
+    virtual bool pushStateUpdate(String payload, String path) = 0;
     virtual void wifiAvailable() = 0;
 };
 

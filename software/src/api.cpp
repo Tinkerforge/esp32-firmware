@@ -49,16 +49,16 @@ void API::setup()
 
             reg.last_update = millis();
 
-            if (!reg.config->was_updated()) {
+            // If the config was not updated for any API, we don't have to serialize the payload.
+            if (!reg.config->was_updated(0xFF)) {
                 continue;
             }
 
-            reg.config->set_update_handled();
-
             String payload = reg.config->to_string_except(reg.keys_to_censor);
 
-            for (auto *backend: this->backends) {
-                backend->pushStateUpdate(payload, reg.path);
+            for (int i = 0; i < this->backends.size(); ++i) {
+                if (this->backends[i]->pushStateUpdate(payload, reg.path))
+                    reg.config->set_update_handled(1 << i);
             }
         }
     }, 250, 250);

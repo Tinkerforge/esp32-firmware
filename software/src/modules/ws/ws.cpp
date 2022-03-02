@@ -84,10 +84,10 @@ static size_t prefix_len = strlen(prefix);
 static size_t infix_len = strlen(infix);
 static size_t suffix_len = strlen(suffix);
 
-void WS::pushStateUpdate(String payload, String path)
+bool WS::pushStateUpdate(String payload, String path)
 {
     if (!web_sockets.haveActiveClient())
-        return;
+        return true;
     //String to_send = String("{\"topic\":\"") + path + String("\",\"payload\":") + payload + String("}\n");
     size_t path_len = path.length();
     size_t payload_len = payload.length();
@@ -95,7 +95,7 @@ void WS::pushStateUpdate(String payload, String path)
     size_t to_send_len = prefix_len + path_len + infix_len + payload_len + suffix_len;
     char *to_send = (char *)malloc(to_send_len);
     if (to_send == nullptr)
-        return;
+        return false;
 
     char *ptr = to_send;
     memcpy(ptr, prefix, prefix_len);
@@ -114,6 +114,8 @@ void WS::pushStateUpdate(String payload, String path)
     ptr += suffix_len;
 
     web_sockets.sendToAllOwned(to_send, to_send_len);
+
+    return true;
 }
 
 void WS::wifiAvailable()

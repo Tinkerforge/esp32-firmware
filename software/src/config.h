@@ -117,10 +117,10 @@ struct Config {
     > ConfVariant;
 
     ConfVariant value;
-    bool updated;
+    uint8_t updated;
 
-    bool was_updated();
-    void set_update_handled();
+    bool was_updated(uint8_t api_backend_flag);
+    void set_update_handled(uint8_t api_backend_flag);
 
     template<typename T>
     static int type_id()

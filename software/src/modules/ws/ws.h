@@ -33,7 +33,7 @@ public:
     void addCommand(const CommandRegistration &reg);
     void addState(const StateRegistration &reg);
     void addRawCommand(const RawCommandRegistration &reg);
-    void pushStateUpdate(String payload, String path);
+    bool pushStateUpdate(String payload, String path);
     void wifiAvailable();
 
     bool initialized = false;
