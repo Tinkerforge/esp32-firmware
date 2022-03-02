@@ -5,7 +5,8 @@ export interface config {
     broker_username: string,
     broker_password: string,
     global_topic_prefix: string
-    client_name: string
+    client_name: string,
+    interval: number
 }
 
 export interface state {

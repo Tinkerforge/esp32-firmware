@@ -40,6 +40,11 @@ struct MqttCommand {
     bool forbid_retained;
 };
 
+struct MqttState {
+    String topic;
+    uint32_t last_send_ms;
+};
+
 class Mqtt : public IAPIBackend {
 public:
     Mqtt();
@@ -70,5 +75,6 @@ public:
     ConfigRoot mqtt_config_in_use;
 
     std::vector<MqttCommand> commands;
+    std::vector<MqttState> states;
     esp_mqtt_client_handle_t client;
 };

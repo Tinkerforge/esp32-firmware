@@ -46,7 +46,8 @@ Mqtt::Mqtt()
         {"broker_username", Config::Str("", 0, 64)},
         {"broker_password", Config::Str("", 0, 64)},
         {"global_topic_prefix", Config::Str(String(BUILD_HOST_PREFIX) + String("/") + String("ABC"), 0, 64)},
-        {"client_name", Config::Str(String(BUILD_HOST_PREFIX) + String("-") + String("ABC"), 1, 64)}
+        {"client_name", Config::Str(String(BUILD_HOST_PREFIX) + String("-") + String("ABC"), 1, 64)},
+        {"interval", Config::Uint32(1000)}
     });
 
     mqtt_state = Config::Object({
@@ -97,7 +98,7 @@ void Mqtt::addCommand(const CommandRegistration &reg)
 
 void Mqtt::addState(const StateRegistration &reg)
 {
-
+    this->states.push_back({reg.path, 0});
 }
 
 void Mqtt::addRawCommand(const RawCommandRegistration &reg)
@@ -124,7 +125,18 @@ void Mqtt::publish(String payload, String path)
 
 bool Mqtt::pushStateUpdate(String payload, String path)
 {
-    this->publish(payload, path);
+    for(auto &state : this->states) {
+        if (path != state.topic)
+            continue;
+
+        if (!deadline_elapsed(state.last_send_ms + mqtt_config_in_use.get("interval")->asUint()))
+            return false;
+
+        this->publish(payload, path);
+        state.last_send_ms = millis();
+        return true;
+    }
+
     return true;
 }
 
