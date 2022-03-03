@@ -40,6 +40,7 @@ public:
     void endCharge(uint32_t charge_duration_seconds, float meter_end);
     void removeOldRecords();
     bool setupRecords();
+    void updateState();
 
     size_t completeRecordsInLastFile();
     bool currentlyCharging();
@@ -48,6 +49,7 @@ public:
 
     ConfigRoot last_charges;
     ConfigRoot current_charge;
+    ConfigRoot state;
 
     std::mutex records_mutex;
 };

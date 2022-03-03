@@ -47,7 +47,7 @@ static_assert(CHARGE_RECORD_SIZE == 16, "Unexpected size of ChargeStart + Charge
 #define CHARGE_RECORD_FILE_COUNT 30
 #define CHARGE_RECORD_MAX_FILE_SIZE 4096
 
-#define CHARGE_RECORD_LAST_CHARGES_SIZE 5
+#define CHARGE_RECORD_LAST_CHARGES_SIZE 30
 
 ChargeTracker::ChargeTracker()
 {
@@ -65,6 +65,11 @@ ChargeTracker::ChargeTracker()
         {"evse_uptime_start", Config::Uint32(0)},
         {"timestamp_minutes", Config::Uint32(0)}
     });
+
+    state = Config::Object({
+        {"tracked_charges", Config::Uint16(0)},
+        {"first_charge_timestamp", Config::Uint32(0)}
+    });
 }
 
 String ChargeTracker::chargeRecordFilename(uint32_t i) {
@@ -80,8 +85,10 @@ void ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, u
         ++this->last_charge_record;
         String new_file_name = chargeRecordFilename(this->last_charge_record);
         logger.printfln("Last charge record file %s is full. Creating the new file %s", file.name(), new_file_name.c_str());
+        file.close();
 
         removeOldRecords();
+        updateState();
 
         file = LittleFS.open(new_file_name, "w", true);
     }
@@ -144,6 +151,8 @@ void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end)
     current_charge.get("meter_start")->updateFloat(0);
     current_charge.get("evse_uptime_start")->updateUint(0);
     current_charge.get("timestamp_minutes")->updateUint(0);
+
+    updateState();
 }
 
 void ChargeTracker::removeOldRecords()
@@ -231,6 +240,7 @@ bool ChargeTracker::setupRecords() {
         return false;
     }
 
+
     this->first_charge_record = first;
     this->last_charge_record = last;
 
@@ -251,14 +261,13 @@ bool ChargeTracker::currentlyCharging()
 }
 
 void ChargeTracker::readNRecords(File *f, size_t records_to_read) {
-    uint8_t buf[CHARGE_RECORD_SIZE] = {0};
+    uint8_t buf[CHARGE_RECORD_SIZE];
     ChargeStart cs;
     ChargeEnd ce;
 
     for(int i = 0; i < records_to_read; ++i) {
-        int read = f->read(buf, CHARGE_RECORD_SIZE);
-        if (read != CHARGE_RECORD_SIZE)
-            logger.printfln("Halp plox");
+        memset(buf, 0, sizeof(buf));
+        f->read(buf, CHARGE_RECORD_SIZE);
 
         memcpy(&cs, buf, sizeof(cs));
         memcpy(&ce, buf + sizeof(cs), sizeof(ce));
@@ -271,6 +280,23 @@ void ChargeTracker::readNRecords(File *f, size_t records_to_read) {
     }
 }
 
+void ChargeTracker::updateState() {
+    auto records = this->last_charge_record - this->first_charge_record + 1;
+    state.get("tracked_charges")->updateUint((records - 1) * (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE) + completeRecordsInLastFile());
+
+    File f = LittleFS.open(chargeRecordFilename(this->first_charge_record));
+    ChargeStart cs;
+    if (f.size() >= sizeof(cs)) {
+        uint8_t buf[sizeof(cs)];
+
+        memset(buf, 0, sizeof(buf));
+        f.read(buf, sizeof(cs));
+
+        memcpy(&cs, buf, sizeof(cs));
+        state.get("first_charge_timestamp")->updateUint(cs.timestamp_minutes);
+    }
+}
+
 void ChargeTracker::setup()
 {
     initialized = this->setupRecords();
@@ -278,6 +304,7 @@ void ChargeTracker::setup()
         return;
     }
 
+    // Fill charge_tracker/last_charges
     bool charging = currentlyCharging();
     size_t records_in_last_file = completeRecordsInLastFile();
 
@@ -290,10 +317,13 @@ void ChargeTracker::setup()
     }
 
     size_t records_to_read = min(records_in_last_file, (size_t)CHARGE_RECORD_LAST_CHARGES_SIZE);
-    File f = LittleFS.open(chargeRecordFilename(this->last_charge_record));
-    f.seek(-(records_to_read * CHARGE_RECORD_SIZE) - (charging ? sizeof(ChargeStart) : 0), SeekMode::SeekEnd);
+    {
+        File f = LittleFS.open(chargeRecordFilename(this->last_charge_record));
+        f.seek(-(records_to_read * CHARGE_RECORD_SIZE) - (charging ? sizeof(ChargeStart) : 0), SeekMode::SeekEnd);
+        this->readNRecords(&f, records_to_read);
+    }
 
-    this->readNRecords(&f, records_to_read);
+    updateState();
 }
 
 void ChargeTracker::register_urls()
@@ -325,6 +355,7 @@ void ChargeTracker::register_urls()
 
     api.addState("charge_tracker/last_charges", &last_charges, {}, 1000);
     api.addState("charge_tracker/current_charge", &current_charge, {}, 1000);
+    api.addState("charge_tracker/state", &state, {}, 1000);
 }
 
 void ChargeTracker::loop()
