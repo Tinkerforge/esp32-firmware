@@ -21,7 +21,7 @@
             "user_filter_muted": "CSV-Datei wird nur Ladungen des ausgewählten Benutzers beinhalten",
 
             "date_filter": "Zeitfilter",
-            "date_filter_muted": "CSV-Datei wird nur Ladungen ab dem ausgewählten Datum beinhalten",
+            "date_filter_muted": "CSV-Datei wird nur Ladungen in der ausgewählten Zeitspanne beinhalten",
             "from": "von",
             "to": "bis",
             "last_charges": "Letzte Ladevorgänge",
