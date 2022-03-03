@@ -453,11 +453,11 @@ export function init() {
     // We have to create the chart then, to make sure it is scaled correctly.
     // Immediately deregister afterwards, as we don't want to recreate the chart
     // every time.
-    $('#sidebar-meter', '#energy-manager-meter-configuration-sdm630-details').on('shown.bs.tab', function (e) {
+    $('#sidebar-meter, #energy-manager-meter-configuration-sdm630-details').on('shown.bs.tab', function (e) {
         init_chart();
     });
 
-    $('#sidebar-meter', '#energy-manager-meter-configuration-sdm630-details').on('hidden.bs.tab', function (e) {
+    $('#sidebar-meter, #energy-manager-meter-configuration-sdm630-details').on('hidden.bs.tab', function (e) {
         if (graph_update_interval != null) {
             clearInterval(graph_update_interval);
             graph_update_interval = null;
