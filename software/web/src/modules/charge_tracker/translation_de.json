@@ -9,9 +9,9 @@
         },
         "content": {
             "charge_tracker": "Ladetracker",
-            "charge_tracker_download": "Ladelog herunterladen",
-            "charge_tracker_download_desc": "eine CSV-Datei aller aufgezeichneten Ladevorgänge",
-            "charge_tracker_download_btn": "Ladelog herunterladen",
+            "download": "Ladelog herunterladen",
+            "download_desc": "eine CSV-Datei aller aufgezeichneten Ladevorgänge",
+            "download_btn": "Ladelog herunterladen",
 
             "tracked_charges": "Aufgezeichnete Ladungen",
             "tracked_charges_muted": "",
@@ -23,7 +23,9 @@
             "date_filter": "Zeitfilter",
             "date_filter_muted": "CSV-Datei wird nur Ladungen ab dem ausgewählten Datum beinhalten",
             "from": "von",
-            "to": "bis"
+            "to": "bis",
+            "last_charges": "Letzte Ladevorgänge",
+            "last_charges_desc": ""
         },
         "script": {
             "csv_header_start": "Startzeit",
