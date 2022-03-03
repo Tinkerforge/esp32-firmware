@@ -357,7 +357,7 @@ function debug_stop() {
                             debug_log += result + "\n";
                             status.value = __("evse.script.debug_done");
 
-                            util.downloadToFile(debug_log, "evse-debug-log-" + (new Date()).toISOString().replace(/:/gi, "-").replace(/\./gi, "-") + ".txt", "text/plain");
+                            util.downloadToFile(debug_log, "evse-debug-log", "txt", "text/plain");
                         });
                 });
         });

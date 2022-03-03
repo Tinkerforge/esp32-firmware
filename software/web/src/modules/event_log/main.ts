@@ -74,7 +74,7 @@ export function init() {
                         .done((result) => {
                             util.remove_alert("debug_report_load_failed");
                             debug_log += result + "\n";
-                            util.downloadToFile(debug_log, "debug-report-" + t + ".txt", "text/plain");
+                            util.downloadToFile(debug_log, "debug-report", "txt", "text/plain");
                             window.clearTimeout(timeout);
                             $('#debug_report_spinner').prop("hidden", true);
                         });

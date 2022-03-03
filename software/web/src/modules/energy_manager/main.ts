@@ -245,7 +245,7 @@ function debug_stop() {
                             debug_log += result + "\n";
                             status.value = __("energy_manager.script.debug_done");
 
-                            util.downloadToFile(debug_log, "energy_manager-debug-log-" + (new Date()).toISOString().replace(/:/gi, "-").replace(/\./gi, "-") + ".txt", "text/plain");
+                            util.downloadToFile(debug_log, "energy_manager-debug-log", "txt", "text/plain");
                         });
                 });
         });
