@@ -481,7 +481,7 @@ bool Users::trigger_charge_action(uint8_t user_id)
     uint32_t tscs = 0;
     #ifdef MODULE_EVSE_V2_AVAILABLE
         iec_state = evse_v2.evse_state.get("iec61851_state")->asUint();
-        tscs = evse_v2.evse_low_level_state.get("time_since_state_chage")->asUint();
+        tscs = evse_v2.evse_low_level_state.get("time_since_state_change")->asUint();
     #endif
 
     switch (iec_state) {
