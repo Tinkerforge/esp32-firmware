@@ -144,7 +144,7 @@ async function downloadChargeLog() {
             let start_date = start_s == "" ? new Date(0) : new Date(start_s);
             let start = start_date.getTime() / 1000 / 60;
 
-            let end_date = start_s == "" ? new Date(Date.now()) : new Date(end_s);
+            let end_date = end_s == "" ? new Date(Date.now()) : new Date(end_s);
             end_date.setHours(23, 59, 59, 999);
             let end = end_date.getTime() / 1000 / 60;
 
