@@ -13,3 +13,8 @@ export interface current_charge {
     evse_uptime_start: number,
     timestamp_minutes: number
 }
+
+export interface state {
+    tracked_charges: number,
+    first_charge_timestamp: number,
+}

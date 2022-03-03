@@ -61,30 +61,39 @@ function update_last_charges() {
     let charges = API.get('charge_tracker/last_charges');
     let users_config = API.get('users/config');
 
-    $('#charge_tracker_last_charges').html(charges.map((user) => {
-            let display_name = __("charge_tracker.script.unknown_user")
+    let last_charges_html = charges.map((user) => {
+        let display_name = __("charge_tracker.script.unknown_user")
 
-            if (user.user_id != 0) {
-                display_name = __("charge_tracker.script.deleted_user")
-                let filtered = users_config.users.filter(x => x.id == user.user_id);
-                if (filtered.length == 1)
-                    display_name = filtered[0].display_name
-            }
+        if (user.user_id != 0) {
+            display_name = __("charge_tracker.script.deleted_user")
+            let filtered = users_config.users.filter(x => x.id == user.user_id);
+            if (filtered.length == 1)
+                display_name = filtered[0].display_name
+        }
 
-            return `<div class="list-group-item">
-            <div class="row">
-                <div class="col">
-                    <div class="mb-2"><span class="mr-1" data-feather="user"></span><span style="vertical-align: middle;">${display_name}</span></div>
-                    <div><span class="mr-1" data-feather="calendar"></span><span style="vertical-align: middle;">${timestamp_min_to_date(user.timestamp_minutes)}</span></div>
-                </div>
-                <div class="col-auto">
-                    <div class="mb-2"><span class="mr-1" data-feather="battery-charging"></span><span style="vertical-align: middle;">${user.energy_charged === null ? "N/A" : util.toLocaleFixed(user.energy_charged, 3)} kWh</span></div>
-                    <div><span class="mr-1" data-feather="clock"></span><span style="vertical-align: middle;">${util.format_timespan(user.charge_duration)}</span></div>
-                </div>
+        return `<div class="list-group-item">
+        <div class="row">
+            <div class="col">
+                <div class="mb-2"><span class="mr-1" data-feather="user"></span><span style="vertical-align: middle;">${display_name}</span></div>
+                <div><span class="mr-1" data-feather="calendar"></span><span style="vertical-align: middle;">${timestamp_min_to_date(user.timestamp_minutes)}</span></div>
             </div>
-            </div>`
-        }).join(""));
+            <div class="col-auto">
+                <div class="mb-2"><span class="mr-1" data-feather="battery-charging"></span><span style="vertical-align: middle;">${user.energy_charged === null ? "N/A" : util.toLocaleFixed(user.energy_charged, 3)} kWh</span></div>
+                <div><span class="mr-1" data-feather="clock"></span><span style="vertical-align: middle;">${util.format_timespan(user.charge_duration)}</span></div>
+            </div>
+        </div>
+        </div>`
+    }).reverse();
+
+    $('#charge_tracker_status_last_charges').html(last_charges_html.slice(0, 3).join(""));
+    $('#charge_tracker_last_charges').html(last_charges_html.join(""))
     feather.replace();
+}
+
+function update_state() {
+    let state = API.get('charge_tracker/state');
+    $('#charge_tracker_tracked_charges').val(state.tracked_charges);
+    $('#charge_tracker_first_charge_timestamp').val(timestamp_min_to_date(state.first_charge_timestamp));
 }
 
 function to_csv_line(vals: string[]) {
@@ -125,39 +134,77 @@ async function downloadChargeLog() {
                 __("charge_tracker.script.csv_header_meter_end"),
             ];
 
-            let result = to_csv_line(line);
+            let header = to_csv_line(line);
+            let result = header;
             let users_config = API.get('users/config');
 
-            for(let i = 0; i < buffer.byteLength; i += 16) {
-                let view = new DataView(buffer, i, 16);
+            let start_s = $('#charge_tracker_start_date_filter').val().toString();
+            let end_s = $('#charge_tracker_end_date_filter').val().toString();
 
-                let timestamp_minutes = view.getUint32(0, true);
-                let meter_start = view.getFloat32(4, true);
-                let user_id = view.getUint8(8);
-                let charge_duration = view.getUint32(9, true) & 0x00FFFFFF;
-                let meter_end = view.getFloat32(12, true);
+            let start_date = start_s == "" ? new Date(0) : new Date(start_s);
+            let start = start_date.getTime() / 1000 / 60;
 
-                let filtered = users_config.users.filter(x => x.id == user_id);
+            let end_date = start_s == "" ? new Date(Date.now()) : new Date(end_s);
+            end_date.setHours(23, 59, 59, 999);
+            let end = end_date.getTime() / 1000 / 60;
 
-                let display_name = "";
-                if (user_id == 0)
-                    display_name = __("charge_tracker.script.unknown_user");
-                else if (filtered.length == 1)
-                    display_name = filtered[0].display_name
-                else
-                    display_name = users[user_id];
+            let known_users = API.get('users/config').users.filter(u => u.id != 0).map(u => u.id);
 
-                let line = [
-                    timestamp_min_to_date(timestamp_minutes),
-                    display_name,
-                    (Number.isNaN(meter_start) || Number.isNaN(meter_end)) ? 'N/A' : util.toLocaleFixed(meter_end - meter_start, 3),
-                    charge_duration.toString(),
-                    "",
-                    Number.isNaN(meter_start) ? 'N/A' : util.toLocaleFixed(meter_start, 3),
-                    Number.isNaN(meter_end) ? 'N/A' : util.toLocaleFixed(meter_end, 3)
-                ];
+            let user_filter = parseInt($('#charge_tracker_user_filter').val().toString());
+            let user_filtered = (x: number) => {
+                switch(user_filter) {
+                    case -2:
+                        return false;
+                    case -1:
+                        return !known_users.includes(x);
+                    default:
+                        return x != user_filter;
+                }
+            }
 
-                result += to_csv_line(line);
+            if (start <= end) {
+                for(let i = 0; i < buffer.byteLength; i += 16) {
+                    let view = new DataView(buffer, i, 16);
+
+                    let timestamp_minutes = view.getUint32(0, true);
+                    let meter_start = view.getFloat32(4, true);
+                    let user_id = view.getUint8(8);
+                    let charge_duration = view.getUint32(9, true) & 0x00FFFFFF;
+                    let meter_end = view.getFloat32(12, true);
+
+                    if (timestamp_minutes != 0 && timestamp_minutes < start) {
+                        result = header;
+                        continue;
+                    }
+
+                    if (timestamp_minutes != 0 && timestamp_minutes > end)
+                        break;
+
+                    if (user_filtered(user_id))
+                        continue;
+
+                    let filtered = users_config.users.filter(x => x.id == user_id);
+
+                    let display_name = "";
+                    if (user_id == 0)
+                        display_name = __("charge_tracker.script.unknown_user");
+                    else if (filtered.length == 1)
+                        display_name = filtered[0].display_name
+                    else
+                        display_name = users[user_id];
+
+                    let line = [
+                        timestamp_min_to_date(timestamp_minutes),
+                        display_name,
+                        (Number.isNaN(meter_start) || Number.isNaN(meter_end)) ? 'N/A' : util.toLocaleFixed(meter_end - meter_start, 3),
+                        charge_duration.toString(),
+                        "",
+                        Number.isNaN(meter_start) ? 'N/A' : util.toLocaleFixed(meter_start, 3),
+                        Number.isNaN(meter_end) ? 'N/A' : util.toLocaleFixed(meter_end, 3)
+                    ];
+
+                    result += to_csv_line(line);
+                }
             }
 
             let t = (new Date()).toISOString().replace(/:/gi, "-").replace(/\./gi, "-");
@@ -192,6 +239,14 @@ function update_current_charge() {
     $('#users_status_charging_start').html(timestamp_min_to_date(cc.timestamp_minutes));
 }
 
+function update_user_filter_dropdown() {
+    let uc = API.get('users/config');
+
+    let options = uc.users.map((x) => `<option value=${x.id}>${x.id == 0 ? __("charge_tracker.script.unknown_users") : x.display_name}</option>`);
+    options.unshift(`<option value=-2>${__("charge_tracker.script.all_users")}</option>`, `<option value=-1>${__("charge_tracker.script.deleted_users")}</option>`);
+    $('#charge_tracker_user_filter').empty().append(options.join(""));
+}
+
 export function init() {
     $('#charge_tracker_download').on("click", () =>{
         $('#charge_tracker_download_spinner').prop("hidden", false);
@@ -206,6 +261,9 @@ export function addEventListeners(source: API.ApiEventTarget) {
     source.addEventListener('evse/low_level_state', update_current_charge);
     source.addEventListener('meter/values', update_current_charge);
     source.addEventListener('users/config', update_current_charge);
+    source.addEventListener('users/config', update_user_filter_dropdown);
+
+    source.addEventListener('charge_tracker/state', update_state);
 }
 
 export function updateLockState(module_init: any) {
