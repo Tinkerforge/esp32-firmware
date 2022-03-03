@@ -25,7 +25,7 @@
             "from": "from",
             "to": "to",
             "last_charges": "Last charges",
-            "last_charges_desc": ""
+            "last_charges_desc": "The last 30 charges are shown."
         },
         "script": {
             "csv_header_start": "Start time",

@@ -25,7 +25,7 @@
             "from": "von",
             "to": "bis",
             "last_charges": "Letzte Ladevorgänge",
-            "last_charges_desc": ""
+            "last_charges_desc": "Die letzten 30 Ladevorgänge werden angezeigt."
         },
         "script": {
             "csv_header_start": "Startzeit",
