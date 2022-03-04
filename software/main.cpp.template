@@ -30,7 +30,6 @@
 #include "event_log.h"
 #include "task_scheduler.h"
 #include "web_server.h"
-#include "build.h"
 #include "build_timestamp.h"
 
 const char* DISPLAY_NAME = "{{{display_name}}}";
@@ -59,7 +58,6 @@ bool factory_reset_requested = false;
 ConfigRoot version;
 ConfigRoot modules;
 ConfigRoot reboot;
-ConfigRoot name;
 
 bool firmware_update_allowed = true;
 
@@ -98,7 +96,6 @@ static void register_default_urls(void) {
 
     api.addState("version", &version, {}, 10000);
     api.addState("modules", &modules, {}, 10000);
-    api.addState("name", &name, {}, 10000);
 
     server.on("/force_reboot", HTTP_GET, [](WebServerRequest request) {
         ESP.restart();
@@ -174,12 +171,6 @@ void setup(void) {
         // Fake that the event_log is a module for now.
         {"event_log", Config::Bool(true)},
         {{{module_init_config}}}
-    });
-
-    name = Config::Object({
-        {"name", Config::Str(String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str))},
-        {"type", Config::Str(BUILD_HOST_PREFIX)},
-        {"uid", Config::Str(local_uid_str)}
     });
 
     server.start();

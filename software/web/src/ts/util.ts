@@ -318,7 +318,7 @@ export function downloadToFile(content: BlobPart, filename_prefix: string, exten
     const a = document.createElement('a');
     const file = new Blob([content], {type: contentType});
     let t = iso8601ButLocal(new Date()).replace(/:/gi, "-").replace(/\./gi, "-");
-    let uid = API.get("name").name;
+    let uid = API.get("name/state").name;
 
     a.href= URL.createObjectURL(file);
     a.download = filename_prefix + "-" + uid + "-" + t + "." + extension;
