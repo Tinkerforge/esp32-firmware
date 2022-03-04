@@ -63,6 +63,8 @@ NTP::NTP()
 
 void NTP::setup()
 {
+    initialized = true;
+
     api.restorePersistentConfig("ntp/config", &config);
 
     if (!config.get("enable")->asBool())
@@ -78,6 +80,9 @@ void NTP::setup()
         sntp_stop();
     }
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
+    if (config.get("server")->asString() != "")
+        sntp_setservername(0, config.get("server")->asCStr());
+
     sntp_init();
     setenv("TZ", "CET-1CEST,M3.5.0,M10.5.0/3", 1);
     tzset();
