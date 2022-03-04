@@ -80,6 +80,8 @@ public:
 
     void addRawCommand(String path, std::function<String(char *, size_t)> callback, bool is_action);
 
+    bool hasFeature(const char *name);
+
     static void writeConfig(String path, ConfigRoot *config);
 
     void blockCommand(String path, String reason);

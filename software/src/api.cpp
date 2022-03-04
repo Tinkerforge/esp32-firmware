@@ -125,6 +125,14 @@ void API::addRawCommand(String path, std::function<String(char *, size_t)> callb
     }
 }
 
+bool API::hasFeature(const char *name)
+{
+    for(int i = 0; i < features.count(); ++i)
+        if (features.get(i)->asString() == name)
+            return true;
+    return false;
+}
+
 void API::writeConfig(String path, ConfigRoot *config) {
     String path_copy = path;
     path_copy.replace('/', '_');
