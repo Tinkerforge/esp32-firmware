@@ -43,6 +43,7 @@ function update_mqtt_config() {
     // omit password
     $('#mqtt_topic_prefix').val(config.global_topic_prefix);
     $('#mqtt_client_name').val(config.client_name);
+    $('#mqtt_interval').val(config.interval);
 }
 
 function save_mqtt_config() {
@@ -54,6 +55,7 @@ function save_mqtt_config() {
             broker_password: util.passwordUpdate('#mqtt_broker_password'),
             global_topic_prefix: $('#mqtt_topic_prefix').val().toString(),
             client_name: $('#mqtt_client_name').val().toString(),
+            interval: parseInt($('#mqtt_interval').val().toString(), 10)
         },
         __("mqtt.script.save_failed"),
         __("mqtt.script.reboot_content_changed"));

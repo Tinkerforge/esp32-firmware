@@ -87,10 +87,6 @@
                     </div>
 
                     <div class="tab-pane fade" role="tabpanel" aria-labelledby="sidebar-status" id="status">
-                        <div
-                            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                            <h1 class="h2" data-i18n="main.content_status"></h1>
-                        </div>
                         {{{status}}}
                     </div>
 

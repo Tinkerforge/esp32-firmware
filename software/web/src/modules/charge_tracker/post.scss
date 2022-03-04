@@ -1,0 +1,42 @@
+
+@media (max-width: 768px) {
+    #charge-tracker span.input-group-text {
+        min-width: 3.25em;
+    }
+}
+
+@media (min-width: 768px) {
+    #charge-tracker span.input-group-text {
+        min-width: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .charge-tracker-input-group-append {
+        margin-left: 0px;
+    }
+
+    .charge-tracker-input-group-prepend {
+        margin-right: 0px;
+    }
+}
+
+@media (min-width: 768px) {
+    .charge-tracker-input-group-append {
+        margin-left: -1px;
+    }
+
+    .charge-tracker-input-group-append .input-group-text {
+        border-bottom-left-radius: 0;
+        border-top-left-radius: 0;
+    }
+
+    .charge-tracker-input-group-prepend {
+        margin-right: -1px;
+    }
+
+    .charge-tracker-input-group-prepend .input-group-text {
+        border-bottom-right-radius: 0;
+        border-top-right-radius: 0;
+    }
+}

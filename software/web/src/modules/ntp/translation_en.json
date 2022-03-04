@@ -1,0 +1,21 @@
+{
+    "ntp": {
+        "navbar": {
+            "ntp": "Time synchronization"
+        },
+        "content": {
+            "ntp": "Time synchronization",
+            "enable": "Time synchronization enabled",
+            "enable_desc": "Synchronizes the interal clock over the network (NTP)",
+            "use_dhcp": "Use DHCP",
+            "use_dhcp_desc": "uses time servers that were set via DHCP",
+            "timezone": "Time zone (not yet configurable)",
+            "server": "Time server",
+            "save": "Save"
+        },
+        "script": {
+            "save_failed": "Failed to save the Time synchronization configuration.",
+            "reboot_content_changed": "Time synchronization settings"
+        }
+    }
+}

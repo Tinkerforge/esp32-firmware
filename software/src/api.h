@@ -53,16 +53,17 @@ struct RawCommandRegistration {
 
 class IAPIBackend {
 public:
-    virtual void addCommand(const CommandRegistration &reg) = 0;
-    virtual void addState(const StateRegistration &reg) = 0;
-    virtual void addRawCommand(const RawCommandRegistration &reg) = 0;
-    virtual void pushStateUpdate(String payload, String path) = 0;
+    virtual void addCommand(size_t commandIdx, const CommandRegistration &reg) = 0;
+    virtual void addState(size_t stateIdx, const StateRegistration &reg) = 0;
+    virtual void addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg) = 0;
+    virtual bool pushStateUpdate(size_t stateIdx, String payload, String path) = 0;
+    virtual void pushRawStateUpdate(String payload, String path) = 0;
     virtual void wifiAvailable() = 0;
 };
 
 class API {
 public:
-    API() {}
+    API();
 
     void setup();
     void loop();
@@ -71,6 +72,7 @@ public:
 
     Config *getState(String path, bool log_if_not_found = true);
 
+    void addFeature(const char *name);
     void addCommand(String path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(void)> callback, bool is_action);
     void addState(String path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms);
     bool addPersistentConfig(String path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms);
@@ -78,11 +80,13 @@ public:
 
     void addRawCommand(String path, std::function<String(char *, size_t)> callback, bool is_action);
 
+    bool hasFeature(const char *name);
+
     static void writeConfig(String path, ConfigRoot *config);
 
     void blockCommand(String path, String reason);
     void unblockCommand(String path);
-    String getCommandBlockedReason(String path);
+    String getCommandBlockedReason(size_t commandIdx);
 
     bool restorePersistentConfig(String path, ConfigRoot *config);
 
@@ -97,6 +101,8 @@ public:
     std::vector<RawCommandRegistration> raw_commands;
 
     std::vector<IAPIBackend *> backends;
+
+    ConfigRoot features;
 
 private:
     bool already_registered(const String &path, const char *api_type);

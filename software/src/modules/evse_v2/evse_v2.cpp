@@ -330,7 +330,11 @@ void EVSEV2::setup()
     if (!device_found)
         return;
 
-    task_scheduler.scheduleWithFixedDelay("update_all_data", [this](){
+    api.addFeature("evse");
+    api.addFeature("cp_disconnect");
+    api.addFeature("button_config");
+
+    task_scheduler.scheduleWithFixedDelay([this](){
         update_all_data();
     }, 0, 250);
 }
@@ -614,7 +618,7 @@ void EVSEV2::register_urls()
         set_managed_current(current);
     });
 
-    task_scheduler.scheduleWithFixedDelay("evse_send_cm_networking_client", [this](){
+    task_scheduler.scheduleWithFixedDelay([this](){
         uint16_t supported_current = 32000;
         for(int i = 0; i < CHARGING_SLOT_COUNT; ++i) {
             if (i == CHARGING_SLOT_CHARGE_MANAGER)
@@ -636,7 +640,7 @@ void EVSEV2::register_urls()
         );
     }, 1000, 1000);
 
-    task_scheduler.scheduleWithFixedDelay("evse_managed_current_watchdog", [this]() {
+    task_scheduler.scheduleWithFixedDelay([this]() {
         if (!deadline_elapsed(this->last_current_update + 30000))
             return;
         if (!evse_management_enabled.get("enabled")->asBool()) {
@@ -677,15 +681,15 @@ void EVSEV2::register_urls()
 
 #ifdef MODULE_WS_AVAILABLE
     server.on("/evse/start_debug", HTTP_GET, [this](WebServerRequest request) {
-        task_scheduler.scheduleOnce("enable evse debug", [this](){
-            ws.pushStateUpdate(this->get_evse_debug_header(), "evse/debug_header");
+        task_scheduler.scheduleOnce([this](){
+            ws.pushRawStateUpdate(this->get_evse_debug_header(), "evse/debug_header");
             debug = true;
         }, 0);
         request.send(200);
     });
 
     server.on("/evse/stop_debug", HTTP_GET, [this](WebServerRequest request){
-        task_scheduler.scheduleOnce("enable evse debug", [this](){
+        task_scheduler.scheduleOnce([this](){
             debug = false;
         }, 0);
         request.send(200);
@@ -704,9 +708,9 @@ void EVSEV2::register_urls()
         is_in_bootloader(tf_evse_v2_set_charging_slot_clear_on_disconnect(&device, CHARGING_SLOT_EXTERNAL, evse_external_clear_on_disconnect_update.get("clear_on_disconnect")->asBool()));
     }, false);
 
-
-    api.addCommand("evse/management_current_update", &evse_management_current, {}, [this](){
-        this->set_managed_current(evse_management_current.get("current")->asUint());
+    api.addState("evse/management_current", &evse_management_current, {}, 1000);
+    api.addCommand("evse/management_current_update", &evse_management_current_update, {}, [this](){
+        this->set_managed_current(evse_management_current_update.get("current")->asUint());
     }, false);
 
 
@@ -803,6 +807,7 @@ void EVSEV2::register_urls()
             this->apply_slot_default(CHARGING_SLOT_USER, 32000, false, false);
     }, false);
 
+    api.addState("evse/external_enabled", &evse_external_enabled, {}, 1000);
     api.addCommand("evse/external_enabled_update", &evse_external_enabled_update, {}, [this](){
         bool enabled = evse_external_enabled_update.get("enabled")->asBool();
         tf_evse_v2_set_charging_slot_active(&device, CHARGING_SLOT_EXTERNAL, enabled);
@@ -828,7 +833,7 @@ void EVSEV2::loop()
     static uint32_t last_debug = 0;
     if (debug && deadline_elapsed(last_debug + 50)) {
         last_debug = millis();
-        ws.pushStateUpdate(this->get_evse_debug_line(), "evse/debug");
+        ws.pushRawStateUpdate(this->get_evse_debug_line(), "evse/debug");
     }
 #endif
 }

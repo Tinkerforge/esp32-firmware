@@ -1,0 +1,15 @@
+{
+    "energy_manager_meter_configuration": {
+        "status": {
+            "energy_manager_meter_configuration": "Electricity Meter"
+        },
+        "navbar": {
+            "energy_manager_meter_configuration": "Electricity Meter"
+        },
+        "content": {
+            "energy_manager_meter_configuration": "Electricity Meter Configuration"
+        },
+        "script": {
+        }
+    }
+}

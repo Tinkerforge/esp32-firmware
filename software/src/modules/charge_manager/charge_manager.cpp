@@ -233,7 +233,7 @@ void ChargeManager::start_manager_task()
 
     uint32_t cm_send_delay = 1000 / chargers.size();
 
-    task_scheduler.scheduleWithFixedDelay("charge_manager_send", [this, chargers](){
+    task_scheduler.scheduleWithFixedDelay([this, chargers](){
         static int i = 0;
 
         if (i >= chargers.size())
@@ -278,10 +278,10 @@ void ChargeManager::setup()
 
     start_manager_task();
 
-    task_scheduler.scheduleWithFixedDelay("distribute current", [this](){this->distribute_current();}, 10000, 10000);
+    task_scheduler.scheduleWithFixedDelay([this](){this->distribute_current();}, 10000, 10000);
 
     if (charge_manager_config_in_use.get("enable_watchdog")->asBool()) {
-        task_scheduler.scheduleWithFixedDelay("cm_watchdog", [this](){this->check_watchdog();}, 1000, 1000);
+        task_scheduler.scheduleWithFixedDelay([this](){this->check_watchdog();}, 1000, 1000);
     }
 
     initialized = true;

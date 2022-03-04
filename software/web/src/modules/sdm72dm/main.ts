@@ -27,6 +27,8 @@ declare function __(s: string): string;
 import Chartist from "../../ts/chartist"
 import ctAxisTitle from "../../ts/chartist-plugin-axistitle";
 
+let meter_show_navbar = true;
+
 function update_meter_state() {
     let state = API.get('meter/state');
     show_module(state.state == 2);
@@ -129,6 +131,7 @@ function update_history_meter() {
 }
 
 function meter_chart_change_time(value: string) {
+    console.log(value);
     if (graph_update_interval != null) {
         clearInterval(graph_update_interval);
         graph_update_interval = null;
@@ -450,11 +453,11 @@ export function init() {
     // We have to create the chart then, to make sure it is scaled correctly.
     // Immediately deregister afterwards, as we don't want to recreate the chart
     // every time.
-    $('#sidebar-meter').on('shown.bs.tab', function (e) {
+    $('#sidebar-meter, #energy-manager-meter-configuration-sdm630-details').on('shown.bs.tab', function (e) {
         init_chart();
     });
 
-    $('#sidebar-meter').on('hidden.bs.tab', function (e) {
+    $('#sidebar-meter, #energy-manager-meter-configuration-sdm630-details').on('hidden.bs.tab', function (e) {
         if (graph_update_interval != null) {
             clearInterval(graph_update_interval);
             graph_update_interval = null;
@@ -472,8 +475,13 @@ export function init() {
 }
 
 function show_module(module_available: boolean) {
-    $('#sidebar-meter').prop('hidden', !module_available);
-    $('#status-meter').prop('hidden', !module_available);
+    if(meter_show_navbar) {
+        $('#sidebar-meter').prop('hidden', !module_available);
+        $('#status-meter').prop('hidden', !module_available);
+    } else {
+        $('#sidebar-meter').prop('hidden', true);
+        $('#status-meter').prop('hidden', true);
+    }
 
     if(!module_available) {
         if (graph_update_interval != null) {
@@ -516,6 +524,11 @@ export function addEventListeners(source: API.ApiEventTarget) {
 }
 
 export function updateLockState(module_init: any) {
+    // Don't use meter navbar link if the Energy Manager module is loaded.
+    // The energy manager has its own meter configration module and a link
+    // to the meter frontend directly in the configuration module instead of the navbar.
+    meter_show_navbar = !module_init.energy_manager;
+
     /*let module_available = module_init.sdm72dm || module_init.evse_v2_meter;
     $('#sidebar-meter').prop('hidden', !module_available);
     $('#status-meter').prop('hidden', !module_available);

@@ -1,0 +1,46 @@
+{
+    "authentication": {
+        "content": {
+            "confirm_content": "Soll die Anmeldung wirklich aktiviert werden? Falls das Passwort vergessen wird, muss der Energiemanager auf den Werkszustand zurückgesetzt werden. <a href=\"{{{manual_url}}}\">Siehe Betriebsanleitung für Details.</a>"
+        }
+    },
+    "ethernet": {
+        "content": {
+            "enable_desc": "Wenn aktiviert, verbindet sich der Energiemanager beim Start oder wenn ein Kabel eingesteckt wird, automatisch."
+        }
+    },
+    "event_log": {
+        "content": {
+            "debug_report_desc_muted": "Ein kompletter Report aller Statusinformationen des Energiemanagers außer Passwörtern"
+        }
+    },
+    "firmware_update": {
+        "content": {
+            "factory_reset_modal_text": "Hiermit wird die gesamte Konfiguration auf den Auslieferungszustand zurückgesetzt. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Der Energiemanager öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus der beiliegenden Betriebsanleitung. Fortfahren?",
+            "reboot_desc": "Startet das Webinterface neu. Eine laufende Ladung wird dabei nicht unterbrochen"
+        },
+        "script": {
+            "no_info_page": "Firmware-Datei ist beschädigt oder für WARP Charger (Firmware-Info-Seite fehlt)",
+            "wrong_firmware_type": "Firmware-Datei passt nicht zum Energiemanager"
+        }
+    },
+    "network": {
+        "content": {
+            "enable_mdns_desc": "mDNS erlaubt es anderen Geräten in diesem Netzwerk, der Energiemanager zu finden."
+        }
+    },
+    "mqtt": {
+        "content": {
+            "enable_mqtt_desc": "Hierdurch kann der Energiemanager über den konfigurierten MQTT-Broker kontrolliert werden. <a href=\"{{{apidoc_url}}}\">MQTT-API-Dokumentation</a>"
+        }
+    },
+    "util": {
+        "event_connection_lost_title": "Verbindung zum Energiemanager verloren!"
+    },
+    "wifi": {
+        "content": {
+            "sta_enable_sta_desc": "Wenn aktiviert, verbindet sich der Energiemanager beim Start automatisch zum konfigurierten Netzwerk.",
+            "ap_hide_ssid_desc_pre": "Versteckt den Netzwerknamen. Der Energiemanager ist unter der BSSID "
+        }
+    }
+}

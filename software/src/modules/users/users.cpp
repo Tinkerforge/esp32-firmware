@@ -151,13 +151,6 @@ Users::Users()
         return "Can't delete user. User with this ID not found.";
     });
 
-    charge_info = Config::Object({
-        {"id", Config::Int16(-1)},
-        {"meter_start", Config::Float(0)},
-        {"evse_uptime_start", Config::Uint32(0)},
-        {"timestamp_minutes", Config::Uint32(0)}
-    });
-
     http_auth_update = ConfigRoot(Config::Object({
         {"enabled", Config::Bool(false)}
     }), [this](Config &update) -> String {
@@ -230,15 +223,15 @@ void Users::setup()
         UserSlotInfo info;
         bool success = read_user_slot_info(&info);
         if (success) {
-            charge_info.get("id")->updateInt(info.user_id);
-            charge_info.get("meter_start")->updateFloat(info.meter_start);
-            charge_info.get("evse_uptime_start")->updateUint(info.evse_uptime_on_start);
-            charge_info.get("timestamp_minutes")->updateUint(info.timestamp_minutes);
+            charge_tracker.current_charge.get("user_id")->updateInt(info.user_id);
+            charge_tracker.current_charge.get("meter_start")->updateFloat(info.meter_start);
+            charge_tracker.current_charge.get("evse_uptime_start")->updateUint(info.evse_uptime_on_start);
+            charge_tracker.current_charge.get("timestamp_minutes")->updateUint(info.timestamp_minutes);
         }
     }
 
     #ifdef MODULE_EVSE_V2_AVAILABLE
-    task_scheduler.scheduleWithFixedDelay("users_iec_check", [this](){
+    task_scheduler.scheduleWithFixedDelay([this](){
         static uint8_t last_iec_state = 0;
 
         uint8_t iec_state = evse_v2.evse_state.get("iec61851_state")->asUint();
@@ -303,6 +296,9 @@ void Users::register_urls()
             return String("Can't modify user. User ID is null or missing.");
 
         uint8_t id = doc["id"];
+        if (id == 0) {
+            return "Can't modify the anonymous user.";
+        }
 
         Config *user = nullptr;
         for(int i = 0; i < user_config.get("users")->count(); ++i) {
@@ -393,7 +389,6 @@ void Users::register_urls()
         API::writeConfig("nfc/config", &nfc.config);
     }, true);
 
-    api.addState("users/charge_info", &charge_info, {}, 1000);
 
     api.addCommand("users/http_auth_update", &http_auth_update, {}, [this](){
         user_config.get("http_auth_enabled")->updateBool(http_auth_update.get("enabled")->asBool());
@@ -483,15 +478,19 @@ bool Users::trigger_charge_action(uint8_t user_id)
     }
 
     uint8_t iec_state = IEC_STATE_A;
+    uint32_t tscs = 0;
     #ifdef MODULE_EVSE_V2_AVAILABLE
         iec_state = evse_v2.evse_state.get("iec61851_state")->asUint();
+        tscs = evse_v2.evse_low_level_state.get("time_since_state_change")->asUint();
     #endif
 
     switch (iec_state) {
         case IEC_STATE_B: // State B: The user wants to start charging.
             return this->start_charging(user_id, current_limit);
         case IEC_STATE_C: // State C: The user wants to stop charging.
-            this->stop_charging(user_id, false);
+            // Debounce here a bit, an impatient user can otherwise accidentially trigger a stop if a start_charging takes too long.
+            if (tscs > 3000)
+                this->stop_charging(user_id, false);
         default: //Don't do anything in state A, D, and E/F
             break;
     }
@@ -520,13 +519,8 @@ bool Users::start_charging(uint8_t user_id, uint16_t current_limit)
         uint32_t timestamp = timestamp_minutes();
 
         write_user_slot_info(user_id, evse_uptime, timestamp, meter_start);
-        charge_tracker.startCharge(timestamp, meter_start, user_id);
+        charge_tracker.startCharge(timestamp, meter_start, user_id, evse_uptime);
         evse_v2.set_user_current(current_limit);
-        charge_info.get("id")->updateInt(user_id);
-        charge_info.get("meter_start")->updateFloat(meter_start);
-        charge_info.get("evse_uptime_start")->updateUint(evse_uptime);
-        charge_info.get("timestamp_minutes")->updateUint(timestamp);
-
 
         return true;
     #endif
@@ -562,9 +556,6 @@ bool Users::stop_charging(uint8_t user_id, bool force)
         }
         zero_user_slot_info();
         evse_v2.set_user_current(0);
-        charge_info.get("id")->updateInt(-1);
-        charge_info.get("meter_start")->updateFloat(0);
-        charge_info.get("evse_uptime_start")->updateUint(0);
 
         return true;
     #endif

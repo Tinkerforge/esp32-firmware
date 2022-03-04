@@ -21,6 +21,7 @@
             "topic_prefix": "<span class=\"form-label pr-2\">Topic prefix</span><span class=\"text-muted\">optional</span>",
             "topic_prefix_invalid": "The topic prefix can not start with $ or contain a # or +.",
             "client_name": "<span class=\"form-label pr-2\">Client ID</span>",
+            "interval": "<span class=\"form-label pr-2\">Send interval</span><span class=\"text-muted\">(seconds). Messages are only sent if the payload has changed.</span>",
             "save": "Save"
         },
         "script": {

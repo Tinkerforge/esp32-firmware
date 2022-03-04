@@ -40,6 +40,11 @@ struct MqttCommand {
     bool forbid_retained;
 };
 
+struct MqttState {
+    String topic;
+    uint32_t last_send_ms;
+};
+
 class Mqtt : public IAPIBackend {
 public:
     Mqtt();
@@ -52,10 +57,11 @@ public:
     void subscribe(String topic_suffix, uint32_t max_payload_length, std::function<void(char *, size_t)> callback, bool forbid_retained);
 
     // IAPIBackend implementation
-    void addCommand(const CommandRegistration &reg);
-    void addState(const StateRegistration &reg);
-    void addRawCommand(const RawCommandRegistration &reg);
-    void pushStateUpdate(String payload, String path);
+    void addCommand(size_t commandIdx, const CommandRegistration &reg);
+    void addState(size_t stateIdx, const StateRegistration &reg);
+    void addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg);
+    bool pushStateUpdate(size_t stateIdx, String payload, String path);
+    void pushRawStateUpdate(String payload, String path);
     void wifiAvailable();
 
     bool initialized = false;
@@ -70,5 +76,6 @@ public:
     ConfigRoot mqtt_config_in_use;
 
     std::vector<MqttCommand> commands;
+    std::vector<MqttState> states;
     esp_mqtt_client_handle_t client;
 };

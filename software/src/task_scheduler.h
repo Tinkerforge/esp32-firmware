@@ -34,13 +34,12 @@
 #include "ArduinoJson.h"
 
 struct Task {
-    const char *task_name;
     std::function<void(void)> fn;
     uint32_t next_deadline_ms;
     uint32_t delay_ms;
     bool once;
 
-    Task(const char *task_name, std::function<void(void)> fn, uint32_t first_run_delay_ms, uint32_t delay_ms, bool once);
+    Task(std::function<void(void)> fn, uint32_t first_run_delay_ms, uint32_t delay_ms, bool once);
 };
 
 bool compare(const Task &a, const Task &b);
@@ -54,8 +53,8 @@ public:
 
     bool initialized = false;
 
-    void scheduleOnce(const char *task_name, std::function<void(void)> &&fn, uint32_t delay);
-    void scheduleWithFixedDelay(const char *task_name, std::function<void(void)> &&fn, uint32_t first_delay, uint32_t delay);
+    void scheduleOnce(std::function<void(void)> &&fn, uint32_t delay);
+    void scheduleWithFixedDelay(std::function<void(void)> &&fn, uint32_t first_delay, uint32_t delay);
 
 private:
     std::mutex task_mutex;

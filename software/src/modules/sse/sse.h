@@ -34,7 +34,8 @@ public:
     // IAPIBackend implementation
     void addCommand(CommandRegistration reg);
     void addState(StateRegistration reg);
-    void pushStateUpdate(String payload, String path);
+    bool pushStateUpdate(String payload, String path);
+    void pushRawStateUpdate(String payload, String path);
     void wifiAvailable();
 
     bool initialized = false;

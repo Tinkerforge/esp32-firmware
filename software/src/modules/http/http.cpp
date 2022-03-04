@@ -50,10 +50,10 @@ void Http::loop()
 
 }
 
-void Http::addCommand(const CommandRegistration &reg)
+void Http::addCommand(size_t commandIdx, const CommandRegistration &reg)
 {
-    server.on((String("/") + reg.path).c_str(), HTTP_PUT, [reg](WebServerRequest request) {
-        String reason = api.getCommandBlockedReason(reg.path);
+    server.on((String("/") + reg.path).c_str(), HTTP_PUT, [reg, commandIdx](WebServerRequest request) {
+        String reason = api.getCommandBlockedReason(commandIdx);
         if (reason != "") {
             request.send(400, "text/plain", reason.c_str());
             return;
@@ -81,7 +81,7 @@ void Http::addCommand(const CommandRegistration &reg)
         String message = reg.config->update_from_json(json);
 
         if (message == "") {
-            task_scheduler.scheduleOnce((String("notify command update for ") + reg.path).c_str(), [reg](){reg.callback();}, 0);
+            task_scheduler.scheduleOnce([reg](){reg.callback();}, 0);
             request.send(200, "text/html", "");
         } else {
             request.send(400, "text/html", message.c_str());
@@ -89,7 +89,7 @@ void Http::addCommand(const CommandRegistration &reg)
     });
 }
 
-void Http::addState(const StateRegistration &reg)
+void Http::addState(size_t stateIdx, const StateRegistration &reg)
 {
     server.on((String("/") + reg.path).c_str(), HTTP_GET, [reg](WebServerRequest request) {
         String response = reg.config->to_string_except(reg.keys_to_censor);
@@ -97,7 +97,7 @@ void Http::addState(const StateRegistration &reg)
     });
 }
 
-void Http::addRawCommand(const RawCommandRegistration &reg)
+void Http::addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg)
 {
     server.on((String("/") + reg.path).c_str(), HTTP_PUT, [reg](WebServerRequest request) {
         int bytes_written = request.receive(recv_buf, 4096);
@@ -119,8 +119,12 @@ void Http::addRawCommand(const RawCommandRegistration &reg)
     });
 }
 
-void Http::pushStateUpdate(String payload, String path)
+bool Http::pushStateUpdate(size_t stateIdx, String payload, String path)
 {
+    return true;
+}
+
+void Http::pushRawStateUpdate(String payload, String path) {
 
 }
 

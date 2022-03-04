@@ -305,7 +305,7 @@ void FirmwareUpdate::register_urls()
 
         if(!Update.hasError()) {
             logger.printfln("Firmware flashed successfully! Rebooting in one second.");
-            task_scheduler.scheduleOnce("flash_firmware_reboot", [](){ESP.restart();}, 1000);
+            task_scheduler.scheduleOnce([](){ESP.restart();}, 1000);
         }
 
         request.send(Update.hasError() ? 400: 200, "text/plain", Update.hasError() ? Update.errorString() : "Update OK");
@@ -322,7 +322,7 @@ void FirmwareUpdate::register_urls()
     server.on("/flash_spiffs", HTTP_POST, [this](WebServerRequest request){
         if(!Update.hasError()) {
             logger.printfln("SPFFS flashed successfully! Rebooting in one second.");
-            task_scheduler.scheduleOnce("flash_spiffs_reboot", [](){ESP.restart();}, 1000);
+            task_scheduler.scheduleOnce([](){ESP.restart();}, 1000);
         }
 
         request.send(Update.hasError() ? 400: 200, "text/plain", Update.hasError() ? Update.errorString() : "Update OK");
@@ -350,7 +350,7 @@ void FirmwareUpdate::register_urls()
         }
 
         if (doc["do_i_know_what_i_am_doing"].as<bool>()) {
-            task_scheduler.scheduleOnce("factory_reset", [](){
+            task_scheduler.scheduleOnce([](){
                 logger.printfln("Factory reset requested");
                 factory_reset();
             }, 3000);

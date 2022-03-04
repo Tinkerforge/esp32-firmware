@@ -40,7 +40,7 @@ void Debug::setup()
         {"largest_free_heap_block", Config::Uint32(0)}
     });
 
-    task_scheduler.scheduleWithFixedDelay("update_debug_state", [this](){
+    task_scheduler.scheduleWithFixedDelay([this](){
         debug_state.get("uptime")->updateUint(millis());
         debug_state.get("free_heap")->updateUint(heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));
         debug_state.get("largest_free_heap_block")->updateUint(heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));

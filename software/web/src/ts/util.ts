@@ -307,12 +307,21 @@ export function passwordUpdate(input_selector: string) {
     return value.length > 0 ? value : null;
 }
 
-export function downloadToFile(content: BlobPart, filename: string, contentType: string) {
+function iso8601ButLocal(date: Date) {
+    const offset = date.getTimezoneOffset() * 60 * 1000;
+    const local =  date.getTime() - offset;
+    const dateLocal = new Date(local);
+    return dateLocal.toISOString().slice(0, -1);
+}
+
+export function downloadToFile(content: BlobPart, filename_prefix: string, extension: string, contentType: string) {
     const a = document.createElement('a');
     const file = new Blob([content], {type: contentType});
+    let t = iso8601ButLocal(new Date()).replace(/:/gi, "-").replace(/\./gi, "-");
+    let uid = API.get("name/state").name;
 
     a.href= URL.createObjectURL(file);
-    a.download = filename;
+    a.download = filename_prefix + "-" + uid + "-" + t + "." + extension;
     a.click();
 
     URL.revokeObjectURL(a.href);

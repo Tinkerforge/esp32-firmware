@@ -258,7 +258,14 @@ struct from_json {
         return String("");
     }
     String operator()(std::nullptr_t x) {
-        return json_node.isNull() ? "" : "JSON null node was not null";
+        if (json_node.isNull())
+            return "";
+        if (json_node == "" || json_node == false || json_node == 0)
+            return "";
+        if (json_node.size() == 0 && (json_node.is<JsonArray>() || json_node.is<JsonObject>()))
+            return "";
+
+        return "JSON null node was not null or a falsy value. Use null, \"\", false, 0, [] or {}.";
     }
     String operator()(Config::ConfArray &x) {
         if (json_node.isNull())
@@ -272,7 +279,7 @@ struct from_json {
         x.value.clear();
         for (size_t i = 0; i < arr.size(); ++i) {
             x.value.push_back(*x.prototype);
-            String inner_error = strict_variant::apply_visitor(from_json{arr[i], force_same_keys, permit_null_updates}, x.value[i].value);
+            String inner_error = strict_variant::apply_visitor(from_json{arr[i], force_same_keys, permit_null_updates, false}, x.value[i].value);
             if (inner_error != "")
                 return String("[") + i + "]" + inner_error;
         }
@@ -283,6 +290,17 @@ struct from_json {
     {
         if (json_node.isNull())
             return permit_null_updates ? String("") : String("Null updates not permitted.");
+
+        // If a user passes a non-object to an API that expects an object with exactly one member
+        // Try to use the non-object as value for the single member.
+        // This allows calling for example evse/external_current_update with the payload 8000 instead of {"current": 8000}
+        if (!json_node.is<JsonObject>() && is_root && x.value.size() == 1) {
+            String inner_error = strict_variant::apply_visitor(from_json{json_node, force_same_keys, permit_null_updates, false}, x.value[0].second.value);
+            if (inner_error != "")
+                return String("(inferred) [\"") + x.value[0].first + "\"] " + inner_error;
+            else
+                return inner_error;
+        }
 
         if (!json_node.is<JsonObject>())
             return "JSON node was not an object.";
@@ -296,7 +314,7 @@ struct from_json {
             if (!force_same_keys && !obj.containsKey(x.value[i].first))
                 continue;
 
-            String inner_error = strict_variant::apply_visitor(from_json{obj[x.value[i].first], force_same_keys, permit_null_updates}, x.value[i].second.value);
+            String inner_error = strict_variant::apply_visitor(from_json{obj[x.value[i].first], force_same_keys, permit_null_updates, false}, x.value[i].second.value);
             if (inner_error != "")
                 return String("[\"") + x.value[i].first + "\"]" + inner_error;
         }
@@ -307,6 +325,7 @@ struct from_json {
     JsonVariant json_node;
     bool force_same_keys;
     bool permit_null_updates;
+    bool is_root;
 };
 
 struct from_update {
@@ -448,7 +467,7 @@ struct is_updated {
     }
     bool operator()(const Config::ConfArray &x) const {
         for (const Config &c : x.value) {
-            if (c.updated || strict_variant::apply_visitor(is_updated{}, c.value))
+            if (((c.updated & api_backend_flag) != 0) || strict_variant::apply_visitor(is_updated{api_backend_flag}, c.value))
                 return true;
         }
         return false;
@@ -456,11 +475,12 @@ struct is_updated {
     bool operator()(const Config::ConfObject &x) const
     {
         for (const std::pair<String, Config> &c : x.value) {
-            if (c.second.updated || strict_variant::apply_visitor(is_updated{}, c.second.value))
+            if (((c.second.updated & api_backend_flag) != 0) || strict_variant::apply_visitor(is_updated{api_backend_flag}, c.second.value))
                 return true;
         }
         return false;
     }
+    uint8_t api_backend_flag;
 };
 
 struct set_updated_false {
@@ -473,17 +493,18 @@ struct set_updated_false {
     void operator()(Config::ConfArray &x)
     {
         for (Config &c : x.value) {
-            c.updated = false;
-            strict_variant::apply_visitor(set_updated_false{}, c.value);
+            c.updated &= ~api_backend_flag;
+            strict_variant::apply_visitor(set_updated_false{api_backend_flag}, c.value);
         }
     }
     void operator()(Config::ConfObject &x)
     {
         for (std::pair<String, Config> &c : x.value) {
-            c.second.updated = false;
-            strict_variant::apply_visitor(set_updated_false{}, c.second.value);
+            c.second.updated &= ~api_backend_flag;
+            strict_variant::apply_visitor(set_updated_false{api_backend_flag}, c.second.value);
         }
     }
+    uint8_t api_backend_flag;
 };
 
 Config Config::Str(String s,
@@ -777,14 +798,14 @@ void Config::write_to_stream_except(Print &output, const std::vector<String> &ke
     serializeJson(doc, output);
 }
 
-bool Config::was_updated() {
-    return updated || strict_variant::apply_visitor(is_updated{}, value);
+bool Config::was_updated(uint8_t api_backend_flag) {
+    return ((updated & api_backend_flag) != 0) || strict_variant::apply_visitor(is_updated{api_backend_flag}, value);
 }
 
-void Config::set_update_handled()
+void Config::set_update_handled(uint8_t api_backend_flag)
 {
     updated = false;
-    strict_variant::apply_visitor(set_updated_false{}, value);
+    strict_variant::apply_visitor(set_updated_false{api_backend_flag}, value);
 }
 
 Config *Config::ConfObject::get(String s)
@@ -834,7 +855,6 @@ const Config *Config::ConfArray::get(uint16_t i) const
 
 String ConfigRoot::update_from_file(File file)
 {
-
     DynamicJsonDocument doc(this->json_size());
     DeserializationError error = deserializeJson(doc, file);
     if (error)
@@ -870,7 +890,7 @@ String ConfigRoot::update_from_string(String s)
 String ConfigRoot::update_from_json(JsonVariant root)
 {
     Config copy = *this;
-    String err = strict_variant::apply_visitor(from_json{root, !this->permit_null_updates, this->permit_null_updates}, copy.value);
+    String err = strict_variant::apply_visitor(from_json{root, !this->permit_null_updates, this->permit_null_updates, true}, copy.value);
 
     if (err != "")
         return err;

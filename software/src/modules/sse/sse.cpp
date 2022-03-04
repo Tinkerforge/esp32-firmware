@@ -45,7 +45,7 @@ void Sse::setup()
     });
 
     server.addHandler(&events);
-    task_scheduler.scheduleWithFixedDelay("SSE_keep_alive", [this](){
+    task_scheduler.scheduleWithFixedDelay([this](){
         events.send("keep-alive", "keep-alive", millis());
     }, 1000, 1000);
 }
@@ -66,8 +66,9 @@ void Sse::addState(StateRegistration reg) {
 
 }
 
-void Sse::pushStateUpdate(String payload, String path) {
+bool Sse::pushStateUpdate(String payload, String path) {
     events.send(payload.c_str(), path.c_str(), millis());
+    return true;
 }
 
 void Sse::wifiAvailable()

@@ -76,10 +76,19 @@ def embed_data_with_digest(data, dst_dir, var_name, var_type, data_filter=lambda
         new_digest = hashlib.sha256(data + f.read()).hexdigest()
 
     if old_digest == new_digest and os.path.exists(cpp_path) and os.path.exists(h_path):
-        print('Embedded', var_name, 'is up-to-date')
+        print('Embedded {0} is up-to-date'.format(var_name))
         return
 
-    print('Embedding', var_name)
+    if old_digest == None:
+        reason = 'digest file missing'
+    elif old_digest != new_digest:
+        reason = 'digest mismatch'
+    elif not os.path.exists(cpp_path) or not os.path.exists(h_path):
+        reason = 'embedded file missing'
+    else:
+        reason = 'unknown'
+
+    print('Embedding {0} ({1})'.format(var_name, reason))
 
     try:
         os.remove(digest_path)

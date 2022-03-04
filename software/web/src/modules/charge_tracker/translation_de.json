@@ -9,9 +9,23 @@
         },
         "content": {
             "charge_tracker": "Ladetracker",
-            "charge_tracker_download": "Ladelog herunterladen",
-            "charge_tracker_download_desc": "eine CSV-Datei aller aufgezeichneten Ladevorgänge",
-            "charge_tracker_download_btn": "Ladelog herunterladen"
+            "download": "Ladelog herunterladen",
+            "download_desc": "eine CSV-Datei aller aufgezeichneten Ladevorgänge",
+            "download_btn": "Ladelog herunterladen",
+
+            "tracked_charges": "Aufgezeichnete Ladungen",
+            "tracked_charges_muted": "",
+            "first_charge_timestamp": "Zeitstempel der ältesten aufgezeichneten Ladung",
+            "first_charge_timestamp_muted": "",
+            "user_filter": "Benutzerfilter",
+            "user_filter_muted": "CSV-Datei wird nur Ladungen des ausgewählten Benutzers beinhalten",
+
+            "date_filter": "Zeitfilter",
+            "date_filter_muted": "CSV-Datei wird nur Ladungen in der ausgewählten Zeitspanne beinhalten",
+            "from": "von",
+            "to": "bis",
+            "last_charges": "Letzte Ladevorgänge",
+            "last_charges_desc": "Die letzten 30 Ladevorgänge werden angezeigt."
         },
         "script": {
             "csv_header_start": "Startzeit",
@@ -21,7 +35,10 @@
             "csv_header_meter_start": "Zählerstand Start",
             "csv_header_meter_end": "Zählerstand Ende",
             "unknown_user": "Unbekannter Nutzer",
+            "unknown_users": "unbekannte Nutzer",
             "deleted_user": "Gelöschter Nutzer",
+            "deleted_users": "gelöschte Nutzer",
+            "all_users": "alle Nutzer",
             "unknown_charge_start": "Unbekannter Startzeitpunkt"
         }
     }

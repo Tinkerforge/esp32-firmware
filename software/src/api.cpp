@@ -30,26 +30,37 @@ extern TF_HAL hal;
 extern TaskScheduler task_scheduler;
 extern EventLog logger;
 
+API::API()
+{
+    features = Config::Array(
+        {},
+        new Config{Config::Str("")},
+        0, 20, Config::type_id<Config::ConfString>()
+    );
+}
+
 void API::setup()
 {
-    task_scheduler.scheduleWithFixedDelay("API state update", [this]() {
-        for (auto &reg : states) {
+    task_scheduler.scheduleWithFixedDelay([this]() {
+        for (size_t i = 0; i < states.size(); ++i) {
+            auto &reg = states[i];
+
             if (!deadline_elapsed(reg.last_update + reg.interval)) {
                 continue;
             }
 
             reg.last_update = millis();
 
-            if (!reg.config->was_updated()) {
+            // If the config was not updated for any API, we don't have to serialize the payload.
+            if (!reg.config->was_updated(0xFF)) {
                 continue;
             }
 
-            reg.config->set_update_handled();
-
             String payload = reg.config->to_string_except(reg.keys_to_censor);
 
-            for (auto *backend: this->backends) {
-                backend->pushStateUpdate(payload, reg.path);
+            for (int i = 0; i < this->backends.size(); ++i) {
+                if (this->backends[i]->pushStateUpdate(i, payload, reg.path))
+                    reg.config->set_update_handled(1 << i);
             }
         }
     }, 250, 250);
@@ -61,9 +72,10 @@ void API::addCommand(String path, ConfigRoot *config, std::initializer_list<Stri
         return;
 
     commands.push_back({path, config, callback, keys_to_censor_in_debug_report, is_action, ""});
+    auto commandIdx = commands.size() - 1;
 
     for (auto *backend : this->backends) {
-        backend->addCommand(commands[commands.size() - 1]);
+        backend->addCommand(commandIdx, commands[commandIdx]);
     }
 }
 
@@ -73,9 +85,10 @@ void API::addState(String path, ConfigRoot *config, std::initializer_list<String
         return;
 
     states.push_back({path, config, keys_to_censor, interval_ms, millis()});
+    auto stateIdx = states.size() - 1;
 
     for (auto *backend : this->backends) {
-        backend->addState(states[states.size() - 1]);
+        backend->addState(stateIdx, states[stateIdx]);
     }
 }
 
@@ -105,10 +118,19 @@ void API::addRawCommand(String path, std::function<String(char *, size_t)> callb
         return;
 
     raw_commands.push_back({path, callback, is_action});
+    auto rawCommandIdx = raw_commands.size() - 1;
 
     for (auto *backend : this->backends) {
-        backend->addRawCommand(raw_commands[raw_commands.size() - 1]);
+        backend->addRawCommand(rawCommandIdx, raw_commands[rawCommandIdx]);
     }
+}
+
+bool API::hasFeature(const char *name)
+{
+    for(int i = 0; i < features.count(); ++i)
+        if (features.get(i)->asString() == name)
+            return true;
+    return false;
 }
 
 void API::writeConfig(String path, ConfigRoot *config) {
@@ -149,17 +171,9 @@ void API::unblockCommand(String path)
     blockCommand(path, "");
 }
 
-String API::getCommandBlockedReason(String path)
+String API::getCommandBlockedReason(size_t commandIdx)
 {
-    for (auto &reg : commands) {
-        if (reg.path != path) {
-            continue;
-        }
-
-        return reg.blockedReason;
-    }
-
-    return "";
+    return this->commands[commandIdx].blockedReason;
 }
 
 /*
@@ -265,6 +279,8 @@ void API::registerDebugUrl(WebServer *server)
 
         request.send(200, "application/json; charset=utf-8", result.c_str());
     });
+
+    this->addState("features", &features, {}, 1000);
 }
 
 void API::registerBackend(IAPIBackend *backend)
@@ -287,7 +303,7 @@ String API::callCommand(String path, Config::ConfUpdate payload)
         String error = reg.config->update(&payload);
 
         if (error == "") {
-            task_scheduler.scheduleOnce((String("notify command update for ") + reg.path).c_str(), [reg]() { reg.callback(); }, 0);
+            task_scheduler.scheduleOnce([reg]() { reg.callback(); }, 0);
         }
 
         return error;
@@ -317,9 +333,19 @@ Config *API::getState(String path, bool log_if_not_found)
     return nullptr;
 }
 
+void API::addFeature(const char *name)
+{
+    for(int i = 0; i < features.count(); ++i)
+        if (features.get(i)->asString() == name)
+            return;
+
+    features.add();
+    features.get(features.count() - 1)->updateString(name);
+}
+
 void API::wifiAvailable()
 {
-    task_scheduler.scheduleOnce("wifi_available", [this]() {
+    task_scheduler.scheduleOnce([this]() {
         for (auto *backend: this->backends) {
             backend->wifiAvailable();
         }

@@ -9,9 +9,23 @@
         },
         "content": {
             "charge_tracker": "Charge tracker",
-            "charge_tracker_download": "Download charge log",
-            "charge_tracker_download_desc": "a CSV file of all tracked charges",
-            "charge_tracker_download_btn": "Download charge log"
+            "download": "Download charge log",
+            "download_desc": "a CSV file of all tracked charges",
+            "download_btn": "Download charge log",
+
+            "tracked_charges": "Tracked charges",
+            "tracked_charges_muted": "",
+            "first_charge_timestamp": "Timestamp of the oldest tracked charge",
+            "first_charge_timestamp_muted": "",
+            "user_filter": "User filter",
+            "user_filter_muted": "CSV file will only contain charges of the selected user",
+
+            "date_filter": "Time filter",
+            "date_filter_muted": "CSV file will only contain charges in the selected date range",
+            "from": "from",
+            "to": "to",
+            "last_charges": "Last charges",
+            "last_charges_desc": "The last 30 charges are shown."
         },
         "script": {
             "csv_header_start": "Start time",
@@ -21,7 +35,10 @@
             "csv_header_meter_start": "Meter reading start",
             "csv_header_meter_end": "Meter reading end",
             "unknown_user": "Unknown user",
+            "unknown_users": "unknown users",
             "deleted_user": "Deleted user",
+            "deleted_users": "deleted users",
+            "all_users": "all users",
             "unknown_charge_start": "Unknown start time"
         }
     }
