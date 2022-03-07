@@ -29,11 +29,6 @@ import ctAxisTitle from "../../ts/chartist-plugin-axistitle";
 
 let meter_show_navbar = true;
 
-function update_meter_state() {
-    let state = API.get('meter/state');
-    show_module(state.state == 2);
-}
-
 function update_meter_values() {
     let values = API.get('meter/values');
 
@@ -46,13 +41,6 @@ function update_meter_values() {
 }
 
 function update_meter_phases() {
-    if (!phases_avail) {
-        phases_avail = true;
-        $('#meter_phases_active').prop('hidden', false);
-        $('#meter_phases_connected').prop('hidden', false);
-    }
-
-
     let phases = API.get('meter/phases');
 
     for(let i = 0; i < 3; ++i) {
@@ -423,12 +411,6 @@ function build_evse_v2_detailed_values_view() {
 }
 
 function update_evse_v2_all_values() {
-    if (!all_values_avail) {
-        all_values_avail = true;
-        build_evse_v2_detailed_values_view();
-        $('#meter_detailed_values_container').prop('hidden', false);
-    }
-
     let v = API.get('meter/all_values');
 
     let entry_idx = 0;
@@ -474,16 +456,23 @@ export function init() {
     status_interval = window.setInterval(update_status_chart, 60*1000);
 }
 
-function show_module(module_available: boolean) {
-    if(meter_show_navbar) {
-        $('#sidebar-meter').prop('hidden', !module_available);
-        $('#status-meter').prop('hidden', !module_available);
-    } else {
-        $('#sidebar-meter').prop('hidden', true);
-        $('#status-meter').prop('hidden', true);
-    }
+function update_module_visibility() {
+    let have_meter = API.hasFeature('meter');
+    let have_phases = API.hasFeature('meter_phases');
+    let have_all_values = API.hasFeature('meter_all_values');
 
-    if(!module_available) {
+    // Don't use meter navbar link if the Energy Manager module is loaded.
+    $('#sidebar-meter').prop('hidden', !meter_show_navbar || !have_meter);
+    $('#status-meter').prop('hidden', !meter_show_navbar || !have_meter);
+
+    $('#meter_phases_active').prop('hidden', !have_phases);
+    $('#meter_phases_connected').prop('hidden', !have_phases);
+    $('#meter_detailed_values_container').prop('hidden', !have_all_values);
+
+    if (have_all_values)
+        build_evse_v2_detailed_values_view();
+
+    if(!have_meter) {
         if (graph_update_interval != null) {
             clearInterval(graph_update_interval);
             graph_update_interval = null;
@@ -493,10 +482,6 @@ function show_module(module_available: boolean) {
             clearInterval(status_interval);
             status_interval = null;
         }
-
-        $('#meter_phases_active').prop('hidden', true);
-        $('#meter_phases_connected').prop('hidden', true);
-        $('#meter_detailed_values_container').prop('hidden', true);
     } else {
         if (status_interval == null) {
             status_interval = window.setInterval(update_status_chart, 60*1000);
@@ -505,17 +490,14 @@ function show_module(module_available: boolean) {
 
 }
 
-let all_values_avail = false;
-let phases_avail = false;
-
 export function addEventListeners(source: API.ApiEventTarget) {
-    source.addEventListener('meter/state', update_meter_state);
-
     source.addEventListener('meter/values', update_meter_values);
 
     source.addEventListener('meter/phases', update_meter_phases);
 
     source.addEventListener('meter/all_values', update_evse_v2_all_values);
+
+    source.addEventListener('features', update_module_visibility);
 
     source.addEventListener("evse/max_charging_current", function (e: util.SSE) {
         let parsed = JSON.parse(e.data);
@@ -528,31 +510,4 @@ export function updateLockState(module_init: any) {
     // The energy manager has its own meter configration module and a link
     // to the meter frontend directly in the configuration module instead of the navbar.
     meter_show_navbar = !module_init.energy_manager;
-
-    /*let module_available = module_init.sdm72dm || module_init.evse_v2_meter;
-    $('#sidebar-meter').prop('hidden', !module_available);
-    $('#status-meter').prop('hidden', !module_available);
-
-    if(!module_available) {
-        if (graph_update_interval != null) {
-            clearInterval(graph_update_interval);
-            graph_update_interval = null;
-        }
-
-        if (status_interval != null) {
-            clearInterval(status_interval);
-            status_interval = null;
-        }
-    } else {
-        if (status_interval == null) {
-            status_interval = window.setInterval(update_status_chart, 60*1000);
-        }
-    }
-
-    if (module_init.evse_v2_meter)
-        build_evse_v2_detailed_values_view();
-
-    $('#meter_phases_active').prop('hidden', !module_init.evse_v2_meter);
-    $('#meter_phases_connected').prop('hidden', !module_init.evse_v2_meter);
-    $('#meter_detailed_values_container').prop('hidden', !module_init.evse_v2_meter);*/
 }

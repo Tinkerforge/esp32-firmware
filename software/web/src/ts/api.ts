@@ -52,3 +52,7 @@ export function save<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T],
         error: (xhr, status, error) => util.add_alert(topic + '_failed', 'alert-danger', error_string, error + ': ' + xhr.responseText),
     });
 }
+
+export function hasFeature(feature: string) {
+    return get('features').includes(feature);
+}
