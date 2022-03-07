@@ -59,9 +59,6 @@ public:
     void update_all_data();
 
     void setup_evse();
-    bool flash_firmware();
-    bool flash_plugin(int regular_plugin_upto);
-    bool wait_for_bootloader_mode(int mode);
     String get_evse_debug_header();
     String get_evse_debug_line();
     void set_managed_current(uint16_t current);
