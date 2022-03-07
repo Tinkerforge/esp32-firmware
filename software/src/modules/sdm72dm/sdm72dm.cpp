@@ -38,10 +38,14 @@ extern API api;
 SDM72DM::SDM72DM() : DeviceModule("rs485", "RS485", "energy meter", std::bind(&SDM72DM::setupRS485, this))
 {
     state = Config::Object({
+        {"state", Config::Uint8(0)}, // 0 - no energy meter, 1 - initialization error, 2 - meter available
+        {"type", Config::Uint8(0)} // 0 - not available, 1 - sdm72, 2 - sdm630, 3 - sdm72v2
+    });
+
+    values = Config::Object({
         {"power", Config::Float(0.0)},
         {"energy_rel", Config::Float(0.0)},
         {"energy_abs", Config::Float(0.0)},
-        {"state", Config::Uint8(0)},
     });
 
     error_counters = Config::Object({
@@ -50,7 +54,7 @@ SDM72DM::SDM72DM() : DeviceModule("rs485", "RS485", "energy meter", std::bind(&S
         {"bricklet_reset", Config::Uint32(0)},
     });
 
-    energy_meter_reset = Config::Null();
+    reset = Config::Null();
 
     user_data.expected_request_id = 0;
     user_data.value_to_write = nullptr;
@@ -97,8 +101,10 @@ void read_input_registers_handler(struct TF_RS485 *device, uint8_t request_id, i
     if (ud->state->asUint() == 0 && value.f == 0)
         ud->state->updateUint(1);
 
-    if (ud->state->asUint() != 2 && value.f != 0)
+    if (ud->state->asUint() != 2 && value.f != 0) {
         ud->state->updateUint(2);
+        api.addFeature("meter");
+    }
     ud->done = SDM72DM::UserDataDone::DONE;
 }
 
@@ -194,14 +200,12 @@ void SDM72DM::setup()
 
 void SDM72DM::register_urls()
 {
-    if (!device_found)
-        return;
-
     api.addState("meter/state", &state, {}, 1000);
+    api.addState("meter/values", &values, {}, 1000);
     api.addState("meter/error_counters", &error_counters, {}, 1000);
 
-    api.addCommand("meter/reset", &energy_meter_reset, {}, [this](){
-        this->energy_meter_reset_requested = true;
+    api.addCommand("meter/reset", &reset, {}, [this](){
+        this->reset_requested = true;
     }, true);
 
     server.on("/meter/history", HTTP_GET, [this](WebServerRequest request) {
@@ -284,8 +288,8 @@ void SDM72DM::loop()
     if (user_data.done != UserDataDone::NOT_DONE && !deadline_elapsed(next_read_deadline_ms))
         return;
 
-    if (energy_meter_reset_requested) {
-        energy_meter_reset_requested = false;
+    if (reset_requested) {
+        reset_requested = false;
 
         user_data.done = UserDataDone::NOT_DONE;
         user_data.value_to_write = nullptr;
@@ -304,15 +308,15 @@ void SDM72DM::loop()
 
     switch(modbus_read_state) {
         case 0:
-            to_write = state.get("power");
+            to_write = values.get("power");
             start_address = 1281;
             break;
         case 1:
-            to_write = state.get("energy_rel");
+            to_write = values.get("energy_rel");
             start_address = 389;
             break;
         case 2:
-            to_write = state.get("energy_abs");
+            to_write = values.get("energy_abs");
             start_address = 73;
             break;
         /*case 0:
@@ -380,7 +384,7 @@ void SDM72DM::loop()
             if (deadline_elapsed(next_read_deadline_ms))
                 next_read_deadline_ms = millis() + 500;
 
-            int16_t val = (int16_t)min((float)INT16_MAX, state.get("power")->asFloat());
+            int16_t val = (int16_t)min((float)INT16_MAX, values.get("power")->asFloat());
             interval_samples.push(val);
             ++samples_last_interval;
         } else if (last_user_data_done == UserDataDone::ERROR) {

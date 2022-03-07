@@ -47,13 +47,13 @@ public:
     bool initialized = false;
     bool hardware_available = false;
 
-private:
     ConfigRoot state;
     ConfigRoot values;
     ConfigRoot phases;
     ConfigRoot all_values;
     ConfigRoot reset;
 
+private:
     int samples_last_interval = 0;
     int samples_per_interval = -1;
     TF_Ringbuffer<int16_t, 3 * 60 * HISTORY_MINUTE_INTERVAL, uint32_t, malloc_32bit_addressed, heap_caps_free> interval_samples;

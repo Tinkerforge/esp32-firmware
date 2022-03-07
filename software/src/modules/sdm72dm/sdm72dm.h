@@ -68,15 +68,15 @@ public:
         UserDataDone done;
     };
 
+    ConfigRoot state;
+    ConfigRoot values;
+    ConfigRoot reset;
+    ConfigRoot error_counters;
+
 private:
     void modbus_read();
     void setupRS485();
     void checkRS485State();
-
-    ConfigRoot config;
-    ConfigRoot state;
-    ConfigRoot energy_meter_reset;
-    ConfigRoot error_counters;
 
     TF_RS485 rs485;
     int modbus_read_state = 0;
@@ -90,7 +90,7 @@ private:
     UserData user_data;
     TF_Ringbuffer<int16_t, HISTORY_HOURS * (60 / HISTORY_MINUTE_INTERVAL) + 1, uint32_t, malloc_32bit_addressed, heap_caps_free> power_history;
 
-    bool energy_meter_reset_requested;
+    bool reset_requested;
 
     uint32_t callback_deadline_ms = 0;
     uint32_t next_read_deadline_ms = 0;
