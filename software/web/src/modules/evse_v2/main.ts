@@ -83,15 +83,15 @@ function update_evse_low_level_state() {
 
     $('#pwm_duty_cycle').val(util.toLocaleFixed(state.cp_pwm_duty_cycle / 10, 1) + " %");
 
-    for(let i = 0; i < 7; ++i) {
+    for(let i = 0; i < state.adc_values.length; ++i) {
         $(`#adc_value_${i}`).val(state.adc_values[i]);
     }
 
-    for(let i = 0; i < 7; ++i) {
+    for(let i = 0; i < state.voltages.length; ++i) {
         $(`#voltage_${i}`).val(util.toLocaleFixed(state.voltages[i] / 1000.0, 3) + " V");
     }
 
-    for(let i = 0; i < 2; ++i) {
+    for(let i = 0; i < state.resistances.length; ++i) {
         $(`#resistance_${i}`).val(state.resistances[i] + " Ω");
     }
 
