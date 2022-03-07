@@ -32,6 +32,76 @@
 
 extern TaskScheduler task_scheduler;
 
+// We have to do access the evse/evse_v2 configs manually
+// because a lot of the code runs in setup(), i.e. before APIs
+// are registered.
+void set_data_storage(uint8_t *buf) {
+#ifdef MODULE_EVSE_AVAILABLE
+    tf_evse_set_data_storage(&evse.device, 0, buf);
+#elif MODULE_EVSE_V2_AVAILABLE
+    tf_evse_v2_set_data_storage(&evse_v2.device, 0, buf);
+#endif
+}
+
+void get_data_storage(uint8_t *buf) {
+#ifdef MODULE_EVSE_AVAILABLE
+    tf_evse_get_data_storage(&evse.device, 0, buf);
+#elif MODULE_EVSE_V2_AVAILABLE
+    tf_evse_v2_get_data_storage(&evse_v2.device, 0, buf);
+#endif
+}
+
+void zero_user_slot_info() {
+    uint8_t buf[63] = {0};
+    set_data_storage(buf);
+}
+
+uint8_t get_iec_state() {
+#ifdef MODULE_EVSE_AVAILABLE
+    return evse.evse_state.get("iec61851_state")->asUint();
+#elif  MODULE_EVSE_V2_AVAILABLE;
+    return evse_v2.evse_state.get("iec61851_state")->asUint();
+#endif
+    return 0;
+}
+
+Config *get_user_slot() {
+#ifdef MODULE_EVSE_AVAILABLE
+    return evse.evse_slots.get(CHARGING_SLOT_USER);
+#elif  MODULE_EVSE_V2_AVAILABLE;
+    return evse_v2.evse_slots.get(CHARGING_SLOT_USER);
+#endif
+    return nullptr;
+}
+
+Config *get_low_level_state() {
+#ifdef MODULE_EVSE_AVAILABLE
+    return &evse.evse_low_level_state;
+#elif  MODULE_EVSE_V2_AVAILABLE;
+    return &evse_v2.evse_low_level_state;
+#endif
+    return nullptr;
+}
+
+void set_user_current(uint16_t current) {
+#ifdef MODULE_EVSE_AVAILABLE
+    evse.set_user_current(current);
+#elif MODULE_EVSE_V2_AVAILABLE
+    evse_v2.set_user_current(current);
+#endif
+}
+
+float get_energy() {
+#ifdef MODULE_EVSE_AVAILABLE
+    bool meter_avail = sdm72dm.state.get("state")->asUint() == 2;
+    return !meter_avail ? NAN : sdm72dm.values.get("energy_abs")->asFloat();
+#elif MODULE_EVSE_V2_AVAILABLE
+    bool meter_avail = evse_v2_meter.state.get("state")->asUint() == 2;
+    return !meter_avail ? NAN : evse_v2_meter.values.get("energy_abs")->asFloat();
+#endif
+    return NAN;
+}
+
 #define USER_SLOT_INFO_VERSION 1
 struct UserSlotInfo {
     uint16_t checksum;
@@ -61,11 +131,6 @@ uint16_t calc_checksum(UserSlotInfo info) {
     return checksum;
 }
 
-void zero_user_slot_info() {
-    uint8_t buf[63] = {0};
-    tf_evse_v2_set_data_storage(&evse_v2.device, 0, buf);
-}
-
 void write_user_slot_info(uint8_t user_id, uint32_t evse_uptime, uint32_t timestamp_minutes, float meter_start) {
     UserSlotInfo info;
     info.checksum = 0;
@@ -79,12 +144,12 @@ void write_user_slot_info(uint8_t user_id, uint32_t evse_uptime, uint32_t timest
 
     uint8_t buf[63] = {0};
     memcpy(buf, &info, sizeof(info));
-    tf_evse_v2_set_data_storage(&evse_v2.device, 0, buf);
+    set_data_storage(buf);
 }
 
 bool read_user_slot_info(UserSlotInfo *result) {
     uint8_t buf[63] = {0};
-    tf_evse_v2_get_data_storage(&evse_v2.device, 0, buf);
+    get_data_storage(buf);
 
     memcpy(result, buf, sizeof(UserSlotInfo));
     if (calc_checksum(*result) != 0) {
@@ -205,7 +270,7 @@ void Users::setup()
     //TODO: make sure usernames are the same in user_config and usernames.bin
 
     bool charge_start_tracked = charge_tracker.currentlyCharging();
-    bool charging = evse_v2.evse_state.get("iec61851_state")->asUint() == IEC_STATE_C;
+    bool charging = get_iec_state() == IEC_STATE_C;
 
     if (charge_start_tracked && !charging) {
         this->stop_charging(0, true);
@@ -230,15 +295,14 @@ void Users::setup()
         }
     }
 
-    #ifdef MODULE_EVSE_V2_AVAILABLE
     task_scheduler.scheduleWithFixedDelay([this](){
         static uint8_t last_iec_state = 0;
 
-        uint8_t iec_state = evse_v2.evse_state.get("iec61851_state")->asUint();
+        uint8_t iec_state = get_iec_state();
         if (iec_state == last_iec_state)
             return;
 
-        bool user_enabled = evse_v2.evse_slots.get(CHARGING_SLOT_USER)->get("active")->asBool();
+        bool user_enabled = get_user_slot()->get("active")->asBool();
 
         logger.printfln("IEC state changed from %u to %u", last_iec_state, iec_state);
 
@@ -251,7 +315,6 @@ void Users::setup()
 
         last_iec_state = iec_state;
     }, 1000, 1000);
-    #endif
 
     if (user_config.get("http_auth_enabled")->asBool()) {
         server.setAuthentication([this](WebServerRequest req) -> bool {
@@ -457,7 +520,7 @@ void Users::rename_user(uint8_t user_id, const char *name)
 // Only returns true if the triggered action was a charge start.
 bool Users::trigger_charge_action(uint8_t user_id)
 {
-    bool user_enabled = evse_v2.evse_slots.get(CHARGING_SLOT_USER)->get("active")->asBool();
+    bool user_enabled = get_user_slot()->get("active")->asBool();
     if (!user_enabled)
         return false;
     // This is called whenever a user wants to trigger a charge action.
@@ -477,12 +540,8 @@ bool Users::trigger_charge_action(uint8_t user_id)
         return false;
     }
 
-    uint8_t iec_state = IEC_STATE_A;
-    uint32_t tscs = 0;
-    #ifdef MODULE_EVSE_V2_AVAILABLE
-        iec_state = evse_v2.evse_state.get("iec61851_state")->asUint();
-        tscs = evse_v2.evse_low_level_state.get("time_since_state_change")->asUint();
-    #endif
+    uint8_t iec_state = get_iec_state();
+    uint32_t tscs = get_low_level_state()->get("time_since_state_change")->asUint();
 
     switch (iec_state) {
         case IEC_STATE_B: // State B: The user wants to start charging.
@@ -508,55 +567,50 @@ uint32_t timestamp_minutes() {
 
 bool Users::start_charging(uint8_t user_id, uint16_t current_limit)
 {
-    // TODO: use api.getState("evse/state") or similar here instead of ifdefing everything
-    #ifdef MODULE_EVSE_V2_AVAILABLE
-        if (charge_tracker.currentlyCharging())
-            return false;
+    if (charge_tracker.currentlyCharging())
+        return false;
 
-        uint32_t evse_uptime = evse_v2.evse_low_level_state.get("uptime")->asUint();
-        bool meter_avail = evse_v2.evse_hardware_configuration.get("energy_meter_type")->asUint() != 0;
-        float meter_start = !meter_avail ? NAN : evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat();
-        uint32_t timestamp = timestamp_minutes();
+    uint32_t evse_uptime = get_low_level_state()->get("uptime")->asUint();
+    float meter_start = get_energy();
+    uint32_t timestamp = timestamp_minutes();
 
-        write_user_slot_info(user_id, evse_uptime, timestamp, meter_start);
-        charge_tracker.startCharge(timestamp, meter_start, user_id, evse_uptime);
-        evse_v2.set_user_current(current_limit);
+    write_user_slot_info(user_id, evse_uptime, timestamp, meter_start);
+    charge_tracker.startCharge(timestamp, meter_start, user_id, evse_uptime);
 
-        return true;
-    #endif
+    set_user_current(current_limit);
+
+    return true;
 }
 
 bool Users::stop_charging(uint8_t user_id, bool force)
 {
-    #ifdef MODULE_EVSE_V2_AVAILABLE
-        if (charge_tracker.currentlyCharging()) {
-            UserSlotInfo info;
-            bool success = read_user_slot_info(&info);
-            // If reading the user slot info failed, we don't know which user started this charge anymore.
-            // This should only happen if the EVSE power-cycles, however on a power-cycle any running charge
-            // should be aborted. It is safe to allow tracking a charge end in this case for any authorized card,
-            // as this should never happen anyway.
-            // Allow forcing the endCharge tracking. This is necessary in the case that the car was disconnected.
-            // The user is then autorized at the other end of the charging cable.
-            if (!force && success && info.user_id != user_id)
-                return false;
+    if (charge_tracker.currentlyCharging()) {
+        UserSlotInfo info;
+        bool success = read_user_slot_info(&info);
+        // If reading the user slot info failed, we don't know which user started this charge anymore.
+        // This should only happen if the EVSE power-cycles, however on a power-cycle any running charge
+        // should be aborted. It is safe to allow tracking a charge end in this case for any authorized card,
+        // as this should never happen anyway.
+        // Allow forcing the endCharge tracking. This is necessary in the case that the car was disconnected.
+        // The user is then autorized at the other end of the charging cable.
+        if (!force && success && info.user_id != user_id)
+            return false;
 
-            uint32_t charge_duration = 0;
-            if (success) {
-                uint32_t now_seconds = evse_v2.evse_low_level_state.get("uptime")->asUint() / 1000;
-                uint32_t start_seconds = info.evse_uptime_on_start / 1000;
-                if (now_seconds < start_seconds) {
-                    now_seconds += (0xFFFFFFFF / 1000);
-                }
-                charge_duration = now_seconds - start_seconds;
+        uint32_t charge_duration = 0;
+        if (success) {
+            uint32_t now_seconds = get_low_level_state()->get("uptime")->asUint() / 1000;
+            uint32_t start_seconds = info.evse_uptime_on_start / 1000;
+            if (now_seconds < start_seconds) {
+                now_seconds += (0xFFFFFFFF / 1000);
             }
-
-            bool meter_avail = evse_v2.evse_hardware_configuration.get("energy_meter_type")->asUint() != 0;
-            charge_tracker.endCharge(charge_duration, !meter_avail ? NAN : evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat());
+            charge_duration = now_seconds - start_seconds;
         }
-        zero_user_slot_info();
-        evse_v2.set_user_current(0);
 
-        return true;
-    #endif
+        charge_tracker.endCharge(charge_duration, get_energy());
+    }
+
+    zero_user_slot_info();
+    set_user_current(0);
+
+    return true;
 }
