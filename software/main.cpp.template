@@ -102,10 +102,6 @@ static void register_default_urls(void) {
         request.send(200, "text/html", "Forced reboot.");
     });
 
-    server.on("/uptime", HTTP_GET, [](WebServerRequest request) {
-        request.send(200, "text/html", String(millis()).c_str());
-    });
-
     server.onNotAuthorized([](WebServerRequest request) {
         if (request.uri() == "/") {
             // Safari does not support an unauthenticated login page and an authenticated main page on the same url,
