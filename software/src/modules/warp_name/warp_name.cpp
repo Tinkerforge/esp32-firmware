@@ -64,7 +64,7 @@ void WARPName::setup()
     name.get("name")->updateString(String(BUILD_HOST_PREFIX) + "-" +local_uid_str);
     name.get("uid")->updateString(String(local_uid_str));
 
-    if(!api.restorePersistentConfig("name/display_name", &display_name)) {
+    if(!api.restorePersistentConfig("info/display_name", &display_name)) {
         display_name.get("display_name")->updateString(name.get("name")->asString());
     }
 
