@@ -59,7 +59,7 @@ void zero_user_slot_info() {
 uint8_t get_iec_state() {
 #if defined(MODULE_EVSE_AVAILABLE)
     return evse.evse_state.get("iec61851_state")->asUint();
-#elif  MODULE_EVSE_V2_AVAILABLE;
+#elif defined(MODULE_EVSE_V2_AVAILABLE)
     return evse_v2.evse_state.get("iec61851_state")->asUint();
 #endif
     return 0;
@@ -68,7 +68,7 @@ uint8_t get_iec_state() {
 Config *get_user_slot() {
 #if defined(MODULE_EVSE_AVAILABLE)
     return evse.evse_slots.get(CHARGING_SLOT_USER);
-#elif  MODULE_EVSE_V2_AVAILABLE;
+#elif defined(MODULE_EVSE_V2_AVAILABLE)
     return evse_v2.evse_slots.get(CHARGING_SLOT_USER);
 #endif
     return nullptr;
@@ -77,7 +77,7 @@ Config *get_user_slot() {
 Config *get_low_level_state() {
 #if defined(MODULE_EVSE_AVAILABLE)
     return &evse.evse_low_level_state;
-#elif  MODULE_EVSE_V2_AVAILABLE;
+#elif defined(MODULE_EVSE_V2_AVAILABLE)
     return &evse_v2.evse_low_level_state;
 #endif
     return nullptr;
