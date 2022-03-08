@@ -56,7 +56,9 @@ void WARPName::updateDisplayType() {
     if (api.hasFeature("rtc"))
         display_type += " +RTC";
 
-    name.get("display_type")->updateString(display_type);
+    if (name.get("display_type")->updateString(display_type)) {
+        logger.printfln("This is %s (%s), a %s", display_name.get("display_name")->asCStr(), name.get("name")->asCStr(), name.get("display_type")->asCStr());
+    }
 }
 
 void WARPName::setup()
