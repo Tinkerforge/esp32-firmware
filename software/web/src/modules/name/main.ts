@@ -27,7 +27,7 @@ import * as API from "../../ts/api";
 declare function __(s: string): string;
 
 function update_config() {
-    let config = API.get('name/config');
+    let config = API.get('info/display_name');
 
     // Remove the was-validated class to fix a visual bug
     // where saving the config triggers an update
@@ -48,7 +48,7 @@ function update_state() {
 }
 
 function save_config() {
-    API.save('name/config',{
+    API.save('info/display_name',{
             display_name: $('#display_name').val().toString()
         },
         __("name.script.config_failed"),
@@ -58,7 +58,7 @@ function save_config() {
 export function addEventListeners(source: API.ApiEventTarget) {
     source.addEventListener('name/state', update_state);
 
-    source.addEventListener('name/config', update_config);
+    source.addEventListener('info/display_name', update_config);
 }
 
 export function init() {
@@ -75,7 +75,7 @@ export function init() {
     });
 
     $('#display_name').on("input", () => {
-            if (API.get("name/config").display_name == $('#display_name').val()) {
+            if (API.get('info/display_name').display_name == $('#display_name').val()) {
                 $('#display_name').parent().removeClass("input-group");
                 $('#name_form_submit').prop("hidden", true)
             } else {

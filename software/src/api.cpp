@@ -280,7 +280,7 @@ void API::registerDebugUrl(WebServer *server)
         request.send(200, "application/json; charset=utf-8", result.c_str());
     });
 
-    this->addState("features", &features, {}, 1000);
+    this->addState("info/features", &features, {}, 1000);
 }
 
 void API::registerBackend(IAPIBackend *backend)

@@ -27,14 +27,14 @@ $('.navbar-collapse a').on("click", function () {
 });
 
 function update_modules() {
-    let module_init = API.get('modules');
+    let module_init = API.get('info/modules');
     for (let m of modules) {
         m.updateLockState(module_init);
     }
 }
 
 export function registerEvents(eventSource: API.ApiEventTarget) {
-    eventSource.addEventListener('modules', update_modules);
+    eventSource.addEventListener('info/modules', update_modules);
 
     for (let m of modules) {
         m.addEventListeners(eventSource);

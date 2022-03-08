@@ -54,5 +54,5 @@ export function save<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T],
 }
 
 export function hasFeature(feature: string) {
-    return get('features').includes(feature);
+    return get('info/features').includes(feature);
 }

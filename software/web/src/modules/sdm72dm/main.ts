@@ -497,7 +497,7 @@ export function addEventListeners(source: API.ApiEventTarget) {
 
     source.addEventListener('meter/all_values', update_evse_v2_all_values);
 
-    source.addEventListener('features', update_module_visibility);
+    source.addEventListener('info/features', update_module_visibility);
 
     source.addEventListener("evse/max_charging_current", function (e: util.SSE) {
         let parsed = JSON.parse(e.data);

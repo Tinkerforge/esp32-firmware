@@ -32,6 +32,6 @@ public:
 
     bool initialized = false;
 
-    ConfigRoot state;
-    ConfigRoot config;
+    ConfigRoot name;
+    ConfigRoot display_name;
 };

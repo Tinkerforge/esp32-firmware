@@ -27,14 +27,14 @@ extern TaskScheduler task_scheduler;
 
 WARPName::WARPName()
 {
-    state = Config::Object({
+    name = Config::Object({
         {"name", Config::Str("")},
         {"type", Config::Str(BUILD_HOST_PREFIX)},
         {"display_type", Config::Str("", 0, 32)},
         {"uid", Config::Str("", 0, 32)}
     });
 
-    config = Config::Object({
+    display_name = Config::Object({
         {"display_name", Config::Str("", 0, 32)}
     });
 }
@@ -56,16 +56,16 @@ void WARPName::updateDisplayType() {
     if (api.hasFeature("rtc"))
         display_type += " +RTC";
 
-    state.get("display_type")->updateString(display_type);
+    name.get("display_type")->updateString(display_type);
 }
 
 void WARPName::setup()
 {
-    state.get("name")->updateString(String(BUILD_HOST_PREFIX) + "-" +local_uid_str);
-    state.get("uid")->updateString(String(local_uid_str));
+    name.get("name")->updateString(String(BUILD_HOST_PREFIX) + "-" +local_uid_str);
+    name.get("uid")->updateString(String(local_uid_str));
 
-    if(!api.restorePersistentConfig("name/config", &config)) {
-        config.get("display_name")->updateString(state.get("name")->asString());
+    if(!api.restorePersistentConfig("name/display_name", &display_name)) {
+        display_name.get("display_name")->updateString(name.get("name")->asString());
     }
 
     task_scheduler.scheduleWithFixedDelay([this](){
@@ -77,8 +77,8 @@ void WARPName::setup()
 
 void WARPName::register_urls()
 {
-   api.addState("name/state", &state, {}, 1000);
-   api.addPersistentConfig("name/config", &config, {}, 1000);
+   api.addState("info/name", &name, {}, 1000);
+   api.addPersistentConfig("info/display_name", &display_name, {}, 1000);
 }
 
 void WARPName::loop()

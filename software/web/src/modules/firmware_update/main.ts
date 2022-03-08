@@ -29,7 +29,7 @@ import bsCustomFileInput from "../../ts/bs-custom-file-input";
 let last_version: string = null;
 
 function update_version() {
-    let version = API.get('version');
+    let version = API.get('info/version');
 
     if (last_version == null) {
         last_version = version.firmware;
@@ -167,7 +167,7 @@ export function init() {
 }
 
 export function addEventListeners(source: API.ApiEventTarget) {
-    source.addEventListener('version', update_version);
+    source.addEventListener('info/version', update_version);
 }
 
 export function updateLockState(module_init: any) {

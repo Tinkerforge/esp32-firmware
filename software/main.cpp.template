@@ -94,8 +94,8 @@ static void register_default_urls(void) {
         ESP.restart();
     }, true);
 
-    api.addState("version", &version, {}, 10000);
-    api.addState("modules", &modules, {}, 10000);
+    api.addState("info/version", &version, {}, 10000);
+    api.addState("info/modules", &modules, {}, 10000);
 
     server.on("/force_reboot", HTTP_GET, [](WebServerRequest request) {
         ESP.restart();

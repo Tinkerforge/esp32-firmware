@@ -247,7 +247,7 @@ export function postReboot(alert_title: string, alert_text: string) {
                 // so this will even work if downgrading to an version older than
                 // 1.1.0
                 console.log("setting up...");
-                eventSource.addEventListener('version', function (e) {
+                eventSource.addEventListener('info/version', function (e) {
                     console.log("reloading");
                     window.location.reload();
                 }, false);})
@@ -318,7 +318,7 @@ export function downloadToFile(content: BlobPart, filename_prefix: string, exten
     const a = document.createElement('a');
     const file = new Blob([content], {type: contentType});
     let t = iso8601ButLocal(new Date()).replace(/:/gi, "-").replace(/\./gi, "-");
-    let name = API.get("name/state").name;
+    let name = API.get('info/name').name;
 
     a.href= URL.createObjectURL(file);
     a.download = filename_prefix + "-" + name + "-" + t + "." + extension;

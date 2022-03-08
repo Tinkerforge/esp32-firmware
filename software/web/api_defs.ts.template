@@ -8,12 +8,12 @@ export type Features = string[];
 
 export interface ConfigMap {
     {{{config_map_entries}}}
-    'modules': Modules
-    'features': Features
+    'info/modules': Modules
+    'info/features': Features
 };
 
 export let api_cache: {[key in keyof ConfigMap]: ConfigMap[key]} = {
     {{{api_cache_entries}}}
-    'modules': null,
-    'features': null
+    'info/modules': null,
+    'info/features': null
 };
