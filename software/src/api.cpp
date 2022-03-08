@@ -224,9 +224,9 @@ void API::registerDebugUrl(WebServer *server)
         String result = "{\"uptime\": ";
         result += String(millis());
         result += ",\n \"free_heap_bytes\":";
-        result += ESP.getFreeHeap();
+        result += heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
         result += ",\n \"largest_free_heap_block\":";
-        result += ESP.getMaxAllocHeap();
+        result += heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
         result += ",\n \"devices\": [";
 
         uint16_t i = 0;
