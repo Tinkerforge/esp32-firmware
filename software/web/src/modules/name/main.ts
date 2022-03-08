@@ -56,7 +56,7 @@ function save_config() {
 }
 
 export function addEventListeners(source: API.ApiEventTarget) {
-    source.addEventListener('name/state', update_state);
+    source.addEventListener('info/name', update_state);
 
     source.addEventListener('info/display_name', update_config);
 }
