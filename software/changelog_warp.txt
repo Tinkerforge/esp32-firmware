@@ -125,3 +125,38 @@
 - Link to correct manual
 - Fix web server hang if a client can not be reached anymore
 - Reimplement exponential backoff for WiFi connection attempts
+
+2022-03-08: 1.9.90 (<unknown>)
+- 2.0.0 Beta 1
+- Break API
+- Use charging slots to decouple NFC and other controls (through EVSE Bricklet firmware 2.1.0)
+- Add NTP time sync prototype
+- Add user management
+- Add charge tracker
+- Map NFC tags to users
+- Add network subcategory and module to configure hostname
+- Use same hostname for all network interfaces
+- Rework current configuration UI
+- Merge login page and main page
+- Fix WebSocket connection loss caused by wrong PING handling
+- Fix browser caching
+- Fix firmware compilation on Windows and macOS
+- Log WiFi MAC address
+- Add greyed out bars and RSSI alt text to WiFI reception icon.
+- Log reboot reason
+- Allow passing integer values for float API values
+- Use strings in APIs for NFC tag ids and IP addresses
+- Optimize user modification
+- Add features API
+- Add delay to prevent accidental charge stops immediately after a start via NFC
+- Allow passing the value of single-member commands directly.
+- Accept falsy values for null configs
+- Fix handling of missing meter on charge start and end
+- Add configurable send interval to MQTT
+- Add longer list of last charges to charge tracker page
+- Show latest charge first in list of last charges
+- Add user and time filters to charge tracker page
+- Add editable name UI to web interface
+- Add NTP page
+- Fix reported heap sizes in debug report
+- Move misc APIs to info/

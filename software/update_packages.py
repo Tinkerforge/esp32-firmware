@@ -12,6 +12,7 @@ from zipfile import ZipFile
 
 PACKAGES = [
     ('arduino-esp32', 'warp-1.3.1', 'https://github.com/Tinkerforge/arduino-esp32'),
+    ('arduino-esp32', 'warp-2.0.0', 'https://github.com/Tinkerforge/arduino-esp32'),
     ('arduino-esp32', 'warp2-1.1.1', 'https://github.com/Tinkerforge/arduino-esp32'),
     ('arduino-esp32', 'warp2-2.0.0', 'https://github.com/Tinkerforge/arduino-esp32'),
 ]
