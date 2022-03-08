@@ -126,7 +126,7 @@
 - Fix web server hang if a client can not be reached anymore
 - Reimplement exponential backoff for WiFi connection attempts
 
-2022-03-08: 1.9.90 (<unknown>)
+2022-03-08: 1.9.90 (0795b7de)
 - 2.0.0 Beta 1
 - Break API
 - Use charging slots to decouple NFC and other controls (through EVSE Bricklet firmware 2.1.0)
