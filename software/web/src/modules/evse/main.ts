@@ -156,7 +156,7 @@ function stop_charging() {
 }
 
 function update_evse_user_calibration() {
-    let c = API.get("evse/user_calibration");
+    let c = API.get('evse/user_calibration');
     util.update_button_group("btn_group_user_calibration_enabled", c.user_calibration_active ? 1 : 0);
     $('#voltage_diff').val(c.voltage_diff);
     $('#voltage_mul').val(c.voltage_mul);

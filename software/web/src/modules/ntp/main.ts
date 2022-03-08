@@ -27,7 +27,7 @@ import * as API from "../../ts/api";
 declare function __(s: string): string;
 
 function update_config() {
-    let cfg = API.get("ntp/config");
+    let cfg = API.get('ntp/config');
     $('#ntp_enabled').prop("checked", cfg.enable);
     $('#ntp_use_dhcp').prop("checked", cfg.use_dhcp);
     $('#ntp_timezone').val(cfg.timezone);
