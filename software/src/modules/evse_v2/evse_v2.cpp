@@ -613,7 +613,7 @@ void EVSEV2::register_urls()
     if (!device_found)
         return;
 
-#ifdef MODULE_CM_NETWORKING_AVAILABLE
+#if defined(MODULE_CM_NETWORKING_AVAILABLE)
     cm_networking.register_client([this](uint16_t current){
         set_managed_current(current);
     });
@@ -679,7 +679,7 @@ void EVSEV2::register_urls()
         is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_AUTOSTART_BUTTON, 32000));
     }, true);
 
-#ifdef MODULE_WS_AVAILABLE
+#if defined(MODULE_WS_AVAILABLE)
     server.on("/evse/start_debug", HTTP_GET, [this](WebServerRequest request) {
         task_scheduler.scheduleOnce([this](){
             ws.pushRawStateUpdate(this->get_evse_debug_header(), "evse/debug_header");
@@ -829,7 +829,7 @@ void EVSEV2::loop()
 {
     this->DeviceModule::loop();
 
-#ifdef MODULE_WS_AVAILABLE
+#if defined(MODULE_WS_AVAILABLE)
     static uint32_t last_debug = 0;
     if (debug && deadline_elapsed(last_debug + 50)) {
         last_debug = millis();

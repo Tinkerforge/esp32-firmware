@@ -36,17 +36,17 @@ extern TaskScheduler task_scheduler;
 // because a lot of the code runs in setup(), i.e. before APIs
 // are registered.
 void set_data_storage(uint8_t *buf) {
-#ifdef MODULE_EVSE_AVAILABLE
+#if defined(MODULE_EVSE_AVAILABLE)
     tf_evse_set_data_storage(&evse.device, 0, buf);
-#elif MODULE_EVSE_V2_AVAILABLE
+#elif defined(MODULE_EVSE_V2_AVAILABLE)
     tf_evse_v2_set_data_storage(&evse_v2.device, 0, buf);
 #endif
 }
 
 void get_data_storage(uint8_t *buf) {
-#ifdef MODULE_EVSE_AVAILABLE
+#if defined(MODULE_EVSE_AVAILABLE)
     tf_evse_get_data_storage(&evse.device, 0, buf);
-#elif MODULE_EVSE_V2_AVAILABLE
+#elif defined(MODULE_EVSE_V2_AVAILABLE)
     tf_evse_v2_get_data_storage(&evse_v2.device, 0, buf);
 #endif
 }
@@ -57,7 +57,7 @@ void zero_user_slot_info() {
 }
 
 uint8_t get_iec_state() {
-#ifdef MODULE_EVSE_AVAILABLE
+#if defined(MODULE_EVSE_AVAILABLE)
     return evse.evse_state.get("iec61851_state")->asUint();
 #elif  MODULE_EVSE_V2_AVAILABLE;
     return evse_v2.evse_state.get("iec61851_state")->asUint();
@@ -66,7 +66,7 @@ uint8_t get_iec_state() {
 }
 
 Config *get_user_slot() {
-#ifdef MODULE_EVSE_AVAILABLE
+#if defined(MODULE_EVSE_AVAILABLE)
     return evse.evse_slots.get(CHARGING_SLOT_USER);
 #elif  MODULE_EVSE_V2_AVAILABLE;
     return evse_v2.evse_slots.get(CHARGING_SLOT_USER);
@@ -75,7 +75,7 @@ Config *get_user_slot() {
 }
 
 Config *get_low_level_state() {
-#ifdef MODULE_EVSE_AVAILABLE
+#if defined(MODULE_EVSE_AVAILABLE)
     return &evse.evse_low_level_state;
 #elif  MODULE_EVSE_V2_AVAILABLE;
     return &evse_v2.evse_low_level_state;
@@ -84,18 +84,18 @@ Config *get_low_level_state() {
 }
 
 void set_user_current(uint16_t current) {
-#ifdef MODULE_EVSE_AVAILABLE
+#if defined(MODULE_EVSE_AVAILABLE)
     evse.set_user_current(current);
-#elif MODULE_EVSE_V2_AVAILABLE
+#elif defined(MODULE_EVSE_V2_AVAILABLE)
     evse_v2.set_user_current(current);
 #endif
 }
 
 float get_energy() {
-#ifdef MODULE_EVSE_AVAILABLE
+#if defined(MODULE_EVSE_AVAILABLE)
     bool meter_avail = sdm72dm.state.get("state")->asUint() == 2;
     return !meter_avail ? NAN : sdm72dm.values.get("energy_abs")->asFloat();
-#elif MODULE_EVSE_V2_AVAILABLE
+#elif defined(MODULE_EVSE_V2_AVAILABLE)
     bool meter_avail = evse_v2_meter.state.get("state")->asUint() == 2;
     return !meter_avail ? NAN : evse_v2_meter.values.get("energy_abs")->asFloat();
 #endif

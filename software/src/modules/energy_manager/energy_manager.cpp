@@ -307,7 +307,7 @@ void EnergyManager::register_urls()
         return;
 
 
-#ifdef MODULE_WS_AVAILABLE
+#if defined(MODULE_WS_AVAILABLE)
     server.on("/energy_manager/start_debug", HTTP_GET, [this](WebServerRequest request) {
         task_scheduler.scheduleOnce([this](){
             ws.pushStateUpdate(this->get_energy_manager_debug_header(), "energy_manager/debug_header");
@@ -334,7 +334,7 @@ void EnergyManager::loop()
 {
     this->DeviceModule::loop();
 
-#ifdef MODULE_WS_AVAILABLE
+#if defined(MODULE_WS_AVAILABLE)
     static uint32_t last_debug = 0;
     if (debug && deadline_elapsed(last_debug + 50)) {
         last_debug = millis();

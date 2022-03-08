@@ -27,10 +27,10 @@
 #include "task_scheduler.h"
 #include "modules.h"
 
-#ifdef MODULE_EVSE_AVAILABLE
+#if defined(MODULE_EVSE_AVAILABLE)
 #include "bindings/bricklet_evse.h"
 #endif
-#ifdef MODULE_EVSE_V2_AVAILABLE
+#if defined(MODULE_EVSE_V2_AVAILABLE)
 #include "bindings/bricklet_evse_v2.h"
 #endif
 
@@ -209,10 +209,10 @@ void set_led(int16_t mode)
             break;
     }
 
-#ifdef MODULE_EVSE_AVAILABLE
+#if defined(MODULE_EVSE_AVAILABLE)
     tf_evse_set_indicator_led(&evse.device, mode, mode != IND_NACK ? 2620 : 3930, nullptr);
 #endif
-#ifdef MODULE_EVSE_V2_AVAILABLE
+#if defined(MODULE_EVSE_V2_AVAILABLE)
     tf_evse_v2_set_indicator_led(&evse_v2.device, mode, mode != IND_NACK ? 2620 : 3930, nullptr);
 #endif
 
