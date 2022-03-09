@@ -660,8 +660,6 @@ void EVSEV2::register_urls()
     api.addState("evse/state", &evse_state, {}, 1000);
     api.addState("evse/hardware_configuration", &evse_hardware_configuration, {}, 1000);
     api.addState("evse/low_level_state", &evse_low_level_state, {}, 1000);
-    api.addState("evse/energy_meter_values", &evse_energy_meter_values, {}, 1000);
-    api.addState("evse/energy_meter_errors", &evse_energy_meter_errors, {}, 1000);
     api.addState("evse/button_state", &evse_button_state, {}, 250);
     api.addState("evse/slots", &evse_slots, {}, 1000);
     api.addState("evse/indicator_led", &evse_indicator_led, {}, 1000);
