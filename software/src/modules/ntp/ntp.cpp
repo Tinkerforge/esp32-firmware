@@ -25,6 +25,8 @@
 #include "time.h"
 #include "sntp.h"
 
+#include "timezone_translation.h"
+
 extern TaskScheduler task_scheduler;
 
 Config *ntp_state;
@@ -84,7 +86,12 @@ void NTP::setup()
         sntp_setservername(0, config.get("server")->asCStr());
 
     sntp_init();
-    setenv("TZ", "CET-1CEST,M3.5.0,M10.5.0/3", 1);
+    const char *tzstring = lookup_timezone(config.get("timezone")->asCStr());
+    if (tzstring == nullptr) {
+        logger.printfln("Failed to look up timezone information for %s. Will not set timezone", config.get("timezone")->asCStr());
+        return;
+    }
+    setenv("TZ", tzstring, 1);
     tzset();
     logger.printfln("Set timezone to %s", config.get("timezone")->asCStr());
 }
