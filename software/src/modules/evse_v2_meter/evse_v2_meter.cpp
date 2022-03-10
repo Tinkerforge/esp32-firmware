@@ -68,6 +68,23 @@ EVSEV2Meter::EVSEV2Meter()
     reset = Config::Null();
 }
 
+void EVSEV2Meter::updateMeterValues() {
+    float power = evse_v2.evse_energy_meter_values.get("power")->asFloat();
+    values.get("power")->updateFloat(power);
+    values.get("energy_rel")->updateFloat(evse_v2.evse_energy_meter_values.get("energy_rel")->asFloat());
+    values.get("energy_abs")->updateFloat(evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat());
+
+    for(int i = 0; i < 3; ++i)
+        phases.get("phases_active")->get(i)->updateBool(evse_v2.evse_energy_meter_values.get("phases_active")->get(i)->asBool());
+
+    for(int i = 0; i < 3; ++i)
+        phases.get("phases_connected")->get(i)->updateBool(evse_v2.evse_energy_meter_values.get("phases_connected")->get(i)->asBool());
+
+    int16_t val = (int16_t)min((float)INT16_MAX, power);
+    interval_samples.push(val);
+    ++samples_last_interval;
+}
+
 void EVSEV2Meter::setupEVSE(bool update_module_initialized)
 {
     evse_v2.update_all_data();
@@ -100,21 +117,13 @@ void EVSEV2Meter::setupEVSE(bool update_module_initialized)
         all_values.add();
     }
 
+    // We _have_ to update the meter values here:
+    // Other modules may in their setup check if the meter feature is available
+    // and if so, read the meter values.
+    updateMeterValues();
+
     task_scheduler.scheduleWithFixedDelay([this](){
-        float power = evse_v2.evse_energy_meter_values.get("power")->asFloat();
-        values.get("power")->updateFloat(power);
-        values.get("energy_rel")->updateFloat(evse_v2.evse_energy_meter_values.get("energy_rel")->asFloat());
-        values.get("energy_abs")->updateFloat(evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat());
-
-        for(int i = 0; i < 3; ++i)
-            phases.get("phases_active")->get(i)->updateBool(evse_v2.evse_energy_meter_values.get("phases_active")->get(i)->asBool());
-
-        for(int i = 0; i < 3; ++i)
-            phases.get("phases_connected")->get(i)->updateBool(evse_v2.evse_energy_meter_values.get("phases_connected")->get(i)->asBool());
-
-        int16_t val = (int16_t)min((float)INT16_MAX, power);
-        interval_samples.push(val);
-        ++samples_last_interval;
+        this->updateMeterValues();
     }, 500, 500);
 
     task_scheduler.scheduleWithFixedDelay([this](){

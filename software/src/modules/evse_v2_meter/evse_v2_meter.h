@@ -43,6 +43,7 @@ public:
     void setupEVSE(bool update_module_initialized);
     void register_urls();
     void loop();
+    void updateMeterValues();
 
     bool initialized = false;
     bool hardware_available = false;
