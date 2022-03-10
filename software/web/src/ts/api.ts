@@ -42,8 +42,7 @@ export function trigger<T extends keyof ConfigMap>(topic: T, event_source: ApiEv
 }
 
 export function save<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T], error_string: string, reboot_string?: string) {
-    console.log(reboot_string);
-    $.ajax({
+    return $.ajax({
         url: '/' + topic + '_update',
         method: 'PUT',
         contentType: 'application/json',
