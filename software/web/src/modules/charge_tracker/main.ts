@@ -233,7 +233,7 @@ function update_current_charge() {
 
     time_charging = Math.floor(time_charging / 1000);
 
-    $('#users_status_charging_user').html(cc.user_id == 0 ? "unbekannter Nutzer" : user_display_name);
+    $('#users_status_charging_user').html(cc.user_id == 0 ? __("charge_tracker.script.unknown_user") : user_display_name);
     $('#users_status_charging_time').html(util.format_timespan(time_charging));
     $('#users_status_charged_energy').html(cc.meter_start == null ? "N/A" : util.toLocaleFixed(energy_charged, 3) + " kWh");
     $('#users_status_charging_start').html(timestamp_min_to_date(cc.timestamp_minutes));

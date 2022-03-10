@@ -34,11 +34,11 @@
             "csv_header_duration": "Ladedauer in s",
             "csv_header_meter_start": "Zählerstand Start",
             "csv_header_meter_end": "Zählerstand Ende",
-            "unknown_user": "Unbekannter Nutzer",
-            "unknown_users": "unbekannte Nutzer",
-            "deleted_user": "Gelöschter Nutzer",
-            "deleted_users": "gelöschte Nutzer",
-            "all_users": "alle Nutzer",
+            "unknown_user": "Unbekannter Benutzer",
+            "unknown_users": "unbekannte Benutzer",
+            "deleted_user": "Gelöschter Benutzer",
+            "deleted_users": "gelöschte Benutzer",
+            "all_users": "alle Benutzer",
             "unknown_charge_start": "Unbekannter Startzeitpunkt"
         }
     }
