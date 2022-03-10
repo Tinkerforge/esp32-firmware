@@ -42,8 +42,8 @@ API::API()
 void API::setup()
 {
     task_scheduler.scheduleWithFixedDelay([this]() {
-        for (size_t i = 0; i < states.size(); ++i) {
-            auto &reg = states[i];
+        for (size_t state_idx = 0; state_idx < states.size(); ++state_idx) {
+            auto &reg = states[state_idx];
 
             if (!deadline_elapsed(reg.last_update + reg.interval)) {
                 continue;
@@ -58,9 +58,9 @@ void API::setup()
 
             String payload = reg.config->to_string_except(reg.keys_to_censor);
 
-            for (int i = 0; i < this->backends.size(); ++i) {
-                if (this->backends[i]->pushStateUpdate(i, payload, reg.path))
-                    reg.config->set_update_handled(1 << i);
+            for (size_t backend_idx = 0; backend_idx < this->backends.size(); ++backend_idx) {
+                if (this->backends[backend_idx]->pushStateUpdate(state_idx, payload, reg.path))
+                    reg.config->set_update_handled(1 << backend_idx);
             }
         }
     }, 250, 250);
