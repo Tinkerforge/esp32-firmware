@@ -151,6 +151,10 @@ $(window).on('pageshow', (ev) => {
         $('a[data-toggle="tab"]').not(<Element>event.target).trigger("hidden.bs.tab");
     });
 
+    $('a[data-toggle="tab"]').on('shown.bs.tab', () => {
+        window.scrollTo(0,0);
+    });
+
     $("#reboot_button").on("click", () => {
         $('#reboot').modal('hide');
         util.reboot();
