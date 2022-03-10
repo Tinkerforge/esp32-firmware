@@ -6,7 +6,7 @@
     },
     "ethernet": {
         "content": {
-            "enable_desc": "Der Brick verbindet automatisch beim Start oder wenn ein Kabel eingesteckt wird"
+            "enable_desc": "Der Brick verbindet sich automatisch beim Start oder wenn ein Kabel eingesteckt wird"
         }
     },
     "event_log": {
