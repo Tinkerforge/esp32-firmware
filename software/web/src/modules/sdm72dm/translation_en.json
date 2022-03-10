@@ -92,22 +92,22 @@
             "detailed_ah_desc": "{{{empty_text}}}",
 
             "detailed_total_system_power_demand": "Active power demand",
-            "detailed_total_system_power_demand_desc": "Import - Export",
+            "detailed_total_system_power_demand_desc": "import - export",
 
             "detailed_maximum_total_system_power_demand": "Maximum active power demand",
-            "detailed_maximum_total_system_power_demand_desc": "Highest value measured",
+            "detailed_maximum_total_system_power_demand_desc": "highest value measured",
 
             "detailed_total_system_va_demand": "Apparent power demand",
-            "detailed_total_system_va_demand_desc": "Import - Export",
+            "detailed_total_system_va_demand_desc": "import - export",
 
             "detailed_maximum_total_system_va_demand": "Maximum apparent power demand",
-            "detailed_maximum_total_system_va_demand_desc": "Highest value measured",
+            "detailed_maximum_total_system_va_demand_desc": "highest value measured",
 
             "detailed_neutral_current_demand": "Neutral current demand",
             "detailed_neutral_current_demand_desc": "{{{empty_text}}}",
 
             "detailed_maximum_neutral_current_demand": "Maximum neutral current demand",
-            "detailed_maximum_neutral_current_demand_desc": "Highest value measured",
+            "detailed_maximum_neutral_current_demand_desc": "highest value measured",
 
             "detailed_line1_to_line2_volts": "L1 to L2 voltage",
             "detailed_line1_to_line2_volts_desc": "{{{empty_text}}}",
@@ -140,7 +140,7 @@
             "detailed_current_demand_desc": "L1, L2, L3",
 
             "detailed_maximum_current_demand": "Maximum current demand",
-            "detailed_maximum_current_demand_desc": "L1, L2, L3; Highest value measured",
+            "detailed_maximum_current_demand_desc": "L1, L2, L3; highest value measured",
 
             "detailed_line1_to_line2_volts_thd": "Voltage THD L1 to L2",
             "detailed_line1_to_line2_volts_thd_desc": "{{{empty_text}}}",
@@ -167,7 +167,7 @@
             "detailed_export_kwh_desc": "L1, L2, L3; transfered from vehicle",
 
             "detailed_total_kwh": "Total active energies",
-            "detailed_total_kwh_desc": "L1, L2, L3; Import + Export",
+            "detailed_total_kwh_desc": "L1, L2, L3; import + export",
 
             "detailed_import_kvarh": "Reactive energies (Import)",
             "detailed_import_kvarh_desc": "L1, L2, L3; transfered to vehicle",
@@ -176,7 +176,7 @@
             "detailed_export_kvarh_desc": "L1, L2, L3; transfered from vehicle",
 
             "detailed_total_kvarh": "Total reactive energies",
-            "detailed_total_kvarh_desc": "L1, L2, L3; Import + Export"
+            "detailed_total_kvarh_desc": "L1, L2, L3; import + export"
         },
         "script": {
             "time": "Time of day",

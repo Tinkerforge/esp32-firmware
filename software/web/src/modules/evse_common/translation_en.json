@@ -60,7 +60,7 @@
             "jumper_config_unconfigured": "Unconfigured",
             "evse_version": "EVSE version",
             "charging_current": "Charging current limits",
-            "charging_current_muted": "Minimum of the charging current limits",
+            "charging_current_muted": "minimum of the charging current limits",
             "reset_configured_current": "Release",
             "reset_external_slot": "Release",
             "low_level_state": "Low Level State",
@@ -89,11 +89,11 @@
             "settings": "Settings",
             "charge_management_description": "Charge management",
             "charge_management_description_muted": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
-            "charge_management_enable": "Require the clearance of a charge manager (of this or another WARP charger) to charge",
+            "charge_management_enable": "Requires the clearance of a charge manager (of this or another WARP charger) to charge",
 
             "user_slot_description": "User authorization",
-            "user_slot_description_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
-            "user_slot_enable": "Require an user authorization (via NFC card) to charge",
+            "user_slot_description_muted": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
+            "user_slot_enable": "Requires a user authorization (via NFC card) to charge",
 
 
             "external_description": "External control",

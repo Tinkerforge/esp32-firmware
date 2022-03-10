@@ -10,12 +10,12 @@
         "content": {
             "charge_tracker": "Charge tracker",
             "download": "Download charge log",
-            "download_desc": "a CSV file of all tracked charges",
+            "download_desc": "CSV file of all tracked charges",
             "download_btn": "Download charge log",
 
             "tracked_charges": "Tracked charges",
             "tracked_charges_muted": "",
-            "first_charge_timestamp": "Timestamp of the oldest tracked charge",
+            "first_charge_timestamp": "Oldest tracked charge",
             "first_charge_timestamp_muted": "",
             "user_filter": "User filter",
             "user_filter_muted": "CSV file will only contain charges of the selected user",
@@ -25,7 +25,7 @@
             "from": "from",
             "to": "to",
             "last_charges": "Last charges",
-            "last_charges_desc": "The last 30 charges are shown."
+            "last_charges_desc": "up to 30 charges are shown"
         },
         "script": {
             "csv_header_start": "Start time",

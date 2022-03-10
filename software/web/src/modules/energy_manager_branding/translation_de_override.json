@@ -6,12 +6,12 @@
     },
     "ethernet": {
         "content": {
-            "enable_desc": "Wenn aktiviert, verbindet sich der Energiemanager beim Start oder wenn ein Kabel eingesteckt wird, automatisch."
+            "enable_desc": "Der Energiemanager verbindet sich beim Start automatisch zum konfigurierten Netzwerk"
         }
     },
     "event_log": {
         "content": {
-            "debug_report_desc_muted": "Ein kompletter Report aller Statusinformationen des Energiemanagers außer Passwörtern"
+            "debug_report_desc_muted": "kompletter Report aller Statusinformationen des Energiemanagers außer Passwörtern"
         }
     },
     "firmware_update": {
@@ -39,8 +39,8 @@
     },
     "wifi": {
         "content": {
-            "sta_enable_sta_desc": "Wenn aktiviert, verbindet sich der Energiemanager beim Start automatisch zum konfigurierten Netzwerk.",
-            "ap_hide_ssid_desc_pre": "Versteckt den Netzwerknamen. Der Energiemanager ist unter der BSSID "
+            "sta_enable_sta_desc": "Der Energiemanager verbindet sich beim Start automatisch zum konfigurierten Netzwerk",
+            "ap_hide_ssid_desc_pre": "Der Energiemanager ist unter der BSSID "
         }
     }
 }

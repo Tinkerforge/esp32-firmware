@@ -6,7 +6,7 @@
     },
     "event_log": {
         "content": {
-            "debug_report_desc_muted": "A complete report of all status information of this energy manager except passwords"
+            "debug_report_desc_muted": "complete report of all status information of this energy manager except passwords"
         }
     },
     "firmware_update": {
@@ -21,7 +21,7 @@
     },
     "mqtt": {
         "content": {
-            "enable_mqtt_desc": "This allows controlling the energy manager over the configured MQTT broker. <a href=\"{{{apidoc_url}}}\">MQTT API documentation (German only)</a>"
+            "enable_mqtt_desc": "This allows controlling the energy manager over the configured MQTT broker. <a href=\"{{{apidoc_url}}}\">MQTT API documentation</a>"
         }
     },
     "network": {
@@ -34,7 +34,7 @@
     },
     "wifi": {
         "content": {
-            "ap_hide_ssid_desc_pre": "Hides the network name. The energy manager is reachable under the BSSID "
+            "ap_hide_ssid_desc_pre": "The energy manager is reachable under the BSSID "
         }
     }
 }

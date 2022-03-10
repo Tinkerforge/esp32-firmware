@@ -6,12 +6,12 @@
     },
     "ethernet": {
         "content": {
-            "enable_desc": "Wenn aktiviert, verbindet sich die Wallbox beim Start oder wenn ein Kabel eingesteckt wird, automatisch."
+            "enable_desc": "Die Wallbox verbindet automatisch beim Start oder wenn ein Kabel eingesteckt wird"
         }
     },
     "event_log": {
         "content": {
-            "debug_report_desc_muted": "Ein kompletter Report aller Statusinformationen der Wallbox außer Passwörtern"
+            "debug_report_desc_muted": "kompletter Report aller Statusinformationen der Wallbox außer Passwörtern"
         }
     },
     "firmware_update": {
@@ -26,7 +26,7 @@
     },
     "network": {
         "content": {
-            "enable_mdns_desc": "mDNS erlaubt es anderen Geräten in diesem Netzwerk die Wallbox zu finden."
+            "enable_mdns_desc": "Erlaubt es anderen Geräten in diesem Netzwerk die Wallbox zu finden"
         }
     },
     "mqtt": {
@@ -39,8 +39,8 @@
     },
     "wifi": {
         "content": {
-            "sta_enable_sta_desc": "Wenn aktiviert, verbindet sich die Wallbox beim Start automatisch zum konfigurierten Netzwerk.",
-            "ap_hide_ssid_desc_pre": "Versteckt den Netzwerknamen. Die Wallbox ist unter der BSSID "
+            "sta_enable_sta_desc": "Die Wallbox verbindet sich beim Start automatisch zum konfigurierten Netzwerk",
+            "ap_hide_ssid_desc_pre": "Die Wallbox ist unter der BSSID "
         }
     }
 }

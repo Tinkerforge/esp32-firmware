@@ -6,7 +6,7 @@
     },
     "event_log": {
         "content": {
-            "debug_report_desc_muted": "A complete report of all status information of this Brick except passwords"
+            "debug_report_desc_muted": "complete report of all status information of this Brick except passwords"
         }
     },
     "firmware_update": {
@@ -26,7 +26,7 @@
     },
     "mqtt": {
         "content": {
-            "enable_mqtt_desc": "This allows controlling the Brick over the configured MQTT broker. <a href=\"{{{apidoc_url}}}\">MQTT API documentation (German only)</a>"
+            "enable_mqtt_desc": "This allows controlling the Brick over the configured MQTT broker. <a href=\"{{{apidoc_url}}}\">MQTT API documentation</a>"
         }
     },
     "util": {
@@ -34,7 +34,7 @@
     },
     "wifi": {
         "content": {
-            "ap_hide_ssid_desc_pre": "Hides the network name. The Brick is reachable under the BSSID "
+            "ap_hide_ssid_desc_pre": "The Brick is reachable under the BSSID "
         }
     }
 }

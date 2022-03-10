@@ -81,7 +81,12 @@
         <div class="form-group row">
             <label for="mqtt_client_name" class="col-lg-3 col-xl-2 col-form-label" data-i18n="mqtt.content.interval"></label>
             <div class="col-lg-9 col-xl-6">
-                <input id="mqtt_interval" class="form-control" type="number" step="1" min="1" max="4294967296" required>
+                <div class="input-group">
+                    <input id="mqtt_interval" class="form-control" type="number" step="1" min="1" max="4294967296" required>
+                    <div class="input-group-append">
+                        <div class="input-group-text form-control">s</div>
+                    </div>
+                </div>
             </div>
         </div>
 

@@ -10,7 +10,7 @@
             "users": "Benutzer&shy;verwaltung",
 
             "enable_authentication": "Anmeldung aktiviert",
-            "enable_authentication_desc": "Wenn aktiviert, muss beim Aufrufen des Webinterfaces oder bei Verwendung der HTTP-API eine Anmeldung als einer der konfigurieren Benutzer durchgeführt werden.",
+            "enable_authentication_desc": "Beim Aufrufen des Webinterfaces oder bei Verwendung der HTTP-API muss eine Anmeldung als einer der konfigurieren Benutzer durchgeführt werden",
 
             "save": "Speichern",
             "authorized_users": "Berechtigte Benutzer",

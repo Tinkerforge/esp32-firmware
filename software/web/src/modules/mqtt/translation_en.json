@@ -13,7 +13,7 @@
         "content": {
             "mqtt": "MQTT Settings",
             "enable_mqtt_desc": null,
-            "enable_mqtt": "Enable MQTT",
+            "enable_mqtt": "MQTT enabled",
             "broker_host": "Broker hostname or IP address",
             "port": "<span class=\"form-label pr-2\">Broker port</span><span class=\"text-muted\">typically 1883</span>",
             "username": "<span class=\"form-label pr-2\">Broker username</span><span class=\"text-muted\">optional</span",
@@ -21,7 +21,7 @@
             "topic_prefix": "<span class=\"form-label pr-2\">Topic prefix</span><span class=\"text-muted\">optional</span>",
             "topic_prefix_invalid": "The topic prefix can not start with $ or contain a # or +.",
             "client_name": "<span class=\"form-label pr-2\">Client ID</span>",
-            "interval": "<span class=\"form-label pr-2\">Send interval</span><span class=\"text-muted\">(seconds). Messages are only sent if the payload has changed.</span>",
+            "interval": "<span class=\"form-label pr-2\">Maximum send interval</span><span class=\"text-muted\">messages are only sent if the payload has changed</span>",
             "save": "Save"
         },
         "script": {
