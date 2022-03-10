@@ -109,13 +109,22 @@ if generated_db_version >= installed_db_version:
 timezones = make_timezones_dict()
 
 nested_dict = {}
+empty_nested_dict = {}
+
 for name, tz in timezones.items():
+    if len(name) > longest:
+        longest = len(name)
+        longest_val = name
+
     splt = name.split("/")
     d = nested_dict
+    d2 = empty_nested_dict
     for entry in splt[:-1]:
         d = d.setdefault(entry, {})
+        d2 = d2.setdefault(entry, {})
 
     d[splt[-1]] = tz
+    d2[splt[-1]] = None
 
 generate("global", nested_dict)
 
@@ -124,3 +133,8 @@ specialize_template("timezones.c.template", "timezones.c", {
     '{{{table_inits}}}': "\n\n".join(inits)
 })
 
+
+specialize_template("../../../web/src/modules/ntp/timezones.ts.template", "../../../web/src/modules/ntp/timezones.ts", {
+    '{{{generated_comment}}}': "/*\n{};{}\n*/".format(installed_db_version, datetime.datetime.utcnow().isoformat()),
+    '{{{json}}}': json.dumps(empty_nested_dict, indent=4)
+})
