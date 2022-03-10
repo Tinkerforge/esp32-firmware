@@ -50,12 +50,16 @@ void ntp_sync_cb(struct timeval *t)
 
 NTP::NTP()
 {
-    config = Config::Object({
+    config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(true)},
         {"use_dhcp", Config::Bool(true)},
-        {"timezone", Config::Str("Europe/Berlin", 0, 64)},
+        {"timezone", Config::Str("Europe/Berlin", 0, 32)}, // Longest is America/Argentina/ComodRivadavia = 32 chars
         {"server", Config::Str("", 0, 64)},
-    });
+    }), [](Config &conf) -> String {
+        if (lookup_timezone(conf.get("timezone")->asCStr()) == nullptr)
+            return "Can't update config: Failed to look up timezone.";
+        return "";
+    }};
 
     state = Config::Object({
         {"synced", Config::Bool(false)},
