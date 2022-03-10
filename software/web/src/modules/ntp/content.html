@@ -38,7 +38,13 @@
                 <label for="ntp_timezone" class="col-form-label form-label" data-i18n="ntp.content.timezone"></label>
             </div>
             <div class="col-lg-9 col-xl-6">
-                <input id="ntp_timezone" class="form-control" type="text" disabled>
+                <div class="input-group">
+                    <select class="custom-select" id="ntp_timezone_area"></select>
+                    <select class="custom-select rounded-right" id="ntp_timezone_location"></select>
+                    <select class="custom-select" id="ntp_timezone_sublocation" hidden></select>
+                </div>
+                <br/>
+                <button id="ntp_browser_timezone" class="btn btn-primary form-control" type="button" data-i18n="ntp.content.use_browser_timezone"></button>
             </div>
         </div>
 
@@ -53,7 +59,7 @@
 
         <div class="form-group row">
             <div class="col-lg-12 col-xl-8 text-right">
-                <button id="ntp_save_button" type="submit" form="ntp_form" class="btn btn-primary" data-i18n="ntp.content.save"></button>
+                <button id="ntp_save_button" type="submit" form="ntp_form" class="btn btn-primary" data-i18n="ntp.content.save" disabled></button>
             </div>
         </div>
     </form>

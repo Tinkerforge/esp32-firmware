@@ -24,14 +24,32 @@ import feather from "../../ts/feather";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
+import timezones from "./timezones";
+
 declare function __(s: string): string;
 
-function update_config() {
+function update_timezone(timezone: string) {
+    let splt = timezone.split("/");
+    $('#ntp_timezone_area').val(splt[0]);
+    $('#ntp_timezone_area').trigger('change');
+
+    $('#ntp_timezone_location').val(splt[1]);
+    $('#ntp_timezone_location').trigger('change');
+
+    if (splt.length == 3) {
+        $('#ntp_timezone_sublocation').val(splt[2]);
+    }
+}
+
+function update_config(force: boolean = false) {
+    if (!force && !$('#ntp_save_button').prop("disabled"))
+        return;
+
     let cfg = API.get('ntp/config');
     $('#ntp_enabled').prop("checked", cfg.enable);
     $('#ntp_use_dhcp').prop("checked", cfg.use_dhcp);
-    $('#ntp_timezone').val(cfg.timezone);
     $('#ntp_server').val(cfg.server);
+    update_timezone(cfg.timezone);
 }
 
 function update_state() {
@@ -39,22 +57,59 @@ function update_state() {
 }
 
 function save_config() {
+    let timezone = $('#ntp_timezone_area').val() + "/" + $('#ntp_timezone_location').val() + ($('#ntp_timezone_sublocation').prop("hidden") ? "" : ("/" + $('#ntp_timezone_sublocation').val()));
+
     API.save("ntp/config", {
         enable: $('#ntp_enabled').prop("checked"),
         use_dhcp: $('#ntp_use_dhcp').prop("checked"),
-        timezone: $('#ntp_timezone').val().toString(),
+        timezone: timezone,
         server: $('#ntp_server').val().toString()
     },
     __("ntp.script.save_failed"),
     __("ntp.script.reboot_content_changed"));
+
+    $('#ntp_save_button').prop("disabled", true);
 }
 
 export function addEventListeners(source: API.ApiEventTarget) {
     source.addEventListener('ntp/state', update_state);
-    source.addEventListener('ntp/config', update_config);
+    source.addEventListener('ntp/config', () => update_config());
 }
 
 export function init() {
+    $('#ntp_browser_timezone').on('click', () => {
+        update_timezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
+        $('#ntp_form').trigger('input');
+    });
+
+    $('#ntp_form').on('input', () => $('#ntp_save_button').prop("disabled", false));
+
+    $('#ntp_timezone_area').on('change', () => {
+        let area = <string>$('#ntp_timezone_area').val();
+        let options = Object.keys(timezones[area]).sort().map((x) => `<option value="${x}">${x}</option>`).join("");
+        $('#ntp_timezone_location').empty().append(options);
+        $('#ntp_timezone_location').trigger('change');
+    });
+
+    $('#ntp_timezone_location').on('change', () => {
+        let area = <string>$('#ntp_timezone_area').val();
+        let loc = <string>$('#ntp_timezone_location').val();
+        let sub_loc = timezones[area][loc];
+        if (sub_loc === null) {
+            $('#ntp_timezone_sublocation').prop("hidden", true);
+            $('#ntp_timezone_location').addClass("rounded-right");
+        } else {
+            let options = Object.keys(sub_loc).sort().map((x) => `<option value="${x}">${x}</option>`).join("");
+            $('#ntp_timezone_sublocation').empty().append(options);
+            $('#ntp_timezone_sublocation').prop("hidden", false);
+            $('#ntp_timezone_location').removeClass("rounded-right");
+        }
+    });
+
+    let options = Object.keys(timezones).sort().map((x) => `<option value="${x}">${x}</option>`).join("");
+    $('#ntp_timezone_area').empty().append(options);
+    $('#ntp_timezone_area').trigger('change');
+
     $('#ntp_form').on('submit', function (this: HTMLFormElement, event: Event) {
         this.classList.add('was-validated');
         event.preventDefault();
