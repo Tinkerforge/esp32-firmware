@@ -60,15 +60,14 @@ function save_config() {
     let timezone = $('#ntp_timezone_area').val() + "/" + $('#ntp_timezone_location').val() + ($('#ntp_timezone_sublocation').prop("hidden") ? "" : ("/" + $('#ntp_timezone_sublocation').val()));
 
     API.save("ntp/config", {
-        enable: $('#ntp_enabled').prop("checked"),
-        use_dhcp: $('#ntp_use_dhcp').prop("checked"),
-        timezone: timezone,
-        server: $('#ntp_server').val().toString()
-    },
-    __("ntp.script.save_failed"),
-    __("ntp.script.reboot_content_changed"));
-
-    $('#ntp_save_button').prop("disabled", true);
+                enable: $('#ntp_enabled').prop("checked"),
+                use_dhcp: $('#ntp_use_dhcp').prop("checked"),
+                timezone: timezone,
+                server: $('#ntp_server').val().toString()
+            },
+            __("ntp.script.save_failed"),
+            __("ntp.script.reboot_content_changed"))
+        .then(() => $('#ntp_save_button').prop("disabled", true));
 }
 
 export function addEventListeners(source: API.ApiEventTarget) {
