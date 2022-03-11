@@ -42,14 +42,24 @@ export function trigger<T extends keyof ConfigMap>(topic: T, event_source: ApiEv
 }
 
 export function save<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T], error_string: string, reboot_string?: string) {
-    return $.ajax({
-        url: '/' + topic + '_update',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify(payload),
-        success: reboot_string ? util.getShowRebootModalFn(reboot_string) : undefined,
-        error: (xhr, status, error) => util.add_alert(topic + '_failed', 'alert-danger', error_string, error + ': ' + xhr.responseText),
-    });
+    return fetch('/' + topic + '_update', {
+            method: 'PUT',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => {
+            if (response.ok)
+                return response;
+            return response.text().catch(() => response.statusText).then(x => {throw new Error(x)});
+        })
+        .then(reboot_string ? util.getShowRebootModalFn(reboot_string) : undefined)
+        .catch(error => {
+            util.add_alert(topic + '_failed', 'alert-danger', error_string, error);
+            throw error;
+        });
 }
 
 export function hasFeature(feature: string) {
