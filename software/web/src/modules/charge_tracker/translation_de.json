@@ -29,7 +29,8 @@
         },
         "script": {
             "csv_header_start": "Startzeit",
-            "csv_header_user": "Benutzer",
+            "csv_header_display_name": "Anzeigename",
+            "csv_header_username": "Benutzername",
             "csv_header_energy": "geladene Energie in kWh",
             "csv_header_duration": "Ladedauer in s",
             "csv_header_meter_start": "Zählerstand Start",

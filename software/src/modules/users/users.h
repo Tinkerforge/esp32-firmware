@@ -29,9 +29,7 @@ public:
     void loop();
 
     uint8_t next_user_id();
-    void create_user(const char *name);
-    void get_username(uint8_t user_id, char *buf);
-    void rename_user(uint8_t user_id, const char *name);
+    void rename_user(uint8_t user_id, const char *username, const char *display_name);
 
     bool trigger_charge_action(uint8_t user_id);
 

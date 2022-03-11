@@ -29,7 +29,8 @@
         },
         "script": {
             "csv_header_start": "Start time",
-            "csv_header_user": "User",
+            "csv_header_display_name": "Display name",
+            "csv_header_username": "Username",
             "csv_header_energy": "Charged energy in kWh",
             "csv_header_duration": "Charge duration in s",
             "csv_header_meter_start": "Meter reading start",

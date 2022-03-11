@@ -103,20 +103,24 @@ function to_csv_line(vals: string[]) {
 }
 
 async function downloadChargeLog() {
-    let users: string[] = [];
+    let usernames: string[] = [];
+    let display_names: string[] = [];
 
     await fetch('/users/all_usernames')
         .then(response => response.arrayBuffer())
         .then(buffer => {
-            if (buffer.byteLength != 256 * 32) {
+            if (buffer.byteLength != 256 * 64) {
                 console.log("Unexpected length of all_usernames!");
                 return;
             }
 
             const decoder = new TextDecoder();
             for(let i = 0; i < 256; ++i) {
-                let view = new DataView(buffer, i * 32, 32);
-                users.push(decoder.decode(view));
+                let view = new DataView(buffer, i * 64, 32);
+                usernames.push(decoder.decode(view).replace(/\0/g, ""));
+
+                view = new DataView(buffer, i * 64 + 32, 32);
+                display_names.push(decoder.decode(view).replace(/\0/g, ""));
             }
         })
         .catch(err => console.log(err));
@@ -126,12 +130,13 @@ async function downloadChargeLog() {
         .then(buffer => {
             let line = [
                 __("charge_tracker.script.csv_header_start"),
-                __("charge_tracker.script.csv_header_user"),
+                __("charge_tracker.script.csv_header_display_name"),
                 __("charge_tracker.script.csv_header_energy"),
                 __("charge_tracker.script.csv_header_duration"),
                 "",
                 __("charge_tracker.script.csv_header_meter_start"),
                 __("charge_tracker.script.csv_header_meter_end"),
+                __("charge_tracker.script.csv_header_username"),
             ];
 
             let header = to_csv_line(line);
@@ -186,12 +191,19 @@ async function downloadChargeLog() {
                     let filtered = users_config.users.filter(x => x.id == user_id);
 
                     let display_name = "";
-                    if (user_id == 0)
+                    let username = ""
+                    if (user_id == 0) {
                         display_name = __("charge_tracker.script.unknown_user");
-                    else if (filtered.length == 1)
+                        username = __("charge_tracker.script.unknown_user");
+                    }
+                    else if (filtered.length == 1) {
                         display_name = filtered[0].display_name
-                    else
-                        display_name = users[user_id];
+                        username = filtered[0].username
+                    }
+                    else {
+                        display_name = display_names[user_id];
+                        username = usernames[user_id];
+                    }
 
                     let line = [
                         timestamp_min_to_date(timestamp_minutes),
@@ -200,7 +212,8 @@ async function downloadChargeLog() {
                         charge_duration.toString(),
                         "",
                         Number.isNaN(meter_start) ? 'N/A' : util.toLocaleFixed(meter_start, 3),
-                        Number.isNaN(meter_end) ? 'N/A' : util.toLocaleFixed(meter_end, 3)
+                        Number.isNaN(meter_end) ? 'N/A' : util.toLocaleFixed(meter_end, 3),
+                        username
                     ];
 
                     result += to_csv_line(line);

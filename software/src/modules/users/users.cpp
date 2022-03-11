@@ -28,7 +28,11 @@
 #include <cmath>
 
 #define USERNAME_LENGTH 32
+#define DISPLAY_NAME_LENGTH 32
+#define USERNAME_ENTRY_LENGTH (USERNAME_LENGTH + DISPLAY_NAME_LENGTH)
+#define MAX_PASSIVE_USERS 256
 #define MAX_ACTIVE_USERS 16
+#define USERNAME_FILE "/users/all_usernames"
 
 extern TaskScheduler task_scheduler;
 
@@ -233,18 +237,16 @@ Users::Users()
 
 void create_username_file() {
     logger.printfln("Recreating users file");
-    File f = LittleFS.open("/users/usernames", "w", true);
+    File f = LittleFS.open(USERNAME_FILE, "w", true);
     const uint8_t buf[512] = {};
 
-    for(int i = 0; i < 256 * USERNAME_LENGTH; i += sizeof(buf))
+    for(int i = 0; i < MAX_PASSIVE_USERS * USERNAME_ENTRY_LENGTH; i += sizeof(buf))
         f.write(buf, sizeof(buf));
 }
 
 void Users::setup()
 {
     if (!api.restorePersistentConfig("users/config", &user_config)) {
-        create_username_file();
-
         user_config.get("users")->add();
         Config *user = user_config.get("users")->get(user_config.get("users")->count() - 1);
 
@@ -259,15 +261,16 @@ void Users::setup()
         user_config.get("next_user_id")->updateUint(user_id);
 
         API::writeConfig("users/config", &user_config);
-        this->rename_user(user->get("id")->asUint(), user->get("username")->asCStr());
     }
 
-    if (!LittleFS.exists("/users/usernames")) {
+    if (!LittleFS.exists(USERNAME_FILE)) {
         logger.printfln("Username list does not exist! Recreating now.");
         create_username_file();
+        for (int i = 0; i < user_config.get("users")->count(); ++i) {
+            Config *user = user_config.get("users")->get(i);
+            this->rename_user(user->get("id")->asUint(), user->get("username")->asCStr(), user->get("display_name")->asCStr());
+        }
     }
-
-    //TODO: make sure usernames are the same in user_config and usernames.bin
 
     bool charge_start_tracked = charge_tracker.currentlyCharging();
     bool charging = get_iec_state() == IEC_STATE_C;
@@ -382,8 +385,9 @@ void Users::register_urls()
         if (doc["display_name"] != nullptr)
             display_name_changed = user->get("display_name")->updateString(doc["display_name"]);
 
+        bool username_changed = false;
         if (doc["username"] != nullptr)
-            user->get("username")->updateString(doc["username"]);
+            username_changed = user->get("username")->updateString(doc["username"]);
 
         if (doc["current"] != nullptr)
             user->get("current")->updateUint((uint32_t) doc["current"]);
@@ -397,8 +401,8 @@ void Users::register_urls()
 
         API::writeConfig("users/config", &user_config);
 
-        if (display_name_changed)
-            this->rename_user(user->get("id")->asUint(), user->get("display_name")->asCStr());
+        if (display_name_changed || username_changed)
+            this->rename_user(user->get("id")->asUint(), user->get("username")->asCStr(), user->get("display_name")->asCStr());
 
         return "";
     }, true);
@@ -423,7 +427,7 @@ void Users::register_urls()
         user_config.get("next_user_id")->updateUint(user_id);
 
         API::writeConfig("users/config", &user_config);
-        this->rename_user(user->get("id")->asUint(), user->get("username")->asCStr());
+        this->rename_user(user->get("id")->asUint(), user->get("username")->asCStr(), user->get("display_name")->asCStr());
     }, true);
 
     api.addCommand("users/delete", &del, {}, [this](){
@@ -460,14 +464,14 @@ void Users::register_urls()
 
     server.on("/users/all_usernames", HTTP_GET, [this](WebServerRequest request) {
         //std::lock_guard<std::mutex> lock{records_mutex};
-        size_t len = 256 * USERNAME_LENGTH;
+        size_t len = MAX_PASSIVE_USERS * USERNAME_ENTRY_LENGTH;
         char *buf = (char*)malloc(len);
         if (buf == nullptr) {
             request.send(507);
             return;
         }
 
-        File f = LittleFS.open("/users/usernames", "r");
+        File f = LittleFS.open(USERNAME_FILE, "r");
 
         size_t read = f.read((uint8_t *)buf, len);
         request.send(200, "application/octet-stream", buf, read);
@@ -486,35 +490,19 @@ uint8_t Users::next_user_id()
     return this->user_config.get("next_user_id")->asUint();
 }
 
-void Users::create_user(const char *name)
+void Users::rename_user(uint8_t user_id, const char *username, const char *display_name)
 {
-    Config *next_uid = this->user_config.get("next_user_id");
-    uint8_t next_user_id = next_uid->asUint();
+    File f = LittleFS.open(USERNAME_FILE, "r+");
+    uint8_t buf[USERNAME_ENTRY_LENGTH] = {0};
 
-    this->rename_user(next_user_id, name);
+    f.seek(user_id * USERNAME_ENTRY_LENGTH, SeekMode::SeekSet);
+    f.write(buf, USERNAME_ENTRY_LENGTH);
 
-    next_uid->updateUint((uint8_t)++next_user_id);
-}
+    f.seek(user_id * USERNAME_ENTRY_LENGTH, SeekMode::SeekSet);
+    f.write((const uint8_t *)username, strnlen(username, USERNAME_LENGTH));
 
-void Users::get_username(uint8_t user_id, char *buf)
-{
-    File f = LittleFS.open("/users/usernames", "r");
-    f.seek(user_id * USERNAME_LENGTH, SeekMode::SeekSet);
-    f.read((uint8_t *)buf, USERNAME_LENGTH);
-
-    if (buf[0] == '\0')
-        snprintf(buf, USERNAME_LENGTH, "Unknown User %u", user_id);
-}
-
-void Users::rename_user(uint8_t user_id, const char *name)
-{
-    File f = LittleFS.open("/users/usernames", "r+");
-    uint8_t buf[32] = {0};
-    f.seek(user_id * USERNAME_LENGTH, SeekMode::SeekSet);
-    f.write(buf, USERNAME_LENGTH);
-
-    f.seek(user_id * USERNAME_LENGTH, SeekMode::SeekSet);
-    f.write((const uint8_t *)name, strnlen(name, USERNAME_LENGTH));
+    f.seek(user_id * USERNAME_ENTRY_LENGTH + USERNAME_LENGTH, SeekMode::SeekSet);
+    f.write((const uint8_t *)display_name, strnlen(display_name, DISPLAY_NAME_LENGTH));
 }
 
 // Only returns true if the triggered action was a charge start.
