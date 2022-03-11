@@ -37,7 +37,7 @@ public:
 
     ConfigRoot user_config;
     ConfigRoot add;
-    ConfigRoot del;
+    ConfigRoot remove;
     ConfigRoot http_auth;
     ConfigRoot http_auth_update;
 

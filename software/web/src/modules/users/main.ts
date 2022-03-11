@@ -34,42 +34,19 @@ type UsersConfig = API.getType['users/config'];
 type User = UsersConfig['users'][0];
 
 function save_authentication_config() {
-    return $.ajax({
-        url: '/users/http_auth_update',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify({"enabled": $('#users_authentication_enable').is(':checked')}),
-        success: util.getShowRebootModalFn(__("users.script.reboot_content_changed")),
-        error: (xhr, status, error) => util.add_alert("authentication_config_update_failed", "alert-danger", __("users.script.save_failed"), error + ": " + xhr.responseText)
-    });
+    return API.save('users/http_auth', {
+            "enabled": $('#users_authentication_enable').is(':checked')
+        },
+        __("users.script.save_failed"),
+        __("users.script.reboot_content_changed"));
 }
 
-function delete_user(id: number) {
-    return $.ajax({
-        url: '/users/delete',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify({"id": id}),
-        success: () => {
-        },
-        error: (xhr, status, error) => {
-            //util.add_alert("charge_manager_set_available_current_failed", "alert-danger", __("charge_manager.script.set_available_current_failed"), error + ": " + xhr.responseText);
-        }
-    });
+function remove_user(id: number) {
+    return API.call("users/remove", {"id": id}, __("users.script.save_failed"));
 }
 
 function modify_user(user: User) {
-    return $.ajax({
-        url: '/users/modify',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify(user),
-        success: () => {
-        },
-        error: (xhr, status, error) => {
-            //util.add_alert("charge_manager_set_available_current_failed", "alert-danger", __("charge_manager.script.set_available_current_failed"), error + ": " + xhr.responseText);
-        }
-    });
+    return API.call("users/modify", user, __("users.script.save_failed"));
 }
 
 let next_user_id = 0;
@@ -77,17 +54,7 @@ let next_user_id = 0;
 function add_user(user: User) {
     user.id = next_user_id;
     ++next_user_id;
-    return $.ajax({
-        url: '/users/add',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify(user),
-        success: () => {
-        },
-        error: (xhr, status, error) => {
-            //util.add_alert("charge_manager_set_available_current_failed", "alert-danger", __("charge_manager.script.set_available_current_failed"), error + ": " + xhr.responseText);
-        }
-    });
+    return API.call("users/add", user, __("users.script.save_failed"));
 }
 
 let authorized_users_count = -1;
@@ -137,7 +104,7 @@ async function save_users_config() {
     let to_modify = old_ids.filter(x => have_ids.includes(x));
 
     for(let i of to_remove) {
-        await delete_user(i);
+        await remove_user(i);
     }
 
     for(let i of have) {
@@ -154,8 +121,6 @@ async function save_users_config() {
     }
 
     await save_authentication_config();
-
-    //TODO show reboot modal
 }
 
 function generate_user_ui(user: User, password: string) {
@@ -365,7 +330,9 @@ export function init() {
         }
 
         $('#users_save_spinner').prop('hidden', false);
-        await save_users_config().finally(() => $('#users_save_spinner').prop('hidden', true));
+        await save_users_config()
+            .then(util.getShowRebootModalFn(__("users.script.reboot_content_changed")))
+            .finally(() => $('#users_save_spinner').prop('hidden', true));
     });
 
     $('#users_add_user_form').on("submit", (event: Event) => {

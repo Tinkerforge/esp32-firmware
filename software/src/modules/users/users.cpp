@@ -201,23 +201,27 @@ Users::Users()
         if (user_config.get("users")->count() == MAX_ACTIVE_USERS)
             return "Can't add user. Already have the maximum number of active users.";
 
+        for(int i = 0; i < user_config.get("users")->count(); ++i)
+            if (user_config.get("users")->get(i)->get("username")->asString() == add.get("username")->asString())
+                return "Can't add user. A user with this username already exists.";
+
         return "";
     });
     add.permit_null_updates = false;
 
-    del = ConfigRoot(Config::Object({
+    remove = ConfigRoot(Config::Object({
         {"id", Config::Uint8(0)}
-    }), [this](Config &del) -> String {
-        if (del.get("id")->asUint() == 0)
-            return "The anonymous user can't be deleted.";
+    }), [this](Config &remove) -> String {
+        if (remove.get("id")->asUint() == 0)
+            return "The anonymous user can't be removed.";
 
         for(int i = 0; i < user_config.get("users")->count(); ++i) {
-            if (user_config.get("users")->get(i)->get("id")->asUint() == del.get("id")->asUint()) {
+            if (user_config.get("users")->get(i)->get("id")->asUint() == remove.get("id")->asUint()) {
                 return "";
             }
         }
 
-        return "Can't delete user. User with this ID not found.";
+        return "Can't remove user. User with this ID not found.";
     });
 
     http_auth_update = ConfigRoot(Config::Object({
@@ -430,17 +434,17 @@ void Users::register_urls()
         this->rename_user(user->get("id")->asUint(), user->get("username")->asCStr(), user->get("display_name")->asCStr());
     }, true);
 
-    api.addCommand("users/delete", &del, {}, [this](){
+    api.addCommand("users/remove", &remove, {}, [this](){
         int idx = -1;
         for(int i = 0; i < user_config.get("users")->count(); ++i) {
-            if (user_config.get("users")->get(i)->get("id")->asUint() == del.get("id")->asUint()) {
+            if (user_config.get("users")->get(i)->get("id")->asUint() == remove.get("id")->asUint()) {
                 idx = i;
                 break;
             }
         }
 
         if (idx < 0) {
-            logger.printfln("Can't delete user. User with this ID not found.");
+            logger.printfln("Can't remove user. User with this ID not found.");
             return;
         }
 
@@ -450,7 +454,7 @@ void Users::register_urls()
         Config *tags = nfc.config.get("authorized_tags");
 
         for(int i = 0; i < tags->count(); ++i) {
-            if(tags->get(i)->get("user_id")->asUint() == del.get("id")->asUint())
+            if(tags->get(i)->get("user_id")->asUint() == remove.get("id")->asUint())
                 tags->get(i)->get("user_id")->updateUint(0);
         }
         API::writeConfig("nfc/config", &nfc.config);
