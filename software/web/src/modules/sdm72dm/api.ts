@@ -31,3 +31,7 @@ interface WARP1MeterErrorCounters {
 }
 
 export type all_values = number[];
+
+export interface reset {
+
+}

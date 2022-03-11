@@ -112,15 +112,7 @@ function set_charging_current(current: number) {
     status_charging_current_dirty = false;
     util.setNumericInput("status_charging_current", current / 1000, 3);
 
-    $.ajax({
-        url: '/evse/global_current_update',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify({"current": current}),
-        error: (xhr, status, error) => {
-            util.add_alert("evse_set_charging_current_failed", "alert-danger", __("evse.script.set_charging_current_failed"), error + ": " + xhr.responseText);
-        }
-    });
+    API.save('evse/global_current', {"current": current}, __("evse.script.set_charging_current_failed"));
 }
 
 
@@ -131,35 +123,16 @@ function update_evse_auto_start_charging() {
 }
 
 function set_auto_start_charging(auto_start_charging: boolean) {
-    $.ajax({
-        url: '/evse/auto_start_charging_update',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify({"auto_start_charging": auto_start_charging}),
-        error: (xhr, status, error) => util.add_alert("evse_set_auto_start_charging_failed", "alert-danger",  __("evse.script.auto_start_charging_update"), error + ": " + xhr.responseText)
-    });
+    API.save('evse/auto_start_charging', {"auto_start_charging": auto_start_charging}, __("evse.script.auto_start_charging_update"));
 }
 
 function start_charging() {
-    $.ajax({
-        url: '/evse/start_charging',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify(null),
-        error: (xhr, status, error) => util.add_alert("evse_set_start_charging_failed", "alert-danger", __("evse.script.start_charging_failed"), error + ": " + xhr.responseText)
-    });
+    API.call('evse/start_charging', {}, __("evse.script.start_charging_failed"));
 }
 
 function stop_charging() {
-    $.ajax({
-        url: '/evse/stop_charging',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify(null),
-        error: (xhr, status, error) => util.add_alert("evse_set_stop_charging_failed", "alert-danger",  __("evse.script.stop_charging_failed"), error + ": " + xhr.responseText)
-    });
+    API.call('evse/stop_charging', {}, __("evse.script.stop_charging_failed"));
 }
-
 
 function update_evse_managed() {
     let x = API.get('evse/management_enabled');
@@ -371,47 +344,29 @@ export function init() {
     $("#reset_current_configured").on("click", () => set_charging_current(32000));
 
     $('#reset_external_slot').on("click", () => {
-        $.ajax({
-            url: '/evse/external_defaults_update',
-            method: 'PUT',
-            contentType: 'application/json',
-            data: JSON.stringify({"current": 32000, "clear_on_disconnect": false}),
-            error: (xhr, status, error) => {
-                util.add_alert("evse_reset_external_slot_failed", "alert-danger", __("evse.script.reset_external_slot_failed"), error + ": " + xhr.responseText);
-            }
-        });
-        $.ajax({
-            url: '/evse/external_current_update',
-            method: 'PUT',
-            contentType: 'application/json',
-            data: JSON.stringify({"current": 32000}),
-            error: (xhr, status, error) => {
-                util.add_alert("evse_reset_external_slot_failed", "alert-danger", __("evse.script.reset_external_slot_failed"), error + ": " + xhr.responseText);
-            }
-        });
-        $.ajax({
-            url: '/evse/external_clear_on_disconnect_update',
-            method: 'PUT',
-            contentType: 'application/json',
-            data: JSON.stringify({"clear_on_disconnect": false}),
-            error: (xhr, status, error) => {
-                util.add_alert("evse_reset_external_slot_failed", "alert-danger", __("evse.script.reset_external_slot_failed"), error + ": " + xhr.responseText);
-            }
-        });
+        API.save('evse/external_defaults', {
+                "current": 32000,
+                "clear_on_disconnect": false
+            },
+            __("evse.script.reset_external_slot_failed"));
+
+
+        API.save('evse/external_current',
+            {"current": 32000},
+            __("evse.script.reset_external_slot_failed"));
+
+        API.save('evse/external_clear_on_disconnect',
+            {"clear_on_disconnect": false},
+            __("evse.script.reset_external_slot_failed"));
     });
 
     $('#evse_reset_dc_fault_current').on("click", () => $('#evse_reset_dc_fault_modal').modal('show'));
     $('#evse_reset_dc_fault_modal_button').on("click", () => {
         $('#evse_reset_dc_fault_modal').modal('hide');
-        $.ajax({
-            url: '/evse/reset_dc_fault_current_state',
-            method: 'PUT',
-            contentType: 'application/json',
-            data: JSON.stringify({"password": 0xDC42FA23}),
-            error: (xhr, status, error) => {
-                util.add_alert("evse_reset_dc_fault_current_failed", "alert-danger", __("evse.script.reset_dc_fault_current_failed"), error + ": " + xhr.responseText);
-            }
-        });
+
+        API.call('evse/reset_dc_fault_current_state',
+                 {"password": 0xDC42FA23},
+                 __("evse.script.reset_dc_fault_current_failed"));
     });
 
 
@@ -464,19 +419,8 @@ export function init() {
 
     $('#evse_control_pilot').on("change", save_evse_control_pilot_configuration);
 
-    $("#evse_reset").on("click", () => $.ajax({
-        url: '/evse/reset',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: "null"})
-    );
-
-    $("#evse_reflash").on("click", () => $.ajax({
-        url: '/evse/reflash',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: "null"})
-    );
+    $("#evse_reset").on("click", () => API.call('evse/reset', {}, ""));
+    $("#evse_reflash").on("click", () => API.call('evse/reflash', {}, ""));
 
     $('#status_charging_current_minus').on("click", () => {
         let val: number = parseInt(input.val().toString());

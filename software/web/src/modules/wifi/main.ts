@@ -80,16 +80,9 @@ function update_wifi_scan_results(data: Readonly<WifiInfo[]>) {
 
 let scan_timeout: number = null;
 function scan_wifi() {
-    $.ajax({
-        url: '/wifi/scan',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify(null),
-        error: (xhr, status, error) => {
-            util.add_alert("wifi_scan_failed", "alert-danger", __("wifi.script.scan_wifi_init_failed"), error + ": " + xhr.responseText);
-            $('#scan_wifi_dropdown').dropdown('hide');
-        },
-        success: () => {
+    API.call('wifi/scan', {}, __("wifi.script.scan_wifi_init_failed"))
+       .catch(() => $('#scan_wifi_dropdown').dropdown('hide'))
+       .then(() => {
             scan_timeout = window.setTimeout(function () {
                     scan_timeout = null;
                     $.get("/wifi/scan_results").done(function (data: WifiInfo[]) {
@@ -99,8 +92,7 @@ function scan_wifi() {
                         $('#scan_wifi_dropdown').dropdown('hide');
                     });
                 }, 10000);
-        }
-    });
+        });
 }
 
 

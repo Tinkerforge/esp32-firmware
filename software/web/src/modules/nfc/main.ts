@@ -137,17 +137,8 @@ function collect_nfc_config(new_tag: AuthorizedTag = null, remove_tag: number = 
 function save_nfc_config() {
     let payload = collect_nfc_config();
 
-    $.ajax({
-        url: '/nfc/config_update',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify(payload),
-        success: () => {
-            $('#nfc_save_button').prop("disabled", true);
-            util.getShowRebootModalFn(__("nfc.script.reboot_content_changed"))();
-        },
-        error: (xhr, status, error) => util.add_alert("nfc_config_update_failed", "alert-danger", __("nfc.script.save_failed"), error + ": " + xhr.responseText)
-    });
+    API.save('nfc/config', payload, __("nfc.script.save_failed"), __("nfc.script.reboot_content_changed"))
+       .then(() => $('#nfc_save_button').prop("disabled", true));
 }
 
 

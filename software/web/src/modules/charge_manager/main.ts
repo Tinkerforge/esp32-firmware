@@ -104,19 +104,9 @@ let charger_config_count = -1;
 
 function set_available_current(current: number) {
     $('#charge_manager_status_available_current_save').prop("disabled", true);
-    $.ajax({
-        url: '/charge_manager/available_current_update',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify({"current": current}),
-        success: () => {
-            $('#charge_manager_status_available_current_save').html(feather.icons.check.toSvg());
-        },
-        error: (xhr, status, error) => {
-            $('#charge_manager_status_available_current_save').prop("disabled", false);
-            util.add_alert("charge_manager_set_available_current_failed", "alert-danger", __("charge_manager.script.set_available_current_failed"), error + ": " + xhr.responseText);
-        }
-    });
+    API.save("charge_manager/available_current", {"current": current},__("charge_manager.script.set_available_current_failed"))
+       .then(() => $('#charge_manager_status_available_current_save').html(feather.icons.check.toSvg()))
+       .catch(error => $('#charge_manager_status_available_current_save').prop("disabled", false));
 }
 
 function update_available_current(current: number = API.get('charge_manager/available_current').current) {
@@ -229,18 +219,8 @@ function collect_charge_manager_config(new_charger: ChargerConfig = null, remove
 
 function save_charge_manager_config() {
     let payload = collect_charge_manager_config();
-
-    $.ajax({
-        url: '/charge_manager/config_update',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify(payload),
-        success: () => {
-            $('#charge_manager_save_button').prop("disabled", true);
-            util.getShowRebootModalFn(__("charge_manager.script.reboot_content_changed"))();
-        },
-        error: (xhr, status, error) => util.add_alert("charge_manager_config_update_failed", "alert-danger", __("charge_manager.script.save_failed"), error + ": " + xhr.responseText)
-    });
+    API.save('charge_manager/config', payload, __("charge_manager.script.save_failed"), __("charge_manager.script.reboot_content_changed"))
+       .then(() => $('#charge_manager_save_button').prop("disabled", true));
 }
 
 export function init() {

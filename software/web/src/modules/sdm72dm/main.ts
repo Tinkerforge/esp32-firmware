@@ -283,12 +283,7 @@ function init_status_chart(min_value=0, max_value=0) {
 }
 
 function energy_meter_reset_statistics() {
-    $.ajax({
-        url: '/meter/reset',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify(null)
-    });
+    API.call('meter/reset', {}, "");
 }
 
 interface DetailedViewEntry {
