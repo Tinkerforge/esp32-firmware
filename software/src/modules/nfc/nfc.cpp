@@ -34,7 +34,11 @@
 #include "bindings/bricklet_evse_v2.h"
 #endif
 
+#if defined(MODULE_ESP32_ETHERNET_BRICK_AVAILABLE)
 #define AUTHORIZED_TAG_LIST_LENGTH 16
+#else
+#define AUTHORIZED_TAG_LIST_LENGTH 8
+#endif
 
 #define IND_ACK 1001
 #define IND_NACK 1002

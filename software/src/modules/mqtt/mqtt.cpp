@@ -33,7 +33,11 @@ extern TaskScheduler task_scheduler;
 extern char local_uid_str[7];
 extern API api;
 
+#if defined(MODULE_ESP32_ETHERNET_BRICK_AVAILABLE)
 #define MQTT_RECV_BUFFER_SIZE 4096
+#else
+#define MQTT_RECV_BUFFER_SIZE 2048
+#endif
 #define MQTT_RECV_BUFFER_HEADROOM (MQTT_RECV_BUFFER_SIZE / 4)
 
 Mqtt::Mqtt()

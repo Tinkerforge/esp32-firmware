@@ -31,8 +31,13 @@
 #define DISPLAY_NAME_LENGTH 32
 #define USERNAME_ENTRY_LENGTH (USERNAME_LENGTH + DISPLAY_NAME_LENGTH)
 #define MAX_PASSIVE_USERS 256
-#define MAX_ACTIVE_USERS 16
 #define USERNAME_FILE "/users/all_usernames"
+
+#if defined(MODULE_ESP32_ETHERNET_BRICK_AVAILABLE)
+#define MAX_ACTIVE_USERS 16
+#else
+#define MAX_ACTIVE_USERS 8
+#endif
 
 extern TaskScheduler task_scheduler;
 
