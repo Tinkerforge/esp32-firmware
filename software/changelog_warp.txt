@@ -161,7 +161,7 @@
 - Fix reported heap sizes in debug report
 - Move misc APIs to info/
 
-2022-03-14: 1.9.91 (<unknown>)
+2022-03-14: 1.9.91 (5cf222bd)
 - 2.0.0 Beta 2
 - Add NTP timezone lookup
 - Fix MQTT not publishing to some topics
