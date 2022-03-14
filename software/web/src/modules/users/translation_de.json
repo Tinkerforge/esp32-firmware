@@ -11,6 +11,7 @@
 
             "enable_authentication": "Anmeldung aktiviert",
             "enable_authentication_desc": "Beim Aufrufen des Webinterfaces oder bei Verwendung der HTTP-API muss eine Anmeldung als einer der konfigurieren Benutzer durchgeführt werden",
+            "enable_authentication_invalid": "Damit die Anmeldung aktiviert sein kann, muss mindestens ein Benutzer mit einem konfigurierten Passwort vorhanden sein.",
 
             "save": "Speichern",
             "authorized_users": "Berechtigte Benutzer",

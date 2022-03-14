@@ -167,7 +167,7 @@ function generate_user_ui(user: User, password: string) {
                                             <label class="custom-control-label" for="users_authorized_user_${i}_show_password" style="line-height: 20px;"><span data-feather="eye"></span></label>
                                         </div>
                                         <div class="input-group-text custom-control custom-switch" style="padding-left: 2.5rem;">
-                                            <input id="users_authorized_user_${i}_clear_password" type="checkbox" class="custom-control-input" aria-label="Disable login">
+                                            <input id="users_authorized_user_${i}_clear_password" type="checkbox" class="custom-control-input user-disable-password" aria-label="Disable login">
                                             <label class="custom-control-label" for="users_authorized_user_${i}_clear_password" style="line-height: 20px;"><span data-feather="slash"></span></label>
                                         </div>
                                     </div>
@@ -195,6 +195,7 @@ function generate_user_ui(user: User, password: string) {
     $(`#users_authorized_user_${i}_remove`).on("click", () => {
         $(`#users_authorized_user_${i}_remove`).parent().parent().parent().remove();
         $('#users_save_button').prop("disabled", false);
+        check_http_auth_allowed();
     });
 }
 
@@ -259,7 +260,7 @@ function update_users_config(force: boolean) {
                                             <label class="custom-control-label" for="users_authorized_user_${i}_show_password" style="line-height: 20px;"><span data-feather="eye"></span></label>
                                         </div>
                                         <div class="input-group-text custom-control custom-switch" style="padding-left: 2.5rem;">
-                                            <input id="users_authorized_user_${i}_clear_password" type="checkbox" class="custom-control-input" aria-label="Disable login">
+                                            <input id="users_authorized_user_${i}_clear_password" type="checkbox" class="custom-control-input user-disable-password" aria-label="Disable login">
                                             <label class="custom-control-label" for="users_authorized_user_${i}_clear_password" style="line-height: 20px;"><span data-feather="slash"></span></label>
                                         </div>
                                     </div>
@@ -296,6 +297,7 @@ function update_users_config(force: boolean) {
             $(`#users_authorized_user_${i}_remove`).on("click", () => {
                 $(`#users_authorized_user_${i}_remove`).parent().parent().parent().remove();
                 $('#users_save_button').prop("disabled", false);
+                check_http_auth_allowed();
             });
         }
     }
@@ -315,10 +317,45 @@ function update_users_config(force: boolean) {
         $(`#users_authorized_user_${i}_clear_password`).prop("checked", (s.digest_hash === ""));
         $(`#users_authorized_user_${i}_clear_password`).trigger("change");
     }
+
+    check_http_auth_allowed();
+}
+
+function check_http_auth_allowed() {
+    let disable_auth = $('.user-disable-password').filter(function() {
+            if ($(this).prop("checked"))
+                return false;
+
+            let i_str = $(this).attr('id');
+            let i = parseInt(i_str.replace("users_authorized_user_", "").split("_")[0]);
+            let id = $(`#users_authorized_user_${i}_id`).val();
+            let new_pw = $(`#users_authorized_user_${id}_password`).val();
+            let filtered = API.get("users/config").users.filter(user => user.id == id);
+            console.log(filtered, new_pw);
+            if (filtered.length == 0)
+                return new_pw != "";
+            else
+                return filtered[0].digest_hash === null || new_pw != "";
+        }).length == 0;
+
+    if ($('#users_authentication_enable').prop("disabled") == disable_auth)
+        return;
+
+    $('#users_authentication_enable').prop("disabled", disable_auth);
+    if (disable_auth) {
+        if ($('#users_authentication_enable').prop("checked"))
+            $('#users_authentication_enable').addClass("is-invalid");
+        $('#users_authentication_enable').prop("checked", !disable_auth);
+    } else {
+        $('#users_authentication_enable').removeClass("is-invalid");
+        $('#users_authentication_enable').prop("checked", API.get("users/config").http_auth_enabled);
+    }
 }
 
 export function init() {
     $('#users_config_form').on('input', () => $('#users_save_button').prop("disabled", false));
+
+    $('#users_config_form').on('input', check_http_auth_allowed);
 
     $('#users_config_form').on('submit', async function (event: Event) {
         this.classList.add('was-validated');
@@ -357,6 +394,7 @@ export function init() {
 
         $('#users_add_user_modal').modal('hide');
         $('#users_save_button').prop("disabled", false);
+        check_http_auth_allowed();
 
 /*
         let new_config = collect_nfc_config({
