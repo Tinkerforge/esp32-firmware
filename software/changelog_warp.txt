@@ -160,3 +160,14 @@
 - Add NTP page
 - Fix reported heap sizes in debug report
 - Move misc APIs to info/
+
+2022-03-14: 1.9.91 (<unknown>)
+- 2.0.0 Beta 2
+- Add NTP timezone lookup
+- Fix MQTT not publishing to some topics
+- Add username to charge log
+- Enforce unique usernames
+- Don't allow enabling HTTP Auth if no user with password is configured
+- Report correct EVSE version
+- Scroll back to top when changing sub-page
+- Improve translations
