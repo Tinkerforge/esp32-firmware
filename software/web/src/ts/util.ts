@@ -182,7 +182,7 @@ export function setupEventSource(first: boolean, keep_as_first: boolean, continu
     if (ws != null) {
         ws.close();
     }
-    ws = new WebSocket('ws://' + location.host + '/ws');
+    ws = new WebSocket((location.protocol == 'https:' ? 'wss://' : 'ws://') + location.host + '/ws');
     eventTarget = new API.ApiEventTarget();
 
     if (wsReconnectTimeout != null) {
