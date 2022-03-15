@@ -169,7 +169,7 @@ struct to_json {
 
 struct json_length_visitor {
     size_t operator()(const Config::ConfString &x) {
-        return x.maxChars + 1;
+        return zero_copy ? 0 : (x.maxChars + 1);
     }
     size_t operator()(const Config::ConfFloat &x) {
         return 0;
@@ -188,14 +188,15 @@ struct json_length_visitor {
     }
     size_t operator()(const Config::ConfArray &x)
     {
-        return strict_variant::apply_visitor(json_length_visitor{}, x.prototype->value) * x.maxElements + JSON_ARRAY_SIZE(x.maxElements);
+        return strict_variant::apply_visitor(json_length_visitor{zero_copy}, x.prototype->value) * x.maxElements + JSON_ARRAY_SIZE(x.maxElements);
     }
     size_t operator()(const Config::ConfObject &x)
     {
         size_t sum = 0;
         for (size_t i = 0; i < x.value.size(); ++i) {
-            sum += x.value[i].first.length() + 1;
-            size_t item_size = strict_variant::apply_visitor(json_length_visitor{}, x.value[i].second.value);
+            if (!zero_copy)
+                sum += x.value[i].first.length() + 1;
+            size_t item_size = strict_variant::apply_visitor(json_length_visitor{zero_copy}, x.value[i].second.value);
             // If the item size is 0 it is not an array or object.
             // It will fit into the variant size added below.
             if (item_size > 0)
@@ -203,6 +204,8 @@ struct json_length_visitor {
         }
         return sum + JSON_OBJECT_SIZE(x.value.size());
     }
+
+    bool zero_copy;
 };
 
 struct from_json {
@@ -685,13 +688,13 @@ size_t Config::fillInt64Array(int32_t *arr, size_t elements) {
     return fillArray<int32_t, Config::ConfInt>(arr, elements);
 }
 
-size_t Config::json_size() const {
-    return strict_variant::apply_visitor(json_length_visitor{}, value);
+size_t Config::json_size(bool zero_copy) const {
+    return strict_variant::apply_visitor(json_length_visitor{zero_copy}, value);
 }
 
 void Config::save_to_file(File file)
 {
-    DynamicJsonDocument doc(json_size());
+    DynamicJsonDocument doc(json_size(false));
 
     JsonVariant var;
     if (is<Config::ConfObject>()) {
@@ -708,7 +711,7 @@ void Config::save_to_file(File file)
 
 void Config::write_to_stream(Print &output)
 {
-    DynamicJsonDocument doc(json_size());
+    DynamicJsonDocument doc(json_size(false));
 
     JsonVariant var;
     if (is<Config::ConfObject>()) {
@@ -728,7 +731,7 @@ String Config::to_string() const {
 
 String Config::to_string_except(std::initializer_list<String> keys_to_censor) const
 {
-    DynamicJsonDocument doc(json_size());
+    DynamicJsonDocument doc(json_size(false));
 
     JsonVariant var;
     if (is<Config::ConfObject>()) {
@@ -747,7 +750,7 @@ String Config::to_string_except(std::initializer_list<String> keys_to_censor) co
 
 String Config::to_string_except(const std::vector<String> &keys_to_censor) const
 {
-    DynamicJsonDocument doc(json_size());
+    DynamicJsonDocument doc(json_size(false));
 
     JsonVariant var;
     if (is<Config::ConfObject>()) {
@@ -766,7 +769,7 @@ String Config::to_string_except(const std::vector<String> &keys_to_censor) const
 
 void Config::write_to_stream_except(Print &output, std::initializer_list<String> keys_to_censor)
 {
-    DynamicJsonDocument doc(json_size());
+    DynamicJsonDocument doc(json_size(false));
 
     JsonVariant var;
     if (is<Config::ConfObject>()) {
@@ -783,7 +786,7 @@ void Config::write_to_stream_except(Print &output, std::initializer_list<String>
 
 void Config::write_to_stream_except(Print &output, const std::vector<String> &keys_to_censor)
 {
-    DynamicJsonDocument doc(json_size());
+    DynamicJsonDocument doc(json_size(false));
 
     JsonVariant var;
     if (is<Config::ConfObject>()) {
@@ -855,7 +858,7 @@ const Config *Config::ConfArray::get(uint16_t i) const
 
 String ConfigRoot::update_from_file(File file)
 {
-    DynamicJsonDocument doc(this->json_size());
+    DynamicJsonDocument doc(this->json_size(false));
     DeserializationError error = deserializeJson(doc, file);
     if (error)
         return String("Failed to read file: ") + String(error.c_str());
@@ -865,7 +868,7 @@ String ConfigRoot::update_from_file(File file)
 
 String ConfigRoot::update_from_cstr(char *c, size_t len)
 {
-    DynamicJsonDocument doc(this->json_size());
+    DynamicJsonDocument doc(this->json_size(true));
     DeserializationError error = deserializeJson(doc, c, len);
 
     if (error) {
@@ -877,7 +880,7 @@ String ConfigRoot::update_from_cstr(char *c, size_t len)
 
 String ConfigRoot::update_from_string(String s)
 {
-    DynamicJsonDocument doc(this->json_size());
+    DynamicJsonDocument doc(this->json_size(false));
     DeserializationError error = deserializeJson(doc, s);
 
     if (error) {

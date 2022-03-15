@@ -379,7 +379,7 @@ struct Config {
         }
     }
 */
-    size_t json_size() const;
+    size_t json_size(bool zero_copy) const;
 
     void save_to_file(File file);
 
