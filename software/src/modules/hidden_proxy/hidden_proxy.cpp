@@ -20,8 +20,10 @@
 #include "hidden_proxy.h"
 
 #include "bindings/hal_common.h"
+#include "event_log.h"
 #include "web_server.h"
 
+extern EventLog logger;
 extern TF_HAL hal;
 extern WebServer server;
 
@@ -53,6 +55,14 @@ static bool blinky_running = false;
 
 void HiddenProxy::start_proxy()
 {
+    if (net != nullptr) {
+        logger.printfln("TF_Net already allocated?");
+    } else {
+        net = (TF_Net*) malloc(sizeof(TF_Net));
+        if (net == nullptr)
+            logger.printfln("Failed to allocate TF_Net");
+    }
+
     if (blinky_running)
         return;
     blinky_running = true;
@@ -65,9 +75,9 @@ void HiddenProxy::start_proxy()
             tskIDLE_PRIORITY,
             &xTaskBuffer);
 
-    tf_hal_set_net(&hal, NULL);
-    tf_net_create(&net, NULL, 0, NULL);
-    tf_hal_set_net(&hal, &net);
+    tf_hal_set_net(&hal, nullptr);
+    tf_net_create(net, nullptr, 0, nullptr);
+    tf_hal_set_net(&hal, net);
 }
 
 void HiddenProxy::stop_proxy()
@@ -79,8 +89,10 @@ void HiddenProxy::stop_proxy()
     if (green_led_pin >= 0)
         vTaskDelete(xTaskBuffer);
 
-    tf_hal_set_net(&hal, NULL);
-    tf_net_destroy(&net);
+    tf_hal_set_net(&hal, nullptr);
+    tf_net_destroy(net);
+    free(net);
+    net = nullptr;
 }
 
 HiddenProxy::HiddenProxy()
