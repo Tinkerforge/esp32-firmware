@@ -102,7 +102,7 @@ WebServerHandler *WebServer::on(const char *uri, httpd_method_t method, wshCallb
     return result;
 }
 
-static const size_t SCRATCH_BUFSIZE = 4096;
+static const size_t SCRATCH_BUFSIZE = 2048;
 static uint8_t scratch_buf[SCRATCH_BUFSIZE] = {0};
 
 static esp_err_t low_level_upload_handler(httpd_req_t *req)
