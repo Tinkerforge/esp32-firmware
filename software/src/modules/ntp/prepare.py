@@ -112,10 +112,6 @@ nested_dict = {}
 empty_nested_dict = {}
 
 for name, tz in timezones.items():
-    if len(name) > longest:
-        longest = len(name)
-        longest_val = name
-
     splt = name.split("/")
     d = nested_dict
     d2 = empty_nested_dict
