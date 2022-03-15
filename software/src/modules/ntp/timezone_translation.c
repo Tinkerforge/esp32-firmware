@@ -23,30 +23,30 @@
 #include "timezone_translation.h"
 
 static size_t timezone_prefix_len_global = 0;
-static int compare(const void *left, const void *right) {
+static int compare(const void * const left, const void * const right) {
     const char *const l = (const char *const) left;
-        const char *const r = *((const char *const *)right);
-        int cmp = strncmp(l, r, timezone_prefix_len_global);
-        if (cmp == 0)
-            return (int)(timezone_prefix_len_global - strlen(r));
-        return cmp;
+    const char *const r = *((const char *const *)right);
+    int cmp = strncmp(l, r, timezone_prefix_len_global);
+    if (cmp == 0)
+        return (int)(timezone_prefix_len_global - strlen(r));
+    return cmp;
 }
 
-static const char *lookup_timezone_internal(const char *timezone, size_t timezone_len, struct Table table) {
-    const char *sep = strchr(timezone, '/');
+static const char *lookup_timezone_internal(const char * const timezone, const size_t timezone_len, const struct Table table) {
+    const char * const sep = strchr(timezone, '/');
     timezone_prefix_len_global = timezone_len;
 
     if (sep != NULL && sep > timezone)
         timezone_prefix_len_global = (size_t)(sep - timezone);
 
-    const char **key = (const char **) bsearch(timezone, table.keys, table.len, sizeof(const char *), compare);
+    const char * const *key = (const char * const *) bsearch(timezone, table.keys, table.len, sizeof(const char *), compare);
 
     if (key == NULL) {
         return NULL;
     }
 
-    size_t idx =(size_t)(key - table.keys);
-    TableValue val = table.values[idx];
+    size_t idx = (size_t)(key - table.keys);
+    const TableValue val = table.values[idx];
     if (val.leaf)
         return val.value.posix_tz;
 

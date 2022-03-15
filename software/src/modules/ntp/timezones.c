@@ -1,5 +1,5 @@
 /*
-2021e;2022-03-10T14:58:32.031044
+2021e;2022-03-15T08:27:31.658318
 */
 /* esp32-firmware
  * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
@@ -22,7 +22,7 @@
 
 #include "timezone_translation.h"
 
-static const char *Africa_keys[] = {
+static const char * const Africa_keys[] = {
     "Abidjan",
     "Accra",
     "Addis_Ababa",
@@ -79,7 +79,7 @@ static const char *Africa_keys[] = {
     "Windhoek"
 };
 
-static TableValue Africa_vals[] = {
+static const TableValue Africa_vals[] = {
     {true, {"GMT0"}},
     {true, {"GMT0"}},
     {true, {"EAT-3"}},
@@ -136,9 +136,9 @@ static TableValue Africa_vals[] = {
     {true, {"CAT-2"}},
 };
 
-static Table Africa = {Africa_keys, Africa_vals, 54};
+static const Table Africa = {Africa_keys, Africa_vals, 54};
 
-static const char *Argentina_keys[] = {
+static const char * const Argentina_keys[] = {
     "Buenos_Aires",
     "Catamarca",
     "ComodRivadavia",
@@ -154,7 +154,7 @@ static const char *Argentina_keys[] = {
     "Ushuaia"
 };
 
-static TableValue Argentina_vals[] = {
+static const TableValue Argentina_vals[] = {
     {true, {"<-03>3"}},
     {true, {"<-03>3"}},
     {true, {"<-03>3"}},
@@ -170,9 +170,9 @@ static TableValue Argentina_vals[] = {
     {true, {"<-03>3"}},
 };
 
-static Table Argentina = {Argentina_keys, Argentina_vals, 13};
+static const Table Argentina = {Argentina_keys, Argentina_vals, 13};
 
-static const char *Indiana_keys[] = {
+static const char * const Indiana_keys[] = {
     "Indianapolis",
     "Knox",
     "Marengo",
@@ -183,7 +183,7 @@ static const char *Indiana_keys[] = {
     "Winamac"
 };
 
-static TableValue Indiana_vals[] = {
+static const TableValue Indiana_vals[] = {
     {true, {"EST5EDT,M3.2.0,M11.1.0"}},
     {true, {"CST6CDT,M3.2.0,M11.1.0"}},
     {true, {"EST5EDT,M3.2.0,M11.1.0"}},
@@ -194,35 +194,35 @@ static TableValue Indiana_vals[] = {
     {true, {"EST5EDT,M3.2.0,M11.1.0"}},
 };
 
-static Table Indiana = {Indiana_keys, Indiana_vals, 8};
+static const Table Indiana = {Indiana_keys, Indiana_vals, 8};
 
-static const char *Kentucky_keys[] = {
+static const char * const Kentucky_keys[] = {
     "Louisville",
     "Monticello"
 };
 
-static TableValue Kentucky_vals[] = {
+static const TableValue Kentucky_vals[] = {
     {true, {"EST5EDT,M3.2.0,M11.1.0"}},
     {true, {"EST5EDT,M3.2.0,M11.1.0"}},
 };
 
-static Table Kentucky = {Kentucky_keys, Kentucky_vals, 2};
+static const Table Kentucky = {Kentucky_keys, Kentucky_vals, 2};
 
-static const char *North_Dakota_keys[] = {
+static const char * const North_Dakota_keys[] = {
     "Beulah",
     "Center",
     "New_Salem"
 };
 
-static TableValue North_Dakota_vals[] = {
+static const TableValue North_Dakota_vals[] = {
     {true, {"CST6CDT,M3.2.0,M11.1.0"}},
     {true, {"CST6CDT,M3.2.0,M11.1.0"}},
     {true, {"CST6CDT,M3.2.0,M11.1.0"}},
 };
 
-static Table North_Dakota = {North_Dakota_keys, North_Dakota_vals, 3};
+static const Table North_Dakota = {North_Dakota_keys, North_Dakota_vals, 3};
 
-static const char *America_keys[] = {
+static const char * const America_keys[] = {
     "Adak",
     "Anchorage",
     "Anguilla",
@@ -370,7 +370,7 @@ static const char *America_keys[] = {
     "Yellowknife"
 };
 
-static TableValue America_vals[] = {
+static const TableValue America_vals[] = {
     {true, {"HST10HDT,M3.2.0,M11.1.0"}},
     {true, {"AKST9AKDT,M3.2.0,M11.1.0"}},
     {true, {"AST4"}},
@@ -518,9 +518,9 @@ static TableValue America_vals[] = {
     {true, {"MST7MDT,M3.2.0,M11.1.0"}},
 };
 
-static Table America = {America_keys, America_vals, 145};
+static const Table America = {America_keys, America_vals, 145};
 
-static const char *Antarctica_keys[] = {
+static const char * const Antarctica_keys[] = {
     "Casey",
     "Davis",
     "DumontDUrville",
@@ -535,7 +535,7 @@ static const char *Antarctica_keys[] = {
     "Vostok"
 };
 
-static TableValue Antarctica_vals[] = {
+static const TableValue Antarctica_vals[] = {
     {true, {"<+11>-11"}},
     {true, {"<+07>-7"}},
     {true, {"<+10>-10"}},
@@ -550,19 +550,19 @@ static TableValue Antarctica_vals[] = {
     {true, {"<+06>-6"}},
 };
 
-static Table Antarctica = {Antarctica_keys, Antarctica_vals, 12};
+static const Table Antarctica = {Antarctica_keys, Antarctica_vals, 12};
 
-static const char *Arctic_keys[] = {
+static const char * const Arctic_keys[] = {
     "Longyearbyen"
 };
 
-static TableValue Arctic_vals[] = {
+static const TableValue Arctic_vals[] = {
     {true, {"CET-1CEST,M3.5.0,M10.5.0/3"}},
 };
 
-static Table Arctic = {Arctic_keys, Arctic_vals, 1};
+static const Table Arctic = {Arctic_keys, Arctic_vals, 1};
 
-static const char *Asia_keys[] = {
+static const char * const Asia_keys[] = {
     "Aden",
     "Almaty",
     "Amman",
@@ -664,7 +664,7 @@ static const char *Asia_keys[] = {
     "Yerevan"
 };
 
-static TableValue Asia_vals[] = {
+static const TableValue Asia_vals[] = {
     {true, {"<+03>-3"}},
     {true, {"<+06>-6"}},
     {true, {"EET-2EEST,M2.5.4/24,M10.5.5/1"}},
@@ -766,9 +766,9 @@ static TableValue Asia_vals[] = {
     {true, {"<+04>-4"}},
 };
 
-static Table Asia = {Asia_keys, Asia_vals, 99};
+static const Table Asia = {Asia_keys, Asia_vals, 99};
 
-static const char *Atlantic_keys[] = {
+static const char * const Atlantic_keys[] = {
     "Azores",
     "Bermuda",
     "Canary",
@@ -783,7 +783,7 @@ static const char *Atlantic_keys[] = {
     "Stanley"
 };
 
-static TableValue Atlantic_vals[] = {
+static const TableValue Atlantic_vals[] = {
     {true, {"<-01>1<+00>,M3.5.0/0,M10.5.0/1"}},
     {true, {"AST4ADT,M3.2.0,M11.1.0"}},
     {true, {"WET0WEST,M3.5.0/1,M10.5.0"}},
@@ -798,9 +798,9 @@ static TableValue Atlantic_vals[] = {
     {true, {"<-03>3"}},
 };
 
-static Table Atlantic = {Atlantic_keys, Atlantic_vals, 12};
+static const Table Atlantic = {Atlantic_keys, Atlantic_vals, 12};
 
-static const char *Australia_keys[] = {
+static const char * const Australia_keys[] = {
     "ACT",
     "Adelaide",
     "Brisbane",
@@ -826,7 +826,7 @@ static const char *Australia_keys[] = {
     "Yancowinna"
 };
 
-static TableValue Australia_vals[] = {
+static const TableValue Australia_vals[] = {
     {true, {"AEST-10AEDT,M10.1.0,M4.1.0/3"}},
     {true, {"ACST-9:30ACDT,M10.1.0,M4.1.0/3"}},
     {true, {"AEST-10"}},
@@ -852,9 +852,9 @@ static TableValue Australia_vals[] = {
     {true, {"ACST-9:30ACDT,M10.1.0,M4.1.0/3"}},
 };
 
-static Table Australia = {Australia_keys, Australia_vals, 23};
+static const Table Australia = {Australia_keys, Australia_vals, 23};
 
-static const char *Etc_keys[] = {
+static const char * const Etc_keys[] = {
     "GMT",
     "GMT+0",
     "GMT+1",
@@ -892,7 +892,7 @@ static const char *Etc_keys[] = {
     "Zulu"
 };
 
-static TableValue Etc_vals[] = {
+static const TableValue Etc_vals[] = {
     {true, {"GMT0"}},
     {true, {"GMT0"}},
     {true, {"<-01>1"}},
@@ -930,9 +930,9 @@ static TableValue Etc_vals[] = {
     {true, {"UTC0"}},
 };
 
-static Table Etc = {Etc_keys, Etc_vals, 35};
+static const Table Etc = {Etc_keys, Etc_vals, 35};
 
-static const char *Europe_keys[] = {
+static const char * const Europe_keys[] = {
     "Amsterdam",
     "Andorra",
     "Astrakhan",
@@ -998,7 +998,7 @@ static const char *Europe_keys[] = {
     "Zurich"
 };
 
-static TableValue Europe_vals[] = {
+static const TableValue Europe_vals[] = {
     {true, {"CET-1CEST,M3.5.0,M10.5.0/3"}},
     {true, {"CET-1CEST,M3.5.0,M10.5.0/3"}},
     {true, {"<+04>-4"}},
@@ -1064,9 +1064,9 @@ static TableValue Europe_vals[] = {
     {true, {"CET-1CEST,M3.5.0,M10.5.0/3"}},
 };
 
-static Table Europe = {Europe_keys, Europe_vals, 63};
+static const Table Europe = {Europe_keys, Europe_vals, 63};
 
-static const char *Indian_keys[] = {
+static const char * const Indian_keys[] = {
     "Antananarivo",
     "Chagos",
     "Christmas",
@@ -1080,7 +1080,7 @@ static const char *Indian_keys[] = {
     "Reunion"
 };
 
-static TableValue Indian_vals[] = {
+static const TableValue Indian_vals[] = {
     {true, {"EAT-3"}},
     {true, {"<+06>-6"}},
     {true, {"<+07>-7"}},
@@ -1094,9 +1094,9 @@ static TableValue Indian_vals[] = {
     {true, {"<+04>-4"}},
 };
 
-static Table Indian = {Indian_keys, Indian_vals, 11};
+static const Table Indian = {Indian_keys, Indian_vals, 11};
 
-static const char *Pacific_keys[] = {
+static const char * const Pacific_keys[] = {
     "Apia",
     "Auckland",
     "Bougainville",
@@ -1143,7 +1143,7 @@ static const char *Pacific_keys[] = {
     "Yap"
 };
 
-static TableValue Pacific_vals[] = {
+static const TableValue Pacific_vals[] = {
     {true, {"<+13>-13"}},
     {true, {"NZST-12NZDT,M9.5.0,M4.1.0/3"}},
     {true, {"<+11>-11"}},
@@ -1190,9 +1190,9 @@ static TableValue Pacific_vals[] = {
     {true, {"<+10>-10"}},
 };
 
-static Table Pacific = {Pacific_keys, Pacific_vals, 44};
+static const Table Pacific = {Pacific_keys, Pacific_vals, 44};
 
-static const char *global_keys[] = {
+static const char * const global_keys[] = {
     "Africa",
     "America",
     "Antarctica",
@@ -1206,7 +1206,7 @@ static const char *global_keys[] = {
     "Pacific"
 };
 
-static TableValue global_vals[] = {
+static const TableValue global_vals[] = {
     {false, {.sub_table=&Africa}},
     {false, {.sub_table=&America}},
     {false, {.sub_table=&Antarctica}},
@@ -1220,4 +1220,4 @@ static TableValue global_vals[] = {
     {false, {.sub_table=&Pacific}},
 };
 
-Table global = {global_keys, global_vals, 11};
+const Table global = {global_keys, global_vals, 11};

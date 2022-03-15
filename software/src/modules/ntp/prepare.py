@@ -60,15 +60,15 @@ def make_timezones_dict():
 
     return result
 
-timezone_init_template = """static const char *{table_name}_keys[] = {{
+timezone_init_template = """static const char * const {table_name}_keys[] = {{
     {table_keys}
 }};
 
-static TableValue {table_name}_vals[] = {{
+static const TableValue {table_name}_vals[] = {{
     {table_vals}
 }};
 
-{table_modifier}Table {table_name} = {{{table_name}_keys, {table_name}_vals, {len}}};"""
+{table_modifier}const Table {table_name} = {{{table_name}_keys, {table_name}_vals, {len}}};"""
 table_val_template = "{{{is_leaf}, {{{value}}}}},"
 
 inits = []

@@ -30,22 +30,22 @@ extern "C"
 struct Table;
 
 typedef struct TableValue {
-    bool leaf;
-    union {
-        const char *posix_tz;
-        struct Table *sub_table;
+    const bool leaf;
+    const union {
+        const char * const posix_tz;
+        const struct Table * const sub_table;
     } value;
 } TableValue;
 
 typedef struct Table {
-    const char **keys;
-    struct TableValue *values;
-    size_t len;
+    const char * const *keys;
+    const struct TableValue * const values;
+    const size_t len;
 } Table;
 
-extern Table global;
+extern const Table global;
 
-const char *lookup_timezone(const char *timezone);
+const char *lookup_timezone(const char * const timezone);
 
 #ifdef __cplusplus
 }
