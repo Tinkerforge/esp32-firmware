@@ -81,8 +81,9 @@ public:
     ConfigRoot evse_global_current_update;
     ConfigRoot evse_management_enabled;
     ConfigRoot evse_management_enabled_update;
-    ConfigRoot evse_user_slot_enabled;
-    ConfigRoot evse_user_slot_enabled_update;
+    ConfigRoot evse_user_current;
+    ConfigRoot evse_user_enabled;
+    ConfigRoot evse_user_enabled_update;
     ConfigRoot evse_external_enabled;
     ConfigRoot evse_external_enabled_update;
     ConfigRoot evse_external_defaults;

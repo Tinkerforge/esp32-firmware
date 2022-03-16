@@ -55,7 +55,7 @@ export interface management_enabled {
     enabled: boolean;
 }
 
-export interface user_slot_enabled {
+export interface user_enabled {
     enabled: boolean;
 }
 

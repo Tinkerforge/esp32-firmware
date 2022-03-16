@@ -145,9 +145,9 @@ function update_evse_managed() {
 }
 
 
-function update_evse_user_slot() {
-    let x = API.get('evse/user_slot_enabled');
-    $('#evse_user_slot').prop("checked", x.enabled);
+function update_evse_user() {
+    let x = API.get('evse/user_enabled');
+    $('#evse_user').prop("checked", x.enabled);
 }
 
 
@@ -388,9 +388,9 @@ export function init() {
         API.save('evse/management_enabled', {"enabled": enable}, __("evse.script.save_failed"));
     });
 
-    $('#evse_user_slot').on("change", () => {
-        let enable = $('#evse_user_slot').is(":checked");
-        API.save('evse/user_slot_enabled', {"enabled": enable}, __("evse.script.save_failed"));
+    $('#evse_user').on("change", () => {
+        let enable = $('#evse_user').is(":checked");
+        API.save('evse/user_enabled', {"enabled": enable}, __("evse.script.save_failed"));
     });
 
     $('#evse_external').on("change", () => {
@@ -480,7 +480,7 @@ export function addEventListeners(source: API.ApiEventTarget) {
 
     source.addEventListener("evse/management_enabled", update_evse_managed);
 
-    source.addEventListener("evse/user_slot_enabled", update_evse_user_slot);
+    source.addEventListener("evse/user_enabled", update_evse_user);
 
     source.addEventListener("evse/external_enabled", update_evse_external);
 

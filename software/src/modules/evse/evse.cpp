@@ -143,10 +143,14 @@ EVSE::EVSE() : DeviceModule("evse", "EVSE", "EVSE", std::bind(&EVSE::setup_evse,
     });
     evse_management_enabled_update = evse_management_enabled;
 
-    evse_user_slot_enabled = Config::Object({
+    evse_user_current = Config::Object({
+        {"current", Config::Uint16(32000)}
+    });
+
+    evse_user_enabled = Config::Object({
         {"enabled", Config::Bool(false)}
     });
-    evse_user_slot_enabled_update = evse_user_slot_enabled;
+    evse_user_enabled_update = evse_user_enabled;
 
     evse_external_enabled = Config::Object({
         {"enabled", Config::Bool(false)}
@@ -261,15 +265,15 @@ void EVSE::apply_defaults() {
     // Slot 6 (user) depends on user config.
     // It can be enabled per API (is stored in the EVSEs flash, not ours).
     // Set clear to true and current to 0 in any case: If disabled those are ignored anyway.
-    bool user_slot_enabled;
-    rc = tf_evse_get_charging_slot(&device, CHARGING_SLOT_USER, nullptr, &user_slot_enabled, nullptr);
+    bool user_enabled;
+    rc = tf_evse_get_charging_slot(&device, CHARGING_SLOT_USER, nullptr, &user_enabled, nullptr);
     if (rc != TF_E_OK) {
         is_in_bootloader(rc);
         logger.printfln("Failed to apply defaults (cm read failed). rc %d", rc);
         return;
     }
-    if (this->apply_slot_default(CHARGING_SLOT_USER, 0, user_slot_enabled, true))
-        tf_evse_set_charging_slot(&device, CHARGING_SLOT_USER, 0, user_slot_enabled, true);
+    if (this->apply_slot_default(CHARGING_SLOT_USER, 0, user_enabled, true))
+        tf_evse_set_charging_slot(&device, CHARGING_SLOT_USER, 0, user_enabled, true);
 
     // Slot 7 (charge manager) can be enabled per API (is stored in the EVSEs flash, not ours).
     // Set clear to true and current to 0 in any case: If disabled those are ignored anyway.
@@ -612,10 +616,11 @@ void EVSE::register_urls()
             this->apply_slot_default(CHARGING_SLOT_CHARGE_MANAGER, 32000, false, false);
     }, false);
 
-    api.addState("evse/user_slot_enabled", &evse_user_slot_enabled, {}, 1000);
-    api.addCommand("evse/user_slot_enabled_update", &evse_user_slot_enabled_update, {}, [this](){
+    api.addState("evse/user_current", &evse_user_current, {}, 1000);
+    api.addState("evse/user_enabled", &evse_user_enabled, {}, 1000);
+    api.addCommand("evse/user_enabled_update", &evse_user_enabled_update, {}, [this](){
         //TODO: enabling the user slot if it is already enabled should not throw away the set current.
-        bool enabled = evse_user_slot_enabled_update.get("enabled")->asBool();
+        bool enabled = evse_user_enabled_update.get("enabled")->asBool();
 
         if (enabled) {
             users.stop_charging(0, true);
@@ -892,7 +897,7 @@ void EVSE::update_all_data()
 
     evse_management_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_CHARGE_MANAGER]));
 
-    evse_user_slot_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_USER]));
+    evse_user_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_USER]));
 
     evse_external_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_EXTERNAL]));
     evse_external_clear_on_disconnect.get("clear_on_disconnect")->updateBool(SLOT_CLEAR_ON_DISCONNECT(active_and_clear_on_disconnect[CHARGING_SLOT_EXTERNAL]));
@@ -900,6 +905,7 @@ void EVSE::update_all_data()
     evse_global_current.get("current")->updateUint(max_current[CHARGING_SLOT_GLOBAL]);
     evse_management_current.get("current")->updateUint(max_current[CHARGING_SLOT_CHARGE_MANAGER]);
     evse_external_current.get("current")->updateUint(max_current[CHARGING_SLOT_EXTERNAL]);
+    evse_user_current.get("current")->updateUint(max_current[CHARGING_SLOT_USER]);
 
     evse_external_defaults.get("current")->updateUint(external_default_current);
     evse_external_defaults.get("clear_on_disconnect")->updateBool(external_default_clear_on_disconnect);

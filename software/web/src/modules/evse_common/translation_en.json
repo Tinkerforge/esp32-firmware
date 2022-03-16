@@ -91,9 +91,9 @@
             "charge_management_description_muted": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
             "charge_management_enable": "Requires the clearance of a charge manager (of this or another WARP charger) to charge",
 
-            "user_slot_description": "User authorization",
-            "user_slot_description_muted": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
-            "user_slot_enable": "Requires a user authorization (via NFC card) to charge",
+            "user_description": "User authorization",
+            "user_description_muted": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
+            "user_enable": "Requires a user authorization (via NFC card) to charge",
 
 
             "external_description": "External control",
