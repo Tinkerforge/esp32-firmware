@@ -246,6 +246,7 @@ def main():
         f.write('#define BUILD_VERSION_MINOR {}\n'.format(version[1]))
         f.write('#define BUILD_VERSION_PATCH {}\n'.format(version[2]))
         f.write('#define BUILD_HOST_PREFIX "{}"\n'.format(host_prefix))
+        f.write('#define BUILD_NAME_{}\n'.format(name.upper()))
         f.write('#define BUILD_REQUIRE_FIRMWARE_INFO {}\n'.format(require_firmware_info))
 
     with open(os.path.join('src', 'build_timestamp.h'), 'w', encoding='utf-8') as f:
