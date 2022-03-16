@@ -16,16 +16,18 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
-#include "warp_name.h"
+#include "device_name.h"
 
 #include "build.h"
+#include "api.h"
 #include "modules.h"
 #include "task_scheduler.h"
 
 extern char local_uid_str[7];
 extern TaskScheduler task_scheduler;
+extern API api;
 
-WARPName::WARPName()
+DeviceName::DeviceName()
 {
     name = Config::Object({
         {"name", Config::Str("")},
@@ -39,10 +41,14 @@ WARPName::WARPName()
     });
 }
 
-void WARPName::updateDisplayType() {
+void DeviceName::updateDisplayType() {
+#if defined BUILD_NAME_WARP || defined BUILD_NAME_WARP2
     String display_type = "WARP";
-    if (api.getState("evse/hardware_configuration")->get("evse_version")->asUint() >= 20)
+
+    if (api.getState("evse/hardware_configuration")->get("evse_version")->asUint() >= 20) {
         display_type += "2";
+    }
+
     display_type += " Charger ";
 
     display_type += api.hasFeature("meter") ? "Pro " : "Smart ";
@@ -50,18 +56,25 @@ void WARPName::updateDisplayType() {
     display_type += api.getState("evse/slots")->get(1)->get("max_current")->asUint() <= 20000 ? "11" : "22";
     display_type += "kW";
 
-    if (api.hasFeature("nfc"))
+    if (api.hasFeature("nfc")) {
         display_type += " +NFC";
+    }
 
-    if (api.hasFeature("rtc"))
+    if (api.hasFeature("rtc")) {
         display_type += " +RTC";
+    }
+#elif defined BUILD_NAME_ESP32
+    String display_type = "ESP32 Brick";
+#elif defined BUILD_NAME_ESP32_ETHERNET
+    String display_type = "ESP32 Ethernet Brick";
+#endif
 
     if (name.get("display_type")->updateString(display_type)) {
         logger.printfln("This is %s (%s), a %s", display_name.get("display_name")->asCStr(), name.get("name")->asCStr(), name.get("display_type")->asCStr());
     }
 }
 
-void WARPName::setup()
+void DeviceName::setup()
 {
     name.get("name")->updateString(String(BUILD_HOST_PREFIX) + "-" +local_uid_str);
     name.get("uid")->updateString(String(local_uid_str));
@@ -77,13 +90,13 @@ void WARPName::setup()
     initialized = true;
 }
 
-void WARPName::register_urls()
+void DeviceName::register_urls()
 {
    api.addState("info/name", &name, {}, 1000);
    api.addPersistentConfig("info/display_name", &display_name, {}, 1000);
 }
 
-void WARPName::loop()
+void DeviceName::loop()
 {
 
 }

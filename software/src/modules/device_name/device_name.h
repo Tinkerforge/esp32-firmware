@@ -21,9 +21,9 @@
 
 #include "config.h"
 
-class WARPName {
+class DeviceName {
 public:
-    WARPName();
+    DeviceName();
     void setup();
     void register_urls();
     void loop();

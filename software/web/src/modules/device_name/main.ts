@@ -34,12 +34,12 @@ function update_config() {
     // that fills the elements, but clears the passphrase field.
     // An empty passphrase is invalid, so the input
     // field is marked as non-validated, confusing the user.
-    let form = <HTMLFormElement>$('#name_form')[0];
+    let form = <HTMLFormElement>$('#device_name_form')[0];
     form.classList.remove('was-validated');
 
     $('#display_name').val(config.display_name);
     $('#display_name').parent().removeClass("input-group");
-    $('#name_form_submit').prop('hidden', true);
+    $('#device_name_form_submit').prop('hidden', true);
     document.title = config.display_name + ' - ' + __('main.title');
 }
 
@@ -51,8 +51,8 @@ function save_config() {
     API.save('info/display_name',{
             display_name: $('#display_name').val().toString()
         },
-        __("name.script.config_failed"),
-        __("name.script.reboot_content_changed"));
+        __("device_name.script.config_failed"),
+        __("device_name.script.reboot_content_changed"));
 }
 
 export function addEventListeners(source: API.ApiEventTarget) {
@@ -63,7 +63,7 @@ export function addEventListeners(source: API.ApiEventTarget) {
 
 export function init() {
     // Use bootstrap form validation
-    $('#name_form').on('submit', function (this: HTMLFormElement, event: Event) {
+    $('#device_name_form').on('submit', function (this: HTMLFormElement, event: Event) {
         this.classList.add('was-validated');
         event.preventDefault();
         event.stopPropagation();
@@ -75,14 +75,14 @@ export function init() {
     });
 
     $('#display_name').on("input", () => {
-            if (API.get('info/display_name').display_name == $('#display_name').val()) {
-                $('#display_name').parent().removeClass("input-group");
-                $('#name_form_submit').prop("hidden", true)
-            } else {
-                $('#display_name').parent().addClass("input-group");
-                $('#name_form_submit').prop("hidden", false)
-            }
-        });
+        if (API.get('info/display_name').display_name == $('#display_name').val()) {
+            $('#display_name').parent().removeClass("input-group");
+            $('#device_name_form_submit').prop("hidden", true)
+        } else {
+            $('#display_name').parent().addClass("input-group");
+            $('#device_name_form_submit').prop("hidden", false)
+        }
+    });
 }
 
 export function updateLockState(module_init: any) {
