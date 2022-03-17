@@ -86,7 +86,7 @@ void EventLog::write(const char *buf, size_t len)
 
 void EventLog::printfln(const char *fmt, ...)
 {
-    char buf[128];
+    char buf[256];
     memset(buf, 0, sizeof(buf) / sizeof(buf[0]));
 
     va_list args;
