@@ -176,7 +176,16 @@ Users::Users()
 {
     user_config = Config::Object({
         {"users", Config::Array(
-            {},
+            {
+                Config::Object({
+                    {"id", Config::Uint8(0)},
+                    {"roles", Config::Uint32(0xFFFFFFFF)},
+                    {"current", Config::Uint16(32000)},
+                    {"display_name", Config::Str("Anonymous", 0, USERNAME_LENGTH)},
+                    {"username", Config::Str("anonymous", 0, USERNAME_LENGTH)},
+                    {"digest_hash", Config::Str("", 0, 32)}
+                })
+            },
             new Config(Config::Object({
                 {"id", Config::Uint8(0)},
                 {"roles", Config::Uint32(0)},
@@ -188,7 +197,7 @@ Users::Users()
             0, MAX_ACTIVE_USERS,
             Config::type_id<Config::ConfObject>()
         )},
-        {"next_user_id", Config::Uint8(0)},
+        {"next_user_id", Config::Uint8(1)},
         {"http_auth_enabled", Config::Bool(false)}
     });
 
@@ -255,22 +264,7 @@ void create_username_file() {
 
 void Users::setup()
 {
-    if (!api.restorePersistentConfig("users/config", &user_config)) {
-        user_config.get("users")->add();
-        Config *user = user_config.get("users")->get(user_config.get("users")->count() - 1);
-
-        user->get("id")->updateUint(0);
-        user->get("roles")->updateUint(0xFFFF);
-        user->get("display_name")->updateString("Anonymous");
-        user->get("username")->updateString("anonymous");
-        user->get("digest_hash")->updateString("");
-
-        uint8_t user_id = user_config.get("next_user_id")->asUint();
-        ++user_id;
-        user_config.get("next_user_id")->updateUint(user_id);
-
-        API::writeConfig("users/config", &user_config);
-    }
+    api.restorePersistentConfig("users/config", &user_config);
 
     if (!LittleFS.exists(USERNAME_FILE)) {
         logger.printfln("Username list does not exist! Recreating now.");
