@@ -36,7 +36,7 @@
 #if defined(MODULE_ESP32_ETHERNET_BRICK_AVAILABLE)
 #define MAX_ACTIVE_USERS 16
 #else
-#define MAX_ACTIVE_USERS 8
+#define MAX_ACTIVE_USERS 10
 #endif
 
 extern TaskScheduler task_scheduler;
