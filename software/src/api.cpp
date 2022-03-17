@@ -139,8 +139,8 @@ bool API::hasFeature(const char *name)
 void API::writeConfig(String path, ConfigRoot *config) {
     String path_copy = path;
     path_copy.replace('/', '_');
-    String cfg_path = String("/") + path_copy;
-    String tmp_path = String("/.") + path_copy; //max len is 31 - len("/.") = 29
+    String cfg_path = String("/config/") + path_copy;
+    String tmp_path = String("/config/.") + path_copy;
 
     if (LittleFS.exists(tmp_path)) {
         LittleFS.remove(tmp_path);
