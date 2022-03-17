@@ -149,6 +149,10 @@ void setup(void) {
         logger.printfln("Failed to mount SPIFFS.");
     }
 
+    // Setup task scheduler before API: The API setup can run migrations that want to start tasks.
+    task_scheduler.setup();
+    api.setup();
+
     String config_version = read_or_write_config_version(BUILD_VERSION_FULL_STR);
 
     logger.printfln("{{{display_name}}} configuration version %s", config_version.c_str());
@@ -157,9 +161,6 @@ void setup(void) {
         {"firmware", Config::Str(BUILD_VERSION_FULL_STR)},
         {"spiffs", Config::Str(config_version)},
     });
-
-    api.setup();
-    task_scheduler.setup();
 
     {{{module_setup}}}
 

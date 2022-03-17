@@ -23,6 +23,7 @@
 #include "bindings/hal_common.h"
 #include "bindings/errors.h"
 
+#include "config_migrations.h"
 #include "event_log.h"
 #include "task_scheduler.h"
 
@@ -41,6 +42,8 @@ API::API()
 
 void API::setup()
 {
+    migrate_config();
+
     task_scheduler.scheduleWithFixedDelay([this]() {
         for (size_t state_idx = 0; state_idx < states.size(); ++state_idx) {
             auto &reg = states[state_idx];
@@ -187,23 +190,10 @@ void API::addTemporaryConfig(String path, Config *config, std::initializer_list<
 bool API::restorePersistentConfig(String path, ConfigRoot *config)
 {
     path.replace('/', '_');
-    String filename = String("/") + path;
+    String filename = String("/config/") + path;
 
     if (!LittleFS.exists(filename)) {
-        // We have to migrate from the old naming schema here
-        // /xyz.json.tmp is now /.xyz
-        // /xyz.json is now /xyz
-
-        if (LittleFS.exists(filename + ".json.tmp")) {
-            LittleFS.remove(filename + ".json.tmp");
-        }
-
-        if (!LittleFS.exists(filename + ".json")) {
-            return false;
-        }
-
-        logger.printfln("Migrating config file %s to %s.", (filename + ".json").c_str(), filename.c_str());
-        LittleFS.rename(filename + ".json", filename);
+        return false;
     }
 
     File file = LittleFS.open(filename);

@@ -324,17 +324,17 @@ bool mount_or_format_spiffs(void)
 
 String read_or_write_config_version(const char *firmware_version)
 {
-    if (LittleFS.exists("/spiffs.json")) {
+    if (LittleFS.exists("/config/version")) {
         const size_t capacity = JSON_OBJECT_SIZE(1) + 60;
         StaticJsonDocument<capacity> doc;
-        File file = LittleFS.open("/spiffs.json", "r");
+        File file = LittleFS.open("/config/version", "r");
 
         deserializeJson(doc, file);
         file.close();
 
         return doc["spiffs"].as<const char *>();
     } else {
-        File file = LittleFS.open("/spiffs.json", "w");
+        File file = LittleFS.open("/config/version", "w");
 
         file.printf("{\"spiffs\": \"%s\"}", firmware_version);
         file.close();
