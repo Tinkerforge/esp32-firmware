@@ -353,9 +353,9 @@ void remove_directory(const char *path) {
     // LittleFS instead. Calling ::rmdir directly bypasses
     // this and other helpful checks.
     for_every_file([](File *f) {
-            String path = f->path();
+            String path_ = f->path();
             f->close();
-            LittleFS.remove(path);
+            LittleFS.remove(path_);
             return true;
         }, path);
 
