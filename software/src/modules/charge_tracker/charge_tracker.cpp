@@ -23,6 +23,11 @@
 
 #include <esp_random.h>
 
+#include "task_scheduler.h"
+#include "tools.h"
+
+extern TaskScheduler task_scheduler;
+
 struct ChargeStart {
     uint32_t timestamp_minutes = 0;
     float meter_start = 0.0f;
@@ -362,6 +367,31 @@ void ChargeTracker::register_urls()
     api.addState("charge_tracker/last_charges", &last_charges, {}, 1000);
     api.addState("charge_tracker/current_charge", &current_charge, {}, 1000);
     api.addState("charge_tracker/state", &state, {}, 1000);
+    api.addRawCommand("charge_tracker/remove_all_charges", [this](char *c, size_t s) -> String {
+        StaticJsonDocument<16> doc;
+
+        DeserializationError error = deserializeJson(doc, c, s);
+
+        if (error) {
+            return String("Failed to deserialize string: ") + String(error.c_str());
+        }
+
+        if (!doc["do_i_know_what_i_am_doing"].is<bool>()) {
+            return "you don't seem to know what you are doing";
+        }
+
+        if (!doc["do_i_know_what_i_am_doing"].as<bool>()) {
+            return "Charges will NOT be removed";
+        }
+
+        task_scheduler.scheduleOnce([](){
+            logger.printfln("Removing all tracked charges and rebooting.");
+            remove_directory(CHARGE_RECORD_FOLDER);
+            ESP.restart();
+        }, 3000);
+        return "";
+    }, true);
+
 }
 
 void ChargeTracker::loop()
