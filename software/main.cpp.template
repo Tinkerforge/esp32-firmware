@@ -155,7 +155,7 @@ void setup(void) {
 
     String config_version = read_or_write_config_version(BUILD_VERSION_FULL_STR);
 
-    logger.printfln("{{{display_name}}} configuration version %s", config_version.c_str());
+    logger.printfln("{{{display_name}}} config version: %s", config_version.c_str());
 
     version = Config::Object({
         {"firmware", Config::Str(BUILD_VERSION_FULL_STR)},
