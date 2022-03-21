@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "math.h"
 
 struct printer {
   void operator()(const Config::ConfString &x) const { Serial.println("string"); }
@@ -165,6 +166,40 @@ struct to_json {
 
     JsonVariant insertHere;
     const std::vector<String> &keys_to_censor;
+};
+
+struct string_length_visitor {
+    size_t operator()(const Config::ConfString &x) {
+        return x.maxChars + 3; // "" and null terminator
+    }
+    size_t operator()(const Config::ConfFloat &x) {
+        return 42; // Educated guess
+    }
+    size_t operator()(const Config::ConfInt &x) {
+        return 11;
+    }
+    size_t operator()(const Config::ConfUint &x) {
+        return 10;
+    }
+    size_t operator()(const Config::ConfBool &x) {
+        return 5;
+    }
+    size_t operator()(std::nullptr_t x) {
+        return 4;
+    }
+    size_t operator()(const Config::ConfArray &x)
+    {
+        return strict_variant::apply_visitor(string_length_visitor{}, x.prototype->value) * x.maxElements + (x.maxElements + 1); //[,] and n-1 ,
+    }
+    size_t operator()(const Config::ConfObject &x)
+    {
+        size_t sum = 2; // { and }
+        for (size_t i = 0; i < x.value.size(); ++i) {
+            sum += x.value[i].first.length() + 3; // "" and null terminator
+            sum += strict_variant::apply_visitor(string_length_visitor{}, x.value[i].second.value);;
+        }
+        return sum;
+    }
 };
 
 struct json_length_visitor {
@@ -690,6 +725,10 @@ size_t Config::fillInt64Array(int32_t *arr, size_t elements) {
 
 size_t Config::json_size(bool zero_copy) const {
     return strict_variant::apply_visitor(json_length_visitor{zero_copy}, value);
+}
+
+size_t Config::max_string_length() const {
+    return strict_variant::apply_visitor(string_length_visitor{}, value);
 }
 
 void Config::save_to_file(File file)

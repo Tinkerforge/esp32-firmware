@@ -73,7 +73,7 @@ void Mqtt::subscribe(String topic_suffix, uint32_t max_payload_length, std::func
 
 void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)
 {
-    auto req_size = reg.config->json_size(true);
+    auto req_size = reg.config->max_string_length();
     if (req_size > MQTT_RECV_BUFFER_SIZE) {
         logger.printfln("MQTT: Recv buf is %u bytes. %s requires %u. Bump MQTT_RECV_BUFFER_SIZE! Not subscribing!", MQTT_RECV_BUFFER_SIZE, reg.path.c_str(), req_size);
         return;
@@ -84,7 +84,7 @@ void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)
     if (mqtt_state.get("connection_state")->asInt() != (int)MqttConnectionState::CONNECTED)
         return;
 
-    subscribe(reg.path, reg.config->json_size(true), [reg, commandIdx](char *payload, size_t payload_len){
+    subscribe(reg.path, reg.config->max_string_length(), [reg, commandIdx](char *payload, size_t payload_len){
         String reason = api.getCommandBlockedReason(commandIdx);
         if (reason != "") {
             logger.printfln("MQTT: Command %s is blocked: %s", reg.path.c_str(), reason.c_str());
