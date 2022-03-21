@@ -282,23 +282,24 @@ void Users::setup()
         this->stop_charging(0, true);
     }
 
-    if (!charge_start_tracked && charging) {
-        // If the user slot is enabled, this can not happen, as we first write into the ESPs RAM
-        // and then set the user current so that the EVSE can start charging.
-        // In the user slot is disabled, we just start tracking a charge here.
-        this->start_charging(0, 32000, CHARGE_TRACKER_AUTH_TYPE_NONE, nullptr);
-    }
-
     if (charging) {
         // If the EVSE is already charging, read back the user slot info, in case the ESP just power cycled.
         UserSlotInfo info;
         bool success = read_user_slot_info(&info);
         if (success) {
-            charge_tracker.current_charge.get("user_id")->updateInt(info.user_id);
-            charge_tracker.current_charge.get("meter_start")->updateFloat(info.meter_start);
-            charge_tracker.current_charge.get("evse_uptime_start")->updateUint(info.evse_uptime_on_start);
-            charge_tracker.current_charge.get("timestamp_minutes")->updateUint(info.timestamp_minutes);
+            if (!charge_start_tracked) {
+                charge_tracker.startCharge(info.timestamp_minutes, info.meter_start, info.user_id, info.evse_uptime_on_start, CHARGE_TRACKER_AUTH_TYPE_LOST, nullptr);
+            } else {
+                // Don't track a start, but restore the current_charge API anyway.
+                charge_tracker.current_charge.get("user_id")->updateInt(info.user_id);
+                charge_tracker.current_charge.get("meter_start")->updateFloat(info.meter_start);
+                charge_tracker.current_charge.get("evse_uptime_start")->updateUint(info.evse_uptime_on_start);
+                charge_tracker.current_charge.get("timestamp_minutes")->updateUint(info.timestamp_minutes);
+                charge_tracker.current_charge.get("authorization_type")->updateUint(CHARGE_TRACKER_AUTH_TYPE_LOST);
+            }
         }
+        else if (!charge_start_tracked)
+            this->start_charging(0, 32000, CHARGE_TRACKER_AUTH_TYPE_NONE, nullptr);
     }
 
     task_scheduler.scheduleWithFixedDelay([this](){
