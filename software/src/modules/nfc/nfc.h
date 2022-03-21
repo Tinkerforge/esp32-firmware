@@ -63,7 +63,6 @@ public:
     ConfigRoot config_in_use;
     ConfigRoot seen_tags;
     ConfigRoot state;
-    ConfigRoot last_tag;
     ConfigRoot inject_tag;
     uint32_t last_tag_injection = 0;
 

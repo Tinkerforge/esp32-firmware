@@ -98,12 +98,6 @@ NFC::NFC() : DeviceModule("nfc", "NFC", "NFC", std::bind(&NFC::setup_nfc, this))
         return "";
     });
 
-    last_tag = Config::Object({
-        {"user_id", Config::Uint8(0)},
-        {"tag_type", Config::Uint(0, 0, 4)},
-        {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)}
-    });
-
     inject_tag = ConfigRoot(Config::Object({
         {"tag_type", Config::Uint(0, 0, 4)},
         {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)}
@@ -235,13 +229,9 @@ void NFC::handle_event(tag_info_t *tag, bool found, bool injected)
             auth_token = idx;
             auth_token_seen = millis();
             blink_state = IND_ACK;
-            if (users.trigger_charge_action(user_id, injected ? CHARGE_TRACKER_AUTH_TYPE_NFC_INJECTION : CHARGE_TRACKER_AUTH_TYPE_NFC, Config::Object({
+            users.trigger_charge_action(user_id, injected ? CHARGE_TRACKER_AUTH_TYPE_NFC_INJECTION : CHARGE_TRACKER_AUTH_TYPE_NFC, Config::Object({
                     {"tag_type", Config::Uint8(tag->tag_type)},
-                    {"tag_id", Config::Str(tag->tag_id)}}).value)) {
-                last_tag.get("user_id")->updateUint(user_id);
-                last_tag.get("tag_type")->updateUint(tag->tag_type);
-                last_tag.get("tag_id")->updateString(tag->tag_id);
-            }
+                    {"tag_id", Config::Str(tag->tag_id)}}).value));
         } else if (auth_token == idx) {
             // Lost an authorized tag. If we still have it's auth token, extend the token's validity.
             //auth_token_seen = millis();
