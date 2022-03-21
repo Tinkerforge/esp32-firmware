@@ -534,7 +534,10 @@ def main():
     with open(node_digest_path, 'rb') as f:
         h.update(f.read())
 
-    with open('util.py', 'rb') as f:
+    for frontend_module in frontend_modules: # ensure changes to the frontend modules change the digest
+        h.update(frontend_module.under.encode('utf-8'))
+
+    with open('util.py', 'rb') as f: # ensure changes to the embed_data function change the digest
         h.update(f.read())
 
     # FIXME: Scons runs this script using exec(), resulting in __file__ being not available
