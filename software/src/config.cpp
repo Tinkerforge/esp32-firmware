@@ -231,11 +231,8 @@ struct json_length_visitor {
         for (size_t i = 0; i < x.value.size(); ++i) {
             if (!zero_copy)
                 sum += x.value[i].first.length() + 1;
-            size_t item_size = strict_variant::apply_visitor(json_length_visitor{zero_copy}, x.value[i].second.value);
-            // If the item size is 0 it is not an array or object.
-            // It will fit into the variant size added below.
-            if (item_size > 0)
-                sum += item_size;
+
+            sum += strict_variant::apply_visitor(json_length_visitor{zero_copy}, x.value[i].second.value);
         }
         return sum + JSON_OBJECT_SIZE(x.value.size());
     }
