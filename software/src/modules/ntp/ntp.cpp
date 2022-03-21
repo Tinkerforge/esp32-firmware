@@ -22,15 +22,19 @@
 
 #include "modules.h"
 
-#include "time.h"
-#include "sntp.h"
+#include <time.h>
+#include <sntp.h>
+#include <lwip/inet.h>
+#include <esp_netif.h>
 
 #include "timezone_translation.h"
 
 extern TaskScheduler task_scheduler;
+extern API api;
 
-Config *ntp_state;
-bool first = true;
+static Config *ntp_state;
+static bool first = true;
+
 void ntp_sync_cb(struct timeval *t)
 {
     if (first) {
