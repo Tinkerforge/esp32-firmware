@@ -306,11 +306,10 @@ void EnergyManager::register_urls()
     if (!device_found)
         return;
 
-
 #if defined(MODULE_WS_AVAILABLE)
     server.on("/energy_manager/start_debug", HTTP_GET, [this](WebServerRequest request) {
         task_scheduler.scheduleOnce([this](){
-            ws.pushStateUpdate(this->get_energy_manager_debug_header(), "energy_manager/debug_header");
+            ws.pushRawStateUpdate(this->get_energy_manager_debug_header(), "energy_manager/debug_header");
             debug = true;
         }, 0);
         request.send(200);
@@ -338,7 +337,7 @@ void EnergyManager::loop()
     static uint32_t last_debug = 0;
     if (debug && deadline_elapsed(last_debug + 50)) {
         last_debug = millis();
-        ws.pushStateUpdate(this->get_energy_manager_debug_line(), "energy_manager/debug");
+        ws.pushRawStateUpdate(this->get_energy_manager_debug_line(), "energy_manager/debug");
     }
 #endif
 }
