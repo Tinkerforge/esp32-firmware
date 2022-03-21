@@ -32,6 +32,7 @@
 #include "config.h"
 #include "digest_auth.h"
 #include "task_scheduler.h"
+#include "tools.h"
 
 extern API api;
 extern TaskScheduler task_scheduler;
@@ -94,19 +95,6 @@ static void delete_config_file(const char *config) {
 
 #endif
 
-static bool for_every_file(bool (*callback)(File *open_file), const char *dir = "/migration") {
-    File root = LittleFS.open(dir);
-    File file;
-    while(file = root.openNextFile()){
-        if(file.isDirectory()){
-            continue;
-        }
-        if (!callback(&file))
-            return false;
-    }
-    return true;
-}
-
 static const ConfigMigration migrations[] = {
 #if defined(BUILD_NAME_WARP)
     {
@@ -115,7 +103,7 @@ static const ConfigMigration migrations[] = {
         // - Renamed xyz.json to xyz
         1, 3, 0,
         [](){
-            for_every_file([](File *file){
+            for_file_in("/migration", [](File *file){
                 String path = file->path();
                 file->close();
                 if (path.endsWith(".tmp"))
@@ -328,7 +316,7 @@ bool prepare_migrations() {
         LittleFS.rmdir("/migration");
 
     LittleFS.mkdir("/migration");
-    return for_every_file([](File *source) {
+    return for_file_in("/config", [](File *source) {
         uint8_t buf[1024] = {0};
         String name = source->name();
 
@@ -343,27 +331,7 @@ bool prepare_migrations() {
             }
         }
         return true;
-    }, "/config");
-}
-
-void remove_directory(const char *path) {
-    // This is more involved than expected:
-    // rmdir only deletes empty directories, so remove all files first
-    // Also LittleFS.rmdir will call the vfs_api.cpp implementation that
-    // helpfully checks the mountpoint's name. If it is
-    // "/spiffs", the directory will not be deleted, but instead
-    // "rmdir is unnecessary in SPIFFS" is printed. However our mountpoint
-    // is only called /spiffs for historical reasons, we use
-    // LittleFS instead. Calling ::rmdir directly bypasses
-    // this and other helpful checks.
-    for_every_file([](File *f) {
-            String path_ = f->path();
-            f->close();
-            LittleFS.remove(path_);
-            return true;
-        }, path);
-
-    ::rmdir((String("/spiffs/") + path).c_str());
+    });
 }
 
 void migrate_config() {
@@ -394,13 +362,13 @@ void migrate_config() {
             remove_directory("/config");
         LittleFS.mkdir("/config");
 
-        for_every_file([](File *file) {
+        for_file_in("/", [](File *file) {
             String name = file->name();
             file->close();
             if (name != "spiffs.json") // do version last.
                 LittleFS.rename(String("/") + name, String("/config/") + name);
             return true;
-        }, "/");
+        });
 
         LittleFS.rename("/spiffs.json", "/config/version");
     }

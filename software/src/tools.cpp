@@ -608,3 +608,36 @@ bool clock_synced(struct timeval *out_tv_now) {
     gettimeofday(out_tv_now, nullptr);
     return out_tv_now->tv_sec > ((2016 - 1970) * 365 * 24  * 60 * 60);
 }
+
+bool for_file_in(const char *dir, bool (*callback)(File *open_file), bool skip_directories) {
+    File root = LittleFS.open(dir);
+    File file;
+    while(file = root.openNextFile()){
+        if(skip_directories && file.isDirectory()){
+            continue;
+        }
+        if (!callback(&file))
+            return false;
+    }
+    return true;
+}
+
+void remove_directory(const char *path) {
+    // This is more involved than expected:
+    // rmdir only deletes empty directories, so remove all files first
+    // Also LittleFS.rmdir will call the vfs_api.cpp implementation that
+    // helpfully checks the mountpoint's name. If it is
+    // "/spiffs", the directory will not be deleted, but instead
+    // "rmdir is unnecessary in SPIFFS" is printed. However our mountpoint
+    // is only called /spiffs for historical reasons, we use
+    // LittleFS instead. Calling ::rmdir directly bypasses
+    // this and other helpful checks.
+    for_file_in(path, [](File *f) {
+            String file_path = f->path();
+            f->close();
+            LittleFS.remove(file_path);
+            return true;
+        });
+
+    ::rmdir((String("/spiffs/") + path).c_str());
+}
