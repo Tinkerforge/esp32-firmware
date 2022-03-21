@@ -32,7 +32,7 @@ DeviceName::DeviceName()
     name = Config::Object({
         {"name", Config::Str("")},
         {"type", Config::Str(BUILD_HOST_PREFIX)},
-        {"display_type", Config::Str("", 0, 32)},
+        {"display_type", Config::Str("", 0, 64)},
         {"uid", Config::Str("", 0, 32)}
     });
 
@@ -41,28 +41,37 @@ DeviceName::DeviceName()
     });
 }
 
-void DeviceName::updateDisplayType() {
-#if defined BUILD_NAME_WARP || defined BUILD_NAME_WARP2
-    String display_type = "WARP";
-
-    if (api.getState("evse/hardware_configuration")->get("evse_version")->asUint() >= 20) {
-        display_type += "2";
-    }
-
-    display_type += " Charger ";
-
+String getWarpDisplayName() {
+#if defined BUILD_NAME_WARP
+    String display_type = "WARP Charger ";
+#elif defined BUILD_NAME_WARP2
+    String display_type = "WARP2 Charger ";
+#endif
     display_type += api.hasFeature("meter") ? "Pro " : "Smart ";
 
-    display_type += api.getState("evse/slots")->get(1)->get("max_current")->asUint() <= 20000 ? "11" : "22";
-    display_type += "kW";
-
-    if (api.hasFeature("nfc")) {
-        display_type += " +NFC";
+    if (api.hasFeature("evse")) {
+        display_type += api.getState("evse/slots")->get(1)->get("max_current")->asUint() <= 20000 ? "11" : "22";
+        display_type += "kW ";
     }
+    else {
+        display_type += "without EVSE ";
+    }
+
+#if defined BUILD_NAME_WARP
+    if (api.hasFeature("nfc")) {
+        display_type += "+NFC ";
+    }
+#endif
 
     if (api.hasFeature("rtc")) {
-        display_type += " +RTC";
+        display_type += "+RTC";
     }
+    return display_type;
+}
+
+void DeviceName::updateDisplayType() {
+#if defined BUILD_NAME_WARP || defined BUILD_NAME_WARP2
+    String display_type = getWarpDisplayName();
 #elif defined BUILD_NAME_ESP32
     String display_type = "ESP32 Brick";
 #elif defined BUILD_NAME_ESP32_ETHERNET
