@@ -41,6 +41,8 @@ DeviceName::DeviceName()
     });
 }
 
+#if defined BUILD_NAME_WARP || defined BUILD_NAME_WARP2
+
 String getWarpDisplayName() {
 #if defined BUILD_NAME_WARP
     String display_type = "WARP Charger ";
@@ -68,6 +70,8 @@ String getWarpDisplayName() {
     }
     return display_type;
 }
+
+#endif
 
 void DeviceName::updateDisplayType() {
 #if defined BUILD_NAME_WARP || defined BUILD_NAME_WARP2

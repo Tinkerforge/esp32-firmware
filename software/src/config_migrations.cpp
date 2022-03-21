@@ -48,6 +48,8 @@ struct ConfigMigration {
     void (*const fn)(void);
 };
 
+#if defined(BUILD_NAME_WARP) || defined(BUILD_NAME_WARP2)
+
 static bool read_config_file(const char *config, JsonDocument &json) {
     String s = String(config);
     s.replace('/', '_');
@@ -89,6 +91,8 @@ static void delete_config_file(const char *config) {
 
     LittleFS.remove(filename);
 }
+
+#endif
 
 static bool for_every_file(bool (*callback)(File *open_file), const char *dir = "/migration") {
     File root = LittleFS.open(dir);
