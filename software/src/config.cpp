@@ -170,7 +170,7 @@ struct to_json {
 
 struct string_length_visitor {
     size_t operator()(const Config::ConfString &x) {
-        return x.maxChars + 3; // "" and null terminator
+        return x.maxChars + 2; // ""
     }
     size_t operator()(const Config::ConfFloat &x) {
         return 42; // Educated guess
@@ -189,13 +189,13 @@ struct string_length_visitor {
     }
     size_t operator()(const Config::ConfArray &x)
     {
-        return strict_variant::apply_visitor(string_length_visitor{}, x.prototype->value) * x.maxElements + (x.maxElements + 1); //[,] and n-1 ,
+        return strict_variant::apply_visitor(string_length_visitor{}, x.prototype->value) * x.maxElements + (x.maxElements + 1); // [,] and n-1 ,
     }
     size_t operator()(const Config::ConfObject &x)
     {
         size_t sum = 2; // { and }
         for (size_t i = 0; i < x.value.size(); ++i) {
-            sum += x.value[i].first.length() + 3; // "" and null terminator
+            sum += x.value[i].first.length() + 2; // ""
             sum += strict_variant::apply_visitor(string_length_visitor{}, x.value[i].second.value);;
         }
         return sum;
