@@ -64,7 +64,12 @@
             "ap_subnet_invalid": "The subnet mask must have four groups between 0 and 255 separated with a dot. For example 255.255.255.0",
             "ap_gateway_invalid": "The gateway IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1",
 
-            "unchanged": "unchanged"
+            "unchanged": "unchanged",
+
+            "confirm_title": "Disable WiFi Access Point?",
+            "confirm_content": null,
+            "confirm_abort": "Abort",
+            "confirm_confirm": "Disable"
         },
         "script": {
             "scan_wifi_init_failed": "Search for networks failed. Failed to start scan.",

@@ -264,4 +264,26 @@
             </div>
         </div>
     </form>
+
+    <div class="modal fade" id="wifi_ap_disable" tabindex="-1" role="dialog" aria-hidden="true">
+        <div id="wifi_ap_disable_content"
+            class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <form-label class="modal-title" data-i18n="wifi.content.confirm_title"></form-label>
+                    <button type="button" class="close" data-dismiss="modal"
+                        aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" data-i18n="wifi.content.confirm_content"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                        data-dismiss="modal" data-i18n="wifi.content.confirm_abort"></button>
+                    <button id="wifi_ap_disable_button" type="button"
+                        class="btn btn-danger" data-i18n="wifi.content.confirm_confirm"></button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

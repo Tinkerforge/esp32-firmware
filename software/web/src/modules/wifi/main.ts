@@ -357,6 +357,17 @@ export function init() {
         if (this.checkValidity() === false) {
             return;
         }
+
+        if ($('#wifi_ap_enable_ap').val() == 2) {
+            $('#wifi_ap_disable').modal('show');
+            return;
+        }
+
+        save_wifi_ap_config();
+    });
+
+    $('#wifi_ap_disable_button').on('click', () => {
+        $('#wifi_ap_disable').modal('hide');
         save_wifi_ap_config();
     });
 
