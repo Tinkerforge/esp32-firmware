@@ -231,7 +231,7 @@ void NFC::handle_event(tag_info_t *tag, bool found, bool injected)
             blink_state = IND_ACK;
             users.trigger_charge_action(user_id, injected ? CHARGE_TRACKER_AUTH_TYPE_NFC_INJECTION : CHARGE_TRACKER_AUTH_TYPE_NFC, Config::Object({
                     {"tag_type", Config::Uint8(tag->tag_type)},
-                    {"tag_id", Config::Str(tag->tag_id)}}).value));
+                    {"tag_id", Config::Str(tag->tag_id)}}).value);
         } else if (auth_token == idx) {
             // Lost an authorized tag. If we still have it's auth token, extend the token's validity.
             //auth_token_seen = millis();
