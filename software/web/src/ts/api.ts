@@ -61,7 +61,7 @@ export function call<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T],
         })
         .then(reboot_string ? util.getShowRebootModalFn(reboot_string) : undefined)
         .catch(error => {
-            util.add_alert(topic + '_failed', 'alert-danger', error_string, error);
+            util.add_alert(topic.replace("/", "_") + '_failed', 'alert-danger', error_string, error);
             throw error;
         });
 }
