@@ -286,7 +286,7 @@ void Users::setup()
         // If the user slot is enabled, this can not happen, as we first write into the ESPs RAM
         // and then set the user current so that the EVSE can start charging.
         // In the user slot is disabled, we just start tracking a charge here.
-        this->start_charging(0, 32000);
+        this->start_charging(0, 32000, CHARGE_TRACKER_AUTH_TYPE_NONE, nullptr);
     }
 
     if (charging) {
@@ -314,7 +314,7 @@ void Users::setup()
 
         if ((last_iec_state == IEC_STATE_A && iec_state == IEC_STATE_B) || iec_state == IEC_STATE_C) {
             if (!user_enabled)
-                this->start_charging(0, 32000);
+                this->start_charging(0, 32000, CHARGE_TRACKER_AUTH_TYPE_NONE, nullptr);
         } else if (iec_state == IEC_STATE_A) {
             this->stop_charging(0, true);
         }
@@ -509,7 +509,7 @@ void Users::rename_user(uint8_t user_id, const char *username, const char *displ
 }
 
 // Only returns true if the triggered action was a charge start.
-bool Users::trigger_charge_action(uint8_t user_id)
+bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::ConfVariant auth_info)
 {
     bool user_enabled = get_user_slot()->get("active")->asBool();
     if (!user_enabled)
@@ -536,7 +536,7 @@ bool Users::trigger_charge_action(uint8_t user_id)
 
     switch (iec_state) {
         case IEC_STATE_B: // State B: The user wants to start charging.
-            return this->start_charging(user_id, current_limit);
+            return this->start_charging(user_id, current_limit, auth_type, auth_info);
         case IEC_STATE_C: // State C: The user wants to stop charging.
             // Debounce here a bit, an impatient user can otherwise accidentially trigger a stop if a start_charging takes too long.
             if (tscs > 3000)
@@ -556,7 +556,7 @@ uint32_t timestamp_minutes() {
     return tv_now.tv_sec / 60;
 }
 
-bool Users::start_charging(uint8_t user_id, uint16_t current_limit)
+bool Users::start_charging(uint8_t user_id, uint16_t current_limit, uint8_t auth_type, Config::ConfVariant auth_info)
 {
     if (charge_tracker.currentlyCharging())
         return false;
@@ -566,7 +566,7 @@ bool Users::start_charging(uint8_t user_id, uint16_t current_limit)
     uint32_t timestamp = timestamp_minutes();
 
     write_user_slot_info(user_id, evse_uptime, timestamp, meter_start);
-    charge_tracker.startCharge(timestamp, meter_start, user_id, evse_uptime);
+    charge_tracker.startCharge(timestamp, meter_start, user_id, evse_uptime, auth_type, auth_info);
 
     set_user_current(current_limit);
 

@@ -23,6 +23,10 @@
 
 #include "config.h"
 
+#define CHARGE_TRACKER_AUTH_TYPE_NONE 0
+#define CHARGE_TRACKER_AUTH_TYPE_NFC 1
+#define CHARGE_TRACKER_AUTH_TYPE_NFC_INJECTION 2
+
 class ChargeTracker {
 public:
     ChargeTracker();
@@ -36,7 +40,7 @@ public:
     uint32_t last_charge_record;
 
     String chargeRecordFilename(uint32_t i);
-    void startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id, uint32_t evse_uptime);
+    void startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id, uint32_t evse_uptime, uint8_t auth_type, Config::ConfVariant auth_info);
     void endCharge(uint32_t charge_duration_seconds, float meter_end);
     void removeOldRecords();
     bool setupRecords();

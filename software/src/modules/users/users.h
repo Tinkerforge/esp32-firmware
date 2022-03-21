@@ -31,7 +31,7 @@ public:
     uint8_t next_user_id();
     void rename_user(uint8_t user_id, const char *username, const char *display_name);
 
-    bool trigger_charge_action(uint8_t user_id);
+    bool trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::ConfVariant auth_info);
 
     bool initialized = false;
 
@@ -41,6 +41,6 @@ public:
     ConfigRoot http_auth;
     ConfigRoot http_auth_update;
 
-    bool start_charging(uint8_t user_id, uint16_t current_limit);
+    bool start_charging(uint8_t user_id, uint16_t current_limit, uint8_t auth_type, Config::ConfVariant auth_info);
     bool stop_charging(uint8_t user_id, bool force);
 };
