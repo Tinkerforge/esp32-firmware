@@ -80,6 +80,8 @@ void DeviceName::updateDisplayType() {
     String display_type = "ESP32 Brick";
 #elif defined BUILD_NAME_ESP32_ETHERNET
     String display_type = "ESP32 Ethernet Brick";
+#elif defined BUILD_NAME_ENERGY_MANAGER
+    String display_type = "WARP Energy Manager"; // FIXME: Add more details, similar to WARP[2] here?
 #endif
 
     if (name.get("display_type")->updateString(display_type)) {
