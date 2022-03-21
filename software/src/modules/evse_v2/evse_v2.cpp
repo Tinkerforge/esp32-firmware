@@ -334,6 +334,8 @@ void EVSEV2::setup()
     if (!device_found)
         return;
 
+    // Get all data once before announcing the EVSE feature.
+    update_all_data();
     api.addFeature("evse");
     api.addFeature("cp_disconnect");
     api.addFeature("button_config");

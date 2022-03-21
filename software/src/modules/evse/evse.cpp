@@ -296,6 +296,8 @@ void EVSE::setup()
     if (!device_found)
         return;
 
+    // Get all data once before announcing the EVSE feature.
+    update_all_data();
     api.addFeature("evse");
 
     task_scheduler.scheduleWithFixedDelay([this](){
