@@ -21,7 +21,7 @@
     },
     "network": {
         "content": {
-            "enable_mdns_desc": "mDNS allows other devices in this network to find the Brick."
+            "enable_mdns_desc": "Allows other devices in this network to find the Brick."
         }
     },
     "mqtt": {

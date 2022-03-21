@@ -31,7 +31,7 @@
     },
     "network": {
         "content": {
-            "enable_mdns_desc": "mDNS erlaubt es anderen Geräten in diesem Netzwerk den Brick zu finden."
+            "enable_mdns_desc": "Erlaubt es anderen Geräten in diesem Netzwerk den Brick zu finden."
         }
     },
     "util": {

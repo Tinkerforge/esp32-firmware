@@ -26,7 +26,7 @@
     },
     "network": {
         "content": {
-            "enable_mdns_desc": "mDNS allows other devices in this network to find the energy manager."
+            "enable_mdns_desc": "Allows other devices in this network to find the energy manager."
         }
     },
     "util": {

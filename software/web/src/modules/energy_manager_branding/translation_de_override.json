@@ -26,7 +26,7 @@
     },
     "network": {
         "content": {
-            "enable_mdns_desc": "mDNS erlaubt es anderen Geräten in diesem Netzwerk, der Energiemanager zu finden."
+            "enable_mdns_desc": "Erlaubt es anderen Geräten in diesem Netzwerk, der Energiemanager zu finden."
         }
     },
     "mqtt": {
