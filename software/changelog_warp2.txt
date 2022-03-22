@@ -104,7 +104,7 @@
 - Scroll back to top when changing sub-page
 - Improve translations
 
-2022-03-22: 1.9.93 (<unknown>)
+2022-03-22: 1.9.93 (98b7afb7)
 - 2.0.0 Beta 4
 - Refine new API
 - Add configuration migration
