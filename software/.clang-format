@@ -1,0 +1,12 @@
+---
+Language:                         Cpp
+BasedOnStyle:                     LLVM
+AccessModifierOffset:             -4
+AllowAllArgumentsOnNextLine:      false
+AllowShortFunctionsOnASingleLine: None
+ColumnLimit:                      140
+IndentWidth:                      4
+BraceWrapping:
+  AfterFunction:                  true
+BreakBeforeBraces:                Custom
+...
