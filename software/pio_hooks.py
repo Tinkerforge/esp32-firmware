@@ -139,8 +139,9 @@ def get_changelog_version(name):
     if len(versions) == 0:
         raise Exception('no version found in changelog')
 
+    oldest_version = (str(versions[0][0]), str(versions[0][1]), str(versions[0][2]))
     version = (str(versions[-1][0]), str(versions[-1][1]), str(versions[-1][2]))
-    return version
+    return oldest_version, version
 
 def write_firmware_info(display_name, major, minor, patch, build_time):
     buf = bytearray([0xFF] * 4096)
@@ -228,7 +229,7 @@ def main():
     apidoc_url = env.GetProjectOption("apidoc_url")
     require_firmware_info = env.GetProjectOption("require_firmware_info")
     src_filter = env.GetProjectOption("src_filter")
-    version = get_changelog_version(name)
+    oldest_version, version = get_changelog_version(name)
 
     if src_filter[0] == '+<empty.c>':
         src_filter = None
@@ -242,11 +243,16 @@ def main():
 
     with open(os.path.join('src', 'build.h'), 'w', encoding='utf-8') as f:
         f.write('#pragma once\n')
+        f.write('#define OLDEST_VERSION_MAJOR {}\n'.format(oldest_version[0]))
+        f.write('#define OLDEST_VERSION_MINOR {}\n'.format(oldest_version[1]))
+        f.write('#define OLDEST_VERSION_PATCH {}\n'.format(oldest_version[2]))
         f.write('#define BUILD_VERSION_MAJOR {}\n'.format(version[0]))
         f.write('#define BUILD_VERSION_MINOR {}\n'.format(version[1]))
         f.write('#define BUILD_VERSION_PATCH {}\n'.format(version[2]))
+        f.write('#define BUILD_VERSION_STRING "{}.{}.{}"\n'.format(*version))
         f.write('#define BUILD_HOST_PREFIX "{}"\n'.format(host_prefix))
         f.write('#define BUILD_NAME_{}\n'.format(name.upper()))
+        f.write('#define BUILD_DISPLAY_NAME "{}"\n'.format(display_name))
         f.write('#define BUILD_REQUIRE_FIRMWARE_INFO {}\n'.format(require_firmware_info))
 
     with open(os.path.join('src', 'build_timestamp.h'), 'w', encoding='utf-8') as f:

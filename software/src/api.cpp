@@ -23,6 +23,8 @@
 #include "bindings/hal_common.h"
 #include "bindings/errors.h"
 
+#include "build.h"
+#include "build_timestamp.h"
 #include "config_migrations.h"
 #include "event_log.h"
 #include "task_scheduler.h"
@@ -38,11 +40,20 @@ API::API()
         new Config{Config::Str("")},
         0, 20, Config::type_id<Config::ConfString>()
     );
+
+    version = Config::Object({
+        {"firmware", Config::Str(BUILD_VERSION_FULL_STR)},
+        {"configuration", Config::Str("", 0, 12)},
+    });
 }
 
 void API::setup()
 {
     migrate_config();
+
+    String config_version = read_config_version();
+    logger.printfln("%s config version: %s", BUILD_DISPLAY_NAME, config_version.c_str());
+    version.get("configuration")->updateString(config_version);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         for (size_t state_idx = 0; state_idx < states.size(); ++state_idx) {
@@ -271,6 +282,8 @@ void API::registerDebugUrl(WebServer *server)
     });
 
     this->addState("info/features", &features, {}, 1000);
+    this->addState("info/version", &version, {}, 10000);
+
 }
 
 void API::registerBackend(IAPIBackend *backend)

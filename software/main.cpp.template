@@ -55,7 +55,6 @@ int8_t button_pin = -1;
 // filled by board module
 bool factory_reset_requested = false;
 
-ConfigRoot version;
 ConfigRoot modules;
 ConfigRoot reboot;
 
@@ -94,7 +93,6 @@ static void register_default_urls(void) {
         ESP.restart();
     }, true);
 
-    api.addState("info/version", &version, {}, 10000);
     api.addState("info/modules", &modules, {}, 10000);
 
     server.on("/force_reboot", HTTP_GET, [](WebServerRequest request) {
@@ -152,15 +150,6 @@ void setup(void) {
     // Setup task scheduler before API: The API setup can run migrations that want to start tasks.
     task_scheduler.setup();
     api.setup();
-
-    String config_version = read_or_write_config_version(BUILD_VERSION_FULL_STR);
-
-    logger.printfln("{{{display_name}}} config version: %s", config_version.c_str());
-
-    version = Config::Object({
-        {"firmware", Config::Str(BUILD_VERSION_FULL_STR)},
-        {"spiffs", Config::Str(config_version)},
-    });
 
     {{{module_setup}}}
 

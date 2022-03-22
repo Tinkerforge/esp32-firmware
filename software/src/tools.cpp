@@ -33,6 +33,7 @@
 #include "bindings/bricklet_unknown.h"
 #include "event_log.h"
 #include "esp_log.h"
+#include "build.h"
 
 extern EventLog logger;
 
@@ -322,7 +323,7 @@ bool mount_or_format_spiffs(void)
     return true;
 }
 
-String read_or_write_config_version(const char *firmware_version)
+String read_config_version()
 {
     if (LittleFS.exists("/config/version")) {
         const size_t capacity = JSON_OBJECT_SIZE(1) + 60;
@@ -333,14 +334,9 @@ String read_or_write_config_version(const char *firmware_version)
         file.close();
 
         return doc["spiffs"].as<const char *>();
-    } else {
-        File file = LittleFS.open("/config/version", "w");
-
-        file.printf("{\"spiffs\": \"%s\"}", firmware_version);
-        file.close();
-
-        return firmware_version;
     }
+    logger.printfln("Failed to read config version!");
+    return BUILD_VERSION_STRING;
 }
 
 static bool wait_for_bootloader_mode(TF_Unknown *bricklet, int target_mode)

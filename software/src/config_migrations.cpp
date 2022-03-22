@@ -335,6 +335,7 @@ bool prepare_migrations() {
 }
 
 void migrate_config() {
+    size_t migration_count = sizeof(migrations) / sizeof(migrations[0]);
 
     if (!LittleFS.exists("/config") && LittleFS.exists("/migration/version")) {
         // The migration is done, we were interrupted while moving over the migrated files to /config.
@@ -370,17 +371,25 @@ void migrate_config() {
             return true;
         });
 
-        LittleFS.rename("/spiffs.json", "/config/version");
+        if (LittleFS.exists("/spiffs.json"))
+            LittleFS.rename("/spiffs.json", "/config/version");
     }
 
+    bool write_version_file = false;
+    bool migrations_executed = false;
+
     uint8_t major, minor, patch;
-    {
+    if (LittleFS.exists("/config/version")) {
         StaticJsonDocument<256> doc;
         File f = LittleFS.open("/config/version");
         deserializeJson(doc, f);
 
         String v = doc["spiffs"];
-        v = v.substring(0, v.indexOf('-'));
+        int dash = v.indexOf('-');
+        if (dash >= 0) {
+            v = v.substring(0, dash);
+            write_version_file = true;
+        }
 
         size_t first_dot = v.indexOf('.');
         size_t second_dot = v.indexOf('.', first_dot + 1);
@@ -388,11 +397,23 @@ void migrate_config() {
         major = (uint8_t)v.substring(0, first_dot).toInt();
         minor = (uint8_t)v.substring(first_dot + 1, second_dot).toInt();
         patch = (uint8_t)v.substring(second_dot + 1).toInt();
+    } else if (migration_count > 0) {
+        auto &last_mig = migrations[migration_count - 1];
+        major = last_mig.major;
+        minor = last_mig.minor;
+        patch = last_mig.patch;
+
+        write_version_file = true;
+    } else {
+        major = OLDEST_VERSION_MAJOR;
+        minor = OLDEST_VERSION_MINOR;
+        patch = OLDEST_VERSION_PATCH;
+
+        write_version_file = true;
     }
 
     bool first = true;
-    bool one_migration_executed = false;
-    for(int i = 0; i < sizeof(migrations) / sizeof(migrations[0]); ++i) {
+    for(int i = 0; i < migration_count; ++i) {
         auto &mig = migrations[i];
 
         bool have_to_migrate = (major < mig.major)|| (major == mig.major && minor < mig.minor) || (major == mig.major && minor == mig.minor && patch < mig.patch);
@@ -412,20 +433,24 @@ void migrate_config() {
         logger.printfln("Migrating config from %d.%d.%d to %d.%d.%d", major, minor, patch, mig.major, mig.minor, mig.patch);
         mig.fn();
 
-        one_migration_executed = true;
+        write_version_file = true;
+        migrations_executed = true;
 
         major = mig.major;
         minor = mig.minor;
         patch = mig.patch;
     }
 
-    if (!one_migration_executed)
+    if (!write_version_file)
         return;
 
-    File file = LittleFS.open("/migration/version", "w");
+    File file = LittleFS.open(migrations_executed ? "/migration/version" : "/config/version", "w");
 
-    file.printf("{\"spiffs\": \"%u.%u.%u-migrated\"}", major, minor, patch);
+    file.printf("{\"spiffs\": \"%u.%u.%u\"}", major, minor, patch);
     file.close();
+
+    if (!migrations_executed)
+        return;
 
     remove_directory("/config");
     LittleFS.rename("/migration", "/config");

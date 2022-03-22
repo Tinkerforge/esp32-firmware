@@ -35,7 +35,7 @@ int check(int rc, const char *msg);
 
 bool mount_or_format_spiffs(void);
 
-String read_or_write_config_version(const char *firmware_version);
+String read_config_version();
 
 int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose, const uint8_t *firmware, size_t firmware_len, EventLog *logger, bool force);
 
