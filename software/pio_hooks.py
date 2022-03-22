@@ -13,14 +13,13 @@ import shutil
 import subprocess
 import time
 import re
-import hashlib
 import json
 import glob
 import io
 import gzip
 from base64 import b64encode
 from zlib import crc32
-from util import embed_data
+import util
 
 NameFlavors = namedtuple('NameFlavors', 'space lower camel headless under upper dash camel_abbrv lower_no_space camel_constant_safe')
 
@@ -464,42 +463,23 @@ def main():
     # Generate web interface
     print('Checking web interface dependencies')
 
-    h = hashlib.sha256()
-
-    with open('web/package-lock.json', 'rb') as f:
-        h.update(f.read())
+    node_modules_src_paths = ['web/package-lock.json']
 
     # FIXME: Scons runs this script using exec(), resulting in __file__ being not available
-    #with open(__file__, 'rb') as f:
-    #    h.update(f.read())
+    #node_modules_src_paths.append(__file__)
 
-    new_node_digest = h.hexdigest()
-    node_digest_path = os.path.join(env.subst('$BUILD_DIR'), 'web,package-lock.json.digest')
+    node_modules_needs_update, node_modules_reason, node_modules_digest = util.check_digest(node_modules_src_paths, [], 'web', 'node_modules', env=env)
+    node_modules_digest_paths = util.get_digest_paths('web', 'node_modules', env=env)
 
-    try:
-        with open(node_digest_path, 'r', encoding='utf-8') as f:
-            old_node_digest = f.read().strip()
-    except FileNotFoundError:
-        old_node_digest = None
-
-    if old_node_digest == new_node_digest and os.path.exists('web/node_modules/tinkerforge.marker'):
+    if not node_modules_needs_update and os.path.exists('web/node_modules/tinkerforge.marker'):
         print('Web interface dependencies are up-to-date')
     else:
-        if old_node_digest == None:
-            reason = 'digest file missing'
-        elif old_node_digest != new_node_digest:
-            reason = 'digest mismatch'
-        elif not os.path.exists('web/node_modules/tinkerforge.marker'):
-            reason = 'node_modules marker missing'
-        else:
-            reason = 'unknown'
+        if not os.path.exists('web/node_modules/tinkerforge.marker'):
+            node_modules_reason = 'marker file missing'
 
-        print('Web interface dependencies are not up-to-date ({0}), updating now'.format(reason))
+        print('Web interface dependencies are not up-to-date ({0}), updating now'.format(node_modules_reason))
 
-        try:
-            os.remove(node_digest_path)
-        except FileNotFoundError:
-            pass
+        util.remove_digest('web', 'node_modules', env=env)
 
         try:
             shutil.rmtree('web/node_modules')
@@ -507,71 +487,47 @@ def main():
             pass
 
         with ChangedDirectory('web'):
-            subprocess.check_call(["npm", "ci"], shell=sys.platform == 'win32')
+            subprocess.check_call(['npm', 'ci'], shell=sys.platform == 'win32')
 
         with open('web/node_modules/tinkerforge.marker', 'wb') as f:
             pass
 
-        with open(node_digest_path + '.tmp', 'w', encoding='utf-8') as f:
-            f.write(new_node_digest)
-
-        os.replace(node_digest_path + '.tmp', node_digest_path)
+        util.store_digest(node_modules_digest, 'web', 'node_modules', env=env)
 
     print('Checking web interface')
 
-    h = hashlib.sha256()
+    index_html_src_paths = []
+    index_html_src_datas = []
 
     for name in sorted(os.listdir('web')):
         path = os.path.join('web', name)
 
-        if not os.path.isfile(path):
-            continue
-
-        with open(path, 'rb') as f:
-            h.update(f.read())
+        if os.path.isfile(path):
+            index_html_src_paths.append(path)
 
     for root, dirs, files in sorted(os.walk('web/src')):
-        for name in files:
-            path = os.path.join(root, name)
+        for name in sorted(files):
+            index_html_src_paths.append(os.path.join(root, name))
 
-            with open(path, 'rb') as f:
-                h.update(f.read())
-
-    with open(node_digest_path, 'rb') as f:
-        h.update(f.read())
+    index_html_src_paths += node_modules_digest_paths
 
     for frontend_module in frontend_modules: # ensure changes to the frontend modules change the digest
-        h.update(frontend_module.under.encode('utf-8'))
-
-    with open('util.py', 'rb') as f: # ensure changes to the embed_data function change the digest
-        h.update(f.read())
+        index_html_src_datas.append(frontend_module.under.encode('utf-8'))
 
     # FIXME: Scons runs this script using exec(), resulting in __file__ being not available
-    #with open(__file__, 'rb') as f:
-    #    h.update(f.read())
+    #index_html_src_paths.append(__file__)
 
-    new_html_digest = h.hexdigest()
-    html_digest_path = os.path.join(env.subst('$BUILD_DIR'), 'src,index.html.digest')
+    index_html_needs_update, index_html_reason, index_html_digest = util.check_digest(index_html_src_paths, index_html_src_datas, 'src', 'index_html', env=env)
 
-    try:
-        with open(html_digest_path, 'r', encoding='utf-8') as f:
-            old_html_digest = f.read().strip()
-    except FileNotFoundError:
-        old_html_digest = None
-
-    if old_html_digest == new_html_digest and os.path.exists('src/index_html.embedded.h') and os.path.exists('src/index_html.embedded.cpp'):
+    if not index_html_needs_update and os.path.exists('src/index_html.embedded.h') and os.path.exists('src/index_html.embedded.cpp'):
         print('Web interface is up-to-date')
     else:
-        if old_html_digest == None:
-            reason = 'digest file missing'
-        elif old_html_digest != new_html_digest:
-            reason = 'digest mismatch'
-        elif not os.path.exists('src/index_html.embedded.h') or not os.path.exists('src/index_html.embedded.cpp'):
-            reason = 'embedded file missing'
-        else:
-            reason = 'unknown'
+        if not os.path.exists('src/index_html.embedded.h') or not os.path.exists('src/index_html.embedded.cpp'):
+            index_html_reason = 'embedded file missing'
 
-        print('Web interface is not up-to-date ({0}), building now'.format(reason))
+        print('Web interface is not up-to-date ({0}), building now'.format(index_html_reason))
+
+        util.remove_digest('src', 'index_html', env=env)
 
         try:
             shutil.rmtree('web/build')
@@ -593,11 +549,7 @@ def main():
         html = html.replace('<link href=css/main.css rel=stylesheet>', '<style rel=stylesheet>{0}</style>'.format(css))
         html = html.replace('<script src=js/bundle.js></script>', '<script>{0}</script>'.format(js))
 
-        embed_data(gzip.compress(html.encode('utf-8')), 'src', 'index_html', 'char')
-
-        with open(html_digest_path + '.tmp', 'w', encoding='utf-8') as f:
-            f.write(new_html_digest)
-
-        os.replace(html_digest_path + '.tmp', html_digest_path)
+        util.embed_data(gzip.compress(html.encode('utf-8')), 'src', 'index_html', 'char')
+        util.store_digest(index_html_digest, 'src', 'index_html', env=env)
 
 main()
