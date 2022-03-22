@@ -64,7 +64,7 @@ def parse_ts_file(path, name):
 
     incorrect_placeholders = [x for x in placeholders if not x[0] == '"' or not x[-1] == '"']
     if len(incorrect_placeholders) != 0:
-        print("Found incorrect placeholders", incorrect_placeholders)
+        print("Found incorrectly quoted placeholders. Use \"\"!", incorrect_placeholders)
 
     used_placeholders += [x[1:-1] for x in placeholders]
 
