@@ -338,7 +338,7 @@ void EVSEV2::setup()
     update_all_data();
     api.addFeature("evse");
     api.addFeature("cp_disconnect");
-    api.addFeature("button_config");
+    api.addFeature("button_configuration");
 
     task_scheduler.scheduleWithFixedDelay([this](){
         update_all_data();
