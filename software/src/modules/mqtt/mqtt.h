@@ -35,7 +35,6 @@ enum class MqttConnectionState {
 
 struct MqttCommand {
     String topic;
-    uint32_t max_len;
     std::function<void(char *, size_t)> callback;
     bool forbid_retained;
 };
@@ -54,7 +53,7 @@ public:
     void connect();
 
     void publish(String topic_suffix, String payload);
-    void subscribe(String topic_suffix, uint32_t max_payload_length, std::function<void(char *, size_t)> callback, bool forbid_retained);
+    void subscribe(String topic_suffix, std::function<void(char *, size_t)> callback, bool forbid_retained);
 
     // IAPIBackend implementation
     void addCommand(size_t commandIdx, const CommandRegistration &reg);

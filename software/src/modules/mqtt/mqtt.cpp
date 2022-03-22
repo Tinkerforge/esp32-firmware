@@ -61,11 +61,11 @@ Mqtt::Mqtt()
     });
 }
 
-void Mqtt::subscribe(String topic_suffix, uint32_t max_payload_length, std::function<void(char *, size_t)> callback, bool forbid_retained)
+void Mqtt::subscribe(String topic_suffix, std::function<void(char *, size_t)> callback, bool forbid_retained)
 {
     String prefix = mqtt_config_in_use.get("global_topic_prefix")->asString();
     String topic = prefix + "/" + topic_suffix;
-    this->commands.push_back({topic, max_payload_length, callback, forbid_retained});
+    this->commands.push_back({topic, callback, forbid_retained});
 
     esp_mqtt_client_unsubscribe(client, topic.c_str());
     esp_mqtt_client_subscribe(client, topic.c_str(), 0);
@@ -84,7 +84,7 @@ void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)
     if (mqtt_state.get("connection_state")->asInt() != (int)MqttConnectionState::CONNECTED)
         return;
 
-    subscribe(reg.path, reg.config->max_string_length(), [reg, commandIdx](char *payload, size_t payload_len){
+    subscribe(reg.path, [reg, commandIdx](char *payload, size_t payload_len){
         String reason = api.getCommandBlockedReason(commandIdx);
         if (reason != "") {
             logger.printfln("MQTT: Command %s is blocked: %s", reg.path.c_str(), reason.c_str());
@@ -111,7 +111,7 @@ void Mqtt::addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg
     if (mqtt_state.get("connection_state")->asInt() != (int)MqttConnectionState::CONNECTED)
         return;
 
-    subscribe(reg.path, MQTT_RECV_BUFFER_SIZE, [reg](char *payload, size_t payload_len){
+    subscribe(reg.path, [reg](char *payload, size_t payload_len){
         String error = reg.callback(payload, payload_len);
         if(error == "") {
             return;
@@ -184,11 +184,6 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
             continue;
         if (memcmp(c.topic.c_str(), topic, topic_len) != 0)
             continue;
-
-        if (data_len > c.max_len) {
-            logger.printfln("MQTT: Ignoring message with payload length %u for topic %s. Maximum length allowed is %u.", data_len, c.topic.c_str(), c.max_len);
-            return;
-        }
 
         if (retain && c.forbid_retained) {
             logger.printfln("MQTT: Topic %s is an action. Ignoring retained message.", c.topic.c_str());
