@@ -33,10 +33,10 @@ export function init() {
 
 }
 
-export function addEventListeners(source: API.ApiEventTarget) {
+export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('debug/state', update_debug_state);
 }
 
-export function updateLockState(module_init: any) {
+export function update_sidebar_state(module_init: any) {
     $('#sidebar-debug').prop('hidden', !module_init.debug);
 }

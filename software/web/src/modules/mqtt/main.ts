@@ -70,15 +70,13 @@ function update_mqtt_state() {
     }
 }
 
-export function addEventListeners(source: API.ApiEventTarget) {
+export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('mqtt/config', update_mqtt_config);
-
     source.addEventListener('mqtt/state', update_mqtt_state);
 }
 
 export function init() {
     $("#mqtt_show_password").on("change", util.toggle_password_fn("#mqtt_broker_password"));
-
     $("#mqtt_clear_password").on("change", util.clear_password_fn("#mqtt_broker_password"));
 
     $('#mqtt_config_form').on('submit', function (this: HTMLFormElement, event: Event) {
@@ -96,6 +94,6 @@ export function init() {
     });
 }
 
-export function updateLockState(module_init: any) {
+export function update_sidebar_state(module_init: any) {
     $('#sidebar-mqtt').prop('hidden', !module_init.mqtt);
 }

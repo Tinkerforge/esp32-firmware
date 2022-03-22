@@ -22,12 +22,14 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-export function updateLockState(module_init: any) {
-    $('#sidebar-energy-manager-energy-analysis').prop('hidden', !module_init.energy_manager);
-}
-
 export function init() {
+
 }
 
-export function addEventListeners(source: API.ApiEventTarget) {
+export function add_event_listeners(source: API.APIEventTarget) {
+
+}
+
+export function update_sidebar_state(module_init: any) {
+    $('#sidebar-energy-manager-energy-analysis').prop('hidden', !module_init.energy_manager);
 }

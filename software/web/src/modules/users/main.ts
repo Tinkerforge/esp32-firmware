@@ -354,7 +354,6 @@ function check_http_auth_allowed() {
 
 export function init() {
     $('#users_config_form').on('input', () => $('#users_save_button').prop("disabled", false));
-
     $('#users_config_form').on('input', check_http_auth_allowed);
 
     $('#users_config_form').on('submit', async function (event: Event) {
@@ -412,13 +411,13 @@ export function init() {
         form.reset();
     })
 
-   $(`#users_config_user_show_password`).on("change", util.toggle_password_fn(`#users_config_user_new_password`));
+    $(`#users_config_user_show_password`).on("change", util.toggle_password_fn(`#users_config_user_new_password`));
 }
 
-export function addEventListeners(source: API.ApiEventTarget) {
+export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('users/config', () => update_users_config(false));
 }
 
-export function updateLockState(module_init: any) {
+export function update_sidebar_state(module_init: any) {
     $('#sidebar-users').prop('hidden', !module_init.users);
 }

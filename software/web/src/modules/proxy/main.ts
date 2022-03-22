@@ -75,15 +75,15 @@ function update_error_counters() {
     $("#bricklets_error_counters").html(result);
 }
 
-export function addEventListeners(source: API.ApiEventTarget) {
-    source.addEventListener('proxy/devices', update_devices);
-    source.addEventListener('proxy/error_counters', update_error_counters);
-}
-
 export function init() {
 
 }
 
-export function updateLockState(module_init: any) {
+export function add_event_listeners(source: API.APIEventTarget) {
+    source.addEventListener('proxy/devices', update_devices);
+    source.addEventListener('proxy/error_counters', update_error_counters);
+}
+
+export function update_sidebar_state(module_init: any) {
     $('#sidebar-bricklets').prop('hidden', !module_init.proxy);
 }

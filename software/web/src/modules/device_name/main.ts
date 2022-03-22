@@ -55,9 +55,8 @@ function save_config() {
         __("device_name.script.reboot_content_changed"));
 }
 
-export function addEventListeners(source: API.ApiEventTarget) {
+export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('info/name', update_state);
-
     source.addEventListener('info/display_name', update_config);
 }
 
@@ -85,6 +84,6 @@ export function init() {
     });
 }
 
-export function updateLockState(module_init: any) {
+export function update_sidebar_state(module_init: any) {
 
 }

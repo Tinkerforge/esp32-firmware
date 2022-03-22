@@ -278,15 +278,13 @@ export function init() {
     })
 }
 
-export function addEventListeners(source: API.ApiEventTarget) {
+export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('nfc/config', () => update_nfc_config(undefined, false));
-
     source.addEventListener('nfc/seen_tags', update_nfc_seen_tags);
-
     source.addEventListener('nfc/config', update_users_config);
     source.addEventListener('users/config', update_users_config);
 }
 
-export function updateLockState(module_init: any) {
+export function update_sidebar_state(module_init: any) {
     $('#sidebar-nfc').prop('hidden', !module_init.nfc);
 }

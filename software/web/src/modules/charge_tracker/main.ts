@@ -267,18 +267,16 @@ export function init() {
     });
 }
 
-export function addEventListeners(source: API.ApiEventTarget) {
+export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('charge_tracker/last_charges', update_last_charges);
-
     source.addEventListener('charge_tracker/current_charge', update_current_charge);
     source.addEventListener('evse/low_level_state', update_current_charge);
     source.addEventListener('meter/values', update_current_charge);
     source.addEventListener('users/config', update_current_charge);
     source.addEventListener('users/config', update_user_filter_dropdown);
-
     source.addEventListener('charge_tracker/state', update_state);
 }
 
-export function updateLockState(module_init: any) {
+export function update_sidebar_state(module_init: any) {
     $('#sidebar-charge_tracker').prop('hidden', !module_init.charge_tracker);
 }

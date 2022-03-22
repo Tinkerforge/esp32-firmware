@@ -70,11 +70,6 @@ function save_config() {
         .then(() => $('#ntp_save_button').prop("disabled", true));
 }
 
-export function addEventListeners(source: API.ApiEventTarget) {
-    source.addEventListener('ntp/state', update_state);
-    source.addEventListener('ntp/config', () => update_config());
-}
-
 export function init() {
     $('#ntp_browser_timezone').on('click', () => {
         update_timezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
@@ -122,6 +117,11 @@ export function init() {
     });
 }
 
-export function updateLockState(module_init: any) {
+export function add_event_listeners(source: API.APIEventTarget) {
+    source.addEventListener('ntp/state', update_state);
+    source.addEventListener('ntp/config', () => update_config());
+}
+
+export function update_sidebar_state(module_init: any) {
     $('#sidebar-ntp').prop('hidden', !module_init.ntp);
 }

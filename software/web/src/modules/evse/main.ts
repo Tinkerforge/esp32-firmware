@@ -468,26 +468,17 @@ export function init() {
     });
 }
 
-export function addEventListeners(source: API.ApiEventTarget) {
+export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('evse/state', update_evse_state);
-
     source.addEventListener('evse/low_level_state', update_evse_low_level_state);
     source.addEventListener('evse/state', update_evse_low_level_state);
-
     source.addEventListener('evse/hardware_configuration', update_evse_hardware_configuration);
-
     source.addEventListener('evse/auto_start_charging', update_evse_auto_start_charging);
-
     source.addEventListener("evse/management_enabled", update_evse_managed);
-
     source.addEventListener("evse/user_enabled", update_evse_user);
-
     source.addEventListener("evse/external_enabled", update_evse_external);
-
     source.addEventListener("evse/slots", update_evse_slots);
-
     source.addEventListener("evse/user_calibration", update_evse_user_calibration);
-
     source.addEventListener("evse/state", update_evse_status_start_charging_button);
     source.addEventListener("evse/slots", update_evse_status_start_charging_button);
 
@@ -500,7 +491,7 @@ export function addEventListeners(source: API.ApiEventTarget) {
     }, false);
 }
 
-export function updateLockState(module_init: any) {
+export function update_sidebar_state(module_init: any) {
     $('#sidebar-evse').prop('hidden', !module_init.evse);
     $('#status-evse').prop('hidden', !module_init.evse);
 }

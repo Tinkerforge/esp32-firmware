@@ -297,11 +297,9 @@ function save_wifi_ap_config() {
         __("wifi.script.ap_reboot_content_changed"));
 }
 
-export function addEventListeners(source: API.ApiEventTarget) {
+export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('wifi/state', update_wifi_state);
-
     source.addEventListener('wifi/sta_config', update_wifi_sta_config);
-
     source.addEventListener('wifi/ap_config', update_wifi_ap_config);
 
     source.addEventListener('wifi/scan_results', (e) => {
@@ -324,15 +322,10 @@ export function addEventListeners(source: API.ApiEventTarget) {
 
 export function init() {
     $("#scan_wifi_button").on("click", scan_wifi);
-
     $("#wifi_sta_show_passphrase").on("change", util.toggle_password_fn("#wifi_sta_passphrase"));
-
     $("#wifi_sta_clear_passphrase").on("change", util.clear_password_fn("#wifi_sta_passphrase"));
-
     $("#wifi_ap_show_passphrase").on("change", util.toggle_password_fn("#wifi_ap_passphrase"));
-
     $("#wifi_ap_clear_passphrase").on("change", util.clear_password_fn("#wifi_ap_passphrase"));
-
     $("#wifi_sta_show_static").on("change", function(this: HTMLInputElement) {wifi_cfg_toggle_static_ip_collapse(this.value);});
 
     // Use bootstrap form validation
@@ -379,7 +372,7 @@ export function init() {
     });
 }
 
-export function updateLockState(module_init: any) {
+export function update_sidebar_state(module_init: any) {
     $('#sidebar-wifi-sta').prop('hidden', !module_init.wifi);
     $('#sidebar-wifi-ap').prop('hidden', !module_init.wifi);
 }

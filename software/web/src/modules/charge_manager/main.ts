@@ -281,14 +281,12 @@ export function init() {
     });
 }
 
-export function addEventListeners(source: API.ApiEventTarget) {
+export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('charge_manager/state', update_charge_manager_state);
-
     source.addEventListener('charge_manager/config', () => update_charge_manager_config(undefined, false));
-
     source.addEventListener('charge_manager/available_current', () => update_available_current());
 }
 
-export function updateLockState(module_init: any) {
+export function update_sidebar_state(module_init: any) {
     $('#sidebar-charge_manager').prop('hidden', !module_init.charge_manager);
 }

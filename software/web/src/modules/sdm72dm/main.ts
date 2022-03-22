@@ -482,16 +482,12 @@ function update_module_visibility() {
             status_interval = window.setInterval(update_status_chart, 60*1000);
         }
     }
-
 }
 
-export function addEventListeners(source: API.ApiEventTarget) {
+export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('meter/values', update_meter_values);
-
     source.addEventListener('meter/phases', update_meter_phases);
-
     source.addEventListener('meter/all_values', update_evse_v2_all_values);
-
     source.addEventListener('info/features', update_module_visibility);
 
     source.addEventListener("evse/max_charging_current", function (e: util.SSE) {
@@ -500,7 +496,7 @@ export function addEventListeners(source: API.ApiEventTarget) {
     }, false);
 }
 
-export function updateLockState(module_init: any) {
+export function update_sidebar_state(module_init: any) {
     // Don't use meter navbar link if the Energy Manager module is loaded.
     // The energy manager has its own meter configration module and a link
     // to the meter frontend directly in the configuration module instead of the navbar.

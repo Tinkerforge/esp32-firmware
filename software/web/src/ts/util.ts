@@ -172,9 +172,9 @@ let ws: WebSocket = null;
 
 const RECONNECT_TIME = 12000;
 
-let eventTarget: API.ApiEventTarget = null;
+let eventTarget: API.APIEventTarget = null;
 
-export function setupEventSource(first: boolean, keep_as_first: boolean, continuation: (ws: WebSocket, eventTarget: API.ApiEventTarget) => void) {
+export function setupEventSource(first: boolean, keep_as_first: boolean, continuation: (ws: WebSocket, eventTarget: API.APIEventTarget) => void) {
     if (!first) {
         add_alert("event_connection_lost", "alert-warning",  __("util.event_connection_lost_title"), __("util.event_connection_lost"))
     }
@@ -183,7 +183,7 @@ export function setupEventSource(first: boolean, keep_as_first: boolean, continu
         ws.close();
     }
     ws = new WebSocket((location.protocol == 'https:' ? 'wss://' : 'ws://') + location.host + '/ws');
-    eventTarget = new API.ApiEventTarget();
+    eventTarget = new API.APIEventTarget();
 
     if (wsReconnectTimeout != null) {
         clearTimeout(wsReconnectTimeout);

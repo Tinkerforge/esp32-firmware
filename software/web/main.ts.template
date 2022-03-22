@@ -16,8 +16,8 @@ import * as API from "./ts/api";
 
 interface Module {
     init(): void;
-    addEventListeners(source: API.ApiEventTarget): void;
-    updateLockState(m: API.Modules): void;
+    add_event_listeners(source: API.APIEventTarget): void;
+    update_sidebar_state(m: API.Modules): void;
 }
 
 let modules: Module[] = [{{{modules}}}];
@@ -29,15 +29,15 @@ $('.navbar-collapse a').on("click", function () {
 function update_modules() {
     let module_init = API.get('info/modules');
     for (let m of modules) {
-        m.updateLockState(module_init);
+        m.update_sidebar_state(module_init);
     }
 }
 
-export function registerEvents(eventSource: API.ApiEventTarget) {
+export function registerEvents(eventSource: API.APIEventTarget) {
     eventSource.addEventListener('info/modules', update_modules);
 
     for (let m of modules) {
-        m.addEventListeners(eventSource);
+        m.add_event_listeners(eventSource);
     }
 }
 
@@ -50,7 +50,7 @@ function init() {
         m.init();
     }
 
-    util.setupEventSource(true, false,  (ws: WebSocket, eventTarget: API.ApiEventTarget) => registerEvents(eventTarget));
+    util.setupEventSource(true, false, (ws: WebSocket, eventTarget: API.APIEventTarget) => registerEvents(eventTarget));
 }
 
 function login() {

@@ -26,10 +26,10 @@ export function init() {
     $('#system').on('show.bs.collapse', () => $('#system-chevron').addClass("rotated-chevron"));
 }
 
-export function addEventListeners(source: API.ApiEventTarget) {
+export function add_event_listeners(source: API.APIEventTarget) {
 
 }
 
-export function updateLockState(module_init: any) {
+export function update_sidebar_state(module_init: any) {
 
 }
