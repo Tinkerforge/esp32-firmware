@@ -173,7 +173,8 @@ struct string_length_visitor {
         return x.maxChars + 2; // ""
     }
     size_t operator()(const Config::ConfFloat &x) {
-        return 42; // Educated guess
+        // Educated guess, FLT_MAX is ~3*10^38 however it is unlikely that a user will send enough float values longer than 20.
+        return 20;
     }
     size_t operator()(const Config::ConfInt &x) {
         return 11;
