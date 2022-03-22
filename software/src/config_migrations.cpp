@@ -28,7 +28,6 @@
 
 #include "api.h"
 #include "build.h"
-#include "build_timestamp.h"
 #include "config.h"
 #include "digest_auth.h"
 #include "task_scheduler.h"
