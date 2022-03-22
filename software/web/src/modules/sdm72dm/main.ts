@@ -186,8 +186,6 @@ function init_chart() {
     meter_chart_change_time($("#meter_chart_time_select").val().toString());
 }
 
-let allowed_current = 32000;
-
 function update_status_chart() {
     $.get("/meter/history").done(function (values: number[]) {
         const HISTORY_MINUTE_INTERVAL = 4;
@@ -221,15 +219,7 @@ function update_status_chart() {
             ]
         };
 
-        // We have to assume three phases even if only one or two are connected,
-        // because the other phases could be disconnected only temporarily.
-        // The only case where scaling to one phase would be useful is when
-        // the charger is always connected with one phase only, however
-        // we can't reliably detect this case.
-        // Maybe in the future (as in "as soon as the first customer complains about this" ;) )
-        // we could add a configuration for this.
-        let configured_max = allowed_current / 1000 * 3 * 230;
-        init_status_chart(0, Math.max(configured_max, Math.max(...values))),
+        init_status_chart(0, Math.max(6 * 230, Math.max(...values))),
         status_meter_chart.update(data);
     });
 }
@@ -489,11 +479,6 @@ export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('meter/phases', update_meter_phases);
     source.addEventListener('meter/all_values', update_evse_v2_all_values);
     source.addEventListener('info/features', update_module_visibility);
-
-    source.addEventListener("evse/max_charging_current", function (e: util.SSE) {
-        let parsed = JSON.parse(e.data);
-        allowed_current = Math.min(parsed.max_current_incoming_cable, parsed.max_current_outgoing_cable);
-    }, false);
 }
 
 export function update_sidebar_state(module_init: any) {
