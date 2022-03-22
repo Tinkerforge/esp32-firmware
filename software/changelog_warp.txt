@@ -171,3 +171,15 @@
 - Report correct EVSE version
 - Scroll back to top when changing sub-page
 - Improve translations
+
+2022-03-22: 1.9.92 (<unknown>)
+- 2.0.0 Beta 3
+- Refine new API
+- Add configuration migration
+- Add warning when disabling the WiFi AP
+- Fix websocket connections through SSL proxy
+- Fix charge tracker edge cases
+- Fix web interface error message hide logic
+- Fix MQTT payload length limit calculation
+- Fix spurious firmware update flash failures
+- Fix crash when starting without plugged in EVSE
