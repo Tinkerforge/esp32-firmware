@@ -248,7 +248,7 @@ struct string_length_visitor {
         size_t sum = 2; // { and }
         for (size_t i = 0; i < x.value.size(); ++i) {
             sum += x.value[i].first.length() + 2; // ""
-            sum += strict_variant::apply_visitor(string_length_visitor{}, x.value[i].second.value);;
+            sum += strict_variant::apply_visitor(string_length_visitor{}, x.value[i].second.value);
         }
         return sum;
     }
