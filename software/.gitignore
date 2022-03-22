@@ -11,6 +11,7 @@ src/main.cpp
 src/modules.h
 src/build.h
 src/build_timestamp.h
+web/**/*.digest
 web/node_modules/
 web/build/
 web/src/main.ts
