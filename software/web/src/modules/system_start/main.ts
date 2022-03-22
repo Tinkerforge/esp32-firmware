@@ -22,8 +22,8 @@ import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 
 export function init() {
-    $('#system').on('hide.bs.collapse', () => $('#system-chevron').removeClass("rotated-chevron"));
-    $('#system').on('show.bs.collapse', () => $('#system-chevron').addClass("rotated-chevron"));
+    $('#system-group').on('hide.bs.collapse', () => $('#system-chevron').removeClass("rotated-chevron"));
+    $('#system-group').on('show.bs.collapse', () => $('#system-chevron').addClass("rotated-chevron"));
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
@@ -31,5 +31,5 @@ export function add_event_listeners(source: API.APIEventTarget) {
 }
 
 export function update_sidebar_state(module_init: any) {
-
+    $('#sidebar-system-group').prop('hidden', false);
 }

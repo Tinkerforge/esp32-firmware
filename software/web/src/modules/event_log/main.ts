@@ -88,5 +88,4 @@ export function add_event_listeners(source: API.APIEventTarget) {
 
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-event-log').prop('hidden', !module_init.event_log);
-    $('#sidebar-system').prop('hidden',  $('#sidebar-system').prop('hidden') && !module_init.event_log);
 }
