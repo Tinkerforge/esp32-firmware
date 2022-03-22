@@ -236,8 +236,10 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             }, 0);
             break;
         case MQTT_EVENT_DATA:
-            if(event->total_data_len != event->data_len) {
-                logger.printfln("MQTT: fragmented payload (%u %u). Payload too long?", event->data_len, event->total_data_len);
+            if (event->current_data_offset != 0)
+                return;
+            if (event->total_data_len != event->data_len) {
+                logger.printfln("MQTT: Ignoring message with payload length %d for topic %.*s. Maximum length allowed is %u.", event->total_data_len, event->topic_len, event->topic, MQTT_RECV_BUFFER_SIZE);
                 return;
             }
             mqtt->onMqttMessage(event->topic, event->topic_len, event->data, event->data_len, event->retain);
