@@ -138,7 +138,7 @@ void CMNetworking::register_manager(const std::vector<String> &hosts,
             }
 
         if (charger_idx == -1) {
-            logger.printfln("Received packet from unknown %s. Is the configuration complete?", inet_ntoa(source_addr.sin_addr));
+            logger.printfln("Received packet from unknown %s. Is the config complete?", inet_ntoa(source_addr.sin_addr));
             return;
         }
 

@@ -58,7 +58,7 @@
             "jumper_config": "switch configured",
             "jumper_config_software": "Software",
             "jumper_config_unconfigured": "Unconfigured",
-            "evse_version": "EVSE version",
+            "evse_version": "Charge controller version",
             "charging_current": "Charging current limits",
             "charging_current_muted": "minimum of the charging current limits",
             "reset_configured_current": "Release",
@@ -100,21 +100,7 @@
             "external_description_muted": "<a href=\"https://www.warp-charger.com/evcc.html?v=2\">see setup tutorial for details</a>",
             "external_enable": "Enables an external control system (for example <a href=\"https://evcc.io/\">EVCC</a>) to control this charger",
 
-            "dc_fault_current_state": "DC fault protector state",
-            "dc_fault_current_state_desc": "{{{empty_text}}}",
-            "dc_fault_current_ok": "OK",
-            "dc_fault_current_6_ma": "DC fault",
-            "dc_fault_current_system": "System error",
-            "dc_fault_current_unknown": "Unknown error",
-            "dc_fault_current_calibration": "Calibration error",
-            "dc_fault_current_reset": "Reset",
-
-            "reset_dc_fault_title": "Reset the DC fault protector",
-            "reset_dc_fault_content": "Resetting the DC fault protector restores the ability to charge. <b>Ensure that the reason why the DC fault protector triggered is resolved!</b> <a href=\"{{{manual_url}}}\">See manual for details.</a> Really reset the DC fault protector?",
-            "abort": "Abort",
-            "reset": "Reset",
-
-            "reset_description": "Restart or reflash EVSE",
+            "reset_description": "Actions",
             "reset_description_muted": "{{{empty_text}}}",
             "reset_evse": "Restart",
             "reflash_evse": "Reflash",
@@ -156,8 +142,6 @@
             "slot_blocks": "blocks",
             "slot_no_limit": "no limit",
 
-            "reset_dc_fault_current_failed": "Reset of the DC fault protector failed",
-            "gpio_configuration_failed": "Updating the GPIO configuration failed",
             "reset_external_slot_failed": "Releasing the external current limit failed",
 
             "slot_0": "Supply cable",

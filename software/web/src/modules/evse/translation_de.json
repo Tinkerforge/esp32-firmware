@@ -17,10 +17,7 @@
             "user_calibration_download": "Herunterladen",
             "user_calibration_browse": "Hochladen",
             "user_calibration_select_file": "Kalibrierungsdatei auswählen",
-            "user_calibration_reset": "Zurücksetzen",
-            "hardware_version": "Hardware-Version",
-            "hardware_version_14": "1.4",
-            "hardware_version_15": "1.5"
+            "user_calibration_reset": "Zurücksetzen"
         },
         "script": {
             "user_calibration_upload_failed": "Aktualisieren der Kalibrierung fehlgeschlagen"

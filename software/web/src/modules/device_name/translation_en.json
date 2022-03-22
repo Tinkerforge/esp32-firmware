@@ -2,6 +2,9 @@
     "device_name": {
         "status": {
             "status": "Status"
+        },
+        "script": {
+            "config_failed": "Failed to save the display name"
         }
     }
 }

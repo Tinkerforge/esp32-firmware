@@ -58,7 +58,7 @@
             "jumper_config": "durch Schalter konfiguriert",
             "jumper_config_software": "Software",
             "jumper_config_unconfigured": "Unkonfiguriert",
-            "evse_version": "EVSE-Version",
+            "evse_version": "Version des Ladecontrollers",
             "charging_current": "Ladestromgrenzen",
             "charging_current_muted": "Minimum der Ladestromgrenzen",
             "reset_configured_current": "Freigeben",
@@ -99,25 +99,11 @@
             "external_description_muted": "<a href=\"https://www.warp-charger.com/evcc.html?v=2\">siehe Einrichtungs-Tutorial für Details</a>",
             "external_enable": "Erlaubt einer externen Steuerung (z.B. <a href=\"https://evcc.io/\">EVCC</a>) diese Wallbox zu steuern",
 
-            "dc_fault_current_state": "DC-Fehlerstrom&shy;zustand",
-            "dc_fault_current_state_desc": "{{{empty_text}}}",
-            "dc_fault_current_ok": "OK",
-            "dc_fault_current_6_ma": "Gleichstromfehler",
-            "dc_fault_current_system": "Systemfehler",
-            "dc_fault_current_unknown": "Unbekannter Fehler",
-            "dc_fault_current_calibration": "Kalibrierungs&shy;fehler",
-            "dc_fault_current_reset": "Zurücksetzen",
-
-            "reset_dc_fault_title": "Zurücksetzen des DC-Fehlerstromschutzmoduls",
-            "reset_dc_fault_content": "Durch das Zurücksetzen des Moduls kann wieder geladen werden. <b>Es muss sichergestellt sein, dass der Grund für das Auslösen des Moduls behoben wurde!</b> <a href=\"{{{manual_url}}}\">Siehe Betriebsanleitung für Details.</a> Soll das DC-Fehlerstromschutzmodul wirklich zurückgesetzt werden?",
-            "abort": "Abbrechen",
-            "reset": "Zurücksetzen",
-
-            "reset_description": "EVSE neustarten / neuflashen",
+            "reset_description": "Aktionen",
             "reset_description_muted": "{{{empty_text}}}",
-            "reset_evse": "Neustarten",
-            "reflash_evse": "Neuflashen",
-            "charging_time": "Lade seit",
+            "reset_evse": "Neu starten",
+            "reflash_evse": "Neu flashen",
+            "charging_time": "Lädt seit",
 
             "slot_0": "Zuleitung",
             "slot_1": "Typ-2-Ladekabel",
@@ -151,8 +137,6 @@
 
             "save_failed": "(De-)Aktivieren des Lastmanagements fehlgeschlagen",
 
-            "reset_dc_fault_current_failed": "Zurücksetzen des DC-Fehlerstromschutzmoduls fehlgeschlagen",
-            "gpio_configuration_failed": "Speichern der GPIO-Konfiguration fehlgeschlagen",
             "reset_external_slot_failed": "Freigeben der externen Stromgrenze fehlgeschlagen",
 
             "slot_disabled": "nicht aktiv",

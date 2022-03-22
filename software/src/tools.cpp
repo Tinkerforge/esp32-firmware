@@ -251,7 +251,7 @@ bool mount_or_format_spiffs(void)
     // If we still have an SPIFFS, copy the configuration into the "backup" slot, i.e. the core dump partition
     // Format the core dump partition in any case, maybe we where interrupted while copying the last time.
     if (is_spiffs_available("spiffs", "/spiffs")) {
-        logger.printfln("Configuration partition is mountable as SPIFFS. Migrating to LittleFS.");
+        logger.printfln("Data partition is mountable as SPIFFS. Migrating to LittleFS.");
 
         logger.printfln("Formatting core dump partition as LittleFS.");
         {
@@ -262,7 +262,7 @@ bool mount_or_format_spiffs(void)
         LittleFS.format();
         LittleFS.begin(false, "/conf_backup", 10, "coredump");
 
-        logger.printfln("Mirroring configuration to core dump partition.");
+        logger.printfln("Mirroring data to core dump partition.");
         SPIFFS.begin(false);
         uint8_t *buf = (uint8_t *)malloc(4096);
         mirror_filesystem(SPIFFS, LittleFS, "/", 4, buf, 4096);
@@ -276,9 +276,9 @@ bool mount_or_format_spiffs(void)
     // (maybe we copied only half the config last time). Then copy over the configuration backup files
     // and erase the backup completely.
     if (is_littlefs_available("coredump", "/conf_backup")) {
-        logger.printfln("Core dump partition is mountable as LittleFS, configuration backup found. Continuing migration.");
+        logger.printfln("Core dump partition is mountable as LittleFS, data backup found. Continuing migration.");
 
-        logger.printfln("Formatting configuration partition as LittleFS.");
+        logger.printfln("Formatting data partition as LittleFS.");
         {
             LogSilencer ls{"esp_littlefs"};
             LogSilencer ls2{"ARDUINO"};
@@ -287,7 +287,7 @@ bool mount_or_format_spiffs(void)
         LittleFS.format();
         LittleFS.begin(false, "/spiffs", 10, "spiffs");
 
-        logger.printfln("Mirroring configuration backup to configuration partition.");
+        logger.printfln("Mirroring data backup to data partition.");
         fs::LittleFSFS configFS;
         configFS.begin(false, "/conf_backup", 10, "coredump");
         uint8_t *buf = (uint8_t *)malloc(4096);
@@ -303,13 +303,13 @@ bool mount_or_format_spiffs(void)
     }
 
     if (!is_littlefs_available("spiffs", "/spiffs")) {
-        logger.printfln("Configuration partition is not mountable as LittleFS. Formatting now.");
+        logger.printfln("Data partition is not mountable as LittleFS. Formatting now.");
         {
             LogSilencer ls{"esp_littlefs"};
             LittleFS.begin(false, "/spiffs", 10, "spiffs");
         }
         LittleFS.format();
-        logger.printfln("Configuration partition is now formatted as LittleFS.");
+        logger.printfln("Data partition is now formatted as LittleFS.");
     }
 
     if (!LittleFS.begin(false, "/spiffs", 10, "spiffs")) {
@@ -318,7 +318,7 @@ bool mount_or_format_spiffs(void)
 
     size_t part_size = LittleFS.totalBytes();
     size_t part_used = LittleFS.usedBytes();
-    logger.printfln("Mounted configuration partition. %u of %u bytes (%3.1f %%) used", part_used, part_size, ((float)part_used / (float)part_size) * 100.0f);
+    logger.printfln("Mounted data partition. %u of %u bytes (%3.1f %%) used", part_used, part_size, ((float)part_used / (float)part_size) * 100.0f);
 
     return true;
 }

@@ -14,9 +14,9 @@
             "download_btn": "Ladelog herunterladen",
 
             "tracked_charges": "Aufgezeichnete Ladungen",
-            "tracked_charges_muted": "",
+            "tracked_charges_muted": "{{{empty_text}}}",
             "first_charge_timestamp": "Älteste aufgezeichnete Ladung",
-            "first_charge_timestamp_muted": "",
+            "first_charge_timestamp_muted": "{{{empty_text}}}",
             "user_filter": "Benutzerfilter",
             "user_filter_muted": "CSV-Datei wird nur Ladungen des ausgewählten Benutzers beinhalten",
 

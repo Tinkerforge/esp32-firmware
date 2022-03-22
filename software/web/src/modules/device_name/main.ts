@@ -40,7 +40,7 @@ function update_config() {
     $('#display_name').val(config.display_name);
     $('#display_name').parent().removeClass("input-group");
     $('#device_name_form_submit').prop('hidden', true);
-    document.title = config.display_name + ' - ' + __('main.title');
+    document.title = config.display_name + ' - ' + __("main.title");
 }
 
 function update_state() {
@@ -51,8 +51,7 @@ function save_config() {
     API.save('info/display_name',{
             display_name: $('#display_name').val().toString()
         },
-        __("device_name.script.config_failed"),
-        __("device_name.script.reboot_content_changed"));
+        __("device_name.script.config_failed"));
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {

@@ -34,10 +34,26 @@
             "control_pilot_muted": "Simulates unplugging and plugging the charging cable",
             "control_pilot_disconnected": "Disconnected",
             "control_pilot_connected": "Connected",
-            "control_pilot_automatic": "Automatic"
+            "control_pilot_automatic": "Automatic",
+
+            "dc_fault_current_state": "DC fault protector state",
+            "dc_fault_current_state_desc": "{{{empty_text}}}",
+            "dc_fault_current_ok": "OK",
+            "dc_fault_current_6_ma": "DC fault",
+            "dc_fault_current_system": "System error",
+            "dc_fault_current_unknown": "Unknown error",
+            "dc_fault_current_calibration": "Calibration error",
+            "dc_fault_current_reset": "Reset",
+
+            "reset_dc_fault_title": "Reset the DC fault protector",
+            "reset_dc_fault_content": "Resetting the DC fault protector restores the ability to charge. <b>Ensure that the reason why the DC fault protector triggered is resolved!</b> <a href=\"{{{manual_url}}}\">See manual for details.</a> Really reset the DC fault protector?",
+            "abort": "Abort",
+            "reset": "Reset"
         },
         "script": {
-            "control_pilot_configuration_failed": "Updating the control pilot configuration failed"
+            "control_pilot_configuration_failed": "Updating the control pilot configuration failed",
+            "reset_dc_fault_current_failed": "Reset of the DC fault protector failed",
+            "gpio_configuration_failed": "Updating the GPIO configuration failed"
         }
     }
 }

@@ -17,10 +17,7 @@
             "user_calibration_download": "Download",
             "user_calibration_browse": "Upload",
             "user_calibration_select_file": "Select calibration file",
-            "user_calibration_reset": "Reset",
-            "hardware_version": "Hardware version",
-            "hardware_version_14": "1.4",
-            "hardware_version_15": "1.5"
+            "user_calibration_reset": "Reset"
         },
         "script": {
             "user_calibration_upload_failed": "Updating the calibration failed"

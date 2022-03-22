@@ -14,9 +14,9 @@
             "download_btn": "Download charge log",
 
             "tracked_charges": "Tracked charges",
-            "tracked_charges_muted": "",
+            "tracked_charges_muted": "{{{empty_text}}}",
             "first_charge_timestamp": "Oldest tracked charge",
-            "first_charge_timestamp_muted": "",
+            "first_charge_timestamp_muted": "{{{empty_text}}}",
             "user_filter": "User filter",
             "user_filter_muted": "CSV file will only contain charges of the selected user",
 

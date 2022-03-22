@@ -53,8 +53,8 @@
             "charge_error_2": "Firmware incompatible",
             "charge_error_3": "Charge management deactivated",
             "charge_error_128": "Charger unreachable",
-            "charge_error_129": "EVSE unreachable",
-            "charge_error_130": "EVSE does not react",
+            "charge_error_129": "Charge controller unreachable",
+            "charge_error_130": "Charge controller does not react",
 
             "charge_error_192": "OK",
             "charge_error_193": "Switch error",

@@ -10,6 +10,7 @@
             "use_dhcp": "Use DHCP",
             "use_dhcp_desc": "Uses time servers that were set via DHCP",
             "timezone": "Time zone (not yet configurable)",
+            "use_browser_timezone": "Use browser timezone",
             "server": "Time server",
             "save": "Save"
         },
