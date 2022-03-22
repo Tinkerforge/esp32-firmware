@@ -1,0 +1,15 @@
+{
+    "tutorial": {
+        "status": {
+        },
+        "navbar": {
+            "tutorial": "Tutorial"
+        },
+        "content": {
+            "tutorial": "Tutorial",
+            "color": "Farbe"
+        },
+        "script": {
+        }
+    }
+}
