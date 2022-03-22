@@ -78,6 +78,8 @@ def parse_ts_file(path, name):
         end = content.find(END_PATTERN)
         json_dict = content[:end+1]
         json_dict = re.sub(",\s*\}", "}", json_dict)
+        for x in re.findall('"([^"]*)":\s*""', json_dict):
+            print('error: key "{}" in {} has empty value. Use {{{{{{empty_text}}}}}} instead.'.format(x, name))
         json_dict = json_dict.replace("{{{empty_text}}}", '""')
         try:
             merge(translation, {language: json.loads(json_dict)})
