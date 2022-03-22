@@ -43,7 +43,7 @@ API::API()
 
     version = Config::Object({
         {"firmware", Config::Str(BUILD_VERSION_FULL_STR)},
-        {"configuration", Config::Str("", 0, 12)},
+        {"config", Config::Str("", 0, 12)},
     });
 }
 
@@ -53,7 +53,7 @@ void API::setup()
 
     String config_version = read_config_version();
     logger.printfln("%s config version: %s", BUILD_DISPLAY_NAME, config_version.c_str());
-    version.get("configuration")->updateString(config_version);
+    version.get("config")->updateString(config_version);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         for (size_t state_idx = 0; state_idx < states.size(); ++state_idx) {

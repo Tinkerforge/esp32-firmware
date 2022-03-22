@@ -38,7 +38,7 @@ function update_version() {
     }
 
     $('#current_firmware').val(version.firmware);
-    $('#current_spiffs').val(version.configuration);
+    $('#current_spiffs').val(version.config);
 }
 
 function check_upload(type: string) {
