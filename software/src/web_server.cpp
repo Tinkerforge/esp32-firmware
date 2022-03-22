@@ -118,7 +118,7 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req)
         return ESP_OK;
     }
 
-    size_t received = 0;
+    int received = 0;
     size_t remaining = req->content_len;
     size_t index = 0;
 
@@ -130,7 +130,7 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req)
         }
 
         if (received <= 0) {
-            printf("File reception failed!\n");
+            logger.printfln("File reception failed (%d)!\n", received);
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to receive file");
             return ESP_FAIL;
         }
