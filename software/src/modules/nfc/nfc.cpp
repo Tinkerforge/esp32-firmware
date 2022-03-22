@@ -162,7 +162,6 @@ void NFC::check_nfc_state()
     }
 }
 
-
 uint8_t NFC::get_user_id(tag_info_t *tag, uint8_t *tag_idx)
 {
     if (tag->last_seen >= TOKEN_LIFETIME_MS)
@@ -263,8 +262,9 @@ void NFC::handle_evse()
 
 const char *lookup = "0123456789ABCDEF";
 
-void tag_id_bytes_to_string(uint8_t *tag_id, uint8_t tag_id_len, char buf[NFC_TAG_ID_STRING_LENGTH + 1]) {
-    for(int i = 0; i < tag_id_len; ++i) {
+void tag_id_bytes_to_string(uint8_t *tag_id, uint8_t tag_id_len, char buf[NFC_TAG_ID_STRING_LENGTH + 1])
+{
+    for (int i = 0; i < tag_id_len; ++i) {
         uint8_t b = tag_id[i];
         uint8_t hi = (b & 0xF0) >> 4;
         uint8_t lo = b & 0x0F;
@@ -295,7 +295,7 @@ void NFC::update_seen_tags()
         seen_tags.get(i)->get("last_seen")->updateUint(new_tags[i].last_seen);
     }
 
-    if (last_tag_injection == 0 || deadline_elapsed(last_tag_injection + 1000*60*60*24)) {
+    if (last_tag_injection == 0 || deadline_elapsed(last_tag_injection + 1000 * 60 * 60 * 24)) {
         last_tag_injection = 0;
         new_tags[TAG_LIST_LENGTH - 1].tag_type = 0;
         new_tags[TAG_LIST_LENGTH - 1].tag_id[0] = '\0';
@@ -303,7 +303,7 @@ void NFC::update_seen_tags()
     } else {
         new_tags[TAG_LIST_LENGTH - 1].tag_type = inject_tag.get("tag_type")->asUint();
         strncpy(new_tags[TAG_LIST_LENGTH - 1].tag_id, inject_tag.get("tag_id")->asCStr(), sizeof(new_tags[TAG_LIST_LENGTH - 1].tag_id));
-        new_tags[TAG_LIST_LENGTH - 1].last_seen =  millis() - last_tag_injection;
+        new_tags[TAG_LIST_LENGTH - 1].last_seen = millis() - last_tag_injection;
     }
 
     seen_tags.get(TAG_LIST_LENGTH - 1)->get("last_seen")->updateUint(new_tags[TAG_LIST_LENGTH - 1].last_seen);

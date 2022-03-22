@@ -47,7 +47,7 @@ static const char *TAG = "wss_keep_alive";
 
 static uint64_t _tick_get_ms(void)
 {
-    return esp_timer_get_time()/1000;
+    return esp_timer_get_time() / 1000;
 }
 
 // Goes over active clients to find out how long we could sleep before checking who's alive
@@ -221,7 +221,7 @@ void wss_keep_alive_set_user_ctx(wss_keep_alive_t h, void *ctx)
     h->user_ctx = ctx;
 }
 
-void* wss_keep_alive_get_user_ctx(wss_keep_alive_t h)
+void *wss_keep_alive_get_user_ctx(wss_keep_alive_t h)
 {
     return h->user_ctx;
 }

@@ -79,7 +79,8 @@ ChargeTracker::ChargeTracker()
     });
 }
 
-String ChargeTracker::chargeRecordFilename(uint32_t i) {
+String ChargeTracker::chargeRecordFilename(uint32_t i)
+{
     return String(CHARGE_RECORD_FOLDER) + "/charge-record-" + i + ".bin";
 }
 
@@ -124,7 +125,8 @@ void ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, u
     current_charge.get("authorization_info")->value = auth_info;
 }
 
-void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end) {
+void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end)
+{
     std::lock_guard<std::mutex> lock{records_mutex};
     ChargeEnd ce;
 
@@ -176,8 +178,9 @@ void ChargeTracker::removeOldRecords()
     }
 }
 
-bool ChargeTracker::setupRecords() {
-    if (!LittleFS.mkdir(CHARGE_RECORD_FOLDER)) { //mkdir also returns true if the directory already exists and is a directory.
+bool ChargeTracker::setupRecords()
+{
+    if (!LittleFS.mkdir(CHARGE_RECORD_FOLDER)) { // mkdir also returns true if the directory already exists and is a directory.
         logger.printfln("Failed to create charge record folder!");
         return false;
     }
@@ -186,7 +189,7 @@ bool ChargeTracker::setupRecords() {
     File f;
 
     uint32_t found_blobs[32] = {0};
-    size_t found_blobs_size = sizeof(found_blobs)/sizeof(found_blobs[0]);
+    size_t found_blobs_size = sizeof(found_blobs) / sizeof(found_blobs[0]);
     int found_blob_counter = 0;
 
     while (f = folder.openNextFile()) {
@@ -251,7 +254,6 @@ bool ChargeTracker::setupRecords() {
         return false;
     }
 
-
     this->first_charge_record = first;
     this->last_charge_record = last;
 
@@ -271,12 +273,13 @@ bool ChargeTracker::currentlyCharging()
     return (file.size() % CHARGE_RECORD_SIZE) == sizeof(ChargeStart);
 }
 
-void ChargeTracker::readNRecords(File *f, size_t records_to_read) {
+void ChargeTracker::readNRecords(File *f, size_t records_to_read)
+{
     uint8_t buf[CHARGE_RECORD_SIZE];
     ChargeStart cs;
     ChargeEnd ce;
 
-    for(int i = 0; i < records_to_read; ++i) {
+    for (int i = 0; i < records_to_read; ++i) {
         memset(buf, 0, sizeof(buf));
         f->read(buf, CHARGE_RECORD_SIZE);
 
@@ -291,7 +294,8 @@ void ChargeTracker::readNRecords(File *f, size_t records_to_read) {
     }
 }
 
-void ChargeTracker::updateState() {
+void ChargeTracker::updateState()
+{
     auto records = this->last_charge_record - this->first_charge_record + 1;
     state.get("tracked_charges")->updateUint((records - 1) * (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE) + completeRecordsInLastFile());
 
@@ -342,7 +346,7 @@ void ChargeTracker::register_urls()
     server.on("/charge_tracker/charge_log", HTTP_GET, [this](WebServerRequest request) {
         std::lock_guard<std::mutex> lock{records_mutex};
 
-        char *url_buf = (char*)malloc(CHARGE_RECORD_MAX_FILE_SIZE);
+        char *url_buf = (char *)malloc(CHARGE_RECORD_MAX_FILE_SIZE);
         if (url_buf == nullptr) {
             request.send(507);
             return;
@@ -354,7 +358,7 @@ void ChargeTracker::register_urls()
         request.addResponseHeader("Content-Length", file_size_string.c_str());
 
         request.beginChunkedResponse(200, "application/octet-stream");
-        for(int i = this->first_charge_record; i <= this->last_charge_record; ++i) {
+        for (int i = this->first_charge_record; i <= this->last_charge_record; ++i) {
             File f = LittleFS.open(chargeRecordFilename(i));
             int read = f.read((uint8_t *)url_buf, CHARGE_RECORD_MAX_FILE_SIZE);
             int trunc = read - (read % CHARGE_RECORD_SIZE);

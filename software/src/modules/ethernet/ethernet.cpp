@@ -185,7 +185,6 @@ void Ethernet::register_urls()
 
 void Ethernet::loop()
 {
-
 }
 
 EthernetState Ethernet::get_connection_state()

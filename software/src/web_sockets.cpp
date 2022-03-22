@@ -68,7 +68,8 @@ struct ws_work_item {
 std::mutex work_queue_mutex;
 std::deque<ws_work_item> work_queue;
 
-static void removeFd(wss_keep_alive_t h, int fd){
+static void removeFd(wss_keep_alive_t h, int fd)
+{
     wss_keep_alive_remove_client(h, fd);
 }
 
@@ -254,7 +255,7 @@ bool check_client_alive_cb(wss_keep_alive_t h, int fd)
     return httpd_queue_work(hd, work, nullptr) == ESP_OK;
 }
 
-void WebSocketsClient::send(const char* payload, size_t payload_len)
+void WebSocketsClient::send(const char *payload, size_t payload_len)
 {
     ws->sendToClient(payload, payload_len, fd);
 }

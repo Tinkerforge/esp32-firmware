@@ -39,8 +39,8 @@ extern bool firmware_update_allowed;
 
 #define CHARGING_SLOT_COUNT 10
 
-#define SLOT_ACTIVE(x) ((bool) (x & 0x01))
-#define SLOT_CLEAR_ON_DISCONNECT(x) ((bool) (x & 0x02))
+#define SLOT_ACTIVE(x) ((bool)(x & 0x01))
+#define SLOT_CLEAR_ON_DISCONNECT(x) ((bool)(x & 0x02))
 
 EVSE::EVSE() : DeviceModule("evse", "EVSE", "EVSE", std::bind(&EVSE::setup_evse, this))
 {
@@ -109,7 +109,7 @@ EVSE::EVSE() : DeviceModule("evse", "EVSE", "EVSE", std::bind(&EVSE::setup_evse,
         CHARGING_SLOT_COUNT, CHARGING_SLOT_COUNT,
         Config::type_id<Config::ConfObject>());
 
-    for(int i = 0; i < CHARGING_SLOT_COUNT; ++i)
+    for (int i = 0; i < CHARGING_SLOT_COUNT; ++i)
         evse_slots.add();
 
     evse_indicator_led = Config::Object({
@@ -206,7 +206,8 @@ EVSE::EVSE() : DeviceModule("evse", "EVSE", "EVSE", std::bind(&EVSE::setup_evse,
     });
 }
 
-bool EVSE::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear) {
+bool EVSE::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear)
+{
     uint16_t old_current;
     bool old_enabled;
     bool old_clear;
@@ -229,7 +230,8 @@ bool EVSE::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool
     return true;
 }
 
-void EVSE::apply_defaults() {
+void EVSE::apply_defaults()
+{
     // Maybe this is the first start-up after updating the EVSE to firmware 2.1.0 (or higher)
     // (Or the first start-up at all)
     // Make sure, that the charging slot defaults are the expected ones.
@@ -408,7 +410,7 @@ String EVSE::get_evse_debug_line()
     }
 
     char line[512] = {0};
-    snprintf(line, sizeof(line)/sizeof(line[0]),
+    snprintf(line, sizeof(line) / sizeof(line[0]),
              "\"%lu,,"
              "%u,%u,%u,%u,%u,%u,%u,,"
              "%u,%c,%u,,"
@@ -461,7 +463,8 @@ void EVSE::set_managed_current(uint16_t current)
     this->shutdown_logged = false;
 }
 
-void EVSE::set_user_current(uint16_t current) {
+void EVSE::set_user_current(uint16_t current)
+{
     is_in_bootloader(tf_evse_set_charging_slot_max_current(&device, CHARGING_SLOT_USER, current));
 }
 
@@ -876,7 +879,7 @@ void EVSE::update_all_data()
     evse_low_level_state.get("time_since_state_change")->updateUint(time_since_state_change);
     evse_low_level_state.get("uptime")->updateUint(uptime);
 
-    for(int i = 0; i < CHARGING_SLOT_COUNT; ++i) {
+    for (int i = 0; i < CHARGING_SLOT_COUNT; ++i) {
         evse_slots.get(i)->get("max_current")->updateUint(max_current[i]);
         evse_slots.get(i)->get("active")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[i]));
         evse_slots.get(i)->get("clear_on_disconnect")->updateBool(SLOT_CLEAR_ON_DISCONNECT(active_and_clear_on_disconnect[i]));

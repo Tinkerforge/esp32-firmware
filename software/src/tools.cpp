@@ -123,12 +123,14 @@ int check(int rc, const char *msg)
 
 class LogSilencer {
 public:
-    LogSilencer(const char *tag) : tag(tag), level_to_restore(ESP_LOG_NONE) {
+    LogSilencer(const char *tag) : tag(tag), level_to_restore(ESP_LOG_NONE)
+    {
         level_to_restore = esp_log_level_get(tag);
         esp_log_level_set(tag, ESP_LOG_NONE);
     }
 
-    ~LogSilencer() {
+    ~LogSilencer()
+    {
         esp_log_level_set(tag, level_to_restore);
     }
     const char *tag;
@@ -494,7 +496,6 @@ static bool flash_firmware(TF_Unknown *bricklet, const uint8_t *firmware, size_t
 #define FIRMWARE_MINOR_OFFSET 11
 #define FIRMWARE_PATCH_OFFSET 12
 
-
 class TFPSwap {
 public:
     TFPSwap(TF_TFP *tfp) :
@@ -576,7 +577,6 @@ int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose,
     return 0;
 }
 
-
 int compare_version(uint8_t left_major, uint8_t left_minor, uint8_t left_patch,
                     uint8_t right_major, uint8_t right_minor, uint8_t right_patch) {
     if (left_major > right_major)
@@ -600,16 +600,18 @@ int compare_version(uint8_t left_major, uint8_t left_minor, uint8_t left_patch,
     return 0;
 }
 
-bool clock_synced(struct timeval *out_tv_now) {
+bool clock_synced(struct timeval *out_tv_now)
+{
     gettimeofday(out_tv_now, nullptr);
-    return out_tv_now->tv_sec > ((2016 - 1970) * 365 * 24  * 60 * 60);
+    return out_tv_now->tv_sec > ((2016 - 1970) * 365 * 24 * 60 * 60);
 }
 
-bool for_file_in(const char *dir, bool (*callback)(File *open_file), bool skip_directories) {
+bool for_file_in(const char *dir, bool (*callback)(File *open_file), bool skip_directories)
+{
     File root = LittleFS.open(dir);
     File file;
-    while(file = root.openNextFile()){
-        if(skip_directories && file.isDirectory()){
+    while (file = root.openNextFile()) {
+        if (skip_directories && file.isDirectory()) {
             continue;
         }
         if (!callback(&file))
@@ -618,7 +620,8 @@ bool for_file_in(const char *dir, bool (*callback)(File *open_file), bool skip_d
     return true;
 }
 
-void remove_directory(const char *path) {
+void remove_directory(const char *path)
+{
     // This is more involved than expected:
     // rmdir only deletes empty directories, so remove all files first
     // Also LittleFS.rmdir will call the vfs_api.cpp implementation that

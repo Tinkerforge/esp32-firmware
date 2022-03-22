@@ -27,7 +27,6 @@ extern TaskScheduler task_scheduler;
 
 CMNetworking::CMNetworking()
 {
-
 }
 
 void CMNetworking::setup()
@@ -37,15 +36,14 @@ void CMNetworking::setup()
 
 void CMNetworking::register_urls()
 {
-
 }
 
 void CMNetworking::loop()
 {
-
 }
 
-int CMNetworking::create_socket(uint16_t port) {
+int CMNetworking::create_socket(uint16_t port)
+{
     int sock;
     struct sockaddr_in dest_addr;
 

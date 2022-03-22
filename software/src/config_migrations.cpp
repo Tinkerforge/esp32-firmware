@@ -40,7 +40,7 @@ extern char local_uid_str[7];
 
 struct ConfigFileMigration {
     const char *path;
-    JsonVariant (* fn)(JsonVariant json);
+    JsonVariant (*fn)(JsonVariant json);
 };
 
 struct ConfigMigration {
@@ -50,7 +50,8 @@ struct ConfigMigration {
 
 #if defined(BUILD_NAME_WARP) || defined(BUILD_NAME_WARP2)
 
-static bool read_config_file(const char *config, JsonDocument &json) {
+static bool read_config_file(const char *config, JsonDocument &json)
+{
     String s = String(config);
     s.replace('/', '_');
     String filename = String("/migration/") + s;
@@ -74,7 +75,8 @@ static bool read_config_file(const char *config, JsonDocument &json) {
     return true;
 }
 
-static void write_config_file(const char *config, JsonDocument &json) {
+static void write_config_file(const char *config, JsonDocument &json)
+{
     String s = String(config);
     s.replace('/', '_');
     String filename = String("/migration/") + s;
@@ -84,7 +86,8 @@ static void write_config_file(const char *config, JsonDocument &json) {
     file.close();
 }
 
-static void delete_config_file(const char *config) {
+static void delete_config_file(const char *config)
+{
     String s = String(config);
     s.replace('/', '_');
     String filename = String("/migration/") + s;
@@ -295,7 +298,8 @@ static const ConfigMigration migrations[] = {
 
 };
 
-bool prepare_migrations() {
+bool prepare_migrations()
+{
     /*
         Normal Migrations work as follows:
         M0. Check /config/version to determine necessary migrations
@@ -321,7 +325,7 @@ bool prepare_migrations() {
 
         File target = LittleFS.open(String("/migration/") + name, "w");
         while (source->available()) {
-            size_t read = source->read(buf, sizeof(buf)/sizeof(buf[0]));
+            size_t read = source->read(buf, sizeof(buf) / sizeof(buf[0]));
             size_t written = target.write(buf, read);
 
             if (written != read) {
@@ -333,7 +337,8 @@ bool prepare_migrations() {
     });
 }
 
-void migrate_config() {
+void migrate_config()
+{
     size_t migration_count = sizeof(migrations) / sizeof(migrations[0]);
 
     if (!LittleFS.exists("/config") && LittleFS.exists("/migration/version")) {
@@ -412,7 +417,7 @@ void migrate_config() {
     }
 
     bool first = true;
-    for(int i = 0; i < migration_count; ++i) {
+    for (int i = 0; i < migration_count; ++i) {
         auto &mig = migrations[i];
 
         bool have_to_migrate = (major < mig.major)|| (major == mig.major && minor < mig.minor) || (major == mig.major && minor == mig.minor && patch < mig.patch);

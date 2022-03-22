@@ -86,7 +86,7 @@ void NTP::setup()
     sntp_servermode_dhcp(config.get("use_dhcp")->asBool() ? 1 : 0);
 
     esp_netif_init();
-    if(sntp_enabled()){
+    if (sntp_enabled()) {
         sntp_stop();
     }
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
@@ -112,5 +112,4 @@ void NTP::register_urls()
 
 void NTP::loop()
 {
-
 }

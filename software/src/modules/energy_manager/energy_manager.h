@@ -101,7 +101,6 @@ public:
     void register_urls();
     void loop();
 
-
     // Called in energy_manager_meter setup
     void update_all_data();
     void update_all_data_struct();
@@ -112,7 +111,7 @@ public:
     void handle_relay_config_if_input(uint8_t input);
     void handle_relay_config_if_phase_switching();
     void handle_relay_config_if_meter();
-    void handle_input_config_rule_based(uint8_t input); 
+    void handle_input_config_rule_based(uint8_t input);
     void handle_input_config_contactor_check(uint8_t input);
     void setup_energy_manager();
     bool flash_firmware();

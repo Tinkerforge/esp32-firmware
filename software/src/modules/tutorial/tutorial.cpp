@@ -28,7 +28,6 @@ extern API api;
 
 Tutorial::Tutorial()
 {
-
 }
 
 void Tutorial::setup()
@@ -47,5 +46,4 @@ void Tutorial::register_urls()
 
 void Tutorial::loop()
 {
-
 }

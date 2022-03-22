@@ -141,13 +141,14 @@ void API::addRawCommand(String path, std::function<String(char *, size_t)> callb
 
 bool API::hasFeature(const char *name)
 {
-    for(int i = 0; i < features.count(); ++i)
+    for (int i = 0; i < features.count(); ++i)
         if (features.get(i)->asString() == name)
             return true;
     return false;
 }
 
-void API::writeConfig(String path, ConfigRoot *config) {
+void API::writeConfig(String path, ConfigRoot *config)
+{
     String path_copy = path;
     path_copy.replace('/', '_');
     String cfg_path = String("/config/") + path_copy;
@@ -283,7 +284,6 @@ void API::registerDebugUrl(WebServer *server)
 
     this->addState("info/features", &features, {}, 1000);
     this->addState("info/version", &version, {}, 10000);
-
 }
 
 void API::registerBackend(IAPIBackend *backend)
@@ -293,7 +293,6 @@ void API::registerBackend(IAPIBackend *backend)
 
 void API::loop()
 {
-
 }
 
 String API::callCommand(String path, Config::ConfUpdate payload)
@@ -338,7 +337,7 @@ Config *API::getState(String path, bool log_if_not_found)
 
 void API::addFeature(const char *name)
 {
-    for(int i = 0; i < features.count(); ++i)
+    for (int i = 0; i < features.count(); ++i)
         if (features.get(i)->asString() == name)
             return;
 

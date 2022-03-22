@@ -9,8 +9,7 @@
 #pragma once
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 #define KEEP_ALIVE_CONFIG_DEFAULT() \

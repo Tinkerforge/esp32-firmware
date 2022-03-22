@@ -371,7 +371,8 @@ void WebServerRequest::requestAuthentication()
 
 class CustomString : public String {
 public:
-    void setLength(int len) {
+    void setLength(int len)
+    {
         setLen(len);
     }
 };
@@ -393,7 +394,8 @@ String WebServerRequest::header(const char *header_name)
     return result;
 }
 
-size_t WebServerRequest::contentLength() {
+size_t WebServerRequest::contentLength()
+{
     return req->content_len;
 }
 

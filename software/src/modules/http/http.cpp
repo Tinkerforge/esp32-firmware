@@ -43,17 +43,14 @@ Http::Http()
 
 void Http::setup()
 {
-
 }
 
 void Http::register_urls()
 {
-
 }
 
 void Http::loop()
 {
-
 }
 
 void Http::addCommand(size_t commandIdx, const CommandRegistration &reg)
@@ -130,11 +127,10 @@ bool Http::pushStateUpdate(size_t stateIdx, String payload, String path)
     return true;
 }
 
-void Http::pushRawStateUpdate(String payload, String path) {
-
+void Http::pushRawStateUpdate(String payload, String path)
+{
 }
 
 void Http::wifiAvailable()
 {
-
 }

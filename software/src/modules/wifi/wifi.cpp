@@ -145,7 +145,7 @@ void Wifi::apply_soft_ap_config_and_start()
     subnet.fromString(wifi_ap_config_in_use.get("subnet")->asCStr());
 
     int counter = 0;
-    while(ip != WiFi.softAPIP()) {
+    while (ip != WiFi.softAPIP()) {
         WiFi.softAPConfig(ip, gateway, subnet);
         ++counter;
     }

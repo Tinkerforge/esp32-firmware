@@ -50,11 +50,13 @@ public:
 
     int receive(char *buf, size_t buf_len);
 
-    int method() {
+    int method()
+    {
         return req->method;
     }
 
-    const char *methodString() {
+    const char *methodString()
+    {
         switch(method()) {
             case HTTP_GET:
                 return "GET";
@@ -66,7 +68,8 @@ public:
         return "";
     }
 
-    String uri() {
+    String uri()
+    {
         return String(req->uri);
     }
 
@@ -88,14 +91,17 @@ struct WebServerHandler {
 
 class WebServer {
 public:
-    WebServer() : httpd(nullptr), handlers() {}
+    WebServer() : httpd(nullptr), handlers()
+    {
+    }
     void start();
 
     WebServerHandler *on(const char *uri, httpd_method_t method, wshCallback callback);
     WebServerHandler *on(const char *uri, httpd_method_t method, wshCallback callback, wshUploadCallback uploadCallback);
     void onNotAuthorized(wshCallback callback);
 
-    void setAuthentication(std::function<bool(WebServerRequest)> auth_fn) {
+    void setAuthentication(std::function<bool(WebServerRequest)> auth_fn)
+    {
         this->auth_fn = auth_fn;
     }
 

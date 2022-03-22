@@ -89,7 +89,8 @@ String requestDigestAuthentication(const char * realm){
   return header;
 }
 
-AuthFields parseDigestAuth(const char *header) {
+AuthFields parseDigestAuth(const char *header)
+{
     AuthFields result;
     result.success = false;
 
@@ -100,7 +101,7 @@ AuthFields parseDigestAuth(const char *header) {
 
     String myHeader = String(header);
     int nextBreak = myHeader.indexOf(",");
-    if(nextBreak < 0){
+    if (nextBreak < 0) {
         logger.printfln("AUTH FAIL: no variables");
         return result;
     }
@@ -109,58 +110,58 @@ AuthFields parseDigestAuth(const char *header) {
     do {
         String avLine = myHeader.substring(0, nextBreak);
         avLine.trim();
-        myHeader = myHeader.substring(nextBreak+1);
+        myHeader = myHeader.substring(nextBreak + 1);
         nextBreak = myHeader.indexOf(",");
 
         int eqSign = avLine.indexOf("=");
-        if(eqSign < 0){
+        if (eqSign < 0) {
             logger.printfln("AUTH FAIL: no = sign");
             return result;
         }
 
         String varName = avLine.substring(0, eqSign);
         avLine = avLine.substring(eqSign + 1);
-        if(avLine.startsWith("\"")){
+        if (avLine.startsWith("\"")) {
             avLine = avLine.substring(1, avLine.length() - 1);
         }
 
-        if(varName.equals("username")){
+        if (varName.equals("username")) {
             result.username = avLine;
-        } else if(varName.equals("realm")){
+        } else if (varName.equals("realm")) {
             result.realm = avLine;
-        } else if(varName.equals("nonce")){
+        } else if (varName.equals("nonce")) {
             result.nonce = avLine;
-        } else if(varName.equals("opaque")){
+        } else if (varName.equals("opaque")) {
             result.opaque = avLine;
-        } else if(varName.equals("uri")){
+        } else if (varName.equals("uri")) {
             result.uri = avLine;
-        } else if(varName.equals("response")){
+        } else if (varName.equals("response")) {
             result.response = avLine;
-        } else if(varName.equals("qop")){
+        } else if (varName.equals("qop")) {
             result.qop = avLine;
-        } else if(varName.equals("nc")){
+        } else if (varName.equals("nc")) {
             result.nc = avLine;
-        } else if(varName.equals("cnonce")){
+        } else if (varName.equals("cnonce")) {
             result.cnonce = avLine;
         }
-    } while(nextBreak > 0);
+    } while (nextBreak > 0);
 
     result.success = true;
     return result;
 }
 
 bool checkDigestAuthentication(AuthFields fields, const char * method, const char * username, const char * password, const char * realm, bool passwordIsHash, const char * nonce, const char * opaque, const char * uri){
-    if(username == NULL || password == NULL || method == NULL) {
+    if (username == NULL || password == NULL || method == NULL) {
         logger.printfln("AUTH FAIL: missing requred fields");
         return false;
     }
 
-    if(!fields.username.equals(username)){
+    if (!fields.username.equals(username)) {
         logger.printfln("AUTH FAIL: username");
         return false;
     }
 
-    if(realm != NULL && !fields.realm.equals(realm)){
+    if (realm != NULL && !fields.realm.equals(realm)) {
         logger.printfln("AUTH FAIL: realm");
         return false;
     } else if (realm == NULL && !fields.realm.equals(DEFAULT_REALM) && !fields.realm.equals("asyncesp")) {
@@ -168,16 +169,16 @@ bool checkDigestAuthentication(AuthFields fields, const char * method, const cha
         return false;
     }
 
-    if(nonce != NULL && !fields.nonce.equals(nonce)){
+    if (nonce != NULL && !fields.nonce.equals(nonce)) {
         logger.printfln("AUTH FAIL: nonce");
         return false;
     }
 
-    if(opaque != NULL && !fields.opaque.equals(opaque)){
+    if (opaque != NULL && !fields.opaque.equals(opaque)) {
         logger.printfln("AUTH FAIL: opaque");
         return false;
     }
-    if(uri != NULL && !fields.uri.equals(uri)){
+    if (uri != NULL && !fields.uri.equals(uri)) {
         logger.printfln("AUTH FAIL: uri");
         return false;
     }
@@ -186,7 +187,7 @@ bool checkDigestAuthentication(AuthFields fields, const char * method, const cha
     String ha2 = String(method) + ":" + fields.uri;
     String response = ha1 + ":" + fields.nonce + ":" + fields.nc + ":" + fields.cnonce + ":" + fields.qop + ":" + stringMD5(ha2);
 
-    if(fields.response.equals(stringMD5(response))){
+    if (fields.response.equals(stringMD5(response))) {
         return true;
     }
 

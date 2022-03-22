@@ -54,7 +54,6 @@ public:
     void register_urls();
     void loop();
 
-
     // Called in evse_v2_meter setup
     void update_all_data();
 

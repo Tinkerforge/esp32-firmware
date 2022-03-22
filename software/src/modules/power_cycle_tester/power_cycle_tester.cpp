@@ -48,7 +48,6 @@ TF_RGBLEDV2 led;
 
 PowerCycleTester::PowerCycleTester()
 {
-
 }
 
 void PowerCycleTester::setup()
@@ -74,12 +73,10 @@ void PowerCycleTester::setup()
 
 void PowerCycleTester::register_urls()
 {
-
 }
 
 void PowerCycleTester::loop()
 {
-
 }
 
 void PowerCycleTester::led_green()

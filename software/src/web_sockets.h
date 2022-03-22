@@ -36,9 +36,13 @@ struct WebSocketsClient {
 
 class WebSockets {
 public:
-    WebSockets() {}
+    WebSockets()
+    {
+    }
     void start(const char *uri);
-    void stop() {}
+    void stop()
+    {
+    }
 
     void sendToClient(const char *payload, size_t payload_len, int sock);
     void sendToAll(const char *payload, size_t payload_len);

@@ -25,7 +25,6 @@
 #include "device_module.h"
 #include "nfc_bricklet_firmware_bin.embedded.h"
 
-
 // in bytes
 #define NFC_TAG_ID_LENGTH 10
 // For hex strings: two chars per byte plus a separator between each byte

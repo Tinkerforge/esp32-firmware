@@ -23,8 +23,7 @@
 #include <stdbool.h>
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 struct Table;
@@ -32,20 +31,20 @@ struct Table;
 typedef struct TableValue {
     const bool leaf;
     const union {
-        const char * const posix_tz;
-        const struct Table * const sub_table;
+        const char *const posix_tz;
+        const struct Table *const sub_table;
     } value;
 } TableValue;
 
 typedef struct Table {
-    const char * const *keys;
-    const struct TableValue * const values;
+    const char *const *keys;
+    const struct TableValue *const values;
     const size_t len;
 } Table;
 
 extern const Table global;
 
-const char *lookup_timezone(const char * const timezone);
+const char *lookup_timezone(const char *const timezone);
 
 #ifdef __cplusplus
 }

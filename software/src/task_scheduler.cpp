@@ -31,7 +31,8 @@ Task::Task(std::function<void(void)> fn, uint32_t first_run_delay_ms, uint32_t d
 
 }
 
-bool compare(const Task &a, const Task &b) {
+bool compare(const Task &a, const Task &b)
+{
     return a.next_deadline_ms >= b.next_deadline_ms;
 }
 
@@ -62,7 +63,6 @@ void TaskScheduler::loop()
         tasks.pop();
     this->task_mutex.unlock();
 
-
     if (!task.fn) {
         logger.printfln("Invalid task");
     } else {
@@ -78,7 +78,6 @@ void TaskScheduler::loop()
         std::lock_guard<std::mutex> l{this->task_mutex};
         tasks.push(std::move(task));
     }
-
 }
 
 void TaskScheduler::scheduleOnce(std::function<void(void)> &&fn, uint32_t delay)

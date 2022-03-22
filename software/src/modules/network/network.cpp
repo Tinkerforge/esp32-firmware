@@ -67,5 +67,4 @@ void Network::register_urls()
 
 void Network::loop()
 {
-
 }

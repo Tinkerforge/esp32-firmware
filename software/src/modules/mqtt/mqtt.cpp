@@ -140,7 +140,8 @@ bool Mqtt::pushStateUpdate(size_t stateIdx, String payload, String path)
     return true;
 }
 
-void Mqtt::pushRawStateUpdate(String payload, String path) {
+void Mqtt::pushRawStateUpdate(String payload, String path)
+{
     this->publish(payload, path);
 }
 
@@ -324,5 +325,4 @@ void Mqtt::register_urls()
 
 void Mqtt::loop()
 {
-
 }

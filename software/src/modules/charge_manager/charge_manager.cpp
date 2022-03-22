@@ -131,7 +131,8 @@ ChargeManager::ChargeManager()
     }};
 }
 
-uint8_t get_charge_state(uint8_t charger_state, uint16_t supported_current, uint32_t charging_time, uint16_t target_allocated_current) {
+uint8_t get_charge_state(uint8_t charger_state, uint16_t supported_current, uint32_t charging_time, uint16_t target_allocated_current)
+{
     if (charger_state == 0) // not connected
         return 0;
     if (charger_state == 3) // charging
@@ -179,7 +180,7 @@ void ChargeManager::start_manager_task()
             // This means, that the EVSE hangs or the communication
             // is not working. As last_update will now hang too,
             // the management will stop all charging after some time.
-            if(target.get("uptime")->asUint() == uptime) {
+            if (target.get("uptime")->asUint() == uptime) {
                 logger.printfln("Received stale charger state from %s (%s). Reported EVSE uptime (%u) is the same as in the last state. Is the EVSE still reachable?",
                     chargers[client_id].get("name")->asString().c_str(), chargers[client_id].get("host")->asString().c_str(),
                     uptime);
@@ -478,8 +479,7 @@ void ChargeManager::distribute_current()
                 if (supported_current < current_array[idx_array[i]])
                     continue;
 
-                uint16_t current_to_add = MIN(supported_current - current_array[idx_array[i]],
-                                            current_per_charger);
+                uint16_t current_to_add = MIN(supported_current - current_array[idx_array[i]], current_per_charger);
 
                 ++chargers_reallocated;
 
@@ -641,5 +641,4 @@ void ChargeManager::register_urls()
 
 void ChargeManager::loop()
 {
-
 }

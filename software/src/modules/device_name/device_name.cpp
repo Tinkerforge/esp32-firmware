@@ -43,7 +43,8 @@ DeviceName::DeviceName()
 
 #if defined BUILD_NAME_WARP || defined BUILD_NAME_WARP2
 
-String getWarpDisplayName() {
+String getWarpDisplayName()
+{
 #if defined BUILD_NAME_WARP
     String display_type = "WARP Charger ";
 #elif defined BUILD_NAME_WARP2
@@ -54,8 +55,7 @@ String getWarpDisplayName() {
     if (api.hasFeature("evse")) {
         display_type += api.getState("evse/slots")->get(1)->get("max_current")->asUint() <= 20000 ? "11" : "22";
         display_type += "kW ";
-    }
-    else {
+    } else {
         display_type += "without EVSE ";
     }
 
@@ -73,7 +73,8 @@ String getWarpDisplayName() {
 
 #endif
 
-void DeviceName::updateDisplayType() {
+void DeviceName::updateDisplayType()
+{
 #if defined BUILD_NAME_WARP || defined BUILD_NAME_WARP2
     String display_type = getWarpDisplayName();
 #elif defined BUILD_NAME_ESP32
@@ -91,10 +92,10 @@ void DeviceName::updateDisplayType() {
 
 void DeviceName::setup()
 {
-    name.get("name")->updateString(String(BUILD_HOST_PREFIX) + "-" +local_uid_str);
+    name.get("name")->updateString(String(BUILD_HOST_PREFIX) + "-" + local_uid_str);
     name.get("uid")->updateString(String(local_uid_str));
 
-    if(!api.restorePersistentConfig("info/display_name", &display_name)) {
+    if (!api.restorePersistentConfig("info/display_name", &display_name)) {
         display_name.get("display_name")->updateString(name.get("name")->asString());
     }
 
@@ -107,11 +108,10 @@ void DeviceName::setup()
 
 void DeviceName::register_urls()
 {
-   api.addState("info/name", &name, {}, 1000);
-   api.addPersistentConfig("info/display_name", &display_name, {}, 1000);
+    api.addState("info/name", &name, {}, 1000);
+    api.addPersistentConfig("info/display_name", &display_name, {}, 1000);
 }
 
 void DeviceName::loop()
 {
-
 }

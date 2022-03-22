@@ -27,7 +27,8 @@
 
 extern WebServer server;
 
-void EventLog::get_timestamp(char buf[TIMESTAMP_LEN + 1]) {
+void EventLog::get_timestamp(char buf[TIMESTAMP_LEN + 1])
+{
     struct timeval tv_now;
     struct tm timeinfo;
 
@@ -44,7 +45,7 @@ void EventLog::get_timestamp(char buf[TIMESTAMP_LEN + 1]) {
         auto to_write = snprintf(nullptr, 0, "%lu", secs) + 6; // + 6 for the decimal sign, fractional part and two spaces
         auto start = TIMESTAMP_LEN - to_write;
 
-        for(int i = 0; i < TIMESTAMP_LEN; ++i)
+        for (int i = 0; i < TIMESTAMP_LEN; ++i)
             buf[i] = ' ';
         snprintf(buf + start, to_write + 1, "%lu,%03lu  ", secs, ms); // + 1 for the null terminator
     }

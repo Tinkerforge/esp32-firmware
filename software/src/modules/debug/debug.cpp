@@ -28,8 +28,8 @@
 extern TaskScheduler task_scheduler;
 extern API api;
 
-Debug::Debug() {
-
+Debug::Debug()
+{
 }
 
 void Debug::setup()
@@ -56,5 +56,4 @@ void Debug::register_urls()
 
 void Debug::loop()
 {
-
 }

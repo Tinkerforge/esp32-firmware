@@ -46,7 +46,9 @@ bool compare(const Task &a, const Task &b);
 
 class TaskScheduler {
 public:
-    TaskScheduler() : tasks(&compare) {}
+    TaskScheduler() : tasks(&compare)
+    {
+    }
     void setup();
     void register_urls();
     void loop();

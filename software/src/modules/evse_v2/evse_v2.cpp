@@ -142,7 +142,7 @@ EVSEV2::EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE 2.0", std::bind(&EVSEV
         CHARGING_SLOT_COUNT, CHARGING_SLOT_COUNT,
         Config::type_id<Config::ConfObject>());
 
-    for(int i = 0; i < CHARGING_SLOT_COUNT; ++i)
+    for (int i = 0; i < CHARGING_SLOT_COUNT; ++i)
         evse_slots.add();
 
     evse_indicator_led = Config::Object({
@@ -153,7 +153,7 @@ EVSEV2::EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE 2.0", std::bind(&EVSEV
     // Actions
 
     evse_reset_dc_fault_current_state = Config::Object({
-        {"password", Config::Uint32(0)} //0xDC42FA23
+        {"password", Config::Uint32(0)} // 0xDC42FA23
     });
 
     // TODO indicator LED
@@ -244,7 +244,8 @@ EVSEV2::EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE 2.0", std::bind(&EVSEV
     evse_external_clear_on_disconnect_update = evse_external_clear_on_disconnect;
 }
 
-bool EVSEV2::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear) {
+bool EVSEV2::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear)
+{
     uint16_t old_current;
     bool old_enabled;
     bool old_clear;
@@ -267,7 +268,8 @@ bool EVSEV2::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bo
     return true;
 }
 
-void EVSEV2::apply_defaults() {
+void EVSEV2::apply_defaults()
+{
     // Maybe this is the first start-up after updating the EVSE to firmware 2.1.0 (or higher)
     // (Or the first start-up at all)
     // Make sure, that the charging slot defaults are the expected ones.
@@ -610,7 +612,8 @@ void EVSEV2::set_managed_current(uint16_t current)
     this->shutdown_logged = false;
 }
 
-void EVSEV2::set_user_current(uint16_t current) {
+void EVSEV2::set_user_current(uint16_t current)
+{
     is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_USER, current));
 }
 
@@ -1062,7 +1065,7 @@ void EVSEV2::update_all_data()
     evse_low_level_state.get("time_since_state_change")->updateUint(time_since_state_change);
     evse_low_level_state.get("uptime")->updateUint(uptime);
 
-    for(int i = 0; i < CHARGING_SLOT_COUNT; ++i) {
+    for (int i = 0; i < CHARGING_SLOT_COUNT; ++i) {
         evse_slots.get(i)->get("max_current")->updateUint(max_current[i]);
         evse_slots.get(i)->get("active")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[i]));
         evse_slots.get(i)->get("clear_on_disconnect")->updateBool(SLOT_CLEAR_ON_DISCONNECT(active_and_clear_on_disconnect[i]));

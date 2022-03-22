@@ -28,7 +28,8 @@ extern API api;
 extern AsyncWebServer server;
 extern TaskScheduler task_scheduler;
 
-Sse::Sse() : events("/events") {
+Sse::Sse() : events("/events")
+{
     api.registerBackend(this);
 }
 
@@ -50,28 +51,28 @@ void Sse::setup()
     }, 1000, 1000);
 }
 
-void Sse::register_urls() {
-
+void Sse::register_urls()
+{
 }
 
-void Sse::loop() {
-
+void Sse::loop()
+{
 }
 
-void Sse::addCommand(CommandRegistration reg) {
-
+void Sse::addCommand(CommandRegistration reg)
+{
 }
 
-void Sse::addState(StateRegistration reg) {
-
+void Sse::addState(StateRegistration reg)
+{
 }
 
-bool Sse::pushStateUpdate(String payload, String path) {
+bool Sse::pushStateUpdate(String payload, String path)
+{
     events.send(payload.c_str(), path.c_str(), millis());
     return true;
 }
 
 void Sse::wifiAvailable()
 {
-
 }

@@ -64,7 +64,7 @@ struct Config {
     struct ConfArray {
         std::vector<Config> value;
         Config *prototype;
-        uint32_t minElements:12, maxElements:12;
+        uint32_t minElements : 12, maxElements : 12;
         int8_t variantType;
 
         Config *get(uint16_t i);
@@ -95,7 +95,10 @@ struct Config {
     // a get<std::nullptr_t>() that returned nullptr because the variant
     // had another type and the same call that returned nullptr because
     // the variant has the std::nullptr_type and thus contains a nullptr.
-    static bool containsNull(ConfUpdate *update) { return update->which() == 0; }
+    static bool containsNull(ConfUpdate *update)
+    {
+        return update->which() == 0;
+    }
 
     struct ConfUpdateArray {
         std::vector<ConfUpdate> elements;
@@ -292,23 +295,28 @@ struct Config {
         return old_value != value;
     }
 
-    bool updateString(String value) {
+    bool updateString(String value)
+    {
         return update_value<String, ConfString>(value);
     }
 
-    bool updateInt(int32_t value) {
+    bool updateInt(int32_t value)
+    {
         return update_value<int32_t, ConfInt>(value);
     }
 
-    bool updateUint(uint32_t value) {
+    bool updateUint(uint32_t value)
+    {
         return update_value<uint32_t, ConfUint>(value);
     }
 
-    bool updateFloat(float value) {
+    bool updateFloat(float value)
+    {
         return update_value<float, ConfFloat>(value);
     }
 
-    bool updateBool(bool value) {
+    bool updateBool(bool value)
+    {
         return update_value<bool, ConfBool>(value);
     }
 
@@ -397,12 +405,12 @@ struct ConfigRoot : public Config {
 public:
     ConfigRoot() = default;
 
-    ConfigRoot(Config cfg) : Config(cfg), validator(nullptr) {
-
+    ConfigRoot(Config cfg) : Config(cfg), validator(nullptr)
+    {
     }
 
-    ConfigRoot(Config cfg, std::function<String(Config &)> validator) : Config(cfg), validator(validator) {
-
+    ConfigRoot(Config cfg, std::function<String(Config &)> validator) : Config(cfg), validator(validator)
+    {
     }
 
     std::function<String(Config &)> validator;

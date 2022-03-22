@@ -67,8 +67,8 @@ void ESP32EthernetBrick::setup()
     tf_hal_set_timeout(&hal, 100000);
 
 #if TF_LOCAL_ENABLE != 0
-    uint8_t hw_version[3] = { 1, 0, 0 };
-    uint8_t fw_version[3] = { BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH };
+    uint8_t hw_version[3] = {1, 0, 0};
+    uint8_t fw_version[3] = {BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH};
 
     check(tf_local_create(&local, local_uid_str, '0', hw_version, fw_version, TF_ESP32_ETHERNET_DEVICE_IDENTIFIER, &hal), "local create");
 

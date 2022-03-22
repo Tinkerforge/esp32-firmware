@@ -83,8 +83,8 @@ void factory_reset()
     ESP.restart();
 }
 
-FirmwareUpdate::FirmwareUpdate() {
-
+FirmwareUpdate::FirmwareUpdate()
+{
 }
 
 void FirmwareUpdate::setup()
@@ -92,7 +92,8 @@ void FirmwareUpdate::setup()
     initialized = true;
 }
 
-void FirmwareUpdate::reset_firmware_info() {
+void FirmwareUpdate::reset_firmware_info()
+{
     calculated_checksum = 0;
     info = firmware_info_t{};
     info_offset = 0;
@@ -144,7 +145,8 @@ bool FirmwareUpdate::handle_firmware_info_chunk(size_t chunk_index, uint8_t *dat
     return checksum_offset == sizeof(checksum) && info.magic[0] == 0x12CE2171 && (info.magic[1] & 0x00FFFFFF) == 0x6E12F0;
 }
 
-String FirmwareUpdate::check_firmware_info(bool firmware_info_found, bool detect_downgrade, bool log) {
+String FirmwareUpdate::check_firmware_info(bool firmware_info_found, bool detect_downgrade, bool log)
+{
     if (!firmware_info_found && BUILD_REQUIRE_FIRMWARE_INFO) {
         if (log) {
             logger.printfln("Failed to update: Firmware update has no info page!");
