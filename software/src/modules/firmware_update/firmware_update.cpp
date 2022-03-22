@@ -236,7 +236,7 @@ bool FirmwareUpdate::handle_update_chunk(int command, WebServerRequest request, 
 
     auto written = Update.write(start, length);
     if (written != length) {
-        logger.printfln("Failed to write update chunk with length %d; written %d, error: %s", length, written, Update.errorString());
+        logger.printfln("Failed to write update chunk with length %u; written %u, error: %s", length, written, Update.errorString());
         request.send(400, "text/plain", (String("Failed to write update: ") + Update.errorString()).c_str());
         this->firmware_update_running = false;
         Update.abort();
