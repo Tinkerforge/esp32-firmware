@@ -24,6 +24,7 @@
 #include <Update.h>
 #include <LittleFS.h>
 
+#include "api.h"
 #include "event_log.h"
 #include "task_scheduler.h"
 #include "tools.h"
@@ -37,6 +38,7 @@
 
 extern const char *DISPLAY_NAME;
 
+extern API api;
 extern EventLog logger;
 
 extern WebServer server;
@@ -332,37 +334,56 @@ void FirmwareUpdate::register_urls()
         return handle_update_chunk(U_SPIFFS, request, index, data, len, final, request.contentLength());
     });
 
-    server.on("/factory_reset", HTTP_PUT, [this](WebServerRequest request) {
-        char *payload = request.receive();
+    api.addRawCommand("factory_reset", [this](char *c, size_t s) -> String {
         StaticJsonDocument<16> doc;
 
-        DeserializationError error = deserializeJson(doc, payload, request.contentLength());
+        DeserializationError error = deserializeJson(doc, c, s);
 
         if (error) {
-            logger.printfln("Failed to parse command payload: %s", error.c_str());
-            request.send(400);
-            free(payload);
-            return;
+            return String("Failed to deserialize string: ") + String(error.c_str());
         }
 
         if (!doc["do_i_know_what_i_am_doing"].is<bool>()) {
-            request.send(400, "text/html", "you don't seem to know what you are doing");
-            free(payload);
-            return;
+            return "you don't seem to know what you are doing";
         }
 
-        if (doc["do_i_know_what_i_am_doing"].as<bool>()) {
-            task_scheduler.scheduleOnce([](){
-                logger.printfln("Factory reset requested");
-                factory_reset();
-            }, 3000);
-            request.send(200, "text/html", "Factory reset initiated");
-        } else {
-            request.send(400, "text/html", "Factory reset NOT initiated");
+        if (!doc["do_i_know_what_i_am_doing"].as<bool>()) {
+            return "Factory reset NOT initiated";
         }
 
-        free(payload);
-    });
+        task_scheduler.scheduleOnce([](){
+            logger.printfln("Factory reset requested");
+            factory_reset();
+        }, 3000);
+
+        return "";
+    }, true);
+
+    api.addRawCommand("config_reset", [this](char *c, size_t s) -> String {
+        StaticJsonDocument<16> doc;
+
+        DeserializationError error = deserializeJson(doc, c, s);
+
+        if (error) {
+            return String("Failed to deserialize string: ") + String(error.c_str());
+        }
+
+        if (!doc["do_i_know_what_i_am_doing"].is<bool>()) {
+            return "you don't seem to know what you are doing";
+        }
+
+        if (!doc["do_i_know_what_i_am_doing"].as<bool>()) {
+            return "Config reset NOT initiated";
+        }
+
+        task_scheduler.scheduleOnce([](){
+            logger.printfln("Config reset requested");
+            remove_directory("/config");
+            ESP.restart();
+        }, 3000);
+
+        return "";
+    }, true);
 }
 
 void FirmwareUpdate::loop()
