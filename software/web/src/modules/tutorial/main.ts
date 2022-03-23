@@ -22,20 +22,31 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-function update_tutorial_state() {
-    let state = API.get('tutorial/state');
+function update_config() {
+    let config = API.get("tutorial/config");
 
-    $('#tutorial_color').val(state.color);
+    $("#tutorial_color").val(config.color);
+}
+
+function apply_config() {
+    API.save("tutorial/config", {"color": $("#tutorial_color").val().toString()}, __("tutorial.script.apply_config_failed"));
+}
+
+function update_state() {
+    let state = API.get("tutorial/state");
+
+    $("#tutorial_button").val(state.button ? __("tutorial.script.button_pressed") : __("tutorial.script.button_released"));
 }
 
 export function init() {
-
+    $("#tutorial_color").on("change", apply_config);
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
-    source.addEventListener('tutorial/state', update_tutorial_state);
+    source.addEventListener("tutorial/config", update_config);
+    source.addEventListener("tutorial/state", update_state);
 }
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-tutorial').prop('hidden', !module_init.tutorial);
+    $("#sidebar-tutorial").prop("hidden", !module_init.tutorial);
 }

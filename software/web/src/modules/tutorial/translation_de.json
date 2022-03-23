@@ -7,9 +7,14 @@
         },
         "content": {
             "tutorial": "Tutorial",
-            "color": "Farbe"
+            "color": "Farbe",
+            "button": "Taster",
+            "button_unknown": "Unbekannt"
         },
         "script": {
+            "apply_config_failed": "Konnte Farbe nicht anwenden",
+            "button_pressed": "Gedrückt",
+            "button_released": "Losgelassen"
         }
     }
 }

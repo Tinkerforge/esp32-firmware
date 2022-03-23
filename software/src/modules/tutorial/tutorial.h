@@ -19,9 +19,9 @@
 
 #pragma once
 
-#include "ArduinoJson.h"
-
 #include "config.h"
+
+#include "bindings/bricklet_rgb_led_button.h"
 
 class Tutorial {
 public:
@@ -29,9 +29,11 @@ public:
     void setup();
     void register_urls();
     void loop();
+    void update_config();
 
     bool initialized = false;
-
-private:
+    ConfigRoot tutorial_config;
+    ConfigRoot tutorial_config_update;
     ConfigRoot tutorial_state;
+    TF_RGBLEDButton rgb_led_button;
 };

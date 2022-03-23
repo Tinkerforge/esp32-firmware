@@ -7,9 +7,14 @@
         },
         "content": {
             "tutorial": "Tutorial",
-            "color": "Color"
+            "color": "Color",
+            "button": "Button",
+            "button_unknown": "Unknown"
         },
         "script": {
+            "apply_config_failed": "Could not apply color",
+            "button_pressed": "Pressed",
+            "button_released": "Released"
         }
     }
 }
