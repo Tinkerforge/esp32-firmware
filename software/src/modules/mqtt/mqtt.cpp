@@ -308,7 +308,7 @@ void Mqtt::setup()
     mqtt_cfg.client_id = mqtt_config_in_use.get("client_name")->asCStr();
     mqtt_cfg.username = mqtt_config_in_use.get("broker_username")->asCStr();
     mqtt_cfg.password = mqtt_config_in_use.get("broker_password")->asCStr();
-    mqtt_cfg.buffer_size = MQTT_RECV_BUFFER_SIZE,
+    mqtt_cfg.buffer_size = MQTT_RECV_BUFFER_SIZE;
     mqtt_cfg.network_timeout_ms = 100;
 
     client = esp_mqtt_client_init(&mqtt_cfg);
