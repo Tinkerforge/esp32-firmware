@@ -33,6 +33,8 @@ public:
 
     bool trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::ConfVariant auth_info);
 
+    void remove_username_file();
+
     bool initialized = false;
 
     ConfigRoot user_config;

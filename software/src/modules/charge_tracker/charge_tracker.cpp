@@ -392,11 +392,11 @@ void ChargeTracker::register_urls()
         task_scheduler.scheduleOnce([](){
             logger.printfln("Removing all tracked charges and rebooting.");
             remove_directory(CHARGE_RECORD_FOLDER);
+            users.remove_username_file();
             ESP.restart();
         }, 3000);
         return "";
     }, true);
-
 }
 
 void ChargeTracker::loop()

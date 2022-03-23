@@ -558,6 +558,12 @@ bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::Co
     return false;
 }
 
+void Users::remove_username_file()
+{
+    if (LittleFS.exists(USERNAME_FILE))
+        LittleFS.remove(USERNAME_FILE);
+}
+
 uint32_t timestamp_minutes()
 {
     struct timeval tv_now;
