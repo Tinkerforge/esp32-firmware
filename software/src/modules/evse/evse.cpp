@@ -569,7 +569,8 @@ void EVSE::register_urls()
 
     // Configurations. Note that those are _not_ configs in the api.addPersistentConfig sense:
     // The configs are stored on the EVSE itself, not the ESP's flash.
-
+    // All _update APIs that write the EVSEs flash without checking first if this was a change
+    // are marked as actions to make sure the flash is not written unnecessarily.
     api.addState("evse/auto_start_charging", &evse_auto_start_charging, {}, 1000);
     api.addCommand("evse/auto_start_charging_update", &evse_auto_start_charging_update, {}, [this](){
         // 1. set auto start

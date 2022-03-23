@@ -723,6 +723,8 @@ void EVSEV2::register_urls()
 
     // Configurations. Note that those are _not_ configs in the api.addPersistentConfig sense:
     // The configs are stored on the EVSE itself, not the ESP's flash.
+    // All _update APIs that write the EVSEs flash without checking first if this was a change
+    // are marked as actions to make sure the flash is not written unnecessarily.
     api.addState("evse/gpio_configuration", &evse_gpio_configuration, {}, 1000);
     api.addCommand("evse/gpio_configuration_update", &evse_gpio_configuration_update, {}, [this](){
         is_in_bootloader(tf_evse_v2_set_gpio_configuration(&device, evse_gpio_configuration_update.get("shutdown_input")->asUint(),
