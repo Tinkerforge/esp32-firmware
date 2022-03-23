@@ -629,7 +629,7 @@ void EVSEV2::register_urls()
 
     task_scheduler.scheduleWithFixedDelay([this](){
         uint16_t supported_current = 32000;
-        for(int i = 0; i < CHARGING_SLOT_COUNT; ++i) {
+        for (int i = 0; i < CHARGING_SLOT_COUNT; ++i) {
             if (i == CHARGING_SLOT_CHARGE_MANAGER)
                 continue;
             if (!evse_slots.get(i)->get("active")->asBool())
@@ -720,7 +720,6 @@ void EVSEV2::register_urls()
         this->set_managed_current(evse_management_current_update.get("current")->asUint());
     }, false);
 
-
     // Configurations. Note that those are _not_ configs in the api.addPersistentConfig sense:
     // The configs are stored on the EVSE itself, not the ESP's flash.
     // All _update APIs that write the EVSEs flash without checking first if this was a change
@@ -763,8 +762,7 @@ void EVSEV2::register_urls()
 
         if (enable_auto_start) {
             is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_AUTOSTART_BUTTON, 32000));
-        }
-        else {
+        } else {
             // Only "stop" charging if no car is currently plugged in.
             // Clear on disconnect only triggers once, so we have to zero the current manually here.
             uint8_t iec_state = evse_state.get("iec61851_state")->asUint();
@@ -828,7 +826,6 @@ void EVSEV2::register_urls()
     api.addCommand("evse/external_defaults_update", &evse_external_defaults_update, {}, [this](){
         bool enabled;
         tf_evse_v2_get_charging_slot_default(&device, CHARGING_SLOT_EXTERNAL, nullptr, &enabled, nullptr);
-
         this->apply_slot_default(CHARGING_SLOT_EXTERNAL, evse_external_defaults_update.get("current")->asUint(), enabled, evse_external_defaults_update.get("clear_on_disconnect")->asBool());
     }, false);
 
