@@ -65,8 +65,10 @@ void API::setup()
 
             reg.last_update = millis();
 
+            size_t backend_count = this->backends.size();
+
             // If the config was not updated for any API, we don't have to serialize the payload.
-            if (!reg.config->was_updated(0xFF)) {
+            if (!reg.config->was_updated((1 << backend_count) - 1)) {
                 continue;
             }
 

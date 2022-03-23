@@ -290,7 +290,7 @@ struct Config {
         *target = value;
 
         if (old_value != value)
-            this->updated = true;
+            this->updated = 0xFF;
 
         return old_value != value;
     }

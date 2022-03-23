@@ -625,42 +625,42 @@ struct set_updated_false {
 
 Config Config::Str(String s, uint16_t minChars, uint16_t maxChars)
 {
-    return Config{ConfString{s, minChars, maxChars == 0 ? (uint16_t)s.length() : maxChars}, true};
+    return Config{ConfString{s, minChars, maxChars == 0 ? (uint16_t)s.length() : maxChars}, (uint8_t)0xFF};
 }
 
 Config Config::Float(float d, float min, float max)
 {
-    return Config{ConfFloat{d, min, max}, true};
+    return Config{ConfFloat{d, min, max}, (uint8_t)0xFF};
 }
 
 Config Config::Int(int32_t i, int32_t min, int32_t max)
 {
-    return Config{ConfInt{i, min, max}, true};
+    return Config{ConfInt{i, min, max}, (uint8_t)0xFF};
 }
 
 Config Config::Uint(uint32_t u, uint32_t min, uint32_t max)
 {
-    return Config{ConfUint{u, min, max}, true};
+    return Config{ConfUint{u, min, max}, (uint8_t)0xFF};
 }
 
 Config Config::Bool(bool b)
 {
-    return Config{ConfBool{b}, true};
+    return Config{ConfBool{b}, (uint8_t)0xFF};
 }
 
 Config Config::Array(std::initializer_list<Config> arr, Config *prototype, size_t minElements, size_t maxElements, int variantType)
 {
-    return Config{ConfArray{arr, prototype, minElements, maxElements, (int8_t)variantType}, true};
+    return Config{ConfArray{arr, prototype, minElements, maxElements, (int8_t)variantType}, (uint8_t)0xFF};
 }
 
 Config Config::Object(std::initializer_list<std::pair<String, Config>> obj)
 {
-    return Config{ConfObject{obj}, true};
+    return Config{ConfObject{obj}, (uint8_t)0xFF};
 }
 
 Config Config::Null()
 {
-    return Config{nullptr, true};
+    return Config{nullptr, (uint8_t)0xFF};
 }
 
 Config Config::Uint8(uint8_t u)
