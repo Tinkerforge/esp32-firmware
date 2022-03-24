@@ -1,10 +1,10 @@
 {
     "ntp": {
         "navbar": {
-            "ntp": "Time synchronization"
+            "ntp": "Time Synchronization"
         },
         "content": {
-            "ntp": "Time synchronization",
+            "ntp": "Time Synchronization",
             "enable": "Time synchronization enabled",
             "enable_desc": "Synchronizes the interal clock over the network (NTP)",
             "use_dhcp": "Use DHCP",

@@ -5,10 +5,10 @@
             "current_charge": "Current charge"
         },
         "navbar": {
-            "charge_tracker": "Charge tracker"
+            "charge_tracker": "Charge Tracker"
         },
         "content": {
-            "charge_tracker": "Charge tracker",
+            "charge_tracker": "Charge Tracker",
             "download": "Download charge log",
             "download_desc": "CSV file of all tracked charges",
             "download_btn": "Download charge log",
