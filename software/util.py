@@ -4,6 +4,8 @@ import io
 import re
 import hashlib
 from zipfile import ZipFile
+import json
+import re
 
 def get_digest_paths(dst_dir, var_name, env=None):
     if env is not None:
@@ -176,3 +178,94 @@ def embed_bricklet_firmware_bin(env=None):
     with ZipFile(firmware) as zf:
         with zf.open('{}-bricklet-firmware.bin'.format(firmware_name.replace('_', '-')), 'r') as f:
             embed_data_with_digest(f.read(), '.', firmware_name + '_bricklet_firmware_bin', 'uint8_t', env=env)
+
+def merge(left, right, path=[]):
+    for key in right:
+        if key in left:
+            if isinstance(left[key], dict) and isinstance(right[key], dict):
+                merge(left[key], right[key], path + [str(key)])
+            else:
+                print("Found ambiguous placeholder ", '.'.join(path + [key]))
+        else:
+            left[key] = right[key]
+    return left
+
+def parse_ts_file(path, name, translation, used_placeholders, template_literals):
+    START_PATTERN = "{[index: string]:any} = "
+    END_PATTERN = "};"
+
+    with open(path) as f:
+        content = f.read()
+
+    placeholders = re.findall('__\(([^\)]*)', content)
+    try:
+        placeholders.remove("s: string")
+    except:
+        pass
+
+    template_literal_keys = [x for x in placeholders if x[0] == '`' and x[-1] == '`' and '${' in x and '}' in x]
+    placeholders = [x for x in placeholders if x not in template_literal_keys]
+
+    template_literals.update({x[1:-1]: [] for x in template_literal_keys})
+
+    incorrect_placeholders = [x for x in placeholders if not x[0] == '"' or not x[-1] == '"']
+    if len(incorrect_placeholders) != 0:
+        print("Found incorrectly quoted placeholders. Use \"\"!", incorrect_placeholders)
+
+    used_placeholders += [x[1:-1] for x in placeholders]
+
+    if not name.startswith("translation_") or not name.endswith(".ts"):
+        return
+
+    language = name[len('translation_'):-len('.ts')]
+    start = content.find(START_PATTERN)
+    while start >= 0:
+        content = content[start+len(START_PATTERN):]
+        end = content.find(END_PATTERN)
+        json_dict = content[:end+1]
+        json_dict = re.sub(",\s*\}", "}", json_dict)
+        for x in re.findall('"([^"]*)":\s*""', json_dict):
+            print('error: key "{}" in {} has empty value. Use {{{{{{empty_text}}}}}} instead.'.format(x, name))
+        json_dict = json_dict.replace("{{{empty_text}}}", '""')
+        try:
+            merge(translation, {language: json.loads(json_dict)})
+        except Exception as e:
+            print("error:", e, json_dict)
+
+        content = content[end+len(END_PATTERN):]
+        start = content.find(START_PATTERN)
+
+def parse_ts_files(files):
+    translation = {}
+    used_placeholders = []
+    template_literals = {}
+
+    for f in files:
+        parse_ts_file(f, os.path.basename(f), translation, used_placeholders, template_literals)
+
+    return translation, used_placeholders, template_literals
+
+def get_nested_keys(d, path=""):
+    r = []
+    for k, v in d.items():
+        if isinstance(v, dict) and len(v) > 0:
+            r += get_nested_keys(v, path + "." + k if path != "" else k)
+        elif isinstance(v, str):
+            r.append(path + "." + k)
+    return r
+
+colors = {"off": "\x1b[00m",
+          "blue": "\x1b[34m",
+          "cyan": "\x1b[36m",
+          "green": "\x1b[32m",
+          "red": "\x1b[31m",
+          "gray": "\x1b[90m"}
+
+def red(s):
+    return colors["red"]+s+colors["off"]
+
+def green(s):
+    return colors["green"]+s+colors["off"]
+
+def gray(s):
+    return colors['gray']+s+colors["off"]
