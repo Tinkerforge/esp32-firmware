@@ -4,58 +4,102 @@
         <h1 class="h2" data-i18n="firmware_update.content.firmware_update"></h1>
     </div>
 
-    <form method='POST' action='#' enctype='multipart/form-data' id='upload_firmware_form'>
-        <div class="form-group row">
-            <div class="col-lg-3 mt-2">
-                <input class="form-control mb-1" type="text" placeholder="..." readonly id="current_firmware">
-                <label for='current_firmware' data-i18n="firmware_update.content.current_firmware">/label>
-            </div>
-            <div class="col-lg-9 col-xl-7 mt-2">
-                <div id="firmware_select">
-                    <div class="input-group mb-1">
-                        <div class="custom-file">
-                            <input name="firmware" type="file" class="custom-file-input form-control"
-                                id="firmware_file_select">
-                            <label class="custom-file-label form-control"
-                                for="firmware_file_select" data-browse="" data-i18n="firmware_update.content.browse firmware_update.content.select_file" data-i18n-attr="data-browse innerHTML"></label>
-                        </div>
-                        <div class="input-group-append">
-                            <input id="update_firmware_button" type='submit'  data-i18n="firmware_update.content.update" data-i18n-attr="value" value=""
-                                class="btn btn-primary form-control" disabled>
-                        </div>
+    <div class="form-group row">
+        <label for="current_firmware"
+            class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="firmware_update.content.current_firmware"></label>
+        <div class="col-lg-9 col-xl-6">
+            <input id="current_firmware" class="form-control" type="text" placeholder="..." readonly id="current_firmware">
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label for="firmware_file_select" class="col-lg-3 col-xl-2 col-form-label">
+            <span class="form-label pr-2" data-i18n="firmware_update.content.firmware_update_label"></span>
+            <span class="text-muted" data-i18n="firmware_update.content.firmware_update_desc"></span>
+        </label>
+        <div class="col-lg-9 col-xl-6">
+            <form method='POST' action='#' enctype='multipart/form-data' id='upload_firmware_form'>
+                <div class="input-group">
+                    <div class="custom-file">
+                        <input name="firmware" type="file" class="custom-file-input form-control rounded-left"
+                            id="firmware_file_select">
+                        <label class="custom-file-label form-control"
+                            for="firmware_file_select" data-browse="" data-i18n="firmware_update.content.browse firmware_update.content.select_file" data-i18n-attr="data-browse innerHTML"></label>
                     </div>
-                    <label id="firmware_label" for='firmware_file_select' data-i18n="firmware_update.content.firmware_update"></label>
+                    <div class="input-group-append">
+                        <input id="update_firmware_button" type='submit'  data-i18n="firmware_update.content.update" data-i18n-attr="value" value=""
+                            class="btn btn-primary form-control" disabled>
+                    </div>
                 </div>
-                <div id="firmware-progress" hidden>
-                    <div class="form-progress mb-1">
-                        <div id="firmware-progress-bar" class="progress-bar form-control progress-bar-no-transition"
-                            role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0"
-                            aria-valuemax="100"></div>
-                    </div>
-                    <label for='firmware-progress-bar' data-i18n="firmware_update.content.uploading"></label>
+            </form>
+            <div id="firmware-progress" hidden>
+                <div class="form-progress mb-1">
+                    <div id="firmware-progress-bar" class="progress-bar form-control progress-bar-no-transition"
+                        role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0"
+                        aria-valuemax="100"></div>
+                </div>
+                <label for='firmware-progress-bar' data-i18n="firmware_update.content.uploading"></label>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label for="firmware_update_reboot" class="col-lg-3 col-xl-2 col-form-label">
+            <span class="form-label pr-2" data-i18n="firmware_update.content.reboot"></span>
+            <span class="text-muted" data-i18n="firmware_update.content.reboot_desc"></span>
+        </label>
+        <div class="col-lg-9 col-xl-6">
+            <button id="firmware_update_reboot" type="button" class="form-control btn btn-primary" data-i18n="firmware_update.content.reboot"></button>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label for="current_spiffs"
+            class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="firmware_update.content.current_spiffs"></label>
+        <div class="col-lg-9 col-xl-6">
+            <input id="current_spiffs" class="form-control" type="text" placeholder="..." readonly id="current_spiffs">
+        </div>
+    </div>
+
+    <div class="form-group row" id="config_reset_row">
+        <label for="spiffs_config_reset" class="col-lg-3 col-xl-2 col-form-label">
+            <span class="form-label pr-2" data-i18n="firmware_update.content.config_reset"></span>
+            <span class="text-muted" data-i18n="firmware_update.content.config_reset_desc"></span>
+        </label>
+        <div class="col-lg-9 col-xl-6">
+            <button id="spiffs_config_reset" type="button" class="form-control btn btn-danger" data-i18n="firmware_update.content.config_reset"></button>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label for="spiffs_factory_reset" class="col-lg-3 col-xl-2 col-form-label">
+            <span class="form-label pr-2" data-i18n="firmware_update.content.factory_reset"></span>
+            <span class="text-muted" data-i18n="firmware_update.content.factory_reset_desc"></span>
+        </label>
+        <div class="col-lg-9 col-xl-6">
+            <button id="spiffs_factory_reset" type="button" class="form-control btn btn-danger" data-i18n="firmware_update.content.factory_reset"></button>
+        </div>
+    </div>
+
+    <div class="modal fade" id="config_reset_modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div id="config_reset_content" class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <label class="form-label modal-title" data-i18n="firmware_update.content.config_reset"></label>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body"  data-i18n="firmware_update.content.config_reset_modal_text"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                        data-dismiss="modal" data-i18n="firmware_update.content.abort_reset"></button>
+                    <button id="config_reset_confirm" type="button"
+                        class="btn btn-danger" data-i18n="firmware_update.content.confirm_config_reset"></button>
                 </div>
             </div>
         </div>
-    </form>
-    <hr>
-    <form method='POST' action='#' enctype='multipart/form-data' id='upload_spiffs_form'>
-        <div class="form-group row">
-            <div class="col-lg-3 mt-2">
-                <input class="form-control mb-1" type="text" placeholder="..." readonly id="current_spiffs">
-                <label for='current_spiffs' data-i18n="firmware_update.content.current_spiffs"></label>
-            </div>
-
-            <div class="col-lg-5 col-xl-4 mt-2">
-                <button id="firmware_update_reboot" type="button" class="form-control btn btn-primary mb-1" data-i18n="firmware_update.content.reboot"></button>
-                <label id="spiffs_label" for='debug_report' data-i18n="firmware_update.content.reboot_desc"></label>
-            </div>
-
-            <div class="col-lg-4 col-xl-3 mt-2">
-                <button id="spiffs_factory_reset" type="button" class="form-control btn btn-danger mb-1" data-i18n="firmware_update.content.factory_reset"></button>
-                <label id="spiffs_label" for='spiffs_factory_reset' data-i18n="firmware_update.content.factory_reset_desc"></label>
-            </div>
-        </div>
-    </form>
+    </div>
 
     <div class="modal fade" id="factory_reset_modal" tabindex="-1" role="dialog" aria-hidden="true">
         <div id="factory_reset_content" class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
@@ -71,7 +115,7 @@
                     <button type="button" class="btn btn-secondary"
                         data-dismiss="modal" data-i18n="firmware_update.content.abort_reset"></button>
                     <button id="factory_reset_confirm" type="button"
-                        class="btn btn-danger" data-i18n="firmware_update.content.confirm_reset"></button>
+                        class="btn btn-danger" data-i18n="firmware_update.content.confirm_factory_reset"></button>
                 </div>
             </div>
         </div>

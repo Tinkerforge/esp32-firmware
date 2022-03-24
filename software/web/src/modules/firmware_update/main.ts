@@ -81,7 +81,7 @@ function upload(type: string) {
 
     let file_select = <HTMLInputElement>$(`#${type}_file_select`)[0];
     let progress = $(`#${type}-progress`);
-    let select = $(`#${type}_select`);
+    let select = $(`#upload_${type}_form`);
     let progress_bar = $(`#${type}-progress-bar`);
 
     progress.prop("hidden", false);
@@ -124,8 +124,21 @@ function upload(type: string) {
     });
 }
 
-function factory_reset_modal() {
-    $('#factory_reset_modal').modal('show');
+function config_reset() {
+    $.ajax({
+        url: `/config_reset`,
+        type: 'PUT',
+        contentType: "application/json; charset=utf-8",
+        data: JSON.stringify({"do_i_know_what_i_am_doing": true}),
+        success: () => {
+            $('#config_reset_modal').modal('hide');
+            util.postReboot(__("firmware_update.script.config_reset_init"), __("util.reboot_text"));
+        },
+        error: (xhr, status, error) => {
+            $('#config_reset_modal').modal('hide');
+            util.add_alert("config_reset_failed", "alert-danger", __("firmware_update.script.config_reset_error"), error + ": " + xhr.responseText);
+        }
+    });
 }
 
 function factory_reset() {
@@ -159,7 +172,9 @@ export function init() {
 
     $('#firmware_file_select').on("change", () => $("#update_firmware_button").prop("disabled", false));
 
-    $('#spiffs_factory_reset').on("click", factory_reset_modal);
+    $('#spiffs_config_reset').on("click", () => $('#config_reset_modal').modal('show'));
+    $('#spiffs_factory_reset').on("click", () => $('#factory_reset_modal').modal('show'));
+    $('#config_reset_confirm').on("click", config_reset);
     $('#factory_reset_confirm').on("click", factory_reset);
     $('#firmware_update_reboot').on("click", util.reboot);
 
@@ -172,4 +187,5 @@ export function add_event_listeners(source: API.APIEventTarget) {
 
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-flash').prop('hidden', !module_init.firmware_update);
+    $('#config_reset_row').prop('hidden', !module_init.users);
 }
