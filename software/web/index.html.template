@@ -100,7 +100,7 @@
         <div id="reboot_content" class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <form-label class="modal-title" data-i18n="main.reboot_title"></form-label>
+                    <label class="form-label modal-title" data-i18n="main.reboot_title"></label>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
