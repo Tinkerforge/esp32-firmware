@@ -443,3 +443,7 @@ body {
 }
 
 {{{module_post_imports}}}
+
+.modal-body {
+    font-size: 1rem;
+}
