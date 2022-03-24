@@ -28,10 +28,11 @@
         "script": {
             "id": "ID",
             "roles": "Rollen",
+            "username": "Benutzername",
+            "delete": "Löschen",
             "display_name": "Anzeigename",
             "current": "Maximaler Ladestrom",
             "password": "Passwort",
-            "last_seen_unknown": "placeholder",
             "add_user": "Benutzer hinzufügen",
             "add_user_disabled_prefix": "Es werden nur bis zu ",
             "add_user_disabled_suffix": " Benutzer unterstützt",

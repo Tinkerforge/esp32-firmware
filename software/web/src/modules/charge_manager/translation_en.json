@@ -68,6 +68,7 @@
             "ampere_allocated": "A allocated",
             "ampere_supported": "A supported",
 
+            "delete": "Delete",
             "last_update_prefix": "Unavailable since",
             "last_update_suffix": "{{{empty_text}}}",
             "save_failed": "Failed to save the charge manager configuration",
@@ -76,7 +77,9 @@
             "add_charger_disabled_prefix": "Only up to ",
             "add_charger_disabled_suffix": " chargers are supported.",
 
-            "reboot_content_changed": "charge manager configuration"
+            "reboot_content_changed": "charge manager configuration",
+            "display_name": "Display name",
+            "host": "Host"
         }
     }
 }

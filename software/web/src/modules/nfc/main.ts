@@ -33,6 +33,10 @@ let authorized_tag_count = -1;
 type NFCConfig = API.getType['nfc/config'];
 type AuthorizedTag = NFCConfig['authorized_tags'][0];
 
+let nfc_card_symbol = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" class="feather feather-nfc"><g transform="matrix(1.33 0 0 -1.33 -46.7 105)"><g transform="matrix(.0118 0 0 .0118 39.3 61.8)" fill="currentColor"><path d="m5.51 1345-2.79-149c-.457-23.2-5.91-570 .043-726 9.85-253 24.2-393 122-470h227c-10.9 2.55-21.6 5.48-32.4 9.28-150 52.7-176 187-194 474-2.98 49.9-4.48 145-4.48 250 0 108 1.14 225 2.33 315l456-456v179l-573 573"/><path d="m798 55.1 2.79 149c.461 23.2 5.91 570-.046 725-9.84 252-24.2 393-122 470h-227c10.9-2.55 21.7-5.48 32.4-9.27 150-52.7 176-187 194-474 2.98-49.9 4.49-145 4.49-250 0-108-1.15-225-2.34-315l-456 456v-179l573-573"/></g></g></svg>';
+let nfc_card_delete_symbol = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user-x mr-2"><g transform="matrix(1.33 0 0 -1.33 -51.7 105) translate(0 0)"><g transform="matrix(.0118 0 0 .0118 39.3 61.8)" fill="currentColor"><path d="m5.51 1345-2.79-149c-.457-23.2-5.91-570 .043-726 9.85-253 24.2-393 122-470h227c-10.9 2.55-21.6 5.48-32.4 9.28-150 52.7-176 187-194 474-2.98 49.9-4.48 145-4.48 250 0 108 1.14 225 2.33 315l456-456v179l-573 573"></path><path d="m798 55.1 2.79 149c.461 23.2 5.91 570-.046 725-9.84 252-24.2 393-122 470h-227c10.9-2.55 21.7-5.48 32.4-9.27 150-52.7 176-187 194-474 2.98-49.9 4.49-145 4.49-250 0-108-1.15-225-2.34-315l-456 456v-179l573-573"></path></g></g><line x1="18" x2="23" y1="10" y2="15"></line><line x1="23" x2="18" y1="10" y2="15"></line></svg>';
+let nfc_card_add_symbol = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user-x mr-2"><g transform="matrix(1.33 0 0 -1.33 -51.7 105) translate(0 0)"><g transform="matrix(.0118 0 0 .0118 39.3 61.8)" fill="currentColor"><path d="m5.51 1345-2.79-149c-.457-23.2-5.91-570 .043-726 9.85-253 24.2-393 122-470h227c-10.9 2.55-21.6 5.48-32.4 9.28-150 52.7-176 187-194 474-2.98 49.9-4.48 145-4.48 250 0 108 1.14 225 2.33 315l456-456v179l-573 573"></path><path d="m798 55.1 2.79 149c.461 23.2 5.91 570-.046 725-9.84 252-24.2 393-122 470h-227c10.9-2.55 21.7-5.48 32.4-9.27 150-52.7 176-187 194-474 2.98-49.9 4.49-145 4.49-250 0-108-1.15-225-2.34-315l-456 456v-179l573-573"></path></g></g><line x1="20" y1="9" x2="20" y2="15"></line><line x1="23" y1="12" x2="17" y2="12"></line></svg>';
+
 function update_nfc_config(cfg: NFCConfig = API.get('nfc/config'), force: boolean) {
     if (!force && !$('#nfc_save_button').prop('disabled'))
         return;
@@ -43,21 +47,25 @@ function update_nfc_config(cfg: NFCConfig = API.get('nfc/config'), force: boolea
             authorized_tags += `<div class="col mb-4">
                     <div class="card h-100">
                         <div class="card-header d-flex justify-content-between align-items-center">
-                            <span class="h5" id="nfc_authorized_tag_${i}_tag_id" style="margin-bottom: 0"></span>
-                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                            ${nfc_card_symbol}
+                            <button type="button" class="btn btn-sm btn-outline-dark"
                                 id="nfc_authorized_tag_${i}_remove">
-                                <span data-feather="trash-2"></span>
+                                ${nfc_card_delete_symbol}<span style="font-size: 1rem; vertical-align: middle;">${__("nfc.script.delete")}</span>
                             </button>
                         </div>
 
                         <div class="card-body">
+                            <div class="form-group">
+                                <label for="nfc_authorized_tag_${i}_tag_id" class="form-label">${__("nfc.script.tag_id")}</label>
+                                <input type="text" id="nfc_authorized_tag_${i}_tag_id" class="form-control">
+                            </div>
                             <div class="form-group">
                                 <label for="nfc_authorized_tag_${i}_user_id" class="form-label">${__("nfc.script.user_id")}</label>
                                 <select id="nfc_authorized_tag_${i}_user_id" class="form-control custom-select nfc-user-select">
 
                                 </select>
                             </div>
-                            <div class="form-group">
+                            <div class="">
                                 <label for="nfc_authorized_tag_${i}_tag_type" class="form-label">${__("nfc.script.tag_type")}</label>
                                 <select id="nfc_authorized_tag_${i}_tag_type" class="form-control custom-select">
                                     <option value="0">${__("nfc.content.type_0")}</option>
@@ -69,7 +77,7 @@ function update_nfc_config(cfg: NFCConfig = API.get('nfc/config'), force: boolea
                             </div>
                         </div>
                         <div class="card-footer">
-                            <small id="nfc_authorized_tag_${i}_last_seen" style="visibility: hidden;">${__("nfc.script.last_seen_unknown")}</small>
+                            <span id="nfc_authorized_tag_${i}_last_seen"></span>
                         </div>
                     </div>
                 </div>`;
@@ -77,17 +85,14 @@ function update_nfc_config(cfg: NFCConfig = API.get('nfc/config'), force: boolea
         authorized_tags += `<div class="col mb-4">
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <span class="h5" style="margin-bottom: 0">${__("nfc.script.add_tag")}</span>
-                <button type="button" class="btn btn-sm btn-outline-secondary" style="visibility: hidden;">
-                        <span data-feather="trash-2"></span>
+                ${nfc_card_add_symbol}
+                <button type="button" class="btn btn-sm btn-outline-dark" style="visibility: hidden;">
+                    ${nfc_card_delete_symbol}
                 </button>
             </div>
             <div class="card-body">
-                <button id="nfc_add_tag" type="button" class="btn btn-light btn-lg btn-block" style="height: 100%;" data-toggle="modal" data-target="#nfc_add_tag_modal"><span data-feather="plus-circle"></span></button>
+                <button id="nfc_add_tag" type="button" class="btn btn-light btn-lg btn-block" style="height: 100%;" data-toggle="modal" data-target="#nfc_add_tag_modal">${__("nfc.script.add_tag")}</button>
                 <span id="nfc_add_tag_disabled" hidden>${__("nfc.script.add_tag_disabled_prefix") + MAX_AUTHORIZED_TAGS + __("nfc.script.add_tag_disabled_suffix")}</span>
-            </div>
-            <div class="card-footer">
-                <small style="visibility: hidden;">${__("nfc.script.last_seen_unknown")}</small>
             </div>
         </div>
     </div>`;
@@ -110,7 +115,7 @@ function update_nfc_config(cfg: NFCConfig = API.get('nfc/config'), force: boolea
         const s = cfg.authorized_tags[i];
         $(`#nfc_authorized_tag_${i}_user_id`).val(s.user_id);
         $(`#nfc_authorized_tag_${i}_tag_type`).val(s.tag_type);
-        $(`#nfc_authorized_tag_${i}_tag_id`).html(s.tag_id);
+        $(`#nfc_authorized_tag_${i}_tag_id`).val(s.tag_id);
     }
 }
 
@@ -122,7 +127,7 @@ function collect_nfc_config(new_tag: AuthorizedTag = null, remove_tag: number = 
         let c: AuthorizedTag = {
             tag_type: parseInt($(`#nfc_authorized_tag_${i}_tag_type`).val().toString()),
             user_id: parseInt($(`#nfc_authorized_tag_${i}_user_id`).val().toString()),
-            tag_id: $(`#nfc_authorized_tag_${i}_tag_id`).html().toString()
+            tag_id: $(`#nfc_authorized_tag_${i}_tag_id`).val().toString()
         }
         tags.push(c);
     }
@@ -176,15 +181,24 @@ outer_loop:
         unauth_seen_tags.push(seen_tags[i]);
     }
 
-    for(let i = 0; i < auth_seen_tags.length; ++i) {
-        $(`#nfc_authorized_tag_${auth_seen_ids[i]}_last_seen`).prop("style",  "");
-        $(`#nfc_authorized_tag_${auth_seen_ids[i]}_last_seen`).text(__("nfc.content.last_seen") + util.format_timespan(Math.floor(auth_seen_tags[i].last_seen / 1000)) + __("nfc.content.last_seen_suffix"));
+    let cfg = API.get("nfc/config");
+    for(let i = 0; i < current_nfc_config.authorized_tags.length; ++i) {
+        console.log(i);
+        let tag = current_nfc_config.authorized_tags[i];
+        let auth_seen_idx = auth_seen_ids.indexOf(i);
+
+        if (auth_seen_idx >= 0) {
+            $(`#nfc_authorized_tag_${i}_last_seen`).html(__("nfc.content.last_seen") + util.format_timespan(Math.floor(auth_seen_tags[auth_seen_idx].last_seen / 1000)) + __("nfc.content.last_seen_suffix"));
+            console.log("seen");
+        } else {
+            $(`#nfc_authorized_tag_${i}_last_seen`).html(__("nfc.script.not_seen"));
+            console.log("not seen");
+        }
     }
 
     for (let i = 0; i < current_nfc_config.authorized_tags.length; ++i) {
         if (auth_seen_ids.includes(i))
             continue;
-        $(`#nfc_authorized_tag_${i}_last_seen`).prop("style",  "visibility: hidden;");
     }
 
     if (unauth_seen_tags.length < unauth_tag_list_length) {
@@ -281,6 +295,7 @@ export function init() {
 export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('nfc/config', () => update_nfc_config(undefined, false));
     source.addEventListener('nfc/seen_tags', update_nfc_seen_tags);
+    source.addEventListener('nfc/config', update_nfc_seen_tags);
     source.addEventListener('nfc/config', update_users_config);
     source.addEventListener('users/config', update_users_config);
 }

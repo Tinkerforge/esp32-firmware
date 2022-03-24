@@ -67,7 +67,7 @@
 
             "ampere_allocated": "A zugeteilt",
             "ampere_supported": "A unterstützt",
-
+            "delete": "Löschen",
             "last_update_prefix": "Gestört seit ",
             "last_update_suffix": "{{{empty_text}}}",
             "save_failed": "Speichern der Lastmanager-Konfiguration fehlgeschlagen",
@@ -76,7 +76,10 @@
             "add_charger_disabled_prefix": "Es werden nur bis zu ",
             "add_charger_disabled_suffix": " Wallboxen unterstützt.",
 
-            "reboot_content_changed": "Lastmanagement-Einstellungen"
+            "reboot_content_changed": "Lastmanagement-Einstellungen",
+
+            "display_name": "Anzeigename",
+            "host": "Host"
         }
     }
 }

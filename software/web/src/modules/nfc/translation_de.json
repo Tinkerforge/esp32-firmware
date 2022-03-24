@@ -11,7 +11,7 @@
             "save": "Speichern",
             "authorized_tags": "Berechtigte Tags",
 
-            "add_tag_modal_title": "Berechtigtes Tag hinzufügen",
+            "add_tag_modal_title": "Tag hinzufügen",
             "add_tag_modal_seen_tags": "Zuletzt erkannte Tags",
             "add_tag_modal_user_id": "Zugeordneter Benutzer",
             "add_tag_modal_tag_id": "Tag-ID",
@@ -32,9 +32,11 @@
             "add_tag": "Tag hinzufügen",
             "add_tag_disabled_prefix": "Es werden nur bis zu ",
             "add_tag_disabled_suffix": " Tags unterstützt.",
+            "delete": "Löschen",
+            "tag_id": "Tag-ID",
             "user_id": "Zugeordneter Benutzer",
             "tag_type": "Tag-Typ",
-            "last_seen_unknown": "placeholder",
+            "not_seen": "Seit 24 Stunden oder dem letzten Neustart nicht erkannt",
             "save_failed": "Aktualisieren der NFC-Einstellungen fehlgeschlagen",
             "reboot_content_changed": "NFC-Einstellungen",
             "not_assigned": "nicht zugeordnet"

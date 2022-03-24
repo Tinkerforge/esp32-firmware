@@ -84,7 +84,7 @@ async function save_users_config() {
 
     let nums: number[] = $('.authorized-user-id').map(function() {return parseInt(this.id.replace("users_authorized_user_", "").replace("_id", ""));}).get();
     for (let i of nums) {
-        let username = $(`#users_authorized_user_${i}_username`).html();
+        let username = $(`#users_authorized_user_${i}_username`).val().toString();
         let password = util.passwordUpdate(`#users_authorized_user_${i}_password`);
         let digest = password !== null && password !== "" ? YaMD5.YaMD5.hashStr(username + ":esp32-lib:" + password) : password;
         have.push({
@@ -128,10 +128,10 @@ function generate_user_ui(user: User, password: string) {
     let result = `<div class="col mb-4">
                     <div class="card h-100">
                         <div class="card-header d-flex justify-content-between align-items-center">
-                            <span class="h5" id="users_authorized_user_${i}_username" style="margin-bottom: 0"></span>
-                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                            <span data-feather="user"></span>
+                            <button type="button" class="btn btn-sm btn-outline-dark"
                                 id="users_authorized_user_${i}_remove">
-                                <span data-feather="user-x"></span>
+                                <span data-feather="user-x" class="mr-2"></span><span style="font-size: 1rem; vertical-align: middle;" data-i18n="users.script.delete"></span>
                             </button>
                         </div>
 
@@ -139,6 +139,10 @@ function generate_user_ui(user: User, password: string) {
                             <div class="form-group" hidden>
                                 <label for="users_authorized_user_${i}_id" class="form-label">${__("users.script.id")}</label>
                                 <input type="text" readonly class="form-control authorized-user-id" id="users_authorized_user_${i}_id" class="form-label">
+                            </div>
+                            <div class="form-group">
+                                <label for="users_authorized_user_${i}_username" class="form-label">${__("users.script.username")}</label>
+                                <input type="text" class="form-control" id="users_authorized_user_${i}_username" class="form-label">
                             </div>
                             <div class="form-group">
                                 <label for="users_authorized_user_${i}_display_name" class="form-label">${__("users.script.display_name")}</label>
@@ -174,9 +178,6 @@ function generate_user_ui(user: User, password: string) {
                                 </div>
                             </div>
                         </div>
-                        <div class="card-footer">
-                            <small id="users_authorized_user_${i}_last_seen" style="visibility: hidden;">${__("users.script.last_seen_unknown")}</small>
-                        </div>
                     </div>
                 </div>`;
     $('#users_add_user_card').before(result);
@@ -184,7 +185,7 @@ function generate_user_ui(user: User, password: string) {
     $(`#users_authorized_user_${i}_roles`).val(user.roles);
     util.setNumericInput(`users_authorized_user_${i}_current`, user.current / 1000, 3);
     $(`#users_authorized_user_${i}_display_name`).val(user.display_name);
-    $(`#users_authorized_user_${i}_username`).html(user.username);
+    $(`#users_authorized_user_${i}_username`).val(user.username);
     $(`#users_authorized_user_${i}_password`).val(password)
     $(`#users_authorized_user_${i}_show_password`).on("change", util.toggle_password_fn(`#users_authorized_user_${i}_password`));
     $(`#users_authorized_user_${i}_clear_password`).on("change", util.clear_password_fn(`#users_authorized_user_${i}_password`, __("users.script.login_disabled")));
@@ -221,17 +222,20 @@ function update_users_config(force: boolean) {
             authorized_users += `<div class="col mb-4" ${i == 0 ? "hidden" : ""}>
                     <div class="card h-100">
                         <div class="card-header d-flex justify-content-between align-items-center">
-                            <span class="h5" id="users_authorized_user_${i}_username" style="margin-bottom: 0"></span>
-                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                            <span data-feather="user"></span>
+                            <button type="button" class="btn btn-sm btn-outline-dark"
                                 id="users_authorized_user_${i}_remove">
-                                <span data-feather="user-x"></span>
+                                <span data-feather="user-x" class="mr-2"></span><span style="font-size: 1rem; vertical-align: middle;">${__("users.script.delete")}</span>
                             </button>
                         </div>
-
                         <div class="card-body">
                             <div class="form-group" hidden>
                                 <label for="users_authorized_user_${i}_id" class="form-label">${__("users.script.id")}</label>
                                 <input type="text" readonly class="form-control authorized-user-id" id="users_authorized_user_${i}_id" class="form-label">
+                            </div>
+                            <div class="form-group">
+                                <label for="users_authorized_user_${i}_username" class="form-label">${__("users.script.username")}</label>
+                                <input type="text" class="form-control" id="users_authorized_user_${i}_username" class="form-label">
                             </div>
                             <div class="form-group">
                                 <label for="users_authorized_user_${i}_display_name" class="form-label">${__("users.script.display_name")}</label>
@@ -267,26 +271,21 @@ function update_users_config(force: boolean) {
                                 </div>
                             </div>
                         </div>
-                        <div class="card-footer">
-                            <small id="users_authorized_user_${i}_last_seen" style="visibility: hidden;">${__("users.script.last_seen_unknown")}</small>
-                        </div>
                     </div>
                 </div>`;
         }
         authorized_users += `<div class="col mb-4" id="users_add_user_card">
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <span class="h5" style="margin-bottom: 0">${__("users.script.add_user")}</span>
-                <button type="button" class="btn btn-sm btn-outline-secondary" style="visibility: hidden;">
-                        <span data-feather="trash-2"></span>
-                </button>
+                <span data-feather="user-plus"></span>
+                <button type="button" class="btn btn-sm btn-outline-dark"
+                                id="blah" disabled style="visibility: hidden;">
+                                <span data-feather="user-x" class="mr-2"></span><span style="font-size: 1rem; vertical-align: middle;" data-i18n="users.script.delete"></span>
+                            </button>
             </div>
             <div class="card-body">
-                <button id="users_add_user" type="button" class="btn btn-light btn-lg btn-block" style="height: 100%;" data-toggle="modal" data-target="#users_add_user_modal"><span data-feather="user-plus"></span></button>
+                <button id="users_add_user" type="button" class="btn btn-light btn-lg btn-block" style="height: 100%;" data-toggle="modal" data-target="#users_add_user_modal">${__("users.script.add_user")}</button>
                 <span id="users_add_user_disabled" hidden>${__("users.script.add_user_disabled_prefix") + (MAX_ACTIVE_USERS - 1 /* anonymous */) + __("users.script.add_user_disabled_suffix")}</span>
-            </div>
-            <div class="card-footer">
-                <small style="visibility: hidden;">${__("users.script.last_seen_unknown")}</small>
             </div>
         </div>
     </div>`;
@@ -311,7 +310,7 @@ function update_users_config(force: boolean) {
         $(`#users_authorized_user_${i}_roles`).val(s.roles);
         util.setNumericInput(`users_authorized_user_${i}_current`, s.current / 1000, 3);
         $(`#users_authorized_user_${i}_display_name`).val(s.display_name);
-        $(`#users_authorized_user_${i}_username`).html(s.username);
+        $(`#users_authorized_user_${i}_username`).val(s.username);
         $(`#users_authorized_user_${i}_show_password`).on("change", util.toggle_password_fn(`#users_authorized_user_${i}_password`));
         $(`#users_authorized_user_${i}_clear_password`).on("change", util.clear_password_fn(`#users_authorized_user_${i}_password`, __("users.script.login_disabled")));
         $(`#users_authorized_user_${i}_clear_password`).prop("checked", (s.digest_hash === ""));

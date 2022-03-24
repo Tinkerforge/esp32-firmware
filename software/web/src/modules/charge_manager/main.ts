@@ -30,6 +30,10 @@ let charger_state_count = -1;
 
 const MAX_CONTROLLED_CHARGERS = 10;
 
+let charger_add_symbol = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-server" style=""><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line y1="18" y2="18" x1="18" x2="18.01"></line><line x1="19" x2="19" y1="3" y2="9"></line><line x1="22" x2="16" y1="6" y2="6"></line></svg>'
+let charger_delete_symbol = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-server mr-2" style=""><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line y1="18" y2="18" x1="18" x2="18.01"></line><line x1="17" x2="22" y1="4" y2="9"></line><line x1="22" x2="17" y1="4" y2="9"></line></svg>'
+let charger_symbol = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-server" style=""><rect x="2" y="8" width="20" height="8" rx="2" ry="2"></rect><line y1="12" y2="12" x1="18" x2="18.01"></line></svg>'
+
 function update_charge_manager_state() {
     let state = API.get('charge_manager/state');
 
@@ -52,7 +56,7 @@ function update_charge_manager_state() {
                     <p id="charge_manager_status_charger_${i}_info" class="card-text"></p>
                 </div>
                 <div class="card-footer">
-                    <small id="charge_manager_status_charger_${i}_details"></small>
+                    <span id="charge_manager_status_charger_${i}_details"></span>
                 </div>
             </div>
             `
@@ -138,16 +142,20 @@ function update_charge_manager_config(config: ChargeManagerConfig = API.get('cha
             charger_configs += `<div class="col mb-4">
                     <div class="card h-100">
                         <div class="card-header d-flex justify-content-between align-items-center">
-                            <span class="h5" id="charge_manager_config_charger_${i}_name" style="margin-bottom: 0"></span>
-                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                            ${charger_symbol}
+                            <button type="button" class="btn btn-sm btn-outline-dark"
                                 id="charge_manager_content_${i}_remove">
-                                <span data-feather="trash-2"></span>
+                                ${charger_delete_symbol}<span style="font-size: 1rem; vertical-align: middle;">${__("charge_manager.script.delete")}</span>
                             </button>
                         </div>
 
                         <div class="card-body">
+                        <div class="form-group">
+                                <label class="form-label" for="charge_manager_config_charger_${i}_name">${__("charge_manager.script.display_name")}</label>
+                                <input type="text" class="form-control" id="charge_manager_config_charger_${i}_name">
+                            </div>
                             <div class="form-group">
-                                <label for="charge_manager_config_charger_${i}_host">Host</label>
+                                <label class="form-label" for="charge_manager_config_charger_${i}_host">${__("charge_manager.script.host")}</label>
                                 <input type="text" class="form-control" id="charge_manager_config_charger_${i}_host">
                             </div>
                         </div>
@@ -157,13 +165,13 @@ function update_charge_manager_config(config: ChargeManagerConfig = API.get('cha
         charger_configs += `<div class="col mb-4">
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <span class="h5" style="margin-bottom: 0">${__("charge_manager.script.add_charger")}</span>
-                <button type="button" class="btn btn-sm btn-outline-secondary" style="visibility: hidden;">
-                        <span data-feather="trash-2"></span>
+                ${charger_add_symbol}
+                <button type="button" class="btn btn-sm btn-outline-dark" style="visibility: hidden;">
+                    ${charger_delete_symbol}
                 </button>
             </div>
             <div class="card-body">
-                <button id="charge_manager_add_charger" type="button" class="btn btn-light btn-lg btn-block" style="height: 100%;" data-toggle="modal" data-target="#charge_manager_add_charger_modal"><span data-feather="plus-circle"></span></button>
+                <button id="charge_manager_add_charger" type="button" class="btn btn-light btn-lg btn-block" style="height: 100%;" data-toggle="modal" data-target="#charge_manager_add_charger_modal">${__("charge_manager.script.add_charger")}</button>
                 <span id="charge_manager_add_charger_disabled" hidden>${__("charge_manager.script.add_charger_disabled_prefix") + MAX_CONTROLLED_CHARGERS + __("charge_manager.script.add_charger_disabled_suffix")}</span>
             </div>
         </div>
@@ -184,7 +192,7 @@ function update_charge_manager_config(config: ChargeManagerConfig = API.get('cha
 
     for (let i = 0; i < config.chargers.length; i++) {
         const s = config.chargers[i];
-        $(`#charge_manager_config_charger_${i}_name`).html(s.name);
+        $(`#charge_manager_config_charger_${i}_name`).val(s.name);
         $(`#charge_manager_config_charger_${i}_host`).val(s.host);
     }
 }
@@ -199,7 +207,7 @@ function collect_charge_manager_config(new_charger: ChargerConfig = null, remove
             continue;
         let c: ChargerConfig = {
             host: $(`#charge_manager_config_charger_${i}_host`).val().toString(),
-            name: $(`#charge_manager_config_charger_${i}_name`).html().toString(),
+            name: $(`#charge_manager_config_charger_${i}_name`).val().toString(),
         }
         chargers.push(c);
     }
