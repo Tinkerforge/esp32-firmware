@@ -23,17 +23,22 @@
 
 #include "bindings/bricklet_rgb_led_button.h"
 
-class Tutorial {
+class TutorialPhase4 {
 public:
-    Tutorial();
+    TutorialPhase4();
     void setup();
     void register_urls();
     void loop();
-    void update_config();
+    void set_bricklet_color(String color);
 
     bool initialized = false;
+
+    // ConfigRoot object to represent the color to be send to the frontend module
     ConfigRoot tutorial_config;
+    
+    // Extra ConfigRoot object to represent color updates received from the frontend module
     ConfigRoot tutorial_config_update;
-    ConfigRoot tutorial_state;
+    
+    // RGB LED Button Bricklet object to represent a connected Bricklet
     TF_RGBLEDButton rgb_led_button;
 };

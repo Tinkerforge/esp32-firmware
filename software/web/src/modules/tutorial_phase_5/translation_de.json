@@ -1,18 +1,18 @@
 {
-    "tutorial": {
+    "tutorial_phase_5": {
         "status": {
         },
         "navbar": {
-            "tutorial": "Tutorial"
+            "tutorial_phase_5": "Tutorial (Phase 5)"
         },
         "content": {
-            "tutorial": "Tutorial",
+            "tutorial_phase_5": "Tutorial (Phase 5)",
             "color": "Farbe",
             "button": "Taster",
             "button_unknown": "Unbekannt"
         },
         "script": {
-            "apply_config_failed": "Konnte Farbe nicht anwenden",
+            "save_config_failed": "Konnte Farbe nicht speichern",
             "button_pressed": "Gedrückt",
             "button_released": "Losgelassen"
         }

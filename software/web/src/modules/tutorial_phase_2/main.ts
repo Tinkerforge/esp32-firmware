@@ -22,31 +22,28 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-function update_config() {
-    let config = API.get("tutorial/config");
+function update_config()
+{
+    // Get current config from state "tutorial_phase_2/config" after receiving
+    // a change from the backend
+    let config = API.get("tutorial_phase_2/config");
 
-    $("#tutorial_color").val(config.color);
+    // Update HTML element with current color value
+    $("#tutorial_phase_2_color").val(config.color);
 }
 
-function apply_config() {
-    API.save("tutorial/config", {"color": $("#tutorial_color").val().toString()}, __("tutorial.script.apply_config_failed"));
+export function init()
+{
 }
 
-function update_state() {
-    let state = API.get("tutorial/state");
-
-    $("#tutorial_button").val(state.button ? __("tutorial.script.button_pressed") : __("tutorial.script.button_released"));
+export function add_event_listeners(source: API.APIEventTarget)
+{
+    // Create event listener for state "tutorial_phase_2/config" to call the
+    // update_config function if changes to that state are reported.
+    source.addEventListener("tutorial_phase_2/config", update_config);
 }
 
-export function init() {
-    $("#tutorial_color").on("change", apply_config);
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-    source.addEventListener("tutorial/config", update_config);
-    source.addEventListener("tutorial/state", update_state);
-}
-
-export function update_sidebar_state(module_init: any) {
-    $("#sidebar-tutorial").prop("hidden", !module_init.tutorial);
+export function update_sidebar_state(module_init: any)
+{
+    $("#sidebar-tutorial-phase-2").prop("hidden", !module_init.tutorial_phase_2);
 }
