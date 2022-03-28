@@ -39,20 +39,31 @@
         </div>
     </div>
 
-    <div class="form-group row border-bottom pb-2">
+    <div class="form-group row">
         <div class="col-lg-3 col-xl-2">
             <label for="charge_tracker_download" class="col-form-label">
                 <span class="form-label pr-2" data-i18n="charge_tracker.content.download"></span><span class="text-muted" data-i18n="charge_tracker.content.download_desc"></span>
             </label>
         </div>
         <div class="col-lg-9 col-xl-6">
-            <button type="button" id="charge_tracker_download" class="form-control btn btn-primary mb-1 d-flex align-items-center justify-content-center">
+            <button type="button" id="charge_tracker_download" class="form-control btn btn-primary d-flex align-items-center justify-content-center">
                 <span data-i18n="charge_tracker.content.download_btn" class="mr-2"></span>
                 <span data-feather="download"></span>
                 <span id="charge_tracker_download_spinner" class="ml-2 spinner-border spinner-border-sm" role="status" hidden>
                     <span class="sr-only">Loading...</span>
                 </span>
             </button>
+        </div>
+    </div>
+
+    <div class="form-group row border-bottom pb-2">
+        <div class="col-lg-3 col-xl-2">
+            <label for="charge_tracker_remove" class="col-form-label">
+                <span class="form-label pr-2" data-i18n="charge_tracker.content.remove"></span><span class="text-muted" data-i18n="charge_tracker.content.remove_desc"></span>
+            </label>
+        </div>
+        <div class="col-lg-9 col-xl-6">
+            <button id="charge_tracker_remove" type="button" class="form-control btn btn-danger mb-1 " data-i18n="charge_tracker.content.remove_btn"></button>
         </div>
     </div>
 
@@ -88,6 +99,27 @@
         </div>
         <div class="col-lg-9 col-xl-6">
             <div class="list-group" id="charge_tracker_last_charges">
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="charge_tracker_remove_modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <label class="form-label modal-title" data-i18n="charge_tracker.content.remove"></label>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" data-i18n="charge_tracker.content.charge_tracker_remove_modal_text"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                        data-dismiss="modal" data-i18n="charge_tracker.content.abort_remove"></button>
+                    <button id="charge_tracker_remove_confirm" type="button"
+                        class="btn btn-danger" data-i18n="charge_tracker.content.confirm_remove"></button>
+                </div>
             </div>
         </div>
     </div>

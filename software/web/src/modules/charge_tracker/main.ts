@@ -265,6 +265,20 @@ export function init() {
         $('#charge_tracker_download_spinner').prop("hidden", false);
         downloadChargeLog().finally(() => $('#charge_tracker_download_spinner').prop("hidden", true));
     });
+
+    $('#charge_tracker_remove').on("click", () => $('#charge_tracker_remove_modal').modal('show'));
+
+    $('#charge_tracker_remove_confirm').on("click", () =>
+        API.call('charge_tracker/remove_all_charges', {
+            "do_i_know_what_i_am_doing": true
+        }, __("charge_tracker.script.remove_failed"))
+        .then(() => {
+            util.postReboot(__("charge_tracker.script.remove_init"), __("util.reboot_text"));
+        })
+        .finally(() => {
+            $('#config_reset_modal').modal('hide');
+        })
+    );
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {

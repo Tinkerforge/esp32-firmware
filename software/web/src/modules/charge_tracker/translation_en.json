@@ -25,7 +25,14 @@
             "from": "from",
             "to": "to",
             "last_charges": "Last charges",
-            "last_charges_desc": "up to 30 charges are shown"
+            "last_charges_desc": "up to 30 charges are shown",
+            "remove": "Remove tracked charges",
+            "remove_desc": "{{{empty_text}}}",
+            "remove_btn": "Remove all tracked charges",
+
+            "charge_tracker_remove_modal_text": "All tracked charges and the username history will be removed. <b>This action cannot be undone!</b>",
+            "abort_remove": "Abort",
+            "confirm_remove": "Delete"
         },
         "script": {
             "csv_header_start": "Start time",
@@ -40,7 +47,10 @@
             "deleted_user": "Deleted user",
             "deleted_users": "deleted users",
             "all_users": "all users",
-            "unknown_charge_start": "Unknown start time"
+            "unknown_charge_start": "Unknown start time",
+
+            "remove_failed": "Failed to remove tracked charges",
+            "remove_init": "Removing tracked charges and rebooting..."
         }
     }
 }

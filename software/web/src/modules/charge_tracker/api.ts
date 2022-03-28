@@ -18,3 +18,7 @@ export interface state {
     tracked_charges: number,
     first_charge_timestamp: number,
 }
+
+export interface remove_all_charges {
+    do_i_know_what_i_am_doing: boolean
+}

@@ -25,7 +25,14 @@
             "from": "von",
             "to": "bis",
             "last_charges": "Letzte Ladevorgänge",
-            "last_charges_desc": "bis zu 30 Ladevorgänge werden angezeigt"
+            "last_charges_desc": "bis zu 30 Ladevorgänge werden angezeigt",
+            "remove": "Aufgezeichnete Ladungen löschen",
+            "remove_desc": "{{{empty_text}}}",
+            "remove_btn": "Alle aufgezeichneten Ladungen löschen",
+
+            "charge_tracker_remove_modal_text": "Alle aufgezeichneten Ladungen und der Benutzernamen-Verlauf werden gelöscht. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b>",
+            "abort_remove": "Abbrechen",
+            "confirm_remove": "Löschen"
         },
         "script": {
             "csv_header_start": "Startzeit",
@@ -40,7 +47,10 @@
             "deleted_user": "Gelöschter Benutzer",
             "deleted_users": "gelöschte Benutzer",
             "all_users": "alle Benutzer",
-            "unknown_charge_start": "Unbekannter Startzeitpunkt"
+            "unknown_charge_start": "Unbekannter Startzeitpunkt",
+
+            "remove_failed": "Löschen der aufgezeichneten Ladungen fehlgeschlagen",
+            "remove_init": "Lösche aufgezeichnete Ladungen und starte neu..."
         }
     }
 }
