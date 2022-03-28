@@ -45,7 +45,7 @@
     </form>
 
     <div class="modal fade" id="users_add_user_modal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                   <h5 class="modal-title" data-i18n="users.content.add_user_modal_title"></h5>
@@ -56,17 +56,25 @@
                 <div class="modal-body">
                     <form id="users_add_user_form" class="needs-validation" novalidate>
                         <div class="form-group">
-                            <label class="form-label" for="users_config_user_new_username" data-i18n="users.content.add_user_modal_username"></label>
-                            <input type="text" class="form-control" id="users_config_user_new_username" required maxlength="32">
+                            <label for="users_config_user_new_username">
+                                <span class="form-label pr-2" data-i18n="users.content.add_user_modal_username"></span>
+                                <span class="text-muted" ></span>
+                            </label>
+                            <input type="text" class="form-control" id="users_config_user_new_username" required maxlength="32" data-i18n="users.content.add_user_modal_username_desc" data-i18n-attr="placeholder" placeholder="">
+                            <div class="invalid-feedback" data-i18n="users.content.add_user_modal_username_invalid"></div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="users_config_user_new_display_name" data-i18n="users.content.add_user_modal_display_name"></label>
-                            <input type="text" class="form-control" id="users_config_user_new_display_name" required maxlength="32">
+                            <label for="users_config_user_new_display_name">
+                                <span class="form-label pr-2" data-i18n="users.content.add_user_modal_display_name"></span>
+                            </label>
+                            <input type="text" class="form-control" id="users_config_user_new_display_name" required maxlength="32" data-i18n="users.content.add_user_modal_display_name_desc" data-i18n-attr="placeholder" placeholder="">
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="users_config_user_new_display_name" data-i18n="users.content.add_user_modal_current"></label>
+                            <label for="users_config_user_new_current">
+                                <span class="form-label pr-2" data-i18n="users.content.add_user_modal_current"></span>
+                            </label>
                             <div class="input-group">
-                                <input id="users_config_user_new_current" class="form-control" type="number" min="6" max="32" step="any" required>
+                                <input id="users_config_user_new_current" class="form-control" type="number" min="6" max="32" step="any" data-i18n="users.content.add_user_modal_current_desc" data-i18n-attr="placeholder" placeholder="">
                                 <div class="input-group-append">
                                     <div class="input-group-text form-control">A</div>
                                 </div>
@@ -75,10 +83,9 @@
                         <div class="form-group">
                             <label for="users_config_user_new_password">
                                 <span class="form-label pr-2" data-i18n="users.content.add_user_modal_password"></span>
-                                <span class="text-muted" data-i18n="users.content.add_user_modal_password_desc"></span>
                             </label>
                             <div class="input-group">
-                                <input type="password" id="users_config_user_new_password" class="form-control" value="" maxlength="64"/>
+                                <input type="password" id="users_config_user_new_password" class="form-control" value="" maxlength="64" data-i18n="users.content.add_user_modal_password_desc" data-i18n-attr="placeholder" placeholder="">
                                 <div class="input-group-append">
                                     <div class="input-group-text custom-control custom-switch" style="padding-left: 2.5rem;">
                                         <input id="users_config_user_show_password" type="checkbox" class="custom-control-input" aria-label="Show password">

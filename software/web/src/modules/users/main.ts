@@ -370,21 +370,37 @@ export function init() {
             .finally(() => $('#users_save_spinner').prop('hidden', true));
     });
 
+    $('#users_add_user_form').on("input", () => {
+        let username = $('#users_config_user_new_username').val().toString();
+
+        if (API.get("users/config").users.some(u => u.username == username))
+            $('#users_config_user_new_username').addClass("is-invalid");
+        else
+            $('#users_config_user_new_username').removeClass("is-invalid");
+    })
+
     $('#users_add_user_form').on("submit", (event: Event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if ($('#users_config_user_new_username').hasClass("is-invalid"))
+            return;
 
         let form = <HTMLFormElement>$('#users_add_user_form')[0];
         form.classList.add('was-validated');
-        event.preventDefault();
-        event.stopPropagation();
 
         if (form.checkValidity() === false) {
             return;
         }
 
+        let current = $('#users_config_user_new_current').val();
+        if (current == "")
+            current = 32;
+
         generate_user_ui({
             id: -1,
             username: $('#users_config_user_new_username').val().toString(),
-            current: Math.round(<number>$('#users_config_user_new_current').val() * 1000),
+            current: Math.round(<number>current * 1000),
             display_name: $('#users_config_user_new_display_name').val().toString(),
             roles: 0xFFFF,
             digest_hash: ""

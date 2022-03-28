@@ -18,10 +18,14 @@
 
             "add_user_modal_title": "Add user",
             "add_user_modal_username": "Username",
+            "add_user_modal_username_desc": "to log into the web interface",
+            "add_user_modal_username_invalid": "Username already in use",
             "add_user_modal_display_name": "Display name",
+            "add_user_modal_display_name_desc": "Shown in web interface and charge log",
             "add_user_modal_current": "Maximum charge current",
+            "add_user_modal_current_desc": "not limited",
             "add_user_modal_password": "Password",
-            "add_user_modal_password_desc": "leave blank to disable web interface login for this user",
+            "add_user_modal_password_desc": "Login disabled",
             "add_user_modal_abort": "Discard",
             "add_user_modal_save": "Add"
         },
