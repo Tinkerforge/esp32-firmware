@@ -21,7 +21,6 @@
         },
         "content": {
             "evse": "Ladecontroller (EVSE)",
-            "state": "Zustand",
             "iec_state": "IEC-61851-Zustand",
             "iec_state_a": "A (getrennt)",
             "iec_state_b": "B (verbunden)",
