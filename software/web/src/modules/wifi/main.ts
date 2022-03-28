@@ -256,7 +256,7 @@ function wifi_cfg_toggle_static_ip_collapse(value: string) {
 function connect_to_ap(ssid: string, bssid: string, encryption: number, enable_bssid_lock: boolean) {
     $('#wifi_sta_ssid').val(ssid);
     $('#wifi_sta_bssid').val(bssid);
-    $('#wifi_sta_passphrase').prop("required", encryption != 0);
+    $('#wifi_sta_passphrase').prop("required", API.get("wifi/sta_config").ssid != ssid && encryption != 0);
     $('#wifi_sta_enable_sta').prop("checked", true);
     $('#wifi_sta_bssid_lock').prop("checked", enable_bssid_lock);
     return;
