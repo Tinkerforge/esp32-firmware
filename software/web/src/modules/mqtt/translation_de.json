@@ -21,7 +21,7 @@
             "topic_prefix": "<span class=\"form-label pr-2\">Topic-Präfix</span><span class=\"text-muted\">optional</span>",
             "topic_prefix_invalid": "Der Topic-Präfix darf nicht mit $ beginnen, oder ein # oder + enthalten.",
             "client_name": "<span class=\"form-label pr-2\">Client-ID</span>",
-            "interval": "<span class=\"form-label pr-2\">Maximales Sendeinterval</span><span class=\"text-muted\">Daten werden nur bei Änderung übertragen</span>",
+            "interval": "<span class=\"form-label pr-2\">Maximales Sendeintervall</span><span class=\"text-muted\">Daten werden nur bei Änderung übertragen</span>",
             "save": "Speichern"
         },
         "script": {
