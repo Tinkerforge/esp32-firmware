@@ -2,8 +2,8 @@
     "charge_manager": {
         "status": {
             "charge_manager": "Charge manager",
-            "not_configured": "Not configured",
-            "manager": "Active",
+            "not_configured": "Deactivated",
+            "manager": "Activated",
             "error": "Error",
             "managed_boxes": "Managed chargers",
             "available_current": "Available current",

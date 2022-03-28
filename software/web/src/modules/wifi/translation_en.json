@@ -2,7 +2,7 @@
     "wifi": {
         "status": {
             "wifi_connection": "WiFi connection",
-            "not_configured": "Not configured",
+            "not_configured": "Deactivated",
             "not_connected": "Not connected",
             "connecting": "Connecting",
             "connected": "Connected",

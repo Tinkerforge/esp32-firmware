@@ -2,7 +2,7 @@
     "mqtt": {
         "status": {
             "connection": "MQTT connection",
-            "not_configured": "Not configured",
+            "not_configured": "Deactivated",
             "not_connected": "Not connected",
             "connected": "Connected",
             "error": "Error"

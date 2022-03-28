@@ -2,7 +2,7 @@
     "ethernet": {
         "status": {
             "ethernet_connection": "LAN connection",
-            "not_configured": "Not configured",
+            "not_configured": "Deactivated",
             "not_connected": "Not connected",
             "connecting": "Connecting",
             "connected": "Connected"

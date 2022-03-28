@@ -2,8 +2,8 @@
     "charge_manager": {
         "status": {
             "charge_manager": "Lastmanager",
-            "not_configured": "Unkonfiguriert",
-            "manager": "Aktiv",
+            "not_configured": "Deaktiviert",
+            "manager": "Aktiviert",
             "error": "Fehler",
             "managed_boxes": "Kontrollierte Wallboxen",
             "available_current": "Verfügbarer Strom",
