@@ -32,7 +32,7 @@ public:
 
     // ConfigRoot object to represent the color to be send to the frontend module
     ConfigRoot tutorial_config;
-    
+
     // Extra ConfigRoot object to represent color updates received from the frontend module
     ConfigRoot tutorial_config_update;
 };
