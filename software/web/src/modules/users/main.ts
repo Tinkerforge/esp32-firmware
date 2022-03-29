@@ -41,12 +41,21 @@ function save_authentication_config() {
         __("users.script.reboot_content_changed"));
 }
 
+// This is a bit hacky: the user modification API can take some time because it writes the changed user/display name to flash
+// The API will block up to five seconds, but just to be sure we try this twice.
+function retry_once<T>(fn: () => Promise<T>, topic: string) {
+    return fn().catch(() => {
+        util.remove_alert(topic);
+        return fn();
+    });
+}
+
 function remove_user(id: number) {
-    return API.call("users/remove", {"id": id}, __("users.script.save_failed"));
+    return retry_once(() => API.call("users/remove", {"id": id}, __("users.script.save_failed")), "users_remove_failed");
 }
 
 function modify_user(user: User) {
-    return API.call("users/modify", user, __("users.script.save_failed"));
+    return retry_once(() => API.call("users/modify", user, __("users.script.save_failed")), "users_modify_failed");
 }
 
 let next_user_id = 0;
@@ -54,7 +63,7 @@ let next_user_id = 0;
 function add_user(user: User) {
     user.id = next_user_id;
     ++next_user_id;
-    return API.call("users/add", user, __("users.script.save_failed"));
+    return retry_once(() => API.call("users/add", user, __("users.script.save_failed")), "users_add_failed");
 }
 
 let authorized_users_count = -1;
