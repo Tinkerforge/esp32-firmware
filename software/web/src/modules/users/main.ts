@@ -375,6 +375,7 @@ export function init() {
 
         $('#users_save_spinner').prop('hidden', false);
         await save_users_config()
+            .then(() => $('#users_save_button').prop("disabled", true))
             .then(util.getShowRebootModalFn(__("users.script.reboot_content_changed")))
             .finally(() => $('#users_save_spinner').prop('hidden', true));
     });
