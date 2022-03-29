@@ -183,6 +183,8 @@ bool read_user_slot_info(UserSlotInfo *result)
     return result->version == USER_SLOT_INFO_VERSION;
 }
 
+volatile bool user_api_blocked = false;
+
 Users::Users()
 {
     user_config = Config::Object({
@@ -220,6 +222,16 @@ Users::Users()
         {"username", Config::Str("", 0, USERNAME_LENGTH)},
         {"digest_hash", Config::Str("", 0, 32)},
     }), [this](Config &add) -> String {
+        if (user_api_blocked) {
+            for(int i = 0; i < 50; ++i) {
+                vTaskDelay(100 / portTICK_PERIOD_MS);
+                if (!user_api_blocked)
+                    break;
+            }
+            if (user_api_blocked)
+                return "Still applying the last operation. Please retry.";
+        }
+
         if (add.get("id")->asUint() != user_config.get("next_user_id")->asUint())
             return "Can't add user. Wrong next user ID";
 
@@ -230,6 +242,7 @@ Users::Users()
             if (user_config.get("users")->get(i)->get("username")->asString() == add.get("username")->asString())
                 return "Can't add user. A user with this username already exists.";
 
+        user_api_blocked = true;
         return "";
     });
     add.permit_null_updates = false;
@@ -237,11 +250,22 @@ Users::Users()
     remove = ConfigRoot(Config::Object({
         {"id", Config::Uint8(0)}
     }), [this](Config &remove) -> String {
+        if (user_api_blocked) {
+            for(int i = 0; i < 50; ++i) {
+                vTaskDelay(100 / portTICK_PERIOD_MS);
+                if (!user_api_blocked)
+                    break;
+            }
+            if (user_api_blocked)
+                return "Still applying the last operation. Please retry.";
+        }
+
         if (remove.get("id")->asUint() == 0)
             return "The anonymous user can't be removed.";
 
         for (int i = 0; i < user_config.get("users")->count(); ++i) {
             if (user_config.get("users")->get(i)->get("id")->asUint() == remove.get("id")->asUint()) {
+                user_api_blocked = true;
                 return "";
             }
         }
@@ -365,6 +389,17 @@ void Users::setup()
 void Users::register_urls()
 {
     api.addRawCommand("users/modify", [this](char *c, size_t s) -> String {
+        if (user_api_blocked) {
+            for(int i = 0; i < 50; ++i) {
+                vTaskDelay(100 / portTICK_PERIOD_MS);
+                if (!user_api_blocked)
+                    break;
+            }
+            if (user_api_blocked)
+                return "Still applying the last operation. Please retry.";
+        }
+
+        // TODO: in which context is this callback executed? Is this racy with other reads/writes to the user config?
         StaticJsonDocument<96> doc;
 
         DeserializationError error = deserializeJson(doc, c, s);
@@ -443,6 +478,7 @@ void Users::register_urls()
 
         API::writeConfig("users/config", &user_config);
         this->rename_user(user->get("id")->asUint(), user->get("username")->asCStr(), user->get("display_name")->asCStr());
+        user_api_blocked = false;
     }, true);
 
     api.addCommand("users/remove", &remove, {}, [this](){
@@ -469,6 +505,7 @@ void Users::register_urls()
                 tags->get(i)->get("user_id")->updateUint(0);
         }
         API::writeConfig("nfc/config", &nfc.config);
+        user_api_blocked = false;
     }, true);
 
 
