@@ -506,17 +506,13 @@ uint8_t Users::next_user_id()
 
 void Users::rename_user(uint8_t user_id, const char *username, const char *display_name)
 {
+    char buf[USERNAME_ENTRY_LENGTH] = {0};
+    snprintf(buf, USERNAME_LENGTH, "%s", username);
+    snprintf(buf + USERNAME_LENGTH, DISPLAY_NAME_LENGTH, "%s", display_name);
+
     File f = LittleFS.open(USERNAME_FILE, "r+");
-    uint8_t buf[USERNAME_ENTRY_LENGTH] = {0};
-
     f.seek(user_id * USERNAME_ENTRY_LENGTH, SeekMode::SeekSet);
-    f.write(buf, USERNAME_ENTRY_LENGTH);
-
-    f.seek(user_id * USERNAME_ENTRY_LENGTH, SeekMode::SeekSet);
-    f.write((const uint8_t *)username, strnlen(username, USERNAME_LENGTH));
-
-    f.seek(user_id * USERNAME_ENTRY_LENGTH + USERNAME_LENGTH, SeekMode::SeekSet);
-    f.write((const uint8_t *)display_name, strnlen(display_name, DISPLAY_NAME_LENGTH));
+    f.write((const uint8_t *)buf, USERNAME_ENTRY_LENGTH);
 }
 
 // Only returns true if the triggered action was a charge start.
