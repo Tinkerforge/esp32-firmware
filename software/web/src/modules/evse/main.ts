@@ -60,7 +60,6 @@ function update_evse_hardware_configuration() {
     util.update_button_group("btn_group_has_lock_switch", cfg.has_lock_switch ? 1 : 0);
     util.update_button_group("btn_group_jumper_config", cfg.jumper_configuration);
     $('#evse_version').val((cfg.evse_version / 10).toFixed(1));
-    $('#energy_meter_type').val(__(`evse.script.meter_type_${cfg.energy_meter_type}`));
 
     $('#evse_row_lock_switch').prop('hidden', !cfg.has_lock_switch);
 }
