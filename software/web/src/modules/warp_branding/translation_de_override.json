@@ -16,8 +16,8 @@
     },
     "firmware_update": {
         "content": {
-            "factory_reset_modal_text": "Hiermit wird die gesamte Konfiguration auf den Auslieferungszustand zurückgesetzt. Alle aufgezeichneten Ladungen gehen verloren. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Die Wallbox öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus der beiliegenden Betriebsanleitung. Fortfahren?",
-            "config_reset_modal_text": "Hiermit wird nur die Konfiguration auf den Auslieferungszustand zurückgesetzt. Aufgezeichneten Ladungen bleiben erhalten. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Die Wallbox öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus der beiliegenden Betriebsanleitung. Fortfahren?",
+            "factory_reset_modal_text": "Hiermit wird die gesamte Konfiguration auf den Werkszustand zurückgesetzt. Alle aufgezeichneten Ladungen gehen verloren. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Die Wallbox öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus der beiliegenden Betriebsanleitung. Fortfahren?",
+            "config_reset_modal_text": "Hiermit wird nur die Konfiguration auf den Werkszustand zurückgesetzt. Aufgezeichneten Ladungen bleiben erhalten. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Die Wallbox öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus der beiliegenden Betriebsanleitung. Fortfahren?",
             "reboot_desc": "eine laufende Ladung wird nicht unterbrochen",
             "factory_reset_desc": "löscht die Konfiguration und alle aufgezeichneten Ladungen",
             "config_reset_desc": "aufgezeichnete Ladungen bleiben erhalten"
