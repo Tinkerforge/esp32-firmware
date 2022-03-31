@@ -183,16 +183,13 @@ outer_loop:
 
     let cfg = API.get("nfc/config");
     for(let i = 0; i < current_nfc_config.authorized_tags.length; ++i) {
-        console.log(i);
         let tag = current_nfc_config.authorized_tags[i];
         let auth_seen_idx = auth_seen_ids.indexOf(i);
 
         if (auth_seen_idx >= 0) {
             $(`#nfc_authorized_tag_${i}_last_seen`).html(__("nfc.content.last_seen") + util.format_timespan(Math.floor(auth_seen_tags[auth_seen_idx].last_seen / 1000)) + __("nfc.content.last_seen_suffix"));
-            console.log("seen");
         } else {
             $(`#nfc_authorized_tag_${i}_last_seen`).html(__("nfc.script.not_seen"));
-            console.log("not seen");
         }
     }
 
