@@ -26,6 +26,8 @@ import feather from "../../ts/feather";
 
 import YaMD5 from "../../ts/yamd5";
 
+import {getAllUsernames} from "../charge_tracker/main";
+
 declare function __(s: string): string;
 
 const MAX_ACTIVE_USERS = 16;
@@ -383,18 +385,36 @@ export function init() {
     $('#users_add_user_form').on("input", () => {
         let username = $('#users_config_user_new_username').val().toString();
 
-        if (API.get("users/config").users.some(u => u.username == username))
+        if (API.get("users/config").users.some(u => u.username == username)) {
             $('#users_config_user_new_username').addClass("is-invalid");
+            $('#users_config_user_new_username_feedback').html(__("users.content.add_user_modal_username_invalid"));
+        }
         else
             $('#users_config_user_new_username').removeClass("is-invalid");
     })
 
-    $('#users_add_user_form').on("submit", (event: Event) => {
+    $('#users_add_user_form').on("submit", async (event: Event) => {
         event.preventDefault();
         event.stopPropagation();
 
         if ($('#users_config_user_new_username').hasClass("is-invalid"))
             return;
+
+        const [usernames, _] = await getAllUsernames().catch(err => {
+            util.add_alert("download-usernames", "danger", __("users.script.download_usernames_failed"), err);
+            return <[string[], string[]]>[null, null];
+        });
+
+        if (usernames == null)
+            return;
+
+        let username = $('#users_config_user_new_username').val().toString();
+
+        if (usernames.some(x => x == username)) {
+            $('#users_config_user_new_username_feedback').html(__("users.script.username_already_tracked"));
+            $('#users_config_user_new_username').addClass("is-invalid");
+            return;
+        }
 
         let form = <HTMLFormElement>$('#users_add_user_form')[0];
         form.classList.add('was-validated');
@@ -409,7 +429,7 @@ export function init() {
 
         generate_user_ui({
             id: -1,
-            username: $('#users_config_user_new_username').val().toString(),
+            username: username,
             current: Math.round(<number>current * 1000),
             display_name: $('#users_config_user_new_display_name').val().toString(),
             roles: 0xFFFF,

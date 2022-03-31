@@ -242,6 +242,17 @@ Users::Users()
             if (user_config.get("users")->get(i)->get("username")->asString() == add.get("username")->asString())
                 return "Can't add user. A user with this username already exists.";
 
+        {
+            char username[33] = {0};
+            File f = LittleFS.open(USERNAME_FILE, "r");
+            for(size_t i = 0; i < f.size(); i += USERNAME_ENTRY_LENGTH) {
+                f.seek(i);
+                f.read((uint8_t *) username, USERNAME_LENGTH);
+                if (add.get("username")->asString() == username)
+                    return "Can't add user. A user with this username already has tracked charges.";
+            }
+        }
+
         user_api_blocked = true;
         return "";
     });

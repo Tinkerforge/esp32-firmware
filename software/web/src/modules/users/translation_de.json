@@ -19,7 +19,7 @@
             "add_user_modal_title": "Benutzer hinzufügen",
             "add_user_modal_username": "Benutzername",
             "add_user_modal_username_desc": "zur Anmeldung im Webinterface",
-            "add_user_modal_username_invalid": "Benutzername ist bereits vergeben",
+            "add_user_modal_username_invalid": "Benutzername ist bereits vergeben (aktiver Nutzer)",
             "add_user_modal_display_name": "Anzeigename",
             "add_user_modal_display_name_desc": "zur Anzeige im Ladeprotokoll und Webinterface",
             "add_user_modal_current": "Maximaler Ladestrom",
@@ -43,7 +43,9 @@
             "unchanged": "unverändert",
             "reboot_content_changed": "Benutzereinstellungen",
             "login_disabled": "Anmeldung deaktiviert",
-            "save_failed": "Speichern der Benutzereinstellungen fehlgeschlagen."
+            "save_failed": "Speichern der Benutzereinstellungen fehlgeschlagen.",
+            "username_already_tracked": "Benutzername ist bereits vergeben (in aufgezeichneten Ladevorgängen)",
+            "download_usernames_failed": "Herunterladen der verwendeten Benutzernamen in aufgezeichneten Ladevorgängen fehlgeschlagen"
         }
     }
 }

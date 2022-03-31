@@ -102,28 +102,44 @@ function to_csv_line(vals: string[]) {
     return line.join(",") + "\r\n";
 }
 
-async function downloadChargeLog() {
-    let usernames: string[] = [];
-    let display_names: string[] = [];
-
-    await fetch('/users/all_usernames')
+export function getAllUsernames() {
+    return fetch('/users/all_usernames')
         .then(response => response.arrayBuffer())
         .then(buffer => {
+            let usernames: string[] = [];
+            let display_names: string[] = [];
+
             if (buffer.byteLength != 256 * 64) {
                 console.log("Unexpected length of all_usernames!");
-                return;
+                return [null, null];
             }
 
             const decoder = new TextDecoder();
             for(let i = 0; i < 256; ++i) {
                 let view = new DataView(buffer, i * 64, 32);
-                usernames.push(decoder.decode(view).replace(/\0/g, ""));
+                let username = decoder.decode(view).replace(/\0/g, "");
 
                 view = new DataView(buffer, i * 64 + 32, 32);
-                display_names.push(decoder.decode(view).replace(/\0/g, ""));
+                let display_name = decoder.decode(view).replace(/\0/g, "");
+
+                if (username != "" || display_name != "") {
+                    usernames.push(username);
+                    display_names.push(username);
+                }
             }
-        })
-        .catch(err => console.log(err));
+            return [usernames, display_names];
+        });
+}
+
+async function downloadChargeLog() {
+    const [usernames, display_names] = await getAllUsernames()
+        .catch(err => {
+            util.add_alert("download-charge-log", "danger", __("charge_tracker.script.download_charge_log_failed"), err);
+            return [null, null];
+        });
+
+    if (usernames == null || display_names == null)
+        return;
 
     await fetch('/charge_tracker/charge_log')
         .then(response => response.arrayBuffer())
@@ -223,7 +239,7 @@ async function downloadChargeLog() {
             let t = (new Date()).toISOString().replace(/:/gi, "-").replace(/\./gi, "-");
             util.downloadToFile(result, "charge-log", "csv", "text/csv; charset=utf-8; header=present");
         })
-        .catch(err => console.log(err));
+        .catch(err => util.add_alert("download-charge-log", "danger", __("charge_tracker.script.download_charge_log_failed"), err));
 }
 
 function update_current_charge() {

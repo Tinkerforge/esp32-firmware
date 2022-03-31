@@ -50,7 +50,8 @@
             "unknown_charge_start": "Unbekannter Startzeitpunkt",
 
             "remove_failed": "Löschen der aufgezeichneten Ladungen fehlgeschlagen",
-            "remove_init": "Lösche aufgezeichnete Ladungen und starte neu..."
+            "remove_init": "Lösche aufgezeichnete Ladungen und starte neu...",
+            "download_charge_log_failed": "Herunterladen der aufgezeichneten Ladungen fehlgeschlagen"
         }
     }
 }
