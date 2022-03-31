@@ -46,6 +46,7 @@ public:
     void removeOldRecords();
     bool setupRecords();
     void updateState();
+    bool is_user_tracked(uint8_t user_id);
 
     size_t completeRecordsInLastFile();
     bool currentlyCharging();

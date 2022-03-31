@@ -169,13 +169,71 @@ void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end)
     updateState();
 }
 
+bool ChargeTracker::is_user_tracked(uint8_t user_id) {
+    const size_t user_id_offset = offsetof(ChargeStart, user_id);
+
+    for (int file = this->first_charge_record; file <= this->last_charge_record; ++file) {
+        File f = LittleFS.open(chargeRecordFilename(file));
+        size_t size = f.size();
+        // LittleFS caches internally, so we can read single bytes without a huge performance loss.
+        for(size_t i = 0; i < size; i += CHARGE_RECORD_SIZE) {
+            f.seek(i + user_id_offset);
+            int read_user_id = f.read();
+            if (read_user_id < 0)
+                continue;
+            if (user_id == read_user_id)
+                return true;
+        }
+    }
+    return false;
+}
+
 void ChargeTracker::removeOldRecords()
 {
-    while (this->last_charge_record - this->first_charge_record > 30) {
+    const size_t user_id_offset = offsetof(ChargeStart, user_id);
+
+    uint32_t users_to_delete[8] = {0}; // one bit per user
+
+    while (this->last_charge_record - this->first_charge_record >= 30) {
         String name = chargeRecordFilename(this->first_charge_record);
         logger.printfln("Got %u charge records. Dropping the first one (%s)", this->last_charge_record - this->first_charge_record, name.c_str());
+        {
+            File f = LittleFS.open(name, "r");
+            size_t size = f.size();
+            for(size_t i = 0; i < size; i += CHARGE_RECORD_SIZE) {
+                f.seek(i + user_id_offset);
+                int x = f.read();
+                if (x < 0)
+                    continue;
+                uint8_t user_id = x;
+                users_to_delete[user_id / 32] |= (1 << (user_id % 32));
+            }
+        }
         LittleFS.remove(name);
         ++this->first_charge_record;
+    }
+
+    //users_to_delete has now set a bit for every user_id that was used in the deleted charge records.
+    //Clear this bit for every user that is still used in the current charge records.
+    for (int file = this->first_charge_record; file < this->last_charge_record; ++file) {
+        File f = LittleFS.open(chargeRecordFilename(file));
+        size_t size = f.size();
+        // LittleFS caches internally, so we can read single bytes without a huge performance loss.
+        for(size_t i = 0; i < size; i += CHARGE_RECORD_SIZE) {
+            f.seek(i + user_id_offset);
+            int x = f.read();
+            if (x < 0)
+                continue;
+            uint8_t user_id = x;
+            users_to_delete[user_id / 32] &= ~(1 << (user_id % 32));
+        }
+    }
+
+    // Now only users that are save to remove remain.
+    for(int user_id = 0; user_id < 256; ++user_id) {
+        if ((users_to_delete[user_id / 32] & (1 << (user_id % 32))) != 0) {
+            users.remove_from_username_file(user_id);
+        }
     }
 }
 
