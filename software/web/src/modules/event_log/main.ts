@@ -27,7 +27,7 @@ declare function __(s: string): string;
 function load_event_log() {
     $.get("/event_log")
                .done((result) => {
-                   $('#event_log_content').html(result);
+                   $('#event_log_content').val(result);
                    util.remove_alert("event_log_load_failed");
                 })
                .fail((xhr, status, error) => util.add_alert("event_log_load_failed", "alert-danger", __("event_log.script.load_event_log_error"), error + ": " + xhr.responseText))
