@@ -50,7 +50,8 @@
             "unknown_charge_start": "Unknown start time",
 
             "remove_failed": "Failed to remove tracked charges",
-            "remove_init": "Removing tracked charges and rebooting..."
+            "remove_init": "Removing tracked charges and rebooting...",
+            "download_charge_log_failed": "Failed to download tracked charges"
         }
     }
 }
