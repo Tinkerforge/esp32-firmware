@@ -133,22 +133,33 @@ def exists_evse_test_report(evse_uid):
                 return True
     return False
 
+def retry_wrapper(fn, s):
+    for i in range(3):
+        try:
+            return fn()
+        except Exception as e:
+            print("Failed to {}. ".format(s),end='')
+            if i == 2:
+                print("(3/3) Giving up.")
+                raise e
+            print("({}/3). Retrying in 3 seconds.".format(i + 1))
+            time.sleep(3)
 
 def is_front_panel_button_pressed():
     global evse
-    return evse.get_low_level_state().gpio[6]
+    return retry_wrapper(lambda: evse.get_low_level_state().gpio[6], "check if front panel button is pressed")
 
 def get_iec_state():
     global evse
-    return chr(ord('A') + evse.get_state().iec61851_state)
+    return retry_wrapper(lambda: chr(ord('A') + evse.get_state().iec61851_state), "get IEC state")
 
 def reset_dc_fault():
     global evse
-    return evse.reset_dc_fault_current(0xDC42FA23)
+    return retry_wrapper(lambda: evse.reset_dc_fault_current(0xDC42FA23), "reset DC fault")
 
 def has_evse_error():
     global evse
-    return evse.get_state().error_state != 0
+    return retry_wrapper(lambda: evse.get_state().error_state != 0, "get EVSE error state")
 
 def led_wrap():
     stage3 = Stage3(is_front_panel_button_pressed_function=is_front_panel_button_pressed, get_iec_state_function=get_iec_state, reset_dc_fault_function=reset_dc_fault, has_evse_error_function=has_evse_error)
