@@ -58,7 +58,7 @@ NTP::NTP()
         {"enable", Config::Bool(true)},
         {"use_dhcp", Config::Bool(true)},
         {"timezone", Config::Str("Europe/Berlin", 0, 32)}, // Longest is America/Argentina/ComodRivadavia = 32 chars
-        {"server", Config::Str("", 0, 64)},
+        {"server", Config::Str("pool.ntp.org", 0, 64)}, // We've applied for a vendor zone, however this seems to take quite a while. Use the pool for now.
     }), [](Config &conf) -> String {
         if (lookup_timezone(conf.get("timezone")->asCStr()) == nullptr)
             return "Can't update config: Failed to look up timezone.";
