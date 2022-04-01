@@ -439,6 +439,24 @@ void Users::register_urls()
             return "Can't modify user. User with this ID not found.";
         }
 
+        for(int i = 0; i < user_config.get("users")->count(); ++i) {
+            if (user_config.get("users")->get(i)->get("username")->asString() == doc["username"]) {
+                return "Can't modify user. Another user with the same username already exists.";
+            }
+        }
+
+        char username[33] = {0};
+        File f = LittleFS.open(USERNAME_FILE, "r");
+        for(size_t i = 0; i < f.size(); i += USERNAME_ENTRY_LENGTH) {
+            if (i == id)
+                continue;
+
+            f.seek(i);
+            f.read((uint8_t *) username, USERNAME_LENGTH);
+            if (doc["username"].as<String>() == username)
+                return "Can't modify user. A user with this username already has tracked charges.";
+        }
+
         if (doc["roles"] != nullptr)
             user->get("roles")->updateUint((uint32_t) doc["roles"]);
 
