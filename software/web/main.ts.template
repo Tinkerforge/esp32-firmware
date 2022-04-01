@@ -26,10 +26,21 @@ $('.navbar-collapse a').on("click", function () {
     $(".navbar-collapse").collapse('hide');
 });
 
+let first_module_init = true;
+
 function update_modules() {
     let module_init = API.get('info/modules');
     for (let m of modules) {
         m.update_sidebar_state(module_init);
+    }
+
+    if (first_module_init) {
+        let hash = window.location.hash;
+        if (hash == "")
+            hash = "#status";
+        $(`a[href="${hash}"]`).click();
+        $(`a[href="${hash}"]`).parents(".nav-nested.collapse").collapse('show');
+        first_module_init = false;
     }
 }
 
@@ -149,6 +160,23 @@ $(window).on('pageshow', (ev) => {
     $('a[data-toggle="tab"]').on('show.bs.tab', () => {
         $('a[data-toggle="tab"]').not(<Element>event.target).removeClass("active");
         $('a[data-toggle="tab"]').not(<Element>event.target).trigger("hidden.bs.tab");
+    });
+
+    window.addEventListener("hashchange", (event) => {
+        if (event.oldURL != event.newURL) {
+            let hash = window.location.hash;
+            if (hash == "")
+                hash = "#status";
+            $(`a[href="${hash}"]`).click();
+            $(`a[href="${hash}"]`).parents(".nav-nested.collapse").collapse('show');
+        }
+    });
+
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function() {
+        let hash = $(this).attr("href");
+        if (window.location.hash == "" && hash == "#status")
+            return;
+        window.location.hash = hash;
     });
 
     $('a[data-toggle="tab"]').on('shown.bs.tab', () => {
