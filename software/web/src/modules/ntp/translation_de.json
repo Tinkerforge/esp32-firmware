@@ -12,6 +12,7 @@
             "timezone": "Zeitzone",
             "use_browser_timezone": "Zeitzone aus Browser übernehmen",
             "server": "Zeitserver",
+            "server2": "Alternativer Zeitserver",
             "save": "Speichern"
         },
         "script": {

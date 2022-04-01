@@ -3,6 +3,7 @@ export interface config {
     use_dhcp: boolean,
     timezone: string,
     server: string
+    server2: string
 }
 
 export interface state {

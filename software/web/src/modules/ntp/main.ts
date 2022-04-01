@@ -49,6 +49,7 @@ function update_config(force: boolean = false) {
     $('#ntp_enabled').prop("checked", cfg.enable);
     $('#ntp_use_dhcp').prop("checked", cfg.use_dhcp);
     $('#ntp_server').val(cfg.server);
+    $('#ntp_server2').val(cfg.server2);
     update_timezone(cfg.timezone);
 }
 
@@ -63,7 +64,8 @@ function save_config() {
                 enable: $('#ntp_enabled').prop("checked"),
                 use_dhcp: $('#ntp_use_dhcp').prop("checked"),
                 timezone: timezone,
-                server: $('#ntp_server').val().toString()
+                server: $('#ntp_server').val().toString(),
+                server2: $('#ntp_server2').val().toString()
             },
             __("ntp.script.save_failed"),
             __("ntp.script.reboot_content_changed"))

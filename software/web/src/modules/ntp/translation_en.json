@@ -12,6 +12,7 @@
             "timezone": "Time zone (not yet configurable)",
             "use_browser_timezone": "Use browser timezone",
             "server": "Time server",
+            "server2": "Alternative time server",
             "save": "Save"
         },
         "script": {

@@ -59,6 +59,7 @@ NTP::NTP()
         {"use_dhcp", Config::Bool(true)},
         {"timezone", Config::Str("Europe/Berlin", 0, 32)}, // Longest is America/Argentina/ComodRivadavia = 32 chars
         {"server", Config::Str("ptbtime1.ptb.de", 0, 64)}, // We've applied for a vendor zone @ pool.ntp.org, however this seems to take quite a while. Use the ptb servers for now.
+        {"server2", Config::Str("ptbtime2.ptb.de", 0, 64)},
     }), [](Config &conf) -> String {
         if (lookup_timezone(conf.get("timezone")->asCStr()) == nullptr)
             return "Can't update config: Failed to look up timezone.";
@@ -83,7 +84,8 @@ void NTP::setup()
     ntp_state = &state;
     sntp_set_time_sync_notification_cb(ntp_sync_cb);
 
-    sntp_servermode_dhcp(config.get("use_dhcp")->asBool() ? 1 : 0);
+    bool dhcp = config.get("use_dhcp")->asBool();
+    sntp_servermode_dhcp(dhcp ? 1 : 0);
 
     esp_netif_init();
     if (sntp_enabled()) {
@@ -91,7 +93,9 @@ void NTP::setup()
     }
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
     if (config.get("server")->asString() != "")
-        sntp_setservername(0, config.get("server")->asCStr());
+        sntp_setservername(dhcp ? 1 : 0, config.get("server")->asCStr());
+    if (config.get("server2")->asString() != "")
+        sntp_setservername(dhcp ? 2 : 1, config.get("server2")->asCStr());
 
     sntp_init();
     const char *tzstring = lookup_timezone(config.get("timezone")->asCStr());
