@@ -86,7 +86,10 @@ void NTP::setup()
     if (sntp_enabled()) {
         sntp_stop();
     }
+
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
+    sntp_set_sync_mode(SNTP_SYNC_MODE_IMMED);
+
     if (config.get("server")->asString() != "")
         sntp_setservername(dhcp ? 1 : 0, config.get("server")->asCStr());
     if (config.get("server2")->asString() != "")
