@@ -7,6 +7,5 @@ export interface config {
 }
 
 export interface state {
-    synced: boolean,
-    server: string
+    synced: boolean
 }

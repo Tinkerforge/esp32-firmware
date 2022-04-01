@@ -45,11 +45,7 @@ void ntp_sync_cb(struct timeval *t)
         logger.printfln("NTP synchronized at %lu,%03lu!", secs, ms);
     }
 
-    char buf[INET6_ADDRSTRLEN] = {0};
-    ipaddr_ntoa_r(sntp_getserver(0), buf, sizeof(buf));
-
     ntp_state->get("synced")->updateBool(true);
-    ntp_state->get("server")->updateString(buf);
 }
 
 NTP::NTP()
@@ -67,8 +63,7 @@ NTP::NTP()
     }};
 
     state = Config::Object({
-        {"synced", Config::Bool(false)},
-        {"server", Config::Str("", 0, INET6_ADDRSTRLEN)}
+        {"synced", Config::Bool(false)}
     });
 }
 
