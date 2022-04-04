@@ -290,7 +290,7 @@ export function init() {
             util.postReboot(__("charge_tracker.script.remove_init"), __("util.reboot_text"));
         })
         .finally(() => {
-            $('#config_reset_modal').modal('hide');
+            $('#charge_tracker_remove_modal').modal('hide');
         })
     );
 }
