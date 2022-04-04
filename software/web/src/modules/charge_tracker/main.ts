@@ -122,10 +122,8 @@ export function getAllUsernames() {
                 view = new DataView(buffer, i * 64 + 32, 32);
                 let display_name = decoder.decode(view).replace(/\0/g, "");
 
-                if (username != "" || display_name != "") {
-                    usernames.push(username);
-                    display_names.push(username);
-                }
+                usernames.push(username);
+                display_names.push(display_name);
             }
             return [usernames, display_names];
         });
