@@ -678,7 +678,7 @@ bool Users::stop_charging(uint8_t user_id, bool force)
         // should be aborted. It is safe to allow tracking a charge end in this case for any authorized card,
         // as this should never happen anyway.
         // Allow forcing the endCharge tracking. This is necessary in the case that the car was disconnected.
-        // The user is then autorized at the other end of the charging cable.
+        // The user is then authorized at the other end of the charging cable.
         if (!force && success && info.user_id != user_id)
             return false;
 
