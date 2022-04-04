@@ -237,7 +237,7 @@ async function downloadChargeLog() {
             let t = (new Date()).toISOString().replace(/:/gi, "-").replace(/\./gi, "-");
             util.downloadToFile(result, "charge-log", "csv", "text/csv; charset=utf-8; header=present");
         })
-        .catch(err => util.add_alert("download-charge-log", "danger", __("charge_tracker.script.download_charge_log_failed"), err));
+        .catch(err => util.add_alert("download-charge-log", "alert-danger", __("charge_tracker.script.download_charge_log_failed"), err));
 }
 
 function update_current_charge() {
