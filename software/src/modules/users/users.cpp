@@ -78,6 +78,16 @@ uint8_t get_iec_state()
     return 0;
 }
 
+uint8_t get_charger_state()
+{
+#if defined(MODULE_EVSE_AVAILABLE)
+    return evse.evse_state.get("charger_state")->asUint();
+#elif defined(MODULE_EVSE_V2_AVAILABLE)
+    return evse_v2.evse_state.get("charger_state")->asUint();
+#endif
+    return 0;
+}
+
 Config *get_user_slot()
 {
 #if defined(MODULE_EVSE_AVAILABLE)
@@ -323,7 +333,7 @@ void Users::setup()
     }
 
     bool charge_start_tracked = charge_tracker.currentlyCharging();
-    bool charging = get_iec_state() == IEC_STATE_C;
+    bool charging = get_charger_state() == 2 || get_charger_state() == 3;
 
     if (charge_start_tracked && !charging) {
         this->stop_charging(0, true);
