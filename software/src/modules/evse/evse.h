@@ -40,6 +40,13 @@
 #define IEC_STATE_C 2
 #define IEC_STATE_D 3
 #define IEC_STATE_EF 4
+
+#define CHARGER_STATE_NOT_PLUGGED_IN 0
+#define CHARGER_STATE_WAITING_FOR_RELEASE 1
+#define CHARGER_STATE_READY_TO_CHARGE 2
+#define CHARGER_STATE_CHARGING 3
+#define CHARGER_STATE_ERROR 4
+
 class EVSE : public DeviceModule<TF_EVSE,
                                  evse_bricklet_firmware_bin_data,
                                  evse_bricklet_firmware_bin_length,

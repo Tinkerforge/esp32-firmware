@@ -359,24 +359,32 @@ void Users::setup()
     }
 
     task_scheduler.scheduleWithFixedDelay([this](){
-        static uint8_t last_iec_state = get_iec_state();
+        static uint8_t last_charger_state = get_charger_state();
 
-        uint8_t iec_state = get_iec_state();
-        if (iec_state == last_iec_state)
+        uint8_t charger_state = get_charger_state();
+        if (charger_state == last_charger_state)
             return;
 
-        bool user_enabled = get_user_slot()->get("active")->asBool();
+        logger.printfln("Charger state changed from %u to %u", last_charger_state, charger_state);
+        last_charger_state = charger_state;
 
-        logger.printfln("IEC state changed from %u to %u", last_iec_state, iec_state);
-
-        if ((last_iec_state == IEC_STATE_A && iec_state == IEC_STATE_B) || iec_state == IEC_STATE_C) {
-            if (!user_enabled)
-                this->start_charging(0, 32000, CHARGE_TRACKER_AUTH_TYPE_NONE, nullptr);
-        } else if (iec_state == IEC_STATE_A) {
-            this->stop_charging(0, true);
+        // stop_charging and start_charging will check
+        // if a start/stop was already tracked, so it is safe
+        // to call those methods more often than needed.
+        switch(charger_state) {
+            case CHARGER_STATE_NOT_PLUGGED_IN:
+                this->stop_charging(0, true);
+                break;
+            case CHARGER_STATE_WAITING_FOR_RELEASE:
+                break;
+            case CHARGER_STATE_READY_TO_CHARGE:
+            case CHARGER_STATE_CHARGING:
+                if (!get_user_slot()->get("active")->asBool())
+                    this->start_charging(0, 32000, CHARGE_TRACKER_AUTH_TYPE_NONE, nullptr);
+                break;
+            case CHARGER_STATE_ERROR:
+                break;
         }
-
-        last_iec_state = iec_state;
     }, 1000, 1000);
 
     if (user_config.get("http_auth_enabled")->asBool()) {
