@@ -51,10 +51,10 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, ssid, stage3):
     is_basic = master is not None
 
     evse = BrickletEVSEV2(evse_enum.uid, ipcon)
-    has_meter = evse.get_energy_meter_state().available
+    jumper_config, has_lock_switch, evse_version, energy_meter_type = evse.get_hardware_configuration()
 
-    is_smart = not is_basic and not has_meter
-    is_pro = not is_basic and has_meter
+    is_smart = not is_basic and energy_meter_type == 0
+    is_pro = not is_basic and energy_meter_type != 0
 
     d = {"P": "Pro", "S": "Smart", "B": "Basic"}
 
@@ -74,8 +74,6 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, ssid, stage3):
         result["master_uid"] = master.uid
         print("Master UID is {}".format(master.uid))
 
-    jumper_config, has_lock_switch = evse.get_hardware_configuration()
-
     if qr_power == "11" and jumper_config != 3:
         fatal_error("Wrong jumper config detected: {} but expected {} as the configured power is {} kW.".format(jumper_config, 3, qr_power))
 
@@ -88,7 +86,7 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, ssid, stage3):
 
     result["diode_checked"] = True
 
-    _configured, _incoming, outgoing, _managed = evse.get_max_charging_current()
+    outgoing = evse.get_charging_slot(1).max_current
     if qr_power == "11" and outgoing != 20000:
         fatal_error("Wrong type 2 cable config detected: Allowed current is {} but expected 20 A, as this is a 11 kW box.".format(outgoing / 1000))
     if qr_power == "22" and outgoing != 32000:
@@ -106,7 +104,7 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, ssid, stage3):
         if len(samples) < 2:
             fatal_error("Expected at least 10 samples but got {}".format(len(samples)))
 
-        error_count = evse.get_energy_meter_state().error_count
+        error_count = evse.get_energy_meter_errors()
         if any(x != 0 for x in error_count):
             fatal_error("Energy meter error count is {}, expected only zeros!".format(error_count))
 
@@ -120,7 +118,7 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, ssid, stage3):
         nfc_data = json.loads(nfc_str)
 
         if nfc_data[0]['tag_type'] != 2 or \
-           nfc_data[0]['tag_id'] != [0x04, 0xBA, 0x38, 0x42, 0xEF, 0x6C, 0x80] or \
+           nfc_data[0]['tag_id'] != "04:BA:38:42:EF:6C:80" or \
            nfc_data[0]['last_seen'] > 100:
             fatal_error("Did not find NFC tag: {}".format(nfc_str))
 
@@ -155,7 +153,7 @@ def get_iec_state():
 
 def reset_dc_fault():
     global evse
-    return retry_wrapper(lambda: evse.reset_dc_fault_current(0xDC42FA23), "reset DC fault")
+    return retry_wrapper(lambda: evse.reset_dc_fault_current_state(0xDC42FA23), "reset DC fault")
 
 def has_evse_error():
     global evse
@@ -464,20 +462,36 @@ def main(stage3):
 
         run_bricklet_tests(ipcon, result, qr_variant, qr_power, ssid, stage3)
 
-        print("Configuring tags      ")
+        print("Configuring users")
+        for i in range(3):
+            req = urllib.request.Request("http://{}/users/add".format(ssid),
+                                    data=json.dumps({
+                                        "id":1,
+                                        "roles": 2**32-1,
+                                        "current": 32000,
+                                        "display_name": "Benutzer {}".format(i),
+                                        "username": "user{}".format(i)
+                                    }).encode("utf-8"),
+                                    method='PUT',
+                                    headers={"Content-Type": "application/json"})
+            try:
+                with urllib.request.urlopen(req, timeout=6) as f:
+                    f.read()
+            except Exception as e:
+                fatal_error("Failed to configure user {}: {}!", i, e)
+
+        print("Configuring tags")
         req = urllib.request.Request("http://{}/nfc/config_update".format(ssid),
-                                 data=json.dumps({"require_tag_to_start":False,
-                                                  "require_tag_to_stop":False,
-                                                  "authorized_tags": [{
-                                                    "tag_name": "Tag 1",
+                                 data=json.dumps({"authorized_tags": [{
+                                                    "user_id": 1,
                                                     "tag_type": seen_tags[0].tag_type,
                                                     "tag_id": seen_tags[0].tag_id
                                                     }, {
-                                                    "tag_name": "Tag 2",
+                                                    "user_id": 2,
                                                     "tag_type": seen_tags[1].tag_type,
                                                     "tag_id": seen_tags[1].tag_id
                                                     }, {
-                                                    "tag_name": "Tag 3",
+                                                    "user_id": 3,
                                                     "tag_type": seen_tags[2].tag_type,
                                                     "tag_id": seen_tags[2].tag_id
                                                     }
