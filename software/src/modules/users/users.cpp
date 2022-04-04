@@ -349,7 +349,7 @@ void Users::setup()
     }
 
     task_scheduler.scheduleWithFixedDelay([this](){
-        static uint8_t last_iec_state = 0;
+        static uint8_t last_iec_state = get_iec_state();
 
         uint8_t iec_state = get_iec_state();
         if (iec_state == last_iec_state)
