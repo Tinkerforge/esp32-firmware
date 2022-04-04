@@ -641,7 +641,11 @@ bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::Co
     uint32_t tscs = get_low_level_state()->get("time_since_state_change")->asUint();
 
     switch (iec_state) {
-        case IEC_STATE_B: // State B: The user wants to start charging.
+        case IEC_STATE_B: // State B: The user wants to start charging. If we already have a tracked charge, stop charging to allow switching to another user.
+            if (charge_tracker.currentlyCharging()) {
+                this->stop_charging(user_id, false);
+                return false;
+            }
             return this->start_charging(user_id, current_limit, auth_type, auth_info);
         case IEC_STATE_C: // State C: The user wants to stop charging.
             // Debounce here a bit, an impatient user can otherwise accidentially trigger a stop if a start_charging takes too long.
