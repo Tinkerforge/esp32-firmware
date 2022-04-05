@@ -169,14 +169,15 @@ void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end)
     updateState();
 }
 
-bool ChargeTracker::is_user_tracked(uint8_t user_id) {
+bool ChargeTracker::is_user_tracked(uint8_t user_id)
+{
     const size_t user_id_offset = offsetof(ChargeStart, user_id);
 
     for (int file = this->first_charge_record; file <= this->last_charge_record; ++file) {
         File f = LittleFS.open(chargeRecordFilename(file));
         size_t size = f.size();
         // LittleFS caches internally, so we can read single bytes without a huge performance loss.
-        for(size_t i = 0; i < size; i += CHARGE_RECORD_SIZE) {
+        for (size_t i = 0; i < size; i += CHARGE_RECORD_SIZE) {
             f.seek(i + user_id_offset);
             int read_user_id = f.read();
             if (read_user_id < 0)
@@ -200,7 +201,7 @@ void ChargeTracker::removeOldRecords()
         {
             File f = LittleFS.open(name, "r");
             size_t size = f.size();
-            for(size_t i = 0; i < size; i += CHARGE_RECORD_SIZE) {
+            for (size_t i = 0; i < size; i += CHARGE_RECORD_SIZE) {
                 f.seek(i + user_id_offset);
                 int x = f.read();
                 if (x < 0)
@@ -219,7 +220,7 @@ void ChargeTracker::removeOldRecords()
         File f = LittleFS.open(chargeRecordFilename(file));
         size_t size = f.size();
         // LittleFS caches internally, so we can read single bytes without a huge performance loss.
-        for(size_t i = 0; i < size; i += CHARGE_RECORD_SIZE) {
+        for (size_t i = 0; i < size; i += CHARGE_RECORD_SIZE) {
             f.seek(i + user_id_offset);
             int x = f.read();
             if (x < 0)
@@ -230,7 +231,7 @@ void ChargeTracker::removeOldRecords()
     }
 
     // Now only users that are save to remove remain.
-    for(int user_id = 0; user_id < 256; ++user_id) {
+    for (int user_id = 0; user_id < 256; ++user_id) {
         if ((users_to_delete[user_id / 32] & (1 << (user_id % 32))) != 0) {
             users.remove_from_username_file(user_id);
         }
@@ -290,8 +291,8 @@ bool ChargeTracker::setupRecords()
     uint32_t last = found_blobs[found_blob_counter - 1];
 
     logger.printfln("Found %u records. First is %u, last is %u", found_blob_counter, first, last);
-    for(int i = 0; i < found_blob_counter - 1; ++i) {
-        if (found_blobs[i] + 1 != found_blobs[i+1]) {
+    for (int i = 0; i < found_blob_counter - 1; ++i) {
+        if (found_blobs[i] + 1 != found_blobs[i + 1]) {
             logger.printfln("Non-consecutive charge records found! (Next after %u is %u. Expected was %u", found_blobs[i], found_blobs[i+1], found_blobs[i] + 1);
             return false;
         }

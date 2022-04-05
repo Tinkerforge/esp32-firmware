@@ -55,7 +55,6 @@ static TF_Local local;
 
 ESP32EthernetBrick::ESP32EthernetBrick()
 {
-
 }
 
 void ESP32EthernetBrick::setup()
@@ -86,7 +85,6 @@ void ESP32EthernetBrick::setup()
 
 void ESP32EthernetBrick::register_urls()
 {
-
 }
 
 void ledBlink(int8_t led_pin, int interval, int blinks_per_interval, int off_time_ms)

@@ -64,12 +64,12 @@ void ScreenshotDataFaker::setup()
         LittleFS.mkdir("/charge-records");
         File file = LittleFS.open("/charge-records/charge-record-1.bin", "w");
         ChargeStart cs;
-        cs.timestamp_minutes = (BUILD_TIMESTAMP / 60 ) - 1540;
+        cs.timestamp_minutes = (BUILD_TIMESTAMP / 60) - 1540;
         cs.meter_start = 0;
         cs.user_id = 1;
 
         ChargeEnd ce;
-        ce.charge_duration = 256*60 + 27;
+        ce.charge_duration = 256 * 60 + 27;
         ce.meter_end = 36.913f;
 
         uint8_t buf[sizeof(ChargeStart)] = {0};
@@ -80,7 +80,7 @@ void ScreenshotDataFaker::setup()
         memcpy(buf2, &ce, sizeof(ce));
         file.write(buf2, sizeof(ce));
 
-        cs.timestamp_minutes = (BUILD_TIMESTAMP / 60 ) - 272;
+        cs.timestamp_minutes = (BUILD_TIMESTAMP / 60) - 272;
         cs.meter_start = ce.meter_end;
         cs.user_id = 2;
 
@@ -113,7 +113,7 @@ void ScreenshotDataFaker::register_urls()
 
 #if defined(MODULE_EVSE_V2_METER_AVAILABLE)
     evse_v2_meter.power_history.clear();
-    for(int i = 0; i < sizeof(meter_history)/sizeof(meter_history[0]); ++i)
+    for (int i = 0; i < sizeof(meter_history) / sizeof(meter_history[0]); ++i)
         evse_v2_meter.power_history.push(meter_history[i]);
 #endif
 }

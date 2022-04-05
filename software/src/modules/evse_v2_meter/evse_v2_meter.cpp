@@ -238,7 +238,7 @@ void EVSEV2Meter::register_urls()
         }
         buf_written += snprintf(buf + buf_written, buf_size - buf_written, "{\"samples_per_second\":%f,\"samples\":[%d", samples_per_second, val);
 
-        for(int i = 1; (i < interval_samples.used() - 1) && interval_samples.peek_offset(&val, i) && buf_written < buf_size; ++i) {
+        for (int i = 1; (i < interval_samples.used() - 1) && interval_samples.peek_offset(&val, i) && buf_written < buf_size; ++i) {
             buf_written += snprintf(buf + buf_written, buf_size - buf_written, ",%d", val);
         }
         if (buf_written < buf_size)

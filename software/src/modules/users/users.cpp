@@ -272,7 +272,7 @@ Users::Users()
         {"id", Config::Uint8(0)}
     }), [this](Config &remove) -> String {
         if (user_api_blocked) {
-            for(int i = 0; i < 50; ++i) {
+            for (int i = 0; i < 50; ++i) {
                 vTaskDelay(100 / portTICK_PERIOD_MS);
                 if (!user_api_blocked)
                     break;
@@ -603,7 +603,8 @@ void Users::rename_user(uint8_t user_id, const char *username, const char *displ
     f.write((const uint8_t *)buf, USERNAME_ENTRY_LENGTH);
 }
 
-void Users::remove_from_username_file(uint8_t user_id) {
+void Users::remove_from_username_file(uint8_t user_id)
+{
     Config *users = user_config.get("users");
     for (int i = 0; i < users->count(); ++i) {
         if (users->get(i)->get("id")->asUint() == user_id) {
