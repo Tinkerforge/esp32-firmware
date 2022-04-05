@@ -219,10 +219,18 @@ async function downloadChargeLog() {
                         username = usernames[user_id];
                     }
 
+                    let charged = (Number.isNaN(meter_start) || Number.isNaN(meter_end)) ? NaN : (meter_end - meter_start);
+                    let charged_string;
+                    if (charged == NaN || charged < 0) {
+                        charged_string = 'N/A';
+                    } else {
+                        charged_string = util.toLocaleFixed(charged, 3);
+                    }
+
                     let line = [
                         timestamp_min_to_date(timestamp_minutes),
                         display_name,
-                        (Number.isNaN(meter_start) || Number.isNaN(meter_end)) ? 'N/A' : util.toLocaleFixed(meter_end - meter_start, 3),
+                        charged_string,
                         charge_duration.toString(),
                         "",
                         Number.isNaN(meter_start) ? 'N/A' : util.toLocaleFixed(meter_start, 3),
