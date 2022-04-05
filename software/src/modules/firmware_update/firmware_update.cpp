@@ -178,7 +178,7 @@ String FirmwareUpdate::check_firmware_info(bool firmware_info_found, bool detect
             char buf[128];
             snprintf(buf, sizeof(buf)/sizeof(buf[0]), "{\"error\":\"firmware_update.script.downgrade\", \"fw\":\"%u.%u.%u\", \"installed\":\"%u.%u.%u\"}",
                      info.fw_version[0], info.fw_version[1], info.fw_version[2],
-                     BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH);
+                     (uint8_t) BUILD_VERSION_MAJOR, (uint8_t) BUILD_VERSION_MINOR, (uint8_t) BUILD_VERSION_PATCH);
             return String(buf);
         }
     }
