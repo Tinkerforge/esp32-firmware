@@ -2,7 +2,7 @@
     "charge_tracker": {
         "status": {
             "last_charges": "Letzte Ladevorgänge",
-            "current_charge": "Laufende Ladung"
+            "current_charge": "Laufender Ladevorgang"
         },
         "navbar": {
             "charge_tracker": "Ladetracker"
@@ -13,24 +13,24 @@
             "download_desc": "CSV-Datei aller aufgezeichneten Ladevorgänge",
             "download_btn": "Ladelog herunterladen",
 
-            "tracked_charges": "Aufgezeichnete Ladungen",
+            "tracked_charges": "Aufgezeichnete Ladevorgänge",
             "tracked_charges_muted": "{{{empty_text}}}",
-            "first_charge_timestamp": "Älteste aufgezeichnete Ladung",
+            "first_charge_timestamp": "Ältester aufgezeichneter Ladevorgang",
             "first_charge_timestamp_muted": "{{{empty_text}}}",
             "user_filter": "Benutzerfilter",
-            "user_filter_muted": "CSV-Datei wird nur Ladungen des ausgewählten Benutzers beinhalten",
+            "user_filter_muted": "CSV-Datei wird nur Ladevorgänge des ausgewählten Benutzers beinhalten",
 
             "date_filter": "Zeitfilter",
-            "date_filter_muted": "CSV-Datei wird nur Ladungen in der ausgewählten Zeitspanne beinhalten",
+            "date_filter_muted": "CSV-Datei wird nur Ladevorgänge in der ausgewählten Zeitspanne beinhalten",
             "from": "von",
             "to": "bis",
             "last_charges": "Letzte Ladevorgänge",
             "last_charges_desc": "bis zu 30 Ladevorgänge werden angezeigt",
-            "remove": "Aufgezeichnete Ladungen löschen",
+            "remove": "Aufgezeichnete Ladevorgänge löschen",
             "remove_desc": "{{{empty_text}}}",
-            "remove_btn": "Alle aufgezeichneten Ladungen löschen",
+            "remove_btn": "Alle aufgezeichneten Ladevorgänge löschen",
 
-            "charge_tracker_remove_modal_text": "Alle aufgezeichneten Ladungen und der Benutzernamen-Verlauf werden gelöscht. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b>",
+            "charge_tracker_remove_modal_text": "Alle aufgezeichneten Ladevorgänge und der Benutzernamen-Verlauf werden gelöscht. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b>",
             "abort_remove": "Abbrechen",
             "confirm_remove": "Löschen"
         },
@@ -49,9 +49,9 @@
             "all_users": "alle Benutzer",
             "unknown_charge_start": "Unbekannter Startzeitpunkt",
 
-            "remove_failed": "Löschen der aufgezeichneten Ladungen fehlgeschlagen",
-            "remove_init": "Lösche aufgezeichnete Ladungen und starte neu...",
-            "download_charge_log_failed": "Herunterladen der aufgezeichneten Ladungen fehlgeschlagen"
+            "remove_failed": "Löschen der aufgezeichneten Ladevorgänge fehlgeschlagen",
+            "remove_init": "Lösche aufgezeichnete Ladevorgänge und starte neu...",
+            "download_charge_log_failed": "Herunterladen der aufgezeichneten Ladevorgänge fehlgeschlagen"
         }
     }
 }

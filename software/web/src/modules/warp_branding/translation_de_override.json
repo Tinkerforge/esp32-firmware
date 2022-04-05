@@ -16,11 +16,11 @@
     },
     "firmware_update": {
         "content": {
-            "factory_reset_modal_text": "Hiermit wird die gesamte Konfiguration auf den Werkszustand zurückgesetzt. Alle aufgezeichneten Ladungen gehen verloren. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Die Wallbox öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus der beiliegenden Betriebsanleitung. Fortfahren?",
-            "config_reset_modal_text": "Hiermit wird nur die Konfiguration auf den Werkszustand zurückgesetzt. Aufgezeichneten Ladungen bleiben erhalten. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Die Wallbox öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus der beiliegenden Betriebsanleitung. Fortfahren?",
-            "reboot_desc": "eine laufende Ladung wird nicht unterbrochen",
-            "factory_reset_desc": "löscht die Konfiguration und alle aufgezeichneten Ladungen",
-            "config_reset_desc": "aufgezeichnete Ladungen bleiben erhalten"
+            "factory_reset_modal_text": "Hiermit wird die gesamte Konfiguration auf den Werkszustand zurückgesetzt. Alle aufgezeichneten Ladevorgänge gehen verloren. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Die Wallbox öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus der beiliegenden Betriebsanleitung. Fortfahren?",
+            "config_reset_modal_text": "Hiermit wird nur die Konfiguration auf den Werkszustand zurückgesetzt. Aufgezeichnete Ladevorgänge bleiben erhalten. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Die Wallbox öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus der beiliegenden Betriebsanleitung. Fortfahren?",
+            "reboot_desc": "ein laufender Ladevorgang wird nicht unterbrochen",
+            "factory_reset_desc": "löscht die Konfiguration und alle aufgezeichneten Ladevorgänge",
+            "config_reset_desc": "aufgezeichnete Ladevorgänge bleiben erhalten"
         },
         "script": {
             "no_info_page": "Firmware-Datei ist beschädigt oder für WARP 1 (Firmware-Info-Seite fehlt)",

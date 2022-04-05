@@ -24,7 +24,7 @@
             "default_available_current": "<span class=\"form-label pr-2\">Voreingestellt verfügbarer Strom</span><span class=\"text-muted\">wird nach Neustart des Lastmanagers verwendet</span>",
             "default_available_current_invalid": "Der voreingestellt verfügbare Strom darf maximal so groß sein wie der maximale verfügbare Strom!",
             "maximum_available_current": "<span class=\"form-label pr-2\">Maximal verfügbarer Strom</span><span class=\"text-muted\">verfügbarer Strom kann über Webinterface und API nur bis zu diesem Wert eingestellt werden</span>",
-            "minimum_current": "<span class=\"form-label pr-2\">Minimaler Ladestrom</span><span class=\"text-muted\">muss mindestens verfügbar sein, damit eine Ladung beginnt</span>",
+            "minimum_current": "<span class=\"form-label pr-2\">Minimaler Ladestrom</span><span class=\"text-muted\">muss mindestens verfügbar sein, damit ein Ladevorgang beginnt</span>",
 
             "add_charger_modal_title": "Wallbox hinzufügen",
             "add_charger_modal_name": "Anzeigename",
