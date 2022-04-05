@@ -260,7 +260,11 @@ function update_current_charge() {
         return;
     }
 
-    let user_display_name = uc.users.filter((x) => x.id == cc.user_id)[0].display_name;
+    let filtered = uc.users.filter((x) => x.id == cc.user_id);
+    let user_display_name = __("charge_tracker.script.unknown_user");
+    if (filtered.length > 0 && cc.user_id != 0)
+        user_display_name = filtered[0].display_name;
+
     let energy_charged = mv.energy_abs - cc.meter_start;
     let time_charging = evse_ll.uptime - cc.evse_uptime_start
     if (evse_ll.uptime < cc.evse_uptime_start)
