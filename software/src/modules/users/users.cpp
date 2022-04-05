@@ -226,7 +226,7 @@ Users::Users()
 
     add = ConfigRoot(Config::Object({
         {"id", Config::Uint8(0)},
-        {"roles", Config::Uint16(0)},
+        {"roles", Config::Uint32(0)},
         {"current", Config::Uint16(32000)},
         {"display_name", Config::Str("", 0, USERNAME_LENGTH)},
         {"username", Config::Str("", 0, USERNAME_LENGTH)},
