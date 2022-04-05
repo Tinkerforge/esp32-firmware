@@ -4,16 +4,6 @@ import * as API from "./api";
 
 declare function __(s: string): string;
 
-/* Helper interface to silence typescript error about the data member of server sent events not existing.
-   Use like this:
-   eventSource.addEventListener('eventName', function (e: SSE) {
-       console.log(e.data);
-   }, false);
-*/
-export interface SSE extends Event{
-    data: string;
-}
-
 export function reboot() {
     $.ajax({
         url: '/reboot',
