@@ -242,6 +242,48 @@ class ContentTypeRemover(urllib.request.BaseHandler):
         return req
     https_request = http_request
 
+def factory_reset(ssid):
+    print("Triggering factory reset")
+    print("Connecting via ethernet to {}".format(ssid), end="")
+    for i in range(45):
+        start = time.monotonic()
+        try:
+            req = urllib.request.Request("http://{}/factory_reset".format(ssid),
+                            data=json.dumps({"do_i_know_what_i_am_doing":True}).encode("utf-8"),
+                            method='PUT',
+                            headers={"Content-Type": "application/json"})
+            with urllib.request.urlopen(req, timeout=1) as f:
+                f.read()
+                break
+        except Exception as e:
+            pass
+        t = max(0, 1 - (time.monotonic() - start))
+        time.sleep(t)
+        print(".", end="")
+    else:
+        fatal_error("Failed to connect via ethernet!")
+    print(" Connected.")
+    print("Factory reset triggered.. Waiting 10 seconds")
+    time.sleep(10)
+
+def connect_to_ethernet(ssid, url):
+    print("Connecting via ethernet to {}".format(ssid), end="")
+    for i in range(45):
+        start = time.monotonic()
+        try:
+            with urllib.request.urlopen("http://{}/{}".format(ssid, url), timeout=1) as f:
+                result = f.read()
+                break
+        except:
+            pass
+        t = max(0, 1 - (time.monotonic() - start))
+        time.sleep(t)
+        print(".", end="")
+    else:
+        fatal_error("Failed to connect via ethernet! Is the router's DHCP cache full?")
+    print(" Connected.")
+    return result
+
 def main(stage3):
     result = {"start": now()}
 
@@ -355,22 +397,7 @@ def main(stage3):
 
         ssid = "warp2-" + esp_uid_qr
 
-        print("Connecting via ethernet to {}".format(ssid), end="")
-
-        for i in range(30):
-            start = time.monotonic()
-            try:
-                with urllib.request.urlopen("http://{}/event_log".format(ssid), timeout=1) as f:
-                    event_log = f.read().decode('utf-8')
-                    break
-            except:
-                pass
-            t = max(0, 1 - (time.monotonic() - start))
-            time.sleep(t)
-            print(".", end="")
-        else:
-            fatal_error("Failed to connect via ethernet! Is the router's DHCP cache full?")
-        print(" Connected.")
+        event_log = connect_to_ethernet(ssid, "event_log").decode('utf-8')
 
         m = re.search(r"WARP2 (?:CHARGER|Charger) V(\d+).(\d+).(\d+)", event_log)
         if not m:
@@ -410,49 +437,13 @@ def main(stage3):
                         fatal_error("Can't flash firmware!")
 
             time.sleep(3)
-
-            print("Triggering factory reset")
-            print("Connecting via ethernet to {}".format(ssid), end="")
-            for i in range(45):
-                start = time.monotonic()
-                try:
-                    req = urllib.request.Request("http://{}/factory_reset".format(ssid),
-                                 data=json.dumps({"do_i_know_what_i_am_doing":True}).encode("utf-8"),
-                                 method='PUT',
-                                 headers={"Content-Type": "application/json"})
-                    with urllib.request.urlopen(req, timeout=1) as f:
-                        f.read()
-                        break
-                except Exception as e:
-                    pass
-                t = max(0, 1 - (time.monotonic() - start))
-                time.sleep(t)
-                print(".", end="")
-            else:
-                fatal_error("Failed to connect via ethernet!")
-            print(" Connected.")
-            print("Factory reset triggered.. Waiting 10 seconds")
-            time.sleep(10)
+            factory_reset(ssid)
         else:
             print("Flashed firmware is up-to-date.")
 
         result["firmware"] = firmware_path.split("/")[-1]
 
-        print("Connecting via ethernet to {}".format(ssid), end="")
-        for i in range(45):
-            start = time.monotonic()
-            try:
-                with urllib.request.urlopen("http://{}/hidden_proxy/enable".format(ssid), timeout=1) as f:
-                    f.read()
-                    break
-            except:
-                pass
-            t = max(0, 1 - (time.monotonic() - start))
-            time.sleep(t)
-            print(".", end="")
-        else:
-            fatal_error("Failed to connect via ethernet!")
-        print(" Connected.")
+        connect_to_ethernet(ssid, "hidden_proxy/enable")
 
         ipcon = IPConnection()
         try:
@@ -462,38 +453,79 @@ def main(stage3):
 
         run_bricklet_tests(ipcon, result, qr_variant, qr_power, ssid, stage3)
 
-        print("Configuring users")
-        for i in range(3):
-            req = urllib.request.Request("http://{}/users/add".format(ssid),
-                                    data=json.dumps({
-                                        "id":1,
-                                        "roles": 2**32-1,
-                                        "current": 32000,
-                                        "display_name": "Benutzer {}".format(i),
-                                        "username": "user{}".format(i)
-                                    }).encode("utf-8"),
-                                    method='PUT',
-                                    headers={"Content-Type": "application/json"})
-            try:
-                with urllib.request.urlopen(req, timeout=6) as f:
-                    f.read()
-            except Exception as e:
-                fatal_error("Failed to configure user {}: {}!", i, e)
+        try:
+            with urllib.request.urlopen("http://{}/users/config".format(ssid), timeout=5) as f:
+                user_config = json.loads(f.read())
+        except Exception as e:
+                fatal_error("Failed to get users config: {} {}!".format(e, e.read()))
+
+        do_factory_reset = False
+        do_configure_users = True
+        if len(user_config["users"]) != 4:
+            do_factory_reset = len(user_config["users"]) != 1
+        else:
+            print("hier")
+            for i, u in enumerate(user_config["users"][1:]):
+                print(u)
+                if (u["roles"] != 2**16-1
+                   or u["current"] != 32000
+                   or u["display_name"] != "Benutzer {}".format(i+1)
+                   or u["username"] != "user{}".format(i+1)
+                   or u["digest_hash"] != ""):
+                    do_factory_reset = True
+                    break
+            else:
+                do_configure_users = False
+
+        if do_factory_reset:
+            print("Invalid user configuration.")
+            factory_reset(ssid)
+            connect_to_ethernet(ssid, "hidden_proxy/enable")
+
+        if not do_configure_users:
+            print("Users already configured")
+        else:
+            print("Configuring users")
+            for i in range(3):
+                data = json.dumps({
+                    "id":i+1,
+                    "roles": 2**16-1,
+                    "current": 32000,
+                    "display_name": "Benutzer {}".format(i+1),
+                    "username": "user{}".format(i+1),
+                    "digest_hash": ""
+                }).encode("utf-8")
+                req = urllib.request.Request("http://{}/users/add".format(ssid),
+                                        data=json.dumps({
+                                            "id":i+1,
+                                            "roles": 2**16-1,
+                                            "current": 32000,
+                                            "display_name": "Benutzer {}".format(i+1),
+                                            "username": "user{}".format(i+1),
+                                            "digest_hash": ""
+                                        }).encode("utf-8"),
+                                        method='PUT',
+                                        headers={"Content-Type": "application/json"})
+                try:
+                    with urllib.request.urlopen(req, timeout=6) as f:
+                        print(f.read())
+                except Exception as e:
+                    fatal_error("Failed to configure user {}: {} {}!".format(i, e, e.read()))
 
         print("Configuring tags")
         req = urllib.request.Request("http://{}/nfc/config_update".format(ssid),
                                  data=json.dumps({"authorized_tags": [{
                                                     "user_id": 1,
                                                     "tag_type": seen_tags[0].tag_type,
-                                                    "tag_id": seen_tags[0].tag_id
+                                                    "tag_id": ":".join("{:02x}".format(i) for i in seen_tags[0].tag_id)
                                                     }, {
                                                     "user_id": 2,
                                                     "tag_type": seen_tags[1].tag_type,
-                                                    "tag_id": seen_tags[1].tag_id
+                                                    "tag_id": ":".join("{:02x}".format(i) for i in seen_tags[1].tag_id)
                                                     }, {
                                                     "user_id": 3,
                                                     "tag_type": seen_tags[2].tag_type,
-                                                    "tag_id": seen_tags[2].tag_id
+                                                    "tag_id": ":".join("{:02x}".format(i) for i in seen_tags[2].tag_id)
                                                     }
                                                   ]}).encode("utf-8"),
                                  method='PUT',
@@ -502,7 +534,7 @@ def main(stage3):
             with urllib.request.urlopen(req, timeout=1) as f:
                 f.read()
         except Exception as e:
-            fatal_error("Failed to configure NFC tags!")
+            fatal_error("Failed to configure NFC tags! {} {}!".format(e, e.read()))
         result["nfc_tags_configured"] = True
     else:
         if qr_supply_cable != 0 or qr_cee:
@@ -553,6 +585,28 @@ def main(stage3):
 
     print("Electrical tests passed")
     result["electrical_tests_passed"] = True
+
+    print("Removing tracked charges")
+    print("Connecting via ethernet to {}".format(ssid), end="")
+    for i in range(45):
+        start = time.monotonic()
+        try:
+            req = urllib.request.Request("http://{}/charge_tracker/remove_all_charges".format(ssid),
+                            data=json.dumps({"do_i_know_what_i_am_doing":True}).encode("utf-8"),
+                            method='PUT',
+                            headers={"Content-Type": "application/json"})
+            with urllib.request.urlopen(req, timeout=1) as f:
+                f.read()
+                break
+        except Exception as e:
+            pass
+        t = max(0, 1 - (time.monotonic() - start))
+        time.sleep(t)
+        print(".", end="")
+    else:
+        fatal_error("Failed to connect via ethernet!")
+    print(" Connected.")
+    print("Tracked charges removed.")
     result["end"] = now()
 
     with open("{}_{}_report_stage_2.json".format(ssid, now().replace(":", "-")), "w") as f:
