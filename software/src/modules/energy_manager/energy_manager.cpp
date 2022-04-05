@@ -271,16 +271,18 @@ String EnergyManager::get_energy_manager_debug_line()
              "%u,%u,%u,,"
              "%.3f,%.3f,%.3f,%c,%c,%c,%c,%c,%c,,"
              "%u,%u,%u,%u,%u,%u,%u,,"
-             "%u,%u,,"
+             "%c,%c,,"
              "%u,%u,,"
              "%u,,"
              "%u,,"
              "%u\"",
              millis(),
              all_data.contactor_value,
+
              all_data.rgb_value_r,
              all_data.rgb_value_g,
              all_data.rgb_value_b,
+
              all_data.power,
              all_data.energy_relative,
              all_data.energy_absolute,
@@ -290,6 +292,7 @@ String EnergyManager::get_energy_manager_debug_line()
              all_data.phases_connected[0] ? '0' : '1',
              all_data.phases_connected[1] ? '0' : '1',
              all_data.phases_connected[2] ? '0' : '1',
+
              all_data.energy_meter_type,
              all_data.error_count[0],
              all_data.error_count[1],
@@ -297,10 +300,13 @@ String EnergyManager::get_energy_manager_debug_line()
              all_data.error_count[3],
              all_data.error_count[4],
              all_data.error_count[5],
+
              all_data.input[0] ? '0' : '1',
              all_data.input[1] ? '0' : '1',
+
              all_data.input_configuration[0],
              all_data.input_configuration[1],
+
              all_data.output,
              all_data.voltage,
              all_data.contactor_check_state);
