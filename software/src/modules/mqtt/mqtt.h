@@ -52,8 +52,8 @@ public:
     void loop();
     void connect();
 
-    void publish(String topic_suffix, String payload);
-    void subscribe(String topic_suffix, std::function<void(char *, size_t)> callback, bool forbid_retained);
+    void publish(String path, String payload);
+    void subscribe(String path, std::function<void(char *, size_t)> callback, bool forbid_retained);
 
     // IAPIBackend implementation
     void addCommand(size_t commandIdx, const CommandRegistration &reg);

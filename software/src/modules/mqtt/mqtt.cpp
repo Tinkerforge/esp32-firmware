@@ -61,10 +61,10 @@ Mqtt::Mqtt()
     });
 }
 
-void Mqtt::subscribe(String topic_suffix, std::function<void(char *, size_t)> callback, bool forbid_retained)
+void Mqtt::subscribe(String path, std::function<void(char *, size_t)> callback, bool forbid_retained)
 {
     String prefix = mqtt_config_in_use.get("global_topic_prefix")->asString();
-    String topic = prefix + "/" + topic_suffix;
+    String topic = prefix + "/" + path;
     this->commands.push_back({topic, callback, forbid_retained});
 
     esp_mqtt_client_unsubscribe(client, topic.c_str());
@@ -121,7 +121,7 @@ void Mqtt::addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg
     }, reg.is_action);
 }
 
-void Mqtt::publish(String payload, String path)
+void Mqtt::publish(String path, String payload)
 {
     String prefix = mqtt_config_in_use.get("global_topic_prefix")->asString();
     String topic = prefix + "/" + path;
@@ -135,14 +135,14 @@ bool Mqtt::pushStateUpdate(size_t stateIdx, String payload, String path)
     if (!deadline_elapsed(state.last_send_ms + mqtt_config_in_use.get("interval")->asUint() * 1000))
         return false;
 
-    this->publish(payload, path);
+    this->publish(path, payload);
     state.last_send_ms = millis();
     return true;
 }
 
 void Mqtt::pushRawStateUpdate(String payload, String path)
 {
-    this->publish(payload, path);
+    this->publish(path, payload);
 }
 
 void Mqtt::wifiAvailable()
@@ -168,7 +168,7 @@ void Mqtt::onMqttConnect()
         this->addRawCommand(i, reg);
     }
     for (auto &reg : api.states) {
-        publish(reg.config->to_string_except(reg.keys_to_censor), reg.path);
+        publish(reg.path, reg.config->to_string_except(reg.keys_to_censor));
     }
 }
 
