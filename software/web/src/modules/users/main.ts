@@ -341,7 +341,6 @@ function check_http_auth_allowed() {
             let id = $(`#users_authorized_user_${i}_id`).val();
             let new_pw = $(`#users_authorized_user_${id}_password`).val();
             let filtered = API.get("users/config").users.filter(user => user.id == id);
-            console.log(filtered, new_pw);
             if (filtered.length == 0)
                 return new_pw != "";
             else

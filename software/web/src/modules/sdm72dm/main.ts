@@ -119,7 +119,6 @@ function update_history_meter() {
 }
 
 function meter_chart_change_time(value: string) {
-    console.log(value);
     if (graph_update_interval != null) {
         clearInterval(graph_update_interval);
         graph_update_interval = null;
