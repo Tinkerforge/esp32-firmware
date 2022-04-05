@@ -262,7 +262,7 @@ void NFC::handle_evse()
 
 const char *lookup = "0123456789ABCDEF";
 
-void tag_id_bytes_to_string(uint8_t *tag_id, uint8_t tag_id_len, char buf[NFC_TAG_ID_STRING_LENGTH + 1])
+void tag_id_bytes_to_string(const uint8_t *tag_id, uint8_t tag_id_len, char buf[NFC_TAG_ID_STRING_LENGTH + 1])
 {
     for (int i = 0; i < tag_id_len; ++i) {
         uint8_t b = tag_id[i];

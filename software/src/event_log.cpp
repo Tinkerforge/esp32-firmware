@@ -56,7 +56,7 @@ void EventLog::get_timestamp(char buf[TIMESTAMP_LEN + 1])
 void EventLog::write(const char *buf, size_t len)
 {
     std::lock_guard<std::mutex> lock{event_buf_mutex};
-    String t = String(millis());
+
     size_t to_write = TIMESTAMP_LEN + len + 1; // 12 for the longest timestamp (-2^31) and a space; 1 for the \n
 
     char timestamp_buf[TIMESTAMP_LEN + 1] = {0};

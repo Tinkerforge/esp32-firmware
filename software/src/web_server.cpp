@@ -118,12 +118,11 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req)
         return ESP_OK;
     }
 
-    int received = 0;
     size_t remaining = req->content_len;
     size_t index = 0;
 
     while (remaining > 0) {
-        received = httpd_req_recv(req, (char *)scratch_buf, MIN(remaining, SCRATCH_BUFSIZE));
+        int received = httpd_req_recv(req, (char *)scratch_buf, MIN(remaining, SCRATCH_BUFSIZE));
         // Retry if timeout occurred
         if (received == HTTPD_SOCK_ERR_TIMEOUT) {
             continue;

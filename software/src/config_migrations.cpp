@@ -38,11 +38,6 @@ extern TaskScheduler task_scheduler;
 
 extern char local_uid_str[7];
 
-struct ConfigFileMigration {
-    const char *path;
-    JsonVariant (*fn)(JsonVariant json);
-};
-
 struct ConfigMigration {
     const int major, minor, patch;
     void (*const fn)(void);

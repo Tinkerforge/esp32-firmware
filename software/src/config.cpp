@@ -63,7 +63,7 @@ struct printer {
 };
 
 struct default_validator {
-    String operator()(Config::ConfString &x)
+    String operator()(const Config::ConfString &x) const
     {
         if (x.value.length() < x.minChars)
             return String(String("String of minimum length ") + x.minChars + " was expected, but got " + x.value.length());
@@ -74,7 +74,7 @@ struct default_validator {
         return String(String("String of maximum length ") + x.maxChars + " was expected, but got " + x.value.length());
     }
 
-    String operator()(Config::ConfFloat &x)
+    String operator()(const Config::ConfFloat &x) const
     {
         if (x.value < x.min)
             return String(String("Float value ") + x.value + " was less than the allowed minimum of " + x.min);
@@ -83,7 +83,7 @@ struct default_validator {
         return String("");
     }
 
-    String operator()(Config::ConfInt &x)
+    String operator()(const Config::ConfInt &x) const
     {
         if (x.value < x.min)
             return String(String("Integer value ") + x.value + " was less than the allowed minimum of " + x.min);
@@ -92,7 +92,7 @@ struct default_validator {
         return String("");
     }
 
-    String operator()(Config::ConfUint &x)
+    String operator()(const Config::ConfUint &x) const
     {
         if (x.value < x.min)
             return String(String("Unsigned integer value ") + x.value + " was less than the allowed minimum of " + x.min);
@@ -101,7 +101,7 @@ struct default_validator {
         return String("");
     }
 
-    String operator()(Config::ConfBool &x)
+    String operator()(const Config::ConfBool &x) const
     {
         return String("");
     }
@@ -110,7 +110,7 @@ struct default_validator {
         return String("");
     }
 
-    String operator()(Config::ConfArray &x)
+    String operator()(const Config::ConfArray &x) const
     {
         if (x.maxElements > 0 && x.value.size() > x.maxElements)
             return String(String("Array had ") + x.value.size() + " entries, but only " + x.maxElements + " are allowed.");
@@ -122,7 +122,7 @@ struct default_validator {
                 if (x.value[i].value.which() != x.variantType)
                     return String(String("[") + i + "] has wrong type");
 
-        for (Config &elem : x.value) {
+        for (const Config &elem : x.value) {
             String err = strict_variant::apply_visitor(default_validator{}, elem.value);
             if (err != "")
                 return err;
@@ -131,9 +131,9 @@ struct default_validator {
         return String("");
     }
 
-    String operator()(Config::ConfObject &x)
+    String operator()(const Config::ConfObject &x) const
     {
-        for (std::pair<String, Config> &elem : x.value) {
+        for (const std::pair<String, Config> &elem : x.value) {
             String err = strict_variant::apply_visitor(default_validator{}, elem.second.value);
             if (err != "")
                 return err;

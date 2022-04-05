@@ -311,7 +311,6 @@ void ChargeManager::distribute_current()
 
     static bool verbose = charge_manager_config_in_use.get("verbose")->asBool();
 
-    static bool last_print_local_log_was_error = false;
     bool print_local_log = false;
     char *local_log = distribution_log;
     if (verbose)
@@ -324,6 +323,8 @@ void ChargeManager::distribute_current()
 
     // Handle unreachable EVSEs
     {
+        static bool last_print_local_log_was_error = false;
+
         // If any EVSE is unreachable or in another error state, we set the available current to 0.
         // The distribution algorithm can then run normally and will block all chargers.
         bool unreachable_evse_found = false;

@@ -240,7 +240,7 @@ struct Config {
             delay(100);
             return -1;
         }
-        std::vector<Config> &children = strict_variant::get<Config::ConfArray>(&value)->value;
+        const std::vector<Config> &children = strict_variant::get<Config::ConfArray>(&value)->value;
         return children.size();
     }
 

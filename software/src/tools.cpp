@@ -328,8 +328,7 @@ bool mount_or_format_spiffs(void)
 String read_config_version()
 {
     if (LittleFS.exists("/config/version")) {
-        const size_t capacity = JSON_OBJECT_SIZE(1) + 60;
-        StaticJsonDocument<capacity> doc;
+        StaticJsonDocument<JSON_OBJECT_SIZE(1) + 60> doc;
         File file = LittleFS.open("/config/version", "r");
 
         deserializeJson(doc, file);

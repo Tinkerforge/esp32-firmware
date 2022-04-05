@@ -440,7 +440,7 @@ void Users::register_urls()
         if (doc["id"] == nullptr)
             return String("Can't modify user. User ID is null or missing.");
 
-        uint8_t id = doc["id"];
+        uint8_t id = doc["id"].as<uint8_t>();
         if (id == 0) {
             return "Can't modify the anonymous user.";
         }

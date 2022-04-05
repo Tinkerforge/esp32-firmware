@@ -52,7 +52,7 @@ void TaskScheduler::loop()
             this->task_mutex.unlock();
             return;
         }
-        auto &task_ref = tasks.top();
+        const auto &task_ref = tasks.top();
 
         if(!deadline_elapsed(task_ref.next_deadline_ms)) {
             this->task_mutex.unlock();
