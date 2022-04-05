@@ -1,12 +1,12 @@
 
 @media (max-width: 768px) {
-    #charge-tracker span.input-group-text {
-        min-width: 3.25em;
+    #charge_tracker span.input-group-text {
+        min-width: 3.75em;
     }
 }
 
 @media (min-width: 768px) {
-    #charge-tracker span.input-group-text {
+    #charge_tracker span.input-group-text {
         min-width: 0;
     }
 }
