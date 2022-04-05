@@ -7,8 +7,8 @@
             "connecting": "Connecting",
             "connected": "Connected",
             "wifi_ap": "WiFi access point",
-            "deactivated": "Disabled",
-            "activated": "Enabled",
+            "deactivated": "Deactivated",
+            "activated": "Activated",
             "fallback_inactive": "Fallback inactive",
             "fallback_active": "Fallback active"
         },
@@ -47,9 +47,9 @@
 
             "ap_settings": "WiFi Access Point Settings",
             "ap_enable": "<span class=\"form-label pr-2\">Access point</span><span class=\"text-muted\"><a href=\"{{{manual_url}}}\">see manual for details</a></span></label>",
-            "ap_enabled": "enabled",
+            "ap_enabled": "activated",
             "ap_fallback_only": "as fallback only",
-            "ap_disabled": "disabled",
+            "ap_disabled": "deactivated",
             "ap_ssid": "Network name (SSID)",
             "ap_hide_ssid": "Network name hidden",
             "ap_hide_ssid_desc_pre": null,
