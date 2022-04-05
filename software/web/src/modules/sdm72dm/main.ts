@@ -155,7 +155,7 @@ function init_chart() {
         axisY: {
             scaleMinSpace: 40,
             onlyInteger: true,
-            offset: 50,
+            offset: 60,
             labelOffset: {x: 0, y: 6}
         },
         plugins: [
