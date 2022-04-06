@@ -17,7 +17,7 @@
             "charge_manager": "Lastmanager",
             "enable_charge_manager": "<span class=\"form-label pr-2\">Lastmanager aktiviert</span><span class=\"text-muted\"><a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a></span>",
             "enable_charge_manager_desc": "Steuert mehrere WARP Charger um sicherzustellen, dass ein gesetzter Maximalstrom nie überschritten wird",
-            "enable_watchdog": "Watchdog aktiviert",
+            "enable_watchdog": "<span class=\"form-label pr-2\">Watchdog aktiviert</span><span class=\"text-muted\">Nur bei API-Benutzung aktivieren. <strong>Für den normalen Lastmanagement-Betrieb nicht notwendig!</strong></span>",
             "enable_watchdog_desc": "Setzt den verfügbaren Strom auf die Voreinstellung, wenn er nicht spätestens alle 30 Sekunden aktualisiert wurde",
             "verbose": "Strom&shy;verteilungs&shy;protokoll aktiviert",
             "verbose_desc": "Erzeugt Einträge im Ereignis-Log, wenn Strom umverteilt wird",

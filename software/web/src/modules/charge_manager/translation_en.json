@@ -17,7 +17,7 @@
             "charge_manager": "Charge Manager",
             "enable_charge_manager": "<span class=\"form-label pr-2\">Charge manager enabled</span><span class=\"text-muted\"><a href=\"{{{manual_url}}}\">see manual for details</a></span>",
             "enable_charge_manager_desc": "Controls multiple WARP Chargers to make sure a configured maximum current is never exceeded",
-            "enable_watchdog": "Watchdog enabled",
+            "enable_watchdog": "<span class=\"form-label pr-2\">Watchdog enabled</span><span class=\"text-muted\">Only enable if using the API. <strong>Not required for normal charge manager use!</strong></span>",
             "enable_watchdog_desc": "Sets the available current to the default value if it is not updated every 30 seconds",
             "verbose": "Current distribution log enabled",
             "verbose_desc": "Creates log entries whenever current is redistributed",
