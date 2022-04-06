@@ -416,10 +416,11 @@ export function init() {
         }
 
         let form = <HTMLFormElement>$('#users_add_user_form')[0];
-        form.classList.add('was-validated');
-
-        if (form.checkValidity() === false) {
+        if (!form.checkValidity()) {
+            form.classList.add('was-validated');
             return;
+        } else {
+            form.classList.remove('was-validated');
         }
 
         let current = $('#users_config_user_new_current').val();
