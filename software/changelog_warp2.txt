@@ -115,3 +115,18 @@
 - Fix MQTT payload length limit calculation
 - Fix spurious firmware update flash failures
 - Fix crash when starting without plugged in EVSE
+
+2022-04-06: 2.0.0 (<unknown>)
+- Add remove all charges: Removes tracked charges but keeps configuration
+- Add config reset: removes configuration but keeps tracked charges
+- Rework UI of cards used for chargers, tags and users
+- Fix passphrase requirement when configuring another AP of the same network
+- Improve translations
+- Improve users modification performance and robustness
+- Fix event log sometimes not being shown
+- Add default NTP servers
+- Enforce unique usernames in configuration and tracked charges
+- Add usable anchors and support browser history
+- Fix tracked charge change triggered by ESP reset
+- Allow switching to another NFC tag while vehicle is plugged in
+- Add charge manager watchdog hint
