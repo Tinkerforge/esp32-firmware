@@ -199,7 +199,7 @@
 - Allow switching to another NFC tag while vehicle is plugged in
 - Add charge manager watchdog hint
 
-2022-04-07: 2.0.1 (<unknown>)
+2022-04-07: 2.0.1 (6d9c2bfc)
 - Fix user modification
 - Fix left-over usernames when resetting config
 - Fix HTTP auth not being enabled when a password is added to a user
