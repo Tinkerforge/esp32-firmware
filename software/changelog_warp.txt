@@ -184,7 +184,7 @@
 - Fix spurious firmware update flash failures
 - Fix crash when starting without plugged in EVSE
 
-2022-04-06: 2.0.0 (<unknown>)
+2022-04-06: 2.0.0 (a019ae6c)
 - Add remove all charges: Removes tracked charges but keeps configuration
 - Add config reset: removes configuration but keeps tracked charges
 - Rework UI of cards used for chargers, tags and users
