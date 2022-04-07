@@ -122,7 +122,6 @@ bool FirmwareUpdate::handle_firmware_info_chunk(size_t chunk_index, uint8_t *dat
         info_offset += to_write;
     }
 
-    logger.printfln("chunk index %u data %p len %u", chunk_index, data, chunk_length);
     crc32_ieee_802_3_recalculate(start, length, &calculated_checksum);
 
     const size_t checksum_start = FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH - 4;
