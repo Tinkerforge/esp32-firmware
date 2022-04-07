@@ -338,8 +338,10 @@ function check_http_auth_allowed() {
 
             let i_str = $(this).attr('id');
             let i = parseInt(i_str.replace("users_authorized_user_", "").split("_")[0]);
+            let new_pw = $(`#users_authorized_user_${i}_password`).val();
+
             let id = $(`#users_authorized_user_${i}_id`).val();
-            let new_pw = $(`#users_authorized_user_${id}_password`).val();
+
             let filtered = API.get("users/config").users.filter(user => user.id == id);
             if (filtered.length == 0)
                 return new_pw != "";
