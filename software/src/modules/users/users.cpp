@@ -458,6 +458,9 @@ void Users::register_urls()
         }
 
         for(int i = 0; i < user_config.get("users")->count(); ++i) {
+            if (user_config.get("users")->get(i)->get("id")->asUint() == id)
+                continue;
+
             if (user_config.get("users")->get(i)->get("username")->asString() == doc["username"]) {
                 return "Can't modify user. Another user with the same username already exists.";
             }
@@ -466,7 +469,7 @@ void Users::register_urls()
         char username[33] = {0};
         File f = LittleFS.open(USERNAME_FILE, "r");
         for(size_t i = 0; i < f.size(); i += USERNAME_ENTRY_LENGTH) {
-            if (i == id)
+            if ((i / USERNAME_ENTRY_LENGTH) == id)
                 continue;
 
             f.seek(i);
