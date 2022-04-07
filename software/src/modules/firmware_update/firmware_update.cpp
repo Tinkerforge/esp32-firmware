@@ -29,6 +29,7 @@
 #include "task_scheduler.h"
 #include "tools.h"
 #include "build.h"
+#include "modules.h"
 
 #include "./crc32.h"
 #include "./recovery_html.embedded.h"
@@ -377,6 +378,17 @@ void FirmwareUpdate::register_urls()
 
         task_scheduler.scheduleOnce([](){
             logger.printfln("Config reset requested");
+#if defined MODULE_USERS_AVAILABLE
+            for(int i = 0; i < users.user_config.get("users")->count(); ++i) {
+                uint8_t id = users.user_config.get("users")->get(i)->get("id")->asUint();
+                if (id == 0) // skip anonymous user
+                    continue;
+                if (!charge_tracker.is_user_tracked(id)) {
+                    users.rename_user(id, "", "");
+                }
+            }
+#endif
+
             remove_directory("/config");
             ESP.restart();
         }, 3000);
