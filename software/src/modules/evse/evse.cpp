@@ -429,7 +429,7 @@ String EVSE::get_evse_debug_line()
              lock_state,
 
              jumper_configuration,
-             has_lock_switch ? '0' : '1',
+             has_lock_switch ? '1' : '0',
              evse_version,
 
              led_state,
@@ -448,11 +448,11 @@ String EVSE::get_evse_debug_line()
              resistances[0],
              resistances[1],
 
-             gpio[0] ? '0' : '1',
-             gpio[1] ? '0' : '1',
-             gpio[2] ? '0' : '1',
-             gpio[3] ? '0' : '1',
-             gpio[4] ? '0' : '1');
+             gpio[0] ? '1' : '0',
+             gpio[1] ? '1' : '0',
+             gpio[2] ? '1' : '0',
+             gpio[3] ? '1' : '0',
+             gpio[4] ? '1' : '0');
     return String(line);
 }
 
