@@ -415,6 +415,13 @@ void ChargeTracker::register_urls()
         File file = LittleFS.open(chargeRecordFilename(this->last_charge_record));
         size_t file_size = (this->last_charge_record - this->first_charge_record) * CHARGE_RECORD_MAX_FILE_SIZE + file.size();
         String file_size_string = String(file_size);
+
+        // Don't do a chunked response without any chunk. The webserver does strange things in this case
+        if (file_size == 0) {
+            request.send(200, "application/octet-stream", "", 0);
+            return;
+        }
+
         request.addResponseHeader("Content-Length", file_size_string.c_str());
 
         request.beginChunkedResponse(200, "application/octet-stream");
