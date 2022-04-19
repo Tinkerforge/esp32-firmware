@@ -1,12 +1,24 @@
 ---
-Language:                         Cpp
-BasedOnStyle:                     LLVM
-AccessModifierOffset:             -4
-AllowAllArgumentsOnNextLine:      false
-AllowShortFunctionsOnASingleLine: None
-ColumnLimit:                      140
-IndentWidth:                      4
-BraceWrapping:
-  AfterFunction:                  true
-BreakBeforeBraces:                Custom
+Language:                                  Cpp
+BasedOnStyle:                              LLVM
+AccessModifierOffset:                      -4
+AlignOperands:                             AlignAfterOperator
+AllowAllArgumentsOnNextLine:               false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortFunctionsOnASingleLine:          None
+AllowShortLambdasOnASingleLine:            Empty
+BinPackArguments:                          false
+BinPackParameters:                         false
+BreakBeforeBinaryOperators:                NonAssignment
+BreakBeforeBraces:                         Linux
+BreakBeforeTernaryOperators:               false
+BreakConstructorInitializers:              AfterColon
+ColumnLimit:                               140
+DeriveLineEnding:                          false
+IndentCaseLabels:                          true
+IndentWidth:                               4
+LambdaBodyIndentation:                     Signature
+ReflowComments:                            false
+UseCRLF:                                   false
+UseTab:                                    Never
 ...
