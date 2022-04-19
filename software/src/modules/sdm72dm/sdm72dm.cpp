@@ -306,7 +306,7 @@ void SDM72DM::loop()
     Config *to_write = nullptr;
     uint32_t start_address = 0;
 
-    switch(modbus_read_state) {
+    switch (modbus_read_state) {
         case 0:
             to_write = values.get("power");
             start_address = 1281;

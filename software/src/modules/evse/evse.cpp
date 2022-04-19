@@ -474,7 +474,7 @@ void EVSE::register_urls()
         return;
 
 #if defined(MODULE_CM_NETWORKING_AVAILABLE)
-    cm_networking.register_client([this](uint16_t current){
+    cm_networking.register_client([this](uint16_t current) {
         set_managed_current(current);
     });
 

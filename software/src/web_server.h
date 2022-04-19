@@ -57,7 +57,7 @@ public:
 
     const char *methodString()
     {
-        switch(method()) {
+        switch (method()) {
             case HTTP_GET:
                 return "GET";
             case HTTP_PUT:

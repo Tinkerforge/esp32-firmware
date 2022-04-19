@@ -120,5 +120,4 @@ void ScreenshotDataFaker::register_urls()
 
 void ScreenshotDataFaker::loop()
 {
-
 }

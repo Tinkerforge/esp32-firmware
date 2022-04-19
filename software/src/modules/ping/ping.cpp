@@ -35,7 +35,6 @@ extern API api;
 extern EventLog logger;
 extern TaskScheduler task_scheduler;
 
-
 // Used to print success/timeout only once
 // 0 - init
 // 1 - success
@@ -43,7 +42,7 @@ extern TaskScheduler task_scheduler;
 uint8_t last_state = 0;
 static void on_ping_success(esp_ping_handle_t hdl, void *args)
 {
-    if(last_state == 1) {
+    if (last_state == 1) {
         return;
     }
     last_state = 1;
@@ -63,7 +62,7 @@ static void on_ping_success(esp_ping_handle_t hdl, void *args)
 
 static void on_ping_timeout(esp_ping_handle_t hdl, void *args)
 {
-    if(last_state == 2) {
+    if (last_state == 2) {
         return;
     }
     last_state = 2;
@@ -72,9 +71,8 @@ static void on_ping_timeout(esp_ping_handle_t hdl, void *args)
     ip_addr_t target_addr;
     esp_ping_get_profile(hdl, ESP_PING_PROF_SEQNO, &seqno, sizeof(seqno));
     esp_ping_get_profile(hdl, ESP_PING_PROF_IPADDR, &target_addr, sizeof(target_addr));
-    logger.printfln("ping: From %s icmp_seq=%d timeout\n",ipaddr_ntoa((ip_addr_t*)&target_addr), seqno);
+    logger.printfln("ping: From %s icmp_seq=%d timeout\n", ipaddr_ntoa((ip_addr_t *)&target_addr), seqno);
 }
-
 
 Ping::Ping()
 {
@@ -117,10 +115,10 @@ void Ping::setup()
             return;
         }
         if (res->ai_family == AF_INET) {
-            struct in_addr addr4 = ((struct sockaddr_in *) (res->ai_addr))->sin_addr;
+            struct in_addr addr4 = ((struct sockaddr_in *)(res->ai_addr))->sin_addr;
             inet_addr_to_ip4addr(ip_2_ip4(&target_addr), &addr4);
         } else {
-            struct in6_addr addr6 = ((struct sockaddr_in6 *) (res->ai_addr))->sin6_addr;
+            struct in6_addr addr6 = ((struct sockaddr_in6 *)(res->ai_addr))->sin6_addr;
             inet6_addr_to_ip6addr(ip_2_ip6(&target_addr), &addr6);
         }
         freeaddrinfo(res);
@@ -146,5 +144,4 @@ void Ping::register_urls()
 
 void Ping::loop()
 {
-
 }
