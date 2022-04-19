@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-04-19.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -993,6 +993,8 @@ int tf_lcd_128x64_draw_box(TF_LCD128x64 *lcd_128x64, uint8_t position_x_start, u
  * Draws a text at the pixel position (x, y).
  * 
  * You can use one of 9 different font sizes and draw the text in white or black.
+ * 
+ * The font conforms to code page 437.
  * 
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */

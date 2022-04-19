@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-01-27.      *
+ * This file was automatically generated on 2022-04-19.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -47,7 +47,7 @@ int tf_evse_v2_create(TF_EVSEV2 *evse_v2, const char *uid_or_port_name, TF_HAL *
     evse_v2->tfp->cb_handler = tf_evse_v2_callback_handler;
     evse_v2->magic = 0x5446;
     evse_v2->response_expected[0] = 0x40;
-    evse_v2->response_expected[1] = 0x00;
+    evse_v2->response_expected[1] = 0x08;
     return TF_E_OK;
 }
 
@@ -132,24 +132,29 @@ int tf_evse_v2_get_response_expected(TF_EVSEV2 *evse_v2, uint8_t function_id, bo
                 *ret_response_expected = (evse_v2->response_expected[1] & (1 << 2)) != 0;
             }
             break;
-        case TF_EVSE_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
+        case TF_EVSE_V2_FUNCTION_FACTORY_RESET:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (evse_v2->response_expected[1] & (1 << 3)) != 0;
             }
             break;
-        case TF_EVSE_V2_FUNCTION_SET_STATUS_LED_CONFIG:
+        case TF_EVSE_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (evse_v2->response_expected[1] & (1 << 4)) != 0;
             }
             break;
-        case TF_EVSE_V2_FUNCTION_RESET:
+        case TF_EVSE_V2_FUNCTION_SET_STATUS_LED_CONFIG:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (evse_v2->response_expected[1] & (1 << 5)) != 0;
             }
             break;
-        case TF_EVSE_V2_FUNCTION_WRITE_UID:
+        case TF_EVSE_V2_FUNCTION_RESET:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (evse_v2->response_expected[1] & (1 << 6)) != 0;
+            }
+            break;
+        case TF_EVSE_V2_FUNCTION_WRITE_UID:
+            if (ret_response_expected != NULL) {
+                *ret_response_expected = (evse_v2->response_expected[1] & (1 << 7)) != 0;
             }
             break;
         default:
@@ -246,32 +251,39 @@ int tf_evse_v2_set_response_expected(TF_EVSEV2 *evse_v2, uint8_t function_id, bo
                 evse_v2->response_expected[1] &= ~(1 << 2);
             }
             break;
-        case TF_EVSE_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
+        case TF_EVSE_V2_FUNCTION_FACTORY_RESET:
             if (response_expected) {
                 evse_v2->response_expected[1] |= (1 << 3);
             } else {
                 evse_v2->response_expected[1] &= ~(1 << 3);
             }
             break;
-        case TF_EVSE_V2_FUNCTION_SET_STATUS_LED_CONFIG:
+        case TF_EVSE_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
             if (response_expected) {
                 evse_v2->response_expected[1] |= (1 << 4);
             } else {
                 evse_v2->response_expected[1] &= ~(1 << 4);
             }
             break;
-        case TF_EVSE_V2_FUNCTION_RESET:
+        case TF_EVSE_V2_FUNCTION_SET_STATUS_LED_CONFIG:
             if (response_expected) {
                 evse_v2->response_expected[1] |= (1 << 5);
             } else {
                 evse_v2->response_expected[1] &= ~(1 << 5);
             }
             break;
-        case TF_EVSE_V2_FUNCTION_WRITE_UID:
+        case TF_EVSE_V2_FUNCTION_RESET:
             if (response_expected) {
                 evse_v2->response_expected[1] |= (1 << 6);
             } else {
                 evse_v2->response_expected[1] &= ~(1 << 6);
+            }
+            break;
+        case TF_EVSE_V2_FUNCTION_WRITE_UID:
+            if (response_expected) {
+                evse_v2->response_expected[1] |= (1 << 7);
+            } else {
+                evse_v2->response_expected[1] &= ~(1 << 7);
             }
             break;
         default:
@@ -1915,6 +1927,56 @@ int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_co
     _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 18) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
+    }
+
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
+}
+
+int tf_evse_v2_factory_reset(TF_EVSEV2 *evse_v2, uint32_t password) {
+    if (evse_v2 == NULL) {
+        return TF_E_NULL;
+    }
+
+    if (evse_v2->magic != 0x5446 || evse_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
+    TF_HAL *_hal = evse_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(_hal)->locked) {
+        return TF_E_LOCKED;
+    }
+
+    bool _response_expected = true;
+    tf_evse_v2_get_response_expected(evse_v2, TF_EVSE_V2_FUNCTION_FACTORY_RESET, &_response_expected);
+    tf_tfp_prepare_send(evse_v2->tfp, TF_EVSE_V2_FUNCTION_FACTORY_RESET, 4, _response_expected);
+
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(evse_v2->tfp);
+
+    password = tf_leconvert_uint32_to(password); memcpy(_send_buf + 0, &password, 4);
+
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
+
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(evse_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+
+    if (_result < 0) {
+        return _result;
+    }
+
+    if (_result & TF_TICK_TIMEOUT) {
+        return TF_E_TIMEOUT;
+    }
+
+    _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
+
+    if (_error_code == 0 && _length != 0) {
         return TF_E_WRONG_RESPONSE_LENGTH;
     }
 

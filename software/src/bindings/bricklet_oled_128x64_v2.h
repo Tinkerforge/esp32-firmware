@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-04-19.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -412,6 +412,8 @@ int tf_oled_128x64_v2_get_display_configuration(TF_OLED128x64V2 *oled_128x64_v2,
  * 
  * Automatic draw can be configured with the {@link tf_oled_128x64_v2_set_display_configuration}
  * function.
+ * 
+ * The font conforms to code page 437.
  */
 int tf_oled_128x64_v2_write_line(TF_OLED128x64V2 *oled_128x64_v2, uint8_t line, uint8_t position, const char *text);
 
