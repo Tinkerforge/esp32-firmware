@@ -52,6 +52,8 @@ public:
 
     void onConnect(std::function<void(WebSocketsClient)> fn);
 
+    void triggerHttpThread();
+
     std::function<void(WebSocketsClient)> on_client_connect_fn;
     wss_keep_alive_t keep_alive;
 };

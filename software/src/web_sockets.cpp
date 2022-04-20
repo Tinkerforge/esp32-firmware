@@ -50,6 +50,8 @@ struct ws_work_item {
                     hd(hd), fd(fd), payload(payload), payload_len(payload_len), payload_ref_counter(payload_ref_counter)
     {}
 
+    ws_work_item() : hd(nullptr), fd(-1), payload(nullptr), payload_len(0), payload_ref_counter(nullptr) {}
+
     void clear()
     {
         if (this->payload_ref_counter == nullptr)
@@ -69,6 +71,8 @@ struct ws_work_item {
 
 std::mutex work_queue_mutex;
 std::deque<ws_work_item> work_queue;
+
+volatile bool worker_active = false;
 
 static void removeFd(wss_keep_alive_t h, int fd)
 {
@@ -217,14 +221,19 @@ bool client_not_alive_cb(wss_keep_alive_t h, int fd)
     return true;
 }
 
+static bool have_work(ws_work_item *item) {
+    std::lock_guard<std::mutex> lock{work_queue_mutex};
+    if(work_queue.empty())
+        return false;
+    *item = work_queue.front();
+    work_queue.pop_front();
+    return true;
+}
+
 static void work(void *arg)
 {
-    while (!work_queue.empty()) {
-        ws_work_item wi = work_queue.front();
-        {
-            std::lock_guard<std::mutex> lock{work_queue_mutex};
-            work_queue.pop_front();
-        }
+    ws_work_item wi;
+    while (have_work(&wi)) {
         if (httpd_ws_get_fd_info(wi.hd, wi.fd) != HTTPD_WS_CLIENT_WEBSOCKET) {
             wi.clear();
             continue;
@@ -244,6 +253,9 @@ static void work(void *arg)
 
         wi.clear();
     }
+
+    std::lock_guard<std::mutex> lock{work_queue_mutex};
+    worker_active = false;
 }
 
 bool check_client_alive_cb(wss_keep_alive_t h, int fd)
@@ -254,7 +266,7 @@ bool check_client_alive_cb(wss_keep_alive_t h, int fd)
         std::lock_guard<std::mutex> lock{work_queue_mutex};
         work_queue.emplace_back(hd, fd, nullptr, 0, nullptr);
     }
-    return httpd_queue_work(hd, work, nullptr) == ESP_OK;
+    return true;
 }
 
 void WebSocketsClient::send(const char *payload, size_t payload_len)
@@ -286,9 +298,6 @@ void WebSockets::sendToClient(const char *payload, size_t payload_len, int sock)
         work_queue.emplace_back(httpd, sock, payload_copy, payload_len, payload_ref_counter);
     }
 
-    if (httpd_queue_work(httpd, work, nullptr) != ESP_OK) {
-        logger.printfln("httpd_queue_work failed!");
-    }
 }
 
 bool WebSockets::haveActiveClient()
@@ -373,10 +382,6 @@ void WebSockets::sendToAllOwned(char *payload, size_t payload_len)
         }
 
         work_queue.emplace_back(httpd, sock, payload, payload_len, payload_ref_counter);
-
-        if (httpd_queue_work(httpd, work, nullptr) != ESP_OK) {
-            logger.printfln("httpd_queue_work failed!");
-        }
     }
 }
 
@@ -439,11 +444,24 @@ void WebSockets::sendToAll(const char *payload, size_t payload_len)
         }
 
         work_queue.emplace_back(httpd, sock, payload_copy, payload_len, payload_ref_counter);
-
-        if (httpd_queue_work(httpd, work, nullptr) != ESP_OK) {
-            logger.printfln("httpd_queue_work failed!");
-        }
     }
+}
+
+void WebSockets::triggerHttpThread() {
+    std::lock_guard<std::mutex> lock{work_queue_mutex};
+    if (work_queue.empty()) {
+        return;
+    }
+
+    if (worker_active) {
+        return;
+    }
+
+    if (httpd_queue_work(server.httpd, work, nullptr) != ESP_OK) {
+        return;
+    }
+
+    worker_active = true;
 }
 
 void WebSockets::start(const char *uri)
@@ -473,6 +491,10 @@ void WebSockets::start(const char *uri)
 
     httpd_register_uri_handler(httpd, &ws);
     wss_keep_alive_set_user_ctx(keep_alive, httpd);
+
+    task_scheduler.scheduleWithFixedDelay([this](){
+        this->triggerHttpThread();
+    }, 100, 100);
 
     //server.onConnect([this](int fd) {removeFd(this->keep_alive, fd);});
     //server.onDisconnect([this](int fd) {removeFd(this->keep_alive, fd);});
