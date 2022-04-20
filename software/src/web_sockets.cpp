@@ -37,35 +37,27 @@ extern EventLog logger;
 
 struct ws_work_item {
     httpd_handle_t hd;
-    int fd;
+    int fds[MAX_CLIENTS];
     char *payload;
     size_t payload_len;
-    int *payload_ref_counter;
 
     ws_work_item(httpd_handle_t hd,
-                 int fd,
+                 int fds_to_send[7],
                  char *payload,
-                 size_t payload_len,
-                 int *payload_ref_counter) :
-                    hd(hd), fd(fd), payload(payload), payload_len(payload_len), payload_ref_counter(payload_ref_counter)
-    {}
+                 size_t payload_len) :
+                    hd(hd), fds(), payload(payload), payload_len(payload_len)
+    {
+        memcpy(this->fds, fds_to_send, sizeof(fds));
+    }
 
-    ws_work_item() : hd(nullptr), fd(-1), payload(nullptr), payload_len(0), payload_ref_counter(nullptr) {}
+    ws_work_item() : hd(nullptr), fds(), payload(nullptr), payload_len(0) {}
 
     void clear()
     {
-        if (this->payload_ref_counter == nullptr)
+        if (this->payload == nullptr)
             return;
 
-        if (*this->payload_ref_counter > 0) {
-            --(*this->payload_ref_counter);
-        }
-        if (*this->payload_ref_counter == 0) {
-            free(this->payload);
-            free(this->payload_ref_counter);
-            this->payload = nullptr;
-            this->payload_ref_counter = nullptr;
-        }
+        free(this->payload);
     }
 };
 
@@ -223,8 +215,10 @@ bool client_not_alive_cb(wss_keep_alive_t h, int fd)
 
 static bool have_work(ws_work_item *item) {
     std::lock_guard<std::mutex> lock{work_queue_mutex};
+
     if(work_queue.empty())
         return false;
+
     *item = work_queue.front();
     work_queue.pop_front();
     return true;
@@ -234,11 +228,6 @@ static void work(void *arg)
 {
     ws_work_item wi;
     while (have_work(&wi)) {
-        if (httpd_ws_get_fd_info(wi.hd, wi.fd) != HTTPD_WS_CLIENT_WEBSOCKET) {
-            wi.clear();
-            continue;
-        }
-
         httpd_ws_frame_t ws_pkt;
         memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
 
@@ -246,9 +235,19 @@ static void work(void *arg)
         ws_pkt.len = wi.payload_len;
         ws_pkt.type = wi.payload_len == 0 ? HTTPD_WS_TYPE_PING : HTTPD_WS_TYPE_TEXT;
 
-        auto result = httpd_ws_send_frame_async(wi.hd, wi.fd, &ws_pkt);
-        if (result != ESP_OK) {
-            printf("failed to send %s frame to fd %d: %d\n", wi.payload_len == 0 ? "HTTPD_WS_TYPE_PING" : "HTTPD_WS_TYPE_TEXT", wi.fd, result);
+        for(int i = 0; i < MAX_CLIENTS; ++i) {
+            if (wi.fds[i] == -1) {
+                continue;
+            }
+
+            if (httpd_ws_get_fd_info(wi.hd, wi.fds[i]) != HTTPD_WS_CLIENT_WEBSOCKET) {
+                continue;
+            }
+
+            auto result = httpd_ws_send_frame_async(wi.hd, wi.fds[i], &ws_pkt);
+            if (result != ESP_OK) {
+                printf("failed to send %s frame to fd %d: %d\n", wi.payload_len == 0 ? "HTTPD_WS_TYPE_PING" : "HTTPD_WS_TYPE_TEXT", wi.fds[i], result);
+            }
         }
 
         wi.clear();
@@ -262,10 +261,9 @@ bool check_client_alive_cb(wss_keep_alive_t h, int fd)
 {
     httpd_handle_t hd = (httpd_handle_t)wss_keep_alive_get_user_ctx(h);
 
-    {
-        std::lock_guard<std::mutex> lock{work_queue_mutex};
-        work_queue.emplace_back(hd, fd, nullptr, 0, nullptr);
-    }
+    std::lock_guard<std::mutex> lock{work_queue_mutex};
+    int fds[7] = {fd, -1, -1, -1, -1, -1, -1};
+    work_queue.emplace_back(hd, fds, nullptr, 0);
     return true;
 }
 
@@ -277,27 +275,20 @@ void WebSocketsClient::send(const char *payload, size_t payload_len)
 void WebSockets::sendToClient(const char *payload, size_t payload_len, int sock)
 {
     httpd_handle_t httpd = server.httpd;
-    int *payload_ref_counter = (int *)malloc(sizeof(int));
-    if (payload_ref_counter == nullptr)
-        return;
+
     char *payload_copy = (char *)malloc(payload_len * sizeof(char));
     if (payload_copy == nullptr) {
-        free(payload_ref_counter);
         return;
     }
 
     memcpy(payload_copy, payload, payload_len);
 
-    *payload_ref_counter = 1;
-
-    {
-        // TODO: locking here means, that we assume, the sock fd is valid up to now.
-        // This holds true if sendToClient is only called from the onClientConnect callback,
-        // i.e. from the same thread.
-        std::lock_guard<std::mutex> lock{work_queue_mutex};
-        work_queue.emplace_back(httpd, sock, payload_copy, payload_len, payload_ref_counter);
-    }
-
+    // TODO: locking here means, that we assume, the sock fd is valid up to now.
+    // This holds true if sendToClient is only called from the onClientConnect callback,
+    // i.e. from the same thread.
+    std::lock_guard<std::mutex> lock{work_queue_mutex};
+    int fds[7] = {sock, -1, -1, -1, -1, -1, -1};
+    work_queue.emplace_back(httpd, fds, payload_copy, payload_len);
 }
 
 bool WebSockets::haveActiveClient()
@@ -331,16 +322,13 @@ bool WebSockets::haveActiveClient()
     return active_clients != 0;
 }
 
-void WebSockets::sendToAllOwned(char *payload, size_t payload_len)
-{
-    httpd_handle_t httpd = server.httpd;
+static bool get_client_fds(httpd_handle_t httpd, int fds[7]) {
     size_t clients = MAX_CLIENTS;
-    int client_fds[MAX_CLIENTS];
 
-    auto result = httpd_get_client_list(httpd, &clients, client_fds);
+    auto result = httpd_get_client_list(httpd, &clients, fds);
     if (result != ESP_OK) {
         logger.printfln("httpd_get_client_list failed! %d", result);
-        return;
+        return false;
     }
 
     int active_clients = 0;
@@ -350,11 +338,11 @@ void WebSockets::sendToAllOwned(char *payload, size_t payload_len)
     //printf("payload (len: %d) after copy: %s\n", payload_len, payload_copy);
 
     for (size_t i = 0; i < clients; ++i)
-        if (httpd_ws_get_fd_info(httpd, client_fds[i]) == HTTPD_WS_CLIENT_WEBSOCKET)
+        if (httpd_ws_get_fd_info(httpd, fds[i]) == HTTPD_WS_CLIENT_WEBSOCKET)
             ++active_clients;
-        else if (httpd_ws_get_fd_info(httpd, client_fds[i]) == HTTPD_WS_CLIENT_HTTP)
+        else if (httpd_ws_get_fd_info(httpd, fds[i]) == HTTPD_WS_CLIENT_HTTP)
             ++http_clients;
-        else if (httpd_ws_get_fd_info(httpd, client_fds[i]) == HTTPD_WS_CLIENT_INVALID)
+        else if (httpd_ws_get_fd_info(httpd, fds[i]) == HTTPD_WS_CLIENT_INVALID)
             ++invalid_clients;
         else
             ++unknown_clients;
@@ -366,85 +354,43 @@ void WebSockets::sendToAllOwned(char *payload, size_t payload_len)
             unknown_clients);*/
 
     if (active_clients == 0)
-        return;
+        return false;
 
-    int *payload_ref_counter = (int *)malloc(sizeof(int));
-    if (payload_ref_counter == nullptr)
-        return;
+    for (size_t i = 0; i < clients; ++i) {
+        if (httpd_ws_get_fd_info(httpd, fds[i]) != HTTPD_WS_CLIENT_WEBSOCKET) {
+            fds[i] = -1;
+        }
+    }
 
-    *payload_ref_counter = active_clients;
+    return true;
+}
+
+void WebSockets::sendToAllOwned(char *payload, size_t payload_len)
+{
+    int client_fds[MAX_CLIENTS];
+    if (!get_client_fds(server.httpd, client_fds)) {
+        free(payload);
+        return;
+    }
 
     std::lock_guard<std::mutex> lock{work_queue_mutex};
-    for (size_t i = 0; i < clients; ++i) {
-        int sock = client_fds[i];
-        if (httpd_ws_get_fd_info(httpd, sock) != HTTPD_WS_CLIENT_WEBSOCKET) {
-            continue;
-        }
-
-        work_queue.emplace_back(httpd, sock, payload, payload_len, payload_ref_counter);
-    }
+    work_queue.emplace_back(server.httpd, client_fds, payload, payload_len);
 }
 
 void WebSockets::sendToAll(const char *payload, size_t payload_len)
 {
-    httpd_handle_t httpd = server.httpd;
-    size_t clients = MAX_CLIENTS;
     int client_fds[MAX_CLIENTS];
-
-    auto result = httpd_get_client_list(httpd, &clients, client_fds);
-    if (result != ESP_OK) {
-        logger.printfln("httpd_get_client_list failed! %d", result);
+    if (!get_client_fds(server.httpd, client_fds))
         return;
-    }
-
-    int active_clients = 0;
-    int http_clients = 0;
-    int invalid_clients = 0;
-    int unknown_clients = 0;
-    //printf("payload (len: %d) after copy: %s\n", payload_len, payload_copy);
-
-    for (size_t i = 0; i < clients; ++i)
-        if (httpd_ws_get_fd_info(httpd, client_fds[i]) == HTTPD_WS_CLIENT_WEBSOCKET)
-            ++active_clients;
-        else if (httpd_ws_get_fd_info(httpd, client_fds[i]) == HTTPD_WS_CLIENT_HTTP)
-            ++http_clients;
-        else if (httpd_ws_get_fd_info(httpd, client_fds[i]) == HTTPD_WS_CLIENT_INVALID)
-            ++invalid_clients;
-        else
-            ++unknown_clients;
-
-    /*printf("active_clients %d, http_clients %d, invalid_clients %d, unknown_clients %d\n",
-            active_clients,
-            http_clients,
-            invalid_clients,
-            unknown_clients);*/
-
-    if (active_clients == 0)
-        return;
-
-    int *payload_ref_counter = (int *)malloc(sizeof(int));
-    if (payload_ref_counter == nullptr)
-        return;
-
-    *payload_ref_counter = active_clients;
 
     char *payload_copy = (char *)malloc(payload_len * sizeof(char));
     if (payload_copy == nullptr) {
-        free(payload_ref_counter);
         return;
     }
-
     memcpy(payload_copy, payload, payload_len);
 
     std::lock_guard<std::mutex> lock{work_queue_mutex};
-    for (size_t i = 0; i < clients; ++i) {
-        int sock = client_fds[i];
-        if (httpd_ws_get_fd_info(httpd, sock) != HTTPD_WS_CLIENT_WEBSOCKET) {
-            continue;
-        }
-
-        work_queue.emplace_back(httpd, sock, payload_copy, payload_len, payload_ref_counter);
-    }
+    work_queue.emplace_back(server.httpd, client_fds, payload_copy, payload_len);
 }
 
 void WebSockets::triggerHttpThread() {
