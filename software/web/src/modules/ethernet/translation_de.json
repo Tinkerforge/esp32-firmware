@@ -23,7 +23,7 @@
             "static_ip": "IP-Adresse",
             "subnet": "Subnetzmaske",
             "gateway": "Gateway",
-            "dns": "<span class=\"form-label pr-2\">DNS-Server</span><span class=\"text-muted\">optional</span>",
+            "dns": "<span class=\"form-label pr-2\">DNS-Server</span>",
             "dns2": "<span class=\"form-label pr-2\">Alternativer DNS-Server</span><span class=\"text-muted\">optional</span>",
             "static_ip_invalid": "Die IP-Adresse muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrent durch einen Punkt, bestehen. Zum Beispiel 10.0.0.2",
             "subnet_invalid": "Die Subnetzmaske muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrent durch einen Punkt, bestehen. Zum Beispiel 255.255.255.0",

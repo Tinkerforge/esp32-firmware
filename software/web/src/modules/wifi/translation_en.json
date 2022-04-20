@@ -37,7 +37,7 @@
             "static_ip": "IP address",
             "subnet": "Subnet mask",
             "gateway": "Gateway",
-            "dns": "<span class=\"form-label pr-2\">DNS server</span><span class=\"text-muted\">optional</span>",
+            "dns": "<span class=\"form-label pr-2\">DNS server</span>",
             "dns2": "<span class=\"form-label pr-2\">Alternative DNS server</span><span class=\"text-muted\">optional</span>",
             "static_ip_invalid": "The IP address must have four groups between 0 and 255 separated with a dot. For example 10.0.0.2",
             "subnet_invalid": "The subnet mask must have four groups between 0 and 255 separated with a dot. For example 255.255.255.0",
