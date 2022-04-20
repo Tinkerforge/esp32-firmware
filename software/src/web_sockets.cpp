@@ -61,6 +61,8 @@ struct ws_work_item {
         if (*this->payload_ref_counter == 0) {
             free(this->payload);
             free(this->payload_ref_counter);
+            this->payload = nullptr;
+            this->payload_ref_counter = nullptr;
         }
     }
 };
