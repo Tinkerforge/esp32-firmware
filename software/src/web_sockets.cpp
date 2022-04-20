@@ -33,7 +33,7 @@ extern TaskScheduler task_scheduler;
 extern WebServer server;
 extern EventLog logger;
 
-static const size_t max_clients = 7;
+#define MAX_CLIENTS 7
 
 struct ws_work_item {
     httpd_handle_t hd;
@@ -292,8 +292,8 @@ void WebSockets::sendToClient(const char *payload, size_t payload_len, int sock)
 bool WebSockets::haveActiveClient()
 {
     httpd_handle_t httpd = server.httpd;
-    size_t clients = 7;
-    int client_fds[7];
+    size_t clients = MAX_CLIENTS;
+    int client_fds[MAX_CLIENTS];
 
     auto result = httpd_get_client_list(httpd, &clients, client_fds);
     if (result != ESP_OK) {
@@ -323,8 +323,8 @@ bool WebSockets::haveActiveClient()
 void WebSockets::sendToAllOwned(char *payload, size_t payload_len)
 {
     httpd_handle_t httpd = server.httpd;
-    size_t clients = 7;
-    int client_fds[7];
+    size_t clients = MAX_CLIENTS;
+    int client_fds[MAX_CLIENTS];
 
     auto result = httpd_get_client_list(httpd, &clients, client_fds);
     if (result != ESP_OK) {
@@ -381,8 +381,8 @@ void WebSockets::sendToAllOwned(char *payload, size_t payload_len)
 void WebSockets::sendToAll(const char *payload, size_t payload_len)
 {
     httpd_handle_t httpd = server.httpd;
-    size_t clients = 7;
-    int client_fds[7];
+    size_t clients = MAX_CLIENTS;
+    int client_fds[MAX_CLIENTS];
 
     auto result = httpd_get_client_list(httpd, &clients, client_fds);
     if (result != ESP_OK) {
@@ -453,7 +453,7 @@ void WebSockets::start(const char *uri)
     keep_alive_config.keep_alive_period_ms = 5000;
     keep_alive_config.not_alive_after_ms = 10000;
 
-    keep_alive_config.max_clients = max_clients;
+    keep_alive_config.max_clients = MAX_CLIENTS;
     keep_alive_config.client_not_alive_cb = client_not_alive_cb;
     keep_alive_config.check_client_alive_cb = check_client_alive_cb;
 
