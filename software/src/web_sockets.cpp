@@ -53,7 +53,6 @@ static void work(void *arg)
         ws_pkt.len = wi.payload_len;
         ws_pkt.type = wi.payload_len == 0 ? HTTPD_WS_TYPE_PING : HTTPD_WS_TYPE_TEXT;
 
-        int sent = 0;
         for(int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
             if (wi.fds[i] == -1) {
                 continue;
@@ -64,9 +63,7 @@ static void work(void *arg)
             }
 
             httpd_ws_send_frame_async(wi.hd, wi.fds[i], &ws_pkt);
-            ++sent;
         }
-        logger.printfln("Sent %s to %d", wi.payload_len == 0 ? "ping" : "text", sent);
 
         wi.clear();
     }
@@ -89,7 +86,6 @@ static esp_err_t ws_handler(httpd_req_t *req)
 
         struct httpd_req_aux *aux = (struct httpd_req_aux *)req->aux;
         if (aux->ws_handshake_detect) {
-            //logger.printfln("Responding WS handshake to sock %d", aux->sd->fd);
             struct httpd_data *hd = (struct httpd_data *)server.httpd;
             esp_err_t ret = httpd_ws_respond_server_handshake(&hd->hd_req, nullptr);
             if (ret != ESP_OK) {
@@ -101,11 +97,8 @@ static esp_err_t ws_handler(httpd_req_t *req)
             aux->sd->ws_control_frames = true;
             aux->sd->ws_user_ctx = req->user_ctx;
 
-            //logger.printfln("Handshake done, the new connection was opened");
-
             int sock = httpd_req_to_sockfd(req);
             WebSockets *ws = (WebSockets *)req->user_ctx;
-            logger.printfln("Received open for %d", httpd_req_to_sockfd(req));
             ws->keepAliveAdd(sock);
 
             if (ws->on_client_connect_fn) {
@@ -125,7 +118,7 @@ static esp_err_t ws_handler(httpd_req_t *req)
         logger.printfln("httpd_ws_recv_frame failed to get frame len with %d", ret);
         return ret;
     }
-    //logger.printfln("frame len is %d", ws_pkt.len);
+
     if (ws_pkt.len) {
         /* ws_pkt.len + 1 is for NULL termination as we are expecting a string */
         buf = (uint8_t *)calloc(1, ws_pkt.len + 1);
@@ -150,15 +143,13 @@ static esp_err_t ws_handler(httpd_req_t *req)
         httpd_ws_send_frame(req, &ws_pkt);
     } else if (ws_pkt.type == HTTPD_WS_TYPE_PONG) {
         // If it was a PONG, update the keep-alive
-        //logger.printfln("Received PONG message");
         WebSockets *ws = (WebSockets *)req->user_ctx;
         ws->receivedPong(httpd_req_to_sockfd(req));
     } else if (ws_pkt.type == HTTPD_WS_TYPE_TEXT) {
         // If it was a TEXT message, print it
-        logger.printfln("Received packet with message: %s", ws_pkt.payload);
+        logger.printfln("Ignoring received packet with message: \"%s\" (web sockets are unidirectional for now)", ws_pkt.payload);
     } else if (ws_pkt.type == HTTPD_WS_TYPE_CLOSE) {
         // If it was a CLOSE, remove it from the keep-alive list
-        logger.printfln("Received close for %d", httpd_req_to_sockfd(req));
         WebSockets *ws = (WebSockets *)req->user_ctx;
         ws->keepAliveRemove(httpd_req_to_sockfd(req));
     }
@@ -208,7 +199,6 @@ void WebSockets::keepAliveCloseDead(int fd)
     if (httpd_ws_get_fd_info(server.httpd, fd) == HTTPD_WS_CLIENT_HTTP)
         return;
 
-    //logger.printfln("Client not alive, closing fd %d", fd);
     httpd_sess_trigger_close(server.httpd, fd);
 
     // Seems like we have to do everything by ourselves...
@@ -260,7 +250,6 @@ void WebSockets::checkActiveClients() {
             continue;
 
         if (httpd_ws_get_fd_info(server.httpd, keep_alive_fds[i])  != HTTPD_WS_CLIENT_WEBSOCKET || deadline_elapsed(keep_alive_last_pong[i] + 10000)) {
-            logger.printfln("Client %d is dead.", keep_alive_fds[i]);
             this->keepAliveCloseDead(keep_alive_fds[i]);
         }
     }
