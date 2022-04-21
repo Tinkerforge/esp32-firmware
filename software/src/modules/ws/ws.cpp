@@ -21,7 +21,6 @@
 
 #include <esp_http_server.h>
 
-#include "keep_alive.h"
 #include "task_scheduler.h"
 #include "web_server.h"
 
