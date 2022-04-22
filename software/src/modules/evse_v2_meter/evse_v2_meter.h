@@ -34,7 +34,6 @@ public:
     bool hardware_available = false;
 
     ConfigRoot all_values;
-    ConfigRoot reset;
 
     char uid[7] = {0};
 };

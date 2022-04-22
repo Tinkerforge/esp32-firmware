@@ -41,7 +41,6 @@ extern API api;
 
 EVSEV2Meter::EVSEV2Meter()
 {
-    reset = Config::Null();
 }
 
 void EVSEV2Meter::updateMeterValues()
@@ -118,13 +117,13 @@ void EVSEV2Meter::register_urls()
 {
     api.addState("meter/error_counters", &evse_v2.evse_energy_meter_errors, {}, 1000);
 
-    api.addCommand("meter/reset", &reset, {}, [this](){
+    energy_meter.registerResetCallback([this](){
         if(!initialized) {
             return;
         }
 
         tf_evse_v2_reset_energy_meter_relative_energy(&evse_v2.device);
-    }, true);
+    });
 }
 
 void EVSEV2Meter::loop()

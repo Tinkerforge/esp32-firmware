@@ -62,6 +62,10 @@ EnergyMeter::EnergyMeter()
         0, ALL_VALUES_COUNT, Config::type_id<Config::ConfFloat>());
 
     reset = Config::Null();
+
+    last_reset = Config::Object({
+        {"last_reset", Config::Uint32(0)}
+    });
 }
 
 void EnergyMeter::updateMeterState(uint8_t new_state, uint8_t new_type) {
@@ -99,6 +103,11 @@ void EnergyMeter::updateMeterAllValues(float values[ALL_VALUES_COUNT]) {
         all_values.get(i)->updateFloat(values[i]);
 }
 
+void EnergyMeter::registerResetCallback(std::function<void(void)> cb)
+{
+    this->reset_callbacks.push_back(cb);
+}
+
 void EnergyMeter::setupMeter(uint8_t meter_type)
 {
     hardware_available = true;
@@ -120,7 +129,7 @@ void EnergyMeter::setupMeter(uint8_t meter_type)
 
 void EnergyMeter::setup()
 {
-
+    api.restorePersistentConfig("meter/last_reset", &last_reset);
 }
 
 void EnergyMeter::register_urls()
@@ -129,6 +138,21 @@ void EnergyMeter::register_urls()
     api.addState("meter/values", &values, {}, 1000);
     api.addState("meter/phases", &phases, {}, 1000);
     api.addState("meter/all_values", &all_values, {}, 1000);
+    api.addState("meter/last_reset", &last_reset, {}, 1000);
+
+    api.addCommand("meter/reset", &reset, {}, [this](){
+        for (auto cb : this->reset_callbacks)
+            cb();
+
+        struct timeval tv_now;
+
+        if (clock_synced(&tv_now)) {
+            last_reset.get("last_reset")->updateUint(tv_now.tv_sec);
+        } else {
+            last_reset.get("last_reset")->updateUint(0);
+        }
+        api.writeConfig("meter/last_reset", &last_reset);
+    }, true);
 
     power_hist.register_urls("meter/");
 }

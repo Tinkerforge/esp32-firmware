@@ -185,9 +185,9 @@ void SDM72DM::register_urls()
 {
     api.addState("meter/error_counters", &error_counters, {}, 1000);
 
-    api.addCommand("meter/reset", &reset, {}, [this](){
+    energy_meter.registerResetCallback([this](){
         this->reset_requested = true;
-    }, true);
+    });
 
     this->DeviceModule::register_urls();
 }

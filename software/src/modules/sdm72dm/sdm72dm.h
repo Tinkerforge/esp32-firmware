@@ -67,7 +67,6 @@ public:
         UserDataDone done;
     };
 
-    ConfigRoot reset;
     ConfigRoot error_counters;
 
 private:
