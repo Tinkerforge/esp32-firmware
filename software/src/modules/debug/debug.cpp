@@ -37,13 +37,17 @@ void Debug::setup()
     debug_state = Config::Object({
         {"uptime", Config::Uint32(0)},
         {"free_heap", Config::Uint32(0)},
-        {"largest_free_heap_block", Config::Uint32(0)}
+        {"largest_free_heap_block", Config::Uint32(0)},
+        {"free_psram", Config::Uint32(0)},
+        {"largest_free_psram_block", Config::Uint32(0)}
     });
 
     task_scheduler.scheduleWithFixedDelay([this](){
         debug_state.get("uptime")->updateUint(millis());
         debug_state.get("free_heap")->updateUint(heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));
         debug_state.get("largest_free_heap_block")->updateUint(heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));
+        debug_state.get("free_psram")->updateUint(heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
+        debug_state.get("largest_free_psram_block")->updateUint(heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
     }, 1000, 1000);
 
     initialized = true;
