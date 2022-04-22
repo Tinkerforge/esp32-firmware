@@ -35,8 +35,6 @@ extern Config modules;
 
 extern API api;
 
-#define ALL_VALUES_COUNT 85
-
 APIMeter::APIMeter()
 {
     state_update = Config::Object({

@@ -37,8 +37,6 @@ extern Config modules;
 
 extern API api;
 
-#define ALL_VALUES_COUNT 85
-
 EVSEV2Meter::EVSEV2Meter()
 {
 }
