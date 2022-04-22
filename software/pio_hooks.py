@@ -495,6 +495,18 @@ def main():
             pass
 
         with ChangedDirectory('web'):
+            npm_version = subprocess.check_output(['npm', '--version'], shell=sys.platform == 'win32', encoding='utf-8').strip()
+
+            m = re.fullmatch(r'(\d+)\.\d+\.\d+', npm_version)
+
+            if m == None:
+                print('Error: npm version has unexpected format: {0}'.format(npm_version))
+                sys.exit(1)
+
+            if int(m.group(1)) < 8:
+                print('Error: npm >= 8 required, found npm {0}'.format(npm_version))
+                sys.exit(1)
+
             subprocess.check_call(['npm', 'ci'], shell=sys.platform == 'win32')
 
         with open('web/node_modules/tinkerforge.marker', 'wb') as f:
