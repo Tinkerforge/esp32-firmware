@@ -123,12 +123,11 @@ void EnergyMeter::setupMeter(uint8_t meter_type)
     for (int i = all_values.count(); i < ALL_VALUES_COUNT; ++i) {
         all_values.add();
     }
-
-    initialized = true;
 }
 
 void EnergyMeter::setup()
 {
+    initialized = true;
     api.restorePersistentConfig("meter/last_reset", &last_reset);
 }
 
