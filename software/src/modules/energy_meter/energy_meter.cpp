@@ -67,9 +67,6 @@ EnergyMeter::EnergyMeter()
 void EnergyMeter::updateMeterState(uint8_t new_state, uint8_t new_type) {
     state.get("type")->updateUint(new_type);
 
-    if (!state.get("state")->updateUint(new_state))
-        return;
-
     if (new_state == 2) {
         this->setupMeter(new_type);
     }
@@ -114,7 +111,7 @@ void EnergyMeter::setupMeter(uint8_t meter_type)
 
     power_hist.setup();
 
-    for (int i = 0; i < ALL_VALUES_COUNT; ++i) {
+    for (int i = all_values.count(); i < ALL_VALUES_COUNT; ++i) {
         all_values.add();
     }
 

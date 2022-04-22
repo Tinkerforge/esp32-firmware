@@ -21,6 +21,9 @@
 
 void ValueHistory::setup()
 {
+    history.clear();
+    live.clear();
+
     for (int i = 0; i < history.size(); ++i) {
         //float f = 5000.0 * sin(PI/120.0 * i) + 5000.0;
         // Use negative state to mark that these are pre-filled.
