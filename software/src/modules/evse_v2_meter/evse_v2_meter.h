@@ -20,8 +20,6 @@
 #pragma once
 
 #include "config.h"
-#include "ringbuffer.h"
-#include "malloc_tools.h"
 
 class EVSEV2Meter {
 public:
