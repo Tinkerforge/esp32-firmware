@@ -64,6 +64,7 @@ public:
     ConfigRoot state;
     ConfigRoot inject_tag;
     uint32_t last_tag_injection = 0;
+    int tag_injection_action = 0;
 
     uint32_t last_action_ms = 0;
 

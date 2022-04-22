@@ -619,7 +619,7 @@ void Users::remove_from_username_file(uint8_t user_id)
 }
 
 // Only returns true if the triggered action was a charge start.
-bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::ConfVariant auth_info)
+bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::ConfVariant auth_info, int action)
 {
     bool user_enabled = get_user_slot()->get("active")->asBool();
     if (!user_enabled)
@@ -647,14 +647,18 @@ bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::Co
     switch (iec_state) {
         case IEC_STATE_B: // State B: The user wants to start charging. If we already have a tracked charge, stop charging to allow switching to another user.
             if (charge_tracker.currentlyCharging()) {
-                this->stop_charging(user_id, false);
+                if (action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_STOP)
+                    this->stop_charging(user_id, false);
                 return false;
             }
-            return this->start_charging(user_id, current_limit, auth_type, auth_info);
+            if (action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_START)
+                return this->start_charging(user_id, current_limit, auth_type, auth_info);
+            return false;
         case IEC_STATE_C: // State C: The user wants to stop charging.
             // Debounce here a bit, an impatient user can otherwise accidentially trigger a stop if a start_charging takes too long.
-            if (tscs > 3000)
+            if (tscs > 3000 && (action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_STOP))
                 this->stop_charging(user_id, false);
+            return false;
         default: //Don't do anything in state A, D, and E/F
             break;
     }

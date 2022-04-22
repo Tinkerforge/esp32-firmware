@@ -32,7 +32,10 @@ public:
     void rename_user(uint8_t user_id, const char *username, const char *display_name);
     void remove_from_username_file(uint8_t user_id);
 
-    bool trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::ConfVariant auth_info);
+    #define TRIGGER_CHARGE_ANY 0
+    #define TRIGGER_CHARGE_START 1
+    #define TRIGGER_CHARGE_STOP 2
+    bool trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::ConfVariant auth_info, int action = TRIGGER_CHARGE_ANY);
 
     void remove_username_file();
 
