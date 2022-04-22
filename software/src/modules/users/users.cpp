@@ -119,14 +119,8 @@ void set_user_current(uint16_t current)
 
 float get_energy()
 {
-#if defined(MODULE_EVSE_AVAILABLE)
-    bool meter_avail = sdm72dm.state.get("state")->asUint() == 2;
-    return !meter_avail ? NAN : sdm72dm.values.get("energy_abs")->asFloat();
-#elif defined(MODULE_EVSE_V2_AVAILABLE)
-    bool meter_avail = evse_v2_meter.state.get("state")->asUint() == 2;
-    return !meter_avail ? NAN : evse_v2_meter.values.get("energy_abs")->asFloat();
-#endif
-    return NAN;
+    bool meter_avail = energy_meter.state.get("state")->asUint() == 2;
+    return !meter_avail ? NAN : energy_meter.values.get("energy_abs")->asFloat();
 }
 
 #define USER_SLOT_INFO_VERSION 1

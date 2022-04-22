@@ -26,6 +26,7 @@
 #include "tools.h"
 #include "task_scheduler.h"
 #include "web_server.h"
+#include "modules.h"
 
 extern EventLog logger;
 
@@ -37,17 +38,6 @@ extern API api;
 
 SDM72DM::SDM72DM() : DeviceModule("rs485", "RS485", "energy meter", std::bind(&SDM72DM::setupRS485, this))
 {
-    state = Config::Object({
-        {"state", Config::Uint8(0)}, // 0 - no energy meter, 1 - initialization error, 2 - meter available
-        {"type", Config::Uint8(0)} // 0 - not available, 1 - sdm72, 2 - sdm630, 3 - sdm72v2
-    });
-
-    values = Config::Object({
-        {"power", Config::Float(0.0)},
-        {"energy_rel", Config::Float(0.0)},
-        {"energy_abs", Config::Float(0.0)},
-    });
-
     error_counters = Config::Object({
         {"meter", Config::Uint32(0)},
         {"bricklet", Config::Uint32(0)},
@@ -58,7 +48,6 @@ SDM72DM::SDM72DM() : DeviceModule("rs485", "RS485", "energy meter", std::bind(&S
 
     user_data.expected_request_id = 0;
     user_data.value_to_write = nullptr;
-    user_data.state = state.get("state");
     user_data.done = SDM72DM::UserDataDone::DONE;
 }
 
@@ -97,14 +86,14 @@ void read_input_registers_handler(struct TF_RS485 *device, uint8_t request_id, i
     value.regs[1] = input_registers_chunk_data[0];
     value.regs[0] = input_registers_chunk_data[1];
 
-    ud->value_to_write->updateFloat(value.f);
-    if (ud->state->asUint() == 0 && value.f == 0)
-        ud->state->updateUint(1);
+    *ud->value_to_write = value.f;
 
-    if (ud->state->asUint() != 2 && value.f != 0) {
-        ud->state->updateUint(2);
-        api.addFeature("meter");
-    }
+    if (energy_meter.state.get("state")->asUint() == 0 && value.f == 0)
+        energy_meter.updateMeterState(1, ENERGY_METER_TYPE_SDM72DM);
+
+    if (energy_meter.state.get("state")->asUint() != 2 && value.f != 0)
+        energy_meter.updateMeterState(2, ENERGY_METER_TYPE_SDM72DM);
+
     ud->done = SDM72DM::UserDataDone::DONE;
 }
 
@@ -183,12 +172,6 @@ void SDM72DM::checkRS485State()
 
 void SDM72DM::setup()
 {
-    for (int i = 0; i < power_history.size(); ++i) {
-        //float f = 5000.0 * sin(PI/120.0 * i) + 5000.0;
-        // Use negative values to mark that these are pre-filled.
-        power_history.push(-1);
-    }
-
     setupRS485();
     if (!device_found)
         return;
@@ -200,79 +183,21 @@ void SDM72DM::setup()
 
 void SDM72DM::register_urls()
 {
-    api.addState("meter/state", &state, {}, 1000);
-    api.addState("meter/values", &values, {}, 1000);
     api.addState("meter/error_counters", &error_counters, {}, 1000);
 
     api.addCommand("meter/reset", &reset, {}, [this](){
         this->reset_requested = true;
     }, true);
 
-    server.on("/meter/history", HTTP_GET, [this](WebServerRequest request) {
-        if (!initialized) {
-            request.send(400, "text/html", "not initialized");
-            return;
-        }
-
-        const size_t buf_size = RING_BUF_SIZE * 6 + 100;
-        char buf[buf_size] = {0};
-        size_t buf_written = 0;
-
-        int16_t val;
-        power_history.peek(&val);
-        // Negative values are prefilled, because the ESP was booted less than 48 hours ago.
-        if (val < 0)
-            buf_written += snprintf(buf + buf_written, buf_size - buf_written, "%s", "[null");
-        else
-            buf_written += snprintf(buf + buf_written, buf_size - buf_written, "[%d", (int)val);
-
-        for (int i = 1; i < power_history.used() && power_history.peek_offset(&val, i) && buf_written < buf_size; ++i) {
-            // Negative values are prefilled, because the ESP was booted less than 48 hours ago.
-            if (val < 0)
-                buf_written += snprintf(buf + buf_written, buf_size - buf_written, "%s", ",null");
-            else
-                buf_written += snprintf(buf + buf_written, buf_size - buf_written, ",%d", (int)val);
-        }
-
-        if (buf_written < buf_size)
-            buf_written += snprintf(buf + buf_written, buf_size - buf_written, "%c", ']');
-
-        request.send(200, "application/json; charset=utf-8", buf, buf_written);
-    });
-
-    server.on("/meter/live", HTTP_GET, [this](WebServerRequest request) {
-        if (!initialized) {
-            request.send(400, "text/html", "not initialized");
-            return;
-        }
-
-        const size_t buf_size = RING_BUF_SIZE * 6 + 100;
-        char buf[buf_size] = {0};
-        size_t buf_written = 0;
-
-        int16_t val;
-        interval_samples.peek(&val);
-        float samples_per_second = 0;
-        if (this->samples_per_interval > 0) {
-            samples_per_second = ((float)this->samples_per_interval) / (60 * HISTORY_MINUTE_INTERVAL);
-        } else {
-            samples_per_second = (float)this->samples_last_interval / millis() * 1000;
-        }
-        buf_written += snprintf(buf + buf_written, buf_size - buf_written, "{\"samples_per_second\":%f,\"samples\":[%d", samples_per_second, val);
-
-        for (int i = 1; (i < interval_samples.used() - 1) && interval_samples.peek_offset(&val, i) && buf_written < buf_size; ++i) {
-            buf_written += snprintf(buf + buf_written, buf_size - buf_written, ",%d", val);
-        }
-        if (buf_written < buf_size)
-            buf_written += snprintf(buf + buf_written, buf_size - buf_written, "%s", "]}");
-        request.send(200, "application/json; charset=utf-8", buf, buf_written);
-    });
-
     this->DeviceModule::register_urls();
 }
 
 void SDM72DM::loop()
 {
+    static float power = 0;
+    static float energy_rel = 0;
+    static float energy_abs = 0;
+
     this->DeviceModule::loop();
     if (!initialized)
         return;
@@ -303,60 +228,22 @@ void SDM72DM::loop()
         return;
     }
 
-    Config *to_write = nullptr;
+    float *to_write = nullptr;
     uint32_t start_address = 0;
 
     switch (modbus_read_state) {
         case 0:
-            to_write = values.get("power");
+            to_write = &power;
             start_address = 1281;
             break;
         case 1:
-            to_write = values.get("energy_rel");
+            to_write = &energy_rel;
             start_address = 389;
             break;
         case 2:
-            to_write = values.get("energy_abs");
+            to_write = &energy_abs;
             start_address = 73;
             break;
-        /*case 0:
-            to_write = state.get("power_total");
-            start_address = 53;
-            break;
-        case 1:
-            to_write = state.get("power_import");
-            start_address = 1281;
-            break;
-        case 2:
-            to_write = state.get("power_export");
-            start_address = 1283;
-            break;
-
-        case 3:
-            to_write = state.get("energy_rel_total");
-            start_address = 385;
-            break;
-        case 4:
-            to_write = state.get("energy_rel_import");
-            start_address = 389;
-            break;
-        case 5:
-            to_write = state.get("energy_rel_export");
-            start_address = 391;
-            break;
-
-        case 6:
-            to_write = state.get("energy_abs_total");
-            start_address = 343;
-            break;
-        case 7:
-            to_write = state.get("energy_abs_import");
-            start_address = 73;
-            break;
-        case 8:
-            to_write = state.get("energy_abs_export");
-            start_address = 75;
-        */
         default:
             break;
     }
@@ -384,29 +271,13 @@ void SDM72DM::loop()
             if (deadline_elapsed(next_read_deadline_ms))
                 next_read_deadline_ms = millis() + 500;
 
-            int16_t val = (int16_t)min((float)INT16_MAX, values.get("power")->asFloat());
-            interval_samples.push(val);
-            ++samples_last_interval;
+            energy_meter.updateMeterValues(power, energy_rel, energy_abs);
         } else if (last_user_data_done == UserDataDone::ERROR) {
             next_read_deadline_ms = millis() + 500;
             error_counters.get("meter")->updateUint(error_counters.get("meter")->asUint() + 1);
         } else {
             next_read_deadline_ms = millis() + 500;
             error_counters.get("bricklet")->updateUint(error_counters.get("bricklet")->asUint() + 1);
-        }
-
-        if (deadline_elapsed(interval_end_ms)) {
-            float interval_sum = 0;
-            int16_t val;
-            for (int i = 0; i < samples_last_interval; ++i) {
-                interval_samples.peek_offset(&val, interval_samples.used() - 1 - i);
-                interval_sum += val;
-            }
-
-            power_history.push((int16_t)(interval_sum / samples_last_interval));
-            samples_per_interval = samples_last_interval;
-            samples_last_interval = 0;
-            interval_end_ms = millis() + 1000 * 60 * HISTORY_MINUTE_INTERVAL;
         }
     }
 

@@ -20,23 +20,42 @@
 #pragma once
 
 #include "config.h"
-#include "ringbuffer.h"
-#include "malloc_tools.h"
 
-class EVSEV2Meter {
+#include "value_history.h"
+
+#define ALL_VALUES_COUNT 85
+
+#define ENERGY_METER_TYPE_NONE 0
+#define ENERGY_METER_TYPE_SDM72DM 1
+#define ENERGY_METER_TYPE_SDM630 2
+#define ENERGY_METER_TYPE_SDM72DMV2 3
+
+class EnergyMeter {
 public:
-    EVSEV2Meter();
+    EnergyMeter();
     void setup();
-    void setupEVSE(bool update_module_initialized);
     void register_urls();
     void loop();
-    void updateMeterValues();
+
+    void updateMeterState(uint8_t state, uint8_t type);
+    void updateMeterValues(float power, float energy_rel, float energy_abs);
+    void updateMeterPhases(bool phases_connected[3], bool phases_active[3]);
+
+    void updateMeterAllValues(int idx, float val);
+    void updateMeterAllValues(float values[ALL_VALUES_COUNT]);
+
+    void setupMeter(uint8_t meter_type);
 
     bool initialized = false;
     bool hardware_available = false;
 
+    ConfigRoot state;
+    ConfigRoot values;
+    ConfigRoot phases;
     ConfigRoot all_values;
     ConfigRoot reset;
+
+    ValueHistory power_hist;
 
     char uid[7] = {0};
 };

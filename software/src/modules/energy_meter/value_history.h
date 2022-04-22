@@ -19,15 +19,15 @@
 
 #pragma once
 
-#include "ArduinoJson.h"
-
-#include "bindings/bricklet_rs485.h"
-
-#include "config.h"
 #include "ringbuffer.h"
 #include "malloc_tools.h"
-#include "device_module.h"
-#include "rs485_bricklet_firmware_bin.embedded.h"
+#include "esp_heap_caps.h"
+
+#include "task_scheduler.h"
+#include "web_server.h"
+
+extern TaskScheduler task_scheduler;
+extern WebServer server;
 
 // How many hours to keep the coarse history for
 #define HISTORY_HOURS 48
@@ -42,50 +42,35 @@
 
 #define RING_BUF_SIZE (HISTORY_HOURS * (60 / HISTORY_MINUTE_INTERVAL) + 1)
 
-class SDM72DM : public DeviceModule<TF_RS485,
-                                    rs485_bricklet_firmware_bin_data,
-                                    rs485_bricklet_firmware_bin_length,
-                                    tf_rs485_create,
-                                    tf_rs485_get_bootloader_mode,
-                                    tf_rs485_reset,
-                                    tf_rs485_destroy> {
+class ValueHistory {
 public:
-    SDM72DM();
+    ValueHistory() {
+
+    }
+
     void setup();
-    void register_urls();
-    void loop();
+    void register_urls(String base_url);
+    void add_sample(float sample);
 
-    enum class UserDataDone {
-        NOT_DONE,
-        DONE,
-        ERROR
-    };
+    int samples_last_interval = 0;
+    int samples_per_interval = -1;
+    TF_Ringbuffer<int16_t,
+                  3 * 60 * HISTORY_MINUTE_INTERVAL,
+                  uint32_t,
+#if defined(BOARD_HAS_PSRAM)
+                  malloc_psram,
+#else
+                  malloc_32bit_addressed,
+#endif
+                  heap_caps_free> live;
 
-    struct UserData {
-        float *value_to_write;
-        uint8_t expected_request_id;
-        UserDataDone done;
-    };
-
-    ConfigRoot reset;
-    ConfigRoot error_counters;
-
-private:
-    void modbus_read();
-    void setupRS485();
-    void checkRS485State();
-
-    TF_RS485 rs485;
-    int modbus_read_state = 0;
-
-    uint32_t next_modbus_read_deadline = 0;
-    uint32_t next_power_history_entry = 0;
-    UserData user_data;
-
-    bool reset_requested;
-
-    uint32_t callback_deadline_ms = 0;
-    uint32_t next_read_deadline_ms = 0;
-
-    char uid[7] = {0};
+    TF_Ringbuffer<int16_t,
+                  HISTORY_HOURS * (60 / HISTORY_MINUTE_INTERVAL) + 1,
+                  uint32_t,
+#if defined(BOARD_HAS_PSRAM)
+                  malloc_psram,
+#else
+                  malloc_32bit_addressed,
+#endif
+                  heap_caps_free> history;
 };
