@@ -43,23 +43,13 @@ public:
     void setupEM(bool update_module_initialized);
     void register_urls();
     void loop();
+    void EMMeter::updateMeterValues()
 
     bool initialized = false;
     bool hardware_available = false;
 
-private:
-    ConfigRoot state;
-    ConfigRoot values;
-    ConfigRoot phases;
     ConfigRoot all_values;
-    ConfigRoot reset;
     ConfigRoot errors;
-
-    int samples_last_interval = 0;
-    int samples_per_interval = -1;
-    TF_Ringbuffer<int16_t, 3 * 60 * HISTORY_MINUTE_INTERVAL, uint32_t, malloc_32bit_addressed, heap_caps_free> interval_samples;
-
-    TF_Ringbuffer<int16_t, HISTORY_HOURS * (60 / HISTORY_MINUTE_INTERVAL) + 1, uint32_t, malloc_32bit_addressed, heap_caps_free> power_history;
 
     char uid[7] = {0};
 };
