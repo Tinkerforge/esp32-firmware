@@ -83,8 +83,6 @@ SDM630::SDM630() : DeviceModule("rs485", "RS485", "energy meter", std::bind(&SDM
         {"bricklet_reset", Config::Uint32(0)},
     });
 
-    //reset = Config::Null();
-
     user_data.expected_request_id = 0;
     user_data.value_to_write = nullptr;
     user_data.done = SDM630::UserDataDone::DONE;
