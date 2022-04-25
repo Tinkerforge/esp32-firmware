@@ -314,7 +314,7 @@ def main():
 
     specialize_template("modules.h.template", os.path.join("src", "modules.h"), {
         '{{{module_includes}}}': '\n'.join(['#include "modules/{0}/{0}.h"'.format(x.under) for x in backend_modules]),
-        '{{{module_defines}}}': '\n'.join(['#define MODULE_{}_AVAILABLE() {}'.format(x, "true" if x in backend_mods_upper else "false") for x in all_mods]),
+        '{{{module_defines}}}': '\n'.join(['#define MODULE_{}_AVAILABLE() {}'.format(x, "1" if x in backend_mods_upper else "0") for x in all_mods]),
         '{{{module_extern_decls}}}': '\n'.join(['extern {} {};'.format(x.camel, x.under) for x in backend_modules]),
     })
 
