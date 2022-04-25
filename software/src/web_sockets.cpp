@@ -62,7 +62,12 @@ static void work(void *arg)
                 continue;
             }
 
-            httpd_ws_send_frame_async(wi.hd, wi.fds[i], &ws_pkt);
+            if (httpd_ws_send_frame_async(wi.hd, wi.fds[i], &ws_pkt) == ESP_FAIL) {
+                // This closes the fd.
+                // Already enqueued work items that use this fd
+                // will be handled by the httpd_ws_get_fd_info check above.
+                ws->keepAliveCloseDead(wi.fds[i]);
+            }
         }
 
         wi.clear();
