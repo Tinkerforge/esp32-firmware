@@ -254,7 +254,7 @@ void WebSockets::checkActiveClients() {
         if (keep_alive_fds[i] == -1)
             continue;
 
-        if (httpd_ws_get_fd_info(server.httpd, keep_alive_fds[i])  != HTTPD_WS_CLIENT_WEBSOCKET || deadline_elapsed(keep_alive_last_pong[i] + 10000)) {
+        if (httpd_ws_get_fd_info(server.httpd, keep_alive_fds[i]) != HTTPD_WS_CLIENT_WEBSOCKET || deadline_elapsed(keep_alive_last_pong[i] + 10000)) {
             this->keepAliveCloseDead(keep_alive_fds[i]);
         }
     }
