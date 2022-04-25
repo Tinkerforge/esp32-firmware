@@ -91,6 +91,12 @@ static esp_err_t ws_handler(httpd_req_t *req)
 
         struct httpd_req_aux *aux = (struct httpd_req_aux *)req->aux;
         if (aux->ws_handshake_detect) {
+            WebSockets *ws = (WebSockets *)req->user_ctx;
+            if (!ws->haveFreeSlot()) {
+                request.send(503);
+                return ESP_FAIL;
+            }
+
             struct httpd_data *hd = (struct httpd_data *)server.httpd;
             esp_err_t ret = httpd_ws_respond_server_handshake(&hd->hd_req, nullptr);
             if (ret != ESP_OK) {
@@ -103,7 +109,7 @@ static esp_err_t ws_handler(httpd_req_t *req)
             aux->sd->ws_user_ctx = req->user_ctx;
 
             int sock = httpd_req_to_sockfd(req);
-            WebSockets *ws = (WebSockets *)req->user_ctx;
+
             ws->keepAliveAdd(sock);
 
             if (ws->on_client_connect_fn) {
@@ -297,11 +303,17 @@ bool WebSockets::haveActiveClient()
 {
     std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
     for(int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
-        int fd = keep_alive_fds[i];
-        if (fd == -1)
-            continue;
+        if (keep_alive_fds[i] != -1)
+            return true;
+    }
+    return false;
+}
 
-        return true;
+bool WebSockets::haveFreeSlot() {
+    std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
+    for(int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+        if (keep_alive_fds[i] == -1)
+            return true;
     }
     return false;
 }

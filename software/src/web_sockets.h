@@ -79,6 +79,7 @@ public:
     void sendToAll(const char *payload, size_t payload_len);
     void sendToAllOwned(char *payload, size_t payload_len);
 
+    bool haveFreeSlot();
     bool haveActiveClient();
     void pingActiveClients();
     void checkActiveClients();
