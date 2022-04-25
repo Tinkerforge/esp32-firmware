@@ -95,7 +95,7 @@ AuthFields parseDigestAuth(const char *header)
     result.success = false;
 
     if (header == nullptr) {
-        logger.printfln("AUTH FAIL: missing requred fields");
+        logger.printfln("AUTH FAIL: missing required fields");
         return result;
     }
 
@@ -152,7 +152,7 @@ AuthFields parseDigestAuth(const char *header)
 
 bool checkDigestAuthentication(AuthFields fields, const char * method, const char * username, const char * password, const char * realm, bool passwordIsHash, const char * nonce, const char * opaque, const char * uri){
     if (username == NULL || password == NULL || method == NULL) {
-        logger.printfln("AUTH FAIL: missing requred fields");
+        logger.printfln("AUTH FAIL: missing required fields");
         return false;
     }
 
