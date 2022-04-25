@@ -42,6 +42,7 @@ void WebServer::start()
     config.stack_size = 8192;
     config.max_uri_handlers = MAX_URI_HANDLERS;
     config.global_user_ctx = this;
+    config.max_open_sockets = 10;
     /*config.task_priority = tskIDLE_PRIORITY+7;
     config.core_id = 1;*/
 

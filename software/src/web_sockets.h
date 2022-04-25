@@ -28,7 +28,7 @@
 #include <mutex>
 #include <deque>
 
-#define MAX_WEB_SOCKET_CLIENTS 7
+#define MAX_WEB_SOCKET_CLIENTS 5
 
 class WebSockets;
 
@@ -46,7 +46,7 @@ struct ws_work_item {
     size_t payload_len;
 
     ws_work_item(httpd_handle_t hd,
-                 int fds_to_send[7],
+                 int fds_to_send[MAX_WEB_SOCKET_CLIENTS],
                  char *payload,
                  size_t payload_len) :
                     hd(hd), fds(), payload(payload), payload_len(payload_len)
@@ -98,7 +98,7 @@ public:
     // as every method can lock the mutex without considering that
     // it could be called by another method that locked the mutex.
     std::recursive_mutex keep_alive_mutex;
-    int keep_alive_fds[MAX_WEB_SOCKET_CLIENTS] = {-1,-1,-1,-1,-1,-1,-1};
+    int keep_alive_fds[MAX_WEB_SOCKET_CLIENTS] = {-1,-1,-1,-1,-1};
     uint32_t keep_alive_last_pong[MAX_WEB_SOCKET_CLIENTS];
 
     std::recursive_mutex work_queue_mutex;

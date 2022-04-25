@@ -244,7 +244,7 @@ void WebSockets::pingActiveClients() {
         return;
 
     // Copy over to not hold both mutexes at the same time.
-    int fds[7];
+    int fds[MAX_WEB_SOCKET_CLIENTS];
     {
         std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
         memcpy(fds, keep_alive_fds, sizeof(fds));
@@ -293,7 +293,7 @@ void WebSockets::sendToClient(const char *payload, size_t payload_len, int fd)
 
     memcpy(payload_copy, payload, payload_len);
 
-    int fds[7] = {fd, -1, -1, -1, -1, -1, -1};
+    int fds[MAX_WEB_SOCKET_CLIENTS] = {fd, -1, -1, -1, -1};
 
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
     work_queue.emplace_back(server.httpd, fds, payload_copy, payload_len);
@@ -326,7 +326,7 @@ void WebSockets::sendToAllOwned(char *payload, size_t payload_len)
     }
 
     // Copy over to not hold both mutexes at the same time.
-    int fds[7];
+    int fds[MAX_WEB_SOCKET_CLIENTS];
     {
         std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
         memcpy(fds, keep_alive_fds, sizeof(fds));
@@ -348,7 +348,7 @@ void WebSockets::sendToAll(const char *payload, size_t payload_len)
     memcpy(payload_copy, payload, payload_len);
 
     // Copy over to not hold both mutexes at the same time.
-    int fds[7];
+    int fds[MAX_WEB_SOCKET_CLIENTS];
     {
         std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
         memcpy(fds, keep_alive_fds, sizeof(fds));
