@@ -455,7 +455,7 @@ void Wifi::check_for_scan_completion()
     }
     logger.printfln("Scan done. %d networks.", WiFi.scanComplete());
 
-#if defined(MODULE_WS_AVAILABLE)
+#if MODULE_WS_AVAILABLE()
     ws.pushRawStateUpdate(this->get_scan_results(), "wifi/scan_results");
 #endif
 }
@@ -507,7 +507,7 @@ void Wifi::loop()
 
     bool ap_fallback_only = wifi_ap_config_in_use.get("enable_ap")->asBool() && wifi_ap_config_in_use.get("ap_fallback_only")->asBool();
     bool ethernet_connected = false;
-#if defined(MODULE_ETHERNET_AVAILABLE)
+#if MODULE_ETHERNET_AVAILABLE()
     ethernet_connected = ethernet.get_connection_state() == EthernetState::CONNECTED;
 #endif
     bool connected = (wifi_sta_config_in_use.get("enable_sta")->asBool() && connection_state == WifiState::CONNECTED) || ethernet_connected;

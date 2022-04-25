@@ -302,9 +302,19 @@ def main():
         '{{{module_init_config}}}': ',\n        '.join('{{"{0}", Config::Bool({0}.initialized)}}'.format(x.under) for x in backend_modules if not x.under.startswith("hidden_"))
     })
 
+
+    all_mods = []
+    for existing_backend_module in os.listdir(os.path.join('src', 'modules')):
+        if not os.path.isdir(os.path.join('src', 'modules', existing_backend_module)):
+            continue
+
+        all_mods.append(existing_backend_module.upper())
+
+    backend_mods_upper = [x.upper for x in backend_modules]
+
     specialize_template("modules.h.template", os.path.join("src", "modules.h"), {
         '{{{module_includes}}}': '\n'.join(['#include "modules/{0}/{0}.h"'.format(x.under) for x in backend_modules]),
-        '{{{module_defines}}}': '\n'.join(['#define MODULE_{}_AVAILABLE'.format(x.upper) for x in backend_modules]),
+        '{{{module_defines}}}': '\n'.join(['#define MODULE_{}_AVAILABLE() {}'.format(x, "true" if x in backend_mods_upper else "false") for x in all_mods]),
         '{{{module_extern_decls}}}': '\n'.join(['extern {} {};'.format(x.camel, x.under) for x in backend_modules]),
     })
 

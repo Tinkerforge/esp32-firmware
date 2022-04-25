@@ -27,14 +27,14 @@
 #include "task_scheduler.h"
 #include "modules.h"
 
-#if defined(MODULE_EVSE_AVAILABLE)
+#if MODULE_EVSE_AVAILABLE()
 #include "bindings/bricklet_evse.h"
 #endif
-#if defined(MODULE_EVSE_V2_AVAILABLE)
+#if MODULE_EVSE_V2_AVAILABLE()
 #include "bindings/bricklet_evse_v2.h"
 #endif
 
-#if defined(MODULE_ESP32_ETHERNET_BRICK_AVAILABLE)
+#if MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
 #define AUTHORIZED_TAG_LIST_LENGTH 16
 #else
 #define AUTHORIZED_TAG_LIST_LENGTH 8
@@ -206,10 +206,10 @@ void set_led(int16_t mode)
             break;
     }
 
-#if defined(MODULE_EVSE_AVAILABLE)
+#if MODULE_EVSE_AVAILABLE()
     tf_evse_set_indicator_led(&evse.device, mode, mode != IND_NACK ? 2620 : 3930, nullptr);
 #endif
-#if defined(MODULE_EVSE_V2_AVAILABLE)
+#if MODULE_EVSE_V2_AVAILABLE()
     tf_evse_v2_set_indicator_led(&evse_v2.device, mode, mode != IND_NACK ? 2620 : 3930, nullptr);
 #endif
 

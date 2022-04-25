@@ -28,7 +28,7 @@ extern API api;
 extern WebServer server;
 extern TaskScheduler task_scheduler;
 
-#if defined(MODULE_ESP32_ETHERNET_BRICK_AVAILABLE)
+#if MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
 static char recv_buf[4096] = {0};
 #else
 static char recv_buf[2048] = {0};

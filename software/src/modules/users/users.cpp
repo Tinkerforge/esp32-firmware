@@ -33,7 +33,7 @@
 #define MAX_PASSIVE_USERS 256
 #define USERNAME_FILE "/users/all_usernames"
 
-#if defined(MODULE_ESP32_ETHERNET_BRICK_AVAILABLE)
+#if MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
 #define MAX_ACTIVE_USERS 16
 #else
 #define MAX_ACTIVE_USERS 10
@@ -46,18 +46,18 @@ extern TaskScheduler task_scheduler;
 // are registered.
 void set_data_storage(uint8_t *buf)
 {
-#if defined(MODULE_EVSE_AVAILABLE)
+#if MODULE_EVSE_AVAILABLE()
     tf_evse_set_data_storage(&evse.device, 0, buf);
-#elif defined(MODULE_EVSE_V2_AVAILABLE)
+#elif MODULE_EVSE_V2_AVAILABLE()
     tf_evse_v2_set_data_storage(&evse_v2.device, 0, buf);
 #endif
 }
 
 void get_data_storage(uint8_t *buf)
 {
-#if defined(MODULE_EVSE_AVAILABLE)
+#if MODULE_EVSE_AVAILABLE()
     tf_evse_get_data_storage(&evse.device, 0, buf);
-#elif defined(MODULE_EVSE_V2_AVAILABLE)
+#elif MODULE_EVSE_V2_AVAILABLE()
     tf_evse_v2_get_data_storage(&evse_v2.device, 0, buf);
 #endif
 }
@@ -70,9 +70,9 @@ void zero_user_slot_info()
 
 uint8_t get_iec_state()
 {
-#if defined(MODULE_EVSE_AVAILABLE)
+#if MODULE_EVSE_AVAILABLE()
     return evse.evse_state.get("iec61851_state")->asUint();
-#elif defined(MODULE_EVSE_V2_AVAILABLE)
+#elif MODULE_EVSE_V2_AVAILABLE()
     return evse_v2.evse_state.get("iec61851_state")->asUint();
 #endif
     return 0;
@@ -80,9 +80,9 @@ uint8_t get_iec_state()
 
 uint8_t get_charger_state()
 {
-#if defined(MODULE_EVSE_AVAILABLE)
+#if MODULE_EVSE_AVAILABLE()
     return evse.evse_state.get("charger_state")->asUint();
-#elif defined(MODULE_EVSE_V2_AVAILABLE)
+#elif MODULE_EVSE_V2_AVAILABLE()
     return evse_v2.evse_state.get("charger_state")->asUint();
 #endif
     return 0;
@@ -90,9 +90,9 @@ uint8_t get_charger_state()
 
 Config *get_user_slot()
 {
-#if defined(MODULE_EVSE_AVAILABLE)
+#if MODULE_EVSE_AVAILABLE()
     return evse.evse_slots.get(CHARGING_SLOT_USER);
-#elif defined(MODULE_EVSE_V2_AVAILABLE)
+#elif MODULE_EVSE_V2_AVAILABLE()
     return evse_v2.evse_slots.get(CHARGING_SLOT_USER);
 #endif
     return nullptr;
@@ -100,9 +100,9 @@ Config *get_user_slot()
 
 Config *get_low_level_state()
 {
-#if defined(MODULE_EVSE_AVAILABLE)
+#if MODULE_EVSE_AVAILABLE()
     return &evse.evse_low_level_state;
-#elif defined(MODULE_EVSE_V2_AVAILABLE)
+#elif MODULE_EVSE_V2_AVAILABLE()
     return &evse_v2.evse_low_level_state;
 #endif
     return nullptr;
@@ -110,9 +110,9 @@ Config *get_low_level_state()
 
 void set_user_current(uint16_t current)
 {
-#if defined(MODULE_EVSE_AVAILABLE)
+#if MODULE_EVSE_AVAILABLE()
     evse.set_user_current(current);
-#elif defined(MODULE_EVSE_V2_AVAILABLE)
+#elif MODULE_EVSE_V2_AVAILABLE()
     evse_v2.set_user_current(current);
 #endif
 }

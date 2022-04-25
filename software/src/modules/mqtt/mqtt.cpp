@@ -26,6 +26,7 @@
 #include "api.h"
 #include "event_log.h"
 #include "build.h"
+#include "modules.h"
 
 extern EventLog logger;
 
@@ -33,7 +34,7 @@ extern TaskScheduler task_scheduler;
 extern char local_uid_str[7];
 extern API api;
 
-#if defined(MODULE_ESP32_ETHERNET_BRICK_AVAILABLE)
+#if MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
 #define MQTT_RECV_BUFFER_SIZE 4096
 #else
 #define MQTT_RECV_BUFFER_SIZE 2048
