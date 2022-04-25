@@ -69,6 +69,7 @@ EnergyMeter::EnergyMeter()
 }
 
 void EnergyMeter::updateMeterState(uint8_t new_state, uint8_t new_type) {
+    state.get("state")->updateUint(new_state);
     state.get("type")->updateUint(new_type);
 
     if (new_state == 2) {
