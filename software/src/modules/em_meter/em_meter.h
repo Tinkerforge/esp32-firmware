@@ -20,21 +20,6 @@
 #pragma once
 
 #include "config.h"
-#include "ringbuffer.h"
-#include "malloc_tools.h"
-
-// How many hours to keep the coarse history for
-#define HISTORY_HOURS 48
-// How many minutes to keep the fine history for.
-// This also controls the coarseness of the coarse history.
-// For example 4 means that we accumulate 4 minutes of samples
-// with the maximum rate i.e. ~ 3 samples per second (Querying the state
-// takes about 380 ms).
-// When we have 4 minutes worth of samples, we take the average
-// and add it to the coarse history.
-#define HISTORY_MINUTE_INTERVAL 4
-
-#define RING_BUF_SIZE (HISTORY_HOURS * (60 / HISTORY_MINUTE_INTERVAL) + 1)
 
 class EMMeter {
 public:
