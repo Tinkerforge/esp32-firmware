@@ -280,17 +280,18 @@ interface DetailedViewEntry {
     name: string,
     desc: string,
     three_phase: boolean,
-    unit: string
+    unit: string,
+    sdm630_only: boolean
 }
 
-function entry(name: string, three_phase: boolean, unit: string) : DetailedViewEntry {
-    return {i: 0, name: __(`meter.content.detailed_${name}`), desc: __(`meter.content.detailed_${name}_desc`), three_phase: three_phase, unit: unit}
+function entry(name: string, three_phase: boolean, unit: string, sdm630_only: boolean) : DetailedViewEntry {
+    return {i: 0, name: __(`meter.content.detailed_${name}`), desc: __(`meter.content.detailed_${name}_desc`), three_phase: three_phase, unit: unit, sdm630_only: sdm630_only}
 }
 
 function entry_to_string(e: DetailedViewEntry) : string {
     if (e.three_phase) {
         return `
-        <div class="form-group row">
+        <div class="form-group row meter-${e.sdm630_only ? "sdm630-only" : "any"}">
             <div class="col-lg-3">
                 <label for="meter_dv_${e.i}" class="col-form-label">
                     <span class="form-label pr-2">${e.name}</span>
@@ -311,7 +312,7 @@ function entry_to_string(e: DetailedViewEntry) : string {
         </div>`;
     } else {
         return `
-        <div class="form-group row">
+        <div class="form-group row  meter-${e.sdm630_only ? "sdm630-only" : "any"}">
             <div class="col-lg-3">
                 <label for="meter_dv_${e.i}" class="col-form-label">
                     <span class="form-label pr-2">${e.name}</span>
@@ -332,57 +333,57 @@ function build_evse_v2_detailed_values_view() {
     let container = $('#meter_detailed_values');
     container.empty();
     entries = [
-        entry("line_to_neutral_volts",             true, "V"),
-        entry("current",                           true, "A"),
-        entry("power",                             true, "W"),
-        entry("volt_amps",                         true, "VA"),
-        entry("volt_amps_reactive",                true, "var"),
-        entry("power_factor",                      true, ""),
-        entry("phase_angle",                       true, "°"),
-        entry("average_line_to_neutral_volts",     false, "V"),
-        entry("average_line_current",              false, "A"),
-        entry("sum_of_line_currents",              false, "A"),
-        entry("total_system_power",                false, "W"),
-        entry("total_system_volt_amps",            false, "VA"),
-        entry("total_system_var",                  false, "var"),
-        entry("total_system_power_factor",         false, ""),
-        entry("total_system_phase_angle",          false, "°"),
-        entry("frequency_of_supply_voltages",      false, "Hz"),
-        entry("total_import_kwh",                  false, "kWh"),
-        entry("total_export_kwh",                  false, "kWh"),
-        entry("total_import_kvarh",                false, "kvarh"),
-        entry("total_export_kvarh",                false, "kvarh"),
-        entry("total_vah",                         false, "kVAh"),
-        entry("ah",                                false, "Ah"),
-        entry("total_system_power_demand",         false, "W"),
-        entry("maximum_total_system_power_demand", false, "W"),
-        entry("total_system_va_demand",            false, "VA"),
-        entry("maximum_total_system_va_demand",    false, "VA"),
-        entry("neutral_current_demand",            false, "A"),
-        entry("maximum_neutral_current_demand",    false, "A"),
-        entry("line1_to_line2_volts",              false, "V"),
-        entry("line2_to_line3_volts",              false, "V"),
-        entry("line3_to_line1_volts",              false, "V"),
-        entry("average_line_to_line_volts",        false, "V"),
-        entry("neutral_current",                   false, "A"),
-        entry("ln_volts_thd",                      true, "%"),
-        entry("current_thd",                       true, "%"),
-        entry("average_line_to_neutral_volts_thd", false, "%"),
-        entry("average_line_current_thd",          false, "%"),
-        entry("current_demand",                    true, "A"),
-        entry("maximum_current_demand",            true, "A"),
-        entry("line1_to_line2_volts_thd",          false, "%"),
-        entry("line2_to_line3_volts_thd",          false, "%"),
-        entry("line3_to_line1_volts_thd",          false, "%"),
-        entry("average_line_to_line_volts_thd",    false, "%"),
-        entry("total_kwh_sum",                     false, "kWh"),
-        entry("total_kvarh_sum",                   false, "kvarh"),
-        entry("import_kwh",                        true, "kWh"),
-        entry("export_kwh",                        true, "kWh"),
-        entry("total_kwh",                         true, "kWh"),
-        entry("import_kvarh",                      true, "kvarh"),
-        entry("export_kvarh",                      true, "kvarh"),
-        entry("total_kvarh",                       true, "kvarh")
+        entry("line_to_neutral_volts",             true, "V", false),
+        entry("current",                           true, "A", false),
+        entry("power",                             true, "W", false),
+        entry("volt_amps",                         true, "VA", false),
+        entry("volt_amps_reactive",                true, "var", false),
+        entry("power_factor",                      true, "", false),
+        entry("phase_angle",                       true, "°", true),
+        entry("average_line_to_neutral_volts",     false, "V", true),
+        entry("average_line_current",              false, "A", false),
+        entry("sum_of_line_currents",              false, "A", false),
+        entry("total_system_power",                false, "W", false),
+        entry("total_system_volt_amps",            false, "VA", false),
+        entry("total_system_var",                  false, "var", false),
+        entry("total_system_power_factor",         false, "", false),
+        entry("total_system_phase_angle",          false, "°", true),
+        entry("frequency_of_supply_voltages",      false, "Hz", false),
+        entry("total_import_kwh",                  false, "kWh", false),
+        entry("total_export_kwh",                  false, "kWh", false),
+        entry("total_import_kvarh",                false, "kvarh", true),
+        entry("total_export_kvarh",                false, "kvarh", true),
+        entry("total_vah",                         false, "kVAh", true),
+        entry("ah",                                false, "Ah", true),
+        entry("total_system_power_demand",         false, "W", true),
+        entry("maximum_total_system_power_demand", false, "W", true),
+        entry("total_system_va_demand",            false, "VA", true),
+        entry("maximum_total_system_va_demand",    false, "VA", true),
+        entry("neutral_current_demand",            false, "A", true),
+        entry("maximum_neutral_current_demand",    false, "A", true),
+        entry("line1_to_line2_volts",              false, "V", false),
+        entry("line2_to_line3_volts",              false, "V", false),
+        entry("line3_to_line1_volts",              false, "V", false),
+        entry("average_line_to_line_volts",        false, "V", false),
+        entry("neutral_current",                   false, "A", false),
+        entry("ln_volts_thd",                      true, "%", true),
+        entry("current_thd",                       true, "%", true),
+        entry("average_line_to_neutral_volts_thd", false, "%", true),
+        entry("average_line_current_thd",          false, "%", true),
+        entry("current_demand",                    true, "A", true),
+        entry("maximum_current_demand",            true, "A", true),
+        entry("line1_to_line2_volts_thd",          false, "%", true),
+        entry("line2_to_line3_volts_thd",          false, "%", true),
+        entry("line3_to_line1_volts_thd",          false, "%", true),
+        entry("average_line_to_line_volts_thd",    false, "%", true),
+        entry("total_kwh_sum",                     false, "kWh", false),
+        entry("total_kvarh_sum",                   false, "kvarh", false),
+        entry("import_kwh",                        true, "kWh", true),
+        entry("export_kwh",                        true, "kWh", true),
+        entry("total_kwh",                         true, "kWh", true),
+        entry("import_kvarh",                      true, "kvarh", true),
+        entry("export_kvarh",                      true, "kvarh", true),
+        entry("total_kvarh",                       true, "kvarh", true)
     ];
 
     let i = 0;
@@ -394,8 +395,14 @@ function build_evse_v2_detailed_values_view() {
     }
 }
 
+let last_have_sdm630 = true;
 function update_evse_v2_all_values() {
     let v = API.get('meter/all_values');
+    let have_sdm630 = API.get('meter/state').type == 2;
+    if (have_sdm630 != last_have_sdm630) {
+        $('.meter-sdm630-only').prop("hidden", !have_sdm630);
+        last_have_sdm630 = have_sdm630;
+    }
 
     let entry_idx = 0;
     let subentry_idx = 0;
