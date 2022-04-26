@@ -1,5 +1,5 @@
 {
-    "sdm72dm": {
+    "meter": {
         "status": {
             "charge_history": "Charge history",
             "current_power": "Power draw"

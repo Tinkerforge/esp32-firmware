@@ -161,7 +161,7 @@ function init_chart() {
         plugins: [
             ctAxisTitle({
                 axisX: {
-                axisTitle: __("sdm72dm.script.time"),
+                axisTitle: __("meter.script.time"),
                 axisClass: "ct-axis-title",
                 offset: {
                     x: 0,
@@ -170,7 +170,7 @@ function init_chart() {
                 textAnchor: "middle"
                 },
                 axisY: {
-                axisTitle: __("sdm72dm.script.power"),
+                axisTitle: __("meter.script.power"),
                 axisClass: "ct-axis-title",
                 offset: {
                     x: 0,
@@ -247,7 +247,7 @@ function init_status_chart(min_value=0, max_value=0) {
         plugins: [
             ctAxisTitle({
                 axisX: {
-                axisTitle: __("sdm72dm.script.time"),
+                axisTitle: __("meter.script.time"),
                 axisClass: "ct-axis-title",
                 offset: {
                     x: 0,
@@ -256,7 +256,7 @@ function init_status_chart(min_value=0, max_value=0) {
                 textAnchor: "middle"
                 },
                 axisY: {
-                axisTitle: __("sdm72dm.script.power"),
+                axisTitle: __("meter.script.power"),
                 axisClass: "ct-axis-title",
                 offset: {
                     x: -10,
@@ -284,7 +284,7 @@ interface DetailedViewEntry {
 }
 
 function entry(name: string, three_phase: boolean, unit: string) : DetailedViewEntry {
-    return {i: 0, name: __(`sdm72dm.content.detailed_${name}`), desc: __(`sdm72dm.content.detailed_${name}_desc`), three_phase: three_phase, unit: unit}
+    return {i: 0, name: __(`meter.content.detailed_${name}`), desc: __(`meter.content.detailed_${name}_desc`), three_phase: three_phase, unit: unit}
 }
 
 function entry_to_string(e: DetailedViewEntry) : string {
@@ -292,20 +292,20 @@ function entry_to_string(e: DetailedViewEntry) : string {
         return `
         <div class="form-group row">
             <div class="col-lg-3">
-                <label for="sdm72dm_dv_${e.i}" class="col-form-label">
+                <label for="meter_dv_${e.i}" class="col-form-label">
                     <span class="form-label pr-2">${e.name}</span>
                     <span class="text-muted">${e.desc}</span>
                 </label>
             </div>
             <div class="col-lg-9 row pr-0">
                 <div class="mb-1 col-12 col-sm-4 pr-xs-only-0">
-                    <input id="sdm72dm_dv_${e.i + 0}" class="form-control" type="text" placeholder="..." readonly>
+                    <input id="meter_dv_${e.i + 0}" class="form-control" type="text" placeholder="..." readonly>
                 </div>
                 <div class="mb-1 col-12 col-sm-4 pr-xs-only-0">
-                    <input id="sdm72dm_dv_${e.i + 1}" class="form-control" type="text" placeholder="..." readonly>
+                    <input id="meter_dv_${e.i + 1}" class="form-control" type="text" placeholder="..." readonly>
                 </div>
                 <div class="mb-1 col-12 col-sm-4 pr-0">
-                    <input id="sdm72dm_dv_${e.i + 2}" class="form-control" type="text" placeholder="..." readonly>
+                    <input id="meter_dv_${e.i + 2}" class="form-control" type="text" placeholder="..." readonly>
                 </div>
             </div>
         </div>`;
@@ -313,13 +313,13 @@ function entry_to_string(e: DetailedViewEntry) : string {
         return `
         <div class="form-group row">
             <div class="col-lg-3">
-                <label for="sdm72dm_dv_${e.i}" class="col-form-label">
+                <label for="meter_dv_${e.i}" class="col-form-label">
                     <span class="form-label pr-2">${e.name}</span>
                     <span class="text-muted">${e.desc}</span>
                 </label>
             </div>
             <div class="col-lg-9">
-                <input id="sdm72dm_dv_${e.i}" class="form-control" type="text" placeholder="..." readonly>
+                <input id="meter_dv_${e.i}" class="form-control" type="text" placeholder="..." readonly>
             </div>
         </div>
         `;
@@ -329,7 +329,7 @@ function entry_to_string(e: DetailedViewEntry) : string {
 let entries: DetailedViewEntry[];
 
 function build_evse_v2_detailed_values_view() {
-    let container = $('#sdm72dm_detailed_values');
+    let container = $('#meter_detailed_values');
     container.empty();
     entries = [
         entry("line_to_neutral_volts",             true, "V"),
@@ -400,7 +400,7 @@ function update_evse_v2_all_values() {
     let entry_idx = 0;
     let subentry_idx = 0;
     for(let i = 0; i < v.length; ++i) {
-        $(`#sdm72dm_dv_${i}`).val(util.toLocaleFixed(v[i], 1) + " " + entries[entry_idx].unit);
+        $(`#meter_dv_${i}`).val(util.toLocaleFixed(v[i], 1) + " " + entries[entry_idx].unit);
         ++subentry_idx;
         if (subentry_idx == (entries[entry_idx].three_phase ? 3 : 1)) {
             entry_idx += 1
