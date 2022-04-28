@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-04-28.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -649,7 +649,7 @@ int tf_gps_v2_get_coordinates(TF_GPSV2 *gps_v2, uint32_t *ret_latitude, char *re
 /**
  * \ingroup TF_GPSV2
  *
- * Returns if a fix is currently available as well as the, the number of
+ * Returns if a fix is currently available as well as the number of
  * satellites that are in view.
  * 
  * There is also a :ref:`green LED <gps_v2_bricklet_fix_led>` on the Bricklet that
