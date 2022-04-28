@@ -403,9 +403,10 @@ void ChargeManager::distribute_current()
         }
 
         LOCAL_LOG("%d charger%s request%s current. %u mA available.",
-                chargers_requesting_current,
-                chargers_requesting_current == 1 ? "" : "s", chargers_requesting_current == 1 ? "s" : "",
-                available_current);
+                  chargers_requesting_current,
+                  chargers_requesting_current == 1 ? "" : "s",
+                  chargers_requesting_current == 1 ? "s" : "",
+                  available_current);
 
         std::stable_sort(idx_array, idx_array + chargers.size(), [&chargers](int left, int right) {
             return chargers[left].get("supported_current")->asUint() < chargers[right].get("supported_current")->asUint();
@@ -438,10 +439,10 @@ void ChargeManager::distribute_current()
             uint16_t supported_current = charger.get("supported_current")->asUint();
             if (supported_current < current_to_set) {
                 LOCAL_LOG("stage 0: Can't unblock %s (%s): It only supports %u mA, but %u mA is the configured minimum current.",
-                        charger_cfg.get("name")->asString().c_str(),
-                        charger_cfg.get("host")->asString().c_str(),
-                        supported_current,
-                        current_to_set);
+                          charger_cfg.get("name")->asString().c_str(),
+                          charger_cfg.get("host")->asString().c_str(),
+                          supported_current,
+                          current_to_set);
                 continue;
             }
 
@@ -458,10 +459,10 @@ void ChargeManager::distribute_current()
             available_current -= current_to_set;
 
             LOCAL_LOG("stage 0: Calculated target for %s (%s) of %u mA. %u mA left.",
-                    charger_cfg.get("name")->asString().c_str(),
-                    charger_cfg.get("host")->asString().c_str(),
-                    current_to_set,
-                    available_current);
+                      charger_cfg.get("name")->asString().c_str(),
+                      charger_cfg.get("host")->asString().c_str(),
+                      current_to_set,
+                      available_current);
         }
 
         if (available_current > 0) {
@@ -489,10 +490,10 @@ void ChargeManager::distribute_current()
 
                 auto &charger_cfg = configs[idx_array[i]];
                 LOCAL_LOG("stage 0: Recalculated target for %s (%s) of %u mA. %u mA left.",
-                        charger_cfg.get("name")->asString().c_str(),
-                        charger_cfg.get("host")->asString().c_str(),
-                        current_array[idx_array[i]],
-                        available_current);
+                          charger_cfg.get("name")->asString().c_str(),
+                          charger_cfg.get("host")->asString().c_str(),
+                          current_array[idx_array[i]],
+                          available_current);
             }
         }
     }
@@ -515,10 +516,10 @@ void ChargeManager::distribute_current()
                 uint16_t supported_current = charger.get("supported_current")->asUint();
                 if (supported_current < current_to_set) {
                     LOCAL_LOG("stage 0: Can't unblock %s (%s): It only supports %u mA, but %u mA is the configured minimum current.",
-                            charger_cfg.get("name")->asString().c_str(),
-                            charger_cfg.get("host")->asString().c_str(),
-                            supported_current,
-                            current_to_set);
+                              charger_cfg.get("name")->asString().c_str(),
+                              charger_cfg.get("host")->asString().c_str(),
+                              supported_current,
+                              current_to_set);
                     continue;
                 }
 
@@ -535,10 +536,10 @@ void ChargeManager::distribute_current()
                 available_current -= current_to_set;
 
                 LOCAL_LOG("stage 0: Calculated target for %s (%s) of %u mA. %u mA left.",
-                        charger_cfg.get("name")->asString().c_str(),
-                        charger_cfg.get("host")->asString().c_str(),
-                        current_to_set,
-                        available_current);
+                          charger_cfg.get("name")->asString().c_str(),
+                          charger_cfg.get("host")->asString().c_str(),
+                          current_to_set,
+                          available_current);
             }
         }
     }
@@ -563,9 +564,9 @@ void ChargeManager::distribute_current()
             }
 
             LOCAL_LOG("stage 1: Throttled %s (%s) to %d mA.",
-                    charger_cfg.get("name")->asString().c_str(),
-                    charger_cfg.get("host")->asString().c_str(),
-                    current_to_set);
+                      charger_cfg.get("name")->asString().c_str(),
+                      charger_cfg.get("host")->asString().c_str(),
+                      current_to_set);
 
             if (charger.get("allocated_current")->updateUint(current_to_set)) {
                 print_local_log = true;
@@ -601,9 +602,9 @@ void ChargeManager::distribute_current()
                 }
 
                 LOCAL_LOG("stage 2: Unthrottled %s (%s) to %d mA.",
-                        charger_cfg.get("name")->asString().c_str(),
-                        charger_cfg.get("host")->asString().c_str(),
-                        current_to_set);
+                          charger_cfg.get("name")->asString().c_str(),
+                          charger_cfg.get("host")->asString().c_str(),
+                          current_to_set);
 
                 if (charger.get("allocated_current")->updateUint(current_to_set)) {
                     print_local_log = true;

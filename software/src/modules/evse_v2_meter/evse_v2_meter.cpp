@@ -115,8 +115,8 @@ void EVSEV2Meter::register_urls()
 {
     api.addState("meter/error_counters", &evse_v2.evse_energy_meter_errors, {}, 1000);
 
-    energy_meter.registerResetCallback([this](){
-        if(!initialized) {
+    energy_meter.registerResetCallback([this]() {
+        if (!initialized) {
             return;
         }
 

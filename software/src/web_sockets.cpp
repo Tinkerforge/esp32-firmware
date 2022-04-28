@@ -19,7 +19,6 @@
 
 #include "web_sockets.h"
 
-
 #include "task_scheduler.h"
 #include "web_server.h"
 
@@ -29,10 +28,11 @@ extern TaskScheduler task_scheduler;
 extern WebServer server;
 extern EventLog logger;
 
-bool WebSockets::haveWork(ws_work_item *item) {
+bool WebSockets::haveWork(ws_work_item *item)
+{
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
 
-    if(work_queue.empty())
+    if (work_queue.empty())
         return false;
 
     *item = work_queue.front();
@@ -42,7 +42,7 @@ bool WebSockets::haveWork(ws_work_item *item) {
 
 static void work(void *arg)
 {
-    WebSockets *ws = (WebSockets *) arg;
+    WebSockets *ws = (WebSockets *)arg;
 
     ws_work_item wi;
     while (ws->haveWork(&wi)) {
@@ -53,7 +53,7 @@ static void work(void *arg)
         ws_pkt.len = wi.payload_len;
         ws_pkt.type = wi.payload_len == 0 ? HTTPD_WS_TYPE_PING : HTTPD_WS_TYPE_TEXT;
 
-        for(int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+        for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
             if (wi.fds[i] == -1) {
                 continue;
             }
@@ -171,7 +171,7 @@ static esp_err_t ws_handler(httpd_req_t *req)
 void WebSockets::keepAliveAdd(int fd)
 {
     std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
-    for(int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
         if (keep_alive_fds[i] == fd) {
             // fd is alreaedy in the keep alive array. Only update last_pong to prevent instantly closing the new connection.
             // This can happen if web sockets are opened and closed rapidly (so that LWIP "reuses" the fd) and we miss a close frame.
@@ -180,7 +180,7 @@ void WebSockets::keepAliveAdd(int fd)
         }
     }
 
-    for(int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
         if (keep_alive_fds[i] != -1)
             continue;
         keep_alive_fds[i] = fd;
@@ -192,7 +192,7 @@ void WebSockets::keepAliveAdd(int fd)
 void WebSockets::keepAliveRemove(int fd)
 {
     std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
-    for(int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
         if (keep_alive_fds[i] != fd)
             continue;
         keep_alive_fds[i] = -1;
@@ -239,7 +239,8 @@ void WebSockets::keepAliveCloseDead(int fd)
     httpd_sess_delete_invalid(hd);
 }
 
-void WebSockets::pingActiveClients() {
+void WebSockets::pingActiveClients()
+{
     if (!this->haveActiveClient())
         return;
 
@@ -254,9 +255,10 @@ void WebSockets::pingActiveClients() {
     work_queue.emplace_back(server.httpd, fds, nullptr, 0);
 }
 
-void WebSockets::checkActiveClients() {
+void WebSockets::checkActiveClients()
+{
     std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
-    for(int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
         if (keep_alive_fds[i] == -1)
             continue;
 
@@ -266,9 +268,10 @@ void WebSockets::checkActiveClients() {
     }
 }
 
-void WebSockets::receivedPong(int fd) {
+void WebSockets::receivedPong(int fd)
+{
     std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
-    for(int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
         if (keep_alive_fds[i] != fd)
             continue;
 
@@ -302,16 +305,17 @@ void WebSockets::sendToClient(const char *payload, size_t payload_len, int fd)
 bool WebSockets::haveActiveClient()
 {
     std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
-    for(int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
         if (keep_alive_fds[i] != -1)
             return true;
     }
     return false;
 }
 
-bool WebSockets::haveFreeSlot() {
+bool WebSockets::haveFreeSlot()
+{
     std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
-    for(int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
         if (keep_alive_fds[i] == -1)
             return true;
     }
@@ -358,7 +362,8 @@ void WebSockets::sendToAll(const char *payload, size_t payload_len)
     work_queue.emplace_back(server.httpd, fds, payload_copy, payload_len);
 }
 
-void WebSockets::triggerHttpThread() {
+void WebSockets::triggerHttpThread()
+{
     {
         std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
         if (work_queue.empty()) {

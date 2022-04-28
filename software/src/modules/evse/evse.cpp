@@ -410,7 +410,8 @@ String EVSE::get_evse_debug_line()
     }
 
     char line[512] = {0};
-    snprintf(line, sizeof(line) / sizeof(line[0]),
+    snprintf(line,
+             sizeof(line) / sizeof(line[0]),
              "\"%lu,,"
              "%u,%u,%u,%u,%u,%u,%u,,"
              "%u,%c,%u,,"

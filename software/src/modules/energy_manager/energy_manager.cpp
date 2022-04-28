@@ -265,7 +265,8 @@ String EnergyManager::get_energy_manager_debug_line()
     update_all_data_struct();
 
     char line[512] = {0};
-    snprintf(line, sizeof(line) / sizeof(line[0]),
+    snprintf(line,
+             sizeof(line) / sizeof(line[0]),
              "\"%lu,,"
              "%u,,"
              "%u,%u,%u,,"

@@ -528,7 +528,7 @@ WifiState Wifi::get_connection_state()
     if (!wifi_sta_config_in_use.get("enable_sta")->asBool())
         return WifiState::NOT_CONFIGURED;
 
-    switch(WiFi.status()) {
+    switch (WiFi.status()) {
         case WL_CONNECT_FAILED:
         case WL_CONNECTION_LOST:
         case WL_DISCONNECTED:

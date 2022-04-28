@@ -39,8 +39,8 @@ extern bool firmware_update_allowed;
 
 #define CHARGING_SLOT_COUNT 10
 
-#define SLOT_ACTIVE(x) ((bool) (x & 0x01))
-#define SLOT_CLEAR_ON_DISCONNECT(x) ((bool) (x & 0x02))
+#define SLOT_ACTIVE(x) ((bool)(x & 0x01))
+#define SLOT_CLEAR_ON_DISCONNECT(x) ((bool)(x & 0x02))
 
 EVSEV2::EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE 2.0", std::bind(&EVSEV2::setup_evse, this))
 {
@@ -510,7 +510,8 @@ String EVSEV2::get_evse_debug_line()
     }
 
     char line[512] = {0};
-    snprintf(line, sizeof(line)/sizeof(line[0]),
+    snprintf(line,
+             sizeof(line) / sizeof(line[0]),
              "\"%lu,,"
              "%u,%u,%u,%u,%u,%u,%u,%u,,"
              "%u,%c,%u,%u,,"

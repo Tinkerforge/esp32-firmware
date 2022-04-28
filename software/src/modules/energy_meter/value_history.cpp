@@ -52,7 +52,7 @@ void ValueHistory::setup()
 }
 
 void ValueHistory::register_urls(String base_url)
- {
+{
     server.on(("/" + base_url + "history").c_str(), HTTP_GET, [this](WebServerRequest request) {
         /*if (!initialized) {
             request.send(400, "text/html", "not initialized");

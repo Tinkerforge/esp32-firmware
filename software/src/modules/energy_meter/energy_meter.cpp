@@ -68,7 +68,8 @@ EnergyMeter::EnergyMeter()
     });
 }
 
-void EnergyMeter::updateMeterState(uint8_t new_state, uint8_t new_type) {
+void EnergyMeter::updateMeterState(uint8_t new_state, uint8_t new_type)
+{
     state.get("state")->updateUint(new_state);
     state.get("type")->updateUint(new_type);
 
@@ -109,12 +110,14 @@ void EnergyMeter::updateMeterPhases(bool phases_connected[3], bool phases_active
         phases.get("phases_connected")->get(i)->updateBool(phases_connected[i]);
 }
 
-void EnergyMeter::updateMeterAllValues(int idx, float val) {
+void EnergyMeter::updateMeterAllValues(int idx, float val)
+{
     all_values.get(idx)->updateFloat(val);
 }
 
-void EnergyMeter::updateMeterAllValues(float values[ALL_VALUES_COUNT]) {
-    for(int i = 0; i < ALL_VALUES_COUNT; ++i)
+void EnergyMeter::updateMeterAllValues(float values[ALL_VALUES_COUNT])
+{
+    for (int i = 0; i < ALL_VALUES_COUNT; ++i)
         all_values.get(i)->updateFloat(values[i]);
 }
 

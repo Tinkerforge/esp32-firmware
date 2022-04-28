@@ -65,7 +65,7 @@ public:
                   heap_caps_free> live;
 
     TF_Ringbuffer<int16_t,
-                  HISTORY_HOURS * (60 / HISTORY_MINUTE_INTERVAL) + 1,
+                  HISTORY_HOURS *(60 / HISTORY_MINUTE_INTERVAL) + 1,
                   uint32_t,
 #if defined(BOARD_HAS_PSRAM)
                   malloc_psram,

@@ -49,11 +49,12 @@ EMMeter::EMMeter()
     });
 }
 
-void EMMeter::updateMeterValues() {
+void EMMeter::updateMeterValues()
+{
     float power = energy_manager.all_data.power;
     energy_meter.updateMeterValues(energy_manager.all_data.power,
-                                    energy_manager.all_data.energy_relative,
-                                    energy_manager.all_data.energy_absolute);
+                                   energy_manager.all_data.energy_relative,
+                                   energy_manager.all_data.energy_absolute);
 
     energy_meter.updateMeterPhases(energy_manager.all_data.phases_connected, energy_manager.all_data.phases_active);
 
@@ -121,8 +122,8 @@ void EMMeter::register_urls()
 {
     api.addState("meter/error_counters", &errors, {}, 1000);
 
-     energy_meter.registerResetCallback([this](){
-        if(!initialized) {
+    energy_meter.registerResetCallback([this]() {
+        if (!initialized) {
             return;
         }
 

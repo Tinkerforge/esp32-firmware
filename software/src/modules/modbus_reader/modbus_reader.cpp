@@ -228,7 +228,7 @@ void ModbusReader::register_urls()
 {
     api.addState("meter/error_counters", &error_counters, {}, 1000);
 
-    energy_meter.registerResetCallback([this](){
+    energy_meter.registerResetCallback([this]() {
         this->reset_requested = true;
     });
 
