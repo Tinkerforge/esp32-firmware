@@ -115,7 +115,7 @@ void ValueHistory::register_urls(String base_url)
 }
 
 void ValueHistory::add_sample(float sample)
- {
+{
     int16_t val = (int16_t)min((float)INT16_MAX, sample);
     live.push(val);
     ++samples_last_interval;
