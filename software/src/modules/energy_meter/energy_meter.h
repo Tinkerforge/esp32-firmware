@@ -37,7 +37,9 @@ public:
     void register_urls();
     void loop();
 
-    void updateMeterState(uint8_t state, uint8_t type);
+    void updateMeterState(uint8_t new_state, uint8_t new_type);
+    void updateMeterState(uint8_t new_state);
+    void updateMeterType(uint8_t new_type);
     void updateMeterValues(float power, float energy_rel, float energy_abs);
     void updateMeterPhases(bool phases_connected[3], bool phases_active[3]);
 

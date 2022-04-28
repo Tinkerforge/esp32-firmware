@@ -77,6 +77,20 @@ void EnergyMeter::updateMeterState(uint8_t new_state, uint8_t new_type) {
     }
 }
 
+void EnergyMeter::updateMeterState(uint8_t new_state)
+{
+    state.get("state")->updateUint(new_state);
+
+    if (new_state == 2) {
+        this->setupMeter(state.get("type")->asUint());
+    }
+}
+
+void EnergyMeter::updateMeterType(uint8_t new_type)
+{
+    state.get("type")->updateUint(new_type);
+}
+
 void EnergyMeter::updateMeterValues(float power, float energy_rel, float energy_abs)
 {
     values.get("power")->updateFloat(power);
