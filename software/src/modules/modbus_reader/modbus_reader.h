@@ -19,23 +19,23 @@
 
 #pragma once
 
-#include "ArduinoJson.h"
-
 #include "bindings/bricklet_rs485.h"
 
 #include "config.h"
 #include "device_module.h"
 #include "rs485_bricklet_firmware_bin.embedded.h"
 
-class SDM630 : public DeviceModule<TF_RS485,
-                                   rs485_bricklet_firmware_bin_data,
-                                   rs485_bricklet_firmware_bin_length,
-                                   tf_rs485_create,
-                                   tf_rs485_get_bootloader_mode,
-                                   tf_rs485_reset,
-                                   tf_rs485_destroy> {
+#include "meter_defs.h"
+
+class ModbusReader : public DeviceModule<TF_RS485,
+                                         rs485_bricklet_firmware_bin_data,
+                                         rs485_bricklet_firmware_bin_length,
+                                         tf_rs485_create,
+                                         tf_rs485_get_bootloader_mode,
+                                         tf_rs485_reset,
+                                         tf_rs485_destroy> {
 public:
-    SDM630();
+    ModbusReader();
     void setup();
     void register_urls();
     void loop();
@@ -58,9 +58,12 @@ private:
     void modbus_read();
     void setupRS485();
     void checkRS485State();
+    const RegRead *getNextRead(bool *trigger_fast_read_done, bool *trigger_slow_read_done);
 
     TF_RS485 rs485;
-    int modbus_read_state = 0;
+    size_t modbus_read_state_fast = 0;
+    size_t modbus_read_state_slow = 0;
+    bool last_read_was_fast = false;
 
     uint32_t next_modbus_read_deadline = 0;
     uint32_t next_power_history_entry = 0;
@@ -70,6 +73,8 @@ private:
 
     uint32_t callback_deadline_ms = 0;
     uint32_t next_read_deadline_ms = 0;
+
+    uint16_t meter_type = 0;
 
     char uid[7] = {0};
 };
