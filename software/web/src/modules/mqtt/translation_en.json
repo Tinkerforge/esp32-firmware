@@ -11,7 +11,7 @@
             "mqtt": "MQTT"
         },
         "content": {
-            "mqtt": "MQTT Settings",
+            "mqtt": "MQTT",
             "enable_mqtt_desc": null,
             "enable_mqtt": "MQTT enabled",
             "broker_host": "Broker hostname or IP address",

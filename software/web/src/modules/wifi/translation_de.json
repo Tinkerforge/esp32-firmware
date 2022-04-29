@@ -17,7 +17,7 @@
             "wifi_ap": "WLAN-Access-Point"
         },
         "content": {
-            "sta_settings": "WLAN-Verbindungs&shy;einstellungen",
+            "sta_settings": "WLAN-Verbindung",
             "sta_enable_sta": "Verbindung aktiviert",
             "sta_enable_sta_desc": null,
             "sta_ssid": "Netzwerkname (SSID)",
@@ -45,7 +45,7 @@
             "dns_invalid": "Die IP des DNS-Servers muss entweder leer bleiben, oder aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrent durch einen Punkt, bestehen. Zum Beispiel 10.0.0.1.",
             "dns2_invalid": "Die IP des alternativen DNS-Servers muss entweder leer bleiben, oder aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrent durch einen Punkt, bestehen. Zum Beispiel 10.0.0.1.",
 
-            "ap_settings": "WLAN-Access-Point-Einstellungen",
+            "ap_settings": "WLAN-Access-Point",
             "ap_enable": "<span class=\"form-label pr-2\">Access Point</span><span class=\"text-muted\"><a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a></span></label>",
             "ap_enabled": "aktiviert",
             "ap_fallback_only": "nur als Fallback",

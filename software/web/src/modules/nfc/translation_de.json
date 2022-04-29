@@ -3,10 +3,10 @@
         "status": {
         },
         "navbar": {
-            "nfc": "NFC"
+            "nfc": "NFC-Freigabe"
         },
         "content": {
-            "nfc": "NFC-Freischaltung",
+            "nfc": "NFC-Freigabe",
 
             "save": "Speichern",
             "authorized_tags": "Berechtigte Tags",

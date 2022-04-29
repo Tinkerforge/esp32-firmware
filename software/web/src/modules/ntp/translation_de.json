@@ -1,11 +1,11 @@
 {
     "ntp": {
         "navbar": {
-            "ntp": "Zeit&shy;synchronisierung"
+            "ntp": "Zeit&shy;synchro&shy;nisierung"
         },
         "content": {
-            "ntp": "Zeit&shy;synchronisierung",
-            "enable": "Zeit&shy;synchronisierung aktiviert",
+            "ntp": "Zeit&shy;synchro&shy;nisierung",
+            "enable": "Zeit&shy;synchro&shy;nisierung aktiviert",
             "enable_desc": "Synchronisiert die interne Zeit über das Netzwerk (NTP)",
             "use_dhcp": "DHCP verwendet",
             "use_dhcp_desc": "Verwendet Zeitserver, die per DHCP gesetzt werden",
