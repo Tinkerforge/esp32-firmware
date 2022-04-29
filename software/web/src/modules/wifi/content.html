@@ -1,7 +1,9 @@
 <div class="tab-pane fade" role="tabpanel" aria-labelledby="sidebar-wifi-sta" id="wifi-sta">
-    <div
-        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2" data-i18n="wifi.content.sta_settings"></h1>
+    <div class="row sticky-under-top mb-3 pt-3">
+        <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-caption-shadow">
+            <h1 class="h2" data-i18n="wifi.content.sta_settings"></h1>
+            <button id="wifi_sta_save_button" type="submit" form="wifi_sta_config_form" class="btn btn-primary mb-2" data-i18n="wifi.content.save"></button>
+        </div>
     </div>
     <form id="wifi_sta_form" class="needs-validation" novalidate>
         <!--
@@ -148,19 +150,16 @@
                 </div>
             </div>
         </div>
-        <div class="form-group row">
-            <div class="col-lg-12 col-xl-8 text-right">
-                <button id="wifi_sta_save_button" type="submit" form="wifi_sta_form" class="btn btn-primary" data-i18n="wifi.content.save"></button>
-            </div>
-        </div>
     </form>
 </div>
 
 
 <div class="tab-pane fade" role="tabpanel" aria-labelledby="sidebar-wifi-ap" id="wifi-ap">
-    <div
-        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2" data-i18n="wifi.content.ap_settings"></h1>
+    <div class="row sticky-under-top mb-3 pt-3">
+        <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-caption-shadow">
+            <h1 class="h2" data-i18n="wifi.content.ap_settings"></h1>
+            <button id="wifi_ap_save_button" type="submit" form="wifi_ap_config_form" class="btn btn-primary mb-2" data-i18n="wifi.content.save"></button>
+        </div>
     </div>
     <form id="wifi_ap_form" class="needs-validation" novalidate>
         <div class="form-group row">
@@ -256,11 +255,6 @@
                     pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
                 <div class="invalid-feedback" data-i18n="wifi.content.ap_gateway_invalid">
                 </div>
-            </div>
-        </div>
-        <div class="form-group row">
-            <div class="col-lg-12 col-xl-8 text-right">
-                <button id="wifi_ap_save_button" type="submit" form="wifi_ap_form" class="btn btn-primary" data-i18n="wifi.content.save"></button>
             </div>
         </div>
     </form>
