@@ -299,6 +299,11 @@ void WebSockets::sendToClient(const char *payload, size_t payload_len, int fd)
     int fds[MAX_WEB_SOCKET_CLIENTS] = {fd, -1, -1, -1, -1};
 
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
+    if (work_queue.size() >= MAX_WEB_SOCKET_WORK_ITEMS_IN_QUEUE) {
+        logger.printfln("WebSocket work queue full. Dropping message.");
+        free(payload_copy);
+        return;
+    }
     work_queue.emplace_back(server.httpd, fds, payload_copy, payload_len);
 }
 
@@ -337,6 +342,11 @@ void WebSockets::sendToAllOwned(char *payload, size_t payload_len)
     }
 
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
+    if (work_queue.size() >= MAX_WEB_SOCKET_WORK_ITEMS_IN_QUEUE) {
+        logger.printfln("WebSocket work queue full. Dropping message.");
+        free(payload);
+        return;
+    }
     work_queue.emplace_back(server.httpd, fds, payload, payload_len);
 }
 
@@ -359,6 +369,11 @@ void WebSockets::sendToAll(const char *payload, size_t payload_len)
     }
 
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
+    if (work_queue.size() >= MAX_WEB_SOCKET_WORK_ITEMS_IN_QUEUE) {
+        logger.printfln("WebSocket work queue full. Dropping message.");
+        free(payload_copy);
+        return;
+    }
     work_queue.emplace_back(server.httpd, fds, payload_copy, payload_len);
 }
 

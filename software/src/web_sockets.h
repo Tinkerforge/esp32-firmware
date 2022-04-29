@@ -29,6 +29,7 @@
 #include <deque>
 
 #define MAX_WEB_SOCKET_CLIENTS 5
+#define MAX_WEB_SOCKET_WORK_ITEMS_IN_QUEUE 20
 
 class WebSockets;
 
