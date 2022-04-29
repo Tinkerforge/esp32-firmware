@@ -254,10 +254,12 @@ const RegRead *ModbusReader::getNextRead(bool *trigger_fast_read_done, bool *tri
         if (modbus_read_state_slow == meter_in_use->to_read_slow_len) {
             modbus_read_state_slow = 0;
         }
-        last_read_was_fast = false;
-        const RegRead *result = &meter_in_use->to_read_slow[modbus_read_state_slow];
-        ++modbus_read_state_slow;
-        return result;
+        if (meter_in_use->to_read_slow_len != 0) {
+            last_read_was_fast = false;
+            const RegRead *result = &meter_in_use->to_read_slow[modbus_read_state_slow];
+            ++modbus_read_state_slow;
+            return result;
+        }
     }
     if (modbus_read_state_slow == meter_in_use->to_read_slow_len) {
         *trigger_slow_read_done = true;
