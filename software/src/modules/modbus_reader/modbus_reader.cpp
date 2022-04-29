@@ -101,7 +101,9 @@ void read_meter_type_handler(struct TF_RS485 *rs485, uint8_t request_id, int8_t 
         return;
     }
 
-    logger.printfln("Found unknown meter type 0x%x.", meter_id);
+    logger.printfln("Found unknown meter type 0x%x. Assuming this is a SDM72DM.", meter_id);
+    meter_in_use = supported_meters[0];
+    energy_meter.updateMeterState(2, meter_in_use->meter_type);
 }
 
 void read_input_registers_handler(struct TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, uint16_t *input_registers, uint16_t input_registers_length, void *user_data) {
