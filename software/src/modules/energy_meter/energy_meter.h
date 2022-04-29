@@ -50,7 +50,7 @@ public:
     void setupMeter(uint8_t meter_type);
 
     bool initialized = false;
-    bool hardware_available = false;
+    bool meter_setup_done = false;
 
     ConfigRoot state;
     ConfigRoot values;
