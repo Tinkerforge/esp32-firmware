@@ -196,8 +196,8 @@ body {
 }
 */
 
-tab-caption-shadow {
-    box-shadow: 0 .25rem .5rem -.6rem rgb(0, 0, 0) !important
+.tab-header-shadow {
+    box-shadow: 0 .25rem .5rem -.6rem rgb(0, 0, 0) !important;
 }
 
 .sidebar .nav-link {
