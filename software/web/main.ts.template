@@ -180,7 +180,7 @@ $(window).on('pageshow', (ev) => {
     });
 
     $('a[data-toggle="tab"]').on('shown.bs.tab', () => {
-        window.scrollTo(0,0);
+        setTimeout(() => window.scrollTo(0,0), 1);
     });
 
     $("#reboot_button").on("click", () => {
