@@ -90,7 +90,7 @@
             "charge_management_description_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
             "charge_management_enable": "Verlangt die Freigabe eines Lastmanagers (von diesem oder einem anderen WARP Charger) zum Laden",
 
-            "user_description": "Benutzerautorisierung",
+            "user_description": "Benutzer&shy;autorisierung",
             "user_description_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
             "user_enable": "Verlangt eine Benutzerautorisierung (z.B. per NFC-Tag) zum Laden",
 
