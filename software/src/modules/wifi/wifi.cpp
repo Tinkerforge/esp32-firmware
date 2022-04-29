@@ -343,11 +343,12 @@ void Wifi::setup()
         WiFi.mode(WIFI_AP_STA);
     } else if (enable_ap) {
         WiFi.mode(WIFI_AP);
-    } else if (enable_sta) {
-        WiFi.mode(WIFI_STA);
     } else {
-        WiFi.mode(WIFI_OFF);
+        WiFi.mode(WIFI_STA);
     }
+
+    WiFi.setAutoReconnect(false);
+    WiFi.disconnect(false, true);
 
     wifi_country_t config;
     config.cc[0] = 'D';
