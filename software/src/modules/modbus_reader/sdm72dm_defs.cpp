@@ -30,7 +30,7 @@ static void sdm72dm_slow_read_done(const uint16_t *all_regs) {
 }
 
 MeterInfo sdm72dm {
-    0x0084,
+    0x0200, //0x0084 was told to us by eastron. However every SDM72DM we have here reports 0x0200 instead.
     1,
     sdm72dm_slow,
     sizeof(sdm72dm_slow) / sizeof(sdm72dm_slow[0]),
