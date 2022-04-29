@@ -259,6 +259,9 @@ void WebSockets::pingActiveClients()
     }
 
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
+    if (work_queue.size() >= MAX_WEB_SOCKET_WORK_ITEMS_IN_QUEUE) {
+        return;
+    }
     work_queue.emplace_back(server.httpd, fds, nullptr, 0);
 }
 
