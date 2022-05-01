@@ -28,9 +28,100 @@
 #include <cmath>
 
 #define USERNAME_LENGTH 32
+#define DISPLAY_NAME_LENGTH 32
+#define USERNAME_ENTRY_LENGTH (USERNAME_LENGTH + DISPLAY_NAME_LENGTH)
+#define MAX_PASSIVE_USERS 256
+#define USERNAME_FILE "/users/all_usernames"
+
+#if MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
 #define MAX_ACTIVE_USERS 16
+#else
+#define MAX_ACTIVE_USERS 10
+#endif
 
 extern TaskScheduler task_scheduler;
+
+// We have to do access the evse/evse_v2 configs manually
+// because a lot of the code runs in setup(), i.e. before APIs
+// are registered.
+void set_data_storage(uint8_t *buf)
+{
+#if MODULE_EVSE_AVAILABLE()
+    tf_evse_set_data_storage(&evse.device, 0, buf);
+#elif MODULE_EVSE_V2_AVAILABLE()
+    tf_evse_v2_set_data_storage(&evse_v2.device, 0, buf);
+#endif
+}
+
+void get_data_storage(uint8_t *buf)
+{
+#if MODULE_EVSE_AVAILABLE()
+    tf_evse_get_data_storage(&evse.device, 0, buf);
+#elif MODULE_EVSE_V2_AVAILABLE()
+    tf_evse_v2_get_data_storage(&evse_v2.device, 0, buf);
+#endif
+}
+
+void zero_user_slot_info()
+{
+    uint8_t buf[63] = {0};
+    set_data_storage(buf);
+}
+
+uint8_t get_iec_state()
+{
+#if MODULE_EVSE_AVAILABLE()
+    return evse.evse_state.get("iec61851_state")->asUint();
+#elif MODULE_EVSE_V2_AVAILABLE()
+    return evse_v2.evse_state.get("iec61851_state")->asUint();
+#endif
+    return 0;
+}
+
+uint8_t get_charger_state()
+{
+#if MODULE_EVSE_AVAILABLE()
+    return evse.evse_state.get("charger_state")->asUint();
+#elif MODULE_EVSE_V2_AVAILABLE()
+    return evse_v2.evse_state.get("charger_state")->asUint();
+#endif
+    return 0;
+}
+
+Config *get_user_slot()
+{
+#if MODULE_EVSE_AVAILABLE()
+    return evse.evse_slots.get(CHARGING_SLOT_USER);
+#elif MODULE_EVSE_V2_AVAILABLE()
+    return evse_v2.evse_slots.get(CHARGING_SLOT_USER);
+#endif
+    return nullptr;
+}
+
+Config *get_low_level_state()
+{
+#if MODULE_EVSE_AVAILABLE()
+    return &evse.evse_low_level_state;
+#elif MODULE_EVSE_V2_AVAILABLE()
+    return &evse_v2.evse_low_level_state;
+#endif
+    return nullptr;
+}
+
+void set_user_current(uint16_t current)
+{
+#if MODULE_EVSE_AVAILABLE()
+    evse.set_user_current(current);
+#elif MODULE_EVSE_V2_AVAILABLE()
+    evse_v2.set_user_current(current);
+#endif
+}
+
+float get_energy()
+{
+    bool meter_avail = energy_meter.state.get("state")->asUint() == 2;
+    return !meter_avail ? NAN : energy_meter.values.get("energy_abs")->asFloat();
+}
 
 #define USER_SLOT_INFO_VERSION 1
 struct UserSlotInfo {
@@ -42,7 +133,8 @@ struct UserSlotInfo {
     float meter_start;
 };
 
-uint16_t calc_checksum(UserSlotInfo info) {
+uint16_t calc_checksum(UserSlotInfo info)
+{
     uint32_t float_buf = 0;
     memcpy(&float_buf, &info.meter_start, sizeof(float_buf));
 
@@ -61,12 +153,8 @@ uint16_t calc_checksum(UserSlotInfo info) {
     return checksum;
 }
 
-void zero_user_slot_info() {
-    uint8_t buf[63] = {0};
-    tf_evse_v2_set_data_storage(&evse_v2.device, 0, buf);
-}
-
-void write_user_slot_info(uint8_t user_id, uint32_t evse_uptime, uint32_t timestamp_minutes, float meter_start) {
+void write_user_slot_info(uint8_t user_id, uint32_t evse_uptime, uint32_t timestamp_minutes, float meter_start)
+{
     UserSlotInfo info;
     info.checksum = 0;
     info.version = USER_SLOT_INFO_VERSION;
@@ -79,12 +167,13 @@ void write_user_slot_info(uint8_t user_id, uint32_t evse_uptime, uint32_t timest
 
     uint8_t buf[63] = {0};
     memcpy(buf, &info, sizeof(info));
-    tf_evse_v2_set_data_storage(&evse_v2.device, 0, buf);
+    set_data_storage(buf);
 }
 
-bool read_user_slot_info(UserSlotInfo *result) {
+bool read_user_slot_info(UserSlotInfo *result)
+{
     uint8_t buf[63] = {0};
-    tf_evse_v2_get_data_storage(&evse_v2.device, 0, buf);
+    get_data_storage(buf);
 
     memcpy(result, buf, sizeof(UserSlotInfo));
     if (calc_checksum(*result) != 0) {
@@ -98,11 +187,22 @@ bool read_user_slot_info(UserSlotInfo *result) {
     return result->version == USER_SLOT_INFO_VERSION;
 }
 
+volatile bool user_api_blocked = false;
+
 Users::Users()
 {
     user_config = Config::Object({
         {"users", Config::Array(
-            {},
+            {
+                Config::Object({
+                    {"id", Config::Uint8(0)},
+                    {"roles", Config::Uint32(0xFFFFFFFF)},
+                    {"current", Config::Uint16(32000)},
+                    {"display_name", Config::Str("Anonymous", 0, USERNAME_LENGTH)},
+                    {"username", Config::Str("anonymous", 0, USERNAME_LENGTH)},
+                    {"digest_hash", Config::Str("", 0, 32)}
+                })
+            },
             new Config(Config::Object({
                 {"id", Config::Uint8(0)},
                 {"roles", Config::Uint32(0)},
@@ -114,41 +214,78 @@ Users::Users()
             0, MAX_ACTIVE_USERS,
             Config::type_id<Config::ConfObject>()
         )},
-        {"next_user_id", Config::Uint8(0)},
+        {"next_user_id", Config::Uint8(1)},
         {"http_auth_enabled", Config::Bool(false)}
     });
 
     add = ConfigRoot(Config::Object({
         {"id", Config::Uint8(0)},
-        {"roles", Config::Uint16(0)},
+        {"roles", Config::Uint32(0)},
         {"current", Config::Uint16(32000)},
         {"display_name", Config::Str("", 0, USERNAME_LENGTH)},
         {"username", Config::Str("", 0, USERNAME_LENGTH)},
         {"digest_hash", Config::Str("", 0, 32)},
     }), [this](Config &add) -> String {
+        if (user_api_blocked) {
+            for(int i = 0; i < 50; ++i) {
+                vTaskDelay(100 / portTICK_PERIOD_MS);
+                if (!user_api_blocked)
+                    break;
+            }
+            if (user_api_blocked)
+                return "Still applying the last operation. Please retry.";
+        }
+
         if (add.get("id")->asUint() != user_config.get("next_user_id")->asUint())
             return "Can't add user. Wrong next user ID";
 
         if (user_config.get("users")->count() == MAX_ACTIVE_USERS)
             return "Can't add user. Already have the maximum number of active users.";
 
+        for(int i = 0; i < user_config.get("users")->count(); ++i)
+            if (user_config.get("users")->get(i)->get("username")->asString() == add.get("username")->asString())
+                return "Can't add user. A user with this username already exists.";
+
+        {
+            char username[33] = {0};
+            File f = LittleFS.open(USERNAME_FILE, "r");
+            for(size_t i = 0; i < f.size(); i += USERNAME_ENTRY_LENGTH) {
+                f.seek(i);
+                f.read((uint8_t *) username, USERNAME_LENGTH);
+                if (add.get("username")->asString() == username)
+                    return "Can't add user. A user with this username already has tracked charges.";
+            }
+        }
+
+        user_api_blocked = true;
         return "";
     });
     add.permit_null_updates = false;
 
-    del = ConfigRoot(Config::Object({
+    remove = ConfigRoot(Config::Object({
         {"id", Config::Uint8(0)}
-    }), [this](Config &del) -> String {
-        if (del.get("id")->asUint() == 0)
-            return "The anonymous user can't be deleted.";
+    }), [this](Config &remove) -> String {
+        if (user_api_blocked) {
+            for (int i = 0; i < 50; ++i) {
+                vTaskDelay(100 / portTICK_PERIOD_MS);
+                if (!user_api_blocked)
+                    break;
+            }
+            if (user_api_blocked)
+                return "Still applying the last operation. Please retry.";
+        }
 
-        for(int i = 0; i < user_config.get("users")->count(); ++i) {
-            if (user_config.get("users")->get(i)->get("id")->asUint() == del.get("id")->asUint()) {
+        if (remove.get("id")->asUint() == 0)
+            return "The anonymous user can't be removed.";
+
+        for (int i = 0; i < user_config.get("users")->count(); ++i) {
+            if (user_config.get("users")->get(i)->get("id")->asUint() == remove.get("id")->asUint()) {
+                user_api_blocked = true;
                 return "";
             }
         }
 
-        return "Can't delete user. User with this ID not found.";
+        return "Can't remove user. User with this ID not found.";
     });
 
     http_auth_update = ConfigRoot(Config::Object({
@@ -157,7 +294,7 @@ Users::Users()
         if (!update.get("enabled")->asBool())
             return String("");
 
-        for(int i = 0; i < user_config.get("users")->count(); ++i) {
+        for (int i = 0; i < user_config.get("users")->count(); ++i) {
             if (user_config.get("users")->get(i)->get("digest_hash")->asString() != "")
                 return String("");
         }
@@ -166,56 +303,34 @@ Users::Users()
     });
 }
 
-void create_username_file() {
+void create_username_file()
+{
     logger.printfln("Recreating users file");
-    File f = LittleFS.open("/users/usernames", "w", true);
+    File f = LittleFS.open(USERNAME_FILE, "w", true);
     const uint8_t buf[512] = {};
 
-    for(int i = 0; i < 256 * USERNAME_LENGTH; i += sizeof(buf))
+    for (int i = 0; i < MAX_PASSIVE_USERS * USERNAME_ENTRY_LENGTH; i += sizeof(buf))
         f.write(buf, sizeof(buf));
 }
 
 void Users::setup()
 {
-    if (!api.restorePersistentConfig("users/config", &user_config)) {
-        create_username_file();
+    api.restorePersistentConfig("users/config", &user_config);
 
-        user_config.get("users")->add();
-        Config *user = user_config.get("users")->get(user_config.get("users")->count() - 1);
-
-        user->get("id")->updateUint(0);
-        user->get("roles")->updateUint(0xFFFF);
-        user->get("display_name")->updateString("Anonymous");
-        user->get("username")->updateString("anonymous");
-        user->get("digest_hash")->updateString("");
-
-        uint8_t user_id = user_config.get("next_user_id")->asUint();
-        ++user_id;
-        user_config.get("next_user_id")->updateUint(user_id);
-
-        API::writeConfig("users/config", &user_config);
-        this->rename_user(user->get("id")->asUint(), user->get("username")->asCStr());
-    }
-
-    if (!LittleFS.exists("/users/usernames")) {
+    if (!LittleFS.exists(USERNAME_FILE)) {
         logger.printfln("Username list does not exist! Recreating now.");
         create_username_file();
+        for (int i = 0; i < user_config.get("users")->count(); ++i) {
+            Config *user = user_config.get("users")->get(i);
+            this->rename_user(user->get("id")->asUint(), user->get("username")->asCStr(), user->get("display_name")->asCStr());
+        }
     }
 
-    //TODO: make sure usernames are the same in user_config and usernames.bin
-
     bool charge_start_tracked = charge_tracker.currentlyCharging();
-    bool charging = evse_v2.evse_state.get("iec61851_state")->asUint() == IEC_STATE_C;
+    bool charging = get_charger_state() == 2 || get_charger_state() == 3;
 
     if (charge_start_tracked && !charging) {
         this->stop_charging(0, true);
-    }
-
-    if (!charge_start_tracked && charging) {
-        // If the user slot is enabled, this can not happen, as we first write into the ESPs RAM
-        // and then set the user current so that the EVSE can start charging.
-        // In the user slot is disabled, we just start tracking a charge here.
-        this->start_charging(0, 32000);
     }
 
     if (charging) {
@@ -223,35 +338,48 @@ void Users::setup()
         UserSlotInfo info;
         bool success = read_user_slot_info(&info);
         if (success) {
-            charge_tracker.current_charge.get("user_id")->updateInt(info.user_id);
-            charge_tracker.current_charge.get("meter_start")->updateFloat(info.meter_start);
-            charge_tracker.current_charge.get("evse_uptime_start")->updateUint(info.evse_uptime_on_start);
-            charge_tracker.current_charge.get("timestamp_minutes")->updateUint(info.timestamp_minutes);
-        }
+            if (!charge_start_tracked) {
+                charge_tracker.startCharge(info.timestamp_minutes, info.meter_start, info.user_id, info.evse_uptime_on_start, CHARGE_TRACKER_AUTH_TYPE_LOST, nullptr);
+            } else {
+                // Don't track a start, but restore the current_charge API anyway.
+                charge_tracker.current_charge.get("user_id")->updateInt(info.user_id);
+                charge_tracker.current_charge.get("meter_start")->updateFloat(info.meter_start);
+                charge_tracker.current_charge.get("evse_uptime_start")->updateUint(info.evse_uptime_on_start);
+                charge_tracker.current_charge.get("timestamp_minutes")->updateUint(info.timestamp_minutes);
+                charge_tracker.current_charge.get("authorization_type")->updateUint(CHARGE_TRACKER_AUTH_TYPE_LOST);
+            }
+        } else if (!charge_start_tracked)
+            this->start_charging(0, 32000, CHARGE_TRACKER_AUTH_TYPE_NONE, nullptr);
     }
 
-    #ifdef MODULE_EVSE_V2_AVAILABLE
     task_scheduler.scheduleWithFixedDelay([this](){
-        static uint8_t last_iec_state = 0;
+        static uint8_t last_charger_state = get_charger_state();
 
-        uint8_t iec_state = evse_v2.evse_state.get("iec61851_state")->asUint();
-        if (iec_state == last_iec_state)
+        uint8_t charger_state = get_charger_state();
+        if (charger_state == last_charger_state)
             return;
 
-        bool user_enabled = evse_v2.evse_slots.get(CHARGING_SLOT_USER)->get("active")->asBool();
+        logger.printfln("Charger state changed from %u to %u", last_charger_state, charger_state);
+        last_charger_state = charger_state;
 
-        logger.printfln("IEC state changed from %u to %u", last_iec_state, iec_state);
-
-        if ((last_iec_state == IEC_STATE_A && iec_state == IEC_STATE_B) || iec_state == IEC_STATE_C) {
-            if (!user_enabled)
-                this->start_charging(0, 32000);
-        } else if (iec_state == IEC_STATE_A) {
-            this->stop_charging(0, true);
+        // stop_charging and start_charging will check
+        // if a start/stop was already tracked, so it is safe
+        // to call those methods more often than needed.
+        switch(charger_state) {
+            case CHARGER_STATE_NOT_PLUGGED_IN:
+                this->stop_charging(0, true);
+                break;
+            case CHARGER_STATE_WAITING_FOR_RELEASE:
+                break;
+            case CHARGER_STATE_READY_TO_CHARGE:
+            case CHARGER_STATE_CHARGING:
+                if (!get_user_slot()->get("active")->asBool())
+                    this->start_charging(0, 32000, CHARGE_TRACKER_AUTH_TYPE_NONE, nullptr);
+                break;
+            case CHARGER_STATE_ERROR:
+                break;
         }
-
-        last_iec_state = iec_state;
     }, 1000, 1000);
-    #endif
 
     if (user_config.get("http_auth_enabled")->asBool()) {
         server.setAuthentication([this](WebServerRequest req) -> bool {
@@ -267,7 +395,7 @@ void Users::setup()
             auth = auth.substring(7);
             AuthFields fields = parseDigestAuth(auth.c_str());
 
-            for(int i = 0; i < user_config.get("users")->count(); ++i) {
+            for (int i = 0; i < user_config.get("users")->count(); ++i) {
                 if (user_config.get("users")->get(i)->get("username")->asString().equals(fields.username))
                     return checkDigestAuthentication(fields, req.methodString(), fields.username.c_str(), user_config.get("users")->get(i)->get("digest_hash")->asCStr(), nullptr, true, nullptr, nullptr, nullptr);
             }
@@ -284,6 +412,17 @@ void Users::setup()
 void Users::register_urls()
 {
     api.addRawCommand("users/modify", [this](char *c, size_t s) -> String {
+        if (user_api_blocked) {
+            for(int i = 0; i < 50; ++i) {
+                vTaskDelay(100 / portTICK_PERIOD_MS);
+                if (!user_api_blocked)
+                    break;
+            }
+            if (user_api_blocked)
+                return "Still applying the last operation. Please retry.";
+        }
+
+        // TODO: in which context is this callback executed? Is this racy with other reads/writes to the user config?
         StaticJsonDocument<96> doc;
 
         DeserializationError error = deserializeJson(doc, c, s);
@@ -295,7 +434,7 @@ void Users::register_urls()
         if (doc["id"] == nullptr)
             return String("Can't modify user. User ID is null or missing.");
 
-        uint8_t id = doc["id"];
+        uint8_t id = doc["id"].as<uint8_t>();
         if (id == 0) {
             return "Can't modify the anonymous user.";
         }
@@ -312,6 +451,27 @@ void Users::register_urls()
             return "Can't modify user. User with this ID not found.";
         }
 
+        for(int i = 0; i < user_config.get("users")->count(); ++i) {
+            if (user_config.get("users")->get(i)->get("id")->asUint() == id)
+                continue;
+
+            if (user_config.get("users")->get(i)->get("username")->asString() == doc["username"]) {
+                return "Can't modify user. Another user with the same username already exists.";
+            }
+        }
+
+        char username[33] = {0};
+        File f = LittleFS.open(USERNAME_FILE, "r");
+        for(size_t i = 0; i < f.size(); i += USERNAME_ENTRY_LENGTH) {
+            if ((i / USERNAME_ENTRY_LENGTH) == id)
+                continue;
+
+            f.seek(i);
+            f.read((uint8_t *) username, USERNAME_LENGTH);
+            if (doc["username"].as<String>() == username)
+                return "Can't modify user. A user with this username already has tracked charges.";
+        }
+
         if (doc["roles"] != nullptr)
             user->get("roles")->updateUint((uint32_t) doc["roles"]);
 
@@ -319,8 +479,9 @@ void Users::register_urls()
         if (doc["display_name"] != nullptr)
             display_name_changed = user->get("display_name")->updateString(doc["display_name"]);
 
+        bool username_changed = false;
         if (doc["username"] != nullptr)
-            user->get("username")->updateString(doc["username"]);
+            username_changed = user->get("username")->updateString(doc["username"]);
 
         if (doc["current"] != nullptr)
             user->get("current")->updateUint((uint32_t) doc["current"]);
@@ -334,8 +495,8 @@ void Users::register_urls()
 
         API::writeConfig("users/config", &user_config);
 
-        if (display_name_changed)
-            this->rename_user(user->get("id")->asUint(), user->get("display_name")->asCStr());
+        if (display_name_changed || username_changed)
+            this->rename_user(user->get("id")->asUint(), user->get("username")->asCStr(), user->get("display_name")->asCStr());
 
         return "";
     }, true);
@@ -360,20 +521,21 @@ void Users::register_urls()
         user_config.get("next_user_id")->updateUint(user_id);
 
         API::writeConfig("users/config", &user_config);
-        this->rename_user(user->get("id")->asUint(), user->get("username")->asCStr());
+        this->rename_user(user->get("id")->asUint(), user->get("username")->asCStr(), user->get("display_name")->asCStr());
+        user_api_blocked = false;
     }, true);
 
-    api.addCommand("users/delete", &del, {}, [this](){
+    api.addCommand("users/remove", &remove, {}, [this](){
         int idx = -1;
         for(int i = 0; i < user_config.get("users")->count(); ++i) {
-            if (user_config.get("users")->get(i)->get("id")->asUint() == del.get("id")->asUint()) {
+            if (user_config.get("users")->get(i)->get("id")->asUint() == remove.get("id")->asUint()) {
                 idx = i;
                 break;
             }
         }
 
         if (idx < 0) {
-            logger.printfln("Can't delete user. User with this ID not found.");
+            logger.printfln("Can't remove user. User with this ID not found.");
             return;
         }
 
@@ -383,10 +545,15 @@ void Users::register_urls()
         Config *tags = nfc.config.get("authorized_tags");
 
         for(int i = 0; i < tags->count(); ++i) {
-            if(tags->get(i)->get("user_id")->asUint() == del.get("id")->asUint())
+            if(tags->get(i)->get("user_id")->asUint() == remove.get("id")->asUint())
                 tags->get(i)->get("user_id")->updateUint(0);
         }
         API::writeConfig("nfc/config", &nfc.config);
+
+        if (!charge_tracker.is_user_tracked(remove.get("id")->asUint()))
+            this->rename_user(remove.get("id")->asUint(), "", "");
+
+        user_api_blocked = false;
     }, true);
 
 
@@ -397,14 +564,14 @@ void Users::register_urls()
 
     server.on("/users/all_usernames", HTTP_GET, [this](WebServerRequest request) {
         //std::lock_guard<std::mutex> lock{records_mutex};
-        size_t len = 256 * USERNAME_LENGTH;
-        char *buf = (char*)malloc(len);
+        size_t len = MAX_PASSIVE_USERS * USERNAME_ENTRY_LENGTH;
+        char *buf = (char *)malloc(len);
         if (buf == nullptr) {
             request.send(507);
             return;
         }
 
-        File f = LittleFS.open("/users/usernames", "r");
+        File f = LittleFS.open(USERNAME_FILE, "r");
 
         size_t read = f.read((uint8_t *)buf, len);
         request.send(200, "application/octet-stream", buf, read);
@@ -415,7 +582,6 @@ void Users::register_urls()
 
 void Users::loop()
 {
-
 }
 
 uint8_t Users::next_user_id()
@@ -423,41 +589,33 @@ uint8_t Users::next_user_id()
     return this->user_config.get("next_user_id")->asUint();
 }
 
-void Users::create_user(const char *name)
+void Users::rename_user(uint8_t user_id, const char *username, const char *display_name)
 {
-    Config *next_uid = this->user_config.get("next_user_id");
-    uint8_t next_user_id = next_uid->asUint();
+    char buf[USERNAME_ENTRY_LENGTH] = {0};
+    snprintf(buf, USERNAME_LENGTH, "%s", username);
+    snprintf(buf + USERNAME_LENGTH, DISPLAY_NAME_LENGTH, "%s", display_name);
 
-    this->rename_user(next_user_id, name);
-
-    next_uid->updateUint((uint8_t)++next_user_id);
+    File f = LittleFS.open(USERNAME_FILE, "r+");
+    f.seek(user_id * USERNAME_ENTRY_LENGTH, SeekMode::SeekSet);
+    f.write((const uint8_t *)buf, USERNAME_ENTRY_LENGTH);
 }
 
-void Users::get_username(uint8_t user_id, char *buf)
+void Users::remove_from_username_file(uint8_t user_id)
 {
-    File f = LittleFS.open("/users/usernames", "r");
-    f.seek(user_id * USERNAME_LENGTH, SeekMode::SeekSet);
-    f.read((uint8_t *)buf, USERNAME_LENGTH);
+    Config *users = user_config.get("users");
+    for (int i = 0; i < users->count(); ++i) {
+        if (users->get(i)->get("id")->asUint() == user_id) {
+            return;
+        }
+    }
 
-    if (buf[0] == '\0')
-        snprintf(buf, USERNAME_LENGTH, "Unknown User %u", user_id);
-}
-
-void Users::rename_user(uint8_t user_id, const char *name)
-{
-    File f = LittleFS.open("/users/usernames", "r+");
-    uint8_t buf[32] = {0};
-    f.seek(user_id * USERNAME_LENGTH, SeekMode::SeekSet);
-    f.write(buf, USERNAME_LENGTH);
-
-    f.seek(user_id * USERNAME_LENGTH, SeekMode::SeekSet);
-    f.write((const uint8_t *)name, strnlen(name, USERNAME_LENGTH));
+    this->rename_user(user_id, "", "");
 }
 
 // Only returns true if the triggered action was a charge start.
-bool Users::trigger_charge_action(uint8_t user_id)
+bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::ConfVariant auth_info, int action)
 {
-    bool user_enabled = evse_v2.evse_slots.get(CHARGING_SLOT_USER)->get("active")->asBool();
+    bool user_enabled = get_user_slot()->get("active")->asBool();
     if (!user_enabled)
         return false;
     // This is called whenever a user wants to trigger a charge action.
@@ -477,27 +635,38 @@ bool Users::trigger_charge_action(uint8_t user_id)
         return false;
     }
 
-    uint8_t iec_state = IEC_STATE_A;
-    uint32_t tscs = 0;
-    #ifdef MODULE_EVSE_V2_AVAILABLE
-        iec_state = evse_v2.evse_state.get("iec61851_state")->asUint();
-        tscs = evse_v2.evse_low_level_state.get("time_since_state_change")->asUint();
-    #endif
+    uint8_t iec_state = get_iec_state();
+    uint32_t tscs = get_low_level_state()->get("time_since_state_change")->asUint();
 
     switch (iec_state) {
-        case IEC_STATE_B: // State B: The user wants to start charging.
-            return this->start_charging(user_id, current_limit);
+        case IEC_STATE_B: // State B: The user wants to start charging. If we already have a tracked charge, stop charging to allow switching to another user.
+            if (charge_tracker.currentlyCharging()) {
+                if (action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_STOP)
+                    this->stop_charging(user_id, false);
+                return false;
+            }
+            if (action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_START)
+                return this->start_charging(user_id, current_limit, auth_type, auth_info);
+            return false;
         case IEC_STATE_C: // State C: The user wants to stop charging.
             // Debounce here a bit, an impatient user can otherwise accidentially trigger a stop if a start_charging takes too long.
-            if (tscs > 3000)
+            if (tscs > 3000 && (action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_STOP))
                 this->stop_charging(user_id, false);
+            return false;
         default: //Don't do anything in state A, D, and E/F
             break;
     }
     return false;
 }
 
-uint32_t timestamp_minutes() {
+void Users::remove_username_file()
+{
+    if (LittleFS.exists(USERNAME_FILE))
+        LittleFS.remove(USERNAME_FILE);
+}
+
+uint32_t timestamp_minutes()
+{
     struct timeval tv_now;
 
     if (!clock_synced(&tv_now))
@@ -506,57 +675,52 @@ uint32_t timestamp_minutes() {
     return tv_now.tv_sec / 60;
 }
 
-bool Users::start_charging(uint8_t user_id, uint16_t current_limit)
+bool Users::start_charging(uint8_t user_id, uint16_t current_limit, uint8_t auth_type, Config::ConfVariant auth_info)
 {
-    // TODO: use api.getState("evse/state") or similar here instead of ifdefing everything
-    #ifdef MODULE_EVSE_V2_AVAILABLE
-        if (charge_tracker.currentlyCharging())
-            return false;
+    if (charge_tracker.currentlyCharging())
+        return false;
 
-        uint32_t evse_uptime = evse_v2.evse_low_level_state.get("uptime")->asUint();
-        bool meter_avail = evse_v2.evse_hardware_configuration.get("energy_meter_type")->asUint() != 0;
-        float meter_start = !meter_avail ? NAN : evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat();
-        uint32_t timestamp = timestamp_minutes();
+    uint32_t evse_uptime = get_low_level_state()->get("uptime")->asUint();
+    float meter_start = get_energy();
+    uint32_t timestamp = timestamp_minutes();
 
-        write_user_slot_info(user_id, evse_uptime, timestamp, meter_start);
-        charge_tracker.startCharge(timestamp, meter_start, user_id, evse_uptime);
-        evse_v2.set_user_current(current_limit);
+    write_user_slot_info(user_id, evse_uptime, timestamp, meter_start);
+    charge_tracker.startCharge(timestamp, meter_start, user_id, evse_uptime, auth_type, auth_info);
 
-        return true;
-    #endif
+    set_user_current(current_limit);
+
+    return true;
 }
 
 bool Users::stop_charging(uint8_t user_id, bool force)
 {
-    #ifdef MODULE_EVSE_V2_AVAILABLE
-        if (charge_tracker.currentlyCharging()) {
-            UserSlotInfo info;
-            bool success = read_user_slot_info(&info);
-            // If reading the user slot info failed, we don't know which user started this charge anymore.
-            // This should only happen if the EVSE power-cycles, however on a power-cycle any running charge
-            // should be aborted. It is safe to allow tracking a charge end in this case for any authorized card,
-            // as this should never happen anyway.
-            // Allow forcing the endCharge tracking. This is necessary in the case that the car was disconnected.
-            // The user is then autorized at the other end of the charging cable.
-            if (!force && success && info.user_id != user_id)
-                return false;
+    if (charge_tracker.currentlyCharging()) {
+        UserSlotInfo info;
+        bool success = read_user_slot_info(&info);
+        // If reading the user slot info failed, we don't know which user started this charge anymore.
+        // This should only happen if the EVSE power-cycles, however on a power-cycle any running charge
+        // should be aborted. It is safe to allow tracking a charge end in this case for any authorized card,
+        // as this should never happen anyway.
+        // Allow forcing the endCharge tracking. This is necessary in the case that the car was disconnected.
+        // The user is then authorized at the other end of the charging cable.
+        if (!force && success && info.user_id != user_id)
+            return false;
 
-            uint32_t charge_duration = 0;
-            if (success) {
-                uint32_t now_seconds = evse_v2.evse_low_level_state.get("uptime")->asUint() / 1000;
-                uint32_t start_seconds = info.evse_uptime_on_start / 1000;
-                if (now_seconds < start_seconds) {
-                    now_seconds += (0xFFFFFFFF / 1000);
-                }
-                charge_duration = now_seconds - start_seconds;
+        uint32_t charge_duration = 0;
+        if (success) {
+            uint32_t now_seconds = get_low_level_state()->get("uptime")->asUint() / 1000;
+            uint32_t start_seconds = info.evse_uptime_on_start / 1000;
+            if (now_seconds < start_seconds) {
+                now_seconds += (0xFFFFFFFF / 1000);
             }
-
-            bool meter_avail = evse_v2.evse_hardware_configuration.get("energy_meter_type")->asUint() != 0;
-            charge_tracker.endCharge(charge_duration, !meter_avail ? NAN : evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat());
+            charge_duration = now_seconds - start_seconds;
         }
-        zero_user_slot_info();
-        evse_v2.set_user_current(0);
 
-        return true;
-    #endif
+        charge_tracker.endCharge(charge_duration, get_energy());
+    }
+
+    zero_user_slot_info();
+    set_user_current(0);
+
+    return true;
 }

@@ -23,6 +23,9 @@
 #include "bindings/hal_common.h"
 #include "bindings/errors.h"
 
+#include "build.h"
+#include "build_timestamp.h"
+#include "config_migrations.h"
 #include "event_log.h"
 #include "task_scheduler.h"
 
@@ -37,13 +40,24 @@ API::API()
         new Config{Config::Str("")},
         0, 20, Config::type_id<Config::ConfString>()
     );
+
+    version = Config::Object({
+        {"firmware", Config::Str(BUILD_VERSION_FULL_STR)},
+        {"config", Config::Str("", 0, 12)},
+    });
 }
 
 void API::setup()
 {
+    migrate_config();
+
+    String config_version = read_config_version();
+    logger.printfln("%s config version: %s", BUILD_DISPLAY_NAME, config_version.c_str());
+    version.get("config")->updateString(config_version);
+
     task_scheduler.scheduleWithFixedDelay([this]() {
-        for (size_t i = 0; i < states.size(); ++i) {
-            auto &reg = states[i];
+        for (size_t state_idx = 0; state_idx < states.size(); ++state_idx) {
+            auto &reg = states[state_idx];
 
             if (!deadline_elapsed(reg.last_update + reg.interval)) {
                 continue;
@@ -51,16 +65,18 @@ void API::setup()
 
             reg.last_update = millis();
 
+            size_t backend_count = this->backends.size();
+
             // If the config was not updated for any API, we don't have to serialize the payload.
-            if (!reg.config->was_updated(0xFF)) {
+            if (!reg.config->was_updated((1 << backend_count) - 1)) {
                 continue;
             }
 
             String payload = reg.config->to_string_except(reg.keys_to_censor);
 
-            for (int i = 0; i < this->backends.size(); ++i) {
-                if (this->backends[i]->pushStateUpdate(i, payload, reg.path))
-                    reg.config->set_update_handled(1 << i);
+            for (size_t backend_idx = 0; backend_idx < this->backends.size(); ++backend_idx) {
+                if (this->backends[backend_idx]->pushStateUpdate(state_idx, payload, reg.path))
+                    reg.config->set_update_handled(1 << backend_idx);
             }
         }
     }, 250, 250);
@@ -127,17 +143,18 @@ void API::addRawCommand(String path, std::function<String(char *, size_t)> callb
 
 bool API::hasFeature(const char *name)
 {
-    for(int i = 0; i < features.count(); ++i)
+    for (int i = 0; i < features.count(); ++i)
         if (features.get(i)->asString() == name)
             return true;
     return false;
 }
 
-void API::writeConfig(String path, ConfigRoot *config) {
+void API::writeConfig(String path, ConfigRoot *config)
+{
     String path_copy = path;
     path_copy.replace('/', '_');
-    String cfg_path = String("/") + path_copy;
-    String tmp_path = String("/.") + path_copy; //max len is 31 - len("/.") = 29
+    String cfg_path = String("/config/") + path_copy;
+    String tmp_path = String("/config/.") + path_copy;
 
     if (LittleFS.exists(tmp_path)) {
         LittleFS.remove(tmp_path);
@@ -187,23 +204,10 @@ void API::addTemporaryConfig(String path, Config *config, std::initializer_list<
 bool API::restorePersistentConfig(String path, ConfigRoot *config)
 {
     path.replace('/', '_');
-    String filename = String("/") + path;
+    String filename = String("/config/") + path;
 
     if (!LittleFS.exists(filename)) {
-        // We have to migrate from the old naming schema here
-        // /xyz.json.tmp is now /.xyz
-        // /xyz.json is now /xyz
-
-        if (LittleFS.exists(filename + ".json.tmp")) {
-            LittleFS.remove(filename + ".json.tmp");
-        }
-
-        if (!LittleFS.exists(filename + ".json")) {
-            return false;
-        }
-
-        logger.printfln("Migrating config file %s to %s.", (filename + ".json").c_str(), filename.c_str());
-        LittleFS.rename(filename + ".json", filename);
+        return false;
     }
 
     File file = LittleFS.open(filename);
@@ -224,9 +228,9 @@ void API::registerDebugUrl(WebServer *server)
         String result = "{\"uptime\": ";
         result += String(millis());
         result += ",\n \"free_heap_bytes\":";
-        result += ESP.getFreeHeap();
+        result += heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
         result += ",\n \"largest_free_heap_block\":";
-        result += ESP.getMaxAllocHeap();
+        result += heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
         result += ",\n \"devices\": [";
 
         uint16_t i = 0;
@@ -280,7 +284,8 @@ void API::registerDebugUrl(WebServer *server)
         request.send(200, "application/json; charset=utf-8", result.c_str());
     });
 
-    this->addState("features", &features, {}, 1000);
+    this->addState("info/features", &features, {}, 1000);
+    this->addState("info/version", &version, {}, 10000);
 }
 
 void API::registerBackend(IAPIBackend *backend)
@@ -290,7 +295,6 @@ void API::registerBackend(IAPIBackend *backend)
 
 void API::loop()
 {
-
 }
 
 String API::callCommand(String path, Config::ConfUpdate payload)
@@ -335,7 +339,7 @@ Config *API::getState(String path, bool log_if_not_found)
 
 void API::addFeature(const char *name)
 {
-    for(int i = 0; i < features.count(); ++i)
+    for (int i = 0; i < features.count(); ++i)
         if (features.get(i)->asString() == name)
             return;
 

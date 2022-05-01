@@ -23,6 +23,11 @@
 
 #include <esp_random.h>
 
+#include "task_scheduler.h"
+#include "tools.h"
+
+extern TaskScheduler task_scheduler;
+
 struct ChargeStart {
     uint32_t timestamp_minutes = 0;
     float meter_start = 0.0f;
@@ -63,7 +68,9 @@ ChargeTracker::ChargeTracker()
         {"user_id", Config::Int16(-1)},
         {"meter_start", Config::Float(0)},
         {"evse_uptime_start", Config::Uint32(0)},
-        {"timestamp_minutes", Config::Uint32(0)}
+        {"timestamp_minutes", Config::Uint32(0)},
+        {"authorization_type", Config::Uint8(0)},
+        {"authorization_info", Config::Null()}
     });
 
     state = Config::Object({
@@ -72,11 +79,12 @@ ChargeTracker::ChargeTracker()
     });
 }
 
-String ChargeTracker::chargeRecordFilename(uint32_t i) {
+String ChargeTracker::chargeRecordFilename(uint32_t i)
+{
     return String(CHARGE_RECORD_FOLDER) + "/charge-record-" + i + ".bin";
 }
 
-void ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id, uint32_t evse_uptime) {
+void ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id, uint32_t evse_uptime, uint8_t auth_type, Config::ConfVariant auth_info) {
     std::lock_guard<std::mutex> lock{records_mutex};
     ChargeStart cs;
     File file = LittleFS.open(chargeRecordFilename(this->last_charge_record), "a", true);
@@ -113,9 +121,13 @@ void ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, u
     current_charge.get("meter_start")->updateFloat(meter_start);
     current_charge.get("evse_uptime_start")->updateUint(evse_uptime);
     current_charge.get("timestamp_minutes")->updateUint(timestamp_minutes);
+    current_charge.get("authorization_type")->updateUint(auth_type);
+    current_charge.get("authorization_info")->value = auth_info;
+    current_charge.get("authorization_info")->updated = 0xFF;
 }
 
-void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end) {
+void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end)
+{
     std::lock_guard<std::mutex> lock{records_mutex};
     ChargeEnd ce;
 
@@ -151,22 +163,84 @@ void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end)
     current_charge.get("meter_start")->updateFloat(0);
     current_charge.get("evse_uptime_start")->updateUint(0);
     current_charge.get("timestamp_minutes")->updateUint(0);
+    current_charge.get("authorization_type")->updateUint(0);
+    current_charge.get("authorization_info")->value = nullptr;
 
     updateState();
 }
 
+bool ChargeTracker::is_user_tracked(uint8_t user_id)
+{
+    const size_t user_id_offset = offsetof(ChargeStart, user_id);
+
+    for (int file = this->first_charge_record; file <= this->last_charge_record; ++file) {
+        File f = LittleFS.open(chargeRecordFilename(file));
+        size_t size = f.size();
+        // LittleFS caches internally, so we can read single bytes without a huge performance loss.
+        for (size_t i = 0; i < size; i += CHARGE_RECORD_SIZE) {
+            f.seek(i + user_id_offset);
+            int read_user_id = f.read();
+            if (read_user_id < 0)
+                continue;
+            if (user_id == read_user_id)
+                return true;
+        }
+    }
+    return false;
+}
+
 void ChargeTracker::removeOldRecords()
 {
-    while (this->last_charge_record - this->first_charge_record > 30) {
+    const size_t user_id_offset = offsetof(ChargeStart, user_id);
+
+    uint32_t users_to_delete[8] = {0}; // one bit per user
+
+    while (this->last_charge_record - this->first_charge_record >= 30) {
         String name = chargeRecordFilename(this->first_charge_record);
         logger.printfln("Got %u charge records. Dropping the first one (%s)", this->last_charge_record - this->first_charge_record, name.c_str());
+        {
+            File f = LittleFS.open(name, "r");
+            size_t size = f.size();
+            for (size_t i = 0; i < size; i += CHARGE_RECORD_SIZE) {
+                f.seek(i + user_id_offset);
+                int x = f.read();
+                if (x < 0)
+                    continue;
+                uint8_t user_id = x;
+                users_to_delete[user_id / 32] |= (1 << (user_id % 32));
+            }
+        }
         LittleFS.remove(name);
         ++this->first_charge_record;
     }
+
+    //users_to_delete has now set a bit for every user_id that was used in the deleted charge records.
+    //Clear this bit for every user that is still used in the current charge records.
+    for (int file = this->first_charge_record; file < this->last_charge_record; ++file) {
+        File f = LittleFS.open(chargeRecordFilename(file));
+        size_t size = f.size();
+        // LittleFS caches internally, so we can read single bytes without a huge performance loss.
+        for (size_t i = 0; i < size; i += CHARGE_RECORD_SIZE) {
+            f.seek(i + user_id_offset);
+            int x = f.read();
+            if (x < 0)
+                continue;
+            uint8_t user_id = x;
+            users_to_delete[user_id / 32] &= ~(1 << (user_id % 32));
+        }
+    }
+
+    // Now only users that are save to remove remain.
+    for (int user_id = 0; user_id < 256; ++user_id) {
+        if ((users_to_delete[user_id / 32] & (1 << (user_id % 32))) != 0) {
+            users.remove_from_username_file(user_id);
+        }
+    }
 }
 
-bool ChargeTracker::setupRecords() {
-    if (!LittleFS.mkdir(CHARGE_RECORD_FOLDER)) { //mkdir also returns true if the directory already exists and is a directory.
+bool ChargeTracker::setupRecords()
+{
+    if (!LittleFS.mkdir(CHARGE_RECORD_FOLDER)) { // mkdir also returns true if the directory already exists and is a directory.
         logger.printfln("Failed to create charge record folder!");
         return false;
     }
@@ -175,7 +249,7 @@ bool ChargeTracker::setupRecords() {
     File f;
 
     uint32_t found_blobs[32] = {0};
-    size_t found_blobs_size = sizeof(found_blobs)/sizeof(found_blobs[0]);
+    size_t found_blobs_size = sizeof(found_blobs) / sizeof(found_blobs[0]);
     int found_blob_counter = 0;
 
     while (f = folder.openNextFile()) {
@@ -217,8 +291,8 @@ bool ChargeTracker::setupRecords() {
     uint32_t last = found_blobs[found_blob_counter - 1];
 
     logger.printfln("Found %u records. First is %u, last is %u", found_blob_counter, first, last);
-    for(int i = 0; i < found_blob_counter - 1; ++i) {
-        if (found_blobs[i] + 1 != found_blobs[i+1]) {
+    for (int i = 0; i < found_blob_counter - 1; ++i) {
+        if (found_blobs[i] + 1 != found_blobs[i + 1]) {
             logger.printfln("Non-consecutive charge records found! (Next after %u is %u. Expected was %u", found_blobs[i], found_blobs[i+1], found_blobs[i] + 1);
             return false;
         }
@@ -240,7 +314,6 @@ bool ChargeTracker::setupRecords() {
         return false;
     }
 
-
     this->first_charge_record = first;
     this->last_charge_record = last;
 
@@ -260,12 +333,13 @@ bool ChargeTracker::currentlyCharging()
     return (file.size() % CHARGE_RECORD_SIZE) == sizeof(ChargeStart);
 }
 
-void ChargeTracker::readNRecords(File *f, size_t records_to_read) {
+void ChargeTracker::readNRecords(File *f, size_t records_to_read)
+{
     uint8_t buf[CHARGE_RECORD_SIZE];
     ChargeStart cs;
     ChargeEnd ce;
 
-    for(int i = 0; i < records_to_read; ++i) {
+    for (int i = 0; i < records_to_read; ++i) {
         memset(buf, 0, sizeof(buf));
         f->read(buf, CHARGE_RECORD_SIZE);
 
@@ -280,7 +354,8 @@ void ChargeTracker::readNRecords(File *f, size_t records_to_read) {
     }
 }
 
-void ChargeTracker::updateState() {
+void ChargeTracker::updateState()
+{
     auto records = this->last_charge_record - this->first_charge_record + 1;
     state.get("tracked_charges")->updateUint((records - 1) * (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE) + completeRecordsInLastFile());
 
@@ -331,7 +406,7 @@ void ChargeTracker::register_urls()
     server.on("/charge_tracker/charge_log", HTTP_GET, [this](WebServerRequest request) {
         std::lock_guard<std::mutex> lock{records_mutex};
 
-        char *url_buf = (char*)malloc(CHARGE_RECORD_MAX_FILE_SIZE);
+        char *url_buf = (char *)malloc(CHARGE_RECORD_MAX_FILE_SIZE);
         if (url_buf == nullptr) {
             request.send(507);
             return;
@@ -340,10 +415,17 @@ void ChargeTracker::register_urls()
         File file = LittleFS.open(chargeRecordFilename(this->last_charge_record));
         size_t file_size = (this->last_charge_record - this->first_charge_record) * CHARGE_RECORD_MAX_FILE_SIZE + file.size();
         String file_size_string = String(file_size);
+
+        // Don't do a chunked response without any chunk. The webserver does strange things in this case
+        if (file_size == 0) {
+            request.send(200, "application/octet-stream", "", 0);
+            return;
+        }
+
         request.addResponseHeader("Content-Length", file_size_string.c_str());
 
         request.beginChunkedResponse(200, "application/octet-stream");
-        for(int i = this->first_charge_record; i <= this->last_charge_record; ++i) {
+        for (int i = this->first_charge_record; i <= this->last_charge_record; ++i) {
             File f = LittleFS.open(chargeRecordFilename(i));
             int read = f.read((uint8_t *)url_buf, CHARGE_RECORD_MAX_FILE_SIZE);
             int trunc = read - (read % CHARGE_RECORD_SIZE);
@@ -356,6 +438,31 @@ void ChargeTracker::register_urls()
     api.addState("charge_tracker/last_charges", &last_charges, {}, 1000);
     api.addState("charge_tracker/current_charge", &current_charge, {}, 1000);
     api.addState("charge_tracker/state", &state, {}, 1000);
+    api.addRawCommand("charge_tracker/remove_all_charges", [this](char *c, size_t s) -> String {
+        StaticJsonDocument<16> doc;
+
+        DeserializationError error = deserializeJson(doc, c, s);
+
+        if (error) {
+            return String("Failed to deserialize string: ") + String(error.c_str());
+        }
+
+        if (!doc["do_i_know_what_i_am_doing"].is<bool>()) {
+            return "you don't seem to know what you are doing";
+        }
+
+        if (!doc["do_i_know_what_i_am_doing"].as<bool>()) {
+            return "Charges will NOT be removed";
+        }
+
+        task_scheduler.scheduleOnce([](){
+            logger.printfln("Removing all tracked charges and rebooting.");
+            remove_directory(CHARGE_RECORD_FOLDER);
+            users.remove_username_file();
+            ESP.restart();
+        }, 3000);
+        return "";
+    }, true);
 }
 
 void ChargeTracker::loop()

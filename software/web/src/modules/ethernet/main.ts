@@ -95,9 +95,8 @@ function save_ethernet_config() {
         __("ethernet.script.reboot_content_changed"));
 }
 
-export function addEventListeners(source: API.ApiEventTarget) {
+export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('ethernet/state', update_ethernet_state);
-
     source.addEventListener('ethernet/config', update_ethernet_config);
 }
 
@@ -118,6 +117,6 @@ export function init() {
     });
 }
 
-export function updateLockState(module_init: any) {
+export function update_sidebar_state(module_init: any) {
     $('#sidebar-ethernet').prop('hidden', !module_init.ethernet);
 }

@@ -33,6 +33,7 @@
 #include "bindings/bricklet_unknown.h"
 #include "event_log.h"
 #include "esp_log.h"
+#include "build.h"
 
 extern EventLog logger;
 
@@ -122,12 +123,14 @@ int check(int rc, const char *msg)
 
 class LogSilencer {
 public:
-    LogSilencer(const char *tag) : tag(tag), level_to_restore(ESP_LOG_NONE) {
+    LogSilencer(const char *tag) : tag(tag), level_to_restore(ESP_LOG_NONE)
+    {
         level_to_restore = esp_log_level_get(tag);
         esp_log_level_set(tag, ESP_LOG_NONE);
     }
 
-    ~LogSilencer() {
+    ~LogSilencer()
+    {
         esp_log_level_set(tag, level_to_restore);
     }
     const char *tag;
@@ -250,7 +253,7 @@ bool mount_or_format_spiffs(void)
     // If we still have an SPIFFS, copy the configuration into the "backup" slot, i.e. the core dump partition
     // Format the core dump partition in any case, maybe we where interrupted while copying the last time.
     if (is_spiffs_available("spiffs", "/spiffs")) {
-        logger.printfln("Configuration partition is mountable as SPIFFS. Migrating to LittleFS.");
+        logger.printfln("Data partition is mountable as SPIFFS. Migrating to LittleFS.");
 
         logger.printfln("Formatting core dump partition as LittleFS.");
         {
@@ -261,7 +264,7 @@ bool mount_or_format_spiffs(void)
         LittleFS.format();
         LittleFS.begin(false, "/conf_backup", 10, "coredump");
 
-        logger.printfln("Mirroring configuration to core dump partition.");
+        logger.printfln("Mirroring data to core dump partition.");
         SPIFFS.begin(false);
         uint8_t *buf = (uint8_t *)malloc(4096);
         mirror_filesystem(SPIFFS, LittleFS, "/", 4, buf, 4096);
@@ -275,9 +278,9 @@ bool mount_or_format_spiffs(void)
     // (maybe we copied only half the config last time). Then copy over the configuration backup files
     // and erase the backup completely.
     if (is_littlefs_available("coredump", "/conf_backup")) {
-        logger.printfln("Core dump partition is mountable as LittleFS, configuration backup found. Continuing migration.");
+        logger.printfln("Core dump partition is mountable as LittleFS, data backup found. Continuing migration.");
 
-        logger.printfln("Formatting configuration partition as LittleFS.");
+        logger.printfln("Formatting data partition as LittleFS.");
         {
             LogSilencer ls{"esp_littlefs"};
             LogSilencer ls2{"ARDUINO"};
@@ -286,7 +289,7 @@ bool mount_or_format_spiffs(void)
         LittleFS.format();
         LittleFS.begin(false, "/spiffs", 10, "spiffs");
 
-        logger.printfln("Mirroring configuration backup to configuration partition.");
+        logger.printfln("Mirroring data backup to data partition.");
         fs::LittleFSFS configFS;
         configFS.begin(false, "/conf_backup", 10, "coredump");
         uint8_t *buf = (uint8_t *)malloc(4096);
@@ -302,13 +305,13 @@ bool mount_or_format_spiffs(void)
     }
 
     if (!is_littlefs_available("spiffs", "/spiffs")) {
-        logger.printfln("Configuration partition is not mountable as LittleFS. Formatting now.");
+        logger.printfln("Data partition is not mountable as LittleFS. Formatting now.");
         {
             LogSilencer ls{"esp_littlefs"};
             LittleFS.begin(false, "/spiffs", 10, "spiffs");
         }
         LittleFS.format();
-        logger.printfln("Configuration partition is now formatted as LittleFS.");
+        logger.printfln("Data partition is now formatted as LittleFS.");
     }
 
     if (!LittleFS.begin(false, "/spiffs", 10, "spiffs")) {
@@ -317,30 +320,24 @@ bool mount_or_format_spiffs(void)
 
     size_t part_size = LittleFS.totalBytes();
     size_t part_used = LittleFS.usedBytes();
-    logger.printfln("Mounted configuration partition. %u of %u bytes (%3.1f %%) used", part_used, part_size, ((float)part_used / (float)part_size) * 100.0f);
+    logger.printfln("Mounted data partition. %u of %u bytes (%3.1f %%) used", part_used, part_size, ((float)part_used / (float)part_size) * 100.0f);
 
     return true;
 }
 
-String read_or_write_config_version(const char *firmware_version)
+String read_config_version()
 {
-    if (LittleFS.exists("/spiffs.json")) {
-        const size_t capacity = JSON_OBJECT_SIZE(1) + 60;
-        StaticJsonDocument<capacity> doc;
-        File file = LittleFS.open("/spiffs.json", "r");
+    if (LittleFS.exists("/config/version")) {
+        StaticJsonDocument<JSON_OBJECT_SIZE(1) + 60> doc;
+        File file = LittleFS.open("/config/version", "r");
 
         deserializeJson(doc, file);
         file.close();
 
         return doc["spiffs"].as<const char *>();
-    } else {
-        File file = LittleFS.open("/spiffs.json", "w");
-
-        file.printf("{\"spiffs\": \"%s\"}", firmware_version);
-        file.close();
-
-        return firmware_version;
     }
+    logger.printfln("Failed to read config version!");
+    return BUILD_VERSION_STRING;
 }
 
 static bool wait_for_bootloader_mode(TF_Unknown *bricklet, int target_mode)
@@ -498,7 +495,6 @@ static bool flash_firmware(TF_Unknown *bricklet, const uint8_t *firmware, size_t
 #define FIRMWARE_MINOR_OFFSET 11
 #define FIRMWARE_PATCH_OFFSET 12
 
-
 class TFPSwap {
 public:
     TFPSwap(TF_TFP *tfp) :
@@ -580,7 +576,6 @@ int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose,
     return 0;
 }
 
-
 int compare_version(uint8_t left_major, uint8_t left_minor, uint8_t left_patch,
                     uint8_t right_major, uint8_t right_minor, uint8_t right_patch) {
     if (left_major > right_major)
@@ -604,7 +599,43 @@ int compare_version(uint8_t left_major, uint8_t left_minor, uint8_t left_patch,
     return 0;
 }
 
-bool clock_synced(struct timeval *out_tv_now) {
+bool clock_synced(struct timeval *out_tv_now)
+{
     gettimeofday(out_tv_now, nullptr);
-    return out_tv_now->tv_sec > ((2016 - 1970) * 365 * 24  * 60 * 60);
+    return out_tv_now->tv_sec > ((2016 - 1970) * 365 * 24 * 60 * 60);
+}
+
+bool for_file_in(const char *dir, bool (*callback)(File *open_file), bool skip_directories)
+{
+    File root = LittleFS.open(dir);
+    File file;
+    while (file = root.openNextFile()) {
+        if (skip_directories && file.isDirectory()) {
+            continue;
+        }
+        if (!callback(&file))
+            return false;
+    }
+    return true;
+}
+
+void remove_directory(const char *path)
+{
+    // This is more involved than expected:
+    // rmdir only deletes empty directories, so remove all files first
+    // Also LittleFS.rmdir will call the vfs_api.cpp implementation that
+    // helpfully checks the mountpoint's name. If it is
+    // "/spiffs", the directory will not be deleted, but instead
+    // "rmdir is unnecessary in SPIFFS" is printed. However our mountpoint
+    // is only called /spiffs for historical reasons, we use
+    // LittleFS instead. Calling ::rmdir directly bypasses
+    // this and other helpful checks.
+    for_file_in(path, [](File *f) {
+            String file_path = f->path();
+            f->close();
+            LittleFS.remove(file_path);
+            return true;
+        });
+
+    ::rmdir((String("/spiffs/") + path).c_str());
 }

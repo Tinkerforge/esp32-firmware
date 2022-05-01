@@ -33,5 +33,4 @@ public:
     ConfigRoot config;
 
 private:
-
 };

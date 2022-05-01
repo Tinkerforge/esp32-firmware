@@ -145,7 +145,7 @@ void Wifi::apply_soft_ap_config_and_start()
     subnet.fromString(wifi_ap_config_in_use.get("subnet")->asCStr());
 
     int counter = 0;
-    while(ip != WiFi.softAPIP()) {
+    while (ip != WiFi.softAPIP()) {
         WiFi.softAPConfig(ip, gateway, subnet);
         ++counter;
     }
@@ -343,11 +343,12 @@ void Wifi::setup()
         WiFi.mode(WIFI_AP_STA);
     } else if (enable_ap) {
         WiFi.mode(WIFI_AP);
-    } else if (enable_sta) {
-        WiFi.mode(WIFI_STA);
     } else {
-        WiFi.mode(WIFI_OFF);
+        WiFi.mode(WIFI_STA);
     }
+
+    WiFi.setAutoReconnect(false);
+    WiFi.disconnect(false, true);
 
     wifi_country_t config;
     config.cc[0] = 'D';
@@ -455,7 +456,7 @@ void Wifi::check_for_scan_completion()
     }
     logger.printfln("Scan done. %d networks.", WiFi.scanComplete());
 
-#ifdef MODULE_WS_AVAILABLE
+#if MODULE_WS_AVAILABLE()
     ws.pushRawStateUpdate(this->get_scan_results(), "wifi/scan_results");
 #endif
 }
@@ -507,7 +508,7 @@ void Wifi::loop()
 
     bool ap_fallback_only = wifi_ap_config_in_use.get("enable_ap")->asBool() && wifi_ap_config_in_use.get("ap_fallback_only")->asBool();
     bool ethernet_connected = false;
-#ifdef MODULE_ETHERNET_AVAILABLE
+#if MODULE_ETHERNET_AVAILABLE()
     ethernet_connected = ethernet.get_connection_state() == EthernetState::CONNECTED;
 #endif
     bool connected = (wifi_sta_config_in_use.get("enable_sta")->asBool() && connection_state == WifiState::CONNECTED) || ethernet_connected;
@@ -528,7 +529,7 @@ WifiState Wifi::get_connection_state()
     if (!wifi_sta_config_in_use.get("enable_sta")->asBool())
         return WifiState::NOT_CONFIGURED;
 
-    switch(WiFi.status()) {
+    switch (WiFi.status()) {
         case WL_CONNECT_FAILED:
         case WL_CONNECTION_LOST:
         case WL_DISCONNECTED:

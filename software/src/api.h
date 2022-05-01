@@ -103,6 +103,7 @@ public:
     std::vector<IAPIBackend *> backends;
 
     ConfigRoot features;
+    ConfigRoot version;
 
 private:
     bool already_registered(const String &path, const char *api_type);

@@ -35,7 +35,7 @@ int check(int rc, const char *msg);
 
 bool mount_or_format_spiffs(void);
 
-String read_or_write_config_version(const char *firmware_version);
+String read_config_version();
 
 int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose, const uint8_t *firmware, size_t firmware_len, EventLog *logger, bool force);
 
@@ -43,3 +43,7 @@ int compare_version(uint8_t left_major, uint8_t left_minor, uint8_t left_patch,
                     uint8_t right_major, uint8_t right_minor, uint8_t right_patch);
 
 bool clock_synced(struct timeval *out_tv_now);
+
+bool for_file_in(const char *dir, bool (*callback)(File *open_file), bool skip_directories = true);
+
+void remove_directory(const char *path);

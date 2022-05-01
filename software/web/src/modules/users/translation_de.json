@@ -10,34 +10,42 @@
             "users": "Benutzer&shy;verwaltung",
 
             "enable_authentication": "Anmeldung aktiviert",
-            "enable_authentication_desc": "Wenn aktiviert, muss beim Aufrufen des Webinterfaces oder bei Verwendung der HTTP-API eine Anmeldung als einer der konfigurieren Benutzer durchgeführt werden.",
+            "enable_authentication_desc": "Beim Aufrufen des Webinterfaces oder bei Verwendung der HTTP-API muss eine Anmeldung als einer der konfigurieren Benutzer durchgeführt werden",
+            "enable_authentication_invalid": "Damit die Anmeldung aktiviert sein kann, muss mindestens ein Benutzer mit einem konfigurierten Passwort vorhanden sein.",
 
             "save": "Speichern",
             "authorized_users": "Berechtigte Benutzer",
 
             "add_user_modal_title": "Benutzer hinzufügen",
             "add_user_modal_username": "Benutzername",
+            "add_user_modal_username_desc": "zur Anmeldung im Webinterface",
+            "add_user_modal_username_invalid": "Benutzername ist bereits vergeben (aktiver Nutzer)",
             "add_user_modal_display_name": "Anzeigename",
+            "add_user_modal_display_name_desc": "zur Anzeige im Ladeprotokoll und Webinterface",
             "add_user_modal_current": "Maximaler Ladestrom",
+            "add_user_modal_current_desc": "nicht beschränkt",
             "add_user_modal_password": "Passwort",
-            "add_user_modal_password_desc": "leer lassen um Anmeldung zu deaktivieren",
+            "add_user_modal_password_desc": "Anmeldung deaktiviert",
             "add_user_modal_abort": "Verwerfen",
             "add_user_modal_save": "Hinzufügen"
         },
         "script": {
             "id": "ID",
             "roles": "Rollen",
+            "username": "Benutzername",
+            "delete": "Löschen",
             "display_name": "Anzeigename",
             "current": "Maximaler Ladestrom",
             "password": "Passwort",
-            "last_seen_unknown": "placeholder",
             "add_user": "Benutzer hinzufügen",
             "add_user_disabled_prefix": "Es werden nur bis zu ",
             "add_user_disabled_suffix": " Benutzer unterstützt",
             "unchanged": "unverändert",
             "reboot_content_changed": "Benutzereinstellungen",
             "login_disabled": "Anmeldung deaktiviert",
-            "save_failed": "Speichern der Benutzereinstellungen fehlgeschlagen."
+            "save_failed": "Speichern der Benutzereinstellungen fehlgeschlagen.",
+            "username_already_tracked": "Benutzername ist bereits vergeben (in aufgezeichneten Ladevorgängen)",
+            "download_usernames_failed": "Herunterladen der verwendeten Benutzernamen in aufgezeichneten Ladevorgängen fehlgeschlagen"
         }
     }
 }

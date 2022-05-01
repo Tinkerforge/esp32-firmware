@@ -26,6 +26,7 @@
 #include "api.h"
 #include "event_log.h"
 #include "build.h"
+#include "modules.h"
 
 extern EventLog logger;
 
@@ -33,7 +34,12 @@ extern TaskScheduler task_scheduler;
 extern char local_uid_str[7];
 extern API api;
 
+#if MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
 #define MQTT_RECV_BUFFER_SIZE 4096
+#else
+#define MQTT_RECV_BUFFER_SIZE 2048
+#endif
+
 #define MQTT_RECV_BUFFER_HEADROOM (MQTT_RECV_BUFFER_SIZE / 4)
 
 Mqtt::Mqtt()
@@ -56,11 +62,11 @@ Mqtt::Mqtt()
     });
 }
 
-void Mqtt::subscribe(String topic_suffix, uint32_t max_payload_length, std::function<void(char *, size_t)> callback, bool forbid_retained)
+void Mqtt::subscribe(String path, std::function<void(char *, size_t)> callback, bool forbid_retained)
 {
     String prefix = mqtt_config_in_use.get("global_topic_prefix")->asString();
-    String topic = prefix + "/" + topic_suffix;
-    this->commands.push_back({topic, max_payload_length, callback, forbid_retained});
+    String topic = prefix + "/" + path;
+    this->commands.push_back({topic, callback, forbid_retained});
 
     esp_mqtt_client_unsubscribe(client, topic.c_str());
     esp_mqtt_client_subscribe(client, topic.c_str(), 0);
@@ -68,7 +74,7 @@ void Mqtt::subscribe(String topic_suffix, uint32_t max_payload_length, std::func
 
 void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)
 {
-    auto req_size = reg.config->json_size();
+    auto req_size = reg.config->max_string_length();
     if (req_size > MQTT_RECV_BUFFER_SIZE) {
         logger.printfln("MQTT: Recv buf is %u bytes. %s requires %u. Bump MQTT_RECV_BUFFER_SIZE! Not subscribing!", MQTT_RECV_BUFFER_SIZE, reg.path.c_str(), req_size);
         return;
@@ -79,7 +85,7 @@ void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)
     if (mqtt_state.get("connection_state")->asInt() != (int)MqttConnectionState::CONNECTED)
         return;
 
-    subscribe(reg.path, reg.config->json_size(), [reg, commandIdx](char *payload, size_t payload_len){
+    subscribe(reg.path, [reg, commandIdx](char *payload, size_t payload_len){
         String reason = api.getCommandBlockedReason(commandIdx);
         if (reason != "") {
             logger.printfln("MQTT: Command %s is blocked: %s", reg.path.c_str(), reason.c_str());
@@ -106,7 +112,7 @@ void Mqtt::addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg
     if (mqtt_state.get("connection_state")->asInt() != (int)MqttConnectionState::CONNECTED)
         return;
 
-    subscribe(reg.path, MQTT_RECV_BUFFER_SIZE, [reg](char *payload, size_t payload_len){
+    subscribe(reg.path, [reg](char *payload, size_t payload_len){
         String error = reg.callback(payload, payload_len);
         if(error == "") {
             return;
@@ -116,7 +122,7 @@ void Mqtt::addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg
     }, reg.is_action);
 }
 
-void Mqtt::publish(String payload, String path)
+void Mqtt::publish(String path, String payload)
 {
     String prefix = mqtt_config_in_use.get("global_topic_prefix")->asString();
     String topic = prefix + "/" + path;
@@ -130,13 +136,14 @@ bool Mqtt::pushStateUpdate(size_t stateIdx, String payload, String path)
     if (!deadline_elapsed(state.last_send_ms + mqtt_config_in_use.get("interval")->asUint() * 1000))
         return false;
 
-    this->publish(payload, path);
+    this->publish(path, payload);
     state.last_send_ms = millis();
     return true;
 }
 
-void Mqtt::pushRawStateUpdate(String payload, String path) {
-    this->publish(payload, path);
+void Mqtt::pushRawStateUpdate(String payload, String path)
+{
+    this->publish(path, payload);
 }
 
 void Mqtt::wifiAvailable()
@@ -162,7 +169,7 @@ void Mqtt::onMqttConnect()
         this->addRawCommand(i, reg);
     }
     for (auto &reg : api.states) {
-        publish(reg.config->to_string_except(reg.keys_to_censor), reg.path);
+        publish(reg.path, reg.config->to_string_except(reg.keys_to_censor));
     }
 }
 
@@ -179,11 +186,6 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
             continue;
         if (memcmp(c.topic.c_str(), topic, topic_len) != 0)
             continue;
-
-        if (data_len > c.max_len) {
-            logger.printfln("MQTT: Ignoring message with payload length %u for topic %s. Maximum length allowed is %u.", data_len, c.topic.c_str(), c.max_len);
-            return;
-        }
 
         if (retain && c.forbid_retained) {
             logger.printfln("MQTT: Topic %s is an action. Ignoring retained message.", c.topic.c_str());
@@ -236,8 +238,10 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             }, 0);
             break;
         case MQTT_EVENT_DATA:
-            if(event->total_data_len != event->data_len) {
-                logger.printfln("MQTT: fragmented payload (%u %u). Payload too long?", event->data_len, event->total_data_len);
+            if (event->current_data_offset != 0)
+                return;
+            if (event->total_data_len != event->data_len) {
+                logger.printfln("MQTT: Ignoring message with payload length %d for topic %.*s. Maximum length allowed is %u.", event->total_data_len, event->topic_len, event->topic, MQTT_RECV_BUFFER_SIZE);
                 return;
             }
             mqtt->onMqttMessage(event->topic, event->topic_len, event->data, event->data_len, event->retain);
@@ -305,7 +309,7 @@ void Mqtt::setup()
     mqtt_cfg.client_id = mqtt_config_in_use.get("client_name")->asCStr();
     mqtt_cfg.username = mqtt_config_in_use.get("broker_username")->asCStr();
     mqtt_cfg.password = mqtt_config_in_use.get("broker_password")->asCStr();
-    mqtt_cfg.buffer_size = MQTT_RECV_BUFFER_SIZE,
+    mqtt_cfg.buffer_size = MQTT_RECV_BUFFER_SIZE;
     mqtt_cfg.network_timeout_ms = 100;
 
     client = esp_mqtt_client_init(&mqtt_cfg);
@@ -322,5 +326,4 @@ void Mqtt::register_urls()
 
 void Mqtt::loop()
 {
-
 }

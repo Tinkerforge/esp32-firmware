@@ -126,7 +126,7 @@ TF_HALCommon *tf_hal_get_common(TF_HAL *hal) {
 }
 
 void tf_hal_log_message(const char *msg, size_t len) {
-    Serial.write((const uint8_t *) msg, len);
+    Serial.write((const uint8_t *)msg, len);
 }
 
 void tf_hal_log_newline(void) {

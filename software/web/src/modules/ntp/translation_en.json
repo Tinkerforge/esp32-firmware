@@ -1,16 +1,18 @@
 {
     "ntp": {
         "navbar": {
-            "ntp": "Time synchronization"
+            "ntp": "Time Synchronization"
         },
         "content": {
-            "ntp": "Time synchronization",
+            "ntp": "Time Synchronization",
             "enable": "Time synchronization enabled",
             "enable_desc": "Synchronizes the interal clock over the network (NTP)",
             "use_dhcp": "Use DHCP",
-            "use_dhcp_desc": "uses time servers that were set via DHCP",
+            "use_dhcp_desc": "Uses time servers that were set via DHCP",
             "timezone": "Time zone (not yet configurable)",
+            "use_browser_timezone": "Use browser timezone",
             "server": "Time server",
+            "server2": "Alternative time server",
             "save": "Save"
         },
         "script": {

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-02-18.      *
+ * This file was automatically generated on 2022-04-19.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -82,7 +82,7 @@ typedef struct TF_WARPEnergyManager {
 /**
  * \ingroup TF_WARPEnergyManager
  */
-#define TF_WARP_ENERGY_MANAGER_FUNCTION_RESET_ENERGY_METER_RELATIVE_ENERGY 8
+#define TF_WARP_ENERGY_MANAGER_FUNCTION_RESET_ENERGY_METER 8
 
 /**
  * \ingroup TF_WARPEnergyManager
@@ -118,11 +118,6 @@ typedef struct TF_WARPEnergyManager {
  * \ingroup TF_WARPEnergyManager
  */
 #define TF_WARP_ENERGY_MANAGER_FUNCTION_GET_STATE 15
-
-/**
- * \ingroup TF_WARPEnergyManager
- */
-#define TF_WARP_ENERGY_MANAGER_FUNCTION_GET_ALL_DATA_1 16
 
 /**
  * \ingroup TF_WARPEnergyManager
@@ -187,26 +182,6 @@ typedef struct TF_WARPEnergyManager {
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 #endif
-
-/**
- * \ingroup TF_WARPEnergyManager
- */
-#define TF_WARP_ENERGY_MANAGER_ENERGY_METER_TYPE_NOT_AVAILABLE 0
-
-/**
- * \ingroup TF_WARPEnergyManager
- */
-#define TF_WARP_ENERGY_MANAGER_ENERGY_METER_TYPE_SDM72 1
-
-/**
- * \ingroup TF_WARPEnergyManager
- */
-#define TF_WARP_ENERGY_MANAGER_ENERGY_METER_TYPE_SDM630 2
-
-/**
- * \ingroup TF_WARPEnergyManager
- */
-#define TF_WARP_ENERGY_MANAGER_ENERGY_METER_TYPE_SDM72V2 3
 
 /**
  * \ingroup TF_WARPEnergyManager
@@ -421,14 +396,14 @@ int tf_warp_energy_manager_get_energy_meter_detailed_values_low_level(TF_WARPEne
  *
  * TODO
  */
-int tf_warp_energy_manager_get_energy_meter_state(TF_WARPEnergyManager *warp_energy_manager, uint8_t *ret_energy_meter_type, uint32_t ret_error_count[6]);
+int tf_warp_energy_manager_get_energy_meter_state(TF_WARPEnergyManager *warp_energy_manager, bool *ret_available, uint32_t ret_error_count[6]);
 
 /**
  * \ingroup TF_WARPEnergyManager
  *
  * TODO
  */
-int tf_warp_energy_manager_reset_energy_meter_relative_energy(TF_WARPEnergyManager *warp_energy_manager);
+int tf_warp_energy_manager_reset_energy_meter(TF_WARPEnergyManager *warp_energy_manager);
 
 /**
  * \ingroup TF_WARPEnergyManager
@@ -478,13 +453,6 @@ int tf_warp_energy_manager_get_input_voltage(TF_WARPEnergyManager *warp_energy_m
  * TODO
  */
 int tf_warp_energy_manager_get_state(TF_WARPEnergyManager *warp_energy_manager, uint8_t *ret_contactor_check_state);
-
-/**
- * \ingroup TF_WARPEnergyManager
- *
- * TODO
- */
-int tf_warp_energy_manager_get_all_data_1(TF_WARPEnergyManager *warp_energy_manager, bool *ret_value, uint8_t *ret_r, uint8_t *ret_g, uint8_t *ret_b, float *ret_power, float *ret_energy_relative, float *ret_energy_absolute, bool ret_phases_active[3], bool ret_phases_connected[3], uint8_t *ret_energy_meter_type, uint32_t ret_error_count[6], bool ret_input[2], bool *ret_output, uint8_t ret_input_configuration[2], uint16_t *ret_voltage, uint8_t *ret_contactor_check_state);
 
 /**
  * \ingroup TF_WARPEnergyManager

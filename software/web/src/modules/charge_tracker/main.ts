@@ -102,36 +102,55 @@ function to_csv_line(vals: string[]) {
     return line.join(",") + "\r\n";
 }
 
-async function downloadChargeLog() {
-    let users: string[] = [];
-
-    await fetch('/users/all_usernames')
+export function getAllUsernames() {
+    return fetch('/users/all_usernames')
         .then(response => response.arrayBuffer())
         .then(buffer => {
-            if (buffer.byteLength != 256 * 32) {
+            let usernames: string[] = [];
+            let display_names: string[] = [];
+
+            if (buffer.byteLength != 256 * 64) {
                 console.log("Unexpected length of all_usernames!");
-                return;
+                return [null, null];
             }
 
             const decoder = new TextDecoder();
             for(let i = 0; i < 256; ++i) {
-                let view = new DataView(buffer, i * 32, 32);
-                users.push(decoder.decode(view));
+                let view = new DataView(buffer, i * 64, 32);
+                let username = decoder.decode(view).replace(/\0/g, "");
+
+                view = new DataView(buffer, i * 64 + 32, 32);
+                let display_name = decoder.decode(view).replace(/\0/g, "");
+
+                usernames.push(username);
+                display_names.push(display_name);
             }
-        })
-        .catch(err => console.log(err));
+            return [usernames, display_names];
+        });
+}
+
+async function downloadChargeLog() {
+    const [usernames, display_names] = await getAllUsernames()
+        .catch(err => {
+            util.add_alert("download-charge-log", "danger", __("charge_tracker.script.download_charge_log_failed"), err);
+            return [null, null];
+        });
+
+    if (usernames == null || display_names == null)
+        return;
 
     await fetch('/charge_tracker/charge_log')
         .then(response => response.arrayBuffer())
         .then(buffer => {
             let line = [
                 __("charge_tracker.script.csv_header_start"),
-                __("charge_tracker.script.csv_header_user"),
+                __("charge_tracker.script.csv_header_display_name"),
                 __("charge_tracker.script.csv_header_energy"),
                 __("charge_tracker.script.csv_header_duration"),
                 "",
                 __("charge_tracker.script.csv_header_meter_start"),
                 __("charge_tracker.script.csv_header_meter_end"),
+                __("charge_tracker.script.csv_header_username"),
             ];
 
             let header = to_csv_line(line);
@@ -186,21 +205,37 @@ async function downloadChargeLog() {
                     let filtered = users_config.users.filter(x => x.id == user_id);
 
                     let display_name = "";
-                    if (user_id == 0)
+                    let username = ""
+                    if (user_id == 0) {
                         display_name = __("charge_tracker.script.unknown_user");
-                    else if (filtered.length == 1)
+                        username = __("charge_tracker.script.unknown_user");
+                    }
+                    else if (filtered.length == 1) {
                         display_name = filtered[0].display_name
-                    else
-                        display_name = users[user_id];
+                        username = filtered[0].username
+                    }
+                    else {
+                        display_name = display_names[user_id];
+                        username = usernames[user_id];
+                    }
+
+                    let charged = (Number.isNaN(meter_start) || Number.isNaN(meter_end)) ? NaN : (meter_end - meter_start);
+                    let charged_string;
+                    if (charged == NaN || charged < 0) {
+                        charged_string = 'N/A';
+                    } else {
+                        charged_string = util.toLocaleFixed(charged, 3);
+                    }
 
                     let line = [
                         timestamp_min_to_date(timestamp_minutes),
                         display_name,
-                        (Number.isNaN(meter_start) || Number.isNaN(meter_end)) ? 'N/A' : util.toLocaleFixed(meter_end - meter_start, 3),
+                        charged_string,
                         charge_duration.toString(),
                         "",
                         Number.isNaN(meter_start) ? 'N/A' : util.toLocaleFixed(meter_start, 3),
-                        Number.isNaN(meter_end) ? 'N/A' : util.toLocaleFixed(meter_end, 3)
+                        Number.isNaN(meter_end) ? 'N/A' : util.toLocaleFixed(meter_end, 3),
+                        username
                     ];
 
                     result += to_csv_line(line);
@@ -210,7 +245,7 @@ async function downloadChargeLog() {
             let t = (new Date()).toISOString().replace(/:/gi, "-").replace(/\./gi, "-");
             util.downloadToFile(result, "charge-log", "csv", "text/csv; charset=utf-8; header=present");
         })
-        .catch(err => console.log(err));
+        .catch(err => util.add_alert("download-charge-log", "alert-danger", __("charge_tracker.script.download_charge_log_failed"), err));
 }
 
 function update_current_charge() {
@@ -225,7 +260,11 @@ function update_current_charge() {
         return;
     }
 
-    let user_display_name = uc.users.filter((x) => x.id == cc.user_id)[0].display_name;
+    let filtered = uc.users.filter((x) => x.id == cc.user_id);
+    let user_display_name = __("charge_tracker.script.unknown_user");
+    if (filtered.length > 0 && cc.user_id != 0)
+        user_display_name = filtered[0].display_name;
+
     let energy_charged = mv.energy_abs - cc.meter_start;
     let time_charging = evse_ll.uptime - cc.evse_uptime_start
     if (evse_ll.uptime < cc.evse_uptime_start)
@@ -233,7 +272,7 @@ function update_current_charge() {
 
     time_charging = Math.floor(time_charging / 1000);
 
-    $('#users_status_charging_user').html(cc.user_id == 0 ? "unbekannter Nutzer" : user_display_name);
+    $('#users_status_charging_user').html(cc.user_id == 0 ? __("charge_tracker.script.unknown_user") : user_display_name);
     $('#users_status_charging_time').html(util.format_timespan(time_charging));
     $('#users_status_charged_energy').html(cc.meter_start == null ? "N/A" : util.toLocaleFixed(energy_charged, 3) + " kWh");
     $('#users_status_charging_start').html(timestamp_min_to_date(cc.timestamp_minutes));
@@ -252,20 +291,32 @@ export function init() {
         $('#charge_tracker_download_spinner').prop("hidden", false);
         downloadChargeLog().finally(() => $('#charge_tracker_download_spinner').prop("hidden", true));
     });
+
+    $('#charge_tracker_remove').on("click", () => $('#charge_tracker_remove_modal').modal('show'));
+
+    $('#charge_tracker_remove_confirm').on("click", () =>
+        API.call('charge_tracker/remove_all_charges', {
+            "do_i_know_what_i_am_doing": true
+        }, __("charge_tracker.script.remove_failed"))
+        .then(() => {
+            util.postReboot(__("charge_tracker.script.remove_init"), __("util.reboot_text"));
+        })
+        .finally(() => {
+            $('#charge_tracker_remove_modal').modal('hide');
+        })
+    );
 }
 
-export function addEventListeners(source: API.ApiEventTarget) {
+export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('charge_tracker/last_charges', update_last_charges);
-
     source.addEventListener('charge_tracker/current_charge', update_current_charge);
     source.addEventListener('evse/low_level_state', update_current_charge);
     source.addEventListener('meter/values', update_current_charge);
     source.addEventListener('users/config', update_current_charge);
     source.addEventListener('users/config', update_user_filter_dropdown);
-
     source.addEventListener('charge_tracker/state', update_state);
 }
 
-export function updateLockState(module_init: any) {
+export function update_sidebar_state(module_init: any) {
     $('#sidebar-charge_tracker').prop('hidden', !module_init.charge_tracker);
 }

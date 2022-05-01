@@ -11,7 +11,7 @@
             "save": "Save",
             "authorized_tags": "Authorized tags",
 
-            "add_tag_modal_title": "Add authorized tag",
+            "add_tag_modal_title": "Add tag",
             "add_tag_modal_seen_tags": "Last seen tags",
             "add_tag_modal_user_id": "Assigned user",
             "add_tag_modal_tag_id": "Tag ID",
@@ -32,9 +32,11 @@
             "add_tag": "Add tag",
             "add_tag_disabled_prefix": "Only up to ",
             "add_tag_disabled_suffix": " tags are supported.",
+            "delete": "Delete",
+            "tag_id": "Tag ID",
             "user_id": "Assigned user",
             "tag_type": "Tag type",
-            "last_seen_unknown": "placeholder",
+            "not_seen": "Not seen since the last reboot or 24 hours",
             "save_failed": "Failed to update the NFC configuration",
             "reboot_content_changed": "NFC configuration",
             "not_assigned": "not assigned"

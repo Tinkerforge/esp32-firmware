@@ -24,10 +24,12 @@
 #include <Update.h>
 #include <LittleFS.h>
 
+#include "api.h"
 #include "event_log.h"
 #include "task_scheduler.h"
 #include "tools.h"
 #include "build.h"
+#include "modules.h"
 
 #include "./crc32.h"
 #include "./recovery_html.embedded.h"
@@ -37,6 +39,7 @@
 
 extern const char *DISPLAY_NAME;
 
+extern API api;
 extern EventLog logger;
 
 extern WebServer server;
@@ -83,8 +86,8 @@ void factory_reset()
     ESP.restart();
 }
 
-FirmwareUpdate::FirmwareUpdate() {
-
+FirmwareUpdate::FirmwareUpdate()
+{
 }
 
 void FirmwareUpdate::setup()
@@ -92,7 +95,8 @@ void FirmwareUpdate::setup()
     initialized = true;
 }
 
-void FirmwareUpdate::reset_firmware_info() {
+void FirmwareUpdate::reset_firmware_info()
+{
     calculated_checksum = 0;
     info = firmware_info_t{};
     info_offset = 0;
@@ -119,7 +123,6 @@ bool FirmwareUpdate::handle_firmware_info_chunk(size_t chunk_index, uint8_t *dat
         info_offset += to_write;
     }
 
-    logger.printfln("chunk index %u data %p len %u", chunk_index, data, chunk_length);
     crc32_ieee_802_3_recalculate(start, length, &calculated_checksum);
 
     const size_t checksum_start = FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH - 4;
@@ -144,7 +147,8 @@ bool FirmwareUpdate::handle_firmware_info_chunk(size_t chunk_index, uint8_t *dat
     return checksum_offset == sizeof(checksum) && info.magic[0] == 0x12CE2171 && (info.magic[1] & 0x00FFFFFF) == 0x6E12F0;
 }
 
-String FirmwareUpdate::check_firmware_info(bool firmware_info_found, bool detect_downgrade, bool log) {
+String FirmwareUpdate::check_firmware_info(bool firmware_info_found, bool detect_downgrade, bool log)
+{
     if (!firmware_info_found && BUILD_REQUIRE_FIRMWARE_INFO) {
         if (log) {
             logger.printfln("Failed to update: Firmware update has no info page!");
@@ -174,7 +178,7 @@ String FirmwareUpdate::check_firmware_info(bool firmware_info_found, bool detect
             char buf[128];
             snprintf(buf, sizeof(buf)/sizeof(buf[0]), "{\"error\":\"firmware_update.script.downgrade\", \"fw\":\"%u.%u.%u\", \"installed\":\"%u.%u.%u\"}",
                      info.fw_version[0], info.fw_version[1], info.fw_version[2],
-                     BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH);
+                     (uint8_t) BUILD_VERSION_MAJOR, (uint8_t) BUILD_VERSION_MINOR, (uint8_t) BUILD_VERSION_PATCH);
             return String(buf);
         }
     }
@@ -236,7 +240,7 @@ bool FirmwareUpdate::handle_update_chunk(int command, WebServerRequest request, 
 
     auto written = Update.write(start, length);
     if (written != length) {
-        logger.printfln("Failed to write update chunk with length %d; written %d, error: %s", length, written, Update.errorString());
+        logger.printfln("Failed to write update chunk with length %u; written %u, error: %s", length, written, Update.errorString());
         request.send(400, "text/plain", (String("Failed to write update: ") + Update.errorString()).c_str());
         this->firmware_update_running = false;
         Update.abort();
@@ -330,37 +334,67 @@ void FirmwareUpdate::register_urls()
         return handle_update_chunk(U_SPIFFS, request, index, data, len, final, request.contentLength());
     });
 
-    server.on("/factory_reset", HTTP_PUT, [this](WebServerRequest request) {
-        char *payload = request.receive();
+    api.addRawCommand("factory_reset", [this](char *c, size_t s) -> String {
         StaticJsonDocument<16> doc;
 
-        DeserializationError error = deserializeJson(doc, payload, request.contentLength());
+        DeserializationError error = deserializeJson(doc, c, s);
 
         if (error) {
-            logger.printfln("Failed to parse command payload: %s", error.c_str());
-            request.send(400);
-            free(payload);
-            return;
+            return String("Failed to deserialize string: ") + String(error.c_str());
         }
 
         if (!doc["do_i_know_what_i_am_doing"].is<bool>()) {
-            request.send(400, "text/html", "you don't seem to know what you are doing");
-            free(payload);
-            return;
+            return "you don't seem to know what you are doing";
         }
 
-        if (doc["do_i_know_what_i_am_doing"].as<bool>()) {
-            task_scheduler.scheduleOnce([](){
-                logger.printfln("Factory reset requested");
-                factory_reset();
-            }, 3000);
-            request.send(200, "text/html", "Factory reset initiated");
-        } else {
-            request.send(400, "text/html", "Factory reset NOT initiated");
+        if (!doc["do_i_know_what_i_am_doing"].as<bool>()) {
+            return "Factory reset NOT initiated";
         }
 
-        free(payload);
-    });
+        task_scheduler.scheduleOnce([](){
+            logger.printfln("Factory reset requested");
+            factory_reset();
+        }, 3000);
+
+        return "";
+    }, true);
+
+    api.addRawCommand("config_reset", [this](char *c, size_t s) -> String {
+        StaticJsonDocument<16> doc;
+
+        DeserializationError error = deserializeJson(doc, c, s);
+
+        if (error) {
+            return String("Failed to deserialize string: ") + String(error.c_str());
+        }
+
+        if (!doc["do_i_know_what_i_am_doing"].is<bool>()) {
+            return "you don't seem to know what you are doing";
+        }
+
+        if (!doc["do_i_know_what_i_am_doing"].as<bool>()) {
+            return "Config reset NOT initiated";
+        }
+
+        task_scheduler.scheduleOnce([](){
+            logger.printfln("Config reset requested");
+#if MODULE_USERS_AVAILABLE()
+            for(int i = 0; i < users.user_config.get("users")->count(); ++i) {
+                uint8_t id = users.user_config.get("users")->get(i)->get("id")->asUint();
+                if (id == 0) // skip anonymous user
+                    continue;
+                if (!charge_tracker.is_user_tracked(id)) {
+                    users.rename_user(id, "", "");
+                }
+            }
+#endif
+
+            remove_directory("/config");
+            ESP.restart();
+        }, 3000);
+
+        return "";
+    }, true);
 }
 
 void FirmwareUpdate::loop()

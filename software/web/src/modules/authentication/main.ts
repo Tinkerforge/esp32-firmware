@@ -99,11 +99,10 @@ export function init() {
     });
 }
 
-export function addEventListeners(source: API.ApiEventTarget) {
+export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('authentication/config', update_authentication_config);
 }
 
-export function updateLockState(module_init: any) {
+export function update_sidebar_state(module_init: any) {
     $('#sidebar-authentication').prop('hidden', !module_init.authentication);
-    $('#sidebar-system').prop('hidden',  $('#sidebar-system').prop('hidden') && !module_init.authentication);
 }

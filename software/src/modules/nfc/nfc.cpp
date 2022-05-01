@@ -27,14 +27,18 @@
 #include "task_scheduler.h"
 #include "modules.h"
 
-#ifdef MODULE_EVSE_AVAILABLE
+#if MODULE_EVSE_AVAILABLE()
 #include "bindings/bricklet_evse.h"
 #endif
-#ifdef MODULE_EVSE_V2_AVAILABLE
+#if MODULE_EVSE_V2_AVAILABLE()
 #include "bindings/bricklet_evse_v2.h"
 #endif
 
+#if MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
 #define AUTHORIZED_TAG_LIST_LENGTH 16
+#else
+#define AUTHORIZED_TAG_LIST_LENGTH 8
+#endif
 
 #define IND_ACK 1001
 #define IND_NACK 1002
@@ -92,12 +96,6 @@ NFC::NFC() : DeviceModule("nfc", "NFC", "NFC", std::bind(&NFC::setup_nfc, this))
         }
 
         return "";
-    });
-
-    last_tag = Config::Object({
-        {"user_id", Config::Uint8(0)},
-        {"tag_type", Config::Uint(0, 0, 4)},
-        {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)}
     });
 
     inject_tag = ConfigRoot(Config::Object({
@@ -164,7 +162,6 @@ void NFC::check_nfc_state()
     }
 }
 
-
 uint8_t NFC::get_user_id(tag_info_t *tag, uint8_t *tag_idx)
 {
     if (tag->last_seen >= TOKEN_LIFETIME_MS)
@@ -209,10 +206,10 @@ void set_led(int16_t mode)
             break;
     }
 
-#ifdef MODULE_EVSE_AVAILABLE
+#if MODULE_EVSE_AVAILABLE()
     tf_evse_set_indicator_led(&evse.device, mode, mode != IND_NACK ? 2620 : 3930, nullptr);
 #endif
-#ifdef MODULE_EVSE_V2_AVAILABLE
+#if MODULE_EVSE_V2_AVAILABLE()
     tf_evse_v2_set_indicator_led(&evse_v2.device, mode, mode != IND_NACK ? 2620 : 3930, nullptr);
 #endif
 
@@ -220,7 +217,7 @@ void set_led(int16_t mode)
     last_set = millis();
 }
 
-void NFC::handle_event(tag_info_t *tag, bool found)
+void NFC::handle_event(tag_info_t *tag, bool found, bool injected)
 {
     uint8_t idx = 0;
     uint8_t user_id = get_user_id(tag, &idx);
@@ -231,11 +228,10 @@ void NFC::handle_event(tag_info_t *tag, bool found)
             auth_token = idx;
             auth_token_seen = millis();
             blink_state = IND_ACK;
-            if (users.trigger_charge_action(user_id)) {
-                last_tag.get("user_id")->updateUint(user_id);
-                last_tag.get("tag_type")->updateUint(tag->tag_type);
-                last_tag.get("tag_id")->updateString(tag->tag_id);
-            }
+            users.trigger_charge_action(user_id, injected ? CHARGE_TRACKER_AUTH_TYPE_NFC_INJECTION : CHARGE_TRACKER_AUTH_TYPE_NFC, Config::Object({
+                    {"tag_type", Config::Uint8(tag->tag_type)},
+                    {"tag_id", Config::Str(tag->tag_id)}}).value,
+                    injected ? tag_injection_action : TRIGGER_CHARGE_ANY);
         } else if (auth_token == idx) {
             // Lost an authorized tag. If we still have it's auth token, extend the token's validity.
             //auth_token_seen = millis();
@@ -267,8 +263,9 @@ void NFC::handle_evse()
 
 const char *lookup = "0123456789ABCDEF";
 
-void tag_id_bytes_to_string(uint8_t *tag_id, uint8_t tag_id_len, char buf[NFC_TAG_ID_STRING_LENGTH + 1]) {
-    for(int i = 0; i < tag_id_len; ++i) {
+void tag_id_bytes_to_string(const uint8_t *tag_id, uint8_t tag_id_len, char buf[NFC_TAG_ID_STRING_LENGTH + 1])
+{
+    for (int i = 0; i < tag_id_len; ++i) {
         uint8_t b = tag_id[i];
         uint8_t hi = (b & 0xF0) >> 4;
         uint8_t lo = b & 0x0F;
@@ -299,7 +296,7 @@ void NFC::update_seen_tags()
         seen_tags.get(i)->get("last_seen")->updateUint(new_tags[i].last_seen);
     }
 
-    if (last_tag_injection == 0 || deadline_elapsed(last_tag_injection + 1000*60*60*24)) {
+    if (last_tag_injection == 0 || deadline_elapsed(last_tag_injection + 1000 * 60 * 60 * 24)) {
         last_tag_injection = 0;
         new_tags[TAG_LIST_LENGTH - 1].tag_type = 0;
         new_tags[TAG_LIST_LENGTH - 1].tag_id[0] = '\0';
@@ -307,7 +304,7 @@ void NFC::update_seen_tags()
     } else {
         new_tags[TAG_LIST_LENGTH - 1].tag_type = inject_tag.get("tag_type")->asUint();
         strncpy(new_tags[TAG_LIST_LENGTH - 1].tag_id, inject_tag.get("tag_id")->asCStr(), sizeof(new_tags[TAG_LIST_LENGTH - 1].tag_id));
-        new_tags[TAG_LIST_LENGTH - 1].last_seen =  millis() - last_tag_injection;
+        new_tags[TAG_LIST_LENGTH - 1].last_seen = millis() - last_tag_injection;
     }
 
     seen_tags.get(TAG_LIST_LENGTH - 1)->get("last_seen")->updateUint(new_tags[TAG_LIST_LENGTH - 1].last_seen);
@@ -340,7 +337,7 @@ void NFC::update_seen_tags()
 
         if (!found && new_seen) {
             // found new tag
-            handle_event(&new_tags[new_idx], true);
+            handle_event(&new_tags[new_idx], true, new_idx == TAG_LIST_LENGTH - 1);
             continue;
         }
 
@@ -349,12 +346,12 @@ void NFC::update_seen_tags()
 
         if (old_seen && !new_seen) {
             // lost old tag
-            handle_event(&old_tags[old_idx], false);
+            handle_event(&old_tags[old_idx], false, old_idx == TAG_LIST_LENGTH - 1);
             continue;
         }
         if (!old_seen && new_seen) {
             // found new tag
-            handle_event(&new_tags[new_idx], true);
+            handle_event(&new_tags[new_idx], true, new_idx == TAG_LIST_LENGTH - 1);
             continue;
         }
     }
@@ -365,7 +362,7 @@ void NFC::update_seen_tags()
         if (old_tags[old_idx].last_seen == 0)
             continue;
 
-        handle_event(&old_tags[old_idx], false);
+        handle_event(&old_tags[old_idx], false, old_idx == TAG_LIST_LENGTH - 1);
     }
 
     tag_info_t *tmp = old_tags;
@@ -406,10 +403,28 @@ void NFC::register_urls()
         return;
 
     api.addState("nfc/seen_tags", &seen_tags, {}, 1000);
-    api.addState("nfc/last_tag", &last_tag, {}, 1000);
     api.addPersistentConfig("nfc/config", &config, {}, 1000);
     api.addCommand("nfc/inject_tag", &inject_tag, {}, [this](){
         last_tag_injection = millis();
+        tag_injection_action = TRIGGER_CHARGE_ANY;
+        // 0 is the marker that no injection happened or the last one was handled.
+        // Fake that we were one ms faster.
+        if (last_tag_injection == 0)
+            last_tag_injection -= 1;
+    }, true);
+
+    api.addCommand("nfc/inject_tag_start", &inject_tag, {}, [this](){
+        last_tag_injection = millis();
+        tag_injection_action = TRIGGER_CHARGE_START;
+        // 0 is the marker that no injection happened or the last one was handled.
+        // Fake that we were one ms faster.
+        if (last_tag_injection == 0)
+            last_tag_injection -= 1;
+    }, true);
+
+    api.addCommand("nfc/inject_tag_stop", &inject_tag, {}, [this](){
+        last_tag_injection = millis();
+        tag_injection_action = TRIGGER_CHARGE_STOP;
         // 0 is the marker that no injection happened or the last one was handled.
         // Fake that we were one ms faster.
         if (last_tag_injection == 0)

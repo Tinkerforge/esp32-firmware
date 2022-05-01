@@ -26,6 +26,8 @@ import feather from "../../ts/feather";
 
 import YaMD5 from "../../ts/yamd5";
 
+import {getAllUsernames} from "../charge_tracker/main";
+
 declare function __(s: string): string;
 
 const MAX_ACTIVE_USERS = 16;
@@ -34,42 +36,28 @@ type UsersConfig = API.getType['users/config'];
 type User = UsersConfig['users'][0];
 
 function save_authentication_config() {
-    return $.ajax({
-        url: '/users/http_auth_update',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify({"enabled": $('#users_authentication_enable').is(':checked')}),
-        success: util.getShowRebootModalFn(__("users.script.reboot_content_changed")),
-        error: (xhr, status, error) => util.add_alert("authentication_config_update_failed", "alert-danger", __("users.script.save_failed"), error + ": " + xhr.responseText)
+    return API.save('users/http_auth', {
+            "enabled": $('#users_authentication_enable').is(':checked')
+        },
+        __("users.script.save_failed"),
+        __("users.script.reboot_content_changed"));
+}
+
+// This is a bit hacky: the user modification API can take some time because it writes the changed user/display name to flash
+// The API will block up to five seconds, but just to be sure we try this twice.
+function retry_once<T>(fn: () => Promise<T>, topic: string) {
+    return fn().catch(() => {
+        util.remove_alert(topic);
+        return fn();
     });
 }
 
-function delete_user(id: number) {
-    return $.ajax({
-        url: '/users/delete',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify({"id": id}),
-        success: () => {
-        },
-        error: (xhr, status, error) => {
-            //util.add_alert("charge_manager_set_available_current_failed", "alert-danger", __("charge_manager.script.set_available_current_failed"), error + ": " + xhr.responseText);
-        }
-    });
+function remove_user(id: number) {
+    return retry_once(() => API.call("users/remove", {"id": id}, __("users.script.save_failed")), "users_remove_failed");
 }
 
 function modify_user(user: User) {
-    return $.ajax({
-        url: '/users/modify',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify(user),
-        success: () => {
-        },
-        error: (xhr, status, error) => {
-            //util.add_alert("charge_manager_set_available_current_failed", "alert-danger", __("charge_manager.script.set_available_current_failed"), error + ": " + xhr.responseText);
-        }
-    });
+    return retry_once(() => API.call("users/modify", user, __("users.script.save_failed")), "users_modify_failed");
 }
 
 let next_user_id = 0;
@@ -77,17 +65,7 @@ let next_user_id = 0;
 function add_user(user: User) {
     user.id = next_user_id;
     ++next_user_id;
-    return $.ajax({
-        url: '/users/add',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify(user),
-        success: () => {
-        },
-        error: (xhr, status, error) => {
-            //util.add_alert("charge_manager_set_available_current_failed", "alert-danger", __("charge_manager.script.set_available_current_failed"), error + ": " + xhr.responseText);
-        }
-    });
+    return retry_once(() => API.call("users/add", user, __("users.script.save_failed")), "users_add_failed");
 }
 
 let authorized_users_count = -1;
@@ -117,7 +95,7 @@ async function save_users_config() {
 
     let nums: number[] = $('.authorized-user-id').map(function() {return parseInt(this.id.replace("users_authorized_user_", "").replace("_id", ""));}).get();
     for (let i of nums) {
-        let username = $(`#users_authorized_user_${i}_username`).html();
+        let username = $(`#users_authorized_user_${i}_username`).val().toString();
         let password = util.passwordUpdate(`#users_authorized_user_${i}_password`);
         let digest = password !== null && password !== "" ? YaMD5.YaMD5.hashStr(username + ":esp32-lib:" + password) : password;
         have.push({
@@ -137,7 +115,7 @@ async function save_users_config() {
     let to_modify = old_ids.filter(x => have_ids.includes(x));
 
     for(let i of to_remove) {
-        await delete_user(i);
+        await remove_user(i);
     }
 
     for(let i of have) {
@@ -154,8 +132,6 @@ async function save_users_config() {
     }
 
     await save_authentication_config();
-
-    //TODO show reboot modal
 }
 
 function generate_user_ui(user: User, password: string) {
@@ -163,10 +139,10 @@ function generate_user_ui(user: User, password: string) {
     let result = `<div class="col mb-4">
                     <div class="card h-100">
                         <div class="card-header d-flex justify-content-between align-items-center">
-                            <span class="h5" id="users_authorized_user_${i}_username" style="margin-bottom: 0"></span>
-                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                            <span data-feather="user"></span>
+                            <button type="button" class="btn btn-sm btn-outline-dark"
                                 id="users_authorized_user_${i}_remove">
-                                <span data-feather="user-x"></span>
+                                <span data-feather="user-x" class="mr-2"></span><span style="font-size: 1rem; vertical-align: middle;" data-i18n="users.script.delete"></span>
                             </button>
                         </div>
 
@@ -174,6 +150,10 @@ function generate_user_ui(user: User, password: string) {
                             <div class="form-group" hidden>
                                 <label for="users_authorized_user_${i}_id" class="form-label">${__("users.script.id")}</label>
                                 <input type="text" readonly class="form-control authorized-user-id" id="users_authorized_user_${i}_id" class="form-label">
+                            </div>
+                            <div class="form-group">
+                                <label for="users_authorized_user_${i}_username" class="form-label">${__("users.script.username")}</label>
+                                <input type="text" class="form-control" id="users_authorized_user_${i}_username" class="form-label">
                             </div>
                             <div class="form-group">
                                 <label for="users_authorized_user_${i}_display_name" class="form-label">${__("users.script.display_name")}</label>
@@ -202,15 +182,12 @@ function generate_user_ui(user: User, password: string) {
                                             <label class="custom-control-label" for="users_authorized_user_${i}_show_password" style="line-height: 20px;"><span data-feather="eye"></span></label>
                                         </div>
                                         <div class="input-group-text custom-control custom-switch" style="padding-left: 2.5rem;">
-                                            <input id="users_authorized_user_${i}_clear_password" type="checkbox" class="custom-control-input" aria-label="Disable login">
+                                            <input id="users_authorized_user_${i}_clear_password" type="checkbox" class="custom-control-input user-disable-password" aria-label="Disable login">
                                             <label class="custom-control-label" for="users_authorized_user_${i}_clear_password" style="line-height: 20px;"><span data-feather="slash"></span></label>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="card-footer">
-                            <small id="users_authorized_user_${i}_last_seen" style="visibility: hidden;">${__("users.script.last_seen_unknown")}</small>
                         </div>
                     </div>
                 </div>`;
@@ -219,7 +196,7 @@ function generate_user_ui(user: User, password: string) {
     $(`#users_authorized_user_${i}_roles`).val(user.roles);
     util.setNumericInput(`users_authorized_user_${i}_current`, user.current / 1000, 3);
     $(`#users_authorized_user_${i}_display_name`).val(user.display_name);
-    $(`#users_authorized_user_${i}_username`).html(user.username);
+    $(`#users_authorized_user_${i}_username`).val(user.username);
     $(`#users_authorized_user_${i}_password`).val(password)
     $(`#users_authorized_user_${i}_show_password`).on("change", util.toggle_password_fn(`#users_authorized_user_${i}_password`));
     $(`#users_authorized_user_${i}_clear_password`).on("change", util.clear_password_fn(`#users_authorized_user_${i}_password`, __("users.script.login_disabled")));
@@ -230,6 +207,7 @@ function generate_user_ui(user: User, password: string) {
     $(`#users_authorized_user_${i}_remove`).on("click", () => {
         $(`#users_authorized_user_${i}_remove`).parent().parent().parent().remove();
         $('#users_save_button').prop("disabled", false);
+        check_http_auth_allowed();
     });
 }
 
@@ -255,17 +233,20 @@ function update_users_config(force: boolean) {
             authorized_users += `<div class="col mb-4" ${i == 0 ? "hidden" : ""}>
                     <div class="card h-100">
                         <div class="card-header d-flex justify-content-between align-items-center">
-                            <span class="h5" id="users_authorized_user_${i}_username" style="margin-bottom: 0"></span>
-                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                            <span data-feather="user"></span>
+                            <button type="button" class="btn btn-sm btn-outline-dark"
                                 id="users_authorized_user_${i}_remove">
-                                <span data-feather="user-x"></span>
+                                <span data-feather="user-x" class="mr-2"></span><span style="font-size: 1rem; vertical-align: middle;">${__("users.script.delete")}</span>
                             </button>
                         </div>
-
                         <div class="card-body">
                             <div class="form-group" hidden>
                                 <label for="users_authorized_user_${i}_id" class="form-label">${__("users.script.id")}</label>
                                 <input type="text" readonly class="form-control authorized-user-id" id="users_authorized_user_${i}_id" class="form-label">
+                            </div>
+                            <div class="form-group">
+                                <label for="users_authorized_user_${i}_username" class="form-label">${__("users.script.username")}</label>
+                                <input type="text" class="form-control" id="users_authorized_user_${i}_username" class="form-label">
                             </div>
                             <div class="form-group">
                                 <label for="users_authorized_user_${i}_display_name" class="form-label">${__("users.script.display_name")}</label>
@@ -294,15 +275,12 @@ function update_users_config(force: boolean) {
                                             <label class="custom-control-label" for="users_authorized_user_${i}_show_password" style="line-height: 20px;"><span data-feather="eye"></span></label>
                                         </div>
                                         <div class="input-group-text custom-control custom-switch" style="padding-left: 2.5rem;">
-                                            <input id="users_authorized_user_${i}_clear_password" type="checkbox" class="custom-control-input" aria-label="Disable login">
+                                            <input id="users_authorized_user_${i}_clear_password" type="checkbox" class="custom-control-input user-disable-password" aria-label="Disable login">
                                             <label class="custom-control-label" for="users_authorized_user_${i}_clear_password" style="line-height: 20px;"><span data-feather="slash"></span></label>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="card-footer">
-                            <small id="users_authorized_user_${i}_last_seen" style="visibility: hidden;">${__("users.script.last_seen_unknown")}</small>
                         </div>
                     </div>
                 </div>`;
@@ -310,17 +288,15 @@ function update_users_config(force: boolean) {
         authorized_users += `<div class="col mb-4" id="users_add_user_card">
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <span class="h5" style="margin-bottom: 0">${__("users.script.add_user")}</span>
-                <button type="button" class="btn btn-sm btn-outline-secondary" style="visibility: hidden;">
-                        <span data-feather="trash-2"></span>
-                </button>
+                <span data-feather="user-plus"></span>
+                <button type="button" class="btn btn-sm btn-outline-dark"
+                                id="blah" disabled style="visibility: hidden;">
+                                <span data-feather="user-x" class="mr-2"></span><span style="font-size: 1rem; vertical-align: middle;" data-i18n="users.script.delete"></span>
+                            </button>
             </div>
             <div class="card-body">
-                <button id="users_add_user" type="button" class="btn btn-light btn-lg btn-block" style="height: 100%;" data-toggle="modal" data-target="#users_add_user_modal"><span data-feather="user-plus"></span></button>
+                <button id="users_add_user" type="button" class="btn btn-light btn-lg btn-block" style="height: 100%;" data-toggle="modal" data-target="#users_add_user_modal">${__("users.script.add_user")}</button>
                 <span id="users_add_user_disabled" hidden>${__("users.script.add_user_disabled_prefix") + (MAX_ACTIVE_USERS - 1 /* anonymous */) + __("users.script.add_user_disabled_suffix")}</span>
-            </div>
-            <div class="card-footer">
-                <small style="visibility: hidden;">${__("users.script.last_seen_unknown")}</small>
             </div>
         </div>
     </div>`;
@@ -331,6 +307,7 @@ function update_users_config(force: boolean) {
             $(`#users_authorized_user_${i}_remove`).on("click", () => {
                 $(`#users_authorized_user_${i}_remove`).parent().parent().parent().remove();
                 $('#users_save_button').prop("disabled", false);
+                check_http_auth_allowed();
             });
         }
     }
@@ -344,16 +321,51 @@ function update_users_config(force: boolean) {
         $(`#users_authorized_user_${i}_roles`).val(s.roles);
         util.setNumericInput(`users_authorized_user_${i}_current`, s.current / 1000, 3);
         $(`#users_authorized_user_${i}_display_name`).val(s.display_name);
-        $(`#users_authorized_user_${i}_username`).html(s.username);
+        $(`#users_authorized_user_${i}_username`).val(s.username);
         $(`#users_authorized_user_${i}_show_password`).on("change", util.toggle_password_fn(`#users_authorized_user_${i}_password`));
         $(`#users_authorized_user_${i}_clear_password`).on("change", util.clear_password_fn(`#users_authorized_user_${i}_password`, __("users.script.login_disabled")));
         $(`#users_authorized_user_${i}_clear_password`).prop("checked", (s.digest_hash === ""));
         $(`#users_authorized_user_${i}_clear_password`).trigger("change");
     }
+
+    check_http_auth_allowed();
+}
+
+function check_http_auth_allowed() {
+    let disable_auth = $('.user-disable-password').filter(function() {
+            if ($(this).prop("checked"))
+                return false;
+
+            let i_str = $(this).attr('id');
+            let i = parseInt(i_str.replace("users_authorized_user_", "").split("_")[0]);
+            let new_pw = $(`#users_authorized_user_${i}_password`).val();
+
+            let id = $(`#users_authorized_user_${i}_id`).val();
+
+            let filtered = API.get("users/config").users.filter(user => user.id == id);
+            if (filtered.length == 0)
+                return new_pw != "";
+            else
+                return filtered[0].digest_hash === null || new_pw != "";
+        }).length == 0;
+
+    if ($('#users_authentication_enable').prop("disabled") == disable_auth)
+        return;
+
+    $('#users_authentication_enable').prop("disabled", disable_auth);
+    if (disable_auth) {
+        if ($('#users_authentication_enable').prop("checked"))
+            $('#users_authentication_enable').addClass("is-invalid");
+        $('#users_authentication_enable').prop("checked", !disable_auth);
+    } else {
+        $('#users_authentication_enable').removeClass("is-invalid");
+        $('#users_authentication_enable').prop("checked", API.get("users/config").http_auth_enabled);
+    }
 }
 
 export function init() {
     $('#users_config_form').on('input', () => $('#users_save_button').prop("disabled", false));
+    $('#users_config_form').on('input', check_http_auth_allowed);
 
     $('#users_config_form').on('submit', async function (event: Event) {
         this.classList.add('was-validated');
@@ -365,24 +377,62 @@ export function init() {
         }
 
         $('#users_save_spinner').prop('hidden', false);
-        await save_users_config().finally(() => $('#users_save_spinner').prop('hidden', true));
+        await save_users_config()
+            .then(() => $('#users_save_button').prop("disabled", true))
+            .then(util.getShowRebootModalFn(__("users.script.reboot_content_changed")))
+            .finally(() => $('#users_save_spinner').prop('hidden', true));
     });
 
-    $('#users_add_user_form').on("submit", (event: Event) => {
+    $('#users_add_user_form').on("input", () => {
+        let username = $('#users_config_user_new_username').val().toString();
 
-        let form = <HTMLFormElement>$('#users_add_user_form')[0];
-        form.classList.add('was-validated');
+        if (API.get("users/config").users.some(u => u.username == username)) {
+            $('#users_config_user_new_username').addClass("is-invalid");
+            $('#users_config_user_new_username_feedback').html(__("users.content.add_user_modal_username_invalid"));
+        }
+        else
+            $('#users_config_user_new_username').removeClass("is-invalid");
+    })
+
+    $('#users_add_user_form').on("submit", async (event: Event) => {
         event.preventDefault();
         event.stopPropagation();
 
-        if (form.checkValidity() === false) {
+        if ($('#users_config_user_new_username').hasClass("is-invalid"))
+            return;
+
+        const [usernames, _] = await getAllUsernames().catch(err => {
+            util.add_alert("download-usernames", "danger", __("users.script.download_usernames_failed"), err);
+            return <[string[], string[]]>[null, null];
+        });
+
+        if (usernames == null)
+            return;
+
+        let username = $('#users_config_user_new_username').val().toString();
+
+        if (usernames.some(x => x == username)) {
+            $('#users_config_user_new_username_feedback').html(__("users.script.username_already_tracked"));
+            $('#users_config_user_new_username').addClass("is-invalid");
             return;
         }
 
+        let form = <HTMLFormElement>$('#users_add_user_form')[0];
+        if (!form.checkValidity()) {
+            form.classList.add('was-validated');
+            return;
+        } else {
+            form.classList.remove('was-validated');
+        }
+
+        let current = $('#users_config_user_new_current').val();
+        if (current == "")
+            current = 32;
+
         generate_user_ui({
             id: -1,
-            username: $('#users_config_user_new_username').val().toString(),
-            current: Math.round(<number>$('#users_config_user_new_current').val() * 1000),
+            username: username,
+            current: Math.round(<number>current * 1000),
             display_name: $('#users_config_user_new_display_name').val().toString(),
             roles: 0xFFFF,
             digest_hash: ""
@@ -390,6 +440,7 @@ export function init() {
 
         $('#users_add_user_modal').modal('hide');
         $('#users_save_button').prop("disabled", false);
+        check_http_auth_allowed();
 
 /*
         let new_config = collect_nfc_config({
@@ -407,13 +458,13 @@ export function init() {
         form.reset();
     })
 
-   $(`#users_config_user_show_password`).on("change", util.toggle_password_fn(`#users_config_user_new_password`));
+    $(`#users_config_user_show_password`).on("change", util.toggle_password_fn(`#users_config_user_new_password`));
 }
 
-export function addEventListeners(source: API.ApiEventTarget) {
+export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('users/config', () => update_users_config(false));
 }
 
-export function updateLockState(module_init: any) {
+export function update_sidebar_state(module_init: any) {
     $('#sidebar-users').prop('hidden', !module_init.users);
 }

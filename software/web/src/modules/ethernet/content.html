@@ -1,7 +1,9 @@
 <div class="tab-pane fade" role="tabpanel" aria-labelledby="sidebar-ethernet" id="ethernet">
-    <div
-        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2" data-i18n="ethernet.content.settings"></h1>
+    <div class="row sticky-under-top mb-3 pt-3">
+        <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-header-shadow">
+            <h1 class="h2" data-i18n="ethernet.content.settings"></h1>
+            <button id="ethernet_save_button" type="submit" form="ethernet_config_form" class="btn btn-primary mb-2" data-i18n="ethernet.content.save"></button>
+        </div>
     </div>
     <form id="ethernet_form" class="needs-validation" novalidate>
         <!--
@@ -83,11 +85,6 @@
                         pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$">
                     <div class="invalid-feedback" data-i18n="ethernet.content.dns2_invalid"></div>
                 </div>
-            </div>
-        </div>
-        <div class="form-group row">
-            <div class="col-lg-12 col-xl-8 text-right">
-                <button id="ethernet_save_button" type="submit" form="ethernet_form" class="btn btn-primary" data-i18n="ethernet.content.save"></button>
             </div>
         </div>
     </form>

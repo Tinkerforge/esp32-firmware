@@ -22,13 +22,19 @@
 #include "api.h"
 #include "task_scheduler.h"
 #include "web_server.h"
+#include "modules.h"
 
 extern API api;
 extern WebServer server;
 extern TaskScheduler task_scheduler;
 
+#if MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
 static char recv_buf[4096] = {0};
-static StaticJsonDocument<4096> json_buf;
+#else
+static char recv_buf[2048] = {0};
+#endif
+
+static StaticJsonDocument<2048> json_buf;
 
 Http::Http()
 {
@@ -37,17 +43,14 @@ Http::Http()
 
 void Http::setup()
 {
-
 }
 
 void Http::register_urls()
 {
-
 }
 
 void Http::loop()
 {
-
 }
 
 void Http::addCommand(size_t commandIdx, const CommandRegistration &reg)
@@ -124,11 +127,10 @@ bool Http::pushStateUpdate(size_t stateIdx, String payload, String path)
     return true;
 }
 
-void Http::pushRawStateUpdate(String payload, String path) {
-
+void Http::pushRawStateUpdate(String payload, String path)
+{
 }
 
 void Http::wifiAvailable()
 {
-
 }

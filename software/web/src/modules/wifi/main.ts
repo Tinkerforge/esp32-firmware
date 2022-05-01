@@ -72,7 +72,10 @@ function update_wifi_scan_results(data: Readonly<WifiInfo[]>) {
     $("#scan_wifi_button").dropdown('update')
 
     $.each(data, (i, v: WifiInfo) => {
-        $(`#wifi_scan_result_${i}`).on("click", () => connect_to_ap(v.ssid, v.bssid, v.encryption, <boolean>tups[2*i+1]));
+        $(`#wifi_scan_result_${i}`).on("click", (event) => {
+            event.preventDefault();
+            connect_to_ap(v.ssid, v.bssid, v.encryption, <boolean>tups[2*i+1]);
+        });
     });
 
     feather.replace();
@@ -80,16 +83,9 @@ function update_wifi_scan_results(data: Readonly<WifiInfo[]>) {
 
 let scan_timeout: number = null;
 function scan_wifi() {
-    $.ajax({
-        url: '/wifi/scan',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify(null),
-        error: (xhr, status, error) => {
-            util.add_alert("wifi_scan_failed", "alert-danger", __("wifi.script.scan_wifi_init_failed"), error + ": " + xhr.responseText);
-            $('#scan_wifi_dropdown').dropdown('hide');
-        },
-        success: () => {
+    API.call('wifi/scan', {}, __("wifi.script.scan_wifi_init_failed"))
+       .catch(() => $('#scan_wifi_dropdown').dropdown('hide'))
+       .then(() => {
             scan_timeout = window.setTimeout(function () {
                     scan_timeout = null;
                     $.get("/wifi/scan_results").done(function (data: WifiInfo[]) {
@@ -99,8 +95,7 @@ function scan_wifi() {
                         $('#scan_wifi_dropdown').dropdown('hide');
                     });
                 }, 10000);
-        }
-    });
+        });
 }
 
 
@@ -264,7 +259,9 @@ function wifi_cfg_toggle_static_ip_collapse(value: string) {
 function connect_to_ap(ssid: string, bssid: string, encryption: number, enable_bssid_lock: boolean) {
     $('#wifi_sta_ssid').val(ssid);
     $('#wifi_sta_bssid').val(bssid);
-    $('#wifi_sta_passphrase').prop("required", encryption != 0);
+    let passphrase_required = API.get("wifi/sta_config").ssid != ssid && encryption != 0;
+    $('#wifi_sta_passphrase').prop("required", passphrase_required);
+    $('#wifi_sta_passphrase').prop("placeholder", passphrase_required ? __("wifi.content.required") : __("wifi.content.unchanged"))
     $('#wifi_sta_enable_sta').prop("checked", true);
     $('#wifi_sta_bssid_lock').prop("checked", enable_bssid_lock);
     return;
@@ -305,11 +302,9 @@ function save_wifi_ap_config() {
         __("wifi.script.ap_reboot_content_changed"));
 }
 
-export function addEventListeners(source: API.ApiEventTarget) {
+export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('wifi/state', update_wifi_state);
-
     source.addEventListener('wifi/sta_config', update_wifi_sta_config);
-
     source.addEventListener('wifi/ap_config', update_wifi_ap_config);
 
     source.addEventListener('wifi/scan_results', (e) => {
@@ -332,15 +327,10 @@ export function addEventListeners(source: API.ApiEventTarget) {
 
 export function init() {
     $("#scan_wifi_button").on("click", scan_wifi);
-
     $("#wifi_sta_show_passphrase").on("change", util.toggle_password_fn("#wifi_sta_passphrase"));
-
     $("#wifi_sta_clear_passphrase").on("change", util.clear_password_fn("#wifi_sta_passphrase"));
-
     $("#wifi_ap_show_passphrase").on("change", util.toggle_password_fn("#wifi_ap_passphrase"));
-
     $("#wifi_ap_clear_passphrase").on("change", util.clear_password_fn("#wifi_ap_passphrase"));
-
     $("#wifi_sta_show_static").on("change", function(this: HTMLInputElement) {wifi_cfg_toggle_static_ip_collapse(this.value);});
 
     // Use bootstrap form validation
@@ -365,6 +355,17 @@ export function init() {
         if (this.checkValidity() === false) {
             return;
         }
+
+        if ($('#wifi_ap_enable_ap').val() == 2) {
+            $('#wifi_ap_disable').modal('show');
+            return;
+        }
+
+        save_wifi_ap_config();
+    });
+
+    $('#wifi_ap_disable_button').on('click', () => {
+        $('#wifi_ap_disable').modal('hide');
         save_wifi_ap_config();
     });
 
@@ -376,7 +377,7 @@ export function init() {
     });
 }
 
-export function updateLockState(module_init: any) {
+export function update_sidebar_state(module_init: any) {
     $('#sidebar-wifi-sta').prop('hidden', !module_init.wifi);
     $('#sidebar-wifi-ap').prop('hidden', !module_init.wifi);
 }

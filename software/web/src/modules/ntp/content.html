@@ -1,7 +1,9 @@
 <div class="tab-pane fade" role="tabpanel" aria-labelledby="sidebar-ntp" id="ntp">
-    <div
-        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2" data-i18n="ntp.content.ntp"></h1>
+    <div class="row sticky-under-top mb-3 pt-3">
+        <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-header-shadow">
+            <h1 class="h2" data-i18n="ntp.content.ntp"></h1>
+            <button id="ntp_save_button" type="submit" form="ntp_config_form" class="btn btn-primary mb-2" data-i18n="ntp.content.save" disabled></button>
+        </div>
     </div>
     <form id="ntp_form" class="needs-validation" novalidate>
         <!--
@@ -11,12 +13,12 @@
 
         <div class="form-group row">
             <div class="col-lg-3 col-xl-2">
-                <label for="ntp_enable" class="col-form-label form-label" data-i18n="ntp.content.enable"></label>
+                <label for="ntp_enabled" class="col-form-label form-label" data-i18n="ntp.content.enable"></label>
             </div>
             <div class="col-lg-9 col-xl-6">
                 <div class="borderless-form-control custom-control custom-switch">
-                    <input type="checkbox" class="custom-control-input" id="ntp_enable">
-                    <label class="custom-control-label" for="ntp_enable" data-i18n="ntp.content.enable_desc"></label>
+                    <input type="checkbox" class="custom-control-input" id="ntp_enabled">
+                    <label class="custom-control-label" for="ntp_enabled" data-i18n="ntp.content.enable_desc"></label>
                 </div>
             </div>
         </div>
@@ -38,7 +40,13 @@
                 <label for="ntp_timezone" class="col-form-label form-label" data-i18n="ntp.content.timezone"></label>
             </div>
             <div class="col-lg-9 col-xl-6">
-                <input id="ntp_timezone" class="form-control" type="text" disabled>
+                <div class="input-group">
+                    <select class="custom-select" id="ntp_timezone_area"></select>
+                    <select class="custom-select rounded-right" id="ntp_timezone_location"></select>
+                    <select class="custom-select" id="ntp_timezone_sublocation" hidden></select>
+                </div>
+                <br/>
+                <button id="ntp_browser_timezone" class="btn btn-primary form-control" type="button" data-i18n="ntp.content.use_browser_timezone"></button>
             </div>
         </div>
 
@@ -52,8 +60,11 @@
         </div>
 
         <div class="form-group row">
-            <div class="col-lg-12 col-xl-8 text-right">
-                <button id="ntp_save_button" type="submit" form="ntp_form" class="btn btn-primary" data-i18n="ntp.content.save"></button>
+            <div class="col-lg-3 col-xl-2">
+                <label for="ntp_server2" class="col-form-label form-label" data-i18n="ntp.content.server2"></label>
+            </div>
+            <div class="col-lg-9 col-xl-6">
+                <input id="ntp_server2" class="form-control" type="text">
             </div>
         </div>
     </form>

@@ -27,7 +27,6 @@ extern TaskScheduler task_scheduler;
 
 CMNetworking::CMNetworking()
 {
-
 }
 
 void CMNetworking::setup()
@@ -37,15 +36,14 @@ void CMNetworking::setup()
 
 void CMNetworking::register_urls()
 {
-
 }
 
 void CMNetworking::loop()
 {
-
 }
 
-int CMNetworking::create_socket(uint16_t port) {
+int CMNetworking::create_socket(uint16_t port)
+{
     int sock;
     struct sockaddr_in dest_addr;
 
@@ -82,16 +80,17 @@ int CMNetworking::create_socket(uint16_t port) {
 
 void CMNetworking::register_manager(const std::vector<String> &hosts,
                                     const std::vector<String> &names,
-                                    std::function<void(uint8_t, // client_id
-                                                        uint8_t, // iec61851_state
-                                                        uint8_t, // charger_state
-                                                        uint8_t, // error_state
-                                                        uint32_t,// uptime
-                                                        uint32_t,// charging_time
-                                                        uint16_t,// allowed_charging_current
-                                                        uint16_t// supported_current
-                                                        )> manager_callback,
-                                    std::function<void(uint8_t, uint8_t)> manager_error_callback) {
+                                    std::function<void(uint8_t,  // client_id
+                                                       uint8_t,  // iec61851_state
+                                                       uint8_t,  // charger_state
+                                                       uint8_t,  // error_state
+                                                       uint32_t, // uptime
+                                                       uint32_t, // charging_time
+                                                       uint16_t, // allowed_charging_current
+                                                       uint16_t  // supported_current
+                                                       )> manager_callback,
+                                    std::function<void(uint8_t, uint8_t)> manager_error_callback)
+{
 
     for (int i = 0; i < names.size(); ++i) {
         dest_addrs[i].sin_addr.s_addr = inet_addr(hosts[i].c_str());
@@ -138,7 +137,7 @@ void CMNetworking::register_manager(const std::vector<String> &hosts,
             }
 
         if (charger_idx == -1) {
-            logger.printfln("Received packet from unknown %s. Is the configuration complete?", inet_ntoa(source_addr.sin_addr));
+            logger.printfln("Received packet from unknown %s. Is the config complete?", inet_ntoa(source_addr.sin_addr));
             return;
         }
 
@@ -275,20 +274,19 @@ void CMNetworking::register_client(std::function<void(uint16_t)> client_callback
 }
 
 bool CMNetworking::send_client_update(uint8_t iec61851_state,
-                            uint8_t charger_state,
-                            uint8_t error_state,
-                            uint32_t uptime,
-                            uint32_t charging_time,
-                            uint16_t allowed_charging_current,
-                            uint16_t supported_current,
-                            bool managed)
+                                      uint8_t charger_state,
+                                      uint8_t error_state,
+                                      uint32_t uptime,
+                                      uint32_t charging_time,
+                                      uint16_t allowed_charging_current,
+                                      uint16_t supported_current,
+                                      bool managed)
 {
     static uint8_t next_seq_num = 0;
 
     if (!source_addr_valid) {
         //logger.printfln("source addr not valid.");
         return false;
-
     }
     //logger.printfln("Sending response.");
 

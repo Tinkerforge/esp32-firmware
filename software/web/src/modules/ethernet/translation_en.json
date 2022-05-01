@@ -2,7 +2,7 @@
     "ethernet": {
         "status": {
             "ethernet_connection": "LAN connection",
-            "not_configured": "Not configured",
+            "not_configured": "Deactivated",
             "not_connected": "Not connected",
             "connecting": "Connecting",
             "connected": "Connected"
@@ -11,9 +11,9 @@
             "ethernet": "LAN Connection"
         },
         "content": {
-            "settings": "LAN Connection Settings",
+            "settings": "LAN Connection",
             "enable": "Connection enabled",
-            "enable_desc": "Automatically connects to the configured network on start-up if activated.",
+            "enable_desc": "Automatically connects to the configured network on start-up",
 
             "ip_configuration": "IP configuration",
             "dhcp": "automatic (DHCP)",
@@ -23,7 +23,7 @@
             "static_ip": "IP address",
             "subnet": "Subnet mask",
             "gateway": "Gateway",
-            "dns": "<span class=\"form-label pr-2\">DNS server</span><span class=\"text-muted\">optional</span>",
+            "dns": "<span class=\"form-label pr-2\">DNS server</span>",
             "dns2": "<span class=\"form-label pr-2\">Alternative DNS server</span><span class=\"text-muted\">optional</span>",
             "static_ip_invalid": "The IP address must have four groups between 0 and 255 separated with a dot. For example 10.0.0.2",
             "subnet_invalid": "The subnet mask must have four groups between 0 and 255 separated with a dot. For example 255.255.255.0",

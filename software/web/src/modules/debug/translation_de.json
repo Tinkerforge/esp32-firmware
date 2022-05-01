@@ -10,7 +10,9 @@
             "debug": "Debug",
             "uptime": "Zeit seit Neustart",
             "heap_free": "Freie Heap-Bytes",
-            "heap_block": "Größter freier Heap-Block"
+            "heap_block": "Größter freier Heap-Block",
+            "psram_free": "Freie Bytes im externen RAM",
+            "psram_block": "Größter freier Block im externen RAM"
         },
         "script": {
         }

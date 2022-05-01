@@ -29,20 +29,24 @@ public:
     void loop();
 
     uint8_t next_user_id();
-    void create_user(const char *name);
-    void get_username(uint8_t user_id, char *buf);
-    void rename_user(uint8_t user_id, const char *name);
+    void rename_user(uint8_t user_id, const char *username, const char *display_name);
+    void remove_from_username_file(uint8_t user_id);
 
-    bool trigger_charge_action(uint8_t user_id);
+    #define TRIGGER_CHARGE_ANY 0
+    #define TRIGGER_CHARGE_START 1
+    #define TRIGGER_CHARGE_STOP 2
+    bool trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::ConfVariant auth_info, int action = TRIGGER_CHARGE_ANY);
+
+    void remove_username_file();
 
     bool initialized = false;
 
     ConfigRoot user_config;
     ConfigRoot add;
-    ConfigRoot del;
+    ConfigRoot remove;
     ConfigRoot http_auth;
     ConfigRoot http_auth_update;
 
-    bool start_charging(uint8_t user_id, uint16_t current_limit);
+    bool start_charging(uint8_t user_id, uint16_t current_limit, uint8_t auth_type, Config::ConfVariant auth_info);
     bool stop_charging(uint8_t user_id, bool force);
 };

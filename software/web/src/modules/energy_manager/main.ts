@@ -22,10 +22,6 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-export function updateLockState(module_init: any) {
-    $('#sidebar-energy-manager').prop('hidden', !module_init.energy_manager);
-}
-
 function update_energy_manager_state() {
     let state = API.get('energy_manager/state');
 
@@ -278,7 +274,7 @@ export function init() {
     allow_debug(true);
 }
 
-export function addEventListeners(source: API.ApiEventTarget) {
+export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('energy_manager/state', update_energy_manager_state);
     source.addEventListener('energy_manager/config', update_energy_manager_config);
 
@@ -289,4 +285,8 @@ export function addEventListeners(source: API.ApiEventTarget) {
     source.addEventListener("energy_manager/debug", function (e) {
         debug_log += e.data + "\n";
     }, false);
+}
+
+export function update_sidebar_state(module_init: any) {
+    $('#sidebar-energy-manager').prop('hidden', !module_init.energy_manager);
 }

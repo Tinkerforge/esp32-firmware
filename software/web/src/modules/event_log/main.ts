@@ -27,7 +27,7 @@ declare function __(s: string): string;
 function load_event_log() {
     $.get("/event_log")
                .done((result) => {
-                   $('#event_log_content').html(result);
+                   $('#event_log_content').val(result);
                    util.remove_alert("event_log_load_failed");
                 })
                .fail((xhr, status, error) => util.add_alert("event_log_load_failed", "alert-danger", __("event_log.script.load_event_log_error"), error + ": " + xhr.responseText))
@@ -82,9 +82,10 @@ export function init() {
     });
 }
 
-export function addEventListeners(source: API.ApiEventTarget) {}
+export function add_event_listeners(source: API.APIEventTarget) {
 
-export function updateLockState(module_init: any) {
+}
+
+export function update_sidebar_state(module_init: any) {
     $('#sidebar-event-log').prop('hidden', !module_init.event_log);
-    $('#sidebar-system').prop('hidden',  $('#sidebar-system').prop('hidden') && !module_init.event_log);
 }

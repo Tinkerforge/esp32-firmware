@@ -1,0 +1,20 @@
+{
+    "tutorial_phase_5": {
+        "status": {
+        },
+        "navbar": {
+            "tutorial_phase_5": "Tutorial (Phase 5)"
+        },
+        "content": {
+            "tutorial_phase_5": "Tutorial (Phase 5)",
+            "color": "Color",
+            "button": "Button",
+            "button_unknown": "Unknown"
+        },
+        "script": {
+            "save_config_failed": "Could not save color",
+            "button_pressed": "Pressed",
+            "button_released": "Released"
+        }
+    }
+}

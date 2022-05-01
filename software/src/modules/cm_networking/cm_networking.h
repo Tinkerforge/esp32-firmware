@@ -80,15 +80,15 @@ public:
 
     void register_manager(const std::vector<String> &hosts,
                           const std::vector<String> &names,
-                          std::function<void(uint8_t, // client_id
-                                             uint8_t, // iec61851_state
-                                             uint8_t, // charger_state
-                                             uint8_t, // error_state
-                                             uint32_t,// uptime
-                                             uint32_t,// charging_time
-                                             uint16_t,// allowed_charging_current
-                                             uint16_t// supported_current
-                                            )> manager_callback,
+                          std::function<void(uint8_t,  // client_id
+                                             uint8_t,  // iec61851_state
+                                             uint8_t,  // charger_state
+                                             uint8_t,  // error_state
+                                             uint32_t, // uptime
+                                             uint32_t, // charging_time
+                                             uint16_t, // allowed_charging_current
+                                             uint16_t  // supported_current
+                                             )> manager_callback,
                           std::function<void(uint8_t, uint8_t)> manager_error_callback);
 
     bool send_manager_update(uint8_t client_id, uint16_t allocated_current);

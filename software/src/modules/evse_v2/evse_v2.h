@@ -41,6 +41,12 @@
 #define IEC_STATE_D 3
 #define IEC_STATE_EF 4
 
+#define CHARGER_STATE_NOT_PLUGGED_IN 0
+#define CHARGER_STATE_WAITING_FOR_RELEASE 1
+#define CHARGER_STATE_READY_TO_CHARGE 2
+#define CHARGER_STATE_CHARGING 3
+#define CHARGER_STATE_ERROR 4
+
 class EVSEV2 : public DeviceModule<TF_EVSEV2,
                                    evse_v2_bricklet_firmware_bin_data,
                                    evse_v2_bricklet_firmware_bin_length,
@@ -54,14 +60,10 @@ public:
     void register_urls();
     void loop();
 
-
     // Called in evse_v2_meter setup
     void update_all_data();
 
     void setup_evse();
-    bool flash_firmware();
-    bool flash_plugin(int regular_plugin_upto);
-    bool wait_for_bootloader_mode(int mode);
     String get_evse_debug_header();
     String get_evse_debug_line();
     void set_managed_current(uint16_t current);
@@ -96,8 +98,9 @@ public:
     ConfigRoot evse_global_current_update;
     ConfigRoot evse_management_enabled;
     ConfigRoot evse_management_enabled_update;
-    ConfigRoot evse_user_slot_enabled;
-    ConfigRoot evse_user_slot_enabled_update;
+    ConfigRoot evse_user_current;
+    ConfigRoot evse_user_enabled;
+    ConfigRoot evse_user_enabled_update;
     ConfigRoot evse_external_enabled;
     ConfigRoot evse_external_enabled_update;
     ConfigRoot evse_external_defaults;

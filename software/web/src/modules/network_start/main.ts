@@ -56,12 +56,11 @@ export function init() {
     });
 }
 
-export function addEventListeners(source: API.ApiEventTarget) {
+export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('network/config', update_network_config);
 }
 
-export function updateLockState(module_init: any) {
-    $('#sidebar-network-group').prop('hidden',  false);
-    $('#sidebar-network').prop('hidden',  false);
-
+export function update_sidebar_state(module_init: any) {
+    $('#sidebar-network-group').prop('hidden', false);
+    $('#sidebar-network').prop('hidden', false);
 }

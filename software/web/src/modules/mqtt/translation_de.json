@@ -2,7 +2,7 @@
     "mqtt": {
         "status": {
             "connection": "MQTT-Verbindung",
-            "not_configured": "Unkonfiguriert",
+            "not_configured": "Deaktiviert",
             "not_connected": "Getrennt",
             "connected": "Verbunden",
             "error": "Fehler"
@@ -11,7 +11,7 @@
             "mqtt": "MQTT"
         },
         "content": {
-            "mqtt": "MQTT-Einstellungen",
+            "mqtt": "MQTT",
             "enable_mqtt_desc": null,
             "enable_mqtt": "MQTT aktiviert",
             "broker_host": "Broker-Hostname oder -IP-Adresse",
@@ -21,7 +21,7 @@
             "topic_prefix": "<span class=\"form-label pr-2\">Topic-Präfix</span><span class=\"text-muted\">optional</span>",
             "topic_prefix_invalid": "Der Topic-Präfix darf nicht mit $ beginnen, oder ein # oder + enthalten.",
             "client_name": "<span class=\"form-label pr-2\">Client-ID</span>",
-            "interval": "<span class=\"form-label pr-2\">Sende-Interval</span><span class=\"text-muted\">(Sekunden). Daten werden nur bei Änderung übertragen.</span>",
+            "interval": "<span class=\"form-label pr-2\">Maximales Sendeintervall</span><span class=\"text-muted\">Daten werden nur bei Änderung übertragen</span>",
             "save": "Speichern"
         },
         "script": {

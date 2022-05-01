@@ -27,16 +27,18 @@ function update_debug_state() {
     $('#debug_uptime').val(util.format_timespan(Math.round(state.uptime / 1000)));
     $('#debug_heap_free').val(state.free_heap);
     $('#debug_heap_block').val(state.largest_free_heap_block);
+    $('#debug_psram_free').val(state.free_psram);
+    $('#debug_psram_block').val(state.largest_free_psram_block);
 }
 
 export function init() {
 
 }
 
-export function addEventListeners(source: API.ApiEventTarget) {
+export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('debug/state', update_debug_state);
 }
 
-export function updateLockState(module_init: any) {
+export function update_sidebar_state(module_init: any) {
     $('#sidebar-debug').prop('hidden', !module_init.debug);
 }

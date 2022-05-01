@@ -6,18 +6,21 @@
     },
     "ethernet": {
         "content": {
-            "enable_desc": "Wenn aktiviert, verbindet sich der Energiemanager beim Start oder wenn ein Kabel eingesteckt wird, automatisch."
+            "enable_desc": "Der Energiemanager verbindet sich beim Start automatisch zum konfigurierten Netzwerk"
         }
     },
     "event_log": {
         "content": {
-            "debug_report_desc_muted": "Ein kompletter Report aller Statusinformationen des Energiemanagers außer Passwörtern"
+            "debug_report_desc_muted": "kompletter Report aller Statusinformationen des Energiemanagers außer Passwörtern"
         }
     },
     "firmware_update": {
         "content": {
-            "factory_reset_modal_text": "Hiermit wird die gesamte Konfiguration auf den Auslieferungszustand zurückgesetzt. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Der Energiemanager öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus der beiliegenden Betriebsanleitung. Fortfahren?",
-            "reboot_desc": "Startet das Webinterface neu. Eine laufende Ladung wird dabei nicht unterbrochen"
+            "factory_reset_modal_text": "Hiermit wird die gesamte Konfiguration auf den Werkszustand zurückgesetzt. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Der Energiemanager öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus der beiliegenden Betriebsanleitung. Fortfahren?",
+            "reboot_desc": "{{{empty_text}}}",
+            "config_reset_modal_text": "{{{empty_text}}}",
+            "factory_reset_desc": "löscht die gesamte Konfiguration",
+            "config_reset_desc": "{{{empty_text}}}"
         },
         "script": {
             "no_info_page": "Firmware-Datei ist beschädigt oder für WARP Charger (Firmware-Info-Seite fehlt)",
@@ -26,7 +29,7 @@
     },
     "network": {
         "content": {
-            "enable_mdns_desc": "mDNS erlaubt es anderen Geräten in diesem Netzwerk, der Energiemanager zu finden."
+            "enable_mdns_desc": "Erlaubt es anderen Geräten in diesem Netzwerk, der Energiemanager zu finden."
         }
     },
     "mqtt": {
@@ -39,8 +42,9 @@
     },
     "wifi": {
         "content": {
-            "sta_enable_sta_desc": "Wenn aktiviert, verbindet sich der Energiemanager beim Start automatisch zum konfigurierten Netzwerk.",
-            "ap_hide_ssid_desc_pre": "Versteckt den Netzwerknamen. Der Energiemanager ist unter der BSSID "
+            "sta_enable_sta_desc": "Der Energiemanager verbindet sich beim Start automatisch zum konfigurierten Netzwerk",
+            "ap_hide_ssid_desc_pre": "Der Energiemanager ist unter der BSSID ",
+            "confirm_content": "Soll der WLAN-Access-Point wirklich komplett deaktiviert werden? Falls zukünftig keine Verbindung zu einem konfigurierten Netzwerk möglich ist, <b>kann nicht mehr auf den Energiemanager zugegriffen werden</b>. Der Energiemanager muss dann auf den Werkszustand zurückgesetzt werden. <a href=\"{{{manual_url}}}\">Siehe Betriebsanleitung für Details.</a>"
         }
     }
 }

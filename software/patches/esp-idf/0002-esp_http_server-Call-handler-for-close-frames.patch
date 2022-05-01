@@ -1,0 +1,24 @@
+From 72fe90c2068e2f160eca4bd1fa17a953ee1362c2 Mon Sep 17 00:00:00 2001
+From: Erik Fleckstein <erik@tinkerforge.com>
+Date: Wed, 20 Apr 2022 15:00:18 +0200
+Subject: [PATCH] esp_http_server: Call handler for close frames.
+
+---
+ components/esp_http_server/src/httpd_parse.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/components/esp_http_server/src/httpd_parse.c b/components/esp_http_server/src/httpd_parse.c
+index 296a43dfc0..096e9893ba 100644
+--- a/components/esp_http_server/src/httpd_parse.c
++++ b/components/esp_http_server/src/httpd_parse.c
+@@ -759,7 +759,6 @@ esp_err_t httpd_req_new(struct httpd_data *hd, struct sock_db *sd)
+         /*  Stop and return here immediately if it's a CLOSE frame */
+         if (ra->ws_type == HTTPD_WS_TYPE_CLOSE) {
+             sd->ws_close = true;
+-            return ret;
+         }
+ 
+         if (ra->ws_type == HTTPD_WS_TYPE_PONG) {
+-- 
+2.36.0
+

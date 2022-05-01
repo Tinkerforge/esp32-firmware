@@ -8,8 +8,8 @@
         },
         "content": {
             "authentication": "Credentials",
-            "enable_authentication": "Enable authentication",
-            "enable_authentication_desc": "If activated, the configured credentials must be entered to open the web interface or use the HTTP API.",
+            "enable_authentication": "Authentication enabled",
+            "enable_authentication_desc": "The configured credentials must be entered to open the web interface or use the HTTP API",
             "username": "Username",
             "password": "Password",
             "save": "Save",

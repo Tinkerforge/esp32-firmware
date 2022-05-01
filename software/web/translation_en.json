@@ -7,7 +7,6 @@
         "login_password": "Password",
         "login_button": "Sign In",
         "navbar_status": "Status",
-        "content_status": "Status",
         "reboot_title": "Reboot to apply configuration",
         "reboot_content_prefix": "The changed ",
         "reboot_content_suffix": " will only be applied after rebooting. Reboot now?",

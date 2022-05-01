@@ -2,8 +2,8 @@
     "charge_manager": {
         "status": {
             "charge_manager": "Charge manager",
-            "not_configured": "Not configured",
-            "manager": "Active",
+            "not_configured": "Deactivated",
+            "manager": "Activated",
             "error": "Error",
             "managed_boxes": "Managed chargers",
             "available_current": "Available current",
@@ -15,12 +15,12 @@
         },
         "content": {
             "charge_manager": "Charge Manager",
-            "enable_charge_manager": "Enable charge manager",
-            "enable_charge_manager_desc": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
-            "enable_watchdog": "Enable watchdog",
-            "enable_watchdog_desc": "Sets the available current to the default value if it is not updated every 30 seconds.",
-            "verbose": "Log current distribution",
-            "verbose_desc": "Creates log entries whenever current is redistributed.",
+            "enable_charge_manager": "<span class=\"form-label pr-2\">Charge manager enabled</span><span class=\"text-muted\"><a href=\"{{{manual_url}}}\">see manual for details</a></span>",
+            "enable_charge_manager_desc": "Controls multiple WARP Chargers to make sure a configured maximum current is never exceeded",
+            "enable_watchdog": "<span class=\"form-label pr-2\">Watchdog enabled</span><span class=\"text-muted\">Only enable if using the API. Not required for normal charge manager use!</span>",
+            "enable_watchdog_desc": "Sets the available current to the default value if it is not updated every 30 seconds",
+            "verbose": "Current distribution log enabled",
+            "verbose_desc": "Creates log entries whenever current is redistributed",
             "default_available_current": "<span class=\"form-label pr-2\">Default available current</span><span class=\"text-muted\">will be used after charge manager reboot</span>",
             "default_available_current_invalid": "The default available current can at most be as much as the maximum available current!",
             "maximum_available_current": "<span class=\"form-label pr-2\">Maximum available current</span><span class=\"text-muted\">available current can only be set to at most this value using the API and web interface</span>",
@@ -53,8 +53,8 @@
             "charge_error_2": "Firmware incompatible",
             "charge_error_3": "Charge management deactivated",
             "charge_error_128": "Charger unreachable",
-            "charge_error_129": "EVSE unreachable",
-            "charge_error_130": "EVSE does not react",
+            "charge_error_129": "Charge controller unreachable",
+            "charge_error_130": "Charge controller does not react",
 
             "charge_error_192": "OK",
             "charge_error_193": "Switch error",
@@ -68,6 +68,7 @@
             "ampere_allocated": "A allocated",
             "ampere_supported": "A supported",
 
+            "delete": "Delete",
             "last_update_prefix": "Unavailable since",
             "last_update_suffix": "{{{empty_text}}}",
             "save_failed": "Failed to save the charge manager configuration",
@@ -76,7 +77,9 @@
             "add_charger_disabled_prefix": "Only up to ",
             "add_charger_disabled_suffix": " chargers are supported.",
 
-            "reboot_content_changed": "charge manager configuration"
+            "reboot_content_changed": "charge manager configuration",
+            "display_name": "Display name",
+            "host": "Host"
         }
     }
 }

@@ -509,10 +509,10 @@ int tf_hal_tick(TF_HAL *hal, uint32_t timeout_us) {
                 tf_local_transceive_packet(hal_common->local);
 
                 uint8_t *recv_buf = tf_local_get_recv_buffer(hal_common->local);
-                TF_TFPHeader header;
+                TF_TFPHeader header_;
 
-                tf_tfp_header_peek_plain(&header, recv_buf);
-                tf_net_send_packet(net, &header, recv_buf);
+                tf_tfp_header_peek_plain(&header_, recv_buf);
+                tf_net_send_packet(net, &header_, recv_buf);
 
                 device_found = true;
                 dispatched = true;

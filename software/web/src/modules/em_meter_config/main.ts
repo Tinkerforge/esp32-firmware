@@ -24,10 +24,6 @@ import * as API from "../../ts/api";
 
 declare function __(s: string): string;
 
-export function updateLockState(module_init: any) {
-    $('#sidebar-em-meter-config').prop('hidden', !module_init.energy_manager);
-}
-
 function update_em_meter_config() {
     let config = API.get('energy_manager/meter_config');
     $('#em-meter-config-type').val(config.meter_type.toString()).trigger('change');
@@ -98,8 +94,11 @@ export function init() {
     });
 }
 
-export function addEventListeners(source: API.ApiEventTarget) {
+export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('energy_manager/state', update_em_meter_config_state);
-
     source.addEventListener('energy_manager/meter_config', update_em_meter_config);
+}
+
+export function update_sidebar_state(module_init: any) {
+    $('#sidebar-em-meter-config').prop('hidden', !module_init.energy_manager);
 }

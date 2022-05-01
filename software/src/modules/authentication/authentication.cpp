@@ -90,5 +90,4 @@ void Authentication::register_urls()
 
 void Authentication::loop()
 {
-
 }

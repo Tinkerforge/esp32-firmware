@@ -61,5 +61,4 @@ void EMMeterConfig::register_urls()
 
 void EMMeterConfig::loop()
 {
- 
 }

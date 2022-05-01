@@ -3,7 +3,7 @@ Import("env")
 import sys
 
 if sys.hexversion < 0x3060000:
-    print('Python >= 3.6 required')
+    print('Error: Python >= 3.6 required')
     sys.exit(1)
 
 from collections import namedtuple
@@ -13,14 +13,13 @@ import shutil
 import subprocess
 import time
 import re
-import hashlib
 import json
 import glob
 import io
 import gzip
 from base64 import b64encode
 from zlib import crc32
-from util import embed_data
+import util
 
 NameFlavors = namedtuple('NameFlavors', 'space lower camel headless under upper dash camel_abbrv lower_no_space camel_constant_safe')
 
@@ -139,8 +138,9 @@ def get_changelog_version(name):
     if len(versions) == 0:
         raise Exception('no version found in changelog')
 
+    oldest_version = (str(versions[0][0]), str(versions[0][1]), str(versions[0][2]))
     version = (str(versions[-1][0]), str(versions[-1][1]), str(versions[-1][2]))
-    return version
+    return oldest_version, version
 
 def write_firmware_info(display_name, major, minor, patch, build_time):
     buf = bytearray([0xFF] * 4096)
@@ -226,9 +226,10 @@ def main():
     display_name = env.GetProjectOption("display_name")
     manual_url = env.GetProjectOption("manual_url")
     apidoc_url = env.GetProjectOption("apidoc_url")
+    firmware_url = env.GetProjectOption("firmware_url")
     require_firmware_info = env.GetProjectOption("require_firmware_info")
     src_filter = env.GetProjectOption("src_filter")
-    version = get_changelog_version(name)
+    oldest_version, version = get_changelog_version(name)
 
     if src_filter[0] == '+<empty.c>':
         src_filter = None
@@ -242,10 +243,16 @@ def main():
 
     with open(os.path.join('src', 'build.h'), 'w', encoding='utf-8') as f:
         f.write('#pragma once\n')
+        f.write('#define OLDEST_VERSION_MAJOR {}\n'.format(oldest_version[0]))
+        f.write('#define OLDEST_VERSION_MINOR {}\n'.format(oldest_version[1]))
+        f.write('#define OLDEST_VERSION_PATCH {}\n'.format(oldest_version[2]))
         f.write('#define BUILD_VERSION_MAJOR {}\n'.format(version[0]))
         f.write('#define BUILD_VERSION_MINOR {}\n'.format(version[1]))
         f.write('#define BUILD_VERSION_PATCH {}\n'.format(version[2]))
+        f.write('#define BUILD_VERSION_STRING "{}.{}.{}"\n'.format(*version))
         f.write('#define BUILD_HOST_PREFIX "{}"\n'.format(host_prefix))
+        f.write('#define BUILD_NAME_{}\n'.format(name.upper()))
+        f.write('#define BUILD_DISPLAY_NAME "{}"\n'.format(display_name))
         f.write('#define BUILD_REQUIRE_FIRMWARE_INFO {}\n'.format(require_firmware_info))
 
     with open(os.path.join('src', 'build_timestamp.h'), 'w', encoding='utf-8') as f:
@@ -295,9 +302,19 @@ def main():
         '{{{module_init_config}}}': ',\n        '.join('{{"{0}", Config::Bool({0}.initialized)}}'.format(x.under) for x in backend_modules if not x.under.startswith("hidden_"))
     })
 
+
+    all_mods = []
+    for existing_backend_module in os.listdir(os.path.join('src', 'modules')):
+        if not os.path.isdir(os.path.join('src', 'modules', existing_backend_module)):
+            continue
+
+        all_mods.append(existing_backend_module.upper())
+
+    backend_mods_upper = [x.upper for x in backend_modules]
+
     specialize_template("modules.h.template", os.path.join("src", "modules.h"), {
         '{{{module_includes}}}': '\n'.join(['#include "modules/{0}/{0}.h"'.format(x.under) for x in backend_modules]),
-        '{{{module_defines}}}': '\n'.join(['#define MODULE_{}_AVAILABLE'.format(x.upper) for x in backend_modules]),
+        '{{{module_defines}}}': '\n'.join(['#define MODULE_{}_AVAILABLE() {}'.format(x, "1" if x in backend_mods_upper else "0") for x in all_mods]),
         '{{{module_extern_decls}}}': '\n'.join(['extern {} {};'.format(x.camel, x.under) for x in backend_modules]),
     })
 
@@ -327,12 +344,12 @@ def main():
         mod_path = os.path.join('web', 'src', 'modules', frontend_module.under)
 
         if not os.path.exists(mod_path) or not os.path.isdir(mod_path):
-            print("Frontend module {} not found.".format(frontend_module.space, mod_path))
+            print("Error: Frontend module {} not found.".format(frontend_module.space, mod_path))
             sys.exit(1)
 
         if os.path.exists(os.path.join(mod_path, 'logo.png')):
             if logo_module != None:
-                print('Logo module collision ' + frontend_module.under + ' vs ' + logo_module)
+                print('Error: Logo module collision ' + frontend_module.under + ' vs ' + logo_module)
                 sys.exit(1)
 
             logo_module = frontend_module.under
@@ -341,7 +358,7 @@ def main():
 
         if os.path.exists(potential_favicon_path):
             if favicon_path != None:
-                print('Favicon path collision ' + potential_favicon_path + ' vs ' + favicon_path)
+                print('Error: Favicon path collision ' + potential_favicon_path + ' vs ' + favicon_path)
                 sys.exit(1)
 
             favicon_path = potential_favicon_path
@@ -396,7 +413,7 @@ def main():
         os.remove(path)
 
     if len(translation) == 0:
-        print('Translation missing')
+        print('Error: Translation missing')
         sys.exit(1)
 
     for language in sorted(translation):
@@ -406,16 +423,17 @@ def main():
             data = data.replace('{{{display_name}}}', display_name)
             data = data.replace('{{{manual_url}}}', manual_url)
             data = data.replace('{{{apidoc_url}}}', apidoc_url)
+            data = data.replace('{{{firmware_url}}}', firmware_url)
 
             f.write('export const translation_{0}: {{[index: string]:any}} = '.format(language))
             f.write(data + ';\n')
 
     if favicon_path == None:
-        print('Favison missing')
+        print('Error: Favison missing')
         sys.exit(1)
 
     if logo_module == None:
-        print('Logo missing')
+        print('Error: Logo missing')
         sys.exit(1)
 
     with open(favicon_path, 'rb') as f:
@@ -454,45 +472,32 @@ def main():
     with ChangedDirectory('web'):
         subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "check_translation_completeness.py"] + [x.under for x in frontend_modules])
 
+    # Check translation override completeness
+    print('Checking translation override completeness')
+
+    with ChangedDirectory('web'):
+        subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "check_override_completeness.py"] + [x.under for x in frontend_modules])
+
     # Generate web interface
     print('Checking web interface dependencies')
 
-    h = hashlib.sha256()
-
-    with open('web/package-lock.json', 'rb') as f:
-        h.update(f.read())
+    node_modules_src_paths = ['web/package-lock.json']
 
     # FIXME: Scons runs this script using exec(), resulting in __file__ being not available
-    #with open(__file__, 'rb') as f:
-    #    h.update(f.read())
+    #node_modules_src_paths.append(__file__)
 
-    new_node_digest = h.hexdigest()
-    node_digest_path = os.path.join(env.subst('$BUILD_DIR'), 'web,package-lock.json.digest')
+    node_modules_needs_update, node_modules_reason, node_modules_digest = util.check_digest(node_modules_src_paths, [], 'web', 'node_modules', env=env)
+    node_modules_digest_paths = util.get_digest_paths('web', 'node_modules', env=env)
 
-    try:
-        with open(node_digest_path, 'r', encoding='utf-8') as f:
-            old_node_digest = f.read().strip()
-    except FileNotFoundError:
-        old_node_digest = None
-
-    if old_node_digest == new_node_digest and os.path.exists('web/node_modules/tinkerforge.marker'):
+    if not node_modules_needs_update and os.path.exists('web/node_modules/tinkerforge.marker'):
         print('Web interface dependencies are up-to-date')
     else:
-        if old_node_digest == None:
-            reason = 'digest file missing'
-        elif old_node_digest != new_node_digest:
-            reason = 'digest mismatch'
-        elif not os.path.exists('web/node_modules/tinkerforge.marker'):
-            reason = 'node_modules marker missing'
-        else:
-            reason = 'unknown'
+        if not os.path.exists('web/node_modules/tinkerforge.marker'):
+            node_modules_reason = 'marker file missing'
 
-        print('Web interface dependencies are not up-to-date ({0}), updating now'.format(reason))
+        print('Web interface dependencies are not up-to-date ({0}), updating now'.format(node_modules_reason))
 
-        try:
-            os.remove(node_digest_path)
-        except FileNotFoundError:
-            pass
+        util.remove_digest('web', 'node_modules', env=env)
 
         try:
             shutil.rmtree('web/node_modules')
@@ -500,68 +505,59 @@ def main():
             pass
 
         with ChangedDirectory('web'):
-            subprocess.check_call(["npm", "ci"], shell=sys.platform == 'win32')
+            npm_version = subprocess.check_output(['npm', '--version'], shell=sys.platform == 'win32', encoding='utf-8').strip()
+
+            m = re.fullmatch(r'(\d+)\.\d+\.\d+', npm_version)
+
+            if m == None:
+                print('Error: npm version has unexpected format: {0}'.format(npm_version))
+                sys.exit(1)
+
+            if int(m.group(1)) < 8:
+                print('Error: npm >= 8 required, found npm {0}'.format(npm_version))
+                sys.exit(1)
+
+            subprocess.check_call(['npm', 'ci'], shell=sys.platform == 'win32')
 
         with open('web/node_modules/tinkerforge.marker', 'wb') as f:
             pass
 
-        with open(node_digest_path + '.tmp', 'w', encoding='utf-8') as f:
-            f.write(new_node_digest)
-
-        os.replace(node_digest_path + '.tmp', node_digest_path)
+        util.store_digest(node_modules_digest, 'web', 'node_modules', env=env)
 
     print('Checking web interface')
 
-    h = hashlib.sha256()
+    index_html_src_paths = []
+    index_html_src_datas = []
 
     for name in sorted(os.listdir('web')):
         path = os.path.join('web', name)
 
-        if not os.path.isfile(path):
-            continue
-
-        with open(path, 'rb') as f:
-            h.update(f.read())
+        if os.path.isfile(path):
+            index_html_src_paths.append(path)
 
     for root, dirs, files in sorted(os.walk('web/src')):
-        for name in files:
-            path = os.path.join(root, name)
+        for name in sorted(files):
+            index_html_src_paths.append(os.path.join(root, name))
 
-            with open(path, 'rb') as f:
-                h.update(f.read())
+    index_html_src_paths += node_modules_digest_paths
 
-    with open(node_digest_path, 'rb') as f:
-        h.update(f.read())
-
-    with open('util.py', 'rb') as f:
-        h.update(f.read())
+    for frontend_module in frontend_modules: # ensure changes to the frontend modules change the digest
+        index_html_src_datas.append(frontend_module.under.encode('utf-8'))
 
     # FIXME: Scons runs this script using exec(), resulting in __file__ being not available
-    #with open(__file__, 'rb') as f:
-    #    h.update(f.read())
+    #index_html_src_paths.append(__file__)
 
-    new_html_digest = h.hexdigest()
-    html_digest_path = os.path.join(env.subst('$BUILD_DIR'), 'src,index.html.digest')
+    index_html_needs_update, index_html_reason, index_html_digest = util.check_digest(index_html_src_paths, index_html_src_datas, 'src', 'index_html', env=env)
 
-    try:
-        with open(html_digest_path, 'r', encoding='utf-8') as f:
-            old_html_digest = f.read().strip()
-    except FileNotFoundError:
-        old_html_digest = None
-
-    if old_html_digest == new_html_digest and os.path.exists('src/index_html.embedded.h') and os.path.exists('src/index_html.embedded.cpp'):
+    if not index_html_needs_update and os.path.exists('src/index_html.embedded.h') and os.path.exists('src/index_html.embedded.cpp'):
         print('Web interface is up-to-date')
     else:
-        if old_html_digest == None:
-            reason = 'digest file missing'
-        elif old_html_digest != new_html_digest:
-            reason = 'digest mismatch'
-        elif not os.path.exists('src/index_html.embedded.h') or not os.path.exists('src/index_html.embedded.cpp'):
-            reason = 'embedded file missing'
-        else:
-            reason = 'unknown'
+        if not os.path.exists('src/index_html.embedded.h') or not os.path.exists('src/index_html.embedded.cpp'):
+            index_html_reason = 'embedded file missing'
 
-        print('Web interface is not up-to-date ({0}), building now'.format(reason))
+        print('Web interface is not up-to-date ({0}), building now'.format(index_html_reason))
+
+        util.remove_digest('src', 'index_html', env=env)
 
         try:
             shutil.rmtree('web/build')
@@ -583,11 +579,7 @@ def main():
         html = html.replace('<link href=css/main.css rel=stylesheet>', '<style rel=stylesheet>{0}</style>'.format(css))
         html = html.replace('<script src=js/bundle.js></script>', '<script>{0}</script>'.format(js))
 
-        embed_data(gzip.compress(html.encode('utf-8')), 'src', 'index_html', 'char')
-
-        with open(html_digest_path + '.tmp', 'w', encoding='utf-8') as f:
-            f.write(new_html_digest)
-
-        os.replace(html_digest_path + '.tmp', html_digest_path)
+        util.embed_data(gzip.compress(html.encode('utf-8')), 'src', 'index_html', 'char')
+        util.store_digest(index_html_digest, 'src', 'index_html', env=env)
 
 main()

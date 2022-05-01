@@ -137,5 +137,4 @@ void Proxy::register_urls()
 
 void Proxy::loop()
 {
-
 }

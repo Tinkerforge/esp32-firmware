@@ -35,7 +35,6 @@ enum class MqttConnectionState {
 
 struct MqttCommand {
     String topic;
-    uint32_t max_len;
     std::function<void(char *, size_t)> callback;
     bool forbid_retained;
 };
@@ -53,16 +52,16 @@ public:
     void loop();
     void connect();
 
-    void publish(String topic_suffix, String payload);
-    void subscribe(String topic_suffix, uint32_t max_payload_length, std::function<void(char *, size_t)> callback, bool forbid_retained);
+    void publish(String path, String payload);
+    void subscribe(String path, std::function<void(char *, size_t)> callback, bool forbid_retained);
 
     // IAPIBackend implementation
-    void addCommand(size_t commandIdx, const CommandRegistration &reg);
-    void addState(size_t stateIdx, const StateRegistration &reg);
-    void addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg);
-    bool pushStateUpdate(size_t stateIdx, String payload, String path);
-    void pushRawStateUpdate(String payload, String path);
-    void wifiAvailable();
+    void addCommand(size_t commandIdx, const CommandRegistration &reg) override;
+    void addState(size_t stateIdx, const StateRegistration &reg) override;
+    void addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg) override;
+    bool pushStateUpdate(size_t stateIdx, String payload, String path) override;
+    void pushRawStateUpdate(String payload, String path) override;
+    void wifiAvailable() override;
 
     bool initialized = false;
 

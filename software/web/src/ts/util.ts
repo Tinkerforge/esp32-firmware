@@ -4,16 +4,6 @@ import * as API from "./api";
 
 declare function __(s: string): string;
 
-/* Helper interface to silence typescript error about the data member of server sent events not existing.
-   Use like this:
-   eventSource.addEventListener('eventName', function (e: SSE) {
-       console.log(e.data);
-   }, false);
-*/
-export interface SSE extends Event{
-    data: string;
-}
-
 export function reboot() {
     $.ajax({
         url: '/reboot',
@@ -172,9 +162,9 @@ let ws: WebSocket = null;
 
 const RECONNECT_TIME = 12000;
 
-let eventTarget: API.ApiEventTarget = null;
+let eventTarget: API.APIEventTarget = null;
 
-export function setupEventSource(first: boolean, keep_as_first: boolean, continuation: (ws: WebSocket, eventTarget: API.ApiEventTarget) => void) {
+export function setupEventSource(first: boolean, keep_as_first: boolean, continuation: (ws: WebSocket, eventTarget: API.APIEventTarget) => void) {
     if (!first) {
         add_alert("event_connection_lost", "alert-warning",  __("util.event_connection_lost_title"), __("util.event_connection_lost"))
     }
@@ -182,8 +172,8 @@ export function setupEventSource(first: boolean, keep_as_first: boolean, continu
     if (ws != null) {
         ws.close();
     }
-    ws = new WebSocket('ws://' + location.host + '/ws');
-    eventTarget = new API.ApiEventTarget();
+    ws = new WebSocket((location.protocol == 'https:' ? 'wss://' : 'ws://') + location.host + '/ws');
+    eventTarget = new API.APIEventTarget();
 
     if (wsReconnectTimeout != null) {
         clearTimeout(wsReconnectTimeout);
@@ -238,7 +228,7 @@ export function postReboot(alert_title: string, alert_text: string) {
     ws.close();
     clearTimeout(wsReconnectTimeout);
     add_alert("reboot", "alert-success", alert_title, alert_text);
-    // Wait 3 seconds before starting the reload/reconnect logic, to make sure the reboot has actually started yet.
+    // Wait 5 seconds before starting the reload/reconnect logic, to make sure the reboot has actually started yet.
     // Else it sometimes happens, that we reconnect _before_ the reboot starts.
     window.setTimeout(() => whenLoggedInElseReload(() =>
         setupEventSource(true, true, (ws, eventSource) => {
@@ -247,11 +237,11 @@ export function postReboot(alert_title: string, alert_text: string) {
                 // so this will even work if downgrading to an version older than
                 // 1.1.0
                 console.log("setting up...");
-                eventSource.addEventListener('version', function (e) {
+                eventSource.addEventListener('info/version', function (e) {
                     console.log("reloading");
                     window.location.reload();
                 }, false);})
-    ), 3000);
+    ), 5000);
 }
 
 let loginReconnectTimeout: number = null;
@@ -318,10 +308,10 @@ export function downloadToFile(content: BlobPart, filename_prefix: string, exten
     const a = document.createElement('a');
     const file = new Blob([content], {type: contentType});
     let t = iso8601ButLocal(new Date()).replace(/:/gi, "-").replace(/\./gi, "-");
-    let uid = API.get("name/state").name;
+    let name = API.get('info/name').name;
 
     a.href= URL.createObjectURL(file);
-    a.download = filename_prefix + "-" + uid + "-" + t + "." + extension;
+    a.download = filename_prefix + "-" + name + "-" + t + "." + extension;
     a.click();
 
     URL.revokeObjectURL(a.href);

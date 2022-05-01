@@ -42,6 +42,7 @@ void WebServer::start()
     config.stack_size = 8192;
     config.max_uri_handlers = MAX_URI_HANDLERS;
     config.global_user_ctx = this;
+    config.max_open_sockets = 10;
     /*config.task_priority = tskIDLE_PRIORITY+7;
     config.core_id = 1;*/
 
@@ -102,7 +103,7 @@ WebServerHandler *WebServer::on(const char *uri, httpd_method_t method, wshCallb
     return result;
 }
 
-static const size_t SCRATCH_BUFSIZE = 4096;
+static const size_t SCRATCH_BUFSIZE = 2048;
 static uint8_t scratch_buf[SCRATCH_BUFSIZE] = {0};
 
 static esp_err_t low_level_upload_handler(httpd_req_t *req)
@@ -118,19 +119,20 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req)
         return ESP_OK;
     }
 
-    size_t received = 0;
     size_t remaining = req->content_len;
     size_t index = 0;
 
     while (remaining > 0) {
-        received = httpd_req_recv(req, (char *)scratch_buf, MIN(remaining, SCRATCH_BUFSIZE));
+        int received = httpd_req_recv(req, (char *)scratch_buf, MIN(remaining, SCRATCH_BUFSIZE));
         // Retry if timeout occurred
         if (received == HTTPD_SOCK_ERR_TIMEOUT) {
             continue;
         }
 
         if (received <= 0) {
-            printf("File reception failed!\n");
+            struct httpd_req_aux *ra = (struct httpd_req_aux *)req->aux;
+
+            logger.printfln("File reception failed (%d fd %d errno %d %s)!\n", received, ra->sd->fd, errno, strerror(errno));
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to receive file");
             return ESP_FAIL;
         }
@@ -371,7 +373,8 @@ void WebServerRequest::requestAuthentication()
 
 class CustomString : public String {
 public:
-    void setLength(int len) {
+    void setLength(int len)
+    {
         setLen(len);
     }
 };
@@ -393,7 +396,8 @@ String WebServerRequest::header(const char *header_name)
     return result;
 }
 
-size_t WebServerRequest::contentLength() {
+size_t WebServerRequest::contentLength()
+{
     return req->content_len;
 }
 
