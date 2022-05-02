@@ -216,3 +216,6 @@
 - Fix downloading an empty charge log
 - Fix boolean values in charge log
 - Fix bootloop if WiFi is completely disabled
+
+2022-05-02: 2.0.3 (<unknown>)
+- Fix visibility of WiFi scan results
