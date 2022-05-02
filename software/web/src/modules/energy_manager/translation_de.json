@@ -13,7 +13,7 @@
             "debug_stop": "Stop + Download",
             "debug_description": "Protokoll erstellen",
             "debug_description_muted": "zur Diagnose bei Problemen",
-            "low_level_state": "Low-Level-Zu&shy;stand",
+            "low_level_state": "Low-Level-Zustand",
             "low_level_state_show": "Anzeigen / Verstecken",
             "state_contactor": "Phasenumschaltung",
             "state_led": "LED",
