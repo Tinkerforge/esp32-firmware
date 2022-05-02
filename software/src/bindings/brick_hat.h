@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -332,12 +332,12 @@ int tf_hat_set_response_expected_all(TF_HAT *hat, bool response_expected);
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint16_t voltage_usb, uint16_t voltage_dc, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_hat_set_voltages_callback_configuration}.
- * 
+ *
  * The parameters are the same as {@link tf_hat_get_voltages}.
- * 
+ *
  * .. versionadded:: 2.0.1$nbsp;(Firmware)
  */
 int tf_hat_register_voltages_callback(TF_HAT *hat, TF_HAT_VoltagesHandler handler, void *user_data);
@@ -357,23 +357,23 @@ int tf_hat_callback_tick(TF_HAT *hat, uint32_t timeout_us);
  * \ingroup TF_HAT
  *
  * Sets the sleep mode.
- * 
+ *
  * \note
  *  Calling this function will cut the Raspberry Pi's power after Power Off Delay seconds.
  *  You have to shut down the operating system yourself, e.g. by calling 'sudo shutdown -h now'.
- * 
+ *
  * Parameters:
- * 
+ *
  * * Power Off Delay: Time before the RPi/Bricklets are powered off.
  * * Power Off Duration: Duration that the RPi/Bricklets stay powered off.
  * * Raspberry Pi Off: RPi is powered off if set to true.
  * * Bricklets Off: Bricklets are powered off if set to true.
  * * Enable Sleep Indicator: If set to true, the status LED will blink in a 1s interval
  *   during the whole power off duration. This will draw additional 0.3mA.
- * 
+ *
  * Example: To turn RPi and Bricklets off in 5 seconds for 10 minutes with sleep
  * indicator enabled, call (5, 60*10, true, true, true).
- * 
+ *
  * This function can also be used to implement a watchdog. To do this you can
  * write a program that calls this function once per second in a loop with
  * (10, 2, true, false, false). If the RPi crashes or gets stuck
@@ -406,9 +406,9 @@ int tf_hat_get_bricklet_power(TF_HAT *hat, bool *ret_bricklet_power);
  * \ingroup TF_HAT
  *
  * Returns the USB supply voltage and the DC input supply voltage.
- * 
+ *
  * There are three possible combinations:
- * 
+ *
  * * Only USB connected: The USB supply voltage will be fed back to the
  *   DC input connector. You will read the USB voltage and a slightly lower
  *   voltage on the DC input.
@@ -427,14 +427,14 @@ int tf_hat_get_voltages(TF_HAT *hat, uint16_t *ret_voltage_usb, uint16_t *ret_vo
  *
  * The period is the period with which the {@link tf_hat_register_voltages_callback}
  * callback is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
- * 
+ *
  * .. versionadded:: 2.0.1$nbsp;(Firmware)
  */
 int tf_hat_set_voltages_callback_configuration(TF_HAT *hat, uint32_t period, bool value_has_to_change);
@@ -444,7 +444,7 @@ int tf_hat_set_voltages_callback_configuration(TF_HAT *hat, uint32_t period, boo
  *
  * Returns the callback configuration as set by
  * {@link tf_hat_set_voltages_callback_configuration}.
- * 
+ *
  * .. versionadded:: 2.0.1$nbsp;(Firmware)
  */
 int tf_hat_get_voltages_callback_configuration(TF_HAT *hat, uint32_t *ret_period, bool *ret_value_has_to_change);
@@ -454,12 +454,12 @@ int tf_hat_get_voltages_callback_configuration(TF_HAT *hat, uint32_t *ret_period
  *
  * Configures the RTC driver that is given to the Raspberry Pi to be used.
  * Currently there are two different RTCs used:
- * 
+ *
  * * Hardware version <= 1.5: PCF8523
  * * Hardware version 1.6: DS1338
- * 
+ *
  * The correct driver will be set during factory flashing by Tinkerforge.
- * 
+ *
  * .. versionadded:: 2.0.3$nbsp;(Firmware)
  */
 int tf_hat_set_rtc_driver(TF_HAT *hat, uint8_t rtc_driver);
@@ -468,7 +468,7 @@ int tf_hat_set_rtc_driver(TF_HAT *hat, uint8_t rtc_driver);
  * \ingroup TF_HAT
  *
  * Returns the RTC driver as set by {@link tf_hat_set_rtc_driver}.
- * 
+ *
  * .. versionadded:: 2.0.3$nbsp;(Firmware)
  */
 int tf_hat_get_rtc_driver(TF_HAT *hat, uint8_t *ret_rtc_driver);
@@ -477,14 +477,14 @@ int tf_hat_get_rtc_driver(TF_HAT *hat, uint8_t *ret_rtc_driver);
  * \ingroup TF_HAT
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -495,11 +495,11 @@ int tf_hat_get_spitfp_error_count(TF_HAT *hat, uint32_t *ret_error_count_ack_che
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -518,7 +518,7 @@ int tf_hat_get_bootloader_mode(TF_HAT *hat, uint8_t *ret_mode);
  * Sets the firmware pointer for {@link tf_hat_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -530,9 +530,9 @@ int tf_hat_set_write_firmware_pointer(TF_HAT *hat, uint32_t pointer);
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_hat_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -544,9 +544,9 @@ int tf_hat_write_firmware(TF_HAT *hat, const uint8_t data[64], uint8_t *ret_stat
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_hat_set_status_led_config(TF_HAT *hat, uint8_t config);
@@ -563,7 +563,7 @@ int tf_hat_get_status_led_config(TF_HAT *hat, uint8_t *ret_config);
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -575,7 +575,7 @@ int tf_hat_get_chip_temperature(TF_HAT *hat, int16_t *ret_temperature);
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -588,7 +588,7 @@ int tf_hat_reset(TF_HAT *hat);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_hat_write_uid(TF_HAT *hat, uint32_t uid);
@@ -608,9 +608,9 @@ int tf_hat_read_uid(TF_HAT *hat, uint32_t *ret_uid);
  * (typically '0' as the HAT is the root device in the topology),
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The HAT (Zero) Brick is always at position 'i'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

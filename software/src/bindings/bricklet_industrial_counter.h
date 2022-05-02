@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -576,10 +576,10 @@ int tf_industrial_counter_set_response_expected_all(TF_IndustrialCounter *indust
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int64_t counter[4], void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_industrial_counter_set_all_counter_callback_configuration}.
- * 
+ *
  * The parameters are the same as {@link tf_industrial_counter_get_all_counter}.
  */
 int tf_industrial_counter_register_all_counter_callback(TF_IndustrialCounter *industrial_counter, TF_IndustrialCounter_AllCounterHandler handler, void *user_data);
@@ -592,10 +592,10 @@ int tf_industrial_counter_register_all_counter_callback(TF_IndustrialCounter *in
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint16_t duty_cycle[4], uint64_t period[4], uint32_t frequency[4], bool value[4], void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_industrial_counter_set_all_signal_data_callback_configuration}.
- * 
+ *
  * The parameters are the same as {@link tf_industrial_counter_get_all_signal_data}.
  */
 int tf_industrial_counter_register_all_signal_data_callback(TF_IndustrialCounter *industrial_counter, TF_IndustrialCounter_AllSignalDataHandler handler, void *user_data);
@@ -629,7 +629,7 @@ int tf_industrial_counter_get_all_counter(TF_IndustrialCounter *industrial_count
  * \ingroup TF_IndustrialCounter
  *
  * Sets the counter value for the given channel.
- * 
+ *
  * The default value for the counters on startup is 0.
  */
 int tf_industrial_counter_set_counter(TF_IndustrialCounter *industrial_counter, uint8_t channel, int64_t counter);
@@ -638,7 +638,7 @@ int tf_industrial_counter_set_counter(TF_IndustrialCounter *industrial_counter, 
  * \ingroup TF_IndustrialCounter
  *
  * Sets the counter values for all four channels.
- * 
+ *
  * The default value for the counters on startup is 0.
  */
 int tf_industrial_counter_set_all_counter(TF_IndustrialCounter *industrial_counter, const int64_t counter[4]);
@@ -663,9 +663,9 @@ int tf_industrial_counter_get_all_signal_data(TF_IndustrialCounter *industrial_c
  * \ingroup TF_IndustrialCounter
  *
  * Activates/deactivates the counter of the given channel.
- * 
+ *
  * true = activate, false = deactivate.
- * 
+ *
  * By default all channels are activated.
  */
 int tf_industrial_counter_set_counter_active(TF_IndustrialCounter *industrial_counter, uint8_t channel, bool active);
@@ -674,9 +674,9 @@ int tf_industrial_counter_set_counter_active(TF_IndustrialCounter *industrial_co
  * \ingroup TF_IndustrialCounter
  *
  * Activates/deactivates the counter of all four channels.
- * 
+ *
  * true = activate, false = deactivate.
- * 
+ *
  * By default all channels are activated.
  */
 int tf_industrial_counter_set_all_counter_active(TF_IndustrialCounter *industrial_counter, const bool active[4]);
@@ -685,7 +685,7 @@ int tf_industrial_counter_set_all_counter_active(TF_IndustrialCounter *industria
  * \ingroup TF_IndustrialCounter
  *
  * Returns the activation state of the given channel.
- * 
+ *
  * true = activated, false = deactivated.
  */
 int tf_industrial_counter_get_counter_active(TF_IndustrialCounter *industrial_counter, uint8_t channel, bool *ret_active);
@@ -694,7 +694,7 @@ int tf_industrial_counter_get_counter_active(TF_IndustrialCounter *industrial_co
  * \ingroup TF_IndustrialCounter
  *
  * Returns the activation state of all four channels.
- * 
+ *
  * true = activated, false = deactivated.
  */
 int tf_industrial_counter_get_all_counter_active(TF_IndustrialCounter *industrial_counter, bool ret_active[4]);
@@ -703,7 +703,7 @@ int tf_industrial_counter_get_all_counter_active(TF_IndustrialCounter *industria
  * \ingroup TF_IndustrialCounter
  *
  * Sets the counter configuration for the given channel.
- * 
+ *
  * * Count Edge: Counter can count on rising, falling or both edges.
  * * Count Direction: Counter can count up or down. You can also use
  *   another channel as direction input, see
@@ -731,11 +731,11 @@ int tf_industrial_counter_get_counter_configuration(TF_IndustrialCounter *indust
  *
  * The period is the period with which the {@link tf_industrial_counter_register_all_counter_callback}
  * callback is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
  */
@@ -754,11 +754,11 @@ int tf_industrial_counter_get_all_counter_callback_configuration(TF_IndustrialCo
  *
  * The period is the period with which the {@link tf_industrial_counter_register_all_signal_data_callback}
  * callback is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
  */
@@ -792,14 +792,14 @@ int tf_industrial_counter_get_channel_led_config(TF_IndustrialCounter *industria
  * \ingroup TF_IndustrialCounter
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -810,11 +810,11 @@ int tf_industrial_counter_get_spitfp_error_count(TF_IndustrialCounter *industria
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -833,7 +833,7 @@ int tf_industrial_counter_get_bootloader_mode(TF_IndustrialCounter *industrial_c
  * Sets the firmware pointer for {@link tf_industrial_counter_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -845,9 +845,9 @@ int tf_industrial_counter_set_write_firmware_pointer(TF_IndustrialCounter *indus
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_industrial_counter_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -859,9 +859,9 @@ int tf_industrial_counter_write_firmware(TF_IndustrialCounter *industrial_counte
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_industrial_counter_set_status_led_config(TF_IndustrialCounter *industrial_counter, uint8_t config);
@@ -878,7 +878,7 @@ int tf_industrial_counter_get_status_led_config(TF_IndustrialCounter *industrial
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -890,7 +890,7 @@ int tf_industrial_counter_get_chip_temperature(TF_IndustrialCounter *industrial_
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -903,7 +903,7 @@ int tf_industrial_counter_reset(TF_IndustrialCounter *industrial_counter);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_industrial_counter_write_uid(TF_IndustrialCounter *industrial_counter, uint32_t uid);
@@ -922,11 +922,11 @@ int tf_industrial_counter_read_uid(TF_IndustrialCounter *industrial_counter, uin
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

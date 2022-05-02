@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -430,17 +430,17 @@ int tf_dc_v2_set_response_expected_all(TF_DCV2 *dc_v2, bool response_expected);
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(void *user_data) \endcode
- * 
+ *
  * This callback is triggered if either the current consumption
  * is too high (above 5A) or the temperature of the driver chip is too high
  * (above 175°C). These two possibilities are essentially the same, since the
  * temperature will reach this threshold immediately if the motor consumes too
  * much current. In case of a voltage below 3.3V (external or stack) this
  * callback is triggered as well.
- * 
+ *
  * If this callback is triggered, the driver chip gets disabled at the same time.
  * That means, {@link tf_dc_v2_set_enabled} has to be called to drive the motor again.
- * 
+ *
  * \note
  *  This callback only works in Drive/Brake mode (see {@link tf_dc_v2_set_drive_mode}). In
  *  Drive/Coast mode it is unfortunately impossible to reliably read the
@@ -456,12 +456,12 @@ int tf_dc_v2_register_emergency_shutdown_callback(TF_DCV2 *dc_v2, TF_DCV2_Emerge
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int16_t velocity, void *user_data) \endcode
- * 
+ *
  * This callback is triggered whenever a set velocity is reached. For example:
  * If a velocity of 0 is present, acceleration is set to 5000 and velocity
  * to 10000, the {@link tf_dc_v2_register_velocity_reached_callback} callback will be triggered after about
  * 2 seconds, when the set velocity is actually reached.
- * 
+ *
  * \note
  *  Since we can't get any feedback from the DC motor, this only works if the
  *  acceleration (see {@link tf_dc_v2_set_motion}) is set smaller or equal to the
@@ -478,11 +478,11 @@ int tf_dc_v2_register_velocity_reached_callback(TF_DCV2 *dc_v2, TF_DCV2_Velocity
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int16_t velocity, void *user_data) \endcode
- * 
+ *
  * This callback is triggered with the period that is set by
  * {@link tf_dc_v2_set_current_velocity_callback_configuration}. The parameter is the *current*
  * velocity used by the motor.
- * 
+ *
  * The {@link tf_dc_v2_register_current_velocity_callback} callback is only triggered after the set period
  * if there is a change in the velocity.
  */
@@ -521,7 +521,7 @@ int tf_dc_v2_get_enabled(TF_DCV2 *dc_v2, bool *ret_enabled);
  * 0 is stop and 32767 is full speed forward. Depending on the
  * acceleration (see {@link tf_dc_v2_set_motion}), the motor is not immediately
  * brought to the velocity but smoothly accelerated.
- * 
+ *
  * The velocity describes the duty cycle of the PWM with which the motor is
  * controlled, e.g. a velocity of 3277 sets a PWM with a 10% duty cycle.
  * You can not only control the duty cycle of the PWM but also the frequency,
@@ -551,11 +551,11 @@ int tf_dc_v2_get_current_velocity(TF_DCV2 *dc_v2, int16_t *ret_velocity);
  * Sets the acceleration and deceleration of the motor. It is given in *velocity/s*.
  * An acceleration of 10000 means, that every second the velocity is increased
  * by 10000 (or about 30% duty cycle).
- * 
+ *
  * For example: If the current velocity is 0 and you want to accelerate to a
  * velocity of 16000 (about 50% duty cycle) in 10 seconds, you should set
  * an acceleration of 1600.
- * 
+ *
  * If acceleration and deceleration is set to 0, there is no speed ramping, i.e. a
  * new velocity is immediately given to the motor.
  */
@@ -572,12 +572,12 @@ int tf_dc_v2_get_motion(TF_DCV2 *dc_v2, uint16_t *ret_acceleration, uint16_t *re
  * \ingroup TF_DCV2
  *
  * Executes an active full brake.
- * 
+ *
  * \warning
  *  This function is for emergency purposes,
  *  where an immediate brake is necessary. Depending on the current velocity and
  *  the strength of the motor, a full brake can be quite violent.
- * 
+ *
  * Call {@link tf_dc_v2_set_velocity} with 0 if you just want to stop the motor.
  */
 int tf_dc_v2_full_brake(TF_DCV2 *dc_v2);
@@ -586,17 +586,17 @@ int tf_dc_v2_full_brake(TF_DCV2 *dc_v2);
  * \ingroup TF_DCV2
  *
  * Sets the drive mode. Possible modes are:
- * 
+ *
  * * 0 = Drive/Brake
  * * 1 = Drive/Coast
- * 
+ *
  * These modes are different kinds of motor controls.
- * 
+ *
  * In Drive/Brake mode, the motor is always either driving or braking. There
  * is no freewheeling. Advantages are: A more linear correlation between
  * PWM and velocity, more exact accelerations and the possibility to drive
  * with slower velocities.
- * 
+ *
  * In Drive/Coast mode, the motor is always either driving or freewheeling.
  * Advantages are: Less current consumption and less demands on the motor and
  * driver chip.
@@ -618,7 +618,7 @@ int tf_dc_v2_get_drive_mode(TF_DCV2 *dc_v2, uint8_t *ret_mode);
  * is less noisy and the motor runs smoother. However, with a low frequency
  * there are less switches and therefore fewer switching losses. Also with
  * most motors lower frequencies enable higher torque.
- * 
+ *
  * If you have no idea what all this means, just ignore this function and use
  * the default frequency, it will very likely work fine.
  */
@@ -643,9 +643,9 @@ int tf_dc_v2_get_power_statistics(TF_DCV2 *dc_v2, uint16_t *ret_voltage, uint16_
  *
  * Configures the error LED to be either turned off, turned on, blink in
  * heartbeat mode or show an error.
- * 
+ *
  * If the LED is configured to show errors it has three different states:
- * 
+ *
  * * Off: No error present.
  * * 1s interval blinking: Input voltage too low (below 6V).
  * * 250ms interval blinking: Overtemperature or overcurrent.
@@ -694,11 +694,11 @@ int tf_dc_v2_get_velocity_reached_callback_configuration(TF_DCV2 *dc_v2, bool *r
  *
  * The period is the period with which the {@link tf_dc_v2_register_current_velocity_callback}
  * callback is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
  */
@@ -716,14 +716,14 @@ int tf_dc_v2_get_current_velocity_callback_configuration(TF_DCV2 *dc_v2, uint32_
  * \ingroup TF_DCV2
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -734,11 +734,11 @@ int tf_dc_v2_get_spitfp_error_count(TF_DCV2 *dc_v2, uint32_t *ret_error_count_ac
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -757,7 +757,7 @@ int tf_dc_v2_get_bootloader_mode(TF_DCV2 *dc_v2, uint8_t *ret_mode);
  * Sets the firmware pointer for {@link tf_dc_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -769,9 +769,9 @@ int tf_dc_v2_set_write_firmware_pointer(TF_DCV2 *dc_v2, uint32_t pointer);
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_dc_v2_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -783,9 +783,9 @@ int tf_dc_v2_write_firmware(TF_DCV2 *dc_v2, const uint8_t data[64], uint8_t *ret
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_dc_v2_set_status_led_config(TF_DCV2 *dc_v2, uint8_t config);
@@ -802,7 +802,7 @@ int tf_dc_v2_get_status_led_config(TF_DCV2 *dc_v2, uint8_t *ret_config);
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -814,7 +814,7 @@ int tf_dc_v2_get_chip_temperature(TF_DCV2 *dc_v2, int16_t *ret_temperature);
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -827,7 +827,7 @@ int tf_dc_v2_reset(TF_DCV2 *dc_v2);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_dc_v2_write_uid(TF_DCV2 *dc_v2, uint32_t uid);
@@ -846,11 +846,11 @@ int tf_dc_v2_read_uid(TF_DCV2 *dc_v2, uint32_t *ret_uid);
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

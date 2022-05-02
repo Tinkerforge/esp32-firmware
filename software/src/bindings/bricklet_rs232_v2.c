@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -1660,7 +1660,7 @@ int tf_rs232_v2_write(TF_RS232V2 *rs232_v2, const char *message, uint16_t messag
     if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
 
     uint32_t _stream_length = message_length;
     uint32_t _message_written = 0;
@@ -1701,7 +1701,7 @@ int tf_rs232_v2_read(TF_RS232V2 *rs232_v2, uint16_t length, char *ret_message, u
     if (rs232_v2->magic != 0x5446 || rs232_v2->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     TF_RS232V2_ReadLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
     _wrapper_data.length = length;

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -423,15 +423,15 @@ int tf_dmx_set_response_expected_all(TF_DMX *dmx, bool response_expected);
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(void *user_data) \endcode
- * 
+ *
  * This callback is triggered as soon as a new frame write is started.
  * You should send the data for the next frame directly after this callback
  * was triggered.
- * 
+ *
  * For an explanation of the general approach see {@link tf_dmx_write_frame}.
- * 
+ *
  * This callback can be enabled via {@link tf_dmx_set_frame_callback_config}.
- * 
+ *
  * This callback can only be triggered in master mode.
  */
 int tf_dmx_register_frame_started_callback(TF_DMX *dmx, TF_DMX_FrameStartedHandler handler, void *user_data);
@@ -444,15 +444,15 @@ int tf_dmx_register_frame_started_callback(TF_DMX *dmx, TF_DMX_FrameStartedHandl
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint32_t frame_number, void *user_data) \endcode
- * 
+ *
  * This callback is triggered in slave mode when a new frame was received from the DMX master
  * and it can be read out. You have to read the frame before the master has written
  * the next frame, see {@link tf_dmx_read_frame} for more details.
- * 
+ *
  * The parameter is the frame number, it is increased by one with each received frame.
- * 
+ *
  * This callback can be enabled via {@link tf_dmx_set_frame_callback_config}.
- * 
+ *
  * This callback can only be triggered in slave mode.
  */
 int tf_dmx_register_frame_available_callback(TF_DMX *dmx, TF_DMX_FrameAvailableHandler handler, void *user_data);
@@ -465,15 +465,15 @@ int tf_dmx_register_frame_available_callback(TF_DMX *dmx, TF_DMX_FrameAvailableH
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint16_t frame_length, uint16_t frame_chunk_offset, uint8_t frame_chunk_data[56], uint32_t frame_number, void *user_data) \endcode
- * 
+ *
  * This callback is called as soon as a new frame is available
  * (written by the DMX master).
- * 
+ *
  * The size of the array is equivalent to the number of channels in
  * the frame. Each byte represents one channel.
- * 
+ *
  * This callback can be enabled via {@link tf_dmx_set_frame_callback_config}.
- * 
+ *
  * This callback can only be triggered in slave mode.
  */
 int tf_dmx_register_frame_low_level_callback(TF_DMX *dmx, TF_DMX_FrameLowLevelHandler handler, void *user_data);
@@ -486,15 +486,15 @@ int tf_dmx_register_frame_low_level_callback(TF_DMX *dmx, TF_DMX_FrameLowLevelHa
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint16_t frame_length, uint16_t frame_chunk_offset, uint8_t frame_chunk_data[56], uint32_t frame_number, void *user_data) \endcode
- * 
+ *
  * This callback is called as soon as a new frame is available
  * (written by the DMX master).
- * 
+ *
  * The size of the array is equivalent to the number of channels in
  * the frame. Each byte represents one channel.
- * 
+ *
  * This callback can be enabled via {@link tf_dmx_set_frame_callback_config}.
- * 
+ *
  * This callback can only be triggered in slave mode.
  */
 int tf_dmx_register_frame_callback(TF_DMX *dmx, TF_DMX_FrameHandler handler, uint8_t *frame, void *user_data);
@@ -507,7 +507,7 @@ int tf_dmx_register_frame_callback(TF_DMX *dmx, TF_DMX_FrameHandler handler, uin
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint32_t overrun_error_count, uint32_t framing_error_count, void *user_data) \endcode
- * 
+ *
  * This callback is called if a new error occurs. It returns
  * the current overrun and framing error count.
  */
@@ -528,7 +528,7 @@ int tf_dmx_callback_tick(TF_DMX *dmx, uint32_t timeout_us);
  * \ingroup TF_DMX
  *
  * Sets the DMX mode to either master or slave.
- * 
+ *
  * Calling this function sets frame number to 0.
  */
 int tf_dmx_set_dmx_mode(TF_DMX *dmx, uint8_t dmx_mode);
@@ -544,24 +544,24 @@ int tf_dmx_get_dmx_mode(TF_DMX *dmx, uint8_t *ret_dmx_mode);
  * \ingroup TF_DMX
  *
  * Writes a DMX frame. The maximum frame size is 512 byte. Each byte represents one channel.
- * 
+ *
  * The next frame can be written after the {@link tf_dmx_register_frame_started_callback} callback was called. The frame
  * is double buffered, so a new frame can be written as soon as the writing of the prior frame
  * starts.
- * 
+ *
  * The data will be transfered when the next frame duration ends, see {@link tf_dmx_set_frame_duration}.
- * 
+ *
  * Generic approach:
- * 
+ *
  * * Set the frame duration to a value that represents the number of frames per second you want to achieve.
  * * Set channels for first frame.
  * * Wait for the {@link tf_dmx_register_frame_started_callback} callback.
  * * Set channels for next frame.
  * * Wait for the {@link tf_dmx_register_frame_started_callback} callback.
  * * and so on.
- * 
+ *
  * This approach ensures that you can set new DMX data with a fixed frame rate.
- * 
+ *
  * This function can only be called in master mode.
  */
 int tf_dmx_write_frame_low_level(TF_DMX *dmx, uint16_t frame_length, uint16_t frame_chunk_offset, const uint8_t frame_chunk_data[60]);
@@ -571,22 +571,22 @@ int tf_dmx_write_frame_low_level(TF_DMX *dmx, uint16_t frame_length, uint16_t fr
  *
  * Returns the last frame that was written by the DMX master. The size of the array
  * is equivalent to the number of channels in the frame. Each byte represents one channel.
- * 
+ *
  * The next frame is available after the {@link tf_dmx_register_frame_available_callback} callback was called.
- * 
+ *
  * Generic approach:
- * 
+ *
  * * Call {@link tf_dmx_read_frame} to get first frame.
  * * Wait for the {@link tf_dmx_register_frame_available_callback} callback.
  * * Call {@link tf_dmx_read_frame} to get second frame.
  * * Wait for the {@link tf_dmx_register_frame_available_callback} callback.
  * * and so on.
- * 
+ *
  * Instead of polling this function you can also use the {@link tf_dmx_register_frame_callback} callback.
  * You can enable it with {@link tf_dmx_set_frame_callback_config}.
- * 
+ *
  * The frame number starts at 0 and it is increased by one with each received frame.
- * 
+ *
  * This function can only be called in slave mode.
  */
 int tf_dmx_read_frame_low_level(TF_DMX *dmx, uint16_t *ret_frame_length, uint16_t *ret_frame_chunk_offset, uint8_t ret_frame_chunk_data[56], uint32_t *ret_frame_number);
@@ -595,13 +595,13 @@ int tf_dmx_read_frame_low_level(TF_DMX *dmx, uint16_t *ret_frame_length, uint16_
  * \ingroup TF_DMX
  *
  * Sets the duration of a frame.
- * 
+ *
  * Example: If you want to achieve 20 frames per second, you should
  * set the frame duration to 50ms (50ms * 20 = 1 second).
- * 
+ *
  * If you always want to send a frame as fast as possible you can set
  * this value to 0.
- * 
+ *
  * This setting is only used in master mode.
  */
 int tf_dmx_set_frame_duration(TF_DMX *dmx, uint16_t frame_duration);
@@ -625,9 +625,9 @@ int tf_dmx_get_frame_error_count(TF_DMX *dmx, uint32_t *ret_overrun_error_count,
  *
  * Sets the communication LED configuration. By default the LED shows
  * communication traffic, it flickers once for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is off.
  */
 int tf_dmx_set_communication_led_config(TF_DMX *dmx, uint8_t config);
@@ -643,13 +643,13 @@ int tf_dmx_get_communication_led_config(TF_DMX *dmx, uint8_t *ret_config);
  * \ingroup TF_DMX
  *
  * Sets the error LED configuration.
- * 
+ *
  * By default the error LED turns on if there is any error (see {@link tf_dmx_register_frame_error_count_callback}
  * callback). If you call this function with the Show-Error option again, the LED
  * will turn off until the next error occurs.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is off.
  */
 int tf_dmx_set_error_led_config(TF_DMX *dmx, uint8_t config);
@@ -667,7 +667,7 @@ int tf_dmx_get_error_led_config(TF_DMX *dmx, uint8_t *ret_config);
  * Enables/Disables the different callbacks. By default the
  * {@link tf_dmx_register_frame_started_callback} callback and {@link tf_dmx_register_frame_available_callback} callback are enabled while
  * the {@link tf_dmx_register_frame_callback} callback and {@link tf_dmx_register_frame_error_count_callback} callback are disabled.
- * 
+ *
  * If you want to use the {@link tf_dmx_register_frame_callback} callback you can enable it and disable
  * the {@link tf_dmx_register_frame_available_callback} callback at the same time. It becomes redundant in
  * this case.
@@ -685,14 +685,14 @@ int tf_dmx_get_frame_callback_config(TF_DMX *dmx, bool *ret_frame_started_callba
  * \ingroup TF_DMX
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -703,11 +703,11 @@ int tf_dmx_get_spitfp_error_count(TF_DMX *dmx, uint32_t *ret_error_count_ack_che
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -726,7 +726,7 @@ int tf_dmx_get_bootloader_mode(TF_DMX *dmx, uint8_t *ret_mode);
  * Sets the firmware pointer for {@link tf_dmx_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -738,9 +738,9 @@ int tf_dmx_set_write_firmware_pointer(TF_DMX *dmx, uint32_t pointer);
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_dmx_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -752,9 +752,9 @@ int tf_dmx_write_firmware(TF_DMX *dmx, const uint8_t data[64], uint8_t *ret_stat
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_dmx_set_status_led_config(TF_DMX *dmx, uint8_t config);
@@ -771,7 +771,7 @@ int tf_dmx_get_status_led_config(TF_DMX *dmx, uint8_t *ret_config);
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -783,7 +783,7 @@ int tf_dmx_get_chip_temperature(TF_DMX *dmx, int16_t *ret_temperature);
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -796,7 +796,7 @@ int tf_dmx_reset(TF_DMX *dmx);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_dmx_write_uid(TF_DMX *dmx, uint32_t uid);
@@ -815,11 +815,11 @@ int tf_dmx_read_uid(TF_DMX *dmx, uint32_t *ret_uid);
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */
@@ -829,24 +829,24 @@ int tf_dmx_get_identity(TF_DMX *dmx, char ret_uid[8], char ret_connected_uid[8],
  * \ingroup TF_DMX
  *
  * Writes a DMX frame. The maximum frame size is 512 byte. Each byte represents one channel.
- * 
+ *
  * The next frame can be written after the {@link tf_dmx_register_frame_started_callback} callback was called. The frame
  * is double buffered, so a new frame can be written as soon as the writing of the prior frame
  * starts.
- * 
+ *
  * The data will be transfered when the next frame duration ends, see {@link tf_dmx_set_frame_duration}.
- * 
+ *
  * Generic approach:
- * 
+ *
  * * Set the frame duration to a value that represents the number of frames per second you want to achieve.
  * * Set channels for first frame.
  * * Wait for the {@link tf_dmx_register_frame_started_callback} callback.
  * * Set channels for next frame.
  * * Wait for the {@link tf_dmx_register_frame_started_callback} callback.
  * * and so on.
- * 
+ *
  * This approach ensures that you can set new DMX data with a fixed frame rate.
- * 
+ *
  * This function can only be called in master mode.
  */
 int tf_dmx_write_frame(TF_DMX *dmx, const uint8_t *frame, uint16_t frame_length);
@@ -856,22 +856,22 @@ int tf_dmx_write_frame(TF_DMX *dmx, const uint8_t *frame, uint16_t frame_length)
  *
  * Returns the last frame that was written by the DMX master. The size of the array
  * is equivalent to the number of channels in the frame. Each byte represents one channel.
- * 
+ *
  * The next frame is available after the {@link tf_dmx_register_frame_available_callback} callback was called.
- * 
+ *
  * Generic approach:
- * 
+ *
  * * Call {@link tf_dmx_read_frame} to get first frame.
  * * Wait for the {@link tf_dmx_register_frame_available_callback} callback.
  * * Call {@link tf_dmx_read_frame} to get second frame.
  * * Wait for the {@link tf_dmx_register_frame_available_callback} callback.
  * * and so on.
- * 
+ *
  * Instead of polling this function you can also use the {@link tf_dmx_register_frame_callback} callback.
  * You can enable it with {@link tf_dmx_set_frame_callback_config}.
- * 
+ *
  * The frame number starts at 0 and it is increased by one with each received frame.
- * 
+ *
  * This function can only be called in slave mode.
  */
 int tf_dmx_read_frame(TF_DMX *dmx, uint8_t *ret_frame, uint16_t *ret_frame_length, uint32_t *ret_frame_number);

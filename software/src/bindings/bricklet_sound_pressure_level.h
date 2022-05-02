@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -405,10 +405,10 @@ int tf_sound_pressure_level_set_response_expected_all(TF_SoundPressureLevel *sou
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint16_t decibel, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_sound_pressure_level_set_decibel_callback_configuration}.
- * 
+ *
  * The parameter is the same as {@link tf_sound_pressure_level_get_decibel}.
  */
 int tf_sound_pressure_level_register_decibel_callback(TF_SoundPressureLevel *sound_pressure_level, TF_SoundPressureLevel_DecibelHandler handler, void *user_data);
@@ -421,10 +421,10 @@ int tf_sound_pressure_level_register_decibel_callback(TF_SoundPressureLevel *sou
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint16_t spectrum_length, uint16_t spectrum_chunk_offset, uint16_t spectrum_chunk_data[30], void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_sound_pressure_level_set_spectrum_callback_configuration}.
- * 
+ *
  * The parameter is the same as {@link tf_sound_pressure_level_get_spectrum}.
  */
 int tf_sound_pressure_level_register_spectrum_low_level_callback(TF_SoundPressureLevel *sound_pressure_level, TF_SoundPressureLevel_SpectrumLowLevelHandler handler, void *user_data);
@@ -437,10 +437,10 @@ int tf_sound_pressure_level_register_spectrum_low_level_callback(TF_SoundPressur
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint16_t spectrum_length, uint16_t spectrum_chunk_offset, uint16_t spectrum_chunk_data[30], void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_sound_pressure_level_set_spectrum_callback_configuration}.
- * 
+ *
  * The parameter is the same as {@link tf_sound_pressure_level_get_spectrum}.
  */
 int tf_sound_pressure_level_register_spectrum_callback(TF_SoundPressureLevel *sound_pressure_level, TF_SoundPressureLevel_SpectrumHandler handler, uint16_t *spectrum, void *user_data);
@@ -460,13 +460,13 @@ int tf_sound_pressure_level_callback_tick(TF_SoundPressureLevel *sound_pressure_
  * \ingroup TF_SoundPressureLevel
  *
  * Returns the measured sound pressure in decibels.
- * 
+ *
  * The Bricklet supports the weighting standards dB(A), dB(B), dB(C), dB(D),
  * dB(Z) and ITU-R 468. You can configure the weighting with {@link tf_sound_pressure_level_set_configuration}.
- * 
+ *
  * By default dB(A) will be used.
- * 
- * 
+ *
+ *
  * If you want to get the value periodically, it is recommended to use the
  * {@link tf_sound_pressure_level_register_decibel_callback} callback. You can set the callback configuration
  * with {@link tf_sound_pressure_level_set_decibel_callback_configuration}.
@@ -478,30 +478,30 @@ int tf_sound_pressure_level_get_decibel(TF_SoundPressureLevel *sound_pressure_le
  *
  * The period is the period with which the {@link tf_sound_pressure_level_register_decibel_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change
  * within the period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
- * 
+ *
  * It is furthermore possible to constrain the callback with thresholds.
- * 
+ *
  * The `option`-parameter together with min/max sets a threshold for the {@link tf_sound_pressure_level_register_decibel_callback} callback.
- * 
+ *
  * The following options are possible:
- * 
+ *
  * \verbatim
  *  "Option", "Description"
- * 
+ *
  *  "'x'",    "Threshold is turned off"
  *  "'o'",    "Threshold is triggered when the value is *outside* the min and max values"
  *  "'i'",    "Threshold is triggered when the value is *inside* or equal to the min and max values"
  *  "'<'",    "Threshold is triggered when the value is smaller than the min value (max is ignored)"
  *  "'>'",    "Threshold is triggered when the value is greater than the min value (max is ignored)"
  * \endverbatim
- * 
+ *
  * If the option is set to 'x' (threshold turned off) the callback is triggered with the fixed period.
  */
 int tf_sound_pressure_level_set_decibel_callback_configuration(TF_SoundPressureLevel *sound_pressure_level, uint32_t period, bool value_has_to_change, char option, uint16_t min, uint16_t max);
@@ -518,19 +518,19 @@ int tf_sound_pressure_level_get_decibel_callback_configuration(TF_SoundPressureL
  *
  * Returns the frequency spectrum. The length of the spectrum is between
  * 512 (FFT size 1024) and 64 (FFT size 128). See {@link tf_sound_pressure_level_set_configuration}.
- * 
+ *
  * Each array element is one bin of the FFT. The first bin is always the
  * DC offset and the other bins have a size between 40Hz (FFT size 1024) and
  * 320Hz (FFT size 128).
- * 
+ *
  * In sum the frequency of the spectrum always has a range from 0 to
  * 20480Hz (the FFT is applied to samples with a frequency of 40960Hz).
- * 
+ *
  * The returned data is already equalized, which means that the microphone
  * frequency response is compensated and the weighting function is applied
  * (see {@link tf_sound_pressure_level_set_configuration} for the available weighting standards). Use
  * dB(Z) if you need the unaltered spectrum.
- * 
+ *
  * The values are not in dB form yet. If you want a proper dB scale of the
  * spectrum you have to apply the formula f(x) = 20*log10(max(1, x/sqrt(2)))
  * on each value.
@@ -542,7 +542,7 @@ int tf_sound_pressure_level_get_spectrum_low_level(TF_SoundPressureLevel *sound_
  *
  * The period is the period with which the {@link tf_sound_pressure_level_register_spectrum_callback} callback is
  * triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * Every new measured spectrum will be send at most once. Set the period to 1 to
  * make sure that you get every spectrum.
  */
@@ -560,22 +560,22 @@ int tf_sound_pressure_level_get_spectrum_callback_configuration(TF_SoundPressure
  * \ingroup TF_SoundPressureLevel
  *
  * Sets the Sound Pressure Level Bricklet configuration.
- * 
+ *
  * With different FFT sizes the Bricklet has a different
  * amount of samples per second and the size of the FFT bins
  * changes. The higher the FFT size the more precise is the result
  * of the dB(X) calculation.
- * 
+ *
  * Available FFT sizes are:
- * 
+ *
  * * 1024: 512 bins, 10 samples per second, each bin has size 40Hz
  * * 512: 256 bins, 20 samples per second, each bin has size 80Hz
  * * 256: 128 bins, 40 samples per second, each bin has size 160Hz
  * * 128: 64 bins, 80 samples per second, each bin has size 320Hz
- * 
+ *
  * The Bricklet supports different weighting functions. You can choose
  * between dB(A), dB(B), dB(C), dB(D), dB(Z) and ITU-R 468.
- * 
+ *
  * dB(A/B/C/D) are the standard dB weighting curves. dB(A) is
  * often used to measure volumes at concerts etc. dB(Z) has a
  * flat response, no weighting is applied. ITU-R 468 is an ITU
@@ -594,14 +594,14 @@ int tf_sound_pressure_level_get_configuration(TF_SoundPressureLevel *sound_press
  * \ingroup TF_SoundPressureLevel
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -612,11 +612,11 @@ int tf_sound_pressure_level_get_spitfp_error_count(TF_SoundPressureLevel *sound_
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -635,7 +635,7 @@ int tf_sound_pressure_level_get_bootloader_mode(TF_SoundPressureLevel *sound_pre
  * Sets the firmware pointer for {@link tf_sound_pressure_level_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -647,9 +647,9 @@ int tf_sound_pressure_level_set_write_firmware_pointer(TF_SoundPressureLevel *so
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_sound_pressure_level_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -661,9 +661,9 @@ int tf_sound_pressure_level_write_firmware(TF_SoundPressureLevel *sound_pressure
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_sound_pressure_level_set_status_led_config(TF_SoundPressureLevel *sound_pressure_level, uint8_t config);
@@ -680,7 +680,7 @@ int tf_sound_pressure_level_get_status_led_config(TF_SoundPressureLevel *sound_p
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -692,7 +692,7 @@ int tf_sound_pressure_level_get_chip_temperature(TF_SoundPressureLevel *sound_pr
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -705,7 +705,7 @@ int tf_sound_pressure_level_reset(TF_SoundPressureLevel *sound_pressure_level);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_sound_pressure_level_write_uid(TF_SoundPressureLevel *sound_pressure_level, uint32_t uid);
@@ -724,11 +724,11 @@ int tf_sound_pressure_level_read_uid(TF_SoundPressureLevel *sound_pressure_level
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */
@@ -739,19 +739,19 @@ int tf_sound_pressure_level_get_identity(TF_SoundPressureLevel *sound_pressure_l
  *
  * Returns the frequency spectrum. The length of the spectrum is between
  * 512 (FFT size 1024) and 64 (FFT size 128). See {@link tf_sound_pressure_level_set_configuration}.
- * 
+ *
  * Each array element is one bin of the FFT. The first bin is always the
  * DC offset and the other bins have a size between 40Hz (FFT size 1024) and
  * 320Hz (FFT size 128).
- * 
+ *
  * In sum the frequency of the spectrum always has a range from 0 to
  * 20480Hz (the FFT is applied to samples with a frequency of 40960Hz).
- * 
+ *
  * The returned data is already equalized, which means that the microphone
  * frequency response is compensated and the weighting function is applied
  * (see {@link tf_sound_pressure_level_set_configuration} for the available weighting standards). Use
  * dB(Z) if you need the unaltered spectrum.
- * 
+ *
  * The values are not in dB form yet. If you want a proper dB scale of the
  * spectrum you have to apply the formula f(x) = 20*log10(max(1, x/sqrt(2)))
  * on each value.

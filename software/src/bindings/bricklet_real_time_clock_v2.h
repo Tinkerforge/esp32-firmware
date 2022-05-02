@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -376,7 +376,7 @@ int tf_real_time_clock_v2_set_response_expected_all(TF_RealTimeClockV2 *real_tim
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second, uint8_t centisecond, uint8_t weekday, int64_t timestamp, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically with the period that is set by
  * {@link tf_real_time_clock_v2_set_date_time_callback_configuration}. The parameters are the
  * same as for {@link tf_real_time_clock_v2_get_date_time}.
@@ -391,7 +391,7 @@ int tf_real_time_clock_v2_register_date_time_callback(TF_RealTimeClockV2 *real_t
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second, uint8_t centisecond, uint8_t weekday, int64_t timestamp, void *user_data) \endcode
- * 
+ *
  * This callback is triggered every time the current date and time matches the
  * configured alarm (see {@link tf_real_time_clock_v2_set_alarm}). The parameters are the same
  * as for {@link tf_real_time_clock_v2_get_date_time}.
@@ -413,10 +413,10 @@ int tf_real_time_clock_v2_callback_tick(TF_RealTimeClockV2 *real_time_clock_v2, 
  * \ingroup TF_RealTimeClockV2
  *
  * Sets the current date (including weekday) and the current time.
- * 
+ *
  * If the backup battery is installed then the real-time clock keeps date and
  * time even if the Bricklet is not powered by a Brick.
- * 
+ *
  * The real-time clock handles leap year and inserts the 29th of February
  * accordingly. But leap seconds, time zones and daylight saving time are not
  * handled.
@@ -428,7 +428,7 @@ int tf_real_time_clock_v2_set_date_time(TF_RealTimeClockV2 *real_time_clock_v2, 
  *
  * Returns the current date (including weekday) and the current time of the
  * real-time.
- * 
+ *
  * The timestamp represents the current date and the the current time of the
  * real-time clock converted to milliseconds and is an offset to 2000-01-01 00:00:00.0000.
  */
@@ -448,27 +448,27 @@ int tf_real_time_clock_v2_get_timestamp(TF_RealTimeClockV2 *real_time_clock_v2, 
  *
  * Sets the offset the real-time clock should compensate for in 2.17 ppm steps
  * between -277.76 ppm (-128) and +275.59 ppm (127).
- * 
+ *
  * The real-time clock time can deviate from the actual time due to the frequency
  * deviation of its 32.768 kHz crystal. Even without compensation (factory
  * default) the resulting time deviation should be at most ±20 ppm (±52.6
  * seconds per month).
- * 
+ *
  * This deviation can be calculated by comparing the same duration measured by the
  * real-time clock (``rtc_duration``) an accurate reference clock
  * (``ref_duration``).
- * 
+ *
  * For best results the configured offset should be set to 0 ppm first and then a
  * duration of at least 6 hours should be measured.
- * 
+ *
  * The new offset (``new_offset``) can be calculated from the currently configured
  * offset (``current_offset``) and the measured durations as follow::
- * 
+ *
  *   new_offset = current_offset - round(1000000 * (rtc_duration - ref_duration) / rtc_duration / 2.17)
- * 
+ *
  * If you want to calculate the offset, then we recommend using the calibration
  * dialog in Brick Viewer, instead of doing it manually.
- * 
+ *
  * The offset is saved in the EEPROM of the Bricklet and only needs to be
  * configured once.
  */
@@ -501,15 +501,15 @@ int tf_real_time_clock_v2_get_date_time_callback_configuration(TF_RealTimeClockV
  *
  * Configures a repeatable alarm. The {@link tf_real_time_clock_v2_register_alarm_callback} callback is triggered if the
  * current date and time matches the configured alarm.
- * 
+ *
  * Setting a parameter to -1 means that it should be disabled and doesn't take part
  * in the match. Setting all parameters to -1 disables the alarm completely.
- * 
+ *
  * For example, to make the alarm trigger every day at 7:30 AM it can be
  * configured as (-1, -1, 7, 30, -1, -1, -1). The hour is set to match 7 and the
  * minute is set to match 30. The alarm is triggered if all enabled parameters
  * match.
- * 
+ *
  * The interval has a special role. It allows to make the alarm reconfigure itself.
  * This is useful if you need a repeated alarm that cannot be expressed by matching
  * the current date and time. For example, to make the alarm trigger every 23
@@ -519,7 +519,7 @@ int tf_real_time_clock_v2_get_date_time_callback_configuration(TF_RealTimeClockV
  * call. Because the interval is not -1, the Bricklet will do the same again
  * internally, take the current date and time, add 23 seconds to it and set that
  * as its alarm. This results in a repeated alarm that triggers every 23 seconds.
- * 
+ *
  * The interval can also be used in combination with the other parameters. For
  * example, configuring the alarm as (-1, -1, 7, 30, -1, -1, 300) results in an
  * alarm that triggers every day at 7:30 AM and is then repeated every 5 minutes.
@@ -537,14 +537,14 @@ int tf_real_time_clock_v2_get_alarm(TF_RealTimeClockV2 *real_time_clock_v2, int8
  * \ingroup TF_RealTimeClockV2
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -555,11 +555,11 @@ int tf_real_time_clock_v2_get_spitfp_error_count(TF_RealTimeClockV2 *real_time_c
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -578,7 +578,7 @@ int tf_real_time_clock_v2_get_bootloader_mode(TF_RealTimeClockV2 *real_time_cloc
  * Sets the firmware pointer for {@link tf_real_time_clock_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -590,9 +590,9 @@ int tf_real_time_clock_v2_set_write_firmware_pointer(TF_RealTimeClockV2 *real_ti
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_real_time_clock_v2_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -604,9 +604,9 @@ int tf_real_time_clock_v2_write_firmware(TF_RealTimeClockV2 *real_time_clock_v2,
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_real_time_clock_v2_set_status_led_config(TF_RealTimeClockV2 *real_time_clock_v2, uint8_t config);
@@ -623,7 +623,7 @@ int tf_real_time_clock_v2_get_status_led_config(TF_RealTimeClockV2 *real_time_cl
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -635,7 +635,7 @@ int tf_real_time_clock_v2_get_chip_temperature(TF_RealTimeClockV2 *real_time_clo
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -648,7 +648,7 @@ int tf_real_time_clock_v2_reset(TF_RealTimeClockV2 *real_time_clock_v2);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_real_time_clock_v2_write_uid(TF_RealTimeClockV2 *real_time_clock_v2, uint32_t uid);
@@ -667,11 +667,11 @@ int tf_real_time_clock_v2_read_uid(TF_RealTimeClockV2 *real_time_clock_v2, uint3
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

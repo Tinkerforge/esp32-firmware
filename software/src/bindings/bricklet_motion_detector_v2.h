@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -321,7 +321,7 @@ int tf_motion_detector_v2_set_response_expected_all(TF_MotionDetectorV2 *motion_
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(void *user_data) \endcode
- * 
+ *
  * This callback is called after a motion was detected.
  */
 int tf_motion_detector_v2_register_motion_detected_callback(TF_MotionDetectorV2 *motion_detector_v2, TF_MotionDetectorV2_MotionDetectedHandler handler, void *user_data);
@@ -334,7 +334,7 @@ int tf_motion_detector_v2_register_motion_detected_callback(TF_MotionDetectorV2 
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(void *user_data) \endcode
- * 
+ *
  * This callback is called when the detection cycle ended. When this
  * callback is called, a new motion can be detected again after approximately 2
  * seconds.
@@ -365,11 +365,11 @@ int tf_motion_detector_v2_get_motion_detected(TF_MotionDetectorV2 *motion_detect
  *
  * Sets the sensitivity of the PIR sensor. At full
  * sensitivity (100), the Bricklet can detect motion in a range of approximately 12m.
- * 
+ *
  * The actual range depends on many things in the environment (e.g. reflections) and the
  * size of the object to be detected. While a big person might be detected in a range
  * of 10m a cat may only be detected at 2m distance with the same setting.
- * 
+ *
  * So you will have to find a good sensitivity for your application by trial and error.
  */
 int tf_motion_detector_v2_set_sensitivity(TF_MotionDetectorV2 *motion_detector_v2, uint8_t sensitivity);
@@ -402,14 +402,14 @@ int tf_motion_detector_v2_get_indicator(TF_MotionDetectorV2 *motion_detector_v2,
  * \ingroup TF_MotionDetectorV2
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -420,11 +420,11 @@ int tf_motion_detector_v2_get_spitfp_error_count(TF_MotionDetectorV2 *motion_det
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -443,7 +443,7 @@ int tf_motion_detector_v2_get_bootloader_mode(TF_MotionDetectorV2 *motion_detect
  * Sets the firmware pointer for {@link tf_motion_detector_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -455,9 +455,9 @@ int tf_motion_detector_v2_set_write_firmware_pointer(TF_MotionDetectorV2 *motion
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_motion_detector_v2_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -469,9 +469,9 @@ int tf_motion_detector_v2_write_firmware(TF_MotionDetectorV2 *motion_detector_v2
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_motion_detector_v2_set_status_led_config(TF_MotionDetectorV2 *motion_detector_v2, uint8_t config);
@@ -488,7 +488,7 @@ int tf_motion_detector_v2_get_status_led_config(TF_MotionDetectorV2 *motion_dete
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -500,7 +500,7 @@ int tf_motion_detector_v2_get_chip_temperature(TF_MotionDetectorV2 *motion_detec
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -513,7 +513,7 @@ int tf_motion_detector_v2_reset(TF_MotionDetectorV2 *motion_detector_v2);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_motion_detector_v2_write_uid(TF_MotionDetectorV2 *motion_detector_v2, uint32_t uid);
@@ -532,11 +532,11 @@ int tf_motion_detector_v2_read_uid(TF_MotionDetectorV2 *motion_detector_v2, uint
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

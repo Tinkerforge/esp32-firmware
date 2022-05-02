@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -1350,7 +1350,7 @@ int tf_sound_pressure_level_get_spectrum(TF_SoundPressureLevel *sound_pressure_l
     if (sound_pressure_level->magic != 0x5446 || sound_pressure_level->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     uint32_t _spectrum_length = 0;
     uint16_t _spectrum_chunk_data[30];
 

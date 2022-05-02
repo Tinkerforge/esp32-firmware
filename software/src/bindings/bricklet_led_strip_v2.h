@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -517,13 +517,13 @@ int tf_led_strip_v2_set_response_expected_all(TF_LEDStripV2 *led_strip_v2, bool 
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint16_t length, void *user_data) \endcode
- * 
+ *
  * This callback is triggered directly after a new frame render is started.
  * The parameter is the number of LEDs in that frame.
- * 
+ *
  * You should send the data for the next frame directly after this callback
  * was triggered.
- * 
+ *
  * For an explanation of the general approach see {@link tf_led_strip_v2_set_led_values}.
  */
 int tf_led_strip_v2_register_frame_started_callback(TF_LEDStripV2 *led_strip_v2, TF_LEDStripV2_FrameStartedHandler handler, void *user_data);
@@ -544,20 +544,20 @@ int tf_led_strip_v2_callback_tick(TF_LEDStripV2 *led_strip_v2, uint32_t timeout_
  *
  * Sets the RGB(W) values for the LEDs starting from *index*.
  * You can set at most 2048 RGB values or 1536 RGBW values (6144 byte each).
- * 
+ *
  * To make the colors show correctly you need to configure the chip type
  * (see {@link tf_led_strip_v2_set_chip_type}) and a channel mapping (see {@link tf_led_strip_v2_set_channel_mapping})
  * according to the connected LEDs.
- * 
+ *
  * If the channel mapping has 3 colors, you need to give the data in the sequence
  * RGBRGBRGB... if the channel mapping has 4 colors you need to give data in the
  * sequence RGBWRGBWRGBW...
- * 
+ *
  * The data is double buffered and the colors will be transfered to the
  * LEDs when the next frame duration ends (see {@link tf_led_strip_v2_set_frame_duration}).
- * 
+ *
  * Generic approach:
- * 
+ *
  * * Set the frame duration to a value that represents the number of frames per
  *   second you want to achieve.
  * * Set all of the LED colors for one frame.
@@ -565,7 +565,7 @@ int tf_led_strip_v2_callback_tick(TF_LEDStripV2 *led_strip_v2, uint32_t timeout_
  * * Set all of the LED colors for next frame.
  * * Wait for the {@link tf_led_strip_v2_register_frame_started_callback} callback.
  * * And so on.
- * 
+ *
  * This approach ensures that you can change the LED colors with a fixed frame rate.
  */
 int tf_led_strip_v2_set_led_values_low_level(TF_LEDStripV2 *led_strip_v2, uint16_t index, uint16_t value_length, uint16_t value_chunk_offset, const uint8_t value_chunk_data[58]);
@@ -575,7 +575,7 @@ int tf_led_strip_v2_set_led_values_low_level(TF_LEDStripV2 *led_strip_v2, uint16
  *
  * Returns *length* RGB(W) values starting from the
  * given *index*.
- * 
+ *
  * If the channel mapping has 3 colors, you will get the data in the sequence
  * RGBRGBRGB... if the channel mapping has 4 colors you will get the data in the
  * sequence RGBWRGBWRGBW...
@@ -587,12 +587,12 @@ int tf_led_strip_v2_get_led_values_low_level(TF_LEDStripV2 *led_strip_v2, uint16
  * \ingroup TF_LEDStripV2
  *
  * Sets the frame duration.
- * 
+ *
  * Example: If you want to achieve 20 frames per second, you should
  * set the frame duration to 50ms (50ms * 20 = 1 second).
- * 
+ *
  * For an explanation of the general approach see {@link tf_led_strip_v2_set_led_values}.
- * 
+ *
  * Default value: 100ms (10 frames per second).
  */
 int tf_led_strip_v2_set_frame_duration(TF_LEDStripV2 *led_strip_v2, uint16_t duration);
@@ -615,15 +615,15 @@ int tf_led_strip_v2_get_supply_voltage(TF_LEDStripV2 *led_strip_v2, uint16_t *re
  * \ingroup TF_LEDStripV2
  *
  * Sets the frequency of the clock.
- * 
+ *
  * The Bricklet will choose the nearest achievable frequency, which may
  * be off by a few Hz. You can get the exact frequency that is used by
  * calling {@link tf_led_strip_v2_get_clock_frequency}.
- * 
+ *
  * If you have problems with flickering LEDs, they may be bits flipping. You
  * can fix this by either making the connection between the LEDs and the
  * Bricklet shorter or by reducing the frequency.
- * 
+ *
  * With a decreasing frequency your maximum frames per second will decrease
  * too.
  */
@@ -640,7 +640,7 @@ int tf_led_strip_v2_get_clock_frequency(TF_LEDStripV2 *led_strip_v2, uint32_t *r
  * \ingroup TF_LEDStripV2
  *
  * Sets the type of the LED driver chip. We currently support the chips
- * 
+ *
  * * WS2801,
  * * WS2811,
  * * WS2812 / SK6812 / NeoPixel RGB,
@@ -662,15 +662,15 @@ int tf_led_strip_v2_get_chip_type(TF_LEDStripV2 *led_strip_v2, uint16_t *ret_chi
  * \ingroup TF_LEDStripV2
  *
  * Sets the channel mapping for the connected LEDs.
- * 
+ *
  * If the mapping has 4 colors, the function {@link tf_led_strip_v2_set_led_values} expects 4
  * values per pixel and if the mapping has 3 colors it expects 3 values per pixel.
- * 
+ *
  * The function always expects the order RGB(W). The connected LED driver chips
  * might have their 3 or 4 channels in a different order. For example, the WS2801
  * chips typically use BGR order, then WS2812 chips typically use GRB order and
  * the APA102 chips typically use WBGR order.
- * 
+ *
  * The APA102 chips are special. They have three 8-bit channels for RGB
  * and an additional 5-bit channel for the overall brightness of the RGB LED
  * making them 4-channel chips. Internally the brightness channel is the first
@@ -705,14 +705,14 @@ int tf_led_strip_v2_get_frame_started_callback_configuration(TF_LEDStripV2 *led_
  * \ingroup TF_LEDStripV2
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -723,11 +723,11 @@ int tf_led_strip_v2_get_spitfp_error_count(TF_LEDStripV2 *led_strip_v2, uint32_t
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -746,7 +746,7 @@ int tf_led_strip_v2_get_bootloader_mode(TF_LEDStripV2 *led_strip_v2, uint8_t *re
  * Sets the firmware pointer for {@link tf_led_strip_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -758,9 +758,9 @@ int tf_led_strip_v2_set_write_firmware_pointer(TF_LEDStripV2 *led_strip_v2, uint
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_led_strip_v2_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -772,9 +772,9 @@ int tf_led_strip_v2_write_firmware(TF_LEDStripV2 *led_strip_v2, const uint8_t da
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_led_strip_v2_set_status_led_config(TF_LEDStripV2 *led_strip_v2, uint8_t config);
@@ -791,7 +791,7 @@ int tf_led_strip_v2_get_status_led_config(TF_LEDStripV2 *led_strip_v2, uint8_t *
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -803,7 +803,7 @@ int tf_led_strip_v2_get_chip_temperature(TF_LEDStripV2 *led_strip_v2, int16_t *r
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -816,7 +816,7 @@ int tf_led_strip_v2_reset(TF_LEDStripV2 *led_strip_v2);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_led_strip_v2_write_uid(TF_LEDStripV2 *led_strip_v2, uint32_t uid);
@@ -835,11 +835,11 @@ int tf_led_strip_v2_read_uid(TF_LEDStripV2 *led_strip_v2, uint32_t *ret_uid);
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */
@@ -850,20 +850,20 @@ int tf_led_strip_v2_get_identity(TF_LEDStripV2 *led_strip_v2, char ret_uid[8], c
  *
  * Sets the RGB(W) values for the LEDs starting from *index*.
  * You can set at most 2048 RGB values or 1536 RGBW values (6144 byte each).
- * 
+ *
  * To make the colors show correctly you need to configure the chip type
  * (see {@link tf_led_strip_v2_set_chip_type}) and a channel mapping (see {@link tf_led_strip_v2_set_channel_mapping})
  * according to the connected LEDs.
- * 
+ *
  * If the channel mapping has 3 colors, you need to give the data in the sequence
  * RGBRGBRGB... if the channel mapping has 4 colors you need to give data in the
  * sequence RGBWRGBWRGBW...
- * 
+ *
  * The data is double buffered and the colors will be transfered to the
  * LEDs when the next frame duration ends (see {@link tf_led_strip_v2_set_frame_duration}).
- * 
+ *
  * Generic approach:
- * 
+ *
  * * Set the frame duration to a value that represents the number of frames per
  *   second you want to achieve.
  * * Set all of the LED colors for one frame.
@@ -871,7 +871,7 @@ int tf_led_strip_v2_get_identity(TF_LEDStripV2 *led_strip_v2, char ret_uid[8], c
  * * Set all of the LED colors for next frame.
  * * Wait for the {@link tf_led_strip_v2_register_frame_started_callback} callback.
  * * And so on.
- * 
+ *
  * This approach ensures that you can change the LED colors with a fixed frame rate.
  */
 int tf_led_strip_v2_set_led_values(TF_LEDStripV2 *led_strip_v2, uint16_t index, const uint8_t *value, uint16_t value_length);
@@ -881,7 +881,7 @@ int tf_led_strip_v2_set_led_values(TF_LEDStripV2 *led_strip_v2, uint16_t index, 
  *
  * Returns *length* RGB(W) values starting from the
  * given *index*.
- * 
+ *
  * If the channel mapping has 3 colors, you will get the data in the sequence
  * RGBRGBRGB... if the channel mapping has 4 colors you will get the data in the
  * sequence RGBWRGBWRGBW...

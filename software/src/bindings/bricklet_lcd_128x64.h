@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-04-19.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -688,7 +688,7 @@ int tf_lcd_128x64_set_response_expected_all(TF_LCD128x64 *lcd_128x64, bool respo
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint16_t pressure, uint16_t x, uint16_t y, uint32_t age, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically with the period that is set by
  * {@link tf_lcd_128x64_set_touch_position_callback_configuration}. The parameters are the
  * same as for {@link tf_lcd_128x64_get_touch_position}.
@@ -703,7 +703,7 @@ int tf_lcd_128x64_register_touch_position_callback(TF_LCD128x64 *lcd_128x64, TF_
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint8_t gesture, uint32_t duration, uint16_t pressure_max, uint16_t x_start, uint16_t y_start, uint16_t x_end, uint16_t y_end, uint32_t age, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically with the period that is set by
  * {@link tf_lcd_128x64_set_touch_gesture_callback_configuration}. The parameters are the
  * same as for {@link tf_lcd_128x64_get_touch_gesture}.
@@ -718,11 +718,11 @@ int tf_lcd_128x64_register_touch_gesture_callback(TF_LCD128x64 *lcd_128x64, TF_L
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint8_t index, bool pressed, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically with the period that is set by
  * {@link tf_lcd_128x64_set_gui_button_pressed_callback_configuration}. The parameters are the
  * same as for {@link tf_lcd_128x64_get_gui_button_pressed}.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_register_gui_button_pressed_callback(TF_LCD128x64 *lcd_128x64, TF_LCD128x64_GUIButtonPressedHandler handler, void *user_data);
@@ -735,11 +735,11 @@ int tf_lcd_128x64_register_gui_button_pressed_callback(TF_LCD128x64 *lcd_128x64,
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint8_t index, uint8_t value, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically with the period that is set by
  * {@link tf_lcd_128x64_set_gui_slider_value_callback_configuration}. The parameters are the
  * same as for {@link tf_lcd_128x64_get_gui_slider_value}.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_register_gui_slider_value_callback(TF_LCD128x64 *lcd_128x64, TF_LCD128x64_GUISliderValueHandler handler, void *user_data);
@@ -752,11 +752,11 @@ int tf_lcd_128x64_register_gui_slider_value_callback(TF_LCD128x64 *lcd_128x64, T
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int8_t index, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically with the period that is set by
  * {@link tf_lcd_128x64_set_gui_tab_selected_callback_configuration}. The parameters are the
  * same as for {@link tf_lcd_128x64_get_gui_tab_selected}.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_register_gui_tab_selected_callback(TF_LCD128x64 *lcd_128x64, TF_LCD128x64_GUITabSelectedHandler handler, void *user_data);
@@ -776,19 +776,19 @@ int tf_lcd_128x64_callback_tick(TF_LCD128x64 *lcd_128x64, uint32_t timeout_us);
  * \ingroup TF_LCD128x64
  *
  * Writes pixels to the specified window.
- * 
+ *
  * The pixels are written into the window line by line top to bottom
  * and each line is written from left to right.
- * 
+ *
  * If automatic draw is enabled (default) the pixels are directly written to
  * the screen. Only pixels that have actually changed are updated on the screen,
  * the rest stays the same.
- * 
+ *
  * If automatic draw is disabled the pixels are written to an internal buffer and
  * the buffer is transferred to the display only after {@link tf_lcd_128x64_draw_buffered_frame}
  * is called. This can be used to avoid flicker when drawing a complex frame in
  * multiple steps.
- * 
+ *
  * Automatic draw can be configured with the {@link tf_lcd_128x64_set_display_configuration}
  * function.
  */
@@ -798,16 +798,16 @@ int tf_lcd_128x64_write_pixels_low_level(TF_LCD128x64 *lcd_128x64, uint8_t x_sta
  * \ingroup TF_LCD128x64
  *
  * Reads pixels from the specified window.
- * 
+ *
  * The pixels are read from the window line by line top to bottom
  * and each line is read from left to right.
- * 
+ *
  * If automatic draw is enabled (default) the pixels that are read are always the
  * same that are shown on the display.
- * 
+ *
  * If automatic draw is disabled the pixels are read from the internal buffer
  * (see {@link tf_lcd_128x64_draw_buffered_frame}).
- * 
+ *
  * Automatic draw can be configured with the {@link tf_lcd_128x64_set_display_configuration}
  * function.
  */
@@ -817,14 +817,14 @@ int tf_lcd_128x64_read_pixels_low_level(TF_LCD128x64 *lcd_128x64, uint8_t x_star
  * \ingroup TF_LCD128x64
  *
  * Clears the complete content of the display.
- * 
+ *
  * If automatic draw is enabled (default) the pixels are directly cleared.
- * 
+ *
  * If automatic draw is disabled the the internal buffer is cleared and
  * the buffer is transferred to the display only after {@link tf_lcd_128x64_draw_buffered_frame}
  * is called. This can be used to avoid flicker when drawing a complex frame in
  * multiple steps.
- * 
+ *
  * Automatic draw can be configured with the {@link tf_lcd_128x64_set_display_configuration}
  * function.
  */
@@ -834,7 +834,7 @@ int tf_lcd_128x64_clear_display(TF_LCD128x64 *lcd_128x64);
  * \ingroup TF_LCD128x64
  *
  * Sets the configuration of the display.
- * 
+ *
  * If automatic draw is set to *true*, the display is automatically updated with every
  * call of {@link tf_lcd_128x64_write_pixels} and {@link tf_lcd_128x64_write_line}. If it is set to false, the
  * changes are written into an internal buffer and only shown on the display after
@@ -853,25 +853,25 @@ int tf_lcd_128x64_get_display_configuration(TF_LCD128x64 *lcd_128x64, uint8_t *r
  * \ingroup TF_LCD128x64
  *
  * Writes text to a specific line with a specific position.
- * 
+ *
  * For example: (1, 10, "Hello") will write *Hello* in the middle of the
  * second line of the display.
- * 
+ *
  * The display uses a special 5x7 pixel charset. You can view the characters
  * of the charset in Brick Viewer.
- * 
+ *
  * If automatic draw is enabled (default) the text is directly written to
  * the screen. Only pixels that have actually changed are updated on the screen,
  * the rest stays the same.
- * 
+ *
  * If automatic draw is disabled the text is written to an internal buffer and
  * the buffer is transferred to the display only after {@link tf_lcd_128x64_draw_buffered_frame}
  * is called. This can be used to avoid flicker when drawing a complex frame in
  * multiple steps.
- * 
+ *
  * Automatic draw can be configured with the {@link tf_lcd_128x64_set_display_configuration}
  * function.
- * 
+ *
  * This function is a 1:1 replacement for the function with the same name
  * in the LCD 20x4 Bricklet. You can draw text at a specific pixel position
  * and with different font sizes with the {@link tf_lcd_128x64_draw_text} function.
@@ -886,7 +886,7 @@ int tf_lcd_128x64_write_line(TF_LCD128x64 *lcd_128x64, uint8_t line, uint8_t pos
  * ({@link tf_lcd_128x64_set_display_configuration}), the data is written in an internal buffer and
  * only transferred to the display by calling this function. This can be used to
  * avoid flicker when drawing a complex frame in multiple steps.
- * 
+ *
  * Set the `force complete redraw` to *true* to redraw the whole display
  * instead of only the changed parts. Normally it should not be necessary to set this to
  * *true*. It may only become necessary in case of stuck pixels because of errors.
@@ -897,7 +897,7 @@ int tf_lcd_128x64_draw_buffered_frame(TF_LCD128x64 *lcd_128x64, bool force_compl
  * \ingroup TF_LCD128x64
  *
  * Returns the last valid touch position:
- * 
+ *
  * * Pressure: Amount of pressure applied by the user
  * * X: Touch position on x-axis
  * * Y: Touch position on y-axis
@@ -910,11 +910,11 @@ int tf_lcd_128x64_get_touch_position(TF_LCD128x64 *lcd_128x64, uint16_t *ret_pre
  *
  * The period is the period with which the {@link tf_lcd_128x64_register_touch_position_callback} callback
  * is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
  */
@@ -932,13 +932,13 @@ int tf_lcd_128x64_get_touch_position_callback_configuration(TF_LCD128x64 *lcd_12
  * \ingroup TF_LCD128x64
  *
  * Returns one of four touch gestures that can be automatically detected by the Bricklet.
- * 
+ *
  * The gestures are swipes from left to right, right to left, top to bottom and bottom to top.
- * 
+ *
  * Additionally to the gestures a vector with a start and end position of the gesture is
  * provided. You can use this vector do determine a more exact location of the gesture (e.g.
  * the swipe from top to bottom was on the left or right part of the screen).
- * 
+ *
  * The age parameter corresponds to the age of gesture (how long ago it was).
  */
 int tf_lcd_128x64_get_touch_gesture(TF_LCD128x64 *lcd_128x64, uint8_t *ret_gesture, uint32_t *ret_duration, uint16_t *ret_pressure_max, uint16_t *ret_x_start, uint16_t *ret_y_start, uint16_t *ret_x_end, uint16_t *ret_y_end, uint32_t *ret_age);
@@ -948,11 +948,11 @@ int tf_lcd_128x64_get_touch_gesture(TF_LCD128x64 *lcd_128x64, uint8_t *ret_gestu
  *
  * The period is the period with which the {@link tf_lcd_128x64_register_touch_gesture_callback} callback
  * is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
  */
@@ -970,7 +970,7 @@ int tf_lcd_128x64_get_touch_gesture_callback_configuration(TF_LCD128x64 *lcd_128
  * \ingroup TF_LCD128x64
  *
  * Draws a white or black line from (x, y)-start to (x, y)-end.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_draw_line(TF_LCD128x64 *lcd_128x64, uint8_t position_x_start, uint8_t position_y_start, uint8_t position_x_end, uint8_t position_y_end, bool color);
@@ -979,10 +979,10 @@ int tf_lcd_128x64_draw_line(TF_LCD128x64 *lcd_128x64, uint8_t position_x_start, 
  * \ingroup TF_LCD128x64
  *
  * Draws a white or black box from (x, y)-start to (x, y)-end.
- * 
+ *
  * If you set fill to true, the box will be filled with the
  * color. Otherwise only the outline will be drawn.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_draw_box(TF_LCD128x64 *lcd_128x64, uint8_t position_x_start, uint8_t position_y_start, uint8_t position_x_end, uint8_t position_y_end, bool fill, bool color);
@@ -991,11 +991,11 @@ int tf_lcd_128x64_draw_box(TF_LCD128x64 *lcd_128x64, uint8_t position_x_start, u
  * \ingroup TF_LCD128x64
  *
  * Draws a text at the pixel position (x, y).
- * 
+ *
  * You can use one of 9 different font sizes and draw the text in white or black.
- * 
+ *
  * The font conforms to code page 437.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_draw_text(TF_LCD128x64 *lcd_128x64, uint8_t position_x, uint8_t position_y, uint8_t font, bool color, const char *text);
@@ -1004,25 +1004,25 @@ int tf_lcd_128x64_draw_text(TF_LCD128x64 *lcd_128x64, uint8_t position_x, uint8_
  * \ingroup TF_LCD128x64
  *
  * Draws a clickable button at position (x, y) with the given text.
- * 
+ *
  * You can use up to 12 buttons.
- * 
+ *
  * The x position + width has to be within the range of 1 to 128 and the y
  * position + height has to be within the range of 1 to 64.
- * 
+ *
  * The minimum useful width/height of a button is 3.
- * 
+ *
  * You can enable a callback for a button press with
  * {@link tf_lcd_128x64_set_gui_button_pressed_callback_configuration}. The callback will
  * be triggered for press and release-events.
- * 
+ *
  * The button is drawn in a separate GUI buffer and the button-frame will
  * always stay on top of the graphics drawn with {@link tf_lcd_128x64_write_pixels}. To
  * remove the button use {@link tf_lcd_128x64_remove_gui_button}.
- * 
+ *
  * If you want an icon instead of text, you can draw the icon inside of the
  * button with {@link tf_lcd_128x64_write_pixels}.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_set_gui_button(TF_LCD128x64 *lcd_128x64, uint8_t index, uint8_t position_x, uint8_t position_y, uint8_t width, uint8_t height, const char *text);
@@ -1031,10 +1031,10 @@ int tf_lcd_128x64_set_gui_button(TF_LCD128x64 *lcd_128x64, uint8_t index, uint8_
  * \ingroup TF_LCD128x64
  *
  * Returns the button properties for a given `Index` as set by {@link tf_lcd_128x64_set_gui_button}.
- * 
+ *
  * Additionally the `Active` parameter shows if a button is currently active/visible
  * or not.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_get_gui_button(TF_LCD128x64 *lcd_128x64, uint8_t index, bool *ret_active, uint8_t *ret_position_x, uint8_t *ret_position_y, uint8_t *ret_width, uint8_t *ret_height, char ret_text[16]);
@@ -1043,9 +1043,9 @@ int tf_lcd_128x64_get_gui_button(TF_LCD128x64 *lcd_128x64, uint8_t index, bool *
  * \ingroup TF_LCD128x64
  *
  * Removes the button with the given index.
- * 
+ *
  * You can use index 255 to remove all buttons.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_remove_gui_button(TF_LCD128x64 *lcd_128x64, uint8_t index);
@@ -1055,14 +1055,14 @@ int tf_lcd_128x64_remove_gui_button(TF_LCD128x64 *lcd_128x64, uint8_t index);
  *
  * The period is the period with which the {@link tf_lcd_128x64_register_gui_button_pressed_callback} callback
  * is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_set_gui_button_pressed_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t period, bool value_has_to_change);
@@ -1072,7 +1072,7 @@ int tf_lcd_128x64_set_gui_button_pressed_callback_configuration(TF_LCD128x64 *lc
  *
  * Returns the callback configuration as set by
  * {@link tf_lcd_128x64_set_gui_button_pressed_callback_configuration}.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_get_gui_button_pressed_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t *ret_period, bool *ret_value_has_to_change);
@@ -1081,9 +1081,9 @@ int tf_lcd_128x64_get_gui_button_pressed_callback_configuration(TF_LCD128x64 *lc
  * \ingroup TF_LCD128x64
  *
  * Returns the state of the button for the given index.
- * 
+ *
  * The state can either be pressed (true) or released (false).
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_get_gui_button_pressed(TF_LCD128x64 *lcd_128x64, uint8_t index, bool *ret_pressed);
@@ -1092,29 +1092,29 @@ int tf_lcd_128x64_get_gui_button_pressed(TF_LCD128x64 *lcd_128x64, uint8_t index
  * \ingroup TF_LCD128x64
  *
  * Draws a slider at position (x, y) with the given length.
- * 
+ *
  * You can use up to 6 sliders.
- * 
+ *
  * If you use the horizontal direction, the x position + length has to be
  * within the range of 1 to 128 and the y position has to be within
  * the range of 0 to 46.
- * 
+ *
  * If you use the vertical direction, the y position + length has to be
  * within the range of 1 to 64 and the x position has to be within
  * the range of 0 to 110.
- * 
+ *
  * The minimum length of a slider is 8.
- * 
+ *
  * The parameter value is the start-position of the slider, it can
  * be between 0 and length-8.
- * 
+ *
  * You can enable a callback for the slider value with
  * {@link tf_lcd_128x64_set_gui_slider_value_callback_configuration}.
- * 
+ *
  * The slider is drawn in a separate GUI buffer and it will
  * always stay on top of the graphics drawn with {@link tf_lcd_128x64_write_pixels}. To
  * remove the button use {@link tf_lcd_128x64_remove_gui_slider}.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_set_gui_slider(TF_LCD128x64 *lcd_128x64, uint8_t index, uint8_t position_x, uint8_t position_y, uint8_t length, uint8_t direction, uint8_t value);
@@ -1123,10 +1123,10 @@ int tf_lcd_128x64_set_gui_slider(TF_LCD128x64 *lcd_128x64, uint8_t index, uint8_
  * \ingroup TF_LCD128x64
  *
  * Returns the slider properties for a given `Index` as set by {@link tf_lcd_128x64_set_gui_slider}.
- * 
+ *
  * Additionally the `Active` parameter shows if a button is currently active/visible
  * or not.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_get_gui_slider(TF_LCD128x64 *lcd_128x64, uint8_t index, bool *ret_active, uint8_t *ret_position_x, uint8_t *ret_position_y, uint8_t *ret_length, uint8_t *ret_direction, uint8_t *ret_value);
@@ -1135,9 +1135,9 @@ int tf_lcd_128x64_get_gui_slider(TF_LCD128x64 *lcd_128x64, uint8_t index, bool *
  * \ingroup TF_LCD128x64
  *
  * Removes the slider with the given index.
- * 
+ *
  * You can use index 255 to remove all slider.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_remove_gui_slider(TF_LCD128x64 *lcd_128x64, uint8_t index);
@@ -1147,14 +1147,14 @@ int tf_lcd_128x64_remove_gui_slider(TF_LCD128x64 *lcd_128x64, uint8_t index);
  *
  * The period is the period with which the {@link tf_lcd_128x64_register_gui_slider_value_callback} callback
  * is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_set_gui_slider_value_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t period, bool value_has_to_change);
@@ -1164,7 +1164,7 @@ int tf_lcd_128x64_set_gui_slider_value_callback_configuration(TF_LCD128x64 *lcd_
  *
  * Returns the callback configuration as set by
  * {@link tf_lcd_128x64_set_gui_slider_value_callback_configuration}.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_get_gui_slider_value_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t *ret_period, bool *ret_value_has_to_change);
@@ -1173,7 +1173,7 @@ int tf_lcd_128x64_get_gui_slider_value_callback_configuration(TF_LCD128x64 *lcd_
  * \ingroup TF_LCD128x64
  *
  * Returns the current slider value for the given index.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_get_gui_slider_value(TF_LCD128x64 *lcd_128x64, uint8_t index, uint8_t *ret_value);
@@ -1183,10 +1183,10 @@ int tf_lcd_128x64_get_gui_slider_value(TF_LCD128x64 *lcd_128x64, uint8_t index, 
  *
  * Sets the general configuration for tabs. You can configure the tabs to only
  * accept clicks or only swipes (gesture left/right and right/left) or both.
- * 
+ *
  * Additionally, if you set `Clear GUI` to true, all of the GUI elements (buttons,
  * slider, graphs) will automatically be removed on every tab change.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_set_gui_tab_configuration(TF_LCD128x64 *lcd_128x64, uint8_t change_tab_config, bool clear_gui);
@@ -1195,7 +1195,7 @@ int tf_lcd_128x64_set_gui_tab_configuration(TF_LCD128x64 *lcd_128x64, uint8_t ch
  * \ingroup TF_LCD128x64
  *
  * Returns the tab configuration as set by {@link tf_lcd_128x64_set_gui_tab_configuration}.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_get_gui_tab_configuration(TF_LCD128x64 *lcd_128x64, uint8_t *ret_change_tab_config, bool *ret_clear_gui);
@@ -1204,11 +1204,11 @@ int tf_lcd_128x64_get_gui_tab_configuration(TF_LCD128x64 *lcd_128x64, uint8_t *r
  * \ingroup TF_LCD128x64
  *
  * Adds a text-tab with the given index.
- * 
+ *
  * You can use up to 10 tabs.
- * 
+ *
  * A text-tab with the same index as a icon-tab will overwrite the icon-tab.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_set_gui_tab_text(TF_LCD128x64 *lcd_128x64, uint8_t index, const char *text);
@@ -1217,10 +1217,10 @@ int tf_lcd_128x64_set_gui_tab_text(TF_LCD128x64 *lcd_128x64, uint8_t index, cons
  * \ingroup TF_LCD128x64
  *
  * Returns the text for a given index as set by {@link tf_lcd_128x64_set_gui_tab_text}.
- * 
+ *
  * Additionally the `Active` parameter shows if the tab is currently active/visible
  * or not.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_get_gui_tab_text(TF_LCD128x64 *lcd_128x64, uint8_t index, bool *ret_active, char ret_text[5]);
@@ -1230,11 +1230,11 @@ int tf_lcd_128x64_get_gui_tab_text(TF_LCD128x64 *lcd_128x64, uint8_t index, bool
  *
  * Adds a icon-tab with the given index. The icon can have a width of 28 pixels
  * with a height of 6 pixels. It is drawn line-by-line from left to right.
- * 
+ *
  * You can use up to 10 tabs.
- * 
+ *
  * A icon-tab with the same index as a text-tab will overwrite the text-tab.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_set_gui_tab_icon(TF_LCD128x64 *lcd_128x64, uint8_t index, const bool icon[168]);
@@ -1243,10 +1243,10 @@ int tf_lcd_128x64_set_gui_tab_icon(TF_LCD128x64 *lcd_128x64, uint8_t index, cons
  * \ingroup TF_LCD128x64
  *
  * Returns the icon for a given index as set by {@link tf_lcd_128x64_set_gui_tab_icon}.
- * 
+ *
  * Additionally the `Active` parameter shows if the tab is currently active/visible
  * or not.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_get_gui_tab_icon(TF_LCD128x64 *lcd_128x64, uint8_t index, bool *ret_active, bool ret_icon[168]);
@@ -1255,9 +1255,9 @@ int tf_lcd_128x64_get_gui_tab_icon(TF_LCD128x64 *lcd_128x64, uint8_t index, bool
  * \ingroup TF_LCD128x64
  *
  * Removes the tab with the given index.
- * 
+ *
  * You can use index 255 to remove all tabs.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_remove_gui_tab(TF_LCD128x64 *lcd_128x64, uint8_t index);
@@ -1266,7 +1266,7 @@ int tf_lcd_128x64_remove_gui_tab(TF_LCD128x64 *lcd_128x64, uint8_t index);
  * \ingroup TF_LCD128x64
  *
  * Sets the tab with the given index as selected (drawn as selected on the display).
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_set_gui_tab_selected(TF_LCD128x64 *lcd_128x64, uint8_t index);
@@ -1276,14 +1276,14 @@ int tf_lcd_128x64_set_gui_tab_selected(TF_LCD128x64 *lcd_128x64, uint8_t index);
  *
  * The period is the period with which the {@link tf_lcd_128x64_register_gui_tab_selected_callback} callback
  * is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_set_gui_tab_selected_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t period, bool value_has_to_change);
@@ -1293,7 +1293,7 @@ int tf_lcd_128x64_set_gui_tab_selected_callback_configuration(TF_LCD128x64 *lcd_
  *
  * Returns the callback configuration as set by
  * {@link tf_lcd_128x64_set_gui_tab_selected_callback_configuration}.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_get_gui_tab_selected_callback_configuration(TF_LCD128x64 *lcd_128x64, uint32_t *ret_period, bool *ret_value_has_to_change);
@@ -1303,7 +1303,7 @@ int tf_lcd_128x64_get_gui_tab_selected_callback_configuration(TF_LCD128x64 *lcd_
  *
  * Returns the index of the currently selected tab.
  * If there are not tabs, the returned index is -1.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_get_gui_tab_selected(TF_LCD128x64 *lcd_128x64, int8_t *ret_index);
@@ -1312,23 +1312,23 @@ int tf_lcd_128x64_get_gui_tab_selected(TF_LCD128x64 *lcd_128x64, int8_t *ret_ind
  * \ingroup TF_LCD128x64
  *
  * Sets the configuration for up to four graphs.
- * 
+ *
  * The graph type can be dot-, line- or bar-graph.
- * 
+ *
  * The x and y position are pixel positions.
- * 
+ *
  * You can add a text for the x and y axis.
  * The text is drawn at the inside of the graph and it can overwrite some
  * of the graph data. If you need the text outside of the graph you can
  * leave this text here empty and use {@link tf_lcd_128x64_draw_text} to draw the caption
  * outside of the graph.
- * 
+ *
  * The data of the graph can be set and updated with {@link tf_lcd_128x64_set_gui_graph_data}.
- * 
+ *
  * The graph is drawn in a separate GUI buffer and the graph-frame and data will
  * always stay on top of the graphics drawn with {@link tf_lcd_128x64_write_pixels}. To
  * remove the graph use {@link tf_lcd_128x64_remove_gui_graph}.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_set_gui_graph_configuration(TF_LCD128x64 *lcd_128x64, uint8_t index, uint8_t graph_type, uint8_t position_x, uint8_t position_y, uint8_t width, uint8_t height, const char *text_x, const char *text_y);
@@ -1337,10 +1337,10 @@ int tf_lcd_128x64_set_gui_graph_configuration(TF_LCD128x64 *lcd_128x64, uint8_t 
  * \ingroup TF_LCD128x64
  *
  * Returns the graph properties for a given `Index` as set by {@link tf_lcd_128x64_set_gui_graph_configuration}.
- * 
+ *
  * Additionally the `Active` parameter shows if a graph is currently active/visible
  * or not.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_get_gui_graph_configuration(TF_LCD128x64 *lcd_128x64, uint8_t index, bool *ret_active, uint8_t *ret_graph_type, uint8_t *ret_position_x, uint8_t *ret_position_y, uint8_t *ret_width, uint8_t *ret_height, char ret_text_x[4], char ret_text_y[4]);
@@ -1350,17 +1350,17 @@ int tf_lcd_128x64_get_gui_graph_configuration(TF_LCD128x64 *lcd_128x64, uint8_t 
  *
  * Sets the data for a graph with the given index. You have to configure the graph with
  * {@link tf_lcd_128x64_set_gui_graph_configuration} before you can set the first data.
- * 
+ *
  * The graph will show the first n values of the data that you set, where
  * n is the width set with {@link tf_lcd_128x64_set_gui_graph_configuration}. If you set
  * less then n values it will show the rest of the values as zero.
- * 
+ *
  * The maximum number of data-points you can set is 118 (which also corresponds to the
  * maximum width of the graph).
- * 
+ *
  * You have to scale your values to be between 0 and 255. 0 will be shown
  * at the bottom of the graph and 255 at the top.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_set_gui_graph_data_low_level(TF_LCD128x64 *lcd_128x64, uint8_t index, uint16_t data_length, uint16_t data_chunk_offset, const uint8_t data_chunk_data[59]);
@@ -1369,7 +1369,7 @@ int tf_lcd_128x64_set_gui_graph_data_low_level(TF_LCD128x64 *lcd_128x64, uint8_t
  * \ingroup TF_LCD128x64
  *
  * Returns the graph data for a given index as set by {@link tf_lcd_128x64_set_gui_graph_data}.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_get_gui_graph_data_low_level(TF_LCD128x64 *lcd_128x64, uint8_t index, uint16_t *ret_data_length, uint16_t *ret_data_chunk_offset, uint8_t ret_data_chunk_data[59]);
@@ -1378,9 +1378,9 @@ int tf_lcd_128x64_get_gui_graph_data_low_level(TF_LCD128x64 *lcd_128x64, uint8_t
  * \ingroup TF_LCD128x64
  *
  * Removes the graph with the given index.
- * 
+ *
  * You can use index 255 to remove all graphs.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_remove_gui_graph(TF_LCD128x64 *lcd_128x64, uint8_t index);
@@ -1389,7 +1389,7 @@ int tf_lcd_128x64_remove_gui_graph(TF_LCD128x64 *lcd_128x64, uint8_t index);
  * \ingroup TF_LCD128x64
  *
  * Removes all GUI elements (buttons, slider, graphs, tabs).
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_remove_all_gui(TF_LCD128x64 *lcd_128x64);
@@ -1399,11 +1399,11 @@ int tf_lcd_128x64_remove_all_gui(TF_LCD128x64 *lcd_128x64);
  *
  * Sets the touch LED configuration. By default the LED is on if the
  * LCD is touched.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is off.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_set_touch_led_config(TF_LCD128x64 *lcd_128x64, uint8_t config);
@@ -1412,7 +1412,7 @@ int tf_lcd_128x64_set_touch_led_config(TF_LCD128x64 *lcd_128x64, uint8_t config)
  * \ingroup TF_LCD128x64
  *
  * Returns the configuration as set by {@link tf_lcd_128x64_set_touch_led_config}
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_get_touch_led_config(TF_LCD128x64 *lcd_128x64, uint8_t *ret_config);
@@ -1421,14 +1421,14 @@ int tf_lcd_128x64_get_touch_led_config(TF_LCD128x64 *lcd_128x64, uint8_t *ret_co
  * \ingroup TF_LCD128x64
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -1439,11 +1439,11 @@ int tf_lcd_128x64_get_spitfp_error_count(TF_LCD128x64 *lcd_128x64, uint32_t *ret
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -1462,7 +1462,7 @@ int tf_lcd_128x64_get_bootloader_mode(TF_LCD128x64 *lcd_128x64, uint8_t *ret_mod
  * Sets the firmware pointer for {@link tf_lcd_128x64_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -1474,9 +1474,9 @@ int tf_lcd_128x64_set_write_firmware_pointer(TF_LCD128x64 *lcd_128x64, uint32_t 
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_lcd_128x64_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -1488,9 +1488,9 @@ int tf_lcd_128x64_write_firmware(TF_LCD128x64 *lcd_128x64, const uint8_t data[64
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_lcd_128x64_set_status_led_config(TF_LCD128x64 *lcd_128x64, uint8_t config);
@@ -1507,7 +1507,7 @@ int tf_lcd_128x64_get_status_led_config(TF_LCD128x64 *lcd_128x64, uint8_t *ret_c
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -1519,7 +1519,7 @@ int tf_lcd_128x64_get_chip_temperature(TF_LCD128x64 *lcd_128x64, int16_t *ret_te
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -1532,7 +1532,7 @@ int tf_lcd_128x64_reset(TF_LCD128x64 *lcd_128x64);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_lcd_128x64_write_uid(TF_LCD128x64 *lcd_128x64, uint32_t uid);
@@ -1551,11 +1551,11 @@ int tf_lcd_128x64_read_uid(TF_LCD128x64 *lcd_128x64, uint32_t *ret_uid);
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */
@@ -1565,19 +1565,19 @@ int tf_lcd_128x64_get_identity(TF_LCD128x64 *lcd_128x64, char ret_uid[8], char r
  * \ingroup TF_LCD128x64
  *
  * Writes pixels to the specified window.
- * 
+ *
  * The pixels are written into the window line by line top to bottom
  * and each line is written from left to right.
- * 
+ *
  * If automatic draw is enabled (default) the pixels are directly written to
  * the screen. Only pixels that have actually changed are updated on the screen,
  * the rest stays the same.
- * 
+ *
  * If automatic draw is disabled the pixels are written to an internal buffer and
  * the buffer is transferred to the display only after {@link tf_lcd_128x64_draw_buffered_frame}
  * is called. This can be used to avoid flicker when drawing a complex frame in
  * multiple steps.
- * 
+ *
  * Automatic draw can be configured with the {@link tf_lcd_128x64_set_display_configuration}
  * function.
  */
@@ -1587,16 +1587,16 @@ int tf_lcd_128x64_write_pixels(TF_LCD128x64 *lcd_128x64, uint8_t x_start, uint8_
  * \ingroup TF_LCD128x64
  *
  * Reads pixels from the specified window.
- * 
+ *
  * The pixels are read from the window line by line top to bottom
  * and each line is read from left to right.
- * 
+ *
  * If automatic draw is enabled (default) the pixels that are read are always the
  * same that are shown on the display.
- * 
+ *
  * If automatic draw is disabled the pixels are read from the internal buffer
  * (see {@link tf_lcd_128x64_draw_buffered_frame}).
- * 
+ *
  * Automatic draw can be configured with the {@link tf_lcd_128x64_set_display_configuration}
  * function.
  */
@@ -1607,17 +1607,17 @@ int tf_lcd_128x64_read_pixels(TF_LCD128x64 *lcd_128x64, uint8_t x_start, uint8_t
  *
  * Sets the data for a graph with the given index. You have to configure the graph with
  * {@link tf_lcd_128x64_set_gui_graph_configuration} before you can set the first data.
- * 
+ *
  * The graph will show the first n values of the data that you set, where
  * n is the width set with {@link tf_lcd_128x64_set_gui_graph_configuration}. If you set
  * less then n values it will show the rest of the values as zero.
- * 
+ *
  * The maximum number of data-points you can set is 118 (which also corresponds to the
  * maximum width of the graph).
- * 
+ *
  * You have to scale your values to be between 0 and 255. 0 will be shown
  * at the bottom of the graph and 255 at the top.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_set_gui_graph_data(TF_LCD128x64 *lcd_128x64, uint8_t index, const uint8_t *data, uint16_t data_length);
@@ -1626,7 +1626,7 @@ int tf_lcd_128x64_set_gui_graph_data(TF_LCD128x64 *lcd_128x64, uint8_t index, co
  * \ingroup TF_LCD128x64
  *
  * Returns the graph data for a given index as set by {@link tf_lcd_128x64_set_gui_graph_data}.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_lcd_128x64_get_gui_graph_data(TF_LCD128x64 *lcd_128x64, uint8_t index, uint8_t *ret_data, uint16_t *ret_data_length);

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -391,10 +391,10 @@ int tf_industrial_digital_in_4_v2_set_response_expected_all(TF_IndustrialDigital
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint8_t channel, bool changed, bool value, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_industrial_digital_in_4_v2_set_value_callback_configuration}.
- * 
+ *
  * The parameters are the channel, a value-changed indicator and the actual
  * value for the channel. The `changed` parameter is true if the value has changed
  * since the last callback.
@@ -409,10 +409,10 @@ int tf_industrial_digital_in_4_v2_register_value_callback(TF_IndustrialDigitalIn
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(bool changed[4], bool value[4], void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_industrial_digital_in_4_v2_set_all_value_callback_configuration}.
- * 
+ *
  * The parameters are the same as {@link tf_industrial_digital_in_4_v2_get_value}. Additional the
  * `changed` parameter is true if the value has changed since
  * the last callback.
@@ -441,14 +441,14 @@ int tf_industrial_digital_in_4_v2_get_value(TF_IndustrialDigitalIn4V2 *industria
  * \ingroup TF_IndustrialDigitalIn4V2
  *
  * This callback can be configured per channel.
- * 
+ *
  * The period is the period with which the {@link tf_industrial_digital_in_4_v2_register_value_callback}
  * callback is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
  */
@@ -467,11 +467,11 @@ int tf_industrial_digital_in_4_v2_get_value_callback_configuration(TF_Industrial
  *
  * The period is the period with which the {@link tf_industrial_digital_in_4_v2_register_all_value_callback}
  * callback is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
  */
@@ -490,7 +490,7 @@ int tf_industrial_digital_in_4_v2_get_all_value_callback_configuration(TF_Indust
  *
  * Returns the current value of the edge counter for the selected channel. You can
  * configure the edges that are counted with {@link tf_industrial_digital_in_4_v2_set_edge_count_configuration}.
- * 
+ *
  * If you set the reset counter to *true*, the count is set back to 0
  * directly after it is read.
  */
@@ -500,16 +500,16 @@ int tf_industrial_digital_in_4_v2_get_edge_count(TF_IndustrialDigitalIn4V2 *indu
  * \ingroup TF_IndustrialDigitalIn4V2
  *
  * Configures the edge counter for a specific channel.
- * 
+ *
  * The edge type parameter configures if rising edges, falling edges or both are
  * counted. Possible edge types are:
- * 
+ *
  * * 0 = rising
  * * 1 = falling
  * * 2 = both
- * 
+ *
  * Configuring an edge counter resets its value to 0.
- * 
+ *
  * If you don't know what any of this means, just leave it at default. The
  * default configuration is very likely OK for you.
  */
@@ -529,7 +529,7 @@ int tf_industrial_digital_in_4_v2_get_edge_count_configuration(TF_IndustrialDigi
  * Each channel has a corresponding LED. You can turn the LED off, on or show a
  * heartbeat. You can also set the LED to "Channel Status". In this mode the
  * LED is on if the channel is high and off otherwise.
- * 
+ *
  * By default all channel LEDs are configured as "Channel Status".
  */
 int tf_industrial_digital_in_4_v2_set_channel_led_config(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, uint8_t channel, uint8_t config);
@@ -545,14 +545,14 @@ int tf_industrial_digital_in_4_v2_get_channel_led_config(TF_IndustrialDigitalIn4
  * \ingroup TF_IndustrialDigitalIn4V2
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -563,11 +563,11 @@ int tf_industrial_digital_in_4_v2_get_spitfp_error_count(TF_IndustrialDigitalIn4
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -586,7 +586,7 @@ int tf_industrial_digital_in_4_v2_get_bootloader_mode(TF_IndustrialDigitalIn4V2 
  * Sets the firmware pointer for {@link tf_industrial_digital_in_4_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -598,9 +598,9 @@ int tf_industrial_digital_in_4_v2_set_write_firmware_pointer(TF_IndustrialDigita
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_industrial_digital_in_4_v2_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -612,9 +612,9 @@ int tf_industrial_digital_in_4_v2_write_firmware(TF_IndustrialDigitalIn4V2 *indu
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_industrial_digital_in_4_v2_set_status_led_config(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, uint8_t config);
@@ -631,7 +631,7 @@ int tf_industrial_digital_in_4_v2_get_status_led_config(TF_IndustrialDigitalIn4V
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -643,7 +643,7 @@ int tf_industrial_digital_in_4_v2_get_chip_temperature(TF_IndustrialDigitalIn4V2
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -656,7 +656,7 @@ int tf_industrial_digital_in_4_v2_reset(TF_IndustrialDigitalIn4V2 *industrial_di
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_industrial_digital_in_4_v2_write_uid(TF_IndustrialDigitalIn4V2 *industrial_digital_in_4_v2, uint32_t uid);
@@ -675,11 +675,11 @@ int tf_industrial_digital_in_4_v2_read_uid(TF_IndustrialDigitalIn4V2 *industrial
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -3696,7 +3696,7 @@ int tf_rs485_write(TF_RS485 *rs485, const char *message, uint16_t message_length
     if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
 
     uint32_t _stream_length = message_length;
     uint32_t _message_written = 0;
@@ -3737,7 +3737,7 @@ int tf_rs485_read(TF_RS485 *rs485, uint16_t length, char *ret_message, uint16_t 
     if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     TF_RS485_ReadLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
     _wrapper_data.length = length;
@@ -3778,7 +3778,7 @@ int tf_rs485_modbus_slave_answer_read_coils_request(TF_RS485 *rs485, uint8_t req
     if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     TF_RS485_ModbusSlaveAnswerReadCoilsRequestLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
     _wrapper_data.request_id = request_id;
@@ -3821,7 +3821,7 @@ int tf_rs485_modbus_slave_answer_read_holding_registers_request(TF_RS485 *rs485,
     if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     TF_RS485_ModbusSlaveAnswerReadHoldingRegistersRequestLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
     _wrapper_data.request_id = request_id;
@@ -3866,7 +3866,7 @@ int tf_rs485_modbus_master_write_multiple_coils(TF_RS485 *rs485, uint8_t slave_a
     if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     TF_RS485_ModbusMasterWriteMultipleCoilsLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
     _wrapper_data.slave_address = slave_address;
@@ -3913,7 +3913,7 @@ int tf_rs485_modbus_master_write_multiple_registers(TF_RS485 *rs485, uint8_t sla
     if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     TF_RS485_ModbusMasterWriteMultipleRegistersLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
     _wrapper_data.slave_address = slave_address;
@@ -3958,7 +3958,7 @@ int tf_rs485_modbus_slave_answer_read_discrete_inputs_request(TF_RS485 *rs485, u
     if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     TF_RS485_ModbusSlaveAnswerReadDiscreteInputsRequestLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
     _wrapper_data.request_id = request_id;
@@ -4001,7 +4001,7 @@ int tf_rs485_modbus_slave_answer_read_input_registers_request(TF_RS485 *rs485, u
     if (rs485->magic != 0x5446 || rs485->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     TF_RS485_ModbusSlaveAnswerReadInputRegistersRequestLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
     _wrapper_data.request_id = request_id;

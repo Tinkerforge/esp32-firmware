@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -1284,7 +1284,7 @@ int tf_oled_128x64_v2_write_pixels(TF_OLED128x64V2 *oled_128x64_v2, uint8_t x_st
     if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     TF_OLED128x64V2_WritePixelsLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
     _wrapper_data.x_start = x_start;
@@ -1332,7 +1332,7 @@ int tf_oled_128x64_v2_read_pixels(TF_OLED128x64V2 *oled_128x64_v2, uint8_t x_sta
     if (oled_128x64_v2->magic != 0x5446 || oled_128x64_v2->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     TF_OLED128x64V2_ReadPixelsLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
     _wrapper_data.x_start = x_start;

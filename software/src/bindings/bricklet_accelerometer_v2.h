@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -490,10 +490,10 @@ int tf_accelerometer_v2_set_response_expected_all(TF_AccelerometerV2 *accelerome
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int32_t x, int32_t y, int32_t z, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_accelerometer_v2_set_acceleration_callback_configuration}.
- * 
+ *
  * The parameters are the same as {@link tf_accelerometer_v2_get_acceleration}.
  */
 int tf_accelerometer_v2_register_acceleration_callback(TF_AccelerometerV2 *accelerometer_v2, TF_AccelerometerV2_AccelerationHandler handler, void *user_data);
@@ -506,28 +506,28 @@ int tf_accelerometer_v2_register_acceleration_callback(TF_AccelerometerV2 *accel
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int16_t acceleration[30], void *user_data) \endcode
- * 
+ *
  * Returns 30 acceleration values with 16 bit resolution. The data rate can
  * be configured with {@link tf_accelerometer_v2_set_configuration} and this callback can be
  * enabled with {@link tf_accelerometer_v2_set_continuous_acceleration_configuration}.
- * 
+ *
  * The returned values are raw ADC data. If you want to put this data into
  * a FFT to determine the occurrences of specific frequencies we recommend
  * that you use the data as is. It has all of the ADC noise in it. This noise
  * looks like pure noise at first glance, but it might still have some frequnecy
  * information in it that can be utilized by the FFT.
- * 
+ *
  * Otherwise you have to use the following formulas that depend on the
  * full scale range (see {@link tf_accelerometer_v2_set_configuration}) to calculate
  * the data in gₙ/10000 (same unit that is returned by {@link tf_accelerometer_v2_get_acceleration}):
- * 
+ *
  * * Full scale 2g: acceleration = value * 625 / 1024
  * * Full scale 4g: acceleration = value * 1250 / 1024
  * * Full scale 8g: acceleration = value * 2500 / 1024
- * 
+ *
  * The data is formated in the sequence "x, y, z, x, y, z, ..." depending on
  * the enabled axis. Examples:
- * 
+ *
  * * x, y, z enabled: "x, y, z, ..." 10x repeated
  * * x, z enabled: "x, z, ..." 15x repeated
  * * y enabled: "y, ..." 30x repeated
@@ -542,28 +542,28 @@ int tf_accelerometer_v2_register_continuous_acceleration_16_bit_callback(TF_Acce
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int8_t acceleration[60], void *user_data) \endcode
- * 
+ *
  * Returns 60 acceleration values with 8 bit resolution. The data rate can
  * be configured with {@link tf_accelerometer_v2_set_configuration} and this callback can be
  * enabled with {@link tf_accelerometer_v2_set_continuous_acceleration_configuration}.
- * 
+ *
  * The returned values are raw ADC data. If you want to put this data into
  * a FFT to determine the occurrences of specific frequencies we recommend
  * that you use the data as is. It has all of the ADC noise in it. This noise
  * looks like pure noise at first glance, but it might still have some frequnecy
  * information in it that can be utilized by the FFT.
- * 
+ *
  * Otherwise you have to use the following formulas that depend on the
  * full scale range (see {@link tf_accelerometer_v2_set_configuration}) to calculate
  * the data in gₙ/10000 (same unit that is returned by {@link tf_accelerometer_v2_get_acceleration}):
- * 
+ *
  * * Full scale 2g: acceleration = value * 256 * 625 / 1024
  * * Full scale 4g: acceleration = value * 256 * 1250 / 1024
  * * Full scale 8g: acceleration = value * 256 * 2500 / 1024
- * 
+ *
  * The data is formated in the sequence "x, y, z, x, y, z, ..." depending on
  * the enabled axis. Examples:
- * 
+ *
  * * x, y, z enabled: "x, y, z, ..." 20x repeated
  * * x, z enabled: "x, z, ..." 30x repeated
  * * y enabled: "y, ..." 60x repeated
@@ -587,7 +587,7 @@ int tf_accelerometer_v2_callback_tick(TF_AccelerometerV2 *accelerometer_v2, uint
  * Returns the acceleration in x, y and z direction. The values
  * are given in gₙ/10000 (1gₙ = 9.80665m/s²). The range is
  * configured with {@link tf_accelerometer_v2_set_configuration}.
- * 
+ *
  * If you want to get the acceleration periodically, it is recommended
  * to use the {@link tf_accelerometer_v2_register_acceleration_callback} callback and set the period with
  * {@link tf_accelerometer_v2_set_acceleration_callback_configuration}.
@@ -599,10 +599,10 @@ int tf_accelerometer_v2_get_acceleration(TF_AccelerometerV2 *accelerometer_v2, i
  *
  * Configures the data rate and full scale range.
  * Possible values are:
- * 
+ *
  * * Data rate of 0.781Hz to 25600Hz.
  * * Full scale range of ±2g up to ±8g.
- * 
+ *
  * Decreasing data rate or full scale range will also decrease the noise on
  * the data.
  */
@@ -620,14 +620,14 @@ int tf_accelerometer_v2_get_configuration(TF_AccelerometerV2 *accelerometer_v2, 
  *
  * The period is the period with which the {@link tf_accelerometer_v2_register_acceleration_callback}
  * callback is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
- * 
+ *
  * If this callback is enabled, the {@link tf_accelerometer_v2_register_continuous_acceleration_16_bit_callback} callback
  * and {@link tf_accelerometer_v2_register_continuous_acceleration_8_bit_callback} callback will automatically be disabled.
  */
@@ -662,44 +662,44 @@ int tf_accelerometer_v2_get_info_led_config(TF_AccelerometerV2 *accelerometer_v2
  * For high throughput of acceleration data (> 1000Hz) you have to use the
  * {@link tf_accelerometer_v2_register_continuous_acceleration_16_bit_callback} or {@link tf_accelerometer_v2_register_continuous_acceleration_8_bit_callback}
  * callbacks.
- * 
+ *
  * You can enable the callback for each axis (x, y, z) individually and choose a
  * resolution of 8 bit or 16 bit.
- * 
+ *
  * If at least one of the axis is enabled and the resolution is set to 8 bit,
  * the {@link tf_accelerometer_v2_register_continuous_acceleration_8_bit_callback} callback is activated. If at least
  * one of the axis is enabled and the resolution is set to 16 bit,
  * the {@link tf_accelerometer_v2_register_continuous_acceleration_16_bit_callback} callback is activated.
- * 
+ *
  * The returned values are raw ADC data. If you want to put this data into
  * a FFT to determine the occurrences of specific frequencies we recommend
  * that you use the data as is. It has all of the ADC noise in it. This noise
  * looks like pure noise at first glance, but it might still have some frequnecy
  * information in it that can be utilized by the FFT.
- * 
+ *
  * Otherwise you have to use the following formulas that depend on the configured
  * resolution (8/16 bit) and the full scale range (see {@link tf_accelerometer_v2_set_configuration}) to calculate
  * the data in gₙ/10000 (same unit that is returned by {@link tf_accelerometer_v2_get_acceleration}):
- * 
+ *
  * * 16 bit, full scale 2g: acceleration = value * 625 / 1024
  * * 16 bit, full scale 4g: acceleration = value * 1250 / 1024
  * * 16 bit, full scale 8g: acceleration = value * 2500 / 1024
- * 
+ *
  * If a resolution of 8 bit is used, only the 8 most significant bits will be
  * transferred, so you can use the following formulas:
- * 
+ *
  * * 8 bit, full scale 2g: acceleration = value * 256 * 625 / 1024
  * * 8 bit, full scale 4g: acceleration = value * 256 * 1250 / 1024
  * * 8 bit, full scale 8g: acceleration = value * 256 * 2500 / 1024
- * 
+ *
  * If no axis is enabled, both callbacks are disabled. If one of the continuous
  * callbacks is enabled, the {@link tf_accelerometer_v2_register_acceleration_callback} callback is disabled.
- * 
+ *
  * The maximum throughput depends on the exact configuration:
- * 
+ *
  * \verbatim
  *  "Number of axis enabled", "Throughput 8 bit", "Throughout 16 bit"
- * 
+ *
  *  "1", "25600Hz", "25600Hz"
  *  "2", "25600Hz", "15000Hz"
  *  "3", "20000Hz", "10000Hz"
@@ -719,16 +719,16 @@ int tf_accelerometer_v2_get_continuous_acceleration_configuration(TF_Acceleromet
  * \ingroup TF_AccelerometerV2
  *
  * Configures IIR Bypass filter mode and low pass filter roll off corner frequency.
- * 
+ *
  * The filter can be applied or bypassed and the corner frequency can be
  * half or a ninth of the output data rate.
- * 
+ *
  * .. image:: /Images/Bricklets/bricklet_accelerometer_v2_filter.png
  *    :scale: 100 %
  *    :alt: Accelerometer filter
  *    :align: center
  *    :target: ../../_images/Bricklets/bricklet_accelerometer_v2_filter.png
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_accelerometer_v2_set_filter_configuration(TF_AccelerometerV2 *accelerometer_v2, uint8_t iir_bypass, uint8_t low_pass_filter);
@@ -737,7 +737,7 @@ int tf_accelerometer_v2_set_filter_configuration(TF_AccelerometerV2 *acceleromet
  * \ingroup TF_AccelerometerV2
  *
  * Returns the configuration as set by {@link tf_accelerometer_v2_set_filter_configuration}.
- * 
+ *
  * .. versionadded:: 2.0.2$nbsp;(Plugin)
  */
 int tf_accelerometer_v2_get_filter_configuration(TF_AccelerometerV2 *accelerometer_v2, uint8_t *ret_iir_bypass, uint8_t *ret_low_pass_filter);
@@ -746,14 +746,14 @@ int tf_accelerometer_v2_get_filter_configuration(TF_AccelerometerV2 *acceleromet
  * \ingroup TF_AccelerometerV2
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -764,11 +764,11 @@ int tf_accelerometer_v2_get_spitfp_error_count(TF_AccelerometerV2 *accelerometer
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -787,7 +787,7 @@ int tf_accelerometer_v2_get_bootloader_mode(TF_AccelerometerV2 *accelerometer_v2
  * Sets the firmware pointer for {@link tf_accelerometer_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -799,9 +799,9 @@ int tf_accelerometer_v2_set_write_firmware_pointer(TF_AccelerometerV2 *accelerom
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_accelerometer_v2_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -813,9 +813,9 @@ int tf_accelerometer_v2_write_firmware(TF_AccelerometerV2 *accelerometer_v2, con
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_accelerometer_v2_set_status_led_config(TF_AccelerometerV2 *accelerometer_v2, uint8_t config);
@@ -832,7 +832,7 @@ int tf_accelerometer_v2_get_status_led_config(TF_AccelerometerV2 *accelerometer_
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -844,7 +844,7 @@ int tf_accelerometer_v2_get_chip_temperature(TF_AccelerometerV2 *accelerometer_v
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -857,7 +857,7 @@ int tf_accelerometer_v2_reset(TF_AccelerometerV2 *accelerometer_v2);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_accelerometer_v2_write_uid(TF_AccelerometerV2 *accelerometer_v2, uint32_t uid);
@@ -876,11 +876,11 @@ int tf_accelerometer_v2_read_uid(TF_AccelerometerV2 *accelerometer_v2, uint32_t 
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

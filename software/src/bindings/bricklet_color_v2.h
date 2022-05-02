@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -430,11 +430,11 @@ int tf_color_v2_set_response_expected_all(TF_ColorV2 *color_v2, bool response_ex
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint16_t r, uint16_t g, uint16_t b, uint16_t c, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically with the period that is set by
  * {@link tf_color_v2_set_color_callback_configuration}. The parameter is the color
  * of the sensor as RGBC.
- * 
+ *
  * The {@link tf_color_v2_register_color_callback} callback is only triggered if the color has changed since the
  * last triggering.
  */
@@ -448,10 +448,10 @@ int tf_color_v2_register_color_callback(TF_ColorV2 *color_v2, TF_ColorV2_ColorHa
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint32_t illuminance, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_color_v2_set_illuminance_callback_configuration}.
- * 
+ *
  * The parameter is the same as {@link tf_color_v2_get_illuminance}.
  */
 int tf_color_v2_register_illuminance_callback(TF_ColorV2 *color_v2, TF_ColorV2_IlluminanceHandler handler, void *user_data);
@@ -464,10 +464,10 @@ int tf_color_v2_register_illuminance_callback(TF_ColorV2 *color_v2, TF_ColorV2_I
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint16_t color_temperature, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_color_v2_set_color_temperature_callback_configuration}.
- * 
+ *
  * The parameter is the same as {@link tf_color_v2_get_color_temperature}.
  */
 int tf_color_v2_register_color_temperature_callback(TF_ColorV2 *color_v2, TF_ColorV2_ColorTemperatureHandler handler, void *user_data);
@@ -487,17 +487,17 @@ int tf_color_v2_callback_tick(TF_ColorV2 *color_v2, uint32_t timeout_us);
  * \ingroup TF_ColorV2
  *
  * Returns the measured color of the sensor.
- * 
+ *
  * The red (r), green (g), blue (b) and clear (c) colors are measured
  * with four different photodiodes that are responsive at different
  * wavelengths:
- * 
+ *
  * .. image:: /Images/Bricklets/bricklet_color_wavelength_chart_600.jpg
  *    :scale: 100 %
  *    :alt: Chart Responsivity / Wavelength
  *    :align: center
  *    :target: ../../_images/Bricklets/bricklet_color_wavelength_chart_600.jpg
- * 
+ *
  * If you want to get the color periodically, it is recommended
  * to use the {@link tf_color_v2_register_color_callback} callback and set the period with
  * {@link tf_color_v2_set_color_callback_configuration}.
@@ -509,11 +509,11 @@ int tf_color_v2_get_color(TF_ColorV2 *color_v2, uint16_t *ret_r, uint16_t *ret_g
  *
  * The period is the period with which the {@link tf_color_v2_register_color_callback}
  * callback is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
  */
@@ -532,15 +532,15 @@ int tf_color_v2_get_color_callback_configuration(TF_ColorV2 *color_v2, uint32_t 
  *
  * Returns the illuminance affected by the gain and integration time as
  * set by {@link tf_color_v2_set_configuration}. To get the illuminance in Lux apply this formula::
- * 
+ *
  *  lux = illuminance * 700 / gain / integration_time
- * 
+ *
  * To get a correct illuminance measurement make sure that the color
  * values themselves are not saturated. The color value (R, G or B)
  * is saturated if it is equal to the maximum value of 65535.
  * In that case you have to reduce the gain, see {@link tf_color_v2_set_configuration}.
- * 
- * 
+ *
+ *
  * If you want to get the value periodically, it is recommended to use the
  * {@link tf_color_v2_register_illuminance_callback} callback. You can set the callback configuration
  * with {@link tf_color_v2_set_illuminance_callback_configuration}.
@@ -552,30 +552,30 @@ int tf_color_v2_get_illuminance(TF_ColorV2 *color_v2, uint32_t *ret_illuminance)
  *
  * The period is the period with which the {@link tf_color_v2_register_illuminance_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change
  * within the period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
- * 
+ *
  * It is furthermore possible to constrain the callback with thresholds.
- * 
+ *
  * The `option`-parameter together with min/max sets a threshold for the {@link tf_color_v2_register_illuminance_callback} callback.
- * 
+ *
  * The following options are possible:
- * 
+ *
  * \verbatim
  *  "Option", "Description"
- * 
+ *
  *  "'x'",    "Threshold is turned off"
  *  "'o'",    "Threshold is triggered when the value is *outside* the min and max values"
  *  "'i'",    "Threshold is triggered when the value is *inside* or equal to the min and max values"
  *  "'<'",    "Threshold is triggered when the value is smaller than the min value (max is ignored)"
  *  "'>'",    "Threshold is triggered when the value is greater than the min value (max is ignored)"
  * \endverbatim
- * 
+ *
  * If the option is set to 'x' (threshold turned off) the callback is triggered with the fixed period.
  */
 int tf_color_v2_set_illuminance_callback_configuration(TF_ColorV2 *color_v2, uint32_t period, bool value_has_to_change, char option, uint32_t min, uint32_t max);
@@ -591,13 +591,13 @@ int tf_color_v2_get_illuminance_callback_configuration(TF_ColorV2 *color_v2, uin
  * \ingroup TF_ColorV2
  *
  * Returns the color temperature.
- * 
+ *
  * To get a correct color temperature measurement make sure that the color
  * values themselves are not saturated. The color value (R, G or B)
  * is saturated if it is equal to the maximum value of 65535.
  * In that case you have to reduce the gain, see {@link tf_color_v2_set_configuration}.
- * 
- * 
+ *
+ *
  * If you want to get the value periodically, it is recommended to use the
  * {@link tf_color_v2_register_color_temperature_callback} callback. You can set the callback configuration
  * with {@link tf_color_v2_set_color_temperature_callback_configuration}.
@@ -609,30 +609,30 @@ int tf_color_v2_get_color_temperature(TF_ColorV2 *color_v2, uint16_t *ret_color_
  *
  * The period is the period with which the {@link tf_color_v2_register_color_temperature_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change
  * within the period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
- * 
+ *
  * It is furthermore possible to constrain the callback with thresholds.
- * 
+ *
  * The `option`-parameter together with min/max sets a threshold for the {@link tf_color_v2_register_color_temperature_callback} callback.
- * 
+ *
  * The following options are possible:
- * 
+ *
  * \verbatim
  *  "Option", "Description"
- * 
+ *
  *  "'x'",    "Threshold is turned off"
  *  "'o'",    "Threshold is triggered when the value is *outside* the min and max values"
  *  "'i'",    "Threshold is triggered when the value is *inside* or equal to the min and max values"
  *  "'<'",    "Threshold is triggered when the value is smaller than the min value (max is ignored)"
  *  "'>'",    "Threshold is triggered when the value is greater than the min value (max is ignored)"
  * \endverbatim
- * 
+ *
  * If the option is set to 'x' (threshold turned off) the callback is triggered with the fixed period.
  */
 int tf_color_v2_set_color_temperature_callback_configuration(TF_ColorV2 *color_v2, uint32_t period, bool value_has_to_change, char option, uint16_t min, uint16_t max);
@@ -663,25 +663,25 @@ int tf_color_v2_get_light(TF_ColorV2 *color_v2, bool *ret_enable);
  *
  * Sets the configuration of the sensor. Gain and integration time
  * can be configured this way.
- * 
+ *
  * For configuring the gain:
- * 
+ *
  * * 0: 1x Gain
  * * 1: 4x Gain
  * * 2: 16x Gain
  * * 3: 60x Gain
- * 
+ *
  * For configuring the integration time:
- * 
+ *
  * * 0: 2.4ms
  * * 1: 24ms
  * * 2: 101ms
  * * 3: 154ms
  * * 4: 700ms
- * 
+ *
  * Increasing the gain enables the sensor to detect a
  * color from a higher distance.
- * 
+ *
  * The integration time provides a trade-off between conversion time
  * and accuracy. With a longer integration time the values read will
  * be more accurate but it will take longer to get the conversion
@@ -700,14 +700,14 @@ int tf_color_v2_get_configuration(TF_ColorV2 *color_v2, uint8_t *ret_gain, uint8
  * \ingroup TF_ColorV2
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -718,11 +718,11 @@ int tf_color_v2_get_spitfp_error_count(TF_ColorV2 *color_v2, uint32_t *ret_error
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -741,7 +741,7 @@ int tf_color_v2_get_bootloader_mode(TF_ColorV2 *color_v2, uint8_t *ret_mode);
  * Sets the firmware pointer for {@link tf_color_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -753,9 +753,9 @@ int tf_color_v2_set_write_firmware_pointer(TF_ColorV2 *color_v2, uint32_t pointe
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_color_v2_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -767,9 +767,9 @@ int tf_color_v2_write_firmware(TF_ColorV2 *color_v2, const uint8_t data[64], uin
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_color_v2_set_status_led_config(TF_ColorV2 *color_v2, uint8_t config);
@@ -786,7 +786,7 @@ int tf_color_v2_get_status_led_config(TF_ColorV2 *color_v2, uint8_t *ret_config)
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -798,7 +798,7 @@ int tf_color_v2_get_chip_temperature(TF_ColorV2 *color_v2, int16_t *ret_temperat
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -811,7 +811,7 @@ int tf_color_v2_reset(TF_ColorV2 *color_v2);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_color_v2_write_uid(TF_ColorV2 *color_v2, uint32_t uid);
@@ -830,11 +830,11 @@ int tf_color_v2_read_uid(TF_ColorV2 *color_v2, uint32_t *ret_uid);
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

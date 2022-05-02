@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -409,14 +409,14 @@ int tf_thermal_imaging_set_response_expected_all(TF_ThermalImaging *thermal_imag
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint16_t image_chunk_offset, uint8_t image_chunk_data[62], void *user_data) \endcode
- * 
+ *
  * This callback is triggered with every new high contrast image if the transfer image
  * config is configured for high contrast callback (see {@link tf_thermal_imaging_set_image_transfer_config}).
- * 
+ *
  * The data is organized as a 8-bit value 80x60 pixel matrix linearized in
  * a one-dimensional array. The data is arranged line by line from top left to
  * bottom right.
- * 
+ *
  * Each 8-bit value represents one gray-scale image pixel that can directly be
  * shown to a user on a display.
  */
@@ -430,14 +430,14 @@ int tf_thermal_imaging_register_high_contrast_image_low_level_callback(TF_Therma
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint16_t image_chunk_offset, uint8_t image_chunk_data[62], void *user_data) \endcode
- * 
+ *
  * This callback is triggered with every new high contrast image if the transfer image
  * config is configured for high contrast callback (see {@link tf_thermal_imaging_set_image_transfer_config}).
- * 
+ *
  * The data is organized as a 8-bit value 80x60 pixel matrix linearized in
  * a one-dimensional array. The data is arranged line by line from top left to
  * bottom right.
- * 
+ *
  * Each 8-bit value represents one gray-scale image pixel that can directly be
  * shown to a user on a display.
  */
@@ -451,14 +451,14 @@ int tf_thermal_imaging_register_high_contrast_image_callback(TF_ThermalImaging *
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint16_t image_chunk_offset, uint16_t image_chunk_data[31], void *user_data) \endcode
- * 
+ *
  * This callback is triggered with every new temperature image if the transfer image
  * config is configured for temperature callback (see {@link tf_thermal_imaging_set_image_transfer_config}).
- * 
+ *
  * The data is organized as a 16-bit value 80x60 pixel matrix linearized in
  * a one-dimensional array. The data is arranged line by line from top left to
  * bottom right.
- * 
+ *
  * Each 16-bit value represents one temperature measurement in either
  * Kelvin/10 or Kelvin/100 (depending on the resolution set with {@link tf_thermal_imaging_set_resolution}).
  */
@@ -472,14 +472,14 @@ int tf_thermal_imaging_register_temperature_image_low_level_callback(TF_ThermalI
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint16_t image_chunk_offset, uint16_t image_chunk_data[31], void *user_data) \endcode
- * 
+ *
  * This callback is triggered with every new temperature image if the transfer image
  * config is configured for temperature callback (see {@link tf_thermal_imaging_set_image_transfer_config}).
- * 
+ *
  * The data is organized as a 16-bit value 80x60 pixel matrix linearized in
  * a one-dimensional array. The data is arranged line by line from top left to
  * bottom right.
- * 
+ *
  * Each 16-bit value represents one temperature measurement in either
  * Kelvin/10 or Kelvin/100 (depending on the resolution set with {@link tf_thermal_imaging_set_resolution}).
  */
@@ -503,14 +503,14 @@ int tf_thermal_imaging_callback_tick(TF_ThermalImaging *thermal_imaging, uint32_
  * for the difference between
  * High Contrast and Temperature Image. If you don't know what to use
  * the High Contrast Image is probably right for you.
- * 
+ *
  * The data is organized as a 8-bit value 80x60 pixel matrix linearized in
  * a one-dimensional array. The data is arranged line by line from top left to
  * bottom right.
- * 
+ *
  * Each 8-bit value represents one gray-scale image pixel that can directly be
  * shown to a user on a display.
- * 
+ *
  * Before you can use this function you have to enable it with
  * {@link tf_thermal_imaging_set_image_transfer_config}.
  */
@@ -522,14 +522,14 @@ int tf_thermal_imaging_get_high_contrast_image_low_level(TF_ThermalImaging *ther
  * Returns the current temperature image. See `here <https://www.tinkerforge.com/en/doc/Hardware/Bricklets/Thermal_Imaging.html#high-contrast-image-vs-temperature-image>`__
  * for the difference between High Contrast and Temperature Image.
  * If you don't know what to use the High Contrast Image is probably right for you.
- * 
+ *
  * The data is organized as a 16-bit value 80x60 pixel matrix linearized in
  * a one-dimensional array. The data is arranged line by line from top left to
  * bottom right.
- * 
+ *
  * Each 16-bit value represents one temperature measurement in either
  * Kelvin/10 or Kelvin/100 (depending on the resolution set with {@link tf_thermal_imaging_set_resolution}).
- * 
+ *
  * Before you can use this function you have to enable it with
  * {@link tf_thermal_imaging_set_image_transfer_config}.
  */
@@ -539,33 +539,33 @@ int tf_thermal_imaging_get_temperature_image_low_level(TF_ThermalImaging *therma
  * \ingroup TF_ThermalImaging
  *
  * Returns the spotmeter statistics, various temperatures, current resolution and status bits.
- * 
+ *
  * The spotmeter statistics are:
- * 
+ *
  * * Index 0: Mean Temperature.
  * * Index 1: Maximum Temperature.
  * * Index 2: Minimum Temperature.
  * * Index 3: Pixel Count of spotmeter region of interest.
- * 
+ *
  * The temperatures are:
- * 
+ *
  * * Index 0: Focal Plain Array temperature.
  * * Index 1: Focal Plain Array temperature at last FFC (Flat Field Correction).
  * * Index 2: Housing temperature.
  * * Index 3: Housing temperature at last FFC.
- * 
+ *
  * The resolution is either `0 to 6553 Kelvin` or `0 to 655 Kelvin`. If the resolution is the former,
  * the temperatures are in Kelvin/10, if it is the latter the temperatures are in Kelvin/100.
- * 
+ *
  * FFC (Flat Field Correction) Status:
- * 
+ *
  * * FFC Never Commanded: Only seen on startup before first FFC.
  * * FFC Imminent: This state is entered 2 seconds prior to initiating FFC.
  * * FFC In Progress: Flat field correction is started (shutter moves in front of lens and back). Takes about 1 second.
  * * FFC Complete: Shutter is in waiting position again, FFC done.
- * 
+ *
  * Temperature warning bits:
- * 
+ *
  * * Index 0: Shutter lockout (if true shutter is locked out because temperature is outside -10°C to +65°C)
  * * Index 1: Overtemperature shut down imminent (goes true 10 seconds before shutdown)
  */
@@ -575,10 +575,10 @@ int tf_thermal_imaging_get_statistics(TF_ThermalImaging *thermal_imaging, uint16
  * \ingroup TF_ThermalImaging
  *
  * Sets the resolution. The Thermal Imaging Bricklet can either measure
- * 
+ *
  * * from 0 to 6553 Kelvin (-273.15°C to +6279.85°C) with 0.1°C resolution or
  * * from 0 to 655 Kelvin (-273.15°C to +381.85°C) with 0.01°C resolution.
- * 
+ *
  * The accuracy is specified for -10°C to 450°C in the
  * first range and -10°C and 140°C in the second range.
  */
@@ -595,12 +595,12 @@ int tf_thermal_imaging_get_resolution(TF_ThermalImaging *thermal_imaging, uint8_
  * \ingroup TF_ThermalImaging
  *
  * Sets the spotmeter region of interest. The 4 values are
- * 
+ *
  * * Index 0: Column start (has to be smaller then Column end).
  * * Index 1: Row start (has to be smaller then Row end).
  * * Index 2: Column end (has to be smaller then 80).
  * * Index 3: Row end (has to be smaller then 60).
- * 
+ *
  * The spotmeter statistics can be read out with {@link tf_thermal_imaging_get_statistics}.
  */
 int tf_thermal_imaging_set_spotmeter_config(TF_ThermalImaging *thermal_imaging, const uint8_t region_of_interest[4]);
@@ -617,39 +617,39 @@ int tf_thermal_imaging_get_spotmeter_config(TF_ThermalImaging *thermal_imaging, 
  *
  * Sets the high contrast region of interest, dampening factor, clip limit and empty counts.
  * This config is only used in high contrast mode (see {@link tf_thermal_imaging_set_image_transfer_config}).
- * 
+ *
  * The high contrast region of interest consists of four values:
- * 
+ *
  * * Index 0: Column start (has to be smaller or equal then Column end).
  * * Index 1: Row start (has to be smaller then Row end).
  * * Index 2: Column end (has to be smaller then 80).
  * * Index 3: Row end (has to be smaller then 60).
- * 
+ *
  * The algorithm to generate the high contrast image is applied to this region.
- * 
+ *
  * Dampening Factor: This parameter is the amount of temporal dampening applied to the HEQ
  * (history equalization) transformation function. An IIR filter of the form::
- * 
+ *
  *  (N / 256) * previous + ((256 - N) / 256) * current
- * 
+ *
  * is applied, and the HEQ dampening factor
  * represents the value N in the equation, i.e., a value that applies to the amount of
  * influence the previous HEQ transformation function has on the current function. The
  * lower the value of N the higher the influence of the current video frame whereas
  * the higher the value of N the more influence the previous damped transfer function has.
- * 
+ *
  * Clip Limit Index 0 (AGC HEQ Clip Limit High): This parameter defines the maximum number of pixels allowed
  * to accumulate in any given histogram bin. Any additional pixels in a given bin are clipped.
  * The effect of this parameter is to limit the influence of highly-populated bins on the
  * resulting HEQ transformation function.
- * 
+ *
  * Clip Limit Index 1 (AGC HEQ Clip Limit Low): This parameter defines an artificial population that is added to
  * every non-empty histogram bin. In other words, if the Clip Limit Low is set to L, a bin
  * with an actual population of X will have an effective population of L + X. Any empty bin
  * that is nearby a populated bin will be given an artificial population of L. The effect of
  * higher values is to provide a more linear transfer function; lower values provide a more
  * non-linear (equalized) transfer function.
- * 
+ *
  * Empty Counts: This parameter specifies the maximum number of pixels in a bin that will be
  * interpreted as an empty bin. Histogram bins with this number of pixels or less will be
  * processed as an empty bin.
@@ -669,9 +669,9 @@ int tf_thermal_imaging_get_high_contrast_config(TF_ThermalImaging *thermal_imagi
  * The necessary bandwidth of this Bricklet is too high to use getter/callback or
  * high contrast/temperature image at the same time. You have to configure the one
  * you want to use, the Bricklet will optimize the internal configuration accordingly.
- * 
+ *
  * Corresponding functions:
- * 
+ *
  * * Manual High Contrast Image: {@link tf_thermal_imaging_get_high_contrast_image}.
  * * Manual Temperature Image: {@link tf_thermal_imaging_get_temperature_image}.
  * * Callback High Contrast Image: {@link tf_thermal_imaging_register_high_contrast_image_callback} callback.
@@ -690,9 +690,9 @@ int tf_thermal_imaging_get_image_transfer_config(TF_ThermalImaging *thermal_imag
  * \ingroup TF_ThermalImaging
  *
  * Sets the flux linear parameters that can be used for radiometry calibration.
- * 
+ *
  * See FLIR document 102-PS245-100-01 for more details.
- * 
+ *
  * .. versionadded:: 2.0.5$nbsp;(Plugin)
  */
 int tf_thermal_imaging_set_flux_linear_parameters(TF_ThermalImaging *thermal_imaging, uint16_t scene_emissivity, uint16_t temperature_background, uint16_t tau_window, uint16_t temperatur_window, uint16_t tau_atmosphere, uint16_t temperature_atmosphere, uint16_t reflection_window, uint16_t temperature_reflection);
@@ -701,7 +701,7 @@ int tf_thermal_imaging_set_flux_linear_parameters(TF_ThermalImaging *thermal_ima
  * \ingroup TF_ThermalImaging
  *
  * Returns the flux linear parameters, as set by {@link tf_thermal_imaging_set_flux_linear_parameters}.
- * 
+ *
  * .. versionadded:: 2.0.5$nbsp;(Plugin)
  */
 int tf_thermal_imaging_get_flux_linear_parameters(TF_ThermalImaging *thermal_imaging, uint16_t *ret_scene_emissivity, uint16_t *ret_temperature_background, uint16_t *ret_tau_window, uint16_t *ret_temperatur_window, uint16_t *ret_tau_atmosphere, uint16_t *ret_temperature_atmosphere, uint16_t *ret_reflection_window, uint16_t *ret_temperature_reflection);
@@ -710,14 +710,14 @@ int tf_thermal_imaging_get_flux_linear_parameters(TF_ThermalImaging *thermal_ima
  * \ingroup TF_ThermalImaging
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -728,11 +728,11 @@ int tf_thermal_imaging_get_spitfp_error_count(TF_ThermalImaging *thermal_imaging
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -751,7 +751,7 @@ int tf_thermal_imaging_get_bootloader_mode(TF_ThermalImaging *thermal_imaging, u
  * Sets the firmware pointer for {@link tf_thermal_imaging_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -763,9 +763,9 @@ int tf_thermal_imaging_set_write_firmware_pointer(TF_ThermalImaging *thermal_ima
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_thermal_imaging_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -777,9 +777,9 @@ int tf_thermal_imaging_write_firmware(TF_ThermalImaging *thermal_imaging, const 
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_thermal_imaging_set_status_led_config(TF_ThermalImaging *thermal_imaging, uint8_t config);
@@ -796,7 +796,7 @@ int tf_thermal_imaging_get_status_led_config(TF_ThermalImaging *thermal_imaging,
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -808,7 +808,7 @@ int tf_thermal_imaging_get_chip_temperature(TF_ThermalImaging *thermal_imaging, 
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -821,7 +821,7 @@ int tf_thermal_imaging_reset(TF_ThermalImaging *thermal_imaging);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_thermal_imaging_write_uid(TF_ThermalImaging *thermal_imaging, uint32_t uid);
@@ -840,11 +840,11 @@ int tf_thermal_imaging_read_uid(TF_ThermalImaging *thermal_imaging, uint32_t *re
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */
@@ -857,14 +857,14 @@ int tf_thermal_imaging_get_identity(TF_ThermalImaging *thermal_imaging, char ret
  * for the difference between
  * High Contrast and Temperature Image. If you don't know what to use
  * the High Contrast Image is probably right for you.
- * 
+ *
  * The data is organized as a 8-bit value 80x60 pixel matrix linearized in
  * a one-dimensional array. The data is arranged line by line from top left to
  * bottom right.
- * 
+ *
  * Each 8-bit value represents one gray-scale image pixel that can directly be
  * shown to a user on a display.
- * 
+ *
  * Before you can use this function you have to enable it with
  * {@link tf_thermal_imaging_set_image_transfer_config}.
  */
@@ -876,14 +876,14 @@ int tf_thermal_imaging_get_high_contrast_image(TF_ThermalImaging *thermal_imagin
  * Returns the current temperature image. See `here <https://www.tinkerforge.com/en/doc/Hardware/Bricklets/Thermal_Imaging.html#high-contrast-image-vs-temperature-image>`__
  * for the difference between High Contrast and Temperature Image.
  * If you don't know what to use the High Contrast Image is probably right for you.
- * 
+ *
  * The data is organized as a 16-bit value 80x60 pixel matrix linearized in
  * a one-dimensional array. The data is arranged line by line from top left to
  * bottom right.
- * 
+ *
  * Each 16-bit value represents one temperature measurement in either
  * Kelvin/10 or Kelvin/100 (depending on the resolution set with {@link tf_thermal_imaging_set_resolution}).
- * 
+ *
  * Before you can use this function you have to enable it with
  * {@link tf_thermal_imaging_set_image_transfer_config}.
  */

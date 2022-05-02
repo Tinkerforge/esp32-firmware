@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -360,7 +360,7 @@ int tf_one_wire_callback_tick(TF_OneWire *one_wire, uint32_t timeout_us);
  * Returns a list of up to 64 identifiers of the connected 1-Wire devices.
  * Each identifier is 64-bit and consists of 8-bit family code, 48-bit ID and
  * 8-bit CRC.
- * 
+ *
  * To get these identifiers the Bricklet runs the
  * `SEARCH ROM algorithm <https://www.maximintegrated.com/en/app-notes/index.mvp/id/187>`__,
  * as defined by Maxim.
@@ -394,7 +394,7 @@ int tf_one_wire_read(TF_OneWire *one_wire, uint8_t *ret_data, uint8_t *ret_statu
  * Writes a command to the 1-Wire device with the given identifier. You can obtain
  * the identifier by calling {@link tf_one_wire_search_bus}. The MATCH ROM operation is used to
  * write the command.
- * 
+ *
  * If you only have one device connected or want to broadcast to all devices
  * you can set the identifier to 0. In this case the SKIP ROM operation is used to
  * write the command.
@@ -406,9 +406,9 @@ int tf_one_wire_write_command(TF_OneWire *one_wire, uint64_t identifier, uint8_t
  *
  * Sets the communication LED configuration. By default the LED shows 1-wire
  * communication traffic by flickering.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is off.
  */
 int tf_one_wire_set_communication_led_config(TF_OneWire *one_wire, uint8_t config);
@@ -424,14 +424,14 @@ int tf_one_wire_get_communication_led_config(TF_OneWire *one_wire, uint8_t *ret_
  * \ingroup TF_OneWire
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -442,11 +442,11 @@ int tf_one_wire_get_spitfp_error_count(TF_OneWire *one_wire, uint32_t *ret_error
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -465,7 +465,7 @@ int tf_one_wire_get_bootloader_mode(TF_OneWire *one_wire, uint8_t *ret_mode);
  * Sets the firmware pointer for {@link tf_one_wire_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -477,9 +477,9 @@ int tf_one_wire_set_write_firmware_pointer(TF_OneWire *one_wire, uint32_t pointe
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_one_wire_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -491,9 +491,9 @@ int tf_one_wire_write_firmware(TF_OneWire *one_wire, const uint8_t data[64], uin
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_one_wire_set_status_led_config(TF_OneWire *one_wire, uint8_t config);
@@ -510,7 +510,7 @@ int tf_one_wire_get_status_led_config(TF_OneWire *one_wire, uint8_t *ret_config)
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -522,7 +522,7 @@ int tf_one_wire_get_chip_temperature(TF_OneWire *one_wire, int16_t *ret_temperat
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -535,7 +535,7 @@ int tf_one_wire_reset(TF_OneWire *one_wire);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_one_wire_write_uid(TF_OneWire *one_wire, uint32_t uid);
@@ -554,11 +554,11 @@ int tf_one_wire_read_uid(TF_OneWire *one_wire, uint32_t *ret_uid);
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */
@@ -570,7 +570,7 @@ int tf_one_wire_get_identity(TF_OneWire *one_wire, char ret_uid[8], char ret_con
  * Returns a list of up to 64 identifiers of the connected 1-Wire devices.
  * Each identifier is 64-bit and consists of 8-bit family code, 48-bit ID and
  * 8-bit CRC.
- * 
+ *
  * To get these identifiers the Bricklet runs the
  * `SEARCH ROM algorithm <https://www.maximintegrated.com/en/app-notes/index.mvp/id/187>`__,
  * as defined by Maxim.

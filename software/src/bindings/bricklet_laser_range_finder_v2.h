@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -411,10 +411,10 @@ int tf_laser_range_finder_v2_set_response_expected_all(TF_LaserRangeFinderV2 *la
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int16_t distance, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_laser_range_finder_v2_set_distance_callback_configuration}.
- * 
+ *
  * The parameter is the same as {@link tf_laser_range_finder_v2_get_distance}.
  */
 int tf_laser_range_finder_v2_register_distance_callback(TF_LaserRangeFinderV2 *laser_range_finder_v2, TF_LaserRangeFinderV2_DistanceHandler handler, void *user_data);
@@ -427,10 +427,10 @@ int tf_laser_range_finder_v2_register_distance_callback(TF_LaserRangeFinderV2 *l
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int16_t velocity, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_laser_range_finder_v2_set_velocity_callback_configuration}.
- * 
+ *
  * The parameter is the same as {@link tf_laser_range_finder_v2_get_velocity}.
  */
 int tf_laser_range_finder_v2_register_velocity_callback(TF_LaserRangeFinderV2 *laser_range_finder_v2, TF_LaserRangeFinderV2_VelocityHandler handler, void *user_data);
@@ -450,10 +450,10 @@ int tf_laser_range_finder_v2_callback_tick(TF_LaserRangeFinderV2 *laser_range_fi
  * \ingroup TF_LaserRangeFinderV2
  *
  * Returns the measured distance.
- * 
+ *
  * The laser has to be enabled, see {@link tf_laser_range_finder_v2_set_enable}.
- * 
- * 
+ *
+ *
  * If you want to get the value periodically, it is recommended to use the
  * {@link tf_laser_range_finder_v2_register_distance_callback} callback. You can set the callback configuration
  * with {@link tf_laser_range_finder_v2_set_distance_callback_configuration}.
@@ -465,30 +465,30 @@ int tf_laser_range_finder_v2_get_distance(TF_LaserRangeFinderV2 *laser_range_fin
  *
  * The period is the period with which the {@link tf_laser_range_finder_v2_register_distance_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change
  * within the period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
- * 
+ *
  * It is furthermore possible to constrain the callback with thresholds.
- * 
+ *
  * The `option`-parameter together with min/max sets a threshold for the {@link tf_laser_range_finder_v2_register_distance_callback} callback.
- * 
+ *
  * The following options are possible:
- * 
+ *
  * \verbatim
  *  "Option", "Description"
- * 
+ *
  *  "'x'",    "Threshold is turned off"
  *  "'o'",    "Threshold is triggered when the value is *outside* the min and max values"
  *  "'i'",    "Threshold is triggered when the value is *inside* or equal to the min and max values"
  *  "'<'",    "Threshold is triggered when the value is smaller than the min value (max is ignored)"
  *  "'>'",    "Threshold is triggered when the value is greater than the min value (max is ignored)"
  * \endverbatim
- * 
+ *
  * If the option is set to 'x' (threshold turned off) the callback is triggered with the fixed period.
  */
 int tf_laser_range_finder_v2_set_distance_callback_configuration(TF_LaserRangeFinderV2 *laser_range_finder_v2, uint32_t period, bool value_has_to_change, char option, int16_t min, int16_t max);
@@ -505,12 +505,12 @@ int tf_laser_range_finder_v2_get_distance_callback_configuration(TF_LaserRangeFi
  *
  * Returns the measured velocity. The value has a range of -12800 to 12700
  * and is given in 1/100 m/s.
- * 
+ *
  * The velocity measurement only produces stables results if a fixed
  * measurement rate (see {@link tf_laser_range_finder_v2_set_configuration}) is configured. Also the laser
  * has to be enabled, see {@link tf_laser_range_finder_v2_set_enable}.
- * 
- * 
+ *
+ *
  * If you want to get the value periodically, it is recommended to use the
  * {@link tf_laser_range_finder_v2_register_velocity_callback} callback. You can set the callback configuration
  * with {@link tf_laser_range_finder_v2_set_velocity_callback_configuration}.
@@ -522,30 +522,30 @@ int tf_laser_range_finder_v2_get_velocity(TF_LaserRangeFinderV2 *laser_range_fin
  *
  * The period is the period with which the {@link tf_laser_range_finder_v2_register_velocity_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change
  * within the period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
- * 
+ *
  * It is furthermore possible to constrain the callback with thresholds.
- * 
+ *
  * The `option`-parameter together with min/max sets a threshold for the {@link tf_laser_range_finder_v2_register_velocity_callback} callback.
- * 
+ *
  * The following options are possible:
- * 
+ *
  * \verbatim
  *  "Option", "Description"
- * 
+ *
  *  "'x'",    "Threshold is turned off"
  *  "'o'",    "Threshold is triggered when the value is *outside* the min and max values"
  *  "'i'",    "Threshold is triggered when the value is *inside* or equal to the min and max values"
  *  "'<'",    "Threshold is triggered when the value is smaller than the min value (max is ignored)"
  *  "'>'",    "Threshold is triggered when the value is greater than the min value (max is ignored)"
  * \endverbatim
- * 
+ *
  * If the option is set to 'x' (threshold turned off) the callback is triggered with the fixed period.
  */
 int tf_laser_range_finder_v2_set_velocity_callback_configuration(TF_LaserRangeFinderV2 *laser_range_finder_v2, uint32_t period, bool value_has_to_change, char option, int16_t min, int16_t max);
@@ -561,7 +561,7 @@ int tf_laser_range_finder_v2_get_velocity_callback_configuration(TF_LaserRangeFi
  * \ingroup TF_LaserRangeFinderV2
  *
  * Enables the laser of the LIDAR if set to *true*.
- * 
+ *
  * We recommend that you wait 250ms after enabling the laser before
  * the first call of {@link tf_laser_range_finder_v2_get_distance} to ensure stable measurements.
  */
@@ -581,19 +581,19 @@ int tf_laser_range_finder_v2_get_enable(TF_LaserRangeFinderV2 *laser_range_finde
  * will integrate acquisitions to find a correlation record peak. With a higher count,
  * the Bricklet can measure longer distances. With a lower count, the rate increases. The
  * allowed values are 1-255.
- * 
+ *
  * If you set **Enable Quick Termination** to true, the distance measurement will be terminated
  * early if a high peak was already detected. This means that a higher measurement rate can be achieved
  * and long distances can be measured at the same time. However, the chance of false-positive
  * distance measurements increases.
- * 
+ *
  * Normally the distance is calculated with a detection algorithm that uses peak value,
  * signal strength and noise. You can however also define a fixed **Threshold Value**.
  * Set this to a low value if you want to measure the distance to something that has
  * very little reflection (e.g. glass) and set it to a high value if you want to measure
  * the distance to something with a very high reflection (e.g. mirror). Set this to 0 to
  * use the default algorithm. The other allowed values are 1-255.
- * 
+ *
  * Set the **Measurement Frequency** to force a fixed measurement rate. If set to 0,
  * the Laser Range Finder Bricklet will use the optimal frequency according to the other
  * configurations and the actual measured distance. Since the rate is not fixed in this case,
@@ -601,7 +601,7 @@ int tf_laser_range_finder_v2_get_enable(TF_LaserRangeFinderV2 *laser_range_finde
  * set a fixed measurement frequency. The lower the frequency, the higher is the resolution
  * of the calculated velocity. The allowed values are 10Hz-500Hz (and 0 to turn the fixed
  * frequency off).
- * 
+ *
  * The default values for Acquisition Count, Enable Quick Termination, Threshold Value and
  * Measurement Frequency are 128, false, 0 and 0.
  */
@@ -619,7 +619,7 @@ int tf_laser_range_finder_v2_get_configuration(TF_LaserRangeFinderV2 *laser_rang
  *
  * Sets the length of a `moving averaging <https://en.wikipedia.org/wiki/Moving_average>`__
  * for the distance and velocity.
- * 
+ *
  * Setting the length to 0 will turn the averaging completely off. With less
  * averaging, there is more noise on the data.
  */
@@ -637,10 +637,10 @@ int tf_laser_range_finder_v2_get_moving_average(TF_LaserRangeFinderV2 *laser_ran
  *
  * The offset is added to the measured distance.
  * It is saved in non-volatile memory, you only have to set it once.
- * 
+ *
  * The Bricklet comes with a per-sensor factory-calibrated offset value,
  * you should not have to call this function.
- * 
+ *
  * If you want to re-calibrate the offset you first have to set it to 0.
  * Calculate the offset by measuring the distance to a known distance
  * and set it again.
@@ -673,14 +673,14 @@ int tf_laser_range_finder_v2_get_distance_led_config(TF_LaserRangeFinderV2 *lase
  * \ingroup TF_LaserRangeFinderV2
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -691,11 +691,11 @@ int tf_laser_range_finder_v2_get_spitfp_error_count(TF_LaserRangeFinderV2 *laser
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -714,7 +714,7 @@ int tf_laser_range_finder_v2_get_bootloader_mode(TF_LaserRangeFinderV2 *laser_ra
  * Sets the firmware pointer for {@link tf_laser_range_finder_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -726,9 +726,9 @@ int tf_laser_range_finder_v2_set_write_firmware_pointer(TF_LaserRangeFinderV2 *l
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_laser_range_finder_v2_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -740,9 +740,9 @@ int tf_laser_range_finder_v2_write_firmware(TF_LaserRangeFinderV2 *laser_range_f
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_laser_range_finder_v2_set_status_led_config(TF_LaserRangeFinderV2 *laser_range_finder_v2, uint8_t config);
@@ -759,7 +759,7 @@ int tf_laser_range_finder_v2_get_status_led_config(TF_LaserRangeFinderV2 *laser_
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -771,7 +771,7 @@ int tf_laser_range_finder_v2_get_chip_temperature(TF_LaserRangeFinderV2 *laser_r
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -784,7 +784,7 @@ int tf_laser_range_finder_v2_reset(TF_LaserRangeFinderV2 *laser_range_finder_v2)
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_laser_range_finder_v2_write_uid(TF_LaserRangeFinderV2 *laser_range_finder_v2, uint32_t uid);
@@ -803,11 +803,11 @@ int tf_laser_range_finder_v2_read_uid(TF_LaserRangeFinderV2 *laser_range_finder_
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

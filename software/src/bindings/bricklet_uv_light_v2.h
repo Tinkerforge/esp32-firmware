@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -400,10 +400,10 @@ int tf_uv_light_v2_set_response_expected_all(TF_UVLightV2 *uv_light_v2, bool res
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int32_t uva, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_uv_light_v2_set_uva_callback_configuration}.
- * 
+ *
  * The parameter is the same as {@link tf_uv_light_v2_get_uva}.
  */
 int tf_uv_light_v2_register_uva_callback(TF_UVLightV2 *uv_light_v2, TF_UVLightV2_UVAHandler handler, void *user_data);
@@ -416,10 +416,10 @@ int tf_uv_light_v2_register_uva_callback(TF_UVLightV2 *uv_light_v2, TF_UVLightV2
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int32_t uvb, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_uv_light_v2_set_uvb_callback_configuration}.
- * 
+ *
  * The parameter is the same as {@link tf_uv_light_v2_get_uvb}.
  */
 int tf_uv_light_v2_register_uvb_callback(TF_UVLightV2 *uv_light_v2, TF_UVLightV2_UVBHandler handler, void *user_data);
@@ -432,10 +432,10 @@ int tf_uv_light_v2_register_uvb_callback(TF_UVLightV2 *uv_light_v2, TF_UVLightV2
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int32_t uvi, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_uv_light_v2_set_uvi_callback_configuration}.
- * 
+ *
  * The parameter is the same as {@link tf_uv_light_v2_get_uvi}.
  */
 int tf_uv_light_v2_register_uvi_callback(TF_UVLightV2 *uv_light_v2, TF_UVLightV2_UVIHandler handler, void *user_data);
@@ -459,14 +459,14 @@ int tf_uv_light_v2_callback_tick(TF_UVLightV2 *uv_light_v2, uint32_t timeout_us)
  * action spectrum to get the skin-affecting irradiation. Therefore, you cannot
  * just divide the value by 250 to get the UVA index. To get the UV index use
  * {@link tf_uv_light_v2_get_uvi}.
- * 
+ *
  * If the sensor is saturated, then -1 is returned, see {@link tf_uv_light_v2_set_configuration}.
- * 
+ *
  * If you want to get the intensity periodically, it is recommended to use the
  * {@link tf_uv_light_v2_register_uva_callback} callback and set the period with
  * {@link tf_uv_light_v2_set_uva_callback_configuration}.
- * 
- * 
+ *
+ *
  * If you want to get the value periodically, it is recommended to use the
  * {@link tf_uv_light_v2_register_uva_callback} callback. You can set the callback configuration
  * with {@link tf_uv_light_v2_set_uva_callback_configuration}.
@@ -478,30 +478,30 @@ int tf_uv_light_v2_get_uva(TF_UVLightV2 *uv_light_v2, int32_t *ret_uva);
  *
  * The period is the period with which the {@link tf_uv_light_v2_register_uva_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change
  * within the period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
- * 
+ *
  * It is furthermore possible to constrain the callback with thresholds.
- * 
+ *
  * The `option`-parameter together with min/max sets a threshold for the {@link tf_uv_light_v2_register_uva_callback} callback.
- * 
+ *
  * The following options are possible:
- * 
+ *
  * \verbatim
  *  "Option", "Description"
- * 
+ *
  *  "'x'",    "Threshold is turned off"
  *  "'o'",    "Threshold is triggered when the value is *outside* the min and max values"
  *  "'i'",    "Threshold is triggered when the value is *inside* or equal to the min and max values"
  *  "'<'",    "Threshold is triggered when the value is smaller than the min value (max is ignored)"
  *  "'>'",    "Threshold is triggered when the value is greater than the min value (max is ignored)"
  * \endverbatim
- * 
+ *
  * If the option is set to 'x' (threshold turned off) the callback is triggered with the fixed period.
  */
 int tf_uv_light_v2_set_uva_callback_configuration(TF_UVLightV2 *uv_light_v2, uint32_t period, bool value_has_to_change, char option, int32_t min, int32_t max);
@@ -521,14 +521,14 @@ int tf_uv_light_v2_get_uva_callback_configuration(TF_UVLightV2 *uv_light_v2, uin
  * action spectrum to get the skin-affecting irradiation. Therefore, you cannot
  * just divide the value by 250 to get the UVB index. To get the UV index use
  * {@link tf_uv_light_v2_get_uvi}.
- * 
+ *
  * If the sensor is saturated, then -1 is returned, see {@link tf_uv_light_v2_set_configuration}.
- * 
+ *
  * If you want to get the intensity periodically, it is recommended to use the
  * {@link tf_uv_light_v2_register_uvb_callback} callback and set the period with
  * {@link tf_uv_light_v2_set_uvb_callback_configuration}.
- * 
- * 
+ *
+ *
  * If you want to get the value periodically, it is recommended to use the
  * {@link tf_uv_light_v2_register_uvb_callback} callback. You can set the callback configuration
  * with {@link tf_uv_light_v2_set_uvb_callback_configuration}.
@@ -540,30 +540,30 @@ int tf_uv_light_v2_get_uvb(TF_UVLightV2 *uv_light_v2, int32_t *ret_uvb);
  *
  * The period is the period with which the {@link tf_uv_light_v2_register_uvb_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change
  * within the period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
- * 
+ *
  * It is furthermore possible to constrain the callback with thresholds.
- * 
+ *
  * The `option`-parameter together with min/max sets a threshold for the {@link tf_uv_light_v2_register_uvb_callback} callback.
- * 
+ *
  * The following options are possible:
- * 
+ *
  * \verbatim
  *  "Option", "Description"
- * 
+ *
  *  "'x'",    "Threshold is turned off"
  *  "'o'",    "Threshold is triggered when the value is *outside* the min and max values"
  *  "'i'",    "Threshold is triggered when the value is *inside* or equal to the min and max values"
  *  "'<'",    "Threshold is triggered when the value is smaller than the min value (max is ignored)"
  *  "'>'",    "Threshold is triggered when the value is greater than the min value (max is ignored)"
  * \endverbatim
- * 
+ *
  * If the option is set to 'x' (threshold turned off) the callback is triggered with the fixed period.
  */
 int tf_uv_light_v2_set_uvb_callback_configuration(TF_UVLightV2 *uv_light_v2, uint32_t period, bool value_has_to_change, char option, int32_t min, int32_t max);
@@ -579,14 +579,14 @@ int tf_uv_light_v2_get_uvb_callback_configuration(TF_UVLightV2 *uv_light_v2, uin
  * \ingroup TF_UVLightV2
  *
  * Returns the UV index of the sensor, the index is given in 1/10.
- * 
+ *
  * If the sensor is saturated, then -1 is returned, see {@link tf_uv_light_v2_set_configuration}.
- * 
+ *
  * If you want to get the intensity periodically, it is recommended to use the
  * {@link tf_uv_light_v2_register_uvi_callback} callback and set the period with
  * {@link tf_uv_light_v2_set_uvi_callback_configuration}.
- * 
- * 
+ *
+ *
  * If you want to get the value periodically, it is recommended to use the
  * {@link tf_uv_light_v2_register_uvi_callback} callback. You can set the callback configuration
  * with {@link tf_uv_light_v2_set_uvi_callback_configuration}.
@@ -598,30 +598,30 @@ int tf_uv_light_v2_get_uvi(TF_UVLightV2 *uv_light_v2, int32_t *ret_uvi);
  *
  * The period is the period with which the {@link tf_uv_light_v2_register_uvi_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change
  * within the period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
- * 
+ *
  * It is furthermore possible to constrain the callback with thresholds.
- * 
+ *
  * The `option`-parameter together with min/max sets a threshold for the {@link tf_uv_light_v2_register_uvi_callback} callback.
- * 
+ *
  * The following options are possible:
- * 
+ *
  * \verbatim
  *  "Option", "Description"
- * 
+ *
  *  "'x'",    "Threshold is turned off"
  *  "'o'",    "Threshold is triggered when the value is *outside* the min and max values"
  *  "'i'",    "Threshold is triggered when the value is *inside* or equal to the min and max values"
  *  "'<'",    "Threshold is triggered when the value is smaller than the min value (max is ignored)"
  *  "'>'",    "Threshold is triggered when the value is greater than the min value (max is ignored)"
  * \endverbatim
- * 
+ *
  * If the option is set to 'x' (threshold turned off) the callback is triggered with the fixed period.
  */
 int tf_uv_light_v2_set_uvi_callback_configuration(TF_UVLightV2 *uv_light_v2, uint32_t period, bool value_has_to_change, char option, int32_t min, int32_t max);
@@ -640,7 +640,7 @@ int tf_uv_light_v2_get_uvi_callback_configuration(TF_UVLightV2 *uv_light_v2, uin
  * between 50 and 800 ms. With a shorter integration time the sensor reading updates
  * more often but contains more noise. With a longer integration the sensor reading
  * contains less noise but updates less often.
- * 
+ *
  * With a longer integration time (especially 800 ms) and a higher UV intensity the
  * sensor can be saturated. If this happens the UVA/UVB/UVI readings are all -1.
  * In this case you need to choose a shorter integration time.
@@ -658,14 +658,14 @@ int tf_uv_light_v2_get_configuration(TF_UVLightV2 *uv_light_v2, uint8_t *ret_int
  * \ingroup TF_UVLightV2
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -676,11 +676,11 @@ int tf_uv_light_v2_get_spitfp_error_count(TF_UVLightV2 *uv_light_v2, uint32_t *r
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -699,7 +699,7 @@ int tf_uv_light_v2_get_bootloader_mode(TF_UVLightV2 *uv_light_v2, uint8_t *ret_m
  * Sets the firmware pointer for {@link tf_uv_light_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -711,9 +711,9 @@ int tf_uv_light_v2_set_write_firmware_pointer(TF_UVLightV2 *uv_light_v2, uint32_
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_uv_light_v2_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -725,9 +725,9 @@ int tf_uv_light_v2_write_firmware(TF_UVLightV2 *uv_light_v2, const uint8_t data[
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_uv_light_v2_set_status_led_config(TF_UVLightV2 *uv_light_v2, uint8_t config);
@@ -744,7 +744,7 @@ int tf_uv_light_v2_get_status_led_config(TF_UVLightV2 *uv_light_v2, uint8_t *ret
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -756,7 +756,7 @@ int tf_uv_light_v2_get_chip_temperature(TF_UVLightV2 *uv_light_v2, int16_t *ret_
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -769,7 +769,7 @@ int tf_uv_light_v2_reset(TF_UVLightV2 *uv_light_v2);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_uv_light_v2_write_uid(TF_UVLightV2 *uv_light_v2, uint32_t uid);
@@ -788,11 +788,11 @@ int tf_uv_light_v2_read_uid(TF_UVLightV2 *uv_light_v2, uint32_t *ret_uid);
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

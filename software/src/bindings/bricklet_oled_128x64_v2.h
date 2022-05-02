@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-04-19.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -313,19 +313,19 @@ int tf_oled_128x64_v2_callback_tick(TF_OLED128x64V2 *oled_128x64_v2, uint32_t ti
  * \ingroup TF_OLED128x64V2
  *
  * Writes pixels to the specified window.
- * 
+ *
  * The pixels are written into the window line by line top to bottom
  * and each line is written from left to right.
- * 
+ *
  * If automatic draw is enabled (default) the pixels are directly written to
  * the screen. Only pixels that have actually changed are updated on the screen,
  * the rest stays the same.
- * 
+ *
  * If automatic draw is disabled the pixels are written to an internal buffer and
  * the buffer is transferred to the display only after {@link tf_oled_128x64_v2_draw_buffered_frame}
  * is called. This can be used to avoid flicker when drawing a complex frame in
  * multiple steps.
- * 
+ *
  * Automatic draw can be configured with the {@link tf_oled_128x64_v2_set_display_configuration}
  * function.
  */
@@ -335,16 +335,16 @@ int tf_oled_128x64_v2_write_pixels_low_level(TF_OLED128x64V2 *oled_128x64_v2, ui
  * \ingroup TF_OLED128x64V2
  *
  * Reads pixels from the specified window.
- * 
+ *
  * The pixels are read from the window line by line top to bottom
  * and each line is read from left to right.
- * 
+ *
  * If automatic draw is enabled (default) the pixels that are read are always the
  * same that are shown on the display.
- * 
+ *
  * If automatic draw is disabled the pixels are read from the internal buffer
  * (see {@link tf_oled_128x64_v2_draw_buffered_frame}).
- * 
+ *
  * Automatic draw can be configured with the {@link tf_oled_128x64_v2_set_display_configuration}
  * function.
  */
@@ -354,14 +354,14 @@ int tf_oled_128x64_v2_read_pixels_low_level(TF_OLED128x64V2 *oled_128x64_v2, uin
  * \ingroup TF_OLED128x64V2
  *
  * Clears the complete content of the display.
- * 
+ *
  * If automatic draw is enabled (default) the pixels are directly cleared.
- * 
+ *
  * If automatic draw is disabled the the internal buffer is cleared and
  * the buffer is transferred to the display only after {@link tf_oled_128x64_v2_draw_buffered_frame}
  * is called. This can be used to avoid flicker when drawing a complex frame in
  * multiple steps.
- * 
+ *
  * Automatic draw can be configured with the {@link tf_oled_128x64_v2_set_display_configuration}
  * function.
  */
@@ -371,10 +371,10 @@ int tf_oled_128x64_v2_clear_display(TF_OLED128x64V2 *oled_128x64_v2);
  * \ingroup TF_OLED128x64V2
  *
  * Sets the configuration of the display.
- * 
+ *
  * You can set a contrast value from 0 to 255 and you can invert the color
  * (white/black) of the display.
- * 
+ *
  * If automatic draw is set to *true*, the display is automatically updated with every
  * call of {@link tf_oled_128x64_v2_write_pixels} or {@link tf_oled_128x64_v2_write_line}. If it is set to false, the
  * changes are written into an internal buffer and only shown on the display after
@@ -394,25 +394,25 @@ int tf_oled_128x64_v2_get_display_configuration(TF_OLED128x64V2 *oled_128x64_v2,
  *
  * Writes text to a specific line with a specific position.
  * The text can have a maximum of 22 characters.
- * 
+ *
  * For example: (1, 10, "Hello") will write *Hello* in the middle of the
  * second line of the display.
- * 
+ *
  * The display uses a special 5x7 pixel charset. You can view the characters
  * of the charset in Brick Viewer.
- * 
+ *
  * If automatic draw is enabled (default) the text is directly written to
  * the screen. Only pixels that have actually changed are updated on the screen,
  * the rest stays the same.
- * 
+ *
  * If automatic draw is disabled the text is written to an internal buffer and
  * the buffer is transferred to the display only after {@link tf_oled_128x64_v2_draw_buffered_frame}
  * is called. This can be used to avoid flicker when drawing a complex frame in
  * multiple steps.
- * 
+ *
  * Automatic draw can be configured with the {@link tf_oled_128x64_v2_set_display_configuration}
  * function.
- * 
+ *
  * The font conforms to code page 437.
  */
 int tf_oled_128x64_v2_write_line(TF_OLED128x64V2 *oled_128x64_v2, uint8_t line, uint8_t position, const char *text);
@@ -425,7 +425,7 @@ int tf_oled_128x64_v2_write_line(TF_OLED128x64V2 *oled_128x64_v2, uint8_t line, 
  * ({@link tf_oled_128x64_v2_set_display_configuration}), the data is written in an internal buffer and
  * only transferred to the display by calling this function. This can be used to
  * avoid flicker when drawing a complex frame in multiple steps.
- * 
+ *
  * Set the `force complete redraw` to *true* to redraw the whole display
  * instead of only the changed parts. Normally it should not be necessary to set this to
  * *true*. It may only become necessary in case of stuck pixels because of errors.
@@ -436,14 +436,14 @@ int tf_oled_128x64_v2_draw_buffered_frame(TF_OLED128x64V2 *oled_128x64_v2, bool 
  * \ingroup TF_OLED128x64V2
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -454,11 +454,11 @@ int tf_oled_128x64_v2_get_spitfp_error_count(TF_OLED128x64V2 *oled_128x64_v2, ui
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -477,7 +477,7 @@ int tf_oled_128x64_v2_get_bootloader_mode(TF_OLED128x64V2 *oled_128x64_v2, uint8
  * Sets the firmware pointer for {@link tf_oled_128x64_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -489,9 +489,9 @@ int tf_oled_128x64_v2_set_write_firmware_pointer(TF_OLED128x64V2 *oled_128x64_v2
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_oled_128x64_v2_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -503,9 +503,9 @@ int tf_oled_128x64_v2_write_firmware(TF_OLED128x64V2 *oled_128x64_v2, const uint
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_oled_128x64_v2_set_status_led_config(TF_OLED128x64V2 *oled_128x64_v2, uint8_t config);
@@ -522,7 +522,7 @@ int tf_oled_128x64_v2_get_status_led_config(TF_OLED128x64V2 *oled_128x64_v2, uin
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -534,7 +534,7 @@ int tf_oled_128x64_v2_get_chip_temperature(TF_OLED128x64V2 *oled_128x64_v2, int1
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -547,7 +547,7 @@ int tf_oled_128x64_v2_reset(TF_OLED128x64V2 *oled_128x64_v2);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_oled_128x64_v2_write_uid(TF_OLED128x64V2 *oled_128x64_v2, uint32_t uid);
@@ -566,11 +566,11 @@ int tf_oled_128x64_v2_read_uid(TF_OLED128x64V2 *oled_128x64_v2, uint32_t *ret_ui
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */
@@ -580,19 +580,19 @@ int tf_oled_128x64_v2_get_identity(TF_OLED128x64V2 *oled_128x64_v2, char ret_uid
  * \ingroup TF_OLED128x64V2
  *
  * Writes pixels to the specified window.
- * 
+ *
  * The pixels are written into the window line by line top to bottom
  * and each line is written from left to right.
- * 
+ *
  * If automatic draw is enabled (default) the pixels are directly written to
  * the screen. Only pixels that have actually changed are updated on the screen,
  * the rest stays the same.
- * 
+ *
  * If automatic draw is disabled the pixels are written to an internal buffer and
  * the buffer is transferred to the display only after {@link tf_oled_128x64_v2_draw_buffered_frame}
  * is called. This can be used to avoid flicker when drawing a complex frame in
  * multiple steps.
- * 
+ *
  * Automatic draw can be configured with the {@link tf_oled_128x64_v2_set_display_configuration}
  * function.
  */
@@ -602,16 +602,16 @@ int tf_oled_128x64_v2_write_pixels(TF_OLED128x64V2 *oled_128x64_v2, uint8_t x_st
  * \ingroup TF_OLED128x64V2
  *
  * Reads pixels from the specified window.
- * 
+ *
  * The pixels are read from the window line by line top to bottom
  * and each line is read from left to right.
- * 
+ *
  * If automatic draw is enabled (default) the pixels that are read are always the
  * same that are shown on the display.
- * 
+ *
  * If automatic draw is disabled the pixels are read from the internal buffer
  * (see {@link tf_oled_128x64_v2_draw_buffered_frame}).
- * 
+ *
  * Automatic draw can be configured with the {@link tf_oled_128x64_v2_set_display_configuration}
  * function.
  */

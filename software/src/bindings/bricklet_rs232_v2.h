@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -424,9 +424,9 @@ int tf_rs232_v2_set_response_expected_all(TF_RS232V2 *rs232_v2, bool response_ex
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint16_t message_length, uint16_t message_chunk_offset, char message_chunk_data[60], void *user_data) \endcode
- * 
+ *
  * This callback is called if new data is available.
- * 
+ *
  * To enable this callback, use {@link tf_rs232_v2_enable_read_callback}.
  */
 int tf_rs232_v2_register_read_low_level_callback(TF_RS232V2 *rs232_v2, TF_RS232V2_ReadLowLevelHandler handler, void *user_data);
@@ -439,9 +439,9 @@ int tf_rs232_v2_register_read_low_level_callback(TF_RS232V2 *rs232_v2, TF_RS232V
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint16_t message_length, uint16_t message_chunk_offset, char message_chunk_data[60], void *user_data) \endcode
- * 
+ *
  * This callback is called if new data is available.
- * 
+ *
  * To enable this callback, use {@link tf_rs232_v2_enable_read_callback}.
  */
 int tf_rs232_v2_register_read_callback(TF_RS232V2 *rs232_v2, TF_RS232V2_ReadHandler handler, char *message, void *user_data);
@@ -454,7 +454,7 @@ int tf_rs232_v2_register_read_callback(TF_RS232V2 *rs232_v2, TF_RS232V2_ReadHand
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint32_t error_count_overrun, uint32_t error_count_parity, void *user_data) \endcode
- * 
+ *
  * This callback is called if a new error occurs. It returns
  * the current overrun and parity error count.
  */
@@ -468,12 +468,12 @@ int tf_rs232_v2_register_error_count_callback(TF_RS232V2 *rs232_v2, TF_RS232V2_E
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint16_t frame_count, void *user_data) \endcode
- * 
+ *
  * This callback is called if at least one frame of data is readable. The frame size is configured with {@link tf_rs232_v2_set_frame_readable_callback_configuration}.
  * The frame count parameter is the number of frames that can be read.
  * This callback is triggered only once until {@link tf_rs232_v2_read} is called. This means, that if you have configured a frame size of X bytes,
  * you can read exactly X bytes using the {@link tf_rs232_v2_read} function, every time the callback triggers without checking the frame count parameter.
- * 
+ *
  * .. versionadded:: 2.0.3$nbsp;(Plugin)
  */
 int tf_rs232_v2_register_frame_readable_callback(TF_RS232V2 *rs232_v2, TF_RS232V2_FrameReadableHandler handler, void *user_data);
@@ -494,9 +494,9 @@ int tf_rs232_v2_callback_tick(TF_RS232V2 *rs232_v2, uint32_t timeout_us);
  *
  * Writes characters to the RS232 interface. The characters can be binary data,
  * ASCII or similar is not necessary.
- * 
+ *
  * The return value is the number of characters that were written.
- * 
+ *
  * See {@link tf_rs232_v2_set_configuration} for configuration possibilities
  * regarding baud rate, parity and so on.
  */
@@ -506,7 +506,7 @@ int tf_rs232_v2_write_low_level(TF_RS232V2 *rs232_v2, uint16_t message_length, u
  * \ingroup TF_RS232V2
  *
  * Returns up to *length* characters from receive buffer.
- * 
+ *
  * Instead of polling with this function, you can also use
  * callbacks. But note that this function will return available
  * data only when the read callback is disabled.
@@ -518,7 +518,7 @@ int tf_rs232_v2_read_low_level(TF_RS232V2 *rs232_v2, uint16_t length, uint16_t *
  * \ingroup TF_RS232V2
  *
  * Enables the {@link tf_rs232_v2_register_read_callback} callback. This will disable the {@link tf_rs232_v2_register_frame_readable_callback} callback.
- * 
+ *
  * By default the callback is disabled.
  */
 int tf_rs232_v2_enable_read_callback(TF_RS232V2 *rs232_v2);
@@ -527,7 +527,7 @@ int tf_rs232_v2_enable_read_callback(TF_RS232V2 *rs232_v2);
  * \ingroup TF_RS232V2
  *
  * Disables the {@link tf_rs232_v2_register_read_callback} callback.
- * 
+ *
  * By default the callback is disabled.
  */
 int tf_rs232_v2_disable_read_callback(TF_RS232V2 *rs232_v2);
@@ -559,9 +559,9 @@ int tf_rs232_v2_get_configuration(TF_RS232V2 *rs232_v2, uint32_t *ret_baudrate, 
  *
  * Sets the send and receive buffer size in byte. In total the buffers have to be
  * 10240 byte (10KiB) in size, the minimum buffer size is 1024 byte (1KiB) for each.
- * 
+ *
  * The current buffer content is lost if this function is called.
- * 
+ *
  * The send buffer holds data that is given by {@link tf_rs232_v2_write} and
  * can not be written yet. The receive buffer holds data that is
  * received through RS232 but could not yet be send to the
@@ -580,7 +580,7 @@ int tf_rs232_v2_get_buffer_config(TF_RS232V2 *rs232_v2, uint16_t *ret_send_buffe
  * \ingroup TF_RS232V2
  *
  * Returns the currently used bytes for the send and received buffer.
- * 
+ *
  * See {@link tf_rs232_v2_set_buffer_config} for buffer size configuration.
  */
 int tf_rs232_v2_get_buffer_status(TF_RS232V2 *rs232_v2, uint16_t *ret_send_buffer_used, uint16_t *ret_receive_buffer_used);
@@ -597,9 +597,9 @@ int tf_rs232_v2_get_error_count(TF_RS232V2 *rs232_v2, uint32_t *ret_error_count_
  *
  * Configures the {@link tf_rs232_v2_register_frame_readable_callback} callback. The frame size is the number of bytes, that have to be readable to trigger the callback.
  * A frame size of 0 disables the callback. A frame size greater than 0 enables the callback and disables the {@link tf_rs232_v2_register_read_callback} callback.
- * 
+ *
  * By default the callback is disabled.
- * 
+ *
  * .. versionadded:: 2.0.3$nbsp;(Plugin)
  */
 int tf_rs232_v2_set_frame_readable_callback_configuration(TF_RS232V2 *rs232_v2, uint16_t frame_size);
@@ -608,7 +608,7 @@ int tf_rs232_v2_set_frame_readable_callback_configuration(TF_RS232V2 *rs232_v2, 
  * \ingroup TF_RS232V2
  *
  * Returns the callback configuration as set by {@link tf_rs232_v2_set_frame_readable_callback_configuration}.
- * 
+ *
  * .. versionadded:: 2.0.3$nbsp;(Plugin)
  */
 int tf_rs232_v2_get_frame_readable_callback_configuration(TF_RS232V2 *rs232_v2, uint16_t *ret_frame_size);
@@ -617,14 +617,14 @@ int tf_rs232_v2_get_frame_readable_callback_configuration(TF_RS232V2 *rs232_v2, 
  * \ingroup TF_RS232V2
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -635,11 +635,11 @@ int tf_rs232_v2_get_spitfp_error_count(TF_RS232V2 *rs232_v2, uint32_t *ret_error
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -658,7 +658,7 @@ int tf_rs232_v2_get_bootloader_mode(TF_RS232V2 *rs232_v2, uint8_t *ret_mode);
  * Sets the firmware pointer for {@link tf_rs232_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -670,9 +670,9 @@ int tf_rs232_v2_set_write_firmware_pointer(TF_RS232V2 *rs232_v2, uint32_t pointe
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_rs232_v2_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -684,9 +684,9 @@ int tf_rs232_v2_write_firmware(TF_RS232V2 *rs232_v2, const uint8_t data[64], uin
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_rs232_v2_set_status_led_config(TF_RS232V2 *rs232_v2, uint8_t config);
@@ -703,7 +703,7 @@ int tf_rs232_v2_get_status_led_config(TF_RS232V2 *rs232_v2, uint8_t *ret_config)
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -715,7 +715,7 @@ int tf_rs232_v2_get_chip_temperature(TF_RS232V2 *rs232_v2, int16_t *ret_temperat
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -728,7 +728,7 @@ int tf_rs232_v2_reset(TF_RS232V2 *rs232_v2);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_rs232_v2_write_uid(TF_RS232V2 *rs232_v2, uint32_t uid);
@@ -747,11 +747,11 @@ int tf_rs232_v2_read_uid(TF_RS232V2 *rs232_v2, uint32_t *ret_uid);
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */
@@ -762,9 +762,9 @@ int tf_rs232_v2_get_identity(TF_RS232V2 *rs232_v2, char ret_uid[8], char ret_con
  *
  * Writes characters to the RS232 interface. The characters can be binary data,
  * ASCII or similar is not necessary.
- * 
+ *
  * The return value is the number of characters that were written.
- * 
+ *
  * See {@link tf_rs232_v2_set_configuration} for configuration possibilities
  * regarding baud rate, parity and so on.
  */
@@ -774,7 +774,7 @@ int tf_rs232_v2_write(TF_RS232V2 *rs232_v2, const char *message, uint16_t messag
  * \ingroup TF_RS232V2
  *
  * Returns up to *length* characters from receive buffer.
- * 
+ *
  * Instead of polling with this function, you can also use
  * callbacks. But note that this function will return available
  * data only when the read callback is disabled.

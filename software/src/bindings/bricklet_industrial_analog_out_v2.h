@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -407,7 +407,7 @@ int tf_industrial_analog_out_v2_get_enabled(TF_IndustrialAnalogOutV2 *industrial
  * \ingroup TF_IndustrialAnalogOutV2
  *
  * Sets the output voltage.
- * 
+ *
  * The output voltage and output current are linked. Changing the output voltage
  * also changes the output current.
  */
@@ -424,7 +424,7 @@ int tf_industrial_analog_out_v2_get_voltage(TF_IndustrialAnalogOutV2 *industrial
  * \ingroup TF_IndustrialAnalogOutV2
  *
  * Sets the output current.
- * 
+ *
  * The output current and output voltage are linked. Changing the output current
  * also changes the output voltage.
  */
@@ -441,18 +441,18 @@ int tf_industrial_analog_out_v2_get_current(TF_IndustrialAnalogOutV2 *industrial
  * \ingroup TF_IndustrialAnalogOutV2
  *
  * Configures the voltage and current range.
- * 
+ *
  * Possible voltage ranges are:
- * 
+ *
  * * 0V to 5V
  * * 0V to 10V
- * 
+ *
  * Possible current ranges are:
- * 
+ *
  * * 4mA to 20mA
  * * 0mA to 20mA
  * * 0mA to 24mA
- * 
+ *
  * The resolution will always be 12 bit. This means, that the
  * precision is higher with a smaller range.
  */
@@ -472,7 +472,7 @@ int tf_industrial_analog_out_v2_get_configuration(TF_IndustrialAnalogOutV2 *indu
  * heartbeat. You can also set the LED to "Out Status". In this mode the
  * LED can either be turned on with a pre-defined threshold or the intensity
  * of the LED can change with the output value (voltage or current).
- * 
+ *
  * You can configure the channel status behavior with {@link tf_industrial_analog_out_v2_set_out_led_status_config}.
  */
 int tf_industrial_analog_out_v2_set_out_led_config(TF_IndustrialAnalogOutV2 *industrial_analog_out_v2, uint8_t config);
@@ -489,9 +489,9 @@ int tf_industrial_analog_out_v2_get_out_led_config(TF_IndustrialAnalogOutV2 *ind
  *
  * Sets the Out LED status config. This config is used if the Out LED is
  * configured as "Out Status", see {@link tf_industrial_analog_out_v2_set_out_led_config}.
- * 
+ *
  * For each channel you can choose between threshold and intensity mode.
- * 
+ *
  * In threshold mode you can define a positive or a negative threshold.
  * For a positive threshold set the "min" parameter to the threshold value in mV or
  * µA above which the LED should turn on and set the "max" parameter to 0. Example:
@@ -502,7 +502,7 @@ int tf_industrial_analog_out_v2_get_out_led_config(TF_IndustrialAnalogOutV2 *ind
  * If you set a negative threshold of 5V, the LED will turn on as soon as the
  * output value goes below 5V and the LED will turn off when the output value
  * exceeds 5V.
- * 
+ *
  * In intensity mode you can define a range mV or µA that is used to scale the brightness
  * of the LED. Example with min=2V, max=8V: The LED is off at 2V and below, on at
  * 8V and above and the brightness is linearly scaled between the values 2V and 8V.
@@ -522,14 +522,14 @@ int tf_industrial_analog_out_v2_get_out_led_status_config(TF_IndustrialAnalogOut
  * \ingroup TF_IndustrialAnalogOutV2
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -540,11 +540,11 @@ int tf_industrial_analog_out_v2_get_spitfp_error_count(TF_IndustrialAnalogOutV2 
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -563,7 +563,7 @@ int tf_industrial_analog_out_v2_get_bootloader_mode(TF_IndustrialAnalogOutV2 *in
  * Sets the firmware pointer for {@link tf_industrial_analog_out_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -575,9 +575,9 @@ int tf_industrial_analog_out_v2_set_write_firmware_pointer(TF_IndustrialAnalogOu
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_industrial_analog_out_v2_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -589,9 +589,9 @@ int tf_industrial_analog_out_v2_write_firmware(TF_IndustrialAnalogOutV2 *industr
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_industrial_analog_out_v2_set_status_led_config(TF_IndustrialAnalogOutV2 *industrial_analog_out_v2, uint8_t config);
@@ -608,7 +608,7 @@ int tf_industrial_analog_out_v2_get_status_led_config(TF_IndustrialAnalogOutV2 *
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -620,7 +620,7 @@ int tf_industrial_analog_out_v2_get_chip_temperature(TF_IndustrialAnalogOutV2 *i
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -633,7 +633,7 @@ int tf_industrial_analog_out_v2_reset(TF_IndustrialAnalogOutV2 *industrial_analo
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_industrial_analog_out_v2_write_uid(TF_IndustrialAnalogOutV2 *industrial_analog_out_v2, uint32_t uid);
@@ -652,11 +652,11 @@ int tf_industrial_analog_out_v2_read_uid(TF_IndustrialAnalogOutV2 *industrial_an
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

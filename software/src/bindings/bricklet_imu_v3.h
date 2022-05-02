@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -694,7 +694,7 @@ int tf_imu_v3_set_response_expected_all(TF_IMUV3 *imu_v3, bool response_expected
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int16_t x, int16_t y, int16_t z, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically with the period that is set by
  * {@link tf_imu_v3_set_acceleration_callback_configuration}. The parameters are the acceleration
  * for the x, y and z axis.
@@ -709,7 +709,7 @@ int tf_imu_v3_register_acceleration_callback(TF_IMUV3 *imu_v3, TF_IMUV3_Accelera
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int16_t x, int16_t y, int16_t z, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically with the period that is set by
  * {@link tf_imu_v3_set_magnetic_field_callback_configuration}. The parameters are the magnetic
  * field for the x, y and z axis.
@@ -724,7 +724,7 @@ int tf_imu_v3_register_magnetic_field_callback(TF_IMUV3 *imu_v3, TF_IMUV3_Magnet
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int16_t x, int16_t y, int16_t z, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically with the period that is set by
  * {@link tf_imu_v3_set_angular_velocity_callback_configuration}. The parameters are the angular
  * velocity for the x, y and z axis.
@@ -739,7 +739,7 @@ int tf_imu_v3_register_angular_velocity_callback(TF_IMUV3 *imu_v3, TF_IMUV3_Angu
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int8_t temperature, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically with the period that is set by
  * {@link tf_imu_v3_set_temperature_callback_configuration}. The parameter is the temperature.
  */
@@ -753,7 +753,7 @@ int tf_imu_v3_register_temperature_callback(TF_IMUV3 *imu_v3, TF_IMUV3_Temperatu
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int16_t x, int16_t y, int16_t z, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically with the period that is set by
  * {@link tf_imu_v3_set_linear_acceleration_callback_configuration}. The parameters are the
  * linear acceleration for the x, y and z axis.
@@ -768,7 +768,7 @@ int tf_imu_v3_register_linear_acceleration_callback(TF_IMUV3 *imu_v3, TF_IMUV3_L
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int16_t x, int16_t y, int16_t z, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically with the period that is set by
  * {@link tf_imu_v3_set_gravity_vector_callback_configuration}. The parameters gravity vector
  * for the x, y and z axis.
@@ -783,7 +783,7 @@ int tf_imu_v3_register_gravity_vector_callback(TF_IMUV3 *imu_v3, TF_IMUV3_Gravit
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int16_t heading, int16_t roll, int16_t pitch, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically with the period that is set by
  * {@link tf_imu_v3_set_orientation_callback_configuration}. The parameters are the orientation
  * (heading (yaw), roll, pitch) of the IMU Brick in Euler angles. See
@@ -799,7 +799,7 @@ int tf_imu_v3_register_orientation_callback(TF_IMUV3 *imu_v3, TF_IMUV3_Orientati
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int16_t w, int16_t x, int16_t y, int16_t z, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically with the period that is set by
  * {@link tf_imu_v3_set_quaternion_callback_configuration}. The parameters are the orientation
  * (w, x, y, z) of the IMU Brick in quaternions. See {@link tf_imu_v3_get_quaternion}
@@ -815,7 +815,7 @@ int tf_imu_v3_register_quaternion_callback(TF_IMUV3 *imu_v3, TF_IMUV3_Quaternion
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int16_t acceleration[3], int16_t magnetic_field[3], int16_t angular_velocity[3], int16_t euler_angle[3], int16_t quaternion[4], int16_t linear_acceleration[3], int16_t gravity_vector[3], int8_t temperature, uint8_t calibration_status, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically with the period that is set by
  * {@link tf_imu_v3_set_all_data_callback_configuration}. The parameters are as for
  * {@link tf_imu_v3_get_all_data}.
@@ -839,7 +839,7 @@ int tf_imu_v3_callback_tick(TF_IMUV3 *imu_v3, uint32_t timeout_us);
  * Returns the calibrated acceleration from the accelerometer for the
  * x, y and z axis. The acceleration is in the range configured with
  * {@link tf_imu_v3_set_sensor_configuration}.
- * 
+ *
  * If you want to get the acceleration periodically, it is recommended
  * to use the {@link tf_imu_v3_register_acceleration_callback} callback and set the period with
  * {@link tf_imu_v3_set_acceleration_callback_configuration}.
@@ -851,7 +851,7 @@ int tf_imu_v3_get_acceleration(TF_IMUV3 *imu_v3, int16_t *ret_x, int16_t *ret_y,
  *
  * Returns the calibrated magnetic field from the magnetometer for the
  * x, y and z axis.
- * 
+ *
  * If you want to get the magnetic field periodically, it is recommended
  * to use the {@link tf_imu_v3_register_magnetic_field_callback} callback and set the period with
  * {@link tf_imu_v3_set_magnetic_field_callback_configuration}.
@@ -864,7 +864,7 @@ int tf_imu_v3_get_magnetic_field(TF_IMUV3 *imu_v3, int16_t *ret_x, int16_t *ret_
  * Returns the calibrated angular velocity from the gyroscope for the
  * x, y and z axis. The angular velocity is in the range configured with
  * {@link tf_imu_v3_set_sensor_configuration}.
- * 
+ *
  * If you want to get the angular velocity periodically, it is recommended
  * to use the {@link tf_imu_v3_register_angular_velocity_callback} acallback nd set the period with
  * {@link tf_imu_v3_set_angular_velocity_callback_configuration}.
@@ -888,7 +888,7 @@ int tf_imu_v3_get_temperature(TF_IMUV3 *imu_v3, int8_t *ret_temperature);
  * experience a `gimbal lock <https://en.wikipedia.org/wiki/Gimbal_lock>`__.
  * We recommend that you use quaternions instead, if you need the absolute
  * orientation.
- * 
+ *
  * If you want to get the orientation periodically, it is recommended
  * to use the {@link tf_imu_v3_register_orientation_callback} callback and set the period with
  * {@link tf_imu_v3_set_orientation_callback_configuration}.
@@ -901,13 +901,13 @@ int tf_imu_v3_get_orientation(TF_IMUV3 *imu_v3, int16_t *ret_heading, int16_t *r
  * Returns the linear acceleration of the IMU Brick for the
  * x, y and z axis. The acceleration is in the range configured with
  * {@link tf_imu_v3_set_sensor_configuration}.
- * 
+ *
  * The linear acceleration is the acceleration in each of the three
  * axis of the IMU Brick with the influences of gravity removed.
- * 
+ *
  * It is also possible to get the gravity vector with the influence of linear
  * acceleration removed, see {@link tf_imu_v3_get_gravity_vector}.
- * 
+ *
  * If you want to get the linear acceleration periodically, it is recommended
  * to use the {@link tf_imu_v3_register_linear_acceleration_callback} callback and set the period with
  * {@link tf_imu_v3_set_linear_acceleration_callback_configuration}.
@@ -919,13 +919,13 @@ int tf_imu_v3_get_linear_acceleration(TF_IMUV3 *imu_v3, int16_t *ret_x, int16_t 
  *
  * Returns the current gravity vector of the IMU Brick for the
  * x, y and z axis.
- * 
+ *
  * The gravity vector is the acceleration that occurs due to gravity.
  * Influences of additional linear acceleration are removed.
- * 
+ *
  * It is also possible to get the linear acceleration with the influence
  * of gravity removed, see {@link tf_imu_v3_get_linear_acceleration}.
- * 
+ *
  * If you want to get the gravity vector periodically, it is recommended
  * to use the {@link tf_imu_v3_register_gravity_vector_callback} callback and set the period with
  * {@link tf_imu_v3_set_gravity_vector_callback_configuration}.
@@ -937,10 +937,10 @@ int tf_imu_v3_get_gravity_vector(TF_IMUV3 *imu_v3, int16_t *ret_x, int16_t *ret_
  *
  * Returns the current orientation (w, x, y, z) of the IMU Brick as
  * `quaternions <https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation>`__.
- * 
+ *
  * You have to divide the return values by 16383 (14 bit) to get
  * the usual range of -1.0 to +1.0 for quaternions.
- * 
+ *
  * If you want to get the quaternions periodically, it is recommended
  * to use the {@link tf_imu_v3_register_quaternion_callback} callback and set the period with
  * {@link tf_imu_v3_set_quaternion_callback_configuration}.
@@ -951,7 +951,7 @@ int tf_imu_v3_get_quaternion(TF_IMUV3 *imu_v3, int16_t *ret_w, int16_t *ret_x, i
  * \ingroup TF_IMUV3
  *
  * Return all of the available data of the IMU Brick.
- * 
+ *
  * * acceleration (see {@link tf_imu_v3_get_acceleration})
  * * magnetic field (see {@link tf_imu_v3_get_magnetic_field})
  * * angular velocity (see {@link tf_imu_v3_get_angular_velocity})
@@ -961,22 +961,22 @@ int tf_imu_v3_get_quaternion(TF_IMUV3 *imu_v3, int16_t *ret_w, int16_t *ret_x, i
  * * gravity vector (see {@link tf_imu_v3_get_gravity_vector})
  * * temperature (see {@link tf_imu_v3_get_temperature})
  * * calibration status (see below)
- * 
+ *
  * The calibration status consists of four pairs of two bits. Each pair
  * of bits represents the status of the current calibration.
- * 
+ *
  * * bit 0-1: Magnetometer
  * * bit 2-3: Accelerometer
  * * bit 4-5: Gyroscope
  * * bit 6-7: System
- * 
+ *
  * A value of 0 means for "not calibrated" and a value of 3 means
  * "fully calibrated". In your program you should always be able to
  * ignore the calibration status, it is used by the calibration
  * window of the Brick Viewer and it can be ignored after the first
  * calibration. See the documentation in the calibration window for
  * more information regarding the calibration of the IMU Brick.
- * 
+ *
  * If you want to get the data periodically, it is recommended
  * to use the {@link tf_imu_v3_register_all_data_callback} callback and set the period with
  * {@link tf_imu_v3_set_all_data_callback_configuration}.
@@ -989,11 +989,11 @@ int tf_imu_v3_get_all_data(TF_IMUV3 *imu_v3, int16_t ret_acceleration[3], int16_
  * A call of this function saves the current calibration to be used
  * as a starting point for the next restart of continuous calibration
  * of the IMU Brick.
- * 
+ *
  * A return value of *true* means that the calibration could be used and
  * *false* means that it could not be used (this happens if the calibration
  * status is not "fully calibrated").
- * 
+ *
  * This function is used by the calibration window of the Brick Viewer, you
  * should not need to call it in your program.
  */
@@ -1021,12 +1021,12 @@ int tf_imu_v3_get_sensor_configuration(TF_IMUV3 *imu_v3, uint8_t *ret_magnetomet
  * If the fusion mode is turned off, the functions {@link tf_imu_v3_get_acceleration},
  * {@link tf_imu_v3_get_magnetic_field} and {@link tf_imu_v3_get_angular_velocity} return uncalibrated
  * and uncompensated sensor data. All other sensor data getters return no data.
- * 
+ *
  * Since firmware version 2.0.6 you can also use a fusion mode without magnetometer.
  * In this mode the calculated orientation is relative (with magnetometer it is
  * absolute with respect to the earth). However, the calculation can't be influenced
  * by spurious magnetic fields.
- * 
+ *
  * Since firmware version 2.0.13 you can also use a fusion mode without fast
  * magnetometer calibration. This mode is the same as the normal fusion mode,
  * but the fast magnetometer calibration is turned off. So to find the orientation
@@ -1047,11 +1047,11 @@ int tf_imu_v3_get_sensor_fusion_mode(TF_IMUV3 *imu_v3, uint8_t *ret_mode);
  *
  * The period is the period with which the {@link tf_imu_v3_register_acceleration_callback} callback
  * is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
  */
@@ -1069,11 +1069,11 @@ int tf_imu_v3_get_acceleration_callback_configuration(TF_IMUV3 *imu_v3, uint32_t
  *
  * The period is the period with which the {@link tf_imu_v3_register_magnetic_field_callback} callback
  * is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
  */
@@ -1091,11 +1091,11 @@ int tf_imu_v3_get_magnetic_field_callback_configuration(TF_IMUV3 *imu_v3, uint32
  *
  * The period is the period with which the {@link tf_imu_v3_register_angular_velocity_callback} callback
  * is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
  */
@@ -1113,11 +1113,11 @@ int tf_imu_v3_get_angular_velocity_callback_configuration(TF_IMUV3 *imu_v3, uint
  *
  * The period is the period with which the {@link tf_imu_v3_register_temperature_callback} callback
  * is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
  */
@@ -1135,11 +1135,11 @@ int tf_imu_v3_get_temperature_callback_configuration(TF_IMUV3 *imu_v3, uint32_t 
  *
  * The period is the period with which the {@link tf_imu_v3_register_orientation_callback} callback
  * is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
  */
@@ -1157,11 +1157,11 @@ int tf_imu_v3_get_orientation_callback_configuration(TF_IMUV3 *imu_v3, uint32_t 
  *
  * The period is the period with which the {@link tf_imu_v3_register_linear_acceleration_callback} callback
  * is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
  */
@@ -1179,11 +1179,11 @@ int tf_imu_v3_get_linear_acceleration_callback_configuration(TF_IMUV3 *imu_v3, u
  *
  * The period is the period with which the {@link tf_imu_v3_register_gravity_vector_callback} callback
  * is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
  */
@@ -1201,11 +1201,11 @@ int tf_imu_v3_get_gravity_vector_callback_configuration(TF_IMUV3 *imu_v3, uint32
  *
  * The period is the period with which the {@link tf_imu_v3_register_quaternion_callback} callback
  * is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
  */
@@ -1223,11 +1223,11 @@ int tf_imu_v3_get_quaternion_callback_configuration(TF_IMUV3 *imu_v3, uint32_t *
  *
  * The period is the period with which the {@link tf_imu_v3_register_all_data_callback} callback
  * is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
  */
@@ -1244,14 +1244,14 @@ int tf_imu_v3_get_all_data_callback_configuration(TF_IMUV3 *imu_v3, uint32_t *re
  * \ingroup TF_IMUV3
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -1262,11 +1262,11 @@ int tf_imu_v3_get_spitfp_error_count(TF_IMUV3 *imu_v3, uint32_t *ret_error_count
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -1285,7 +1285,7 @@ int tf_imu_v3_get_bootloader_mode(TF_IMUV3 *imu_v3, uint8_t *ret_mode);
  * Sets the firmware pointer for {@link tf_imu_v3_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -1297,9 +1297,9 @@ int tf_imu_v3_set_write_firmware_pointer(TF_IMUV3 *imu_v3, uint32_t pointer);
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_imu_v3_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -1311,9 +1311,9 @@ int tf_imu_v3_write_firmware(TF_IMUV3 *imu_v3, const uint8_t data[64], uint8_t *
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_imu_v3_set_status_led_config(TF_IMUV3 *imu_v3, uint8_t config);
@@ -1330,7 +1330,7 @@ int tf_imu_v3_get_status_led_config(TF_IMUV3 *imu_v3, uint8_t *ret_config);
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -1342,7 +1342,7 @@ int tf_imu_v3_get_chip_temperature(TF_IMUV3 *imu_v3, int16_t *ret_temperature);
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -1355,7 +1355,7 @@ int tf_imu_v3_reset(TF_IMUV3 *imu_v3);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_imu_v3_write_uid(TF_IMUV3 *imu_v3, uint32_t uid);
@@ -1374,11 +1374,11 @@ int tf_imu_v3_read_uid(TF_IMUV3 *imu_v3, uint32_t *ret_uid);
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

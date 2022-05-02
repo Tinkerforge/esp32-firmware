@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -402,10 +402,10 @@ int tf_ambient_light_v3_set_response_expected_all(TF_AmbientLightV3 *ambient_lig
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint32_t illuminance, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_ambient_light_v3_set_illuminance_callback_configuration}.
- * 
+ *
  * The parameter is the same as {@link tf_ambient_light_v3_get_illuminance}.
  */
 int tf_ambient_light_v3_register_illuminance_callback(TF_AmbientLightV3 *ambient_light_v3, TF_AmbientLightV3_IlluminanceHandler handler, void *user_data);
@@ -428,14 +428,14 @@ int tf_ambient_light_v3_callback_tick(TF_AmbientLightV3 *ambient_light_v3, uint3
  * up to about 100000lux, but above 64000lux the precision starts to drop.
  * The illuminance is given in lux/100, i.e. a value of 450000 means that an
  * illuminance of 4500lux is measured.
- * 
+ *
  * An illuminance of 0lux indicates an error condition where the sensor cannot
  * perform a reasonable measurement. This can happen with very dim or very bright
  * light conditions. In bright light conditions this might indicate that the sensor
  * is saturated and the configuration should be modified ({@link tf_ambient_light_v3_set_configuration})
  * to better match the conditions.
- * 
- * 
+ *
+ *
  * If you want to get the value periodically, it is recommended to use the
  * {@link tf_ambient_light_v3_register_illuminance_callback} callback. You can set the callback configuration
  * with {@link tf_ambient_light_v3_set_illuminance_callback_configuration}.
@@ -447,30 +447,30 @@ int tf_ambient_light_v3_get_illuminance(TF_AmbientLightV3 *ambient_light_v3, uin
  *
  * The period is the period with which the {@link tf_ambient_light_v3_register_illuminance_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change
  * within the period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
- * 
+ *
  * It is furthermore possible to constrain the callback with thresholds.
- * 
+ *
  * The `option`-parameter together with min/max sets a threshold for the {@link tf_ambient_light_v3_register_illuminance_callback} callback.
- * 
+ *
  * The following options are possible:
- * 
+ *
  * \verbatim
  *  "Option", "Description"
- * 
+ *
  *  "'x'",    "Threshold is turned off"
  *  "'o'",    "Threshold is triggered when the value is *outside* the min and max values"
  *  "'i'",    "Threshold is triggered when the value is *inside* or equal to the min and max values"
  *  "'<'",    "Threshold is triggered when the value is smaller than the min value (max is ignored)"
  *  "'>'",    "Threshold is triggered when the value is greater than the min value (max is ignored)"
  * \endverbatim
- * 
+ *
  * If the option is set to 'x' (threshold turned off) the callback is triggered with the fixed period.
  */
 int tf_ambient_light_v3_set_illuminance_callback_configuration(TF_AmbientLightV3 *ambient_light_v3, uint32_t period, bool value_has_to_change, char option, uint32_t min, uint32_t max);
@@ -487,21 +487,21 @@ int tf_ambient_light_v3_get_illuminance_callback_configuration(TF_AmbientLightV3
  *
  * Sets the configuration. It is possible to configure an illuminance range
  * between 0-600lux and 0-64000lux and an integration time between 50ms and 400ms.
- * 
+ *
  * The unlimited illuminance range allows to measure up to about 100000lux, but
  * above 64000lux the precision starts to drop.
- * 
+ *
  * A smaller illuminance range increases the resolution of the data. A longer
  * integration time will result in less noise on the data.
- * 
+ *
  * If the actual measure illuminance is out-of-range then the current illuminance
  * range maximum +0.01lux is reported by {@link tf_ambient_light_v3_get_illuminance} and the
  * {@link tf_ambient_light_v3_register_illuminance_callback} callback. For example, 800001 for the 0-8000lux range.
- * 
+ *
  * With a long integration time the sensor might be saturated before the measured
  * value reaches the maximum of the selected illuminance range. In this case 0lux
  * is reported by {@link tf_ambient_light_v3_get_illuminance} and the {@link tf_ambient_light_v3_register_illuminance_callback} callback.
- * 
+ *
  * If the measurement is out-of-range or the sensor is saturated then you should
  * configure the next higher illuminance range. If the highest range is already
  * in use, then start to reduce the integration time.
@@ -519,14 +519,14 @@ int tf_ambient_light_v3_get_configuration(TF_AmbientLightV3 *ambient_light_v3, u
  * \ingroup TF_AmbientLightV3
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -537,11 +537,11 @@ int tf_ambient_light_v3_get_spitfp_error_count(TF_AmbientLightV3 *ambient_light_
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -560,7 +560,7 @@ int tf_ambient_light_v3_get_bootloader_mode(TF_AmbientLightV3 *ambient_light_v3,
  * Sets the firmware pointer for {@link tf_ambient_light_v3_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -572,9 +572,9 @@ int tf_ambient_light_v3_set_write_firmware_pointer(TF_AmbientLightV3 *ambient_li
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_ambient_light_v3_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -586,9 +586,9 @@ int tf_ambient_light_v3_write_firmware(TF_AmbientLightV3 *ambient_light_v3, cons
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_ambient_light_v3_set_status_led_config(TF_AmbientLightV3 *ambient_light_v3, uint8_t config);
@@ -605,7 +605,7 @@ int tf_ambient_light_v3_get_status_led_config(TF_AmbientLightV3 *ambient_light_v
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -617,7 +617,7 @@ int tf_ambient_light_v3_get_chip_temperature(TF_AmbientLightV3 *ambient_light_v3
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -630,7 +630,7 @@ int tf_ambient_light_v3_reset(TF_AmbientLightV3 *ambient_light_v3);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_ambient_light_v3_write_uid(TF_AmbientLightV3 *ambient_light_v3, uint32_t uid);
@@ -649,11 +649,11 @@ int tf_ambient_light_v3_read_uid(TF_AmbientLightV3 *ambient_light_v3, uint32_t *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

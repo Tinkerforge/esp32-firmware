@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -351,10 +351,10 @@ int tf_hall_effect_v2_set_response_expected_all(TF_HallEffectV2 *hall_effect_v2,
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int16_t magnetic_flux_density, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_hall_effect_v2_set_magnetic_flux_density_callback_configuration}.
- * 
+ *
  * The parameter is the same as {@link tf_hall_effect_v2_get_magnetic_flux_density}.
  */
 int tf_hall_effect_v2_register_magnetic_flux_density_callback(TF_HallEffectV2 *hall_effect_v2, TF_HallEffectV2_MagneticFluxDensityHandler handler, void *user_data);
@@ -367,10 +367,10 @@ int tf_hall_effect_v2_register_magnetic_flux_density_callback(TF_HallEffectV2 *h
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint32_t count, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_hall_effect_v2_set_counter_callback_configuration}.
- * 
+ *
  * The count is the same as you would get with {@link tf_hall_effect_v2_get_counter}.
  */
 int tf_hall_effect_v2_register_counter_callback(TF_HallEffectV2 *hall_effect_v2, TF_HallEffectV2_CounterHandler handler, void *user_data);
@@ -390,8 +390,8 @@ int tf_hall_effect_v2_callback_tick(TF_HallEffectV2 *hall_effect_v2, uint32_t ti
  * \ingroup TF_HallEffectV2
  *
  * Returns the `magnetic flux density (magnetic induction) <https://en.wikipedia.org/wiki/Magnetic_flux>`__.
- * 
- * 
+ *
+ *
  * If you want to get the value periodically, it is recommended to use the
  * {@link tf_hall_effect_v2_register_magnetic_flux_density_callback} callback. You can set the callback configuration
  * with {@link tf_hall_effect_v2_set_magnetic_flux_density_callback_configuration}.
@@ -403,30 +403,30 @@ int tf_hall_effect_v2_get_magnetic_flux_density(TF_HallEffectV2 *hall_effect_v2,
  *
  * The period is the period with which the {@link tf_hall_effect_v2_register_magnetic_flux_density_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change
  * within the period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
- * 
+ *
  * It is furthermore possible to constrain the callback with thresholds.
- * 
+ *
  * The `option`-parameter together with min/max sets a threshold for the {@link tf_hall_effect_v2_register_magnetic_flux_density_callback} callback.
- * 
+ *
  * The following options are possible:
- * 
+ *
  * \verbatim
  *  "Option", "Description"
- * 
+ *
  *  "'x'",    "Threshold is turned off"
  *  "'o'",    "Threshold is triggered when the value is *outside* the min and max values"
  *  "'i'",    "Threshold is triggered when the value is *inside* or equal to the min and max values"
  *  "'<'",    "Threshold is triggered when the value is smaller than the min value (max is ignored)"
  *  "'>'",    "Threshold is triggered when the value is greater than the min value (max is ignored)"
  * \endverbatim
- * 
+ *
  * If the option is set to 'x' (threshold turned off) the callback is triggered with the fixed period.
  */
 int tf_hall_effect_v2_set_magnetic_flux_density_callback_configuration(TF_HallEffectV2 *hall_effect_v2, uint32_t period, bool value_has_to_change, char option, int16_t min, int16_t max);
@@ -442,13 +442,13 @@ int tf_hall_effect_v2_get_magnetic_flux_density_callback_configuration(TF_HallEf
  * \ingroup TF_HallEffectV2
  *
  * Returns the current value of the counter.
- * 
+ *
  * You can configure the low/high thresholds and the debounce time
  * with {@link tf_hall_effect_v2_set_counter_config}.
- * 
+ *
  * If you set reset counter to *true*, the count is set back to 0
  * directly after it is read.
- * 
+ *
  * If you want to get the count periodically, it is recommended to use the
  * {@link tf_hall_effect_v2_register_counter_callback} callback. You can set the callback configuration
  * with {@link tf_hall_effect_v2_set_counter_callback_configuration}.
@@ -459,10 +459,10 @@ int tf_hall_effect_v2_get_counter(TF_HallEffectV2 *hall_effect_v2, bool reset_co
  * \ingroup TF_HallEffectV2
  *
  * Sets a high and a low threshold as well as a debounce time.
- * 
+ *
  * If the measured magnetic flux density goes above the high threshold or
  * below the low threshold, the count of the counter is increased by 1.
- * 
+ *
  * The debounce time is the minimum time between two count increments.
  */
 int tf_hall_effect_v2_set_counter_config(TF_HallEffectV2 *hall_effect_v2, int16_t high_threshold, int16_t low_threshold, uint32_t debounce);
@@ -479,11 +479,11 @@ int tf_hall_effect_v2_get_counter_config(TF_HallEffectV2 *hall_effect_v2, int16_
  *
  * The period is the period with which the {@link tf_hall_effect_v2_register_counter_callback}
  * callback is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after at least one of the values has changed. If the values didn't
  * change within the period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
  */
@@ -501,14 +501,14 @@ int tf_hall_effect_v2_get_counter_callback_configuration(TF_HallEffectV2 *hall_e
  * \ingroup TF_HallEffectV2
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -519,11 +519,11 @@ int tf_hall_effect_v2_get_spitfp_error_count(TF_HallEffectV2 *hall_effect_v2, ui
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -542,7 +542,7 @@ int tf_hall_effect_v2_get_bootloader_mode(TF_HallEffectV2 *hall_effect_v2, uint8
  * Sets the firmware pointer for {@link tf_hall_effect_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -554,9 +554,9 @@ int tf_hall_effect_v2_set_write_firmware_pointer(TF_HallEffectV2 *hall_effect_v2
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_hall_effect_v2_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -568,9 +568,9 @@ int tf_hall_effect_v2_write_firmware(TF_HallEffectV2 *hall_effect_v2, const uint
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_hall_effect_v2_set_status_led_config(TF_HallEffectV2 *hall_effect_v2, uint8_t config);
@@ -587,7 +587,7 @@ int tf_hall_effect_v2_get_status_led_config(TF_HallEffectV2 *hall_effect_v2, uin
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -599,7 +599,7 @@ int tf_hall_effect_v2_get_chip_temperature(TF_HallEffectV2 *hall_effect_v2, int1
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -612,7 +612,7 @@ int tf_hall_effect_v2_reset(TF_HallEffectV2 *hall_effect_v2);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_hall_effect_v2_write_uid(TF_HallEffectV2 *hall_effect_v2, uint32_t uid);
@@ -631,11 +631,11 @@ int tf_hall_effect_v2_read_uid(TF_HallEffectV2 *hall_effect_v2, uint32_t *ret_ui
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -828,7 +828,7 @@ int tf_silent_stepper_v2_set_response_expected_all(TF_SilentStepperV2 *silent_st
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint16_t voltage, void *user_data) \endcode
- * 
+ *
  * This callback is triggered when the input voltage drops below the value set by
  * {@link tf_silent_stepper_v2_set_minimum_voltage}. The parameter is the current voltage.
  */
@@ -842,10 +842,10 @@ int tf_silent_stepper_v2_register_under_voltage_callback(TF_SilentStepperV2 *sil
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int32_t position, void *user_data) \endcode
- * 
+ *
  * This callback is triggered when a position set by {@link tf_silent_stepper_v2_set_steps} or
  * {@link tf_silent_stepper_v2_set_target_position} is reached.
- * 
+ *
  * \note
  *  Since we can't get any feedback from the stepper motor, this only works if the
  *  acceleration (see {@link tf_silent_stepper_v2_set_speed_ramping}) is set smaller or equal to the
@@ -862,7 +862,7 @@ int tf_silent_stepper_v2_register_position_reached_callback(TF_SilentStepperV2 *
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint16_t current_velocity, int32_t current_position, int32_t remaining_steps, uint16_t input_voltage, uint16_t current_consumption, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically with the period that is set by
  * {@link tf_silent_stepper_v2_set_all_callback_configuration}. The parameters are: the current velocity,
  * the current position, the remaining steps, the stack voltage, the external
@@ -878,7 +878,7 @@ int tf_silent_stepper_v2_register_all_data_callback(TF_SilentStepperV2 *silent_s
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint8_t state_new, uint8_t state_previous, void *user_data) \endcode
- * 
+ *
  * This callback is triggered whenever the Silent Stepper Bricklet 2.0 enters a new state.
  * It returns the new state as well as the previous state.
  */
@@ -892,7 +892,7 @@ int tf_silent_stepper_v2_register_new_state_callback(TF_SilentStepperV2 *silent_
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(bool gpio_state[2], void *user_data) \endcode
- * 
+ *
  * This callback is triggered by GPIO changes if it is activated through {@link tf_silent_stepper_v2_set_gpio_action}.
  */
 int tf_silent_stepper_v2_register_gpio_state_callback(TF_SilentStepperV2 *silent_stepper_v2, TF_SilentStepperV2_GPIOStateHandler handler, void *user_data);
@@ -939,11 +939,11 @@ int tf_silent_stepper_v2_get_current_velocity(TF_SilentStepperV2 *silent_stepper
  * Sets the acceleration and deacceleration of the stepper motor.
  * An acceleration of 1000 means, that
  * every second the velocity is increased by 1000 *steps/s*.
- * 
+ *
  * For example: If the current velocity is 0 and you want to accelerate to a
  * velocity of 8000 *steps/s* in 10 seconds, you should set an acceleration
  * of 800 *steps/s²*.
- * 
+ *
  * An acceleration/deacceleration of 0 means instantaneous
  * acceleration/deacceleration (not recommended)
  */
@@ -961,12 +961,12 @@ int tf_silent_stepper_v2_get_speed_ramping(TF_SilentStepperV2 *silent_stepper_v2
  * \ingroup TF_SilentStepperV2
  *
  * Executes an active full brake.
- * 
+ *
  * \warning
  *  This function is for emergency purposes,
  *  where an immediate brake is necessary. Depending on the current velocity and
  *  the strength of the motor, a full brake can be quite violent.
- * 
+ *
  * Call {@link tf_silent_stepper_v2_stop} if you just want to stop the motor.
  */
 int tf_silent_stepper_v2_full_brake(TF_SilentStepperV2 *silent_stepper_v2);
@@ -999,7 +999,7 @@ int tf_silent_stepper_v2_get_current_position(TF_SilentStepperV2 *silent_stepper
  * called with 1000, the stepper motor will drive 500 steps forward. It will
  * use the velocity, acceleration and deacceleration as set by
  * {@link tf_silent_stepper_v2_set_max_velocity} and {@link tf_silent_stepper_v2_set_speed_ramping}.
- * 
+ *
  * A call of {@link tf_silent_stepper_v2_set_target_position} with the parameter *x* is equivalent to
  * a call of {@link tf_silent_stepper_v2_set_steps} with the parameter
  * (*x* - {@link tf_silent_stepper_v2_get_current_position}).
@@ -1044,14 +1044,14 @@ int tf_silent_stepper_v2_get_remaining_steps(TF_SilentStepperV2 *silent_stepper_
  * \ingroup TF_SilentStepperV2
  *
  * Sets the step resolution from full-step up to 1/256-step.
- * 
+ *
  * If interpolation is turned on, the Silent Stepper Bricklet 2.0 will always interpolate
  * your step inputs as 1/256-step. If you use full-step mode with interpolation, each
  * step will generate 256 1/256 steps.
- * 
+ *
  * For maximum torque use full-step without interpolation. For maximum resolution use
  * 1/256-step. Turn interpolation on to make the Stepper driving less noisy.
- * 
+ *
  * If you often change the speed with high acceleration you should turn the
  * interpolation off.
  */
@@ -1095,11 +1095,11 @@ int tf_silent_stepper_v2_stop(TF_SilentStepperV2 *silent_stepper_v2);
  *
  * Returns the external input voltage. The external input voltage is
  * given via the black power input connector on the Silent Stepper Bricklet 2.0.
- * 
+ *
  * If there is an external input voltage and a stack input voltage, the motor
  * will be driven by the external input voltage. If there is only a stack
  * voltage present, the motor will be driven by this voltage.
- * 
+ *
  * \warning
  *  This means, if you have a high stack voltage and a low external voltage,
  *  the motor will be driven with the low external voltage. If you then remove
@@ -1112,7 +1112,7 @@ int tf_silent_stepper_v2_get_input_voltage(TF_SilentStepperV2 *silent_stepper_v2
  * \ingroup TF_SilentStepperV2
  *
  * Sets the current with which the motor will be driven.
- * 
+ *
  * \warning
  *  Do not set this value above the specifications of your stepper motor.
  *  Otherwise it may damage your motor.
@@ -1131,7 +1131,7 @@ int tf_silent_stepper_v2_get_motor_current(TF_SilentStepperV2 *silent_stepper_v2
  *
  * Enables/Disables the driver chip. The driver parameters can be configured (maximum velocity,
  * acceleration, etc) before it is enabled.
- * 
+ *
  * \warning
  *  Disabling the driver chip while the motor is still turning can damage the
  *  driver chip. The motor should be stopped calling {@link tf_silent_stepper_v2_stop} function
@@ -1153,7 +1153,7 @@ int tf_silent_stepper_v2_get_enabled(TF_SilentStepperV2 *silent_stepper_v2, bool
  * \ingroup TF_SilentStepperV2
  *
  * Sets the basic configuration parameters for the different modes (Stealth, Coolstep, Classic).
- * 
+ *
  * * Standstill Current: This value can be used to lower the current during stand still. This might
  *   be reasonable to reduce the heating of the motor and the Bricklet 2.0. When the motor is in standstill
  *   the configured motor phase current will be driven until the configured
@@ -1161,7 +1161,7 @@ int tf_silent_stepper_v2_get_enabled(TF_SilentStepperV2 *silent_stepper_v2, bool
  *   current. The elapsed time for this reduction can be configured with the Standstill Delay Time.
  *   The maximum allowed value is the configured maximum motor current
  *   (see {@link tf_silent_stepper_v2_set_motor_current}).
- * 
+ *
  * * Motor Run Current: The value sets the motor current when the motor is running.
  *   Use a value of at least one half of the global maximum motor current for a good
  *   microstep performance. The maximum allowed value is the current
@@ -1169,26 +1169,26 @@ int tf_silent_stepper_v2_get_enabled(TF_SilentStepperV2 *silent_stepper_v2, bool
  *   motor current. This value should be used to change the motor current during motor movement,
  *   whereas the global maximum motor current should not be changed while the motor is moving
  *   (see {@link tf_silent_stepper_v2_set_motor_current}).
- * 
+ *
  * * Standstill Delay Time: Controls the duration for motor power down after a motion
  *   as soon as standstill is detected and the Power Down Time is expired. A high Standstill Delay
  *   Time results in a smooth transition that avoids motor jerk during power down.
- * 
+ *
  * * Power Down Time: Sets the delay time after a stand still.
- * 
+ *
  * * Stealth Threshold: Sets the upper threshold for Stealth mode.
  *   If the velocity of the motor goes above this value, Stealth mode is turned
  *   off. Otherwise it is turned on. In Stealth mode the torque declines with high speed.
- * 
+ *
  * * Coolstep Threshold: Sets the lower threshold for Coolstep mode.
  *   The Coolstep Threshold needs to be above the Stealth Threshold.
- * 
+ *
  * * Classic Threshold: Sets the lower threshold for classic mode.
  *   In classic mode the stepper becomes more noisy, but the torque is maximized.
- * 
+ *
  * * High Velocity Chopper Mode: If High Velocity Chopper Mode is enabled, the stepper control
  *   is optimized to run the stepper motors at high velocities.
- * 
+ *
  * If you want to use all three thresholds make sure that
  * Stealth Threshold < Coolstep Threshold < Classic Threshold.
  */
@@ -1206,41 +1206,41 @@ int tf_silent_stepper_v2_get_basic_configuration(TF_SilentStepperV2 *silent_step
  *
  * Note: If you don't know what any of this means you can very likely keep all of
  * the values as default!
- * 
+ *
  * Sets the Spreadcycle configuration parameters. Spreadcycle is a chopper algorithm which actively
  * controls the motor current flow. More information can be found in the TMC2130 datasheet on page
  * 47 (7 spreadCycle and Classic Chopper).
- * 
+ *
  * * Slow Decay Duration: Controls duration of off time setting of slow decay phase.
  *   0 = driver disabled, all bridges off. Use 1 only with Comparator Blank time >= 2.
- * 
+ *
  * * Enable Random Slow Decay: Set to false to fix chopper off time as set by Slow Decay Duration.
  *   If you set it to true, Decay Duration is randomly modulated.
- * 
+ *
  * * Fast Decay Duration: Sets the fast decay duration. This parameters is
  *   only used if the Chopper Mode is set to Fast Decay.
- * 
+ *
  * * Hysteresis Start Value: Sets the hysteresis start value. This parameter is
  *   only used if the Chopper Mode is set to Spread Cycle.
- * 
+ *
  * * Hysteresis End Value: Sets the hysteresis end value. This parameter is
  *   only used if the Chopper Mode is set to Spread Cycle.
- * 
+ *
  * * Sine Wave Offset: Sets the sine wave offset. This parameters is
  *   only used if the Chopper Mode is set to Fast Decay. 1/512 of the value becomes added to the absolute
  *   value of the sine wave.
- * 
+ *
  * * Chopper Mode: 0 = Spread Cycle, 1 = Fast Decay.
- * 
+ *
  * * Comparator Blank Time: Sets the blank time of the comparator. Available values are
- * 
+ *
  *   * 0 = 16 clocks,
  *   * 1 = 24 clocks,
  *   * 2 = 36 clocks and
  *   * 3 = 54 clocks.
- * 
+ *
  *   A value of 1 or 2 is recommended for most applications.
- * 
+ *
  * * Fast Decay Without Comparator: If set to true the current comparator usage for termination of the
  *   fast decay cycle is disabled.
  */
@@ -1258,25 +1258,25 @@ int tf_silent_stepper_v2_get_spreadcycle_configuration(TF_SilentStepperV2 *silen
  *
  * Note: If you don't know what any of this means you can very likely keep all of
  * the values as default!
- * 
+ *
  * Sets the configuration relevant for Stealth mode.
- * 
+ *
  * * Enable Stealth: If set to true the stealth mode is enabled, if set to false the
  *   stealth mode is disabled, even if the speed is below the threshold set in {@link tf_silent_stepper_v2_set_basic_configuration}.
- * 
+ *
  * * Amplitude: If autoscale is disabled, the PWM amplitude is scaled by this value. If autoscale is enabled,
  *   this value defines the maximum PWM amplitude change per half wave.
- * 
+ *
  * * Gradient: If autoscale is disabled, the PWM gradient is scaled by this value. If autoscale is enabled,
  *   this value defines the maximum PWM gradient. With autoscale a value above 64 is recommended,
  *   otherwise the regulation might not be able to measure the current.
- * 
+ *
  * * Enable Autoscale: If set to true, automatic current control is used. Otherwise the user defined
  *   amplitude and gradient are used.
- * 
+ *
  * * Force Symmetric: If true, A symmetric PWM cycle is enforced. Otherwise the PWM value may change within each
  *   PWM cycle.
- * 
+ *
  * * Freewheel Mode: The freewheel mode defines the behavior in stand still if the Standstill Current
  *   (see {@link tf_silent_stepper_v2_set_basic_configuration}) is set to 0.
  */
@@ -1294,29 +1294,29 @@ int tf_silent_stepper_v2_get_stealth_configuration(TF_SilentStepperV2 *silent_st
  *
  * Note: If you don't know what any of this means you can very likely keep all of
  * the values as default!
- * 
+ *
  * Sets the configuration relevant for Coolstep.
- * 
+ *
  * * Minimum Stallguard Value: If the Stallguard result falls below this value*32, the motor current
  *   is increased to reduce motor load angle. A value of 0 turns Coolstep off.
- * 
+ *
  * * Maximum Stallguard Value: If the Stallguard result goes above
  *   (Min Stallguard Value + Max Stallguard Value + 1) * 32, the motor current is decreased to save
  *   energy.
- * 
+ *
  * * Current Up Step Width: Sets the up step increment per Stallguard value. The value range is 0-3,
  *   corresponding to the increments 1, 2, 4 and 8.
- * 
+ *
  * * Current Down Step Width: Sets the down step decrement per Stallguard value. The value range is 0-3,
  *   corresponding to the decrements 1, 2, 8 and 16.
- * 
+ *
  * * Minimum Current: Sets the minimum current for Coolstep current control. You can choose between
  *   half and quarter of the run current.
- * 
+ *
  * * Stallguard Threshold Value: Sets the level for stall output (see {@link tf_silent_stepper_v2_get_driver_status}).
  *   A lower value gives a higher sensitivity. You have to find a suitable value for your
  *   motor by trial and error, 0 works for most motors.
- * 
+ *
  * * Stallguard Mode: Set to 0 for standard resolution or 1 for filtered mode. In filtered mode the Stallguard
  *   signal will be updated every four full-steps.
  */
@@ -1334,12 +1334,12 @@ int tf_silent_stepper_v2_get_coolstep_configuration(TF_SilentStepperV2 *silent_s
  *
  * Note: If you don't know what any of this means you can very likely keep all of
  * the values as default!
- * 
+ *
  * Sets miscellaneous configuration parameters.
- * 
+ *
  * * Disable Short To Ground Protection: Set to false to enable short to ground protection, otherwise
  *   it is disabled.
- * 
+ *
  * * Synchronize Phase Frequency: With this parameter you can synchronize the chopper for both phases
  *   of a two phase motor to avoid the occurrence of a beat. The value range is 0-15. If set to 0,
  *   the synchronization is turned off. Otherwise the synchronization is done through the formula
@@ -1360,9 +1360,9 @@ int tf_silent_stepper_v2_get_misc_configuration(TF_SilentStepperV2 *silent_stepp
  *
  * Configures the error LED to be either turned off, turned on, blink in
  * heartbeat mode or show an error.
- * 
+ *
  * If the LED is configured to show errors it has three different states:
- * 
+ *
  * * Off: No error present.
  * * 250ms interval blink: Overtemperature warning.
  * * 1s interval blink: Input voltage too small.
@@ -1381,30 +1381,30 @@ int tf_silent_stepper_v2_get_error_led_config(TF_SilentStepperV2 *silent_stepper
  * \ingroup TF_SilentStepperV2
  *
  * Returns the current driver status.
- * 
+ *
  * * Open Load: Indicates if an open load is present on phase A, B or both. This could mean that there is a problem
  *   with the wiring of the motor. False detection can occur in fast motion as well as during stand still.
- * 
+ *
  * * Short To Ground: Indicates if a short to ground is present on phase A, B or both. If this is detected the driver
  *   automatically becomes disabled and stays disabled until it is enabled again manually.
- * 
+ *
  * * Over Temperature: The over temperature indicator switches to "Warning" if the driver IC warms up. The warning flag
  *   is expected during long duration stepper uses. If the temperature limit is reached the indicator switches
  *   to "Limit". In this case the driver becomes disabled until it cools down again.
- * 
+ *
  * * Motor Stalled: Is true if a motor stall was detected.
- * 
+ *
  * * Actual Motor Current: Indicates the actual current control scaling as used in Coolstep mode.
  *   It represents a multiplier of 1/32 to 32/32 of the
  *   ``Motor Run Current`` as set by {@link tf_silent_stepper_v2_set_basic_configuration}. Example: If a ``Motor Run Current``
  *   of 1000mA was set and the returned value is 15, the ``Actual Motor Current`` is 16/32*1000mA = 500mA.
- * 
+ *
  * * Stallguard Result: Indicates the load of the motor. A lower value signals a higher load. Per trial and error
  *   you can find out which value corresponds to a suitable torque for the velocity used in your application.
  *   After that you can use this threshold value to find out if a motor stall becomes probable and react on it (e.g.
  *   decrease velocity).
  *   During stand still this value can not be used for stall detection, it shows the chopper on-time for motor coil A.
- * 
+ *
  * * Stealth Voltage Amplitude: Shows the actual PWM scaling. In Stealth mode it can be used to detect motor load and
  *   stall if autoscale is enabled (see {@link tf_silent_stepper_v2_set_stealth_configuration}).
  */
@@ -1434,7 +1434,7 @@ int tf_silent_stepper_v2_get_minimum_voltage(TF_SilentStepperV2 *silent_stepper_
  *
  * Sets the time base of the velocity and the acceleration of the Silent Stepper
  * Bricklet 2.0.
- * 
+ *
  * For example, if you want to make one step every 1.5 seconds, you can set
  * the time base to 15 and the velocity to 10. Now the velocity is
  * 10steps/15s = 1steps/1.5s.
@@ -1454,15 +1454,15 @@ int tf_silent_stepper_v2_get_time_base(TF_SilentStepperV2 *silent_stepper_v2, ui
  * Returns the following parameters: The current velocity,
  * the current position, the remaining steps, the stack voltage, the external
  * voltage and the current consumption of the stepper motor.
- * 
+ *
  * The current consumption is calculated by multiplying the ``Actual Motor Current``
  * value (see {@link tf_silent_stepper_v2_set_basic_configuration}) with the ``Motor Run Current``
  * (see {@link tf_silent_stepper_v2_get_driver_status}). This is an internal calculation of the
  * driver, not an independent external measurement.
- * 
+ *
  * The current consumption calculation was broken up to firmware 2.0.1, it is fixed
  * since firmware 2.0.2.
- * 
+ *
  * There is also a callback for this function, see {@link tf_silent_stepper_v2_register_all_data_callback} callback.
  */
 int tf_silent_stepper_v2_get_all_data(TF_SilentStepperV2 *silent_stepper_v2, uint16_t *ret_current_velocity, int32_t *ret_current_position, int32_t *ret_remaining_steps, uint16_t *ret_input_voltage, uint16_t *ret_current_consumption);
@@ -1502,12 +1502,12 @@ int tf_silent_stepper_v2_get_gpio_configuration(TF_SilentStepperV2 *silent_stepp
  * \ingroup TF_SilentStepperV2
  *
  * Sets the GPIO action for the given channel.
- * 
+ *
  * The action can be a normal stop, a full brake or a callback. Each for a rising
  * edge or falling edge. The actions are a bitmask they can be used at the same time.
  * You can for example trigger a full brake and a callback at the same time or for
  * rising and falling edge.
- * 
+ *
  * The deceleration speed for the normal stop can be configured with
  * {@link tf_silent_stepper_v2_set_gpio_configuration}.
  */
@@ -1532,14 +1532,14 @@ int tf_silent_stepper_v2_get_gpio_state(TF_SilentStepperV2 *silent_stepper_v2, b
  * \ingroup TF_SilentStepperV2
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -1550,11 +1550,11 @@ int tf_silent_stepper_v2_get_spitfp_error_count(TF_SilentStepperV2 *silent_stepp
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -1573,7 +1573,7 @@ int tf_silent_stepper_v2_get_bootloader_mode(TF_SilentStepperV2 *silent_stepper_
  * Sets the firmware pointer for {@link tf_silent_stepper_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -1585,9 +1585,9 @@ int tf_silent_stepper_v2_set_write_firmware_pointer(TF_SilentStepperV2 *silent_s
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_silent_stepper_v2_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -1599,9 +1599,9 @@ int tf_silent_stepper_v2_write_firmware(TF_SilentStepperV2 *silent_stepper_v2, c
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_silent_stepper_v2_set_status_led_config(TF_SilentStepperV2 *silent_stepper_v2, uint8_t config);
@@ -1618,7 +1618,7 @@ int tf_silent_stepper_v2_get_status_led_config(TF_SilentStepperV2 *silent_steppe
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -1630,7 +1630,7 @@ int tf_silent_stepper_v2_get_chip_temperature(TF_SilentStepperV2 *silent_stepper
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -1643,7 +1643,7 @@ int tf_silent_stepper_v2_reset(TF_SilentStepperV2 *silent_stepper_v2);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_silent_stepper_v2_write_uid(TF_SilentStepperV2 *silent_stepper_v2, uint32_t uid);
@@ -1662,11 +1662,11 @@ int tf_silent_stepper_v2_read_uid(TF_SilentStepperV2 *silent_stepper_v2, uint32_
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -351,10 +351,10 @@ int tf_temperature_ir_v2_set_response_expected_all(TF_TemperatureIRV2 *temperatu
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int16_t temperature, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_temperature_ir_v2_set_ambient_temperature_callback_configuration}.
- * 
+ *
  * The parameter is the same as {@link tf_temperature_ir_v2_get_ambient_temperature}.
  */
 int tf_temperature_ir_v2_register_ambient_temperature_callback(TF_TemperatureIRV2 *temperature_ir_v2, TF_TemperatureIRV2_AmbientTemperatureHandler handler, void *user_data);
@@ -367,10 +367,10 @@ int tf_temperature_ir_v2_register_ambient_temperature_callback(TF_TemperatureIRV
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int16_t temperature, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_temperature_ir_v2_set_object_temperature_callback_configuration}.
- * 
+ *
  * The parameter is the same as {@link tf_temperature_ir_v2_get_object_temperature}.
  */
 int tf_temperature_ir_v2_register_object_temperature_callback(TF_TemperatureIRV2 *temperature_ir_v2, TF_TemperatureIRV2_ObjectTemperatureHandler handler, void *user_data);
@@ -390,8 +390,8 @@ int tf_temperature_ir_v2_callback_tick(TF_TemperatureIRV2 *temperature_ir_v2, ui
  * \ingroup TF_TemperatureIRV2
  *
  * Returns the ambient temperature of the sensor.
- * 
- * 
+ *
+ *
  * If you want to get the value periodically, it is recommended to use the
  * {@link tf_temperature_ir_v2_register_ambient_temperature_callback} callback. You can set the callback configuration
  * with {@link tf_temperature_ir_v2_set_ambient_temperature_callback_configuration}.
@@ -403,30 +403,30 @@ int tf_temperature_ir_v2_get_ambient_temperature(TF_TemperatureIRV2 *temperature
  *
  * The period is the period with which the {@link tf_temperature_ir_v2_register_ambient_temperature_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change
  * within the period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
- * 
+ *
  * It is furthermore possible to constrain the callback with thresholds.
- * 
+ *
  * The `option`-parameter together with min/max sets a threshold for the {@link tf_temperature_ir_v2_register_ambient_temperature_callback} callback.
- * 
+ *
  * The following options are possible:
- * 
+ *
  * \verbatim
  *  "Option", "Description"
- * 
+ *
  *  "'x'",    "Threshold is turned off"
  *  "'o'",    "Threshold is triggered when the value is *outside* the min and max values"
  *  "'i'",    "Threshold is triggered when the value is *inside* or equal to the min and max values"
  *  "'<'",    "Threshold is triggered when the value is smaller than the min value (max is ignored)"
  *  "'>'",    "Threshold is triggered when the value is greater than the min value (max is ignored)"
  * \endverbatim
- * 
+ *
  * If the option is set to 'x' (threshold turned off) the callback is triggered with the fixed period.
  */
 int tf_temperature_ir_v2_set_ambient_temperature_callback_configuration(TF_TemperatureIRV2 *temperature_ir_v2, uint32_t period, bool value_has_to_change, char option, int16_t min, int16_t max);
@@ -443,12 +443,12 @@ int tf_temperature_ir_v2_get_ambient_temperature_callback_configuration(TF_Tempe
  *
  * Returns the object temperature of the sensor, i.e. the temperature
  * of the surface of the object the sensor is aimed at.
- * 
+ *
  * The temperature of different materials is dependent on their `emissivity
  * <https://en.wikipedia.org/wiki/Emissivity>`__. The emissivity of the material
  * can be set with {@link tf_temperature_ir_v2_set_emissivity}.
- * 
- * 
+ *
+ *
  * If you want to get the value periodically, it is recommended to use the
  * {@link tf_temperature_ir_v2_register_object_temperature_callback} callback. You can set the callback configuration
  * with {@link tf_temperature_ir_v2_set_object_temperature_callback_configuration}.
@@ -460,30 +460,30 @@ int tf_temperature_ir_v2_get_object_temperature(TF_TemperatureIRV2 *temperature_
  *
  * The period is the period with which the {@link tf_temperature_ir_v2_register_object_temperature_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change
  * within the period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
- * 
+ *
  * It is furthermore possible to constrain the callback with thresholds.
- * 
+ *
  * The `option`-parameter together with min/max sets a threshold for the {@link tf_temperature_ir_v2_register_object_temperature_callback} callback.
- * 
+ *
  * The following options are possible:
- * 
+ *
  * \verbatim
  *  "Option", "Description"
- * 
+ *
  *  "'x'",    "Threshold is turned off"
  *  "'o'",    "Threshold is triggered when the value is *outside* the min and max values"
  *  "'i'",    "Threshold is triggered when the value is *inside* or equal to the min and max values"
  *  "'<'",    "Threshold is triggered when the value is smaller than the min value (max is ignored)"
  *  "'>'",    "Threshold is triggered when the value is greater than the min value (max is ignored)"
  * \endverbatim
- * 
+ *
  * If the option is set to 'x' (threshold turned off) the callback is triggered with the fixed period.
  */
 int tf_temperature_ir_v2_set_object_temperature_callback_configuration(TF_TemperatureIRV2 *temperature_ir_v2, uint32_t period, bool value_has_to_change, char option, int16_t min, int16_t max);
@@ -501,19 +501,19 @@ int tf_temperature_ir_v2_get_object_temperature_callback_configuration(TF_Temper
  * Sets the `emissivity <https://en.wikipedia.org/wiki/Emissivity>`__ that is
  * used to calculate the surface temperature as returned by
  * {@link tf_temperature_ir_v2_get_object_temperature}.
- * 
+ *
  * The emissivity is usually given as a value between 0.0 and 1.0. A list of
  * emissivities of different materials can be found
  * `here <https://www.infrared-thermography.com/material.htm>`__.
- * 
+ *
  * The parameter of {@link tf_temperature_ir_v2_set_emissivity} has to be given with a factor of
  * 65535 (16-bit). For example: An emissivity of 0.1 can be set with the
  * value 6553, an emissivity of 0.5 with the value 32767 and so on.
- * 
+ *
  * \note
  *  If you need a precise measurement for the object temperature, it is
  *  absolutely crucial that you also provide a precise emissivity.
- * 
+ *
  * The emissivity is stored in non-volatile memory and will still be
  * used after a restart or power cycle of the Bricklet.
  */
@@ -530,14 +530,14 @@ int tf_temperature_ir_v2_get_emissivity(TF_TemperatureIRV2 *temperature_ir_v2, u
  * \ingroup TF_TemperatureIRV2
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -548,11 +548,11 @@ int tf_temperature_ir_v2_get_spitfp_error_count(TF_TemperatureIRV2 *temperature_
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -571,7 +571,7 @@ int tf_temperature_ir_v2_get_bootloader_mode(TF_TemperatureIRV2 *temperature_ir_
  * Sets the firmware pointer for {@link tf_temperature_ir_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -583,9 +583,9 @@ int tf_temperature_ir_v2_set_write_firmware_pointer(TF_TemperatureIRV2 *temperat
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_temperature_ir_v2_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -597,9 +597,9 @@ int tf_temperature_ir_v2_write_firmware(TF_TemperatureIRV2 *temperature_ir_v2, c
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_temperature_ir_v2_set_status_led_config(TF_TemperatureIRV2 *temperature_ir_v2, uint8_t config);
@@ -616,7 +616,7 @@ int tf_temperature_ir_v2_get_status_led_config(TF_TemperatureIRV2 *temperature_i
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -628,7 +628,7 @@ int tf_temperature_ir_v2_get_chip_temperature(TF_TemperatureIRV2 *temperature_ir
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -641,7 +641,7 @@ int tf_temperature_ir_v2_reset(TF_TemperatureIRV2 *temperature_ir_v2);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_temperature_ir_v2_write_uid(TF_TemperatureIRV2 *temperature_ir_v2, uint32_t uid);
@@ -660,11 +660,11 @@ int tf_temperature_ir_v2_read_uid(TF_TemperatureIRV2 *temperature_ir_v2, uint32_
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

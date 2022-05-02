@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -322,7 +322,7 @@ int tf_segment_display_4x7_v2_set_response_expected_all(TF_SegmentDisplay4x7V2 *
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(void *user_data) \endcode
- * 
+ *
  * This callback is triggered when the counter (see {@link tf_segment_display_4x7_v2_start_counter}) is
  * finished.
  */
@@ -343,11 +343,11 @@ int tf_segment_display_4x7_v2_callback_tick(TF_SegmentDisplay4x7V2 *segment_disp
  * \ingroup TF_SegmentDisplay4x7V2
  *
  * Sets the segments of the Segment Display 4x7 Bricklet 2.0 segment-by-segment.
- * 
+ *
  * The data is split into the four digits, two colon dots and the tick mark.
- * 
+ *
  * The indices of the segments in the digit and colon parameters are as follows:
- * 
+ *
  * .. image:: /Images/Bricklets/bricklet_segment_display_4x7_v2_segment_index.png
  *    :scale: 100 %
  *    :alt: Indices of segments
@@ -380,7 +380,7 @@ int tf_segment_display_4x7_v2_get_brightness(TF_SegmentDisplay4x7V2 *segment_dis
  * \ingroup TF_SegmentDisplay4x7V2
  *
  * Sets a numeric value for each of the digits. They represent:
- * 
+ *
  * * -2: minus sign
  * * -1: blank
  * * 0-9: 0-9
@@ -390,7 +390,7 @@ int tf_segment_display_4x7_v2_get_brightness(TF_SegmentDisplay4x7V2 *segment_dis
  * * 13: d
  * * 14: E
  * * 15: F
- * 
+ *
  * Example: A call with [-2, -1, 4, 2] will result in a display of "- 42".
  */
 int tf_segment_display_4x7_v2_set_numeric_value(TF_SegmentDisplay4x7V2 *segment_display_4x7_v2, const int8_t value[4]);
@@ -399,9 +399,9 @@ int tf_segment_display_4x7_v2_set_numeric_value(TF_SegmentDisplay4x7V2 *segment_
  * \ingroup TF_SegmentDisplay4x7V2
  *
  * Turns one specified segment on or off.
- * 
+ *
  * The indices of the segments are as follows:
- * 
+ *
  * .. image:: /Images/Bricklets/bricklet_segment_display_4x7_v2_selected_segment_index.png
  *    :scale: 100 %
  *    :alt: Indices of selected segments
@@ -422,13 +422,13 @@ int tf_segment_display_4x7_v2_get_selected_segment(TF_SegmentDisplay4x7V2 *segme
  * Starts a counter with the *from* value that counts to the *to*
  * value with the each step incremented by *increment*.
  * *length* is the pause between each increment.
- * 
+ *
  * Example: If you set *from* to 0, *to* to 100, *increment* to 1 and
  * *length* to 1000, a counter that goes from 0 to 100 with one second
  * pause between each increment will be started.
- * 
+ *
  * Using a negative *increment* allows to count backwards.
- * 
+ *
  * You can stop the counter at every time by calling {@link tf_segment_display_4x7_v2_set_segments}
  * or {@link tf_segment_display_4x7_v2_set_numeric_value}.
  */
@@ -438,7 +438,7 @@ int tf_segment_display_4x7_v2_start_counter(TF_SegmentDisplay4x7V2 *segment_disp
  * \ingroup TF_SegmentDisplay4x7V2
  *
  * Returns the counter value that is currently shown on the display.
- * 
+ *
  * If there is no counter running a 0 will be returned.
  */
 int tf_segment_display_4x7_v2_get_counter_value(TF_SegmentDisplay4x7V2 *segment_display_4x7_v2, uint16_t *ret_value);
@@ -447,14 +447,14 @@ int tf_segment_display_4x7_v2_get_counter_value(TF_SegmentDisplay4x7V2 *segment_
  * \ingroup TF_SegmentDisplay4x7V2
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -465,11 +465,11 @@ int tf_segment_display_4x7_v2_get_spitfp_error_count(TF_SegmentDisplay4x7V2 *seg
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -488,7 +488,7 @@ int tf_segment_display_4x7_v2_get_bootloader_mode(TF_SegmentDisplay4x7V2 *segmen
  * Sets the firmware pointer for {@link tf_segment_display_4x7_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -500,9 +500,9 @@ int tf_segment_display_4x7_v2_set_write_firmware_pointer(TF_SegmentDisplay4x7V2 
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_segment_display_4x7_v2_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -514,9 +514,9 @@ int tf_segment_display_4x7_v2_write_firmware(TF_SegmentDisplay4x7V2 *segment_dis
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_segment_display_4x7_v2_set_status_led_config(TF_SegmentDisplay4x7V2 *segment_display_4x7_v2, uint8_t config);
@@ -533,7 +533,7 @@ int tf_segment_display_4x7_v2_get_status_led_config(TF_SegmentDisplay4x7V2 *segm
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -545,7 +545,7 @@ int tf_segment_display_4x7_v2_get_chip_temperature(TF_SegmentDisplay4x7V2 *segme
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -558,7 +558,7 @@ int tf_segment_display_4x7_v2_reset(TF_SegmentDisplay4x7V2 *segment_display_4x7_
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_segment_display_4x7_v2_write_uid(TF_SegmentDisplay4x7V2 *segment_display_4x7_v2, uint32_t uid);
@@ -577,11 +577,11 @@ int tf_segment_display_4x7_v2_read_uid(TF_SegmentDisplay4x7V2 *segment_display_4
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

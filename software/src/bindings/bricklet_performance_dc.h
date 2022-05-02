@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -614,13 +614,13 @@ int tf_performance_dc_set_response_expected_all(TF_PerformanceDC *performance_dc
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(void *user_data) \endcode
- * 
+ *
  * This callback is triggered if either the current consumption
  * is too high or the temperature of the driver chip is too high
  * (above 150°C) or the user defined thermal shutdown is triggered (see {@link tf_performance_dc_set_thermal_shutdown}).
  * n case of a voltage below 6V (input voltage) this
  * callback is triggered as well.
- * 
+ *
  * If this callback is triggered, the driver chip gets disabled at the same time.
  * That means, {@link tf_performance_dc_set_enabled} has to be called to drive the motor again.
  */
@@ -634,12 +634,12 @@ int tf_performance_dc_register_emergency_shutdown_callback(TF_PerformanceDC *per
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int16_t velocity, void *user_data) \endcode
- * 
+ *
  * This callback is triggered whenever a set velocity is reached. For example:
  * If a velocity of 0 is present, acceleration is set to 5000 and velocity
  * to 10000, the {@link tf_performance_dc_register_velocity_reached_callback} callback will be triggered after about
  * 2 seconds, when the set velocity is actually reached.
- * 
+ *
  * \note
  *  Since we can't get any feedback from the DC motor, this only works if the
  *  acceleration (see {@link tf_performance_dc_set_motion}) is set smaller or equal to the
@@ -656,11 +656,11 @@ int tf_performance_dc_register_velocity_reached_callback(TF_PerformanceDC *perfo
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int16_t velocity, void *user_data) \endcode
- * 
+ *
  * This callback is triggered with the period that is set by
  * {@link tf_performance_dc_set_current_velocity_callback_configuration}. The parameter is the *current*
  * velocity used by the motor.
- * 
+ *
  * The {@link tf_performance_dc_register_current_velocity_callback} callback is only triggered after the set period
  * if there is a change in the velocity.
  */
@@ -674,9 +674,9 @@ int tf_performance_dc_register_current_velocity_callback(TF_PerformanceDC *perfo
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(bool gpio_state[2], void *user_data) \endcode
- * 
+ *
  * This callback is triggered by GPIO changes if it is activated through {@link tf_performance_dc_set_gpio_action}.
- * 
+ *
  * .. versionadded:: 2.0.1$nbsp;(Plugin)
  */
 int tf_performance_dc_register_gpio_state_callback(TF_PerformanceDC *performance_dc, TF_PerformanceDC_GPIOStateHandler handler, void *user_data);
@@ -714,7 +714,7 @@ int tf_performance_dc_get_enabled(TF_PerformanceDC *performance_dc, bool *ret_en
  * 0 is stop and 32767 is full speed forward. Depending on the
  * acceleration (see {@link tf_performance_dc_set_motion}), the motor is not immediately
  * brought to the velocity but smoothly accelerated.
- * 
+ *
  * The velocity describes the duty cycle of the PWM with which the motor is
  * controlled, e.g. a velocity of 3277 sets a PWM with a 10% duty cycle.
  * You can not only control the duty cycle of the PWM but also the frequency,
@@ -744,11 +744,11 @@ int tf_performance_dc_get_current_velocity(TF_PerformanceDC *performance_dc, int
  * Sets the acceleration and deceleration of the motor. It is given in *velocity/s*.
  * An acceleration of 10000 means, that every second the velocity is increased
  * by 10000 (or about 30% duty cycle).
- * 
+ *
  * For example: If the current velocity is 0 and you want to accelerate to a
  * velocity of 16000 (about 50% duty cycle) in 10 seconds, you should set
  * an acceleration of 1600.
- * 
+ *
  * If acceleration and deceleration is set to 0, there is no speed ramping, i.e. a
  * new velocity is immediately given to the motor.
  */
@@ -765,12 +765,12 @@ int tf_performance_dc_get_motion(TF_PerformanceDC *performance_dc, uint16_t *ret
  * \ingroup TF_PerformanceDC
  *
  * Executes an active full brake.
- * 
+ *
  * \warning
  *  This function is for emergency purposes,
  *  where an immediate brake is necessary. Depending on the current velocity and
  *  the strength of the motor, a full brake can be quite violent.
- * 
+ *
  * Call {@link tf_performance_dc_set_velocity} with 0 if you just want to stop the motor.
  */
 int tf_performance_dc_full_brake(TF_PerformanceDC *performance_dc);
@@ -779,17 +779,17 @@ int tf_performance_dc_full_brake(TF_PerformanceDC *performance_dc);
  * \ingroup TF_PerformanceDC
  *
  * Sets the drive mode. Possible modes are:
- * 
+ *
  * * 0 = Drive/Brake
  * * 1 = Drive/Coast
- * 
+ *
  * These modes are different kinds of motor controls.
- * 
+ *
  * In Drive/Brake mode, the motor is always either driving or braking. There
  * is no freewheeling. Advantages are: A more linear correlation between
  * PWM and velocity, more exact accelerations and the possibility to drive
  * with slower velocities.
- * 
+ *
  * In Drive/Coast mode, the motor is always either driving or freewheeling.
  * Advantages are: Less current consumption and less demands on the motor and
  * driver chip.
@@ -811,7 +811,7 @@ int tf_performance_dc_get_drive_mode(TF_PerformanceDC *performance_dc, uint8_t *
  * is less noisy and the motor runs smoother. However, with a low frequency
  * there are less switches and therefore fewer switching losses. Also with
  * most motors lower frequencies enable higher torque.
- * 
+ *
  * If you have no idea what all this means, just ignore this function and use
  * the default frequency, it will very likely work fine.
  */
@@ -835,10 +835,10 @@ int tf_performance_dc_get_power_statistics(TF_PerformanceDC *performance_dc, uin
  * \ingroup TF_PerformanceDC
  *
  * Sets a temperature threshold that is used for thermal shutdown.
- * 
+ *
  * Additionally to this user defined threshold the driver chip will shut down at a
  * temperature of 150°C.
- * 
+ *
  * If a thermal shutdown is triggered the driver is disabled and has to be
  * explicitly re-enabled with {@link tf_performance_dc_set_enabled}.
  */
@@ -871,12 +871,12 @@ int tf_performance_dc_get_gpio_configuration(TF_PerformanceDC *performance_dc, u
  * \ingroup TF_PerformanceDC
  *
  * Sets the GPIO action for the given channel.
- * 
+ *
  * The action can be a normal stop, a full brake or a callback. Each for a rising
  * edge or falling edge. The actions are a bitmask they can be used at the same time.
  * You can for example trigger a full brake and a callback at the same time or for
  * rising and falling edge.
- * 
+ *
  * The deceleration speed for the normal stop can be configured with
  * {@link tf_performance_dc_set_gpio_configuration}.
  */
@@ -902,9 +902,9 @@ int tf_performance_dc_get_gpio_state(TF_PerformanceDC *performance_dc, bool ret_
  *
  * Configures the error LED to be either turned off, turned on, blink in
  * heartbeat mode or show an error.
- * 
+ *
  * If the LED is configured to show errors it has three different states:
- * 
+ *
  * * Off: No error present.
  * * 1s interval blinking: Input voltage too low (below 6V).
  * * 250ms interval blinking: Overtemperature or overcurrent.
@@ -953,7 +953,7 @@ int tf_performance_dc_get_ccw_led_config(TF_PerformanceDC *performance_dc, uint8
  *
  * Configures the GPIO LED to be either turned off, turned on, blink in
  * heartbeat mode or the GPIO state.
- * 
+ *
  * The GPIO LED can be configured for both channels.
  */
 int tf_performance_dc_set_gpio_led_config(TF_PerformanceDC *performance_dc, uint8_t channel, uint8_t config);
@@ -1000,11 +1000,11 @@ int tf_performance_dc_get_velocity_reached_callback_configuration(TF_Performance
  *
  * The period is the period with which the {@link tf_performance_dc_register_current_velocity_callback}
  * callback is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
  */
@@ -1022,14 +1022,14 @@ int tf_performance_dc_get_current_velocity_callback_configuration(TF_Performance
  * \ingroup TF_PerformanceDC
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -1040,11 +1040,11 @@ int tf_performance_dc_get_spitfp_error_count(TF_PerformanceDC *performance_dc, u
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -1063,7 +1063,7 @@ int tf_performance_dc_get_bootloader_mode(TF_PerformanceDC *performance_dc, uint
  * Sets the firmware pointer for {@link tf_performance_dc_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -1075,9 +1075,9 @@ int tf_performance_dc_set_write_firmware_pointer(TF_PerformanceDC *performance_d
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_performance_dc_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -1089,9 +1089,9 @@ int tf_performance_dc_write_firmware(TF_PerformanceDC *performance_dc, const uin
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_performance_dc_set_status_led_config(TF_PerformanceDC *performance_dc, uint8_t config);
@@ -1108,7 +1108,7 @@ int tf_performance_dc_get_status_led_config(TF_PerformanceDC *performance_dc, ui
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -1120,7 +1120,7 @@ int tf_performance_dc_get_chip_temperature(TF_PerformanceDC *performance_dc, int
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -1133,7 +1133,7 @@ int tf_performance_dc_reset(TF_PerformanceDC *performance_dc);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_performance_dc_write_uid(TF_PerformanceDC *performance_dc, uint32_t uid);
@@ -1152,11 +1152,11 @@ int tf_performance_dc_read_uid(TF_PerformanceDC *performance_dc, uint32_t *ret_u
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

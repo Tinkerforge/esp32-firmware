@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -390,10 +390,10 @@ int tf_io16_v2_set_response_expected_all(TF_IO16V2 *io16_v2, bool response_expec
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint8_t channel, bool changed, bool value, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_io16_v2_set_input_value_callback_configuration}.
- * 
+ *
  * The parameters are the channel, a value-changed indicator and the actual value
  * for the channel. The `changed` parameter is true if the value has changed since
  * the last callback.
@@ -408,10 +408,10 @@ int tf_io16_v2_register_input_value_callback(TF_IO16V2 *io16_v2, TF_IO16V2_Input
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(bool changed[16], bool value[16], void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_io16_v2_set_all_input_value_callback_configuration}.
- * 
+ *
  * The parameters are the same as {@link tf_io16_v2_get_value}. Additional the
  * `changed` parameter is true if the value has changed since
  * the last callback.
@@ -426,7 +426,7 @@ int tf_io16_v2_register_all_input_value_callback(TF_IO16V2 *io16_v2, TF_IO16V2_A
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint8_t channel, bool value, void *user_data) \endcode
- * 
+ *
  * This callback is triggered whenever a monoflop timer reaches 0. The
  * parameters contain the channel and the current value of the channel
  * (the value after the monoflop).
@@ -449,14 +449,14 @@ int tf_io16_v2_callback_tick(TF_IO16V2 *io16_v2, uint32_t timeout_us);
  *
  * Sets the output value of all sixteen channels. A value of *true* or *false* outputs
  * logic 1 or logic 0 respectively on the corresponding channel.
- * 
+ *
  * Use {@link tf_io16_v2_set_selected_value} to change only one output channel state.
- * 
+ *
  * For example: (True, True, False, False, ..., False) will turn the channels 0-1
  * high and the channels 2-15 low.
- * 
+ *
  * All running monoflop timers will be aborted if this function is called.
- * 
+ *
  * \note
  *  This function does nothing for channels that are configured as input. Pull-up
  *  resistors can be switched on with {@link tf_io16_v2_set_configuration}.
@@ -476,10 +476,10 @@ int tf_io16_v2_get_value(TF_IO16V2 *io16_v2, bool ret_value[16]);
  * \ingroup TF_IO16V2
  *
  * Sets the output value of a specific channel without affecting the other channels.
- * 
+ *
  * A running monoflop timer for the specific channel will be aborted if this
  * function is called.
- * 
+ *
  * \note
  *  This function does nothing for channels that are configured as input. Pull-up
  *  resistors can be switched on with {@link tf_io16_v2_set_configuration}.
@@ -491,20 +491,20 @@ int tf_io16_v2_set_selected_value(TF_IO16V2 *io16_v2, uint8_t channel, bool valu
  *
  * Configures the value and direction of a specific channel. Possible directions
  * are 'i' and 'o' for input and output.
- * 
+ *
  * If the direction is configured as output, the value is either high or low
  * (set as *true* or *false*).
- * 
+ *
  * If the direction is configured as input, the value is either pull-up or
  * default (set as *true* or *false*).
- * 
+ *
  * For example:
- * 
+ *
  * * (0, 'i', true) will set channel-0 as input pull-up.
  * * (1, 'i', false) will set channel-1 as input default (floating if nothing is connected).
  * * (2, 'o', true) will set channel-2 as output high.
  * * (3, 'o', false) will set channel-3 as output low.
- * 
+ *
  * A running monoflop timer for the specific channel will be aborted if this
  * function is called.
  */
@@ -521,14 +521,14 @@ int tf_io16_v2_get_configuration(TF_IO16V2 *io16_v2, uint8_t channel, char *ret_
  * \ingroup TF_IO16V2
  *
  * This callback can be configured per channel.
- * 
+ *
  * The period is the period with which the {@link tf_io16_v2_register_input_value_callback}
  * callback is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
  */
@@ -547,11 +547,11 @@ int tf_io16_v2_get_input_value_callback_configuration(TF_IO16V2 *io16_v2, uint8_
  *
  * The period is the period with which the {@link tf_io16_v2_register_all_input_value_callback}
  * callback is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
  */
@@ -569,16 +569,16 @@ int tf_io16_v2_get_all_input_value_callback_configuration(TF_IO16V2 *io16_v2, ui
  * \ingroup TF_IO16V2
  *
  * Configures a monoflop of the specified channel.
- * 
+ *
  * The second parameter is the desired value of the specified
  * channel. A *true* means relay closed and a *false* means relay open.
- * 
+ *
  * The third parameter indicates the time that the channels should hold
  * the value.
- * 
+ *
  * If this function is called with the parameters (0, 1, 1500) channel 0 will
  * close and in 1.5s channel 0 will open again
- * 
+ *
  * A monoflop can be used as a fail-safe mechanism. For example: Lets assume you
  * have a RS485 bus and a IO-16 Bricklet 2.0 connected to one of
  * the slave stacks. You can now call this function every second, with a time
@@ -593,7 +593,7 @@ int tf_io16_v2_set_monoflop(TF_IO16V2 *io16_v2, uint8_t channel, bool value, uin
  *
  * Returns (for the given channel) the current value and the time as set by
  * {@link tf_io16_v2_set_monoflop} as well as the remaining time until the value flips.
- * 
+ *
  * If the timer is not running currently, the remaining time will be returned
  * as 0.
  */
@@ -604,7 +604,7 @@ int tf_io16_v2_get_monoflop(TF_IO16V2 *io16_v2, uint8_t channel, bool *ret_value
  *
  * Returns the current value of the edge counter for the selected channel. You can
  * configure the edges that are counted with {@link tf_io16_v2_set_edge_count_configuration}.
- * 
+ *
  * If you set the reset counter to *true*, the count is set back to 0
  * directly after it is read.
  */
@@ -614,16 +614,16 @@ int tf_io16_v2_get_edge_count(TF_IO16V2 *io16_v2, uint8_t channel, bool reset_co
  * \ingroup TF_IO16V2
  *
  * Configures the edge counter for a specific channel.
- * 
+ *
  * The edge type parameter configures if rising edges, falling edges or
  * both are counted if the channel is configured for input. Possible edge types are:
- * 
+ *
  * * 0 = rising
  * * 1 = falling
  * * 2 = both
- * 
+ *
  * Configuring an edge counter resets its value to 0.
- * 
+ *
  * If you don't know what any of this means, just leave it at default. The
  * default configuration is very likely OK for you.
  */
@@ -641,14 +641,14 @@ int tf_io16_v2_get_edge_count_configuration(TF_IO16V2 *io16_v2, uint8_t channel,
  * \ingroup TF_IO16V2
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -659,11 +659,11 @@ int tf_io16_v2_get_spitfp_error_count(TF_IO16V2 *io16_v2, uint32_t *ret_error_co
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -682,7 +682,7 @@ int tf_io16_v2_get_bootloader_mode(TF_IO16V2 *io16_v2, uint8_t *ret_mode);
  * Sets the firmware pointer for {@link tf_io16_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -694,9 +694,9 @@ int tf_io16_v2_set_write_firmware_pointer(TF_IO16V2 *io16_v2, uint32_t pointer);
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_io16_v2_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -708,9 +708,9 @@ int tf_io16_v2_write_firmware(TF_IO16V2 *io16_v2, const uint8_t data[64], uint8_
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_io16_v2_set_status_led_config(TF_IO16V2 *io16_v2, uint8_t config);
@@ -727,7 +727,7 @@ int tf_io16_v2_get_status_led_config(TF_IO16V2 *io16_v2, uint8_t *ret_config);
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -739,7 +739,7 @@ int tf_io16_v2_get_chip_temperature(TF_IO16V2 *io16_v2, int16_t *ret_temperature
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -752,7 +752,7 @@ int tf_io16_v2_reset(TF_IO16V2 *io16_v2);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_io16_v2_write_uid(TF_IO16V2 *io16_v2, uint32_t uid);
@@ -771,11 +771,11 @@ int tf_io16_v2_read_uid(TF_IO16V2 *io16_v2, uint32_t *ret_uid);
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

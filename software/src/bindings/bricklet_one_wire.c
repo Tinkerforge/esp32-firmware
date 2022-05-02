@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -1246,7 +1246,7 @@ int tf_one_wire_search_bus(TF_OneWire *one_wire, uint64_t *ret_identifier, uint1
     if (one_wire->magic != 0x5446 || one_wire->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     TF_OneWire_SearchBusLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
     _wrapper_data.ret_status = ret_status;

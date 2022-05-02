@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -407,14 +407,14 @@ int tf_servo_v2_set_response_expected_all(TF_ServoV2 *servo_v2, bool response_ex
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint16_t servo_channel, int16_t position, void *user_data) \endcode
- * 
+ *
  * This callback is triggered when a position set by {@link tf_servo_v2_set_position}
  * is reached. If the new position matches the current position then the
  * callback is not triggered, because the servo didn't move.
  * The parameters are the servo and the position that is reached.
- * 
+ *
  * You can enable this callback with {@link tf_servo_v2_set_position_reached_callback_configuration}.
- * 
+ *
  * \note
  *  Since we can't get any feedback from the servo, this only works if the
  *  velocity (see {@link tf_servo_v2_set_motion_configuration}) is set smaller or equal to the
@@ -438,15 +438,15 @@ int tf_servo_v2_callback_tick(TF_ServoV2 *servo_v2, uint32_t timeout_us);
  * \ingroup TF_ServoV2
  *
  * Returns the status information of the Servo Bricklet 2.0.
- * 
+ *
  * The status includes
- * 
+ *
  * * for each channel if it is enabled or disabled,
  * * for each channel the current position,
  * * for each channel the current velocity,
  * * for each channel the current usage and
  * * the input voltage.
- * 
+ *
  * Please note that the position and the velocity is a snapshot of the
  * current position and velocity of the servo in motion.
  */
@@ -471,10 +471,10 @@ int tf_servo_v2_get_enabled(TF_ServoV2 *servo_v2, uint16_t servo_channel, bool *
  * \ingroup TF_ServoV2
  *
  * Sets the position in °/100 for the specified servo channel.
- * 
+ *
  * The default range of the position is -9000 to 9000, but it can be specified
  * according to your servo with {@link tf_servo_v2_set_degree}.
- * 
+ *
  * If you want to control a linear servo or RC brushless motor controller or
  * similar with the Servo Brick, you can also define lengths or speeds with
  * {@link tf_servo_v2_set_degree}.
@@ -511,9 +511,9 @@ int tf_servo_v2_get_current_velocity(TF_ServoV2 *servo_v2, uint16_t servo_channe
  *
  * Sets the maximum velocity of the specified servo channel in °/100s as well as
  * the acceleration and deceleration in °/100s²
- * 
+ *
  * With a velocity of 0 °/100s the position will be set immediately (no velocity).
- * 
+ *
  * With an acc-/deceleration of 0 °/100s² the velocity will be set immediately
  * (no acc-/deceleration).
  */
@@ -530,20 +530,20 @@ int tf_servo_v2_get_motion_configuration(TF_ServoV2 *servo_v2, uint16_t servo_ch
  * \ingroup TF_ServoV2
  *
  * Sets the minimum and maximum pulse width of the specified servo channel in µs.
- * 
+ *
  * Usually, servos are controlled with a
  * `PWM <https://en.wikipedia.org/wiki/Pulse-width_modulation>`__, whereby the
  * length of the pulse controls the position of the servo. Every servo has
  * different minimum and maximum pulse widths, these can be specified with
  * this function.
- * 
+ *
  * If you have a datasheet for your servo that specifies the minimum and
  * maximum pulse width, you should set the values accordingly. If your servo
  * comes without any datasheet you have to find the values via trial and error.
- * 
+ *
  * Both values have a range from 1 to 65535 (unsigned 16-bit integer). The
  * minimum must be smaller than the maximum.
- * 
+ *
  * The default values are 1000µs (1ms) and 2000µs (2ms) for minimum and
  * maximum pulse width.
  */
@@ -562,15 +562,15 @@ int tf_servo_v2_get_pulse_width(TF_ServoV2 *servo_v2, uint16_t servo_channel, ui
  *
  * Sets the minimum and maximum degree for the specified servo channel (by default
  * given as °/100).
- * 
+ *
  * This only specifies the abstract values between which the minimum and maximum
  * pulse width is scaled. For example: If you specify a pulse width of 1000µs
  * to 2000µs and a degree range of -90° to 90°, a call of {@link tf_servo_v2_set_position}
  * with 0 will result in a pulse width of 1500µs
  * (-90° = 1000µs, 90° = 2000µs, etc.).
- * 
+ *
  * Possible usage:
- * 
+ *
  * * The datasheet of your servo specifies a range of 200° with the middle position
  *   at 110°. In this case you can set the minimum to -9000 and the maximum to 11000.
  * * You measure a range of 220° on your servo and you don't have or need a middle
@@ -585,10 +585,10 @@ int tf_servo_v2_get_pulse_width(TF_ServoV2 *servo_v2, uint16_t servo_channel, ui
  * * You have a brushless motor with a maximum speed of 10000 rpm and want to
  *   control it with a RC brushless motor controller. In this case you can set the
  *   minimum to 0 and the maximum to 10000. {@link tf_servo_v2_set_position} now controls the rpm.
- * 
+ *
  * Both values have a possible range from -32767 to 32767
  * (signed 16-bit integer). The minimum must be smaller than the maximum.
- * 
+ *
  * The default values are -9000 and 9000 for the minimum and maximum degree.
  */
 int tf_servo_v2_set_degree(TF_ServoV2 *servo_v2, uint16_t servo_channel, int16_t min, int16_t max);
@@ -605,19 +605,19 @@ int tf_servo_v2_get_degree(TF_ServoV2 *servo_v2, uint16_t servo_channel, int16_t
  * \ingroup TF_ServoV2
  *
  * Sets the period of the specified servo channel in µs.
- * 
+ *
  * Usually, servos are controlled with a
  * `PWM <https://en.wikipedia.org/wiki/Pulse-width_modulation>`__. Different
  * servos expect PWMs with different periods. Most servos run well with a
  * period of about 20ms.
- * 
+ *
  * If your servo comes with a datasheet that specifies a period, you should
  * set it accordingly. If you don't have a datasheet and you have no idea
  * what the correct period is, the default value (19.5ms) will most likely
  * work fine.
- * 
+ *
  * The minimum possible period is 1µs and the maximum is 1000000µs.
- * 
+ *
  * The default value is 19.5ms (19500µs).
  */
 int tf_servo_v2_set_period(TF_ServoV2 *servo_v2, uint16_t servo_channel, uint32_t period);
@@ -684,7 +684,7 @@ int tf_servo_v2_get_input_voltage(TF_ServoV2 *servo_v2, uint16_t *ret_voltage);
  * \ingroup TF_ServoV2
  *
  * Sets an offset value (in mA) for each channel.
- * 
+ *
  * Note: On delivery the Servo Bricklet 2.0 is already calibrated.
  */
 int tf_servo_v2_set_current_calibration(TF_ServoV2 *servo_v2, const int16_t offset[10]);
@@ -715,14 +715,14 @@ int tf_servo_v2_get_position_reached_callback_configuration(TF_ServoV2 *servo_v2
  * \ingroup TF_ServoV2
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -733,11 +733,11 @@ int tf_servo_v2_get_spitfp_error_count(TF_ServoV2 *servo_v2, uint32_t *ret_error
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -756,7 +756,7 @@ int tf_servo_v2_get_bootloader_mode(TF_ServoV2 *servo_v2, uint8_t *ret_mode);
  * Sets the firmware pointer for {@link tf_servo_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -768,9 +768,9 @@ int tf_servo_v2_set_write_firmware_pointer(TF_ServoV2 *servo_v2, uint32_t pointe
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_servo_v2_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -782,9 +782,9 @@ int tf_servo_v2_write_firmware(TF_ServoV2 *servo_v2, const uint8_t data[64], uin
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_servo_v2_set_status_led_config(TF_ServoV2 *servo_v2, uint8_t config);
@@ -801,7 +801,7 @@ int tf_servo_v2_get_status_led_config(TF_ServoV2 *servo_v2, uint8_t *ret_config)
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -813,7 +813,7 @@ int tf_servo_v2_get_chip_temperature(TF_ServoV2 *servo_v2, int16_t *ret_temperat
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -826,7 +826,7 @@ int tf_servo_v2_reset(TF_ServoV2 *servo_v2);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_servo_v2_write_uid(TF_ServoV2 *servo_v2, uint32_t uid);
@@ -845,11 +845,11 @@ int tf_servo_v2_read_uid(TF_ServoV2 *servo_v2, uint32_t *ret_uid);
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

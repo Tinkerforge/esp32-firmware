@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -399,7 +399,7 @@ int tf_remote_switch_v2_set_response_expected_all(TF_RemoteSwitchV2 *remote_swit
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(void *user_data) \endcode
- * 
+ *
  * This callback is triggered whenever the switching state changes
  * from busy to ready, see {@link tf_remote_switch_v2_get_switching_state}.
  */
@@ -413,13 +413,13 @@ int tf_remote_switch_v2_register_switching_done_callback(TF_RemoteSwitchV2 *remo
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint8_t house_code, uint8_t receiver_code, uint8_t switch_to, uint16_t repeats, void *user_data) \endcode
- * 
+ *
  * Returns the house code, receiver code, switch state (on/off) and number of repeats for
  * remote type A.
- * 
+ *
  * The repeats are the number of received identical data packets. The longer the button is pressed,
  * the higher the repeat number. The callback is triggered with every repeat.
- * 
+ *
  * You have to enable the callback with {@link tf_remote_switch_v2_set_remote_configuration}. The number
  * of repeats that you can set in the configuration is the minimum number of repeats that have
  * to be seen before the callback is triggered for the first time.
@@ -434,15 +434,15 @@ int tf_remote_switch_v2_register_remote_status_a_callback(TF_RemoteSwitchV2 *rem
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint32_t address, uint8_t unit, uint8_t switch_to, uint8_t dim_value, uint16_t repeats, void *user_data) \endcode
- * 
+ *
  * Returns the address (unique per remote), unit (button number), switch state (on/off) and number of repeats for
  * remote type B.
- * 
+ *
  * If the remote supports dimming the dim value is used instead of the switch state.
- * 
+ *
  * The repeats are the number of received identical data packets. The longer the button is pressed,
  * the higher the repeat number. The callback is triggered with every repeat.
- * 
+ *
  * You have to enable the callback with {@link tf_remote_switch_v2_set_remote_configuration}. The number
  * of repeats that you can set in the configuration is the minimum number of repeats that have
  * to be seen before the callback is triggered for the first time.
@@ -457,13 +457,13 @@ int tf_remote_switch_v2_register_remote_status_b_callback(TF_RemoteSwitchV2 *rem
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(char system_code, uint8_t device_code, uint8_t switch_to, uint16_t repeats, void *user_data) \endcode
- * 
+ *
  * Returns the system code, device code, switch state (on/off) and number of repeats for
  * remote type C.
- * 
+ *
  * The repeats are the number of received identical data packets. The longer the button is pressed,
  * the higher the repeat number. The callback is triggered with every repeat.
- * 
+ *
  * You have to enable the callback with {@link tf_remote_switch_v2_set_remote_configuration}. The number
  * of repeats that you can set in the configuration is the minimum number of repeats that have
  * to be seen before the callback is triggered for the first time.
@@ -487,7 +487,7 @@ int tf_remote_switch_v2_callback_tick(TF_RemoteSwitchV2 *remote_switch_v2, uint3
  * Returns the current switching state. If the current state is busy, the
  * Bricklet is currently sending a code to switch a socket. It will not
  * accept any calls of switch socket functions until the state changes to ready.
- * 
+ *
  * How long the switching takes is dependent on the number of repeats, see
  * {@link tf_remote_switch_v2_set_repeats}.
  */
@@ -499,7 +499,7 @@ int tf_remote_switch_v2_get_switching_state(TF_RemoteSwitchV2 *remote_switch_v2,
  * Sets the number of times the code is sent when one of the Switch Socket
  * functions is called. The repeats basically correspond to the amount of time
  * that a button of the remote is pressed.
- * 
+ *
  * Some dimmers are controlled by the length of a button pressed,
  * this can be simulated by increasing the repeats.
  */
@@ -517,7 +517,7 @@ int tf_remote_switch_v2_get_repeats(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t
  *
  * To switch a type A socket you have to give the house code, receiver code and the
  * state (on or off) you want to switch to.
- * 
+ *
  * A detailed description on how you can figure out the house and receiver code
  * can be found :ref:`here <remote_switch_bricklet_type_a_house_and_receiver_code>`.
  */
@@ -528,9 +528,9 @@ int tf_remote_switch_v2_switch_socket_a(TF_RemoteSwitchV2 *remote_switch_v2, uin
  *
  * To switch a type B socket you have to give the address, unit and the state
  * (on or off) you want to switch to.
- * 
+ *
  * To switch all devices with the same address use 255 for the unit.
- * 
+ *
  * A detailed description on how you can teach a socket the address and unit can
  * be found :ref:`here <remote_switch_bricklet_type_b_address_and_unit>`.
  */
@@ -541,7 +541,7 @@ int tf_remote_switch_v2_switch_socket_b(TF_RemoteSwitchV2 *remote_switch_v2, uin
  *
  * To control a type B dimmer you have to give the address, unit and the
  * dim value you want to set the dimmer to.
- * 
+ *
  * A detailed description on how you can teach a dimmer the address and unit can
  * be found :ref:`here <remote_switch_bricklet_type_b_address_and_unit>`.
  */
@@ -552,7 +552,7 @@ int tf_remote_switch_v2_dim_socket_b(TF_RemoteSwitchV2 *remote_switch_v2, uint32
  *
  * To switch a type C socket you have to give the system code, device code and the
  * state (on or off) you want to switch to.
- * 
+ *
  * A detailed description on how you can figure out the system and device code
  * can be found :ref:`here <remote_switch_bricklet_type_c_system_and_device_code>`.
  */
@@ -562,7 +562,7 @@ int tf_remote_switch_v2_switch_socket_c(TF_RemoteSwitchV2 *remote_switch_v2, cha
  * \ingroup TF_RemoteSwitchV2
  *
  * Sets the configuration for **receiving** data from a remote of type A, B or C.
- * 
+ *
  * * Remote Type: A, B or C depending on the type of remote you want to receive.
  * * Minimum Repeats: The minimum number of repeated data packets until the callback
  *   is triggered (if enabled).
@@ -583,12 +583,12 @@ int tf_remote_switch_v2_get_remote_configuration(TF_RemoteSwitchV2 *remote_switc
  *
  * Returns the house code, receiver code, switch state (on/off) and number of
  * repeats for remote type A.
- * 
+ *
  * Repeats == 0 means there was no button press. Repeats >= 1 means there
  * was a button press with the specified house/receiver code. The repeats are the
  * number of received identical data packets. The longer the button is pressed,
  * the higher the repeat number.
- * 
+ *
  * Use the callback to get this data automatically when a button is pressed,
  * see {@link tf_remote_switch_v2_set_remote_configuration} and {@link tf_remote_switch_v2_register_remote_status_a_callback} callback.
  */
@@ -599,13 +599,13 @@ int tf_remote_switch_v2_get_remote_status_a(TF_RemoteSwitchV2 *remote_switch_v2,
  *
  * Returns the address (unique per remote), unit (button number), switch state
  * (on/off) and number of repeats for remote type B.
- * 
+ *
  * If the remote supports dimming the dim value is used instead of the switch state.
- * 
+ *
  * If repeats=0 there was no button press. If repeats >= 1 there
  * was a button press with the specified address/unit. The repeats are the number of received
  * identical data packets. The longer the button is pressed, the higher the repeat number.
- * 
+ *
  * Use the callback to get this data automatically when a button is pressed,
  * see {@link tf_remote_switch_v2_set_remote_configuration} and {@link tf_remote_switch_v2_register_remote_status_b_callback} callback.
  */
@@ -616,11 +616,11 @@ int tf_remote_switch_v2_get_remote_status_b(TF_RemoteSwitchV2 *remote_switch_v2,
  *
  * Returns the system code, device code, switch state (on/off) and number of repeats for
  * remote type C.
- * 
+ *
  * If repeats=0 there was no button press. If repeats >= 1 there
  * was a button press with the specified system/device code. The repeats are the number of received
  * identical data packets. The longer the button is pressed, the higher the repeat number.
- * 
+ *
  * Use the callback to get this data automatically when a button is pressed,
  * see {@link tf_remote_switch_v2_set_remote_configuration} and {@link tf_remote_switch_v2_register_remote_status_c_callback} callback.
  */
@@ -630,14 +630,14 @@ int tf_remote_switch_v2_get_remote_status_c(TF_RemoteSwitchV2 *remote_switch_v2,
  * \ingroup TF_RemoteSwitchV2
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -648,11 +648,11 @@ int tf_remote_switch_v2_get_spitfp_error_count(TF_RemoteSwitchV2 *remote_switch_
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -671,7 +671,7 @@ int tf_remote_switch_v2_get_bootloader_mode(TF_RemoteSwitchV2 *remote_switch_v2,
  * Sets the firmware pointer for {@link tf_remote_switch_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -683,9 +683,9 @@ int tf_remote_switch_v2_set_write_firmware_pointer(TF_RemoteSwitchV2 *remote_swi
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_remote_switch_v2_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -697,9 +697,9 @@ int tf_remote_switch_v2_write_firmware(TF_RemoteSwitchV2 *remote_switch_v2, cons
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_remote_switch_v2_set_status_led_config(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t config);
@@ -716,7 +716,7 @@ int tf_remote_switch_v2_get_status_led_config(TF_RemoteSwitchV2 *remote_switch_v
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -728,7 +728,7 @@ int tf_remote_switch_v2_get_chip_temperature(TF_RemoteSwitchV2 *remote_switch_v2
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -741,7 +741,7 @@ int tf_remote_switch_v2_reset(TF_RemoteSwitchV2 *remote_switch_v2);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_remote_switch_v2_write_uid(TF_RemoteSwitchV2 *remote_switch_v2, uint32_t uid);
@@ -760,11 +760,11 @@ int tf_remote_switch_v2_read_uid(TF_RemoteSwitchV2 *remote_switch_v2, uint32_t *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

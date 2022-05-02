@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -3848,7 +3848,7 @@ int tf_lcd_128x64_write_pixels(TF_LCD128x64 *lcd_128x64, uint8_t x_start, uint8_
     if (lcd_128x64->magic != 0x5446 || lcd_128x64->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     TF_LCD128x64_WritePixelsLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
     _wrapper_data.x_start = x_start;
@@ -3896,7 +3896,7 @@ int tf_lcd_128x64_read_pixels(TF_LCD128x64 *lcd_128x64, uint8_t x_start, uint8_t
     if (lcd_128x64->magic != 0x5446 || lcd_128x64->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     TF_LCD128x64_ReadPixelsLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
     _wrapper_data.x_start = x_start;
@@ -3940,7 +3940,7 @@ int tf_lcd_128x64_set_gui_graph_data(TF_LCD128x64 *lcd_128x64, uint8_t index, co
     if (lcd_128x64->magic != 0x5446 || lcd_128x64->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     TF_LCD128x64_SetGUIGraphDataLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
     _wrapper_data.index = index;
@@ -3982,7 +3982,7 @@ int tf_lcd_128x64_get_gui_graph_data(TF_LCD128x64 *lcd_128x64, uint8_t index, ui
     if (lcd_128x64->magic != 0x5446 || lcd_128x64->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     TF_LCD128x64_GetGUIGraphDataLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
     _wrapper_data.index = index;

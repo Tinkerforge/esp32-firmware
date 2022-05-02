@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-03-07.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -143,6 +143,11 @@ typedef struct TF_EVSE {
  * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_GET_ALL_DATA_1 20
+
+/**
+ * \ingroup TF_EVSE
+ */
+#define TF_EVSE_FUNCTION_FACTORY_RESET 21
 
 /**
  * \ingroup TF_EVSE
@@ -573,7 +578,7 @@ int tf_evse_callback_tick(TF_EVSE *evse, uint32_t timeout_us);
  * \ingroup TF_EVSE
  *
  * TODO
- * 
+ *
  * .. versionadded:: 2.0.5$nbsp;(Plugin)
  */
 int tf_evse_get_state(TF_EVSE *evse, uint8_t *ret_iec61851_state, uint8_t *ret_charger_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state);
@@ -601,8 +606,8 @@ int tf_evse_get_low_level_state(TF_EVSE *evse, uint8_t *ret_led_state, uint16_t 
  * 2: gpio input 0 (shutdown input)
  * 3: gpio input 1 (input)
  * 4: button (0A <-> 32A, can be controlled from web interface with start button and physical button if configured)
- * 
- * 
+ *
+ *
  * .. versionadded:: 2.1.0$nbsp;(Plugin)
  */
 int tf_evse_set_charging_slot(TF_EVSE *evse, uint8_t slot, uint16_t max_current, bool active, bool clear_on_disconnect);
@@ -639,8 +644,8 @@ int tf_evse_get_charging_slot(TF_EVSE *evse, uint8_t slot, uint16_t *ret_max_cur
  * \ingroup TF_EVSE
  *
  * packed getter
- * 
- * 
+ *
+ *
  * .. versionadded:: 2.1.0$nbsp;(Plugin)
  */
 int tf_evse_get_all_charging_slots(TF_EVSE *evse, uint16_t ret_max_current[20], uint8_t ret_active_and_clear_on_disconnect[20]);
@@ -653,8 +658,8 @@ int tf_evse_get_all_charging_slots(TF_EVSE *evse, uint16_t ret_max_current[20], 
  * 1: outgoing cable (read-only, configured through resistor)
  * 2: gpio input 0 (shutdown input)
  * 3: gpio input 1 (input)
- * 
- * 
+ *
+ *
  * .. versionadded:: 2.1.0$nbsp;(Plugin)
  */
 int tf_evse_set_charging_slot_default(TF_EVSE *evse, uint8_t slot, uint16_t max_current, bool active, bool clear_on_disconnect);
@@ -732,15 +737,22 @@ int tf_evse_get_all_data_1(TF_EVSE *evse, uint8_t *ret_iec61851_state, uint8_t *
 /**
  * \ingroup TF_EVSE
  *
+ * TODO
+ */
+int tf_evse_factory_reset(TF_EVSE *evse, uint32_t password);
+
+/**
+ * \ingroup TF_EVSE
+ *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -751,11 +763,11 @@ int tf_evse_get_spitfp_error_count(TF_EVSE *evse, uint32_t *ret_error_count_ack_
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -774,7 +786,7 @@ int tf_evse_get_bootloader_mode(TF_EVSE *evse, uint8_t *ret_mode);
  * Sets the firmware pointer for {@link tf_evse_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -786,9 +798,9 @@ int tf_evse_set_write_firmware_pointer(TF_EVSE *evse, uint32_t pointer);
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_evse_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -800,9 +812,9 @@ int tf_evse_write_firmware(TF_EVSE *evse, const uint8_t data[64], uint8_t *ret_s
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_evse_set_status_led_config(TF_EVSE *evse, uint8_t config);
@@ -819,7 +831,7 @@ int tf_evse_get_status_led_config(TF_EVSE *evse, uint8_t *ret_config);
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -831,7 +843,7 @@ int tf_evse_get_chip_temperature(TF_EVSE *evse, int16_t *ret_temperature);
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -844,7 +856,7 @@ int tf_evse_reset(TF_EVSE *evse);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_evse_write_uid(TF_EVSE *evse, uint32_t uid);
@@ -863,11 +875,11 @@ int tf_evse_read_uid(TF_EVSE *evse, uint32_t *ret_uid);
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

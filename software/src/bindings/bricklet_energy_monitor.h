@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -322,10 +322,10 @@ int tf_energy_monitor_set_response_expected_all(TF_EnergyMonitor *energy_monitor
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(int32_t voltage, int32_t current, int32_t energy, int32_t real_power, int32_t apparent_power, int32_t reactive_power, uint16_t power_factor, uint16_t frequency, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_energy_monitor_set_energy_data_callback_configuration}.
- * 
+ *
  * The parameters are the same as {@link tf_energy_monitor_get_energy_data}.
  */
 int tf_energy_monitor_register_energy_data_callback(TF_EnergyMonitor *energy_monitor, TF_EnergyMonitor_EnergyDataHandler handler, void *user_data);
@@ -345,7 +345,7 @@ int tf_energy_monitor_callback_tick(TF_EnergyMonitor *energy_monitor, uint32_t t
  * \ingroup TF_EnergyMonitor
  *
  * Returns all of the measurements that are done by the Energy Monitor Bricklet.
- * 
+ *
  * * Voltage RMS
  * * Current RMS
  * * Energy (integrated over time)
@@ -354,13 +354,13 @@ int tf_energy_monitor_callback_tick(TF_EnergyMonitor *energy_monitor, uint32_t t
  * * Reactive Power
  * * Power Factor
  * * Frequency (AC Frequency of the mains voltage)
- * 
+ *
  * The frequency is recalculated every 6 seconds.
- * 
+ *
  * All other values are integrated over 10 zero-crossings of the voltage sine wave.
  * With a standard AC mains voltage frequency of 50Hz this results in a 5 measurements
  * per second (or an integration time of 200ms per measurement).
- * 
+ *
  * If no voltage transformer is connected, the Bricklet will use the current waveform
  * to calculate the frequency and it will use an integration time of
  * 10 zero-crossings of the current waveform.
@@ -381,10 +381,10 @@ int tf_energy_monitor_reset_energy(TF_EnergyMonitor *energy_monitor);
  * in the returned array alternate between voltage and current. The data from
  * one getter call contains 768 data points for voltage and current, which
  * correspond to about 3 full sine waves.
- * 
+ *
  * The voltage is given with a resolution of 100mV and the current is given
  * with a resolution of 10mA.
- * 
+ *
  * This data is meant to be used for a non-realtime graphical representation of
  * the voltage and current waveforms.
  */
@@ -401,16 +401,16 @@ int tf_energy_monitor_get_transformer_status(TF_EnergyMonitor *energy_monitor, b
  * \ingroup TF_EnergyMonitor
  *
  * Sets the transformer ratio for the voltage and current transformer in 1/100 form.
- * 
+ *
  * Example: If your mains voltage is 230V, you use 9V voltage transformer and a
  * 1V:30A current clamp your voltage ratio is 230/9 = 25.56 and your current ratio
  * is 30/1 = 30.
- * 
+ *
  * In this case you have to set the values 2556 and 3000 for voltage ratio and current
  * ratio.
- * 
+ *
  * The calibration is saved in non-volatile memory, you only have to set it once.
- * 
+ *
  * Set the phase shift to 0. It is for future use and currently not supported by the Bricklet.
  */
 int tf_energy_monitor_set_transformer_calibration(TF_EnergyMonitor *energy_monitor, uint16_t voltage_ratio, uint16_t current_ratio, int16_t phase_shift);
@@ -428,14 +428,14 @@ int tf_energy_monitor_get_transformer_calibration(TF_EnergyMonitor *energy_monit
  * Calling this function will start an offset calibration. The offset calibration will
  * integrate the voltage and current waveform over a longer time period to find the 0
  * transition point in the sine wave.
- * 
+ *
  * The Bricklet comes with a factory-calibrated offset value, you should not have to
  * call this function.
- * 
+ *
  * If you want to re-calibrate the offset we recommend that you connect a load that
  * has a smooth sinusoidal voltage and current waveform. Alternatively you can also
  * short both inputs.
- * 
+ *
  * The calibration is saved in non-volatile memory, you only have to set it once.
  */
 int tf_energy_monitor_calibrate_offset(TF_EnergyMonitor *energy_monitor);
@@ -445,11 +445,11 @@ int tf_energy_monitor_calibrate_offset(TF_EnergyMonitor *energy_monitor);
  *
  * The period is the period with which the {@link tf_energy_monitor_register_energy_data_callback}
  * callback is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
  */
@@ -467,14 +467,14 @@ int tf_energy_monitor_get_energy_data_callback_configuration(TF_EnergyMonitor *e
  * \ingroup TF_EnergyMonitor
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -485,11 +485,11 @@ int tf_energy_monitor_get_spitfp_error_count(TF_EnergyMonitor *energy_monitor, u
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -508,7 +508,7 @@ int tf_energy_monitor_get_bootloader_mode(TF_EnergyMonitor *energy_monitor, uint
  * Sets the firmware pointer for {@link tf_energy_monitor_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -520,9 +520,9 @@ int tf_energy_monitor_set_write_firmware_pointer(TF_EnergyMonitor *energy_monito
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_energy_monitor_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -534,9 +534,9 @@ int tf_energy_monitor_write_firmware(TF_EnergyMonitor *energy_monitor, const uin
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_energy_monitor_set_status_led_config(TF_EnergyMonitor *energy_monitor, uint8_t config);
@@ -553,7 +553,7 @@ int tf_energy_monitor_get_status_led_config(TF_EnergyMonitor *energy_monitor, ui
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -565,7 +565,7 @@ int tf_energy_monitor_get_chip_temperature(TF_EnergyMonitor *energy_monitor, int
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -578,7 +578,7 @@ int tf_energy_monitor_reset(TF_EnergyMonitor *energy_monitor);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_energy_monitor_write_uid(TF_EnergyMonitor *energy_monitor, uint32_t uid);
@@ -597,11 +597,11 @@ int tf_energy_monitor_read_uid(TF_EnergyMonitor *energy_monitor, uint32_t *ret_u
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */
@@ -614,10 +614,10 @@ int tf_energy_monitor_get_identity(TF_EnergyMonitor *energy_monitor, char ret_ui
  * in the returned array alternate between voltage and current. The data from
  * one getter call contains 768 data points for voltage and current, which
  * correspond to about 3 full sine waves.
- * 
+ *
  * The voltage is given with a resolution of 100mV and the current is given
  * with a resolution of 10mA.
- * 
+ *
  * This data is meant to be used for a non-realtime graphical representation of
  * the voltage and current waveforms.
  */

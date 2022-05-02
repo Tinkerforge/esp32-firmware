@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -2049,7 +2049,7 @@ int tf_can_v2_write_frame(TF_CANV2 *can_v2, uint8_t frame_type, uint32_t identif
     if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     TF_CANV2_WriteFrameLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
     _wrapper_data.frame_type = frame_type;
@@ -2131,7 +2131,7 @@ int tf_can_v2_set_queue_configuration(TF_CANV2 *can_v2, uint8_t write_buffer_siz
     if (can_v2->magic != 0x5446 || can_v2->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     TF_CANV2_SetQueueConfigurationLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
     _wrapper_data.write_buffer_size = write_buffer_size;

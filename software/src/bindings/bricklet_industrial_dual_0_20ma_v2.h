@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -427,10 +427,10 @@ int tf_industrial_dual_0_20ma_v2_set_response_expected_all(TF_IndustrialDual020m
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint8_t channel, int32_t current, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_industrial_dual_0_20ma_v2_set_current_callback_configuration}.
- * 
+ *
  * The parameter is the same as {@link tf_industrial_dual_0_20ma_v2_get_current}.
  */
 int tf_industrial_dual_0_20ma_v2_register_current_callback(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, TF_IndustrialDual020mAV2_CurrentHandler handler, void *user_data);
@@ -450,15 +450,15 @@ int tf_industrial_dual_0_20ma_v2_callback_tick(TF_IndustrialDual020mAV2 *industr
  * \ingroup TF_IndustrialDual020mAV2
  *
  * Returns the current of the specified channel.
- * 
+ *
  * It is possible to detect if an IEC 60381-1 compatible sensor is connected
  * and if it works probably.
- * 
+ *
  * If the returned current is below 4mA, there is likely no sensor connected
  * or the connected sensor is defective. If the returned current is over 20mA,
  * there might be a short circuit or the sensor is defective.
- * 
- * 
+ *
+ *
  * If you want to get the value periodically, it is recommended to use the
  * {@link tf_industrial_dual_0_20ma_v2_register_current_callback} callback. You can set the callback configuration
  * with {@link tf_industrial_dual_0_20ma_v2_set_current_callback_configuration}.
@@ -470,30 +470,30 @@ int tf_industrial_dual_0_20ma_v2_get_current(TF_IndustrialDual020mAV2 *industria
  *
  * The period is the period with which the {@link tf_industrial_dual_0_20ma_v2_register_current_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change
  * within the period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
- * 
+ *
  * It is furthermore possible to constrain the callback with thresholds.
- * 
+ *
  * The `option`-parameter together with min/max sets a threshold for the {@link tf_industrial_dual_0_20ma_v2_register_current_callback} callback.
- * 
+ *
  * The following options are possible:
- * 
+ *
  * \verbatim
  *  "Option", "Description"
- * 
+ *
  *  "'x'",    "Threshold is turned off"
  *  "'o'",    "Threshold is triggered when the value is *outside* the min and max values"
  *  "'i'",    "Threshold is triggered when the value is *inside* or equal to the min and max values"
  *  "'<'",    "Threshold is triggered when the value is smaller than the min value (max is ignored)"
  *  "'>'",    "Threshold is triggered when the value is greater than the min value (max is ignored)"
  * \endverbatim
- * 
+ *
  * If the option is set to 'x' (threshold turned off) the callback is triggered with the fixed period.
  */
 int tf_industrial_dual_0_20ma_v2_set_current_callback_configuration(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint8_t channel, uint32_t period, bool value_has_to_change, char option, int32_t min, int32_t max);
@@ -510,10 +510,10 @@ int tf_industrial_dual_0_20ma_v2_get_current_callback_configuration(TF_Industria
  *
  * Sets the sample rate to either 240, 60, 15 or 4 samples per second.
  * The resolution for the rates is 12, 14, 16 and 18 bit respectively.
- * 
+ *
  * \verbatim
  *  "Value", "Description"
- * 
+ *
  *  "0",    "240 samples per second, 12 bit resolution"
  *  "1",    "60 samples per second, 14 bit resolution"
  *  "2",    "15 samples per second, 16 bit resolution"
@@ -534,7 +534,7 @@ int tf_industrial_dual_0_20ma_v2_get_sample_rate(TF_IndustrialDual020mAV2 *indus
  *
  * Sets a gain between 1x and 8x. If you want to measure a very small current,
  * you can increase the gain to get some more resolution.
- * 
+ *
  * Example: If you measure 0.5mA with a gain of 8x the return value will be
  * 4mA.
  */
@@ -554,7 +554,7 @@ int tf_industrial_dual_0_20ma_v2_get_gain(TF_IndustrialDual020mAV2 *industrial_d
  * heartbeat. You can also set the LED to "Channel Status". In this mode the
  * LED can either be turned on with a pre-defined threshold or the intensity
  * of the LED can change with the measured value.
- * 
+ *
  * You can configure the channel status behavior with {@link tf_industrial_dual_0_20ma_v2_set_channel_led_status_config}.
  */
 int tf_industrial_dual_0_20ma_v2_set_channel_led_config(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint8_t channel, uint8_t config);
@@ -571,9 +571,9 @@ int tf_industrial_dual_0_20ma_v2_get_channel_led_config(TF_IndustrialDual020mAV2
  *
  * Sets the channel LED status config. This config is used if the channel LED is
  * configured as "Channel Status", see {@link tf_industrial_dual_0_20ma_v2_set_channel_led_config}.
- * 
+ *
  * For each channel you can choose between threshold and intensity mode.
- * 
+ *
  * In threshold mode you can define a positive or a negative threshold.
  * For a positive threshold set the "min" parameter to the threshold value in nA
  * above which the LED should turn on and set the "max" parameter to 0. Example:
@@ -583,7 +583,7 @@ int tf_industrial_dual_0_20ma_v2_get_channel_led_config(TF_IndustrialDual020mAV2
  * below which the LED should turn on and set the "min" parameter to 0. Example:
  * If you set a negative threshold of 10mA, the LED will turn on as soon as the
  * current goes below 10mA and the LED will turn off when the current exceeds 10mA.
- * 
+ *
  * In intensity mode you can define a range in nA that is used to scale the brightness
  * of the LED. Example with min=4mA and max=20mA: The LED is off at 4mA and below,
  * on at 20mA and above and the brightness is linearly scaled between the values
@@ -604,14 +604,14 @@ int tf_industrial_dual_0_20ma_v2_get_channel_led_status_config(TF_IndustrialDual
  * \ingroup TF_IndustrialDual020mAV2
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -622,11 +622,11 @@ int tf_industrial_dual_0_20ma_v2_get_spitfp_error_count(TF_IndustrialDual020mAV2
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -645,7 +645,7 @@ int tf_industrial_dual_0_20ma_v2_get_bootloader_mode(TF_IndustrialDual020mAV2 *i
  * Sets the firmware pointer for {@link tf_industrial_dual_0_20ma_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -657,9 +657,9 @@ int tf_industrial_dual_0_20ma_v2_set_write_firmware_pointer(TF_IndustrialDual020
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_industrial_dual_0_20ma_v2_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -671,9 +671,9 @@ int tf_industrial_dual_0_20ma_v2_write_firmware(TF_IndustrialDual020mAV2 *indust
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_industrial_dual_0_20ma_v2_set_status_led_config(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint8_t config);
@@ -690,7 +690,7 @@ int tf_industrial_dual_0_20ma_v2_get_status_led_config(TF_IndustrialDual020mAV2 
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -702,7 +702,7 @@ int tf_industrial_dual_0_20ma_v2_get_chip_temperature(TF_IndustrialDual020mAV2 *
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -715,7 +715,7 @@ int tf_industrial_dual_0_20ma_v2_reset(TF_IndustrialDual020mAV2 *industrial_dual
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_industrial_dual_0_20ma_v2_write_uid(TF_IndustrialDual020mAV2 *industrial_dual_0_20ma_v2, uint32_t uid);
@@ -734,11 +734,11 @@ int tf_industrial_dual_0_20ma_v2_read_uid(TF_IndustrialDual020mAV2 *industrial_d
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

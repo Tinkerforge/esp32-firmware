@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -336,7 +336,7 @@ int tf_piezo_speaker_v2_set_response_expected_all(TF_PiezoSpeakerV2 *piezo_speak
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(void *user_data) \endcode
- * 
+ *
  * This callback is triggered if a beep set by {@link tf_piezo_speaker_v2_set_beep} is finished
  */
 int tf_piezo_speaker_v2_register_beep_finished_callback(TF_PiezoSpeakerV2 *piezo_speaker_v2, TF_PiezoSpeakerV2_BeepFinishedHandler handler, void *user_data);
@@ -349,7 +349,7 @@ int tf_piezo_speaker_v2_register_beep_finished_callback(TF_PiezoSpeakerV2 *piezo
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(void *user_data) \endcode
- * 
+ *
  * This callback is triggered if a alarm set by {@link tf_piezo_speaker_v2_set_alarm} is finished
  */
 int tf_piezo_speaker_v2_register_alarm_finished_callback(TF_PiezoSpeakerV2 *piezo_speaker_v2, TF_PiezoSpeakerV2_AlarmFinishedHandler handler, void *user_data);
@@ -369,7 +369,7 @@ int tf_piezo_speaker_v2_callback_tick(TF_PiezoSpeakerV2 *piezo_speaker_v2, uint3
  * \ingroup TF_PiezoSpeakerV2
  *
  * Beeps with the given frequency and volume for the duration.
- * 
+ *
  * A duration of 0 stops the current beep if any is ongoing.
  * A duration of 4294967295 results in an infinite beep.
  */
@@ -380,7 +380,7 @@ int tf_piezo_speaker_v2_set_beep(TF_PiezoSpeakerV2 *piezo_speaker_v2, uint16_t f
  *
  * Returns the last beep settings as set by {@link tf_piezo_speaker_v2_set_beep}. If a beep is currently
  * running it also returns the remaining duration of the beep.
- * 
+ *
  * If the frequency or volume is updated during a beep (with {@link tf_piezo_speaker_v2_update_frequency}
  * or {@link tf_piezo_speaker_v2_update_volume}) this function returns the updated value.
  */
@@ -390,41 +390,41 @@ int tf_piezo_speaker_v2_get_beep(TF_PiezoSpeakerV2 *piezo_speaker_v2, uint16_t *
  * \ingroup TF_PiezoSpeakerV2
  *
  * Creates an alarm (a tone that goes back and force between two specified frequencies).
- * 
+ *
  * The following parameters can be set:
- * 
+ *
  * * Start Frequency: Start frequency of the alarm.
  * * End Frequency: End frequency of the alarm.
  * * Step Size: Size of one step of the sweep between the start/end frequencies.
  * * Step Delay: Delay between two steps (duration of time that one tone is used in a sweep).
  * * Duration: Duration of the alarm.
- * 
+ *
  * A duration of 0 stops the current alarm if any is ongoing.
  * A duration of 4294967295 results in an infinite alarm.
- * 
+ *
  * Below you can find two sets of example settings that you can try out. You can use
  * these as a starting point to find an alarm signal that suits your application.
- * 
+ *
  * Example 1: 10 seconds of loud annoying fast alarm
- * 
+ *
  * * Start Frequency = 800
  * * End Frequency = 2000
  * * Step Size = 10
  * * Step Delay = 1
  * * Volume = 10
  * * Duration = 10000
- * 
+ *
  * Example 2: 10 seconds of soft siren sound with slow build-up
- * 
+ *
  * * Start Frequency = 250
  * * End Frequency = 750
  * * Step Size = 1
  * * Step Delay = 5
  * * Volume = 0
  * * Duration = 10000
- * 
+ *
  * The following conditions must be met:
- * 
+ *
  * * Start Frequency: has to be smaller than end frequency
  * * End Frequency: has to be bigger than start frequency
  * * Step Size: has to be small enough to fit into the frequency range
@@ -438,7 +438,7 @@ int tf_piezo_speaker_v2_set_alarm(TF_PiezoSpeakerV2 *piezo_speaker_v2, uint16_t 
  * Returns the last alarm settings as set by {@link tf_piezo_speaker_v2_set_alarm}. If an alarm is currently
  * running it also returns the remaining duration of the alarm as well as the
  * current frequency of the alarm.
- * 
+ *
  * If the volume is updated during an alarm (with {@link tf_piezo_speaker_v2_update_volume})
  * this function returns the updated value.
  */
@@ -462,14 +462,14 @@ int tf_piezo_speaker_v2_update_frequency(TF_PiezoSpeakerV2 *piezo_speaker_v2, ui
  * \ingroup TF_PiezoSpeakerV2
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -480,11 +480,11 @@ int tf_piezo_speaker_v2_get_spitfp_error_count(TF_PiezoSpeakerV2 *piezo_speaker_
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -503,7 +503,7 @@ int tf_piezo_speaker_v2_get_bootloader_mode(TF_PiezoSpeakerV2 *piezo_speaker_v2,
  * Sets the firmware pointer for {@link tf_piezo_speaker_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -515,9 +515,9 @@ int tf_piezo_speaker_v2_set_write_firmware_pointer(TF_PiezoSpeakerV2 *piezo_spea
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_piezo_speaker_v2_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -529,9 +529,9 @@ int tf_piezo_speaker_v2_write_firmware(TF_PiezoSpeakerV2 *piezo_speaker_v2, cons
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_piezo_speaker_v2_set_status_led_config(TF_PiezoSpeakerV2 *piezo_speaker_v2, uint8_t config);
@@ -548,7 +548,7 @@ int tf_piezo_speaker_v2_get_status_led_config(TF_PiezoSpeakerV2 *piezo_speaker_v
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -560,7 +560,7 @@ int tf_piezo_speaker_v2_get_chip_temperature(TF_PiezoSpeakerV2 *piezo_speaker_v2
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -573,7 +573,7 @@ int tf_piezo_speaker_v2_reset(TF_PiezoSpeakerV2 *piezo_speaker_v2);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_piezo_speaker_v2_write_uid(TF_PiezoSpeakerV2 *piezo_speaker_v2, uint32_t uid);
@@ -592,11 +592,11 @@ int tf_piezo_speaker_v2_read_uid(TF_PiezoSpeakerV2 *piezo_speaker_v2, uint32_t *
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

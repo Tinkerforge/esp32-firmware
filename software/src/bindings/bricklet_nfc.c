@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -2483,7 +2483,7 @@ int tf_nfc_reader_write_ndef(TF_NFC *nfc, const uint8_t *ndef, uint16_t ndef_len
     if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
 
     uint32_t _stream_length = ndef_length;
     uint32_t _ndef_written = 0;
@@ -2517,7 +2517,7 @@ int tf_nfc_reader_read_ndef(TF_NFC *nfc, uint8_t *ret_ndef, uint16_t *ret_ndef_l
     if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     uint32_t _ndef_length = 0;
     uint8_t _ndef_chunk_data[60];
 
@@ -2555,7 +2555,7 @@ int tf_nfc_reader_write_page(TF_NFC *nfc, uint16_t page, const uint8_t *data, ui
     if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     TF_NFC_ReaderWritePageLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
     _wrapper_data.page = page;
@@ -2592,7 +2592,7 @@ int tf_nfc_reader_read_page(TF_NFC *nfc, uint8_t *ret_data, uint16_t *ret_data_l
     if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     uint32_t _data_length = 0;
     uint8_t _data_chunk_data[60];
 
@@ -2625,7 +2625,7 @@ int tf_nfc_cardemu_write_ndef(TF_NFC *nfc, const uint8_t *ndef, uint16_t ndef_le
     if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
 
     uint32_t _stream_length = ndef_length;
     uint32_t _ndef_written = 0;
@@ -2660,7 +2660,7 @@ int tf_nfc_p2p_write_ndef(TF_NFC *nfc, const uint8_t *ndef, uint16_t ndef_length
     if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
 
     uint32_t _stream_length = ndef_length;
     uint32_t _ndef_written = 0;
@@ -2694,7 +2694,7 @@ int tf_nfc_p2p_read_ndef(TF_NFC *nfc, uint8_t *ret_ndef, uint16_t *ret_ndef_leng
     if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     uint32_t _ndef_length = 0;
     uint8_t _ndef_chunk_data[60];
 

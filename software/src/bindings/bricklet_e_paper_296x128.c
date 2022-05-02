@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -1863,7 +1863,7 @@ int tf_e_paper_296x128_write_black_white(TF_EPaper296x128 *e_paper_296x128, uint
     if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     TF_EPaper296x128_WriteBlackWhiteLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
     _wrapper_data.x_start = x_start;
@@ -1911,7 +1911,7 @@ int tf_e_paper_296x128_read_black_white(TF_EPaper296x128 *e_paper_296x128, uint1
     if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     TF_EPaper296x128_ReadBlackWhiteLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
     _wrapper_data.x_start = x_start;
@@ -1958,7 +1958,7 @@ int tf_e_paper_296x128_write_color(TF_EPaper296x128 *e_paper_296x128, uint16_t x
     if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     TF_EPaper296x128_WriteColorLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
     _wrapper_data.x_start = x_start;
@@ -2006,7 +2006,7 @@ int tf_e_paper_296x128_read_color(TF_EPaper296x128 *e_paper_296x128, uint16_t x_
     if (e_paper_296x128->magic != 0x5446 || e_paper_296x128->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     TF_EPaper296x128_ReadColorLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
     _wrapper_data.x_start = x_start;

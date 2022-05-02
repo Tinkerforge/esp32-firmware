@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -1402,7 +1402,7 @@ int tf_energy_monitor_get_waveform(TF_EnergyMonitor *energy_monitor, int16_t *re
     if (energy_monitor->magic != 0x5446 || energy_monitor->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     uint32_t _waveform_length = 0;
     int16_t _waveform_chunk_data[30];
 

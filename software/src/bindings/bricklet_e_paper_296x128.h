@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-04-19.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -487,7 +487,7 @@ int tf_e_paper_296x128_set_response_expected_all(TF_EPaper296x128 *e_paper_296x1
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint8_t draw_status, void *user_data) \endcode
- * 
+ *
  * Callback for the current draw status. Will be called every time the
  * draw status changes (see {@link tf_e_paper_296x128_get_draw_status}).
  */
@@ -508,7 +508,7 @@ int tf_e_paper_296x128_callback_tick(TF_EPaper296x128 *e_paper_296x128, uint32_t
  * \ingroup TF_EPaper296x128
  *
  * Draws the current black/white and red or gray buffer to the e-paper display.
- * 
+ *
  * The Bricklet does not have any double-buffering. You should not call
  * this function while writing to the buffer. See {@link tf_e_paper_296x128_get_draw_status}.
  */
@@ -518,11 +518,11 @@ int tf_e_paper_296x128_draw(TF_EPaper296x128 *e_paper_296x128);
  * \ingroup TF_EPaper296x128
  *
  * Returns one of three draw statuses:
- * 
+ *
  * * Idle
  * * Copying: Data is being copied from the buffer of the Bricklet to the buffer of the display.
  * * Drawing: The display is updating its content (during this phase the flickering etc happens).
- * 
+ *
  * You can write to the buffer (through one of the write or draw functions) when the status is
  * either *idle* or *drawing*. You should not write to the buffer while it is being *copied* to the
  * display. There is no double-buffering.
@@ -533,16 +533,16 @@ int tf_e_paper_296x128_get_draw_status(TF_EPaper296x128 *e_paper_296x128, uint8_
  * \ingroup TF_EPaper296x128
  *
  * Writes black/white pixels to the specified window into the buffer.
- * 
+ *
  * The pixels are written into the window line by line top to bottom
  * and each line is written from left to right.
- * 
+ *
  * The value 0 (false) corresponds to a black pixel and the value 1 (true) to a
  * white pixel.
- * 
+ *
  * This function writes the pixels into the black/white pixel buffer, to draw the
  * buffer to the display use {@link tf_e_paper_296x128_draw}.
- * 
+ *
  * Use {@link tf_e_paper_296x128_write_color} to write red or gray pixels.
  */
 int tf_e_paper_296x128_write_black_white_low_level(TF_EPaper296x128 *e_paper_296x128, uint16_t x_start, uint8_t y_start, uint16_t x_end, uint8_t y_end, uint16_t pixels_length, uint16_t pixels_chunk_offset, const bool pixels_chunk_data[432]);
@@ -551,10 +551,10 @@ int tf_e_paper_296x128_write_black_white_low_level(TF_EPaper296x128 *e_paper_296
  * \ingroup TF_EPaper296x128
  *
  * Returns the current content of the black/white pixel buffer for the specified window.
- * 
+ *
  * The pixels are read into the window line by line top to bottom and
  * each line is read from left to right.
- * 
+ *
  * The current content of the buffer does not have to be the current content of the display.
  * It is possible that the data was not drawn to the display yet and after a restart of
  * the Bricklet the buffer will be reset to black, while the display retains its content.
@@ -567,17 +567,17 @@ int tf_e_paper_296x128_read_black_white_low_level(TF_EPaper296x128 *e_paper_296x
  * The E-Paper 296x128 Bricklet is available with the colors black/white/red and
  * black/white/gray. Depending on the model this function writes either red or
  * gray pixels to the specified window into the buffer.
- * 
+ *
  * The pixels are written into the window line by line top to bottom
  * and each line is written from left to right.
- * 
+ *
  * The value 0 (false) means that this pixel does not have color. It will be either black
  * or white (see {@link tf_e_paper_296x128_write_black_white}). The value 1 (true) corresponds to a red or gray
  * pixel, depending on the Bricklet model.
- * 
+ *
  * This function writes the pixels into the red or gray pixel buffer, to draw the buffer
  * to the display use {@link tf_e_paper_296x128_draw}.
- * 
+ *
  * Use {@link tf_e_paper_296x128_write_black_white} to write black/white pixels.
  */
 int tf_e_paper_296x128_write_color_low_level(TF_EPaper296x128 *e_paper_296x128, uint16_t x_start, uint8_t y_start, uint16_t x_end, uint8_t y_end, uint16_t pixels_length, uint16_t pixels_chunk_offset, const bool pixels_chunk_data[432]);
@@ -586,10 +586,10 @@ int tf_e_paper_296x128_write_color_low_level(TF_EPaper296x128 *e_paper_296x128, 
  * \ingroup TF_EPaper296x128
  *
  * Returns the current content of the red or gray pixel buffer for the specified window.
- * 
+ *
  * The pixels are written into the window line by line top to bottom
  * and each line is written from left to right.
- * 
+ *
  * The current content of the buffer does not have to be the current content of the display.
  * It is possible that the data was not drawn to the display yet and after a restart of
  * the Bricklet the buffer will be reset to black, while the display retains its content.
@@ -600,7 +600,7 @@ int tf_e_paper_296x128_read_color_low_level(TF_EPaper296x128 *e_paper_296x128, u
  * \ingroup TF_EPaper296x128
  *
  * Fills the complete content of the display with the given color.
- * 
+ *
  * This function writes the pixels into the black/white/red|gray pixel buffer, to draw the buffer
  * to the display use {@link tf_e_paper_296x128_draw}.
  */
@@ -610,13 +610,13 @@ int tf_e_paper_296x128_fill_display(TF_EPaper296x128 *e_paper_296x128, uint8_t c
  * \ingroup TF_EPaper296x128
  *
  * Draws a text with up to 50 characters at the pixel position (x, y).
- * 
+ *
  * You can use one of 9 different font sizes and draw the text in
  * black/white/red|gray. The text can be drawn horizontal or vertical.
- * 
+ *
  * This function writes the pixels into the black/white/red|gray pixel buffer, to draw the buffer
  * to the display use {@link tf_e_paper_296x128_draw}.
- * 
+ *
  * The font conforms to code page 437.
  */
 int tf_e_paper_296x128_draw_text(TF_EPaper296x128 *e_paper_296x128, uint16_t position_x, uint8_t position_y, uint8_t font, uint8_t color, uint8_t orientation, const char *text);
@@ -625,7 +625,7 @@ int tf_e_paper_296x128_draw_text(TF_EPaper296x128 *e_paper_296x128, uint16_t pos
  * \ingroup TF_EPaper296x128
  *
  * Draws a line from (x, y)-start to (x, y)-end in the given color.
- * 
+ *
  * This function writes the pixels into the black/white/red|gray pixel buffer, to draw the buffer
  * to the display use {@link tf_e_paper_296x128_draw}.
  */
@@ -635,10 +635,10 @@ int tf_e_paper_296x128_draw_line(TF_EPaper296x128 *e_paper_296x128, uint16_t pos
  * \ingroup TF_EPaper296x128
  *
  * Draws a box from (x, y)-start to (x, y)-end in the given color.
- * 
+ *
  * If you set fill to true, the box will be filled with the
  * color. Otherwise only the outline will be drawn.
- * 
+ *
  * This function writes the pixels into the black/white/red|gray pixel buffer, to draw the buffer
  * to the display use {@link tf_e_paper_296x128_draw}.
  */
@@ -652,15 +652,15 @@ int tf_e_paper_296x128_draw_box(TF_EPaper296x128 *e_paper_296x128, uint16_t posi
  *  manufacturer settings. All of the other modes are experimental and
  *  will result in increased ghosting and possibly other long-term
  *  side effects.
- * 
+ *
  *  If you want to know more about the inner workings of an e-paper display
  *  take a look at this excellent video from Ben Krasnow:
  *  `https://www.youtube.com/watch?v=MsbiO8EAsGw <https://www.youtube.com/watch?v=MsbiO8EAsGw>`__.
- * 
+ *
  *  If you are not sure about this option, leave the update mode at default.
- * 
+ *
  * Currently there are three update modes available:
- * 
+ *
  * * Default: Settings as given by the manufacturer. An update will take about
  *   7.5 seconds and during the update the screen will flicker several times.
  * * Black/White: This will only update the black/white pixel. It uses the manufacturer
@@ -672,11 +672,11 @@ int tf_e_paper_296x128_draw_box(TF_EPaper296x128 *e_paper_296x128, uint16_t posi
  *   and the next buffer. With this mode the display will not flicker during an update and
  *   it takes about 900-950ms. Compared to the other two settings there is more ghosting. This
  *   mode can be used for something like a flicker-free live update of a text.
- * 
+ *
  * With the black/white/red display if you use either the black/white or the delta mode,
  * after a while of going back and forth between black and white the white color will
  * start to appear red-ish or pink-ish.
- * 
+ *
  * If you use the aggressive delta mode and rapidly change the content, we recommend that you
  * change back to the default mode every few hours and in the default mode cycle between the
  * three available colors a few times. This will get rid of the ghosting and after that you can
@@ -716,7 +716,7 @@ int tf_e_paper_296x128_get_display_type(TF_EPaper296x128 *e_paper_296x128, uint8
  * SSD1675A and SSD1680. This will be factory set
  * during the flashing and testing phase. The value is saved in
  * non-volatile memory and will stay after a power cycle.
- * 
+ *
  * .. versionadded:: 2.0.3$nbsp;(Plugin)
  */
 int tf_e_paper_296x128_set_display_driver(TF_EPaper296x128 *e_paper_296x128, uint8_t display_driver);
@@ -725,7 +725,7 @@ int tf_e_paper_296x128_set_display_driver(TF_EPaper296x128 *e_paper_296x128, uin
  * \ingroup TF_EPaper296x128
  *
  * Returns the e-paper display driver.
- * 
+ *
  * .. versionadded:: 2.0.3$nbsp;(Plugin)
  */
 int tf_e_paper_296x128_get_display_driver(TF_EPaper296x128 *e_paper_296x128, uint8_t *ret_display_driver);
@@ -734,14 +734,14 @@ int tf_e_paper_296x128_get_display_driver(TF_EPaper296x128 *e_paper_296x128, uin
  * \ingroup TF_EPaper296x128
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -752,11 +752,11 @@ int tf_e_paper_296x128_get_spitfp_error_count(TF_EPaper296x128 *e_paper_296x128,
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -775,7 +775,7 @@ int tf_e_paper_296x128_get_bootloader_mode(TF_EPaper296x128 *e_paper_296x128, ui
  * Sets the firmware pointer for {@link tf_e_paper_296x128_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -787,9 +787,9 @@ int tf_e_paper_296x128_set_write_firmware_pointer(TF_EPaper296x128 *e_paper_296x
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_e_paper_296x128_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -801,9 +801,9 @@ int tf_e_paper_296x128_write_firmware(TF_EPaper296x128 *e_paper_296x128, const u
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_e_paper_296x128_set_status_led_config(TF_EPaper296x128 *e_paper_296x128, uint8_t config);
@@ -820,7 +820,7 @@ int tf_e_paper_296x128_get_status_led_config(TF_EPaper296x128 *e_paper_296x128, 
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -832,7 +832,7 @@ int tf_e_paper_296x128_get_chip_temperature(TF_EPaper296x128 *e_paper_296x128, i
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -845,7 +845,7 @@ int tf_e_paper_296x128_reset(TF_EPaper296x128 *e_paper_296x128);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_e_paper_296x128_write_uid(TF_EPaper296x128 *e_paper_296x128, uint32_t uid);
@@ -864,11 +864,11 @@ int tf_e_paper_296x128_read_uid(TF_EPaper296x128 *e_paper_296x128, uint32_t *ret
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */
@@ -878,16 +878,16 @@ int tf_e_paper_296x128_get_identity(TF_EPaper296x128 *e_paper_296x128, char ret_
  * \ingroup TF_EPaper296x128
  *
  * Writes black/white pixels to the specified window into the buffer.
- * 
+ *
  * The pixels are written into the window line by line top to bottom
  * and each line is written from left to right.
- * 
+ *
  * The value 0 (false) corresponds to a black pixel and the value 1 (true) to a
  * white pixel.
- * 
+ *
  * This function writes the pixels into the black/white pixel buffer, to draw the
  * buffer to the display use {@link tf_e_paper_296x128_draw}.
- * 
+ *
  * Use {@link tf_e_paper_296x128_write_color} to write red or gray pixels.
  */
 int tf_e_paper_296x128_write_black_white(TF_EPaper296x128 *e_paper_296x128, uint16_t x_start, uint8_t y_start, uint16_t x_end, uint8_t y_end, const bool *pixels, uint16_t pixels_length);
@@ -896,10 +896,10 @@ int tf_e_paper_296x128_write_black_white(TF_EPaper296x128 *e_paper_296x128, uint
  * \ingroup TF_EPaper296x128
  *
  * Returns the current content of the black/white pixel buffer for the specified window.
- * 
+ *
  * The pixels are read into the window line by line top to bottom and
  * each line is read from left to right.
- * 
+ *
  * The current content of the buffer does not have to be the current content of the display.
  * It is possible that the data was not drawn to the display yet and after a restart of
  * the Bricklet the buffer will be reset to black, while the display retains its content.
@@ -912,17 +912,17 @@ int tf_e_paper_296x128_read_black_white(TF_EPaper296x128 *e_paper_296x128, uint1
  * The E-Paper 296x128 Bricklet is available with the colors black/white/red and
  * black/white/gray. Depending on the model this function writes either red or
  * gray pixels to the specified window into the buffer.
- * 
+ *
  * The pixels are written into the window line by line top to bottom
  * and each line is written from left to right.
- * 
+ *
  * The value 0 (false) means that this pixel does not have color. It will be either black
  * or white (see {@link tf_e_paper_296x128_write_black_white}). The value 1 (true) corresponds to a red or gray
  * pixel, depending on the Bricklet model.
- * 
+ *
  * This function writes the pixels into the red or gray pixel buffer, to draw the buffer
  * to the display use {@link tf_e_paper_296x128_draw}.
- * 
+ *
  * Use {@link tf_e_paper_296x128_write_black_white} to write black/white pixels.
  */
 int tf_e_paper_296x128_write_color(TF_EPaper296x128 *e_paper_296x128, uint16_t x_start, uint8_t y_start, uint16_t x_end, uint8_t y_end, const bool *pixels, uint16_t pixels_length);
@@ -931,10 +931,10 @@ int tf_e_paper_296x128_write_color(TF_EPaper296x128 *e_paper_296x128, uint16_t x
  * \ingroup TF_EPaper296x128
  *
  * Returns the current content of the red or gray pixel buffer for the specified window.
- * 
+ *
  * The pixels are written into the window line by line top to bottom
  * and each line is written from left to right.
- * 
+ *
  * The current content of the buffer does not have to be the current content of the display.
  * It is possible that the data was not drawn to the display yet and after a restart of
  * the Bricklet the buffer will be reset to black, while the display retains its content.

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -575,11 +575,11 @@ int tf_arinc429_set_response_expected_all(TF_ARINC429 *arinc429, bool response_e
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint8_t channel, uint8_t status, uint8_t seq_number, uint16_t timestamp, uint16_t frames_processed, uint16_t frames_lost, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_arinc429_set_heartbeat_callback_configuration}. It reports the statistics counters
  * for processed frames and lost frames for all TX and RX channels.
- * 
+ *
  * * Channel:          channel from which this heartbeat messages originates.
  * * Status:           will always be 'statistics'.
  * * Seq Number:       running counter that is incremented with each callback, starting with 0 and rolling over after 255 to 1. It will restart from 0 whenever the callback is turned off and on again. This counter can be used to detect lost callbacks.
@@ -597,9 +597,9 @@ int tf_arinc429_register_heartbeat_message_callback(TF_ARINC429 *arinc429, TF_AR
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint8_t channel, uint8_t status, uint8_t seq_number, uint16_t timestamp, uint32_t frame, uint16_t age, void *user_data) \endcode
- * 
+ *
  * This callback is triggered according to the configuration set by {@link tf_arinc429_set_rx_callback_configuration}.
- * 
+ *
  * * Channel:      channel from which this frame messages originates.
  * * Status:       'new' signals that the frame (label + SDI combination) was received for the first time ever or again after a previous timeout. 'update' signals that a new frame was received. 'timeout' signals that the frame (label and SDI combination) encountered the timeout state.
  * * Seq Number:   running counter that is incremented with each callback, starting with 0 and rolling over after 255 to 1. It will restart from 0 whenever the callback is turned off and on again. This counter can be used to detect lost callbacks.
@@ -617,9 +617,9 @@ int tf_arinc429_register_frame_message_callback(TF_ARINC429 *arinc429, TF_ARINC4
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint8_t channel, uint8_t status, uint8_t seq_number, uint16_t timestamp, uint8_t userdata, void *user_data) \endcode
- * 
+ *
  * This callback is triggered by the 'Callback' job in the transmit schedule.
- * 
+ *
  * * Channel:          channel from which this frame messages originates, will always be 'CHANNEL_TX1'.
  * * Status:           will always be 'scheduler'
  * * Seq Number:       running counter that is incremented with each callback, starting with 0 and rolling over after 255 to 1. It will restart from 0 whenever the callback is turned off and on again. This counter can be used to detect lost callbacks.
@@ -643,7 +643,7 @@ int tf_arinc429_callback_tick(TF_ARINC429 *arinc429, uint32_t timeout_us);
  * \ingroup TF_ARINC429
  *
  * Gets the capabilities of the ARINC429 Bricklet as of the currently loaded firmware:
- * 
+ *
  * * TX Total Scheduler Jobs: total number of job entries in the scheduling table.
  * * TX Used Scheduler Jobs:  number of job entries that are currently in use.
  * * RX Total Frame Filters:  total number of frame filters that can be defined per channel.
@@ -671,11 +671,11 @@ int tf_arinc429_get_heartbeat_callback_configuration(TF_ARINC429 *arinc429, uint
  * \ingroup TF_ARINC429
  *
  * Sets the data transmission properties of the selected channel:
- * 
+ *
  * * Channel: channel to configure
  * * Parity:  'parity_auto' for automatic parity adjustment, 'parity_data' for parity bit supplied by the application or if used for data.
  * * Speed:   'speed_hs' for high speed mode (100 kbit/s), 'speed_ls' for low speed mode (12.5 kbit/s).
- * 
+ *
  * When parity set to 'parity_auto', frames received with a parity error will be counted in the lost frames counter but discarded otherwise.
  */
 int tf_arinc429_set_channel_configuration(TF_ARINC429 *arinc429, uint8_t channel, uint8_t parity, uint8_t speed);
@@ -692,7 +692,7 @@ int tf_arinc429_get_channel_configuration(TF_ARINC429 *arinc429, uint8_t channel
  * \ingroup TF_ARINC429
  *
  * Sets the operating mode of the selected channel(s):
- * 
+ *
  * * passive: TX channel: all transmissions are stopped and the hardware interface becomes high-Z. RX channels: all arriving frames will be discarded.
  * * active:  TX channel: Arinc429 frames can be sent via the 'Write Frame Direct' function. RX channels: arriving frames will be processed according to the frame filter and callback settings.
  * * run:     TX channels only: the scheduler will run and transmit frames according to the entries made in the scheduler job table.
@@ -721,11 +721,11 @@ int tf_arinc429_clear_all_rx_filters(TF_ARINC429 *arinc429, uint8_t channel);
  *
  * Clears a specific receive filter on the selected RX channel(s). The RX channels will only process those Arinc429 frames that pass
  * the input filtering stage. With this command, an Arinc429 frame matching the given parameters will be blocked by the filter.
- * 
+ *
  * * Channel: selected channel.
  * * Label:   label code of the filter.
  * * SDI:     SDI code of the filter (SDI_SDI0 to SDI_SDI3 or SDI_DATA if SDI bits are used for data).
- * 
+ *
  * The function either returns 'True' if the filter was cleared or 'False' if a respective filter was not set.
  */
 int tf_arinc429_clear_rx_filter(TF_ARINC429 *arinc429, uint8_t channel, uint8_t label, uint8_t sdi, bool *ret_success);
@@ -741,11 +741,11 @@ int tf_arinc429_set_rx_standard_filters(TF_ARINC429 *arinc429, uint8_t channel);
  * \ingroup TF_ARINC429
  *
  * Sets a specific receive filter on the selected channel(s):
- * 
+ *
  * * Channel: selected channel.
  * * Label:   label code for the filter.
  * * SDI:     SDI code for the filter (SDI_SDI0 to SDI_SDI3 or SDI_DATA if SDI bits are used for data).
- * 
+ *
  * The function either returns 'True' if the filter was set or 'False' if a respective filter could not be created e.g. because the given combination
  * of label and SDI collides with an already existing filter, or because all available filters are used up (see the get_capabilities() function.
  */
@@ -755,11 +755,11 @@ int tf_arinc429_set_rx_filter(TF_ARINC429 *arinc429, uint8_t channel, uint8_t la
  * \ingroup TF_ARINC429
  *
  * Queries if a filter for the given combination of label and SDI is set up or not:
- * 
+ *
  * * Channel:    channel to query.
  * * Label:      label code to query for.
  * * SDI:        SDI usage to query for (SDI_SDI0 to SDI_SDI3 or SDI_DATA if SDI bits shall be used for data).
- * 
+ *
  * The function will return 'True' if the queried filter filter exists, else 'False'.
  */
 int tf_arinc429_get_rx_filter(TF_ARINC429 *arinc429, uint8_t channel, uint8_t label, uint8_t sdi, bool *ret_configured);
@@ -769,13 +769,13 @@ int tf_arinc429_get_rx_filter(TF_ARINC429 *arinc429, uint8_t channel, uint8_t la
  *
  * Executes a direct read of an Arinc429 frame, i.e. without using the callback mechanism.
  * In order to be able to do a direct read of a frame with a certain label and SDI combination, a respective receive filter needs to be set up beforehand.
- * 
+ *
  * * Channel: RX channel to read from.
  * * Label:   label code of the frame to read. Beware that the label codes are usually given in octal notation, so make sure to use the correct notation (i.e. 0o377).
  * * SDI:     SDI code of the frame to read (SDI_SDI0 to SDI_SDI3 or SDI_DATA if SDI bits are used for data).
- * 
+ *
  * The function return the following data:
- * 
+ *
  * * Status:  returns 'True' if a respective frame was received, else 'False'.
  * * Frame:   returns the complete Arinc429 frame including the label and SDI bits as a 32 bit integer. If 'parity_auto' is set for the channel, the parity bit will always come as 0. Opposite to the line transmission format, in the API functions the label code is mirrored such that the label code can directly be extracted from the frame by simply grabbing the lower 8 bits.
  * * Age:     time in milliseconds since a frame matching the label & SDI combination was received last. If no frame was received so far or after a previous timeout, either 60000 or the timeout value set with the {@link tf_arinc429_set_rx_callback_configuration} will be returned.
@@ -786,12 +786,12 @@ int tf_arinc429_read_frame(TF_ARINC429 *arinc429, uint8_t channel, uint8_t label
  * \ingroup TF_ARINC429
  *
  * Sets the configuration of the Arinc429 frame reception callback:
- * 
+ *
  * * Channel:             selected RX channel.
  * * Enabled:             select 'True' for activating the frame callbacks and 'False' for deactivating them.
  * * Value Has To Change: select 'True' if callbacks shall only be sent for frames whose data have changed. With 'False' a callback will be sent on every frame reception.
  * * Timeout:             time period for all frames (label and SDI combinations) on this channel.
- * 
+ *
  * Despite on frame reception, a callback is also generated if a frame encounters a timeout, i.e. if it is not periodically received again before
  * the set timeout period has expired. In order to have callbacks being generated at all, respective receive filters need to be set up.
  */
@@ -809,15 +809,15 @@ int tf_arinc429_get_rx_callback_configuration(TF_ARINC429 *arinc429, uint8_t cha
  *
  * Immediately transmits an Arinc429 frame, given that the channel is in either ACTIVE or RUN mode. If the channel is in RUN mode and frames are sent
  * as per programmed schedule, using this function will inject additional frames into the transmission, independent of the scheduler's activities.
- * 
+ *
  * * Channel: selected transmit channel, either CHANNEL_TX or CHANNEL_TX1 can be used as there is only one TX channel.
  * * frame:   complete Arinc429 frame including the label and SDI bits.
- * 
+ *
  * The frame needs to be passed as a 32 bit integer. Opposite to the line transmission format, in the API functions
  * the label code is mirrored such that the label code can directly be written 1:1 into the lower 8 bits.
  * Beware that the label codes are usually given in octal notation, so make sure to use the correct notation
  * (i.e. 0o377). If 'parity_auto' is set for the channel, the parity bit will be set (adjusted) automatically.
- * 
+ *
  * Between the API and the actual Arinc429 line output, there is a 32 entry deep FIFO. If frames are written via
  * the API and/or in combination with a running TX scheduler, the FIFO may become overfilled and subsequently
  * frames will get lost. Such frame losses will be indicated in the statistics data sent with the heartbeat callback.
@@ -828,16 +828,16 @@ int tf_arinc429_write_frame_direct(TF_ARINC429 *arinc429, uint8_t channel, uint3
  * \ingroup TF_ARINC429
  *
  * Sets or updates an Arinc429 frame that is to be transmitted via the scheduler using the scheduler job types 'Single' or 'Cyclic'.
- * 
+ *
  * * Channel:     selected transmit channel, either CHANNEL_TX or CHANNEL_TX1 can be used as there is only one TX channel.
  * * Frame Index: index number (0-255) that will be used in the transmit scheduler job table to refer to this frame.
  * * Frame:       complete Arinc429 frame including the label and SDI bits.
- * 
+ *
  * The frame needs to be passed as a 32 bit integer. Opposite to the line transmission format, in the API functions
  * the label code is mirrored such that the label code can directly be written 1:1 into the lower 8 bits.
  * Beware that the label codes are usually given in octal notation, so make sure to use the correct notation
  * (i.e. 0o377). If 'parity_auto' is set for the channel, the parity bit will be set (adjusted) automatically.
- * 
+ *
  * If the frame is used by a 'single transmit' scheduler job entry, setting or updating the frame with this function
  * triggers also triggers the next transmission.
  */
@@ -847,11 +847,11 @@ int tf_arinc429_write_frame_scheduled(TF_ARINC429 *arinc429, uint8_t channel, ui
  * \ingroup TF_ARINC429
  *
  * Clears a range of transmit scheduler job table entries:
- * 
+ *
  * * Channel: selected TX channel.
  * * First:   index of the first table entry to be cleared.
  * * Last:    index of the last  table entry to be cleared.
- * 
+ *
  * To clear a single entry, set 'First' and 'Last' to the one index of the one entry to be cleared.
  * Clearing scheduler entries actually means they are set to the job command 'Skip'.
  */
@@ -861,7 +861,7 @@ int tf_arinc429_clear_schedule_entries(TF_ARINC429 *arinc429, uint8_t channel, u
  * \ingroup TF_ARINC429
  *
  * Sets an entry in the transmit scheduler job table:
- * 
+ *
  * * Channel:     selected TX channel, either CHANNEL_TX or CHANNEL_TX1 can be used as there is only one TX channel.
  * * Job Index:   index number of the job, the scheduler processes the job table in ascending order of these index numbers. The index starts with 0, see the output of the get_capabilities() function for the total number of job indexes available. In firmware 2.3.0 it is 1000.
  * * Job:         activity assigned to this entry, see below.
@@ -871,11 +871,11 @@ int tf_arinc429_clear_schedule_entries(TF_ARINC429 *arinc429, uint8_t channel, u
  *                In case of the Callback command, this number will be sent as 'Token' code (values 0-255 only).
  *                In all other cases (Skip, Stop, Dwell, Return) this parameter is not used.
  * * Dwell Time:  time to wait before executing the next job table entry (0-250 milliseconds).
- * 
+ *
  * When the scheduler is set to 'run' mode via the {@link tf_arinc429_set_channel_mode}, it continuously loops through the job table and executes
  * the assigned tasks. It starts with the job stored at job index 0.
  * The scheduler can execute the following activity types (jobs):
- * 
+ *
  * * Skip:        the job is skipped, i.e. no frame is transmitted and no dwelling is done. The frame index and dwell time are not used.
  * * Stop:        the scheduler is stopped, i.e. the channel mode is reverted from 'run' to 'active'. The frame index and dwell time are not used.
  * * Jump:        the scheduler immediately continues at the Job Index position given by the Frame Index parameter. The assigned dwell time will be executed when the scheduler runs into the next Return job.
@@ -886,14 +886,14 @@ int tf_arinc429_clear_schedule_entries(TF_ARINC429 *arinc429, uint8_t channel, u
  * * Cyclic:      the scheduler transmits the referenced frame and executed the dwelling on each round.
  * * Retrans RX1: the scheduler retransmits a frame that was previously received on the RX1 channel. The frame to send is referenced by setting the 'Frame Index' to its extended label code, which is a 10 bit number made of the label code in the lower bits and the two SDI bits in the upper bits. If the SDI bits are used for data, set the SDI bits to zero. As long as the referenced frame was not received yet, or if it is in timeout, no frame will be sent.
  * * Retrans RX2: same as before, but for frames received on the RX2 channel.
- * 
+ *
  * The value assigned to the 'Frame Index' parameter varies with the activity type (job):
- * 
+ *
  * * Single or Cyclic: frame index as used with the {@link tf_arinc429_write_frame_scheduled} of the frame to transmit. Valid range: 0-255
  * * Retrans RX1/RX2:  extended label (label + SDI) of the frame to re-transmit. Valid range: 0-1023
  * * Callback:         arbitrary number decided by the user, it will be reported in the callback via the 'Userdata' parameter. Valid range: 0-255
  * * Jump:             next job index to jump to.
- * 
+ *
  * The {@link tf_arinc429_set_schedule_entry} can be called while the TX scheduler is running, i.e. the channel mode is set to 'RUN'.
  * Any change will take immediate effect once the scheduler passes along and executes the changed job entry.
  * Every time the scheduler is started, it will begin with the job stored at job index 0.
@@ -901,7 +901,7 @@ int tf_arinc429_clear_schedule_entries(TF_ARINC429 *arinc429, uint8_t channel, u
  * Two or more TX schedules can be pre-programmed and then selected for execution by placing - and changing as desired - a 'Jump' at index 0 that then branches to the
  * sequence of commands destined to be executed. This can be arranged in arbitrary ways, e.g. to create schedules with fixed and variable parts, just by using the 'Jump'
  * command alike a track switch in railway.
- * 
+ *
  * When the dwell time of a transmit command is set to zero, the respective Arinc429 frames will be transmitted back-to-back on the physical link.
  * Beware that there is a FIFO between the scheduler and the actual physical transmitter that is limited to 32 frames. So after latest 32 frames enqueued with zero dwell
  * time, the scheduler needs to be commanded to do some dwelling. How much dwelling is required can be computed by the number of back-to-back frames and the speed setting:
@@ -911,7 +911,7 @@ int tf_arinc429_clear_schedule_entries(TF_ARINC429 *arinc429, uint8_t channel, u
  * Please note that this kind of calling a subroutine can not be nested, i.e. there is no return index stack, the 'Return' command always branches to the job index following
  * the index of the last 'Jump' command encountered. In case a dwell time > 0 is set with the 'Jump' command, this dwell time will actually be executed on encountering the
  * 'Return' command, thus as a dwell time to be done after the execution of the subsequence that was jumped to before.
- * 
+ *
  * The 'Callback' command can be used to notify the application program via a callback when the scheduler passes at the respective job index. This can be used for pure
  * reporting / surveillance purpose, or as a means to set up a self-clocked system in which the called application program's function in return does some modification of
  * the programmed sequence or alike.
@@ -919,7 +919,7 @@ int tf_arinc429_clear_schedule_entries(TF_ARINC429 *arinc429, uint8_t channel, u
  * Placing a' Callback' command right before the 'Stop' command will inform the application program via a callback when the sequence is done.
  * When using several 'Callback' commands in a schedule, each of them can be uniquely identified in the receiving application program by assigning a different 'userdata'
  * value to each callback command.
- * 
+ *
  * With the aid of the 'Retrans' commands, a frame transmission schedule can be set up whose frame timing is defined by the schedule, but whose frame's payload is taken
  * from the frames received via the RX1 or RX2 channel. This opens possibilities to create an autonomously operating time base corrector or re-scheduling machinery, to
  * zip the frames from two A429 buses onto one common bus, to create inline filers to remove certain frames (by their label & SDI code), to insert frames into a stream,
@@ -946,7 +946,7 @@ int tf_arinc429_restart(TF_ARINC429 *arinc429);
  *
  * Stops / resumes the transmission of a specific frame or trigger another single-transmit. This
  * function only works on frames that are sent via the TX scheduler jobs 'single' and 'cyclic'.
- * 
+ *
  * * Channel:     selected transmit channel, either CHANNEL_TX or CHANNEL_TX1 can be used as there is only one TX channel.
  * * Frame Index: index number that will be used in the transmit scheduler job table to refer to this frame.
  * * Mode :       either 'Transmit' to transmit the frame / trigger a new single transmit, or 'Mute' to stop the transmission of the frame.
@@ -957,14 +957,14 @@ int tf_arinc429_set_frame_mode(TF_ARINC429 *arinc429, uint8_t channel, uint16_t 
  * \ingroup TF_ARINC429
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -975,11 +975,11 @@ int tf_arinc429_get_spitfp_error_count(TF_ARINC429 *arinc429, uint32_t *ret_erro
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -998,7 +998,7 @@ int tf_arinc429_get_bootloader_mode(TF_ARINC429 *arinc429, uint8_t *ret_mode);
  * Sets the firmware pointer for {@link tf_arinc429_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -1010,9 +1010,9 @@ int tf_arinc429_set_write_firmware_pointer(TF_ARINC429 *arinc429, uint32_t point
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_arinc429_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -1024,9 +1024,9 @@ int tf_arinc429_write_firmware(TF_ARINC429 *arinc429, const uint8_t data[64], ui
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_arinc429_set_status_led_config(TF_ARINC429 *arinc429, uint8_t config);
@@ -1043,7 +1043,7 @@ int tf_arinc429_get_status_led_config(TF_ARINC429 *arinc429, uint8_t *ret_config
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -1055,7 +1055,7 @@ int tf_arinc429_get_chip_temperature(TF_ARINC429 *arinc429, int16_t *ret_tempera
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -1068,7 +1068,7 @@ int tf_arinc429_reset(TF_ARINC429 *arinc429);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_arinc429_write_uid(TF_ARINC429 *arinc429, uint32_t uid);
@@ -1087,11 +1087,11 @@ int tf_arinc429_read_uid(TF_ARINC429 *arinc429, uint32_t *ret_uid);
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

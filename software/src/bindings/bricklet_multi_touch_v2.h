@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -347,10 +347,10 @@ int tf_multi_touch_v2_set_response_expected_all(TF_MultiTouchV2 *multi_touch_v2,
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(bool state[13], void *user_data) \endcode
- * 
+ *
  * Returns the current touch state, see {@link tf_multi_touch_v2_get_touch_state} for
  * information about the state.
- * 
+ *
  * This callback is triggered every time the touch state changes with
  * a given period (see {@link tf_multi_touch_v2_set_touch_state_callback_configuration})
  */
@@ -372,20 +372,20 @@ int tf_multi_touch_v2_callback_tick(TF_MultiTouchV2 *multi_touch_v2, uint32_t ti
  *
  * Returns the current touch state. The state is given as a array of
  * bools.
- * 
+ *
  * Element 0 to 11 represent the 12 electrodes and element 12 represents
  * the proximity.
- * 
+ *
  * If an electrode is touched, the corresponding element is *true*. If
  * a hand or similar is in proximity to the electrodes, element 12 is
  * *true*.
- * 
+ *
  * The proximity is activated with a distance of 1-2cm. An electrode
  * is already counted as touched if a finger is nearly touching the
  * electrode. This means that you can put a piece of paper or foil
  * or similar on top of a electrode to build a touch panel with
  * a professional look.
- * 
+ *
  * If you want to get the value periodically, it is recommended to use the
  * {@link tf_multi_touch_v2_register_touch_state_callback} callback. You can set the callback configuration
  * with {@link tf_multi_touch_v2_set_touch_state_callback_configuration}.
@@ -397,11 +397,11 @@ int tf_multi_touch_v2_get_touch_state(TF_MultiTouchV2 *multi_touch_v2, bool ret_
  *
  * The period is the period with which the {@link tf_multi_touch_v2_register_touch_state_callback} callback
  * is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
  */
@@ -427,16 +427,16 @@ int tf_multi_touch_v2_recalibrate(TF_MultiTouchV2 *multi_touch_v2);
  * \ingroup TF_MultiTouchV2
  *
  * Enables/disables electrodes with a bool array (see {@link tf_multi_touch_v2_get_touch_state}).
- * 
+ *
  * *True* enables the electrode, *false* disables the electrode. A
  * disabled electrode will always return *false* as its state. If you
  * don't need all electrodes you can disable the electrodes that are
  * not needed.
- * 
+ *
  * It is recommended that you disable the proximity electrode (element 12) if
  * the proximity feature is not needed. This will reduce the amount of
  * traffic that is produced by the {@link tf_multi_touch_v2_register_touch_state_callback} callback.
- * 
+ *
  * Disabling electrodes will also reduce power consumption.
  */
 int tf_multi_touch_v2_set_electrode_config(TF_MultiTouchV2 *multi_touch_v2, const bool enabled_electrodes[13]);
@@ -453,11 +453,11 @@ int tf_multi_touch_v2_get_electrode_config(TF_MultiTouchV2 *multi_touch_v2, bool
  *
  * Sets the sensitivity of the electrodes. An electrode with a high sensitivity
  * will register a touch earlier then an electrode with a low sensitivity.
- * 
+ *
  * If you build a big electrode you might need to decrease the sensitivity, since
  * the area that can be charged will get bigger. If you want to be able to
  * activate an electrode from further away you need to increase the sensitivity.
- * 
+ *
  * After a new sensitivity is set, you likely want to call {@link tf_multi_touch_v2_recalibrate}
  * to calibrate the electrodes with the newly defined sensitivity.
  */
@@ -489,14 +489,14 @@ int tf_multi_touch_v2_get_touch_led_config(TF_MultiTouchV2 *multi_touch_v2, uint
  * \ingroup TF_MultiTouchV2
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -507,11 +507,11 @@ int tf_multi_touch_v2_get_spitfp_error_count(TF_MultiTouchV2 *multi_touch_v2, ui
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -530,7 +530,7 @@ int tf_multi_touch_v2_get_bootloader_mode(TF_MultiTouchV2 *multi_touch_v2, uint8
  * Sets the firmware pointer for {@link tf_multi_touch_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -542,9 +542,9 @@ int tf_multi_touch_v2_set_write_firmware_pointer(TF_MultiTouchV2 *multi_touch_v2
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_multi_touch_v2_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -556,9 +556,9 @@ int tf_multi_touch_v2_write_firmware(TF_MultiTouchV2 *multi_touch_v2, const uint
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_multi_touch_v2_set_status_led_config(TF_MultiTouchV2 *multi_touch_v2, uint8_t config);
@@ -575,7 +575,7 @@ int tf_multi_touch_v2_get_status_led_config(TF_MultiTouchV2 *multi_touch_v2, uin
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -587,7 +587,7 @@ int tf_multi_touch_v2_get_chip_temperature(TF_MultiTouchV2 *multi_touch_v2, int1
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -600,7 +600,7 @@ int tf_multi_touch_v2_reset(TF_MultiTouchV2 *multi_touch_v2);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_multi_touch_v2_write_uid(TF_MultiTouchV2 *multi_touch_v2, uint32_t uid);
@@ -619,11 +619,11 @@ int tf_multi_touch_v2_read_uid(TF_MultiTouchV2 *multi_touch_v2, uint32_t *ret_ui
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -426,10 +426,10 @@ int tf_xmc1400_breakout_set_response_expected_all(TF_XMC1400Breakout *xmc1400_br
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint16_t values[8], void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_xmc1400_breakout_set_adc_values_callback_configuration}.
- * 
+ *
  * The parameters are the same as {@link tf_xmc1400_breakout_get_adc_values}.
  */
 int tf_xmc1400_breakout_register_adc_values_callback(TF_XMC1400Breakout *xmc1400_breakout, TF_XMC1400Breakout_ADCValuesHandler handler, void *user_data);
@@ -442,10 +442,10 @@ int tf_xmc1400_breakout_register_adc_values_callback(TF_XMC1400Breakout *xmc1400
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint32_t count, void *user_data) \endcode
- * 
+ *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_xmc1400_breakout_set_count_callback_configuration}.
- * 
+ *
  * The parameter is the same as {@link tf_xmc1400_breakout_get_count}.
  */
 int tf_xmc1400_breakout_register_count_callback(TF_XMC1400Breakout *xmc1400_breakout, TF_XMC1400Breakout_CountHandler handler, void *user_data);
@@ -481,9 +481,9 @@ int tf_xmc1400_breakout_get_gpio_input(TF_XMC1400Breakout *xmc1400_breakout, uin
  * \ingroup TF_XMC1400Breakout
  *
  * Enables a ADC channel for the ADC driver example (adc.c/adc.h).
- * 
+ *
  * There are 8 ADC channels and they correspond to the following pins:
- * 
+ *
  * * Channel 0: P2_6
  * * Channel 1: P2_8
  * * Channel 2: P2_9
@@ -513,9 +513,9 @@ int tf_xmc1400_breakout_get_adc_channel_value(TF_XMC1400Breakout *xmc1400_breako
  * \ingroup TF_XMC1400Breakout
  *
  * Returns the values for all 8 ADC channels of the adc driver example.
- * 
+ *
  * This example function also has a corresponding callback.
- * 
+ *
  * See {@link tf_xmc1400_breakout_set_adc_values_callback_configuration} and {@link tf_xmc1400_breakout_register_adc_values_callback} callback.
  */
 int tf_xmc1400_breakout_get_adc_values(TF_XMC1400Breakout *xmc1400_breakout, uint16_t ret_values[8]);
@@ -525,11 +525,11 @@ int tf_xmc1400_breakout_get_adc_values(TF_XMC1400Breakout *xmc1400_breakout, uin
  *
  * The period is the period with which the {@link tf_xmc1400_breakout_register_adc_values_callback}
  * callback is triggered periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change within the
  * period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
  */
@@ -547,12 +547,12 @@ int tf_xmc1400_breakout_get_adc_values_callback_configuration(TF_XMC1400Breakout
  * \ingroup TF_XMC1400Breakout
  *
  * Returns the value of the example count (see example.c).
- * 
+ *
  * This example function uses the "add_callback_value_function"-helper in the
  * generator. The getter as well as the callback and callback configuration
  * functions are auto-generated for the API as well as the firmware.
- * 
- * 
+ *
+ *
  * If you want to get the value periodically, it is recommended to use the
  * {@link tf_xmc1400_breakout_register_count_callback} callback. You can set the callback configuration
  * with {@link tf_xmc1400_breakout_set_count_callback_configuration}.
@@ -564,30 +564,30 @@ int tf_xmc1400_breakout_get_count(TF_XMC1400Breakout *xmc1400_breakout, uint32_t
  *
  * The period is the period with which the {@link tf_xmc1400_breakout_register_count_callback} callback is triggered
  * periodically. A value of 0 turns the callback off.
- * 
+ *
  * If the `value has to change`-parameter is set to true, the callback is only
  * triggered after the value has changed. If the value didn't change
  * within the period, the callback is triggered immediately on change.
- * 
+ *
  * If it is set to false, the callback is continuously triggered with the period,
  * independent of the value.
- * 
+ *
  * It is furthermore possible to constrain the callback with thresholds.
- * 
+ *
  * The `option`-parameter together with min/max sets a threshold for the {@link tf_xmc1400_breakout_register_count_callback} callback.
- * 
+ *
  * The following options are possible:
- * 
+ *
  * \verbatim
  *  "Option", "Description"
- * 
+ *
  *  "'x'",    "Threshold is turned off"
  *  "'o'",    "Threshold is triggered when the value is *outside* the min and max values"
  *  "'i'",    "Threshold is triggered when the value is *inside* or equal to the min and max values"
  *  "'<'",    "Threshold is triggered when the value is smaller than the min value (max is ignored)"
  *  "'>'",    "Threshold is triggered when the value is greater than the min value (max is ignored)"
  * \endverbatim
- * 
+ *
  * If the option is set to 'x' (threshold turned off) the callback is triggered with the fixed period.
  */
 int tf_xmc1400_breakout_set_count_callback_configuration(TF_XMC1400Breakout *xmc1400_breakout, uint32_t period, bool value_has_to_change, char option, uint32_t min, uint32_t max);
@@ -603,14 +603,14 @@ int tf_xmc1400_breakout_get_count_callback_configuration(TF_XMC1400Breakout *xmc
  * \ingroup TF_XMC1400Breakout
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -621,11 +621,11 @@ int tf_xmc1400_breakout_get_spitfp_error_count(TF_XMC1400Breakout *xmc1400_break
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -644,7 +644,7 @@ int tf_xmc1400_breakout_get_bootloader_mode(TF_XMC1400Breakout *xmc1400_breakout
  * Sets the firmware pointer for {@link tf_xmc1400_breakout_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -656,9 +656,9 @@ int tf_xmc1400_breakout_set_write_firmware_pointer(TF_XMC1400Breakout *xmc1400_b
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_xmc1400_breakout_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -670,9 +670,9 @@ int tf_xmc1400_breakout_write_firmware(TF_XMC1400Breakout *xmc1400_breakout, con
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_xmc1400_breakout_set_status_led_config(TF_XMC1400Breakout *xmc1400_breakout, uint8_t config);
@@ -689,7 +689,7 @@ int tf_xmc1400_breakout_get_status_led_config(TF_XMC1400Breakout *xmc1400_breako
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -701,7 +701,7 @@ int tf_xmc1400_breakout_get_chip_temperature(TF_XMC1400Breakout *xmc1400_breakou
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -714,7 +714,7 @@ int tf_xmc1400_breakout_reset(TF_XMC1400Breakout *xmc1400_breakout);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_xmc1400_breakout_write_uid(TF_XMC1400Breakout *xmc1400_breakout, uint32_t uid);
@@ -733,11 +733,11 @@ int tf_xmc1400_breakout_read_uid(TF_XMC1400Breakout *xmc1400_breakout, uint32_t 
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

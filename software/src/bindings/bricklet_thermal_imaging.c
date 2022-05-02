@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -1663,7 +1663,7 @@ int tf_thermal_imaging_get_high_contrast_image(TF_ThermalImaging *thermal_imagin
     if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     uint32_t _image_length = 0;
     uint8_t _image_chunk_data[62];
 
@@ -1699,7 +1699,7 @@ int tf_thermal_imaging_get_temperature_image(TF_ThermalImaging *thermal_imaging,
     if (thermal_imaging->magic != 0x5446 || thermal_imaging->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     uint32_t _image_length = 0;
     uint16_t _image_chunk_data[31];
 

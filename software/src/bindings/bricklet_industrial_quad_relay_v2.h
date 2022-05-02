@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -332,7 +332,7 @@ int tf_industrial_quad_relay_v2_set_response_expected_all(TF_IndustrialQuadRelay
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint8_t channel, bool value, void *user_data) \endcode
- * 
+ *
  * This callback is triggered whenever a monoflop timer reaches 0. The
  * parameters contain the channel and the current value of the channel
  * (the value after the monoflop).
@@ -355,9 +355,9 @@ int tf_industrial_quad_relay_v2_callback_tick(TF_IndustrialQuadRelayV2 *industri
  *
  * Sets the value of all four relays. A value of *true* closes the
  * relay and a value of *false* opens the relay.
- * 
+ *
  * Use {@link tf_industrial_quad_relay_v2_set_selected_value} to only change one relay.
- * 
+ *
  * All running monoflop timers will be aborted if this function is called.
  */
 int tf_industrial_quad_relay_v2_set_value(TF_IndustrialQuadRelayV2 *industrial_quad_relay_v2, const bool value[4]);
@@ -373,16 +373,16 @@ int tf_industrial_quad_relay_v2_get_value(TF_IndustrialQuadRelayV2 *industrial_q
  * \ingroup TF_IndustrialQuadRelayV2
  *
  * Configures a monoflop of the specified channel.
- * 
+ *
  * The second parameter is the desired value of the specified
  * channel. A *true* means relay closed and a *false* means relay open.
- * 
+ *
  * The third parameter indicates the time that the channels should hold
  * the value.
- * 
+ *
  * If this function is called with the parameters (0, 1, 1500) channel 0 will
  * close and in 1.5s channel 0 will open again
- * 
+ *
  * A monoflop can be used as a fail-safe mechanism. For example: Lets assume you
  * have a RS485 bus and a Industrial Quad Relay Bricklet 2.0 connected to one of
  * the slave stacks. You can now call this function every second, with a time
@@ -397,7 +397,7 @@ int tf_industrial_quad_relay_v2_set_monoflop(TF_IndustrialQuadRelayV2 *industria
  *
  * Returns (for the given channel) the current value and the time as set by
  * {@link tf_industrial_quad_relay_v2_set_monoflop} as well as the remaining time until the value flips.
- * 
+ *
  * If the timer is not running currently, the remaining time will be returned
  * as 0.
  */
@@ -408,7 +408,7 @@ int tf_industrial_quad_relay_v2_get_monoflop(TF_IndustrialQuadRelayV2 *industria
  *
  * Sets the output value of the specified channel without affecting the other
  * channels.
- * 
+ *
  * A running monoflop timer for the specified channel will be aborted if this
  * function is called.
  */
@@ -434,14 +434,14 @@ int tf_industrial_quad_relay_v2_get_channel_led_config(TF_IndustrialQuadRelayV2 
  * \ingroup TF_IndustrialQuadRelayV2
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -452,11 +452,11 @@ int tf_industrial_quad_relay_v2_get_spitfp_error_count(TF_IndustrialQuadRelayV2 
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -475,7 +475,7 @@ int tf_industrial_quad_relay_v2_get_bootloader_mode(TF_IndustrialQuadRelayV2 *in
  * Sets the firmware pointer for {@link tf_industrial_quad_relay_v2_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -487,9 +487,9 @@ int tf_industrial_quad_relay_v2_set_write_firmware_pointer(TF_IndustrialQuadRela
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_industrial_quad_relay_v2_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -501,9 +501,9 @@ int tf_industrial_quad_relay_v2_write_firmware(TF_IndustrialQuadRelayV2 *industr
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_industrial_quad_relay_v2_set_status_led_config(TF_IndustrialQuadRelayV2 *industrial_quad_relay_v2, uint8_t config);
@@ -520,7 +520,7 @@ int tf_industrial_quad_relay_v2_get_status_led_config(TF_IndustrialQuadRelayV2 *
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -532,7 +532,7 @@ int tf_industrial_quad_relay_v2_get_chip_temperature(TF_IndustrialQuadRelayV2 *i
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -545,7 +545,7 @@ int tf_industrial_quad_relay_v2_reset(TF_IndustrialQuadRelayV2 *industrial_quad_
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_industrial_quad_relay_v2_write_uid(TF_IndustrialQuadRelayV2 *industrial_quad_relay_v2, uint32_t uid);
@@ -564,11 +564,11 @@ int tf_industrial_quad_relay_v2_read_uid(TF_IndustrialQuadRelayV2 *industrial_qu
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

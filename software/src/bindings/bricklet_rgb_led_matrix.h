@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.0         *
  *                                                           *
@@ -327,7 +327,7 @@ int tf_rgb_led_matrix_set_response_expected_all(TF_RGBLEDMatrix *rgb_led_matrix,
  * \c user_data will be passed as the last parameter to the \c handler.
  *
  * Signature: \code void callback(uint32_t frame_number, void *user_data) \endcode
- * 
+ *
  * This callback is triggered as soon as a new frame write is started.
  * The LED values are double buffered, so you can send the LED values
  * for the next frame directly after this callback is triggered.
@@ -391,21 +391,21 @@ int tf_rgb_led_matrix_get_blue(TF_RGBLEDMatrix *rgb_led_matrix, uint8_t ret_blue
  * \ingroup TF_RGBLEDMatrix
  *
  * Sets the frame duration.
- * 
+ *
  * Example: If you want to achieve 20 frames per second, you should
  * set the frame duration to 50ms (50ms * 20 = 1 second).
- * 
+ *
  * Set this value to 0 to turn the automatic frame write mechanism off.
- * 
+ *
  * Approach:
- * 
+ *
  * * Call {@link tf_rgb_led_matrix_set_frame_duration} with value > 0.
  * * Set LED values for first frame with {@link tf_rgb_led_matrix_set_red}, {@link tf_rgb_led_matrix_set_green}, {@link tf_rgb_led_matrix_set_blue}.
  * * Wait for {@link tf_rgb_led_matrix_register_frame_started_callback} callback.
  * * Set LED values for second frame with {@link tf_rgb_led_matrix_set_red}, {@link tf_rgb_led_matrix_set_green}, {@link tf_rgb_led_matrix_set_blue}.
  * * Wait for {@link tf_rgb_led_matrix_register_frame_started_callback} callback.
  * * and so on.
- * 
+ *
  * For frame duration of 0 see {@link tf_rgb_led_matrix_draw_frame}.
  */
 int tf_rgb_led_matrix_set_frame_duration(TF_RGBLEDMatrix *rgb_led_matrix, uint16_t frame_duration);
@@ -422,9 +422,9 @@ int tf_rgb_led_matrix_get_frame_duration(TF_RGBLEDMatrix *rgb_led_matrix, uint16
  *
  * If you set the frame duration to 0 (see {@link tf_rgb_led_matrix_set_frame_duration}), you can use this
  * function to transfer the frame to the matrix.
- * 
+ *
  * Approach:
- * 
+ *
  * * Call {@link tf_rgb_led_matrix_set_frame_duration} with 0.
  * * Set LED values for first frame with {@link tf_rgb_led_matrix_set_red}, {@link tf_rgb_led_matrix_set_green}, {@link tf_rgb_led_matrix_set_blue}.
  * * Call {@link tf_rgb_led_matrix_draw_frame}.
@@ -447,14 +447,14 @@ int tf_rgb_led_matrix_get_supply_voltage(TF_RGBLEDMatrix *rgb_led_matrix, uint16
  * \ingroup TF_RGBLEDMatrix
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -465,11 +465,11 @@ int tf_rgb_led_matrix_get_spitfp_error_count(TF_RGBLEDMatrix *rgb_led_matrix, ui
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -488,7 +488,7 @@ int tf_rgb_led_matrix_get_bootloader_mode(TF_RGBLEDMatrix *rgb_led_matrix, uint8
  * Sets the firmware pointer for {@link tf_rgb_led_matrix_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -500,9 +500,9 @@ int tf_rgb_led_matrix_set_write_firmware_pointer(TF_RGBLEDMatrix *rgb_led_matrix
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_rgb_led_matrix_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -514,9 +514,9 @@ int tf_rgb_led_matrix_write_firmware(TF_RGBLEDMatrix *rgb_led_matrix, const uint
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_rgb_led_matrix_set_status_led_config(TF_RGBLEDMatrix *rgb_led_matrix, uint8_t config);
@@ -533,7 +533,7 @@ int tf_rgb_led_matrix_get_status_led_config(TF_RGBLEDMatrix *rgb_led_matrix, uin
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -545,7 +545,7 @@ int tf_rgb_led_matrix_get_chip_temperature(TF_RGBLEDMatrix *rgb_led_matrix, int1
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -558,7 +558,7 @@ int tf_rgb_led_matrix_reset(TF_RGBLEDMatrix *rgb_led_matrix);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_rgb_led_matrix_write_uid(TF_RGBLEDMatrix *rgb_led_matrix, uint32_t uid);
@@ -577,11 +577,11 @@ int tf_rgb_led_matrix_read_uid(TF_RGBLEDMatrix *rgb_led_matrix, uint32_t *ret_ui
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */
