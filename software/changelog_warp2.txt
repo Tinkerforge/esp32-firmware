@@ -136,7 +136,7 @@
 - Fix left-over usernames when resetting config
 - Fix HTTP auth not being enabled when a password is added to a user
 
-2022-05-02: 2.0.2 (<unknown>)
+2022-05-02: 2.0.2 (ebe864c7)
 - Completely rework WebSocket connection handling
 - Add NFC tag injection for start or stop
 - Add API to inject energy meter values
