@@ -107,7 +107,7 @@ function update_wifi_sta_config() {
     // that fills the elements, but clears the passphrase field.
     // An empty passphrase is invalid, so the input
     // field is marked as non-validated, confusing the user.
-    let form = <HTMLFormElement>$('#wifi_sta_form')[0];
+    let form = <HTMLFormElement>$('#wifi_sta_config_form')[0];
     form.classList.remove('was-validated');
 
     $('#wifi_sta_enable_sta').prop("checked", config.enable_sta);
@@ -146,7 +146,7 @@ function update_wifi_ap_config() {
     // that fills the elements, but clears the passphrase field.
     // An empty passphrase is invalid, so the input
     // field is marked as non-validated, confusing the user.
-    let form = <HTMLFormElement>$('#wifi_ap_form')[0];
+    let form = <HTMLFormElement>$('#wifi_ap_config_form')[0];
     form.classList.remove('was-validated');
 
     $('#wifi_ap_ssid').val(config.ssid);
@@ -334,7 +334,7 @@ export function init() {
     $("#wifi_sta_show_static").on("change", function(this: HTMLInputElement) {wifi_cfg_toggle_static_ip_collapse(this.value);});
 
     // Use bootstrap form validation
-    $('#wifi_sta_form').on('submit', function (this: HTMLFormElement, event: Event) {
+    $('#wifi_sta_config_form').on('submit', function (this: HTMLFormElement, event: Event) {
         $('#wifi_sta_ssid').prop("required", $('#wifi_sta_enable_sta').is(':checked'));
 
         this.classList.add('was-validated');
@@ -347,7 +347,7 @@ export function init() {
         save_wifi_sta_config();
     });
 
-    $('#wifi_ap_form').on('submit', function (this: HTMLFormElement, event: Event) {
+    $('#wifi_ap_config_form').on('submit', function (this: HTMLFormElement, event: Event) {
         this.classList.add('was-validated');
         event.preventDefault();
         event.stopPropagation();

@@ -34,7 +34,7 @@ function update_ethernet_config() {
     // that fills the elements, but clears the passphrase field.
     // An empty passphrase is invalid, so the input
     // field is marked as non-validated, confusing the user.
-    let form = <HTMLFormElement>$('#ethernet_form')[0];
+    let form = <HTMLFormElement>$('#ethernet_config_form')[0];
     form.classList.remove('was-validated');
 
     $('#ethernet_enable').prop("checked", config.enable_ethernet);
@@ -105,7 +105,7 @@ export function init() {
     $("#ethernet_show_static").on("change", function(this: HTMLInputElement) {ethernet_cfg_toggle_static_ip_collapse(this.value);});
 
     // Use bootstrap form validation
-    $('#ethernet_form').on('submit', function (this: HTMLFormElement, event: Event) {
+    $('#ethernet_config_form').on('submit', function (this: HTMLFormElement, event: Event) {
         this.classList.add('was-validated');
         event.preventDefault();
         event.stopPropagation();

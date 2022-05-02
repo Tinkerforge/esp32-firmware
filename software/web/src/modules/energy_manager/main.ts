@@ -258,7 +258,7 @@ export function init() {
     ).on("change", update_energy_manager_html_visibility);
 
     // Use bootstrap form validation
-    $('#energy_manager_form').on('submit', function (this: HTMLFormElement, event: Event) {
+    $('#energy_manager_config_form').on('submit', function (this: HTMLFormElement, event: Event) {
         console.log("energy_manager on submit");
         this.classList.add('was-validated');
         event.preventDefault();
