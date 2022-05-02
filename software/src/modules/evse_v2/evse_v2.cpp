@@ -788,7 +788,7 @@ void EVSEV2::register_urls()
     api.addCommand("evse/management_enabled_update", &evse_management_enabled_update, {}, [this](){
         //TODO: enabling the management if it is already enabled should not throw away the set current.
         bool enabled = evse_management_enabled_update.get("enabled")->asBool();
-        logger.printfln("management update %s", enabled ? "enable": "disable");
+
         if (enabled)
             tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_CHARGE_MANAGER, 0, true, true);
         else
