@@ -50,9 +50,10 @@
                     <div id="alert_placeholder" class="alert_placeholder"></div>
 
                     <div class="tab-pane fade" role="tabpanel" aria-labelledby="sidebar-login" id="login">
-                        <div
-                            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                            <h1 class="h2" data-i18n="main.content_login"></h1>
+                        <div class="row sticky-under-top mb-3 pt-3">
+                            <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-header-shadow">
+                                <h1 class="h2" data-i18n="main.content_login"></h1>
+                            </div>
                         </div>
                         <form id="main_login_form">
                             <div class="form-group row">
