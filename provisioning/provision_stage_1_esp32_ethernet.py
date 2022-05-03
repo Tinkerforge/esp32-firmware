@@ -25,8 +25,7 @@ from tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
 from provision_common.provision_common import *
 
 def main():
-    #common_init('/dev/ttyUSB0', '192.168.178.242', 9100)
-    common_init('/dev/ttyUSB0', '192.168.178.242', 9100)
+    common_init('/dev/ttyUSB0', '192.168.178.241', 9100)
 
     if len(sys.argv) != 2:
         fatal_error("Usage: {} firmware_type".format(sys.argv[0]))
