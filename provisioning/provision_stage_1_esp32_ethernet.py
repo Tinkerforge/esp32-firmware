@@ -67,7 +67,7 @@ def main():
                                                       "hostname":"warp2-{}".format(uid),
                                                       "ip":[192,168,123,123],
                                                       "gateway":[0,0,0,0],
-                                                      "subnet":[0,0,0,0],
+                                                      "subnet":[255,255,0,0],
                                                       "dns":[0,0,0,0],
                                                       "dns2":[0,0,0,0]}).encode("utf-8"),
                                      method='PUT',
@@ -77,13 +77,12 @@ def main():
                 f.read()
         except Exception as e:
             fatal_error("Failed to set ethernet config!")
-
         req = urllib.request.Request("http://10.0.0.1/reboot", data='null'.format(uid).encode("utf-8"), method='PUT', headers={"Content-Type": "application/json"})
         try:
             with urllib.request.urlopen(req, timeout=10) as f:
                 f.read()
         except Exception as e:
-            fatal_error("Failed to initiate reboot!")
+            print("Failed to initiate reboot! Attempting to connect via ethernet anyway.")
 
         result["wifi_test_successful"] = True
 
