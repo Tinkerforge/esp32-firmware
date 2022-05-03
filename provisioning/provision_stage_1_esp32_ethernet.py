@@ -2,7 +2,7 @@
 
 import contextlib
 from contextlib import contextmanager
-import datetime
+from datetime import datetime
 import io
 import json
 import os
@@ -28,8 +28,12 @@ def main():
     #common_init('/dev/ttyUSB0', '192.168.178.242', 9100)
     common_init('/dev/ttyUSB0', '192.168.178.242', 9100)
 
-    if len(sys.argv) != 1:
-        fatal_error("Usage: {}".format(sys.argv[0]))
+    if len(sys.argv) != 2:
+        fatal_error("Usage: {} firmware_type".format(sys.argv[0]))
+
+    firmware_type = sys.argv[1]
+    if firmware_type not in ["esp32_ethernet", "warp2"]:
+        fatal_error("Unknown firmware type {}".format(firmware_type))
 
     result = {"start": now()}
 
@@ -48,7 +52,7 @@ def main():
 
     result["uid"] = uid
 
-    ssid = "warp2-" + uid
+    ssid = "warp2-" if firmware_type == "warp2" else "esp32-" + uid
 
     run(["systemctl", "restart", "NetworkManager.service"])
 
@@ -116,6 +120,13 @@ def main():
     except Exception as e:
         fatal_error("Failed to reset ethernet config!")
 
+    req = urllib.request.Request("http://192.168.123.123/info/version")
+    try:
+        with urllib.request.urlopen(req, timeout=10) as f:
+            fw_version = json.loads(f.read().decode("utf-8"))["firmware"].split("-")[0]
+    except Exception as e:
+        fatal_error("Failed to read firmware version!")
+
 
     ipcon = IPConnection()
     ipcon.connect("192.168.123.123", 4223)
@@ -178,10 +189,24 @@ def main():
 
     label_success = "n"
     while label_success != "y":
-        run(["python3", "print-esp32-label.py", ssid, passphrase, "-c", "3"])
-        label_success = input("Stick one label on the ESP, put ESP and the other two labels in the ESD bag. Press n to retry printing the labels. [y/n]")
+        run(["python3", "print-esp32-label.py", ssid, passphrase, "-c", "3" if firmware_type == "warp2" else "1"])
+        label_prompt = "Stick one label on the ESP, put ESP{} in the ESD bag. Press n to retry printing the label{}. [y/n]".format(
+                " and the other two labels" if firmware_type == "warp2" else "",
+                "s" if firmware_type == "warp2" else "")
+
+        label_success = input(label_prompt)
         while label_success not in ("y", "n"):
-            label_success = input("Stick one label on the ESP, put ESP and the other two labels in the ESD bag. Press n to retry printing the labels. [y/n]")
+            label_success = input(label_prompt)
+
+    if firmware_type == "esp32_ethernet":
+        bag_label_success = "n"
+        while label_success != "y":
+            run(["python3", "../../flash-test/label/print-label.py", "-c", "1", "ESP32 Ethernet Brick", "115", datetime.now().strftime('%Y-%m-%d'), uid, fw_version])
+            bag_label_prompt = "Stick bag label on bag. Press n to retry printing the label. [y/n]")
+
+            bag_label_success = input(bag_label_prompt)
+            while bag_label_success not in ("y", "n"):
+                bag_label_success = input(bag_label_prompt)
 
     print('Done!')
 
