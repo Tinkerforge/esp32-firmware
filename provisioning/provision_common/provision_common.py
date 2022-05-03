@@ -21,6 +21,8 @@ import traceback
 import urllib.request
 import csv
 
+from tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
+
 from tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
 
 rnd = secrets.SystemRandom()
@@ -441,11 +443,15 @@ def enumerate_devices(ipcon):
 
     return uids
 
-def test_bricklet_ports(ipcon, esp_device_id):
+def test_bricklet_ports(ipcon, esp_device_id, is_warp):
     enums = enumerate_devices(ipcon)
 
-    if len(enums) != 7 or any(x.device_identifier not in [BrickletRGBLEDV2.DEVICE_IDENTIFIER, esp_device_id] for x in enums):
-        fatal_error("Expected 6 RGB LED 2.0 bricklets and the Brick itself but found {}".format("\n\t".join("Port {}: {}".format(x.position, x.device_identifier) for x in enums)))
+    if is_warp:
+        if len(enums) != 6 or any(x.device_identifier not in [BrickletRGBLEDV2.DEVICE_IDENTIFIER, esp_device_id] for x in enums):
+            fatal_error("Expected 6 RGB LED 2.0 bricklets but found {}".format("\n\t".join("Port {}: {}".format(x.position, x.device_identifier) for x in enums)))
+    if not is_warp:
+        if len(enums) != 7 or any(x.device_identifier not in [BrickletRGBLEDV2.DEVICE_IDENTIFIER, esp_device_id] for x in enums):
+            fatal_error("Expected 6 RGB LED 2.0 bricklets and the Brick itself but found {}".format("\n\t".join("Port {}: {}".format(x.position, x.device_identifier) for x in enums)))
 
     enums = sorted(enums, key=lambda x: x.position)
 

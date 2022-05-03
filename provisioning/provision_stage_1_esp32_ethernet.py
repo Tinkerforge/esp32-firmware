@@ -20,7 +20,7 @@ import traceback
 import urllib.request
 
 from tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
-from tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
+
 
 ESP_ETHERNET_DEVICE_ID = 115
 
@@ -53,7 +53,7 @@ def main():
 
     result["uid"] = uid
 
-    ssid = "warp2-" if firmware_type == "warp2" else "esp32-" + uid
+    ssid = ("warp2-" if firmware_type == "warp2" else "esp32-") + uid
 
     run(["systemctl", "restart", "NetworkManager.service"])
 
@@ -66,17 +66,18 @@ def main():
         req = urllib.request.Request("http://10.0.0.1/ethernet/config_update",
                                      data=json.dumps({"enable_ethernet":True,
                                                       "hostname":ssid,
-                                                      "ip":[192,168,123,123],
-                                                      "gateway":[0,0,0,0],
-                                                      "subnet":[255,255,0,0],
-                                                      "dns":[0,0,0,0],
-                                                      "dns2":[0,0,0,0]}).encode("utf-8"),
+                                                      "ip": "192.168.123.123",
+                                                      "gateway":"0.0.0.0",
+                                                      "subnet":"255.255.0.0",
+                                                      "dns":"0.0.0.0",
+                                                      "dns2":"0.0.0.0"}).encode("utf-8"),
                                      method='PUT',
                                      headers={"Content-Type": "application/json"})
         try:
             with urllib.request.urlopen(req, timeout=10) as f:
                 f.read()
         except Exception as e:
+            print(e)
             fatal_error("Failed to set ethernet config!")
         req = urllib.request.Request("http://10.0.0.1/reboot", data='null'.format(uid).encode("utf-8"), method='PUT', headers={"Content-Type": "application/json"})
         try:
@@ -87,17 +88,18 @@ def main():
 
         result["wifi_test_successful"] = True
 
+    time.sleep(3)
     print("Connecting via ethernet to 192.168.123.123", end="")
     for i in range(30):
         start = time.time()
         req = urllib.request.Request("http://192.168.123.123/ethernet/config_update",
                                  data=json.dumps({"enable_ethernet":True,
                                                   "hostname":ssid,
-                                                  "ip":[0,0,0,0],
-                                                  "gateway":[0,0,0,0],
-                                                  "subnet":[0,0,0,0],
-                                                  "dns":[0,0,0,0],
-                                                  "dns2":[0,0,0,0]}).encode("utf-8"),
+                                                  "ip":"0.0.0.0",
+                                                  "gateway":"0.0.0.0",
+                                                  "subnet":"0.0.0.0",
+                                                  "dns":"0.0.0.0",
+                                                  "dns2":"0.0.0.0"}).encode("utf-8"),
                                  method='PUT',
                                  headers={"Content-Type": "application/json"})
         try:
@@ -121,13 +123,21 @@ def main():
     except Exception as e:
         fatal_error("Failed to read firmware version!")
 
+    if firmware_type == "warp2":
+        try:
+            with urllib.request.urlopen("http://192.168.123.123/hidden_proxy/enable", timeout=10) as f:
+                f.read()
+        except Exception as e:
+            print(e)
+            fatal_error("Failed to enable hidden_proxy!")
 
+    time.sleep(3)
     ipcon = IPConnection()
     ipcon.connect("192.168.123.123", 4223)
     result["ethernet_test_successful"] = True
     print("Connected. Testing bricklet ports")
 
-    test_bricklet_ports(ipcon, ESP_ETHERNET_DEVICE_ID)
+    test_bricklet_ports(ipcon, ESP_ETHERNET_DEVICE_ID, firmware_type == "warp2")
     result["bricklet_port_test_successful"] = True
 
     led0 = input("Does the status LED blink blue? [y/n]")
@@ -166,7 +176,7 @@ def main():
 
     if firmware_type == "esp32_ethernet":
         bag_label_success = "n"
-        while label_success != "y":
+        while bag_label_success != "y":
             run(["python3", "../../flash-test/label/print-label.py", "-c", "1", "ESP32 Ethernet Brick", str(ESP_ETHERNET_DEVICE_ID), datetime.datetime.now().strftime('%Y-%m-%d'), uid, fw_version])
             bag_label_prompt = "Stick bag label on bag. Press n to retry printing the label. [y/n]"
 

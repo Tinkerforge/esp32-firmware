@@ -20,7 +20,6 @@ import traceback
 import urllib.request
 
 from tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
-from tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
 
 ESP_DEVICE_ID = 113
 
@@ -76,7 +75,7 @@ def main():
         ipcon.connect("10.0.0.1", 4223)
         print("Connected. Testing bricklet ports")
 
-        test_bricklet_ports(ipcon, ESP_DEVICE_ID)
+        test_bricklet_ports(ipcon, ESP_DEVICE_ID, False)
         result["bricklet_port_test_successful"] = True
 
     led0 = input("Does the status LED blink blue? [y/n]")
