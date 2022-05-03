@@ -440,3 +440,33 @@ def enumerate_devices(ipcon):
         time.sleep(0.1)
 
     return uids
+
+def test_bricklet_ports(ipcon, esp_device_id):
+    enums = enumerate_devices(ipcon)
+
+    if len(enums) != 7 or any(x.device_identifier not in [BrickletRGBLEDV2.DEVICE_IDENTIFIER, esp_device_id] for x in enums):
+        fatal_error("Expected 6 RGB LED 2.0 bricklets and the Brick itself but found {}".format("\n\t".join("Port {}: {}".format(x.position, x.device_identifier) for x in enums)))
+
+    enums = sorted(enums, key=lambda x: x.position)
+
+    bricklets = [(enum.position, BrickletRGBLEDV2(enum.uid, ipcon)) for enum in enums if enum.device_identifier == BrickletRGBLEDV2.DEVICE_IDENTIFIER]
+    error_count = 0
+    for bricklet_port, rgb in bricklets:
+        rgb.set_rgb_value(127, 127, 0)
+        time.sleep(0.5)
+        if rgb.get_rgb_value() == (127, 127, 0):
+            rgb.set_rgb_value(0, 127, 0)
+        else:
+            print(red("Setting color failed on port {}.".format(bricklet_port)))
+            error_count += 1
+
+    if error_count != 0:
+        fatal_error("")
+
+    stop_event = threading.Event()
+    blink_thread = threading.Thread(target=blink_thread_fn, args=([x[1] for x in bricklets], stop_event))
+    blink_thread.start()
+    input("Bricklet ports seem to work. Press any key to continue")
+    stop_event.set()
+    blink_thread.join()
+    ipcon.disconnect()
