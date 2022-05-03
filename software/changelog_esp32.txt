@@ -1,2 +1,2 @@
-<unknown>: 2.0.0 (<unknown>)
+03.05.2022: 2.0.0 (5ab6df8c)
 - Initial release
