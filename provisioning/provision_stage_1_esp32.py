@@ -22,6 +22,8 @@ import urllib.request
 from tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
 from tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
 
+ESP_DEVICE_ID = 113
+
 from provision_common.provision_common import *
 
 def main():
@@ -62,65 +64,49 @@ def main():
 
     print("Testing ESP Wifi.")
     with wifi(ssid, passphrase):
-        req = urllib.request.Request("http://10.0.0.1/hidden_proxy/enable",
-                                     data=json.dumps({"enable_ethernet":True,
-                                                      "hostname":"warp2-{}".format(uid),
-                                                      "ip":[192,168,123,123],
-                                                      "gateway":[0,0,0,0],
-                                                      "subnet":[0,0,0,0],
-                                                      "dns":[0,0,0,0],
-                                                      "dns2":[0,0,0,0]}).encode("utf-8"),
-                                     method='PUT',
-                                     headers={"Content-Type": "application/json"})
+        req = urllib.request.Request("http://10.0.0.1/info/version")
         try:
             with urllib.request.urlopen(req, timeout=10) as f:
-                f.read()
+                fw_version = json.loads(f.read().decode("utf-8"))["firmware"].split("-")[0]
         except Exception as e:
             fatal_error("Failed to connect via wifi!")
 
         result["wifi_test_successful"] = True
 
-    req = urllib.request.Request("http://10.0.0.1/info/version")
-    try:
-        with urllib.request.urlopen(req, timeout=10) as f:
-            fw_version = json.loads(f.read().decode("utf-8"))["firmware"].split("-")[0]
-    except Exception as e:
-        fatal_error("Failed to read firmware version!")
+        ipcon = IPConnection()
+        ipcon.connect("10.0.0.1", 4223)
+        print("Connected. Testing bricklet ports")
 
-    ipcon = IPConnection()
-    ipcon.connect("10.0.0.1", 4223)
-    print("Connected. Testing bricklet ports")
+        enums = enumerate_devices(ipcon)
 
-    enums = enumerate_devices(ipcon)
+        if len(enums) != 7 or any(x.device_identifier not in [BrickletRGBLEDV2.DEVICE_IDENTIFIER, ESP_DEVICE_ID] for x in enums):
+            fatal_error("Expected 6 RGB LED 2.0 bricklets and the ESP brick but found {}".format("\n\t".join("Port {}: {}".format(x.position, x.device_identifier) for x in enums)))
 
-    if len(enums) != 6 or any(x.device_identifier != BrickletRGBLEDV2.DEVICE_IDENTIFIER for x in enums):
-        fatal_error("Expected 6 RGB LED 2.0 bricklets but found {}".format("\n\t".join("Port {}: {}".format(x.position, x.device_identifier) for x in enums)))
+        enums = sorted(enums, key=lambda x: x.position)
 
-    enums = sorted(enums, key=lambda x: x.position)
+        bricklets = [(enum.position, BrickletRGBLEDV2(enum.uid, ipcon)) for enum in enums if enum.device_identifier == BrickletRGBLEDV2.DEVICE_IDENTIFIER]
+        error_count = 0
+        for bricklet_port, rgb in bricklets:
+            rgb.set_rgb_value(127, 127, 0)
+            time.sleep(0.5)
+            if rgb.get_rgb_value() == (127, 127, 0):
+                rgb.set_rgb_value(0, 127, 0)
+            else:
+                print(red("Setting color failed on port {}.".format(bricklet_port)))
+                error_count += 1
 
-    bricklets = [(enum.position, BrickletRGBLEDV2(enum.uid, ipcon)) for enum in enums]
-    error_count = 0
-    for bricklet_port, rgb in bricklets:
-        rgb.set_rgb_value(127, 127, 0)
-        time.sleep(0.5)
-        if rgb.get_rgb_value() == (127, 127, 0):
-            rgb.set_rgb_value(0, 127, 0)
-        else:
-            print(red("Setting color failed on port {}.".format(bricklet_port)))
-            error_count += 1
+        if error_count != 0:
+            fatal_error("")
 
-    if error_count != 0:
-        fatal_error("")
+        result["bricklet_port_test_successful"] = True
 
-    result["bricklet_port_test_successful"] = True
-
-    stop_event = threading.Event()
-    blink_thread = threading.Thread(target=blink_thread_fn, args=([x[1] for x in bricklets], stop_event))
-    blink_thread.start()
-    input("Bricklet ports seem to work. Press any key to continue")
-    stop_event.set()
-    blink_thread.join()
-    ipcon.disconnect()
+        stop_event = threading.Event()
+        blink_thread = threading.Thread(target=blink_thread_fn, args=([x[1] for x in bricklets], stop_event))
+        blink_thread.start()
+        input("Bricklet ports seem to work. Press any key to continue")
+        stop_event.set()
+        blink_thread.join()
+        ipcon.disconnect()
 
     led0 = input("Does the status LED blink blue? [y/n]")
     while led0 not in ("y", "n"):
@@ -160,9 +146,9 @@ def main():
 
 
     bag_label_success = "n"
-    while label_success != "y":
-        run(["python3", "../../flash-test/label/print-label.py", "-c", "1", "ESP32 Brick", "113", datetime.now().strftime('%Y-%m-%d'), uid, fw_version])
-        bag_label_prompt = "Stick bag label on bag. Press n to retry printing the label. [y/n]")
+    while bag_label_success != "y":
+        run(["python3", "../../flash-test/label/print-label.py", "-c", "1", "ESP32 Brick", str(ESP_DEVICE_ID), datetime.datetime.now().strftime('%Y-%m-%d'), uid, fw_version])
+        bag_label_prompt = "Stick bag label on bag. Press n to retry printing the label. [y/n]"
 
         bag_label_success = input(bag_label_prompt)
         while bag_label_success not in ("y", "n"):
