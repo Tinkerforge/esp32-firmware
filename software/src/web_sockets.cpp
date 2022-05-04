@@ -458,7 +458,7 @@ void WebSockets::start(const char *uri)
     server.on("/info/ws", HTTP_GET, [this](WebServerRequest request) {
         std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
         std::lock_guard<std::recursive_mutex> lock2{keep_alive_mutex};
-        logger.printfln("");
+        logger.printfln("\n");
         logger.printfln("keep_alive_fds   %d %d %d %d %d", keep_alive_fds[0], keep_alive_fds[1], keep_alive_fds[2], keep_alive_fds[3], keep_alive_fds[4]);
         logger.printfln("keep_alive_pongs %u %u %u %u %u", keep_alive_last_pong[0], keep_alive_last_pong[1], keep_alive_last_pong[2], keep_alive_last_pong[3], keep_alive_last_pong[4]);
         logger.printfln("worker_active %s state %s", worker_active ? "yes" : "no", work_state);
