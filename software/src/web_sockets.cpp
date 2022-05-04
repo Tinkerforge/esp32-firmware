@@ -404,11 +404,14 @@ void WebSockets::triggerHttpThread()
         return;
     }
 
-    if (httpd_queue_work(server.httpd, work, this) != ESP_OK) {
-        return;
-    }
-
+    // If we don't set worker_active to true BEFORE enqueueing the worker,
+    // we can be preempted after enqueueing, but before we set worker_active to true
+    // the worker can then run to completion, we then set worker_active to true and are
+    // NEVER able to start the worker again.
     worker_active = true;
+    if (httpd_queue_work(server.httpd, work, this) != ESP_OK) {
+        worker_active = false;
+    }
 }
 
 void WebSockets::start(const char *uri)
