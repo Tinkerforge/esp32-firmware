@@ -395,15 +395,28 @@ void WebSockets::sendToAll(const char *payload, size_t payload_len)
 
 void WebSockets::triggerHttpThread()
 {
+    static uint32_t last_worker_run = 0;
+    if (worker_active) {
+        // Protect against lost UDP packet in httpd_queue_work control socket.
+        // If the packet that enqueues the worker is lost
+        // worker_active must be reset or web sockets will never send data again.
+        if (last_worker_run != 0 && deadline_elapsed(last_worker_run + KEEP_ALIVE_TIMEOUT_MS * 2)) {
+            last_worker_run = millis();
+            worker_active = false;
+
+            std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
+            work_queue.clear();
+        }
+        return;
+    }
+
+    last_worker_run = millis();
+
     {
         std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
         if (work_queue.empty()) {
             return;
         }
-    }
-
-    if (worker_active) {
-        return;
     }
 
     // If we don't set worker_active to true BEFORE enqueueing the worker,
