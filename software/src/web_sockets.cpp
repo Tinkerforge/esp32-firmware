@@ -40,12 +40,15 @@ bool WebSockets::haveWork(ws_work_item *item)
     return true;
 }
 
+const char *work_state = "";
 static void work(void *arg)
 {
+    work_state = "start";
     WebSockets *ws = (WebSockets *)arg;
 
     ws_work_item wi;
     while (ws->haveWork(&wi)) {
+        work_state = "have_work";
         httpd_ws_frame_t ws_pkt;
         memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
 
@@ -53,23 +56,27 @@ static void work(void *arg)
         ws_pkt.len = wi.payload_len;
         ws_pkt.type = wi.payload_len == 0 ? HTTPD_WS_TYPE_PING : HTTPD_WS_TYPE_TEXT;
 
+        work_state = "loop";
         for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
             if (wi.fds[i] == -1) {
                 continue;
             }
-
+            work_state = "get_info";
             if (httpd_ws_get_fd_info(wi.hd, wi.fds[i]) != HTTPD_WS_CLIENT_WEBSOCKET) {
                 continue;
             }
-
+            work_state = "send";
             if (httpd_ws_send_frame_async(wi.hd, wi.fds[i], &ws_pkt) != ESP_OK) {
+                work_state = "close_dead";
                 ws->keepAliveCloseDead(wi.fds[i]);
             }
+            work_state = "send_done";
         }
-
+        work_state = "clear";
         wi.clear();
+        work_state = "loop_end";
     }
-
+    work_state = "done";
     ws->worker_active = false;
 }
 
@@ -433,10 +440,24 @@ void WebSockets::start(const char *uri)
     server.on("/info/ws", HTTP_GET, [this](WebServerRequest request) {
         std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
         std::lock_guard<std::recursive_mutex> lock2{keep_alive_mutex};
+        logger.printfln("");
         logger.printfln("keep_alive_fds   %d %d %d %d %d", keep_alive_fds[0], keep_alive_fds[1], keep_alive_fds[2], keep_alive_fds[3], keep_alive_fds[4]);
         logger.printfln("keep_alive_pongs %u %u %u %u %u", keep_alive_last_pong[0], keep_alive_last_pong[1], keep_alive_last_pong[2], keep_alive_last_pong[3], keep_alive_last_pong[4]);
+        logger.printfln("worker_active %s state %s", worker_active ? "yes" : "no", work_state);
         logger.printfln("queue_len %u", work_queue.size());
-        logger.printfln("worker_active %s", worker_active ? "yes" : "no");
+
+        for(int i = 0; i < work_queue.size(); ++i) {
+            logger.printfln("    q[%d] to {%d %d %d %d %d} len %u %.30s",
+                            i,
+                            work_queue[i].fds[0],
+                            work_queue[i].fds[1],
+                            work_queue[i].fds[2],
+                            work_queue[i].fds[3],
+                            work_queue[i].fds[4],
+                            work_queue[i].payload_len,
+                            work_queue[i].payload_len == 0 ? "PING" : (work_queue[i].payload_len < 10 ? work_queue[i].payload : work_queue[i].payload + 10));
+        }
+
         request.send(200);
     });
 }
