@@ -220,5 +220,5 @@
 2022-05-02: 2.0.3 (9725085b)
 - Fix visibility of WiFi scan results
 
-2022-05-04: 2.0.4 (<unknown>)
+2022-05-04: 2.0.4 (70af7ef1)
 - Fix race condition resulting in unusable web interface
