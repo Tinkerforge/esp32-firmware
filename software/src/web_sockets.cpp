@@ -401,6 +401,7 @@ void WebSockets::triggerHttpThread()
         // If the packet that enqueues the worker is lost
         // worker_active must be reset or web sockets will never send data again.
         if (last_worker_run != 0 && deadline_elapsed(last_worker_run + KEEP_ALIVE_TIMEOUT_MS * 2)) {
+            logger.printfln("WebSocket worker ran %u seconds. Control socket drop? Restarting worker.", (KEEP_ALIVE_TIMEOUT_MS * 2) / 1000);
             last_worker_run = millis();
             worker_active = false;
 
