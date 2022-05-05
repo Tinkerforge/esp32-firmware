@@ -393,9 +393,9 @@ void WebSockets::sendToAll(const char *payload, size_t payload_len)
     work_queue.emplace_back(server.httpd, fds, payload_copy, payload_len);
 }
 
+static uint32_t last_worker_run = 0;
 void WebSockets::triggerHttpThread()
 {
-    static uint32_t last_worker_run = 0;
     if (worker_active) {
         // Protect against lost UDP packet in httpd_queue_work control socket.
         // If the packet that enqueues the worker is lost
@@ -462,6 +462,7 @@ void WebSockets::start(const char *uri)
         logger.printfln("keep_alive_fds   %d %d %d %d %d", keep_alive_fds[0], keep_alive_fds[1], keep_alive_fds[2], keep_alive_fds[3], keep_alive_fds[4]);
         logger.printfln("keep_alive_pongs %u %u %u %u %u", keep_alive_last_pong[0], keep_alive_last_pong[1], keep_alive_last_pong[2], keep_alive_last_pong[3], keep_alive_last_pong[4]);
         logger.printfln("worker_active %s state %s", worker_active ? "yes" : "no", work_state);
+        logger.printfln("last_worker_run %u", last_worker_run);
         logger.printfln("queue_len %u", work_queue.size());
 
         for(int i = 0; i < work_queue.size(); ++i) {
