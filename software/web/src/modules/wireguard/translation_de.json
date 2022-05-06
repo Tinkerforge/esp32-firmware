@@ -1,0 +1,43 @@
+{
+    "wireguard": {
+        "status": {
+            "connection": "WireGuard-Verbindung",
+            "not_configured": "Deaktiviert",
+            "waiting_for_timesync": "Warte auf NTP",
+            "not_connected": "Verbinde",
+            "connected": "Verbunden"
+        },
+        "navbar": {
+            "wireguard": "WireGuard"
+        },
+        "content": {
+            "wireguard": "WireGuard",
+            "save": "Speichern",
+            "enable_wireguard": "WireGuard aktiviert",
+            "enable_wireguard_desc": "Verbindung wird automatisch aufgebaut, sobald eine Netzwerk-Zeitsynchronisierung besteht.",
+            "default_if": "Als Default-Interface verwenden",
+            "default_if_desc": "Bei aktiver WireGuard-Verbindung wird sämtlicher nicht-lokaler Netzwerkverkehr über das VPN geschickt.",
+            "internal_ip": "IP im WireGuard-Netz",
+            "internal_ip_invalid": "Die IP-Adresse muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrent durch einen Punkt, bestehen. Zum Beispiel 10.0.0.2",
+            "internal_subnet": "Subnetzmaske des WireGuard-Netzes",
+            "internal_subnet_invalid": "Die Subnetzmaske muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrent durch einen Punkt, bestehen. Zum Beispiel 255.255.255.0",
+            "internal_gateway": "Gateway des WireGuard-Netzes",
+            "internal_gateway_invalid": "Die IP des Gateways muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrent durch einen Punkt, bestehen. Zum Beispiel 10.0.0.1",
+            "remote_host": "Peer-Hostname oder IP",
+            "port": "Peer-Port",
+            "private_key": "eigener privater Schlüssel",
+            "remote_public_key": "Öffentlicher Schlüssel des Peers",
+            "preshared_key": "Preshared-Key (optional)",
+            "unchanged": "Unverändert",
+            "allowed_ip": "Erlaubte Quell-IP empfangener Pakete",
+            "allowed_ip_invalid": "Die IP-Adresse muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrent durch einen Punkt, bestehen. Zum Beispiel 10.0.0.2",
+            "allowed_subnet": "Erlaubte Subnetzmaske empfangener Pakete",
+            "allowed_subnet_invalid": "Die Subnetzmaske muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrent durch einen Punkt, bestehen. Zum Beispiel 255.255.255.0"
+        },
+        "script": {
+            "save_failed": "Speichern der Wireguard-Einstellungen fehlgeschlagen",
+            "reboot_content_changed": "Wireguard-Einstellungen",
+            "preshared_key_unused": "PSK wird nicht verwendet"
+        }
+    }
+}
