@@ -221,13 +221,13 @@ def check_translation(translation, parent_key=None):
 def main():
     # Add build flags
     timestamp = int(time.time())
-    name = env.GetProjectOption("name")
-    host_prefix = env.GetProjectOption("host_prefix")
-    display_name = env.GetProjectOption("display_name")
-    manual_url = env.GetProjectOption("manual_url")
-    apidoc_url = env.GetProjectOption("apidoc_url")
-    firmware_url = env.GetProjectOption("firmware_url")
-    require_firmware_info = env.GetProjectOption("require_firmware_info")
+    name = env.GetProjectOption("custom_name")
+    host_prefix = env.GetProjectOption("custom_host_prefix")
+    display_name = env.GetProjectOption("custom_display_name")
+    manual_url = env.GetProjectOption("custom_manual_url")
+    apidoc_url = env.GetProjectOption("custom_apidoc_url")
+    firmware_url = env.GetProjectOption("custom_firmware_url")
+    require_firmware_info = env.GetProjectOption("custom_require_firmware_info")
     src_filter = env.GetProjectOption("src_filter")
     oldest_version, version = get_changelog_version(name)
 
@@ -266,7 +266,7 @@ def main():
 
     # Handle backend modules
     excluded_backend_modules = list(os.listdir('src/modules'))
-    backend_modules = [FlavoredName(x).get() for x in env.GetProjectOption("backend_modules").splitlines()]
+    backend_modules = [FlavoredName(x).get() for x in env.GetProjectOption("custom_backend_modules").splitlines()]
     for backend_module in backend_modules:
         mod_path = os.path.join('src', 'modules', backend_module.under)
 
@@ -325,7 +325,7 @@ def main():
     main_ts_entries = []
     pre_scss_paths = []
     post_scss_paths = []
-    frontend_modules = [FlavoredName(x).get() for x in env.GetProjectOption("frontend_modules").splitlines()]
+    frontend_modules = [FlavoredName(x).get() for x in env.GetProjectOption("custom_frontend_modules").splitlines()]
     translation = collect_translation('web')
 
     # API
