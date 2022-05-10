@@ -95,9 +95,10 @@ class ChangedDirectory(object):
 
 
 def get_changelog_version(name):
+    path = os.path.join('changelog_{}.txt'.format(name))
     versions = []
 
-    with open(os.path.join('changelog_{}.txt'.format(name)), 'r', encoding='utf-8') as f:
+    with open(path, 'r', encoding='utf-8') as f:
         for i, line in enumerate(f.readlines()):
             line = line.rstrip()
 
@@ -110,33 +111,33 @@ def get_changelog_version(name):
             m = re.match(r'^(?:<unknown>|20[0-9]{2}-[0-9]{2}-[0-9]{2}): ([0-9]+)\.([0-9]+)\.([0-9]+) \((?:<unknown>|[a-f0-9]+)\)$', line)
 
             if m == None:
-                raise Exception('invalid line {} in changelog: {}'.format(i + 1, line))
+                raise Exception('Invalid line {} in {}: {}'.format(i + 1, path, line))
 
             version = (int(m.group(1)), int(m.group(2)), int(m.group(3)))
 
             if version[0] not in [0, 1, 2]:
-                raise Exception('invalid major version in changelog: {}'.format(version))
+                raise Exception('Invalid major version in {}: {}'.format(path, version))
 
             if version[2] < 90 and len(versions) > 0:
                 if versions[-1] >= version:
-                    raise Exception('invalid version order in changelog: {} -> {}'.format(versions[-1], version))
+                    raise Exception('Invalid version order in {}: {} -> {}'.format(path, versions[-1], version))
 
                 if versions[-1][0] == version[0] and versions[-1][1] == version[1] and versions[-1][2] + 1 != version[2]:
-                    raise Exception('invalid version jump in changelog: {} -> {}'.format(versions[-1], version))
+                    raise Exception('Invalid version jump in {}: {} -> {}'.format(path, versions[-1], version))
 
                 if versions[-1][0] == version[0] and versions[-1][1] != version[1] and versions[-1][1] + 1 != version[1]:
-                    raise Exception('invalid version jump in changelog: {} -> {}'.format(versions[-1], version))
+                    raise Exception('Invalid version jump in {}: {} -> {}'.format(path, versions[-1], version))
 
                 if versions[-1][1] != version[1] and version[2] != 0:
-                    raise Exception('invalid version jump in changelog: {} -> {}'.format(versions[-1], version))
+                    raise Exception('Invalid version jump in {}: {} -> {}'.format(path, versions[-1], version))
 
                 if versions[-1][0] != version[0] and (version[1] != 0 or version[2] != 0):
-                    raise Exception('invalid version jump in changelog: {} -> {}'.format(versions[-1], version))
+                    raise Exception('Invalid version jump in {}: {} -> {}'.format(path, versions[-1], version))
 
             versions.append(version)
 
     if len(versions) == 0:
-        raise Exception('no version found in changelog')
+        raise Exception('No version found in {}'.format(path))
 
     oldest_version = (str(versions[0][0]), str(versions[0][1]), str(versions[0][2]))
     version = (str(versions[-1][0]), str(versions[-1][1]), str(versions[-1][2]))
@@ -229,7 +230,12 @@ def main():
     firmware_url = env.GetProjectOption("custom_firmware_url")
     require_firmware_info = env.GetProjectOption("custom_require_firmware_info")
     src_filter = env.GetProjectOption("src_filter")
-    oldest_version, version = get_changelog_version(name)
+
+    try:
+        oldest_version, version = get_changelog_version(name)
+    except Exception as e:
+        print('Error: Could not get changelog version: {0}'.format(e))
+        sys.exit(1)
 
     if src_filter[0] == '+<empty.c>':
         src_filter = None
