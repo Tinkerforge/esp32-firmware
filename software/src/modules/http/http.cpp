@@ -43,6 +43,7 @@ Http::Http()
 
 void Http::setup()
 {
+    initialized = true;
 }
 
 void Http::register_urls()
