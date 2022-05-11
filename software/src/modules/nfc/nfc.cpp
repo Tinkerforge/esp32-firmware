@@ -273,7 +273,10 @@ void tag_id_bytes_to_string(const uint8_t *tag_id, uint8_t tag_id_len, char buf[
         buf[3 * i + 1] = lookup[lo];
         buf[3 * i + 2] = ':';
     }
-    buf[3 * tag_id_len - 1] = '\0';
+    if (tag_id_len == 0)
+        buf[0] = '\0';
+    else:
+        buf[3 * tag_id_len - 1] = '\0';
 }
 
 void NFC::update_seen_tags()
