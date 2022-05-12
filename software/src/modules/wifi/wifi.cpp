@@ -454,6 +454,12 @@ void Wifi::check_for_scan_completion()
         }, 500);
         return;
     }
+
+    if (result == "scan failed") {
+        logger.printfln("Scan failed.", WiFi.scanComplete());
+        return;
+    }
+
     logger.printfln("Scan done. %d networks.", WiFi.scanComplete());
 
 #if MODULE_WS_AVAILABLE()
@@ -475,13 +481,27 @@ void Wifi::register_urls()
         WiFi.scanDelete();
 
         // WIFI_SCAN_FAILED also means the scan is done.
-        if(WiFi.scanComplete() == WIFI_SCAN_FAILED){
-            WiFi.scanNetworks(true, true);
+        if(WiFi.scanComplete() != WIFI_SCAN_FAILED)
+            return;
+
+        if (WiFi.scanNetworks(true, true) != WIFI_SCAN_FAILED) {
+            task_scheduler.scheduleOnce([this]() {
+                this->check_for_scan_completion();
+            }, 500);
+            return;
         }
 
-        task_scheduler.scheduleOnce([this]() {
-            this->check_for_scan_completion();
-        }, 500);
+        logger.printfln("Starting WiFi scan failed. Maybe a connection attempt is running concurrently. Retrying once in 4 seconds.");
+        task_scheduler.scheduleOnce([this](){
+            if (WiFi.scanNetworks(true, true) == WIFI_SCAN_FAILED) {
+                logger.printfln("Second scan attempt failed. Giving up.");
+                return;
+            }
+
+            task_scheduler.scheduleOnce([this]() {
+                this->check_for_scan_completion();
+            }, 500);
+        }, 4000);
     }, true);
 
     server.on("/wifi/scan_results", HTTP_GET, [this](WebServerRequest request) {
