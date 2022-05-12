@@ -214,13 +214,17 @@ body {
   color: var(--primary);
 }
 
-.sidebar .nav-link:hover {
-    color: var(--primary);
-  }
+@media (hover: hover) {
+    .sidebar .nav-link:hover {
+        color: var(--primary);
+    }
 
-.sidebar .nav-link:hover .feather {
-  color: var(--primary);
+
+    .sidebar .nav-link:hover .feather {
+    color: var(--primary);
+    }
 }
+
 .sidebar .nav-link.active .feather {
   color: inherit;
 }
