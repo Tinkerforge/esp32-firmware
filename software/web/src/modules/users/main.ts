@@ -90,6 +90,12 @@ function user_unmodified(user: User) {
 
 async function save_users_config() {
     let users_config = API.get('users/config');
+    if (users_config.http_auth_enabled && !$('#users_authentication_enable').is(':checked')) {
+        // If we want to disable authentication, do this first,
+        // to make sure authentication is never enabled
+        // while no user without password is configured.
+        await save_authentication_config();
+    }
 
     let have: User[] = [];
 

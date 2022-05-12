@@ -558,7 +558,11 @@ void Users::register_urls()
 
 
     api.addCommand("users/http_auth_update", &http_auth_update, {}, [this](){
-        user_config.get("http_auth_enabled")->updateBool(http_auth_update.get("enabled")->asBool());
+        bool enable = http_auth_update.get("enabled")->asBool();
+        if (!enable)
+            server.setAuthentication([](WebServerRequest req){return true;});
+
+        user_config.get("http_auth_enabled")->updateBool(enable);
         API::writeConfig("users/config", &user_config);
     }, false);
 
