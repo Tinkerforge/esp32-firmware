@@ -275,7 +275,7 @@ void tag_id_bytes_to_string(const uint8_t *tag_id, uint8_t tag_id_len, char buf[
     }
     if (tag_id_len == 0)
         buf[0] = '\0';
-    else:
+    else
         buf[3 * tag_id_len - 1] = '\0';
 }
 
