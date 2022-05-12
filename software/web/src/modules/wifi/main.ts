@@ -91,6 +91,7 @@ function scan_wifi() {
        .then(() => {
             if (scan_timeout != null)
                 window.clearTimeout(scan_timeout);
+
             scan_timeout = window.setTimeout(function () {
                     scan_timeout = null;
                     $.get("/wifi/scan_results").done(function (data: WifiInfo[]) {
@@ -99,7 +100,7 @@ function scan_wifi() {
                         util.add_alert("wifi_scan_failed", "alert-danger", __("wifi.script.scan_wifi_results_failed"), error + ": " + xhr.responseText);
                         $('#scan_wifi_dropdown').dropdown('hide');
                     });
-                }, 10000);
+                }, 12000);
         });
 }
 

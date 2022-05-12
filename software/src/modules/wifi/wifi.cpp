@@ -491,7 +491,7 @@ void Wifi::register_urls()
             return;
         }
 
-        logger.printfln("Starting WiFi scan failed. Maybe a connection attempt is running concurrently. Retrying once in 4 seconds.");
+        logger.printfln("Starting WiFi scan failed. Maybe a connection attempt is running concurrently. Retrying once in 6 seconds.");
         task_scheduler.scheduleOnce([this](){
             if (WiFi.scanNetworks(true, true) == WIFI_SCAN_FAILED) {
                 logger.printfln("Second scan attempt failed. Giving up.");
@@ -501,7 +501,7 @@ void Wifi::register_urls()
             task_scheduler.scheduleOnce([this]() {
                 this->check_for_scan_completion();
             }, 500);
-        }, 4000);
+        }, 6000);
     }, true);
 
     server.on("/wifi/scan_results", HTTP_GET, [this](WebServerRequest request) {
