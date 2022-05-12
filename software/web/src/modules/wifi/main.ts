@@ -83,6 +83,9 @@ function update_wifi_scan_results(data: Readonly<WifiInfo[]>) {
 
 let scan_timeout: number = null;
 function scan_wifi() {
+    $("#wifi_config_scan_spinner").prop('hidden', false);
+    $("#wifi_scan_results").prop('hidden', true);
+
     API.call('wifi/scan', {}, __("wifi.script.scan_wifi_init_failed"))
        .catch(() => $('#scan_wifi_dropdown').dropdown('hide'))
        .then(() => {
