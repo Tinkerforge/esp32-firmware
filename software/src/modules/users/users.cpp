@@ -381,7 +381,22 @@ void Users::setup()
         }
     }, 1000, 1000);
 
+    initialized = true;
+
     if (user_config.get("http_auth_enabled")->asBool()) {
+        bool user_with_password_found = false;
+        for (int i = 0; i < user_config.get("users")->count(); ++i) {
+            if (user_config.get("users")->get(i)->get("digest_hash")->asString() != "") {
+                user_with_password_found = true;
+                break;
+            }
+        }
+
+        if (!user_with_password_found) {
+            logger.printfln("Web interface authentication can not be enabled: No user with set password found.");
+            return;
+        }
+
         server.setAuthentication([this](WebServerRequest req) -> bool {
             String auth = req.header("Authorization");
             if (auth == "") {
@@ -405,8 +420,6 @@ void Users::setup()
 
         logger.printfln("Web interface authentication enabled.");
     }
-
-    initialized = true;
 }
 
 void Users::register_urls()
