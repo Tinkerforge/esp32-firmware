@@ -51,6 +51,7 @@ private:
 
     int get_ap_state();
 
+    void start_scan();
     void check_for_scan_completion();
     String get_scan_results();
 

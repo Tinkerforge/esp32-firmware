@@ -48,7 +48,7 @@ Wifi::Wifi()
         {"ssid", Config::Str("", 0, 32)},
         {"hide_ssid", Config::Bool(false)},
         {"passphrase", Config::Str("this-will-be-replaced-in-setup", 8, 64)},//FIXME: check if there are only ASCII characters or hex digits (for PSK) here.
-        {"channel", Config::Uint(1, 1, 13)},
+        {"channel", Config::Uint(0, 0, 13)},
         {"ip", Config::Str("10.0.0.1", 7, 15)},
         {"gateway", Config::Str("10.0.0.1", 7, 15)},
         {"subnet", Config::Str("255.255.255.0", 7, 15)}
@@ -137,8 +137,90 @@ Wifi::Wifi()
     wifi_scan_config = Config::Null();
 }
 
+float rssi_to_weight(int rssi) {
+    return pow(2, (float)(128 + rssi) / 10);
+}
+
+void apply_weight(float *channels, int channel, float weight) {
+    for(int i = MAX(1, channel - 2); i <= MIN(13, channel + 2); ++i) {
+        if (i == channel - 2 || i == channel + 2)
+            channels[i] += weight / 2;
+        else
+            channels[i] += weight;
+    }
+}
+
 void Wifi::apply_soft_ap_config_and_start()
 {
+    static uint32_t scan_start_time = 0;
+    static int channel_to_use = wifi_ap_config_in_use.get("channel")->asUint();
+
+    if (channel_to_use == 0 && scan_start_time == 0) {
+        logger.printfln("Starting scan to select unoccupied channel for soft AP.");
+        WiFi.scanDelete();
+        WiFi.scanNetworks(true, true);
+        scan_start_time = millis();
+        task_scheduler.scheduleOnce([this](){
+            this->apply_soft_ap_config_and_start();
+        }, 500);
+        return;
+    }
+
+    if (channel_to_use == 0 && scan_start_time != 0 && !deadline_elapsed(scan_start_time + 6000)) {
+        int network_count = WiFi.scanComplete();
+
+        if (network_count == WIFI_SCAN_RUNNING) {
+            task_scheduler.scheduleOnce([this](){
+                this->apply_soft_ap_config_and_start();
+            }, 500);
+            return;
+        }
+
+        if (network_count == WIFI_SCAN_FAILED) {
+            task_scheduler.scheduleOnce([this](){
+                this->apply_soft_ap_config_and_start();
+            }, 500);
+        }
+
+        float channels[14] = {0}; // Don't use 0, channels are one-based.
+        float channels_smeared[14] = {0}; // Don't use 0, channels are one-based.
+        for (int i = 0; i < network_count; ++i) {
+            wifi_ap_record_t *info = (wifi_ap_record_t *)WiFi.getScanInfoByIndex(i);
+
+            int channel = info->primary;
+            float weight = rssi_to_weight(info->rssi);
+            apply_weight(channels, channel, weight);
+
+            if (info->second == WIFI_SECOND_CHAN_ABOVE) {
+                apply_weight(channels, channel + 4, weight);
+            } else if (info->second == WIFI_SECOND_CHAN_BELOW) {
+                apply_weight(channels, channel - 4, weight);
+            }
+        }
+
+        memcpy(channels_smeared, channels, sizeof(channels_smeared) / sizeof(channels_smeared[0]));
+
+        for(int i = 1; i <= 13; ++i) {
+            if (i > 1)
+                channels_smeared[i] += channels[i-1];
+            if (i < 13)
+                channels_smeared[i] += channels[i+1];
+        }
+
+        int min = 1;
+        for(int i = 1; i <= 13; ++i) {
+            if (channels_smeared[i] < channels_smeared[min])
+                min = i;
+        }
+        logger.printfln("Selecting channel %d for softAP", min);
+        channel_to_use = min;
+    }
+    if (channel_to_use == 0 && scan_start_time != 0 && deadline_elapsed(scan_start_time + 6000)) {
+        channel_to_use = (esp_random() % 4) * 4 + 1;
+        logger.printfln("Channel selection scan timeout elapsed! Randomly selected channel %u", channel_to_use);
+    }
+
+
     IPAddress ip, gateway, subnet;
     ip.fromString(wifi_ap_config_in_use.get("ip")->asCStr());
     gateway.fromString(wifi_ap_config_in_use.get("gateway")->asCStr());
@@ -155,7 +237,7 @@ void Wifi::apply_soft_ap_config_and_start()
 
     WiFi.softAP(wifi_ap_config_in_use.get("ssid")->asString().c_str(),
                 wifi_ap_config_in_use.get("passphrase")->asString().c_str(),
-                wifi_ap_config_in_use.get("channel")->asUint(),
+                channel_to_use,
                 wifi_ap_config_in_use.get("hide_ssid")->asBool());
     WiFi.setSleep(false);
 
@@ -476,41 +558,45 @@ void Wifi::check_for_scan_completion()
 #endif
 }
 
+void Wifi::start_scan() {
+    // Abort if a scan is running. This is save, because
+    // the state will change to SCAN_FAILED if it timed out.
+    if (WiFi.scanComplete() == WIFI_SCAN_RUNNING)
+        return;
+
+    logger.printfln("Scanning for wifis...");
+    WiFi.scanDelete();
+
+    // WIFI_SCAN_FAILED also means the scan is done.
+    if(WiFi.scanComplete() != WIFI_SCAN_FAILED)
+        return;
+
+    if (WiFi.scanNetworks(true, true) != WIFI_SCAN_FAILED) {
+        task_scheduler.scheduleOnce([this]() {
+            this->check_for_scan_completion();
+        }, 500);
+        return;
+    }
+
+    logger.printfln("Starting WiFi scan failed. Maybe a connection attempt is running concurrently. Retrying once in 6 seconds.");
+    task_scheduler.scheduleOnce([this](){
+        if (WiFi.scanNetworks(true, true) == WIFI_SCAN_FAILED) {
+            logger.printfln("Second scan attempt failed. Giving up.");
+            return;
+        }
+
+        task_scheduler.scheduleOnce([this]() {
+            this->check_for_scan_completion();
+        }, 500);
+    }, 6000);
+}
+
 void Wifi::register_urls()
 {
     api.addState("wifi/state", &wifi_state, {}, 1000);
 
     api.addCommand("wifi/scan", &wifi_scan_config, {}, [this](){
-        // Abort if a scan is running. This is save, because
-        // the state will change to SCAN_FAILED if it timed out.
-        if (WiFi.scanComplete() == WIFI_SCAN_RUNNING)
-            return;
-
-        logger.printfln("Scanning for wifis...");
-        WiFi.scanDelete();
-
-        // WIFI_SCAN_FAILED also means the scan is done.
-        if(WiFi.scanComplete() != WIFI_SCAN_FAILED)
-            return;
-
-        if (WiFi.scanNetworks(true, true) != WIFI_SCAN_FAILED) {
-            task_scheduler.scheduleOnce([this]() {
-                this->check_for_scan_completion();
-            }, 500);
-            return;
-        }
-
-        logger.printfln("Starting WiFi scan failed. Maybe a connection attempt is running concurrently. Retrying once in 6 seconds.");
-        task_scheduler.scheduleOnce([this](){
-            if (WiFi.scanNetworks(true, true) == WIFI_SCAN_FAILED) {
-                logger.printfln("Second scan attempt failed. Giving up.");
-                return;
-            }
-
-            task_scheduler.scheduleOnce([this]() {
-                this->check_for_scan_completion();
-            }, 500);
-        }, 6000);
+        start_scan();
     }, true);
 
     server.on("/wifi/scan_results", HTTP_GET, [this](WebServerRequest request) {
