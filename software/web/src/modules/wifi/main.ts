@@ -89,6 +89,8 @@ function scan_wifi() {
     API.call('wifi/scan', {}, __("wifi.script.scan_wifi_init_failed"))
        .catch(() => $('#scan_wifi_dropdown').dropdown('hide'))
        .then(() => {
+            if (scan_timeout != null)
+                window.clearTimeout(scan_timeout);
             scan_timeout = window.setTimeout(function () {
                     scan_timeout = null;
                     $.get("/wifi/scan_results").done(function (data: WifiInfo[]) {
