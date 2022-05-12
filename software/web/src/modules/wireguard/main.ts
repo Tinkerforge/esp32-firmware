@@ -46,7 +46,6 @@ function update_wireguard_config(force: boolean) {
     $('#wireguard_remote_host').val(cfg.remote_host);
     $('#wireguard_remote_port').val(cfg.remote_port);
 
-    console.log(cfg.preshared_key === "");
     $('#wireguard_clear_preshared_key').prop("checked", (cfg.preshared_key === ""));
     $('#wireguard_clear_preshared_key').trigger("change");
 
