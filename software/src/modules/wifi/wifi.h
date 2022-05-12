@@ -65,4 +65,6 @@ private:
 
     bool soft_ap_running = false;
     uint32_t connect_attempt_interval_ms;
+
+    uint32_t last_connected_ms;
 };

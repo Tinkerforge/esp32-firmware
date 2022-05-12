@@ -280,7 +280,15 @@ void Wifi::setup()
             if (!this->was_connected) {
                 logger.printfln("Wifi failed to connect to %s: %s (%u)", wifi_sta_config_in_use.get("ssid")->asString().c_str(), reason, reason_code);
             } else {
-                logger.printfln("Wifi disconnected from %s: %s (%u)", wifi_sta_config_in_use.get("ssid")->asString().c_str(), reason, reason_code);
+                uint32_t now = millis();
+                uint32_t connected_for = now - last_connected_ms;
+
+                // FIXME: Use a better way of time keeping here.
+                if (connected_for < 0x7FFFFFFF)
+                    logger.printfln("Wifi disconnected from %s: %s (%u). Was connected for %d seconds.", wifi_sta_config_in_use.get("ssid")->asString().c_str(), reason, reason_code, connected_for / 1000);
+                else
+                    logger.printfln("Wifi disconnected from %s: %s (%u). Was connected for a long time.", wifi_sta_config_in_use.get("ssid")->asString().c_str(), reason, reason_code);
+
             }
             this->was_connected = false;
 
@@ -293,6 +301,7 @@ void Wifi::setup()
             this->was_connected = true;
 
             logger.printfln("Wifi connected to %s", WiFi.SSID().c_str());
+            last_connected_ms = millis();
         },
         ARDUINO_EVENT_WIFI_STA_CONNECTED);
 
@@ -456,7 +465,7 @@ void Wifi::check_for_scan_completion()
     }
 
     if (result == "scan failed") {
-        logger.printfln("Scan failed.", WiFi.scanComplete());
+        logger.printfln("Scan failed.");
         return;
     }
 
