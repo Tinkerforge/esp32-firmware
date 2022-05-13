@@ -434,8 +434,8 @@ void Users::register_urls()
             if (user_api_blocked)
                 return "Still applying the last operation. Please retry.";
         }
+        user_api_blocked = true;
 
-        // TODO: in which context is this callback executed? Is this racy with other reads/writes to the user config?
         StaticJsonDocument<96> doc;
 
         DeserializationError error = deserializeJson(doc, c, s);
@@ -506,10 +506,14 @@ void Users::register_urls()
         if (err != "")
             return err;
 
-        API::writeConfig("users/config", &user_config);
+        task_scheduler.scheduleOnce([this, display_name_changed, username_changed, user](){
+            API::writeConfig("users/config", &user_config);
 
-        if (display_name_changed || username_changed)
-            this->rename_user(user->get("id")->asUint(), user->get("username")->asCStr(), user->get("display_name")->asCStr());
+            if (display_name_changed || username_changed)
+                this->rename_user(user->get("id")->asUint(), user->get("username")->asCStr(), user->get("display_name")->asCStr());
+
+            user_api_blocked = false;
+        }, 0);
 
         return "";
     }, true);
