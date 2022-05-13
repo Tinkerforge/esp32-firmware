@@ -1,2 +1,8 @@
 2022-05-03: 2.0.0 (5ab6df8c)
 - Initial release
+
+2022-05-13: 2.0.1 (<unknown>)
+- More WebSocket fixes
+- Fix initialized flag not being set for some modules
+- Fix WiFi scan sometimes not starting
+- Select unoccupied channel when starting WiFi AP
