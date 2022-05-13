@@ -334,7 +334,7 @@ void ModbusReader::loop()
     }
 
     if (last_user_data_done == UserDataDone::DONE) {
-        if (!last_read_was_fast) {
+        if (trigger_slow_read_done) {
             // Try to measure each 500 ms, but don't pile up measurements
             // if we are already a complete slot behind.
             next_read_deadline_ms = next_read_deadline_ms + 500;
