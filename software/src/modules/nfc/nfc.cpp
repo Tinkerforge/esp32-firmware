@@ -252,7 +252,9 @@ void NFC::handle_evse()
     if (evse_state == nullptr || evse_slots == nullptr)
         return;
 
-    bool waiting_for_start = (evse_state->get("iec61851_state")->asUint() == 1) && (evse_slots->get(CHARGING_SLOT_USER)->get("max_current")->asUint() == 0);
+    bool waiting_for_start = (evse_state->get("iec61851_state")->asUint() == 1)
+                          && (evse_slots->get(CHARGING_SLOT_USER)->get("active")->asBool())
+                          && (evse_slots->get(CHARGING_SLOT_USER)->get("max_current")->asUint() == 0);
 
     if (blink_state != -1) {
         set_led(blink_state);
