@@ -69,6 +69,8 @@ void PowerCycleTester::setup()
 
     tf_rotary_poti_v2_set_status_led_config(&poti, 0);
     tf_rgb_led_v2_set_status_led_config(&led, 0);
+
+    initialized = true;
 }
 
 void PowerCycleTester::register_urls()

@@ -252,7 +252,9 @@ void NFC::handle_evse()
     if (evse_state == nullptr || evse_slots == nullptr)
         return;
 
-    bool waiting_for_start = (evse_state->get("iec61851_state")->asUint() == 1) && (evse_slots->get(CHARGING_SLOT_USER)->get("max_current")->asUint() == 0);
+    bool waiting_for_start = (evse_state->get("iec61851_state")->asUint() == 1)
+                          && (evse_slots->get(CHARGING_SLOT_USER)->get("active")->asBool())
+                          && (evse_slots->get(CHARGING_SLOT_USER)->get("max_current")->asUint() == 0);
 
     if (blink_state != -1) {
         set_led(blink_state);
@@ -273,7 +275,10 @@ void tag_id_bytes_to_string(const uint8_t *tag_id, uint8_t tag_id_len, char buf[
         buf[3 * i + 1] = lookup[lo];
         buf[3 * i + 2] = ':';
     }
-    buf[3 * tag_id_len - 1] = '\0';
+    if (tag_id_len == 0)
+        buf[0] = '\0';
+    else
+        buf[3 * tag_id_len - 1] = '\0';
 }
 
 void NFC::update_seen_tags()

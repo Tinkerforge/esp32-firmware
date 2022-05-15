@@ -5,7 +5,7 @@
             <button id="wifi_sta_save_button" type="submit" form="wifi_sta_config_form" class="btn btn-primary mb-2" data-i18n="wifi.content.save"></button>
         </div>
     </div>
-    <form id="wifi_sta_form" class="needs-validation" novalidate>
+    <form id="wifi_sta_config_form" class="needs-validation" novalidate>
         <!--
             Use custom validation instead of the browser default, that is broken on Chrome
             See: https://getbootstrap.com/docs/4.5/components/forms/#validation
@@ -30,7 +30,7 @@
                 <input id="wifi_sta_ssid" class="form-control" type="text" maxlength="32" required>
                 <div id="scan_wifi_dropdown" class="input-group-append dropdown">
                     <button id="scan_wifi_button" class="form-control btn btn-primary rounded-right dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-i18n="wifi.content.sta_scan" style="color: white !important;"></button>
-                    <div class="dropdown-menu  dropdown-menu-right" aria-labelledby="dropdownMenuButton" style="box-shadow: 0rem 0.25rem 0.5rem rgba(0, 0, 0, 0.2);">
+                    <div class="dropdown-menu  dropdown-menu-right" aria-labelledby="dropdownMenuButton" style="box-shadow: 0rem 0.25rem 0.5rem rgba(0, 0, 0, 0.2); z-index: 1030;">
                         <h6 id="wifi_scan_title" class="dropdown-header" data-i18n="wifi.content.sta_scanning"></h6>
                         <div id="wifi_config_scan_spinner" class="text-center">
                             <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
@@ -161,7 +161,7 @@
             <button id="wifi_ap_save_button" type="submit" form="wifi_ap_config_form" class="btn btn-primary mb-2" data-i18n="wifi.content.save"></button>
         </div>
     </div>
-    <form id="wifi_ap_form" class="needs-validation" novalidate>
+    <form id="wifi_ap_config_form" class="needs-validation" novalidate>
         <div class="form-group row">
             <div class="col-lg-3 col-xl-2">
                 <label for="wifi_ap_enable_ap" class="col-form-label" data-i18n="wifi.content.ap_enable"></label>
@@ -220,7 +220,22 @@
             <label for="wifi_ap_channel"
                 class="col-lg-3 col-xl-2 col-form-label" data-i18n="wifi.content.ap_channel"></label>
             <div class="col-lg-9 col-xl-6">
-                <input id="wifi_ap_channel" class="form-control" type="number" min="1" max="13" required>
+                <select id="wifi_ap_channel" class="form-control" required>
+                    <option value="0" data-i18n="wifi.content.ap_channel_auto_select"></option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                    <option value="13">13</option>
+                </select>
             </div>
         </div>
 

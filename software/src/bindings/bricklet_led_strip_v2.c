@@ -1,7 +1,7 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-10.      *
  *                                                           *
- * C/C++ for Microcontrollers Bindings Version 2.0.0         *
+ * C/C++ for Microcontrollers Bindings Version 2.0.1         *
  *                                                           *
  * If you have a bugfix for this file and want to commit it, *
  * please fix the bug in the generator. You can find a link  *
@@ -1635,7 +1635,7 @@ int tf_led_strip_v2_set_led_values(TF_LEDStripV2 *led_strip_v2, uint16_t index, 
     if (led_strip_v2->magic != 0x5446 || led_strip_v2->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     TF_LEDStripV2_SetLEDValuesLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
     _wrapper_data.index = index;
@@ -1678,7 +1678,7 @@ int tf_led_strip_v2_get_led_values(TF_LEDStripV2 *led_strip_v2, uint16_t index, 
     if (led_strip_v2->magic != 0x5446 || led_strip_v2->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     TF_LEDStripV2_GetLEDValuesLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
     _wrapper_data.index = index;

@@ -81,6 +81,8 @@ void ESP32EthernetBrick::setup()
     green_led_pin = GREEN_LED;
     blue_led_pin = BLUE_LED;
     button_pin = BUTTON;
+
+    initialized = true;
 }
 
 void ESP32EthernetBrick::register_urls()

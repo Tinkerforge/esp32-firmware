@@ -86,6 +86,9 @@ public:
     void checkActiveClients();
     void receivedPong(int fd);
 
+    void cleanUpQueue();
+    bool queueFull();
+
     void onConnect(std::function<void(WebSocketsClient)> fn);
 
     void triggerHttpThread();

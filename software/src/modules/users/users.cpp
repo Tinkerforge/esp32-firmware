@@ -381,7 +381,22 @@ void Users::setup()
         }
     }, 1000, 1000);
 
+    initialized = true;
+
     if (user_config.get("http_auth_enabled")->asBool()) {
+        bool user_with_password_found = false;
+        for (int i = 0; i < user_config.get("users")->count(); ++i) {
+            if (user_config.get("users")->get(i)->get("digest_hash")->asString() != "") {
+                user_with_password_found = true;
+                break;
+            }
+        }
+
+        if (!user_with_password_found) {
+            logger.printfln("Web interface authentication can not be enabled: No user with set password found.");
+            return;
+        }
+
         server.setAuthentication([this](WebServerRequest req) -> bool {
             String auth = req.header("Authorization");
             if (auth == "") {
@@ -405,8 +420,6 @@ void Users::setup()
 
         logger.printfln("Web interface authentication enabled.");
     }
-
-    initialized = true;
 }
 
 void Users::register_urls()
@@ -421,8 +434,8 @@ void Users::register_urls()
             if (user_api_blocked)
                 return "Still applying the last operation. Please retry.";
         }
+        user_api_blocked = true;
 
-        // TODO: in which context is this callback executed? Is this racy with other reads/writes to the user config?
         StaticJsonDocument<96> doc;
 
         DeserializationError error = deserializeJson(doc, c, s);
@@ -493,10 +506,14 @@ void Users::register_urls()
         if (err != "")
             return err;
 
-        API::writeConfig("users/config", &user_config);
+        task_scheduler.scheduleOnce([this, display_name_changed, username_changed, user](){
+            API::writeConfig("users/config", &user_config);
 
-        if (display_name_changed || username_changed)
-            this->rename_user(user->get("id")->asUint(), user->get("username")->asCStr(), user->get("display_name")->asCStr());
+            if (display_name_changed || username_changed)
+                this->rename_user(user->get("id")->asUint(), user->get("username")->asCStr(), user->get("display_name")->asCStr());
+
+            user_api_blocked = false;
+        }, 0);
 
         return "";
     }, true);
@@ -558,7 +575,11 @@ void Users::register_urls()
 
 
     api.addCommand("users/http_auth_update", &http_auth_update, {}, [this](){
-        user_config.get("http_auth_enabled")->updateBool(http_auth_update.get("enabled")->asBool());
+        bool enable = http_auth_update.get("enabled")->asBool();
+        if (!enable)
+            server.setAuthentication([](WebServerRequest req){return true;});
+
+        user_config.get("http_auth_enabled")->updateBool(enable);
         API::writeConfig("users/config", &user_config);
     }, false);
 

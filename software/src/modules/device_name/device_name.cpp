@@ -42,15 +42,9 @@ DeviceName::DeviceName()
 }
 
 #if defined BUILD_NAME_WARP || defined BUILD_NAME_WARP2
-
 String getWarpDisplayName()
 {
-#if defined BUILD_NAME_WARP
-    String display_type = "WARP Charger ";
-#elif defined BUILD_NAME_WARP2
-    String display_type = "WARP2 Charger ";
-#endif
-    display_type += api.hasFeature("meter") ? "Pro " : "Smart ";
+    String display_type = api.hasFeature("meter") ? " Pro " : " Smart ";
 
     if (api.hasFeature("evse")) {
         display_type += api.getState("evse/slots")->get(1)->get("max_current")->asUint() <= 20000 ? "11" : "22";
@@ -70,19 +64,13 @@ String getWarpDisplayName()
     }
     return display_type;
 }
-
 #endif
 
 void DeviceName::updateDisplayType()
 {
+    String display_type = BUILD_DISPLAY_NAME;
 #if defined BUILD_NAME_WARP || defined BUILD_NAME_WARP2
-    String display_type = getWarpDisplayName();
-#elif defined BUILD_NAME_ESP32
-    String display_type = "ESP32 Brick";
-#elif defined BUILD_NAME_ESP32_ETHERNET
-    String display_type = "ESP32 Ethernet Brick";
-#elif defined BUILD_NAME_ENERGY_MANAGER
-    String display_type = "WARP Energy Manager"; // FIXME: Add more details, similar to WARP[2] here?
+    display_type += getWarpDisplayName();  // FIXME: Also add more details for WARP Energy Manager, similar to WARP[2] here?
 #endif
 
     if (name.get("display_type")->updateString(display_type)) {

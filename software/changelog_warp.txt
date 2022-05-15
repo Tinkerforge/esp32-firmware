@@ -203,3 +203,33 @@
 - Fix user modification
 - Fix left-over usernames when resetting config
 - Fix HTTP auth not being enabled when a password is added to a user
+
+2022-05-02: 2.0.2 (ebe864c7)
+- Completely rework WebSocket connection handling
+- Add NFC tag injection for start or stop
+- Add API to inject energy meter values
+- Add (experimental!) support for SDM630 and SDM72DM V2
+- Factory reset EVSE when factory or config reset is triggered (through EVSE Bricklet firmware 2.1.1)
+- Make web interface sub-page headers sticky
+- Move "Save" button into sticky headers
+- Fix sub-page scroll to top in Chrome
+- Fix downloading an empty charge log
+- Fix boolean values in charge log
+- Fix bootloop if WiFi is completely disabled
+
+2022-05-02: 2.0.3 (9725085b)
+- Fix visibility of WiFi scan results
+
+2022-05-04: 2.0.4 (70af7ef1)
+- Fix race condition resulting in unusable web interface
+
+2022-05-13: 2.0.5 (<unknown>)
+- More WebSocket fixes
+- Improve button/key stop logic (through EVSE Bricklet firmware 2.1.2)
+- Fix initialized flag not being set for some modules
+- Fix not clearing last_seen NFC tag ids
+- Make sure HTTP authentication can never be enabled if no user with password is configured
+- Fix WiFi scan sometimes not starting
+- Select unoccupied channel when starting WiFi AP
+- Fix LED blink when waiting for not user-related charge release
+- Fix energy meter graph offset

@@ -44,7 +44,7 @@ export function init() {
     $('#network-group').on('show.bs.collapse', () => $('#network-chevron').addClass("rotated-chevron"));
 
     // Use bootstrap form validation
-    $('#network_form').on('submit', function (this: HTMLFormElement, event: Event) {
+    $('#network_config_form').on('submit', function (this: HTMLFormElement, event: Event) {
         this.classList.add('was-validated');
         event.preventDefault();
         event.stopPropagation();

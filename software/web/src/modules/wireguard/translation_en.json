@@ -1,0 +1,43 @@
+{
+    "wireguard": {
+        "status": {
+            "connection": "WireGuard connection",
+            "not_configured": "Deactivated",
+            "waiting_for_timesync": "Waiting for NTP",
+            "not_connected": "Connecting",
+            "connected": "Connected"
+        },
+        "navbar": {
+            "wireguard": "WireGuard"
+        },
+        "content": {
+            "wireguard": "WireGuard",
+            "save": "Save",
+            "enable_wireguard": "WireGuard enabled",
+            "enable_wireguard_desc": "Connection will be established when network time synchronization is available.",
+            "default_if": "Use as default interface",
+            "default_if_desc": "While WireGuard connection is established, all non-local traffic is sent over the VPN.",
+            "internal_ip": "IP in the WireGuard network",
+            "internal_ip_invalid": "The IP address must have four groups between 0 and 255 separated with a dot. For example 10.0.0.2",
+            "internal_subnet": "Subnet mask of the WireGuard network",
+            "internal_subnet_invalid": "The subnet mask IP must have four groups between 0 and 255 separated with a dot. For example 255.255.255.0",
+            "internal_gateway": "Gateway of the WireGuard network",
+            "internal_gateway_invalid": "The gateway IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1",
+            "remote_host": "Peer hostname or IP",
+            "port": "Peer port",
+            "private_key": "Own private key",
+            "remote_public_key": "Peer public key",
+            "preshared_key": "Preshared key (optional)",
+            "unchanged": "Unchanged",
+            "allowed_ip": "Allowed source IP of received packets",
+            "allowed_ip_invalid": "The IP address must have four groups between 0 and 255 separated with a dot. For example 10.0.0.2",
+            "allowed_subnet": "Allowed subnet mask of received packets",
+            "allowed_subnet_invalid": "The subnet mask IP must have four groups between 0 and 255 separated with a dot. For example 255.255.255.0"
+        },
+        "script": {
+            "save_failed": "Failedto save the WireGuard settings",
+            "reboot_content_changed": "WireGuard settings",
+            "preshared_key_unused": "No PSK in use"
+        }
+    }
+}

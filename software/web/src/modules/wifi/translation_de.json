@@ -57,6 +57,7 @@
             "ap_passphrase": "Passphrase",
             "ap_passphrase_invalid": "Die Passphrase muss zwischen 8 und 63 ASCII-Zeichen lang sein.",
             "ap_channel": "<span class=\"form-label pr-2\">Kanal</span><span class=\"text-muted\">ignoriert wenn WLAN-Verbindung aktiv ist</span>",
+            "ap_channel_auto_select": "automatische Auswahl",
             "ap_ip": "IP-Adresse",
             "ap_subnet": "Subnetzmaske",
             "ap_gateway": "Gateway",

@@ -292,6 +292,11 @@ void EVSE::apply_defaults()
     // Slot 8 (external) is controlled via API, no need to change anything here
 }
 
+void EVSE::factory_reset()
+{
+    tf_evse_factory_reset(&device, 0x2342FACD);
+}
+
 void EVSE::setup()
 {
     setup_evse();

@@ -24,11 +24,15 @@ from tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
 from provision_common.provision_common import *
 
 def main():
-    if len(sys.argv) != 3:
-        fatal_error("Usage: {} firmware port")
+    if len(sys.argv) != 4:
+        fatal_error("Usage: {} firmware port firmware_type")
 
     if not os.path.exists(sys.argv[1]):
         fatal_error("Firmware {} not found.".format(sys.argv[1]))
+
+    firmware_type = sys.argv[3]
+    if firmware_type not in ["esp32", "esp32_ethernet", "warp2"]:
+        fatal_error("Unknown firmware type {}".format(firmware_type))
 
     PORT = sys.argv[2]
 
@@ -96,12 +100,15 @@ def main():
     # base58 (mangled on Windows) and base10. every other field in between is part of the
     # product name and will be capitalized and joined by a space to form the display name.
     # special care if given to "esp32" which is shown in uppercase
-    run(['./cp210x-cfg/cp210x-cfg', '-d', busnum + '.' + devnum, '-C', 'Tinkerforge GmbH', '-N', 'ESP32 Ethernet Brick', '-S', 'Tinkerforge_ESP32_Ethernet_Brick_{0}_{1}'.format(uid, uid_number), '-t', '0'])
+    if firmware_type == "esp32":
+        run(['./cp210x-cfg/cp210x-cfg', '-d', busnum + '.' + devnum, '-C', 'Tinkerforge GmbH', '-N', 'ESP32 Brick', '-S', 'Tinkerforge_ESP32_Brick_{0}_{1}'.format(uid, uid_number), '-t', '0'])
+    else:
+        run(['./cp210x-cfg/cp210x-cfg', '-d', busnum + '.' + devnum, '-C', 'Tinkerforge GmbH', '-N', 'ESP32 Ethernet Brick', '-S', 'Tinkerforge_ESP32_Ethernet_Brick_{0}_{1}'.format(uid, uid_number), '-t', '0'])
 
     result["cp2102n_configured"] = True
     result["end"] = now()
 
-    with open("warp2-{}_{}_report_stage_0.json".format(uid, now().replace(":", "-")), "w") as f:
+    with open("{}-{}_{}_report_stage_0.json".format(firmware_type, uid, now().replace(":", "-")), "w") as f:
         json.dump(result, f, indent=4)
 
     print('Done!')

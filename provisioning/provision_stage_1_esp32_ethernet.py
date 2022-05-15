@@ -2,7 +2,7 @@
 
 import contextlib
 from contextlib import contextmanager
-import datetime
+from datetime import datetime
 import io
 import json
 import os
@@ -20,7 +20,9 @@ import traceback
 import urllib.request
 
 from tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
-from tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
+
+
+ESP_ETHERNET_DEVICE_ID = 115
 
 from provision_common.provision_common import *
 
@@ -28,8 +30,12 @@ def main():
     #common_init('/dev/ttyUSB0', '192.168.178.242', 9100)
     common_init('/dev/ttyUSB0', '192.168.178.242', 9100)
 
-    if len(sys.argv) != 1:
-        fatal_error("Usage: {}".format(sys.argv[0]))
+    if len(sys.argv) != 2:
+        fatal_error("Usage: {} firmware_type".format(sys.argv[0]))
+
+    firmware_type = sys.argv[1]
+    if firmware_type not in ["esp32_ethernet", "warp2"]:
+        fatal_error("Unknown firmware type {}".format(firmware_type))
 
     result = {"start": now()}
 
@@ -48,7 +54,7 @@ def main():
 
     result["uid"] = uid
 
-    ssid = "warp2-" + uid
+    ssid = ("warp2-" if firmware_type == "warp2" else "esp32-") + uid
 
     run(["systemctl", "restart", "NetworkManager.service"])
 
@@ -60,34 +66,45 @@ def main():
     with wifi(ssid, passphrase):
         req = urllib.request.Request("http://10.0.0.1/ethernet/config_update",
                                      data=json.dumps({"enable_ethernet":True,
-                                                      "hostname":"warp2-{}".format(uid),
-                                                      "ip":[192,168,123,123],
-                                                      "gateway":[0,0,0,0],
-                                                      "subnet":[0,0,0,0],
-                                                      "dns":[0,0,0,0],
-                                                      "dns2":[0,0,0,0]}).encode("utf-8"),
+                                                      "hostname":ssid,
+                                                      "ip": "192.168.123.123",
+                                                      "gateway":"0.0.0.0",
+                                                      "subnet":"255.255.0.0",
+                                                      "dns":"0.0.0.0",
+                                                      "dns2":"0.0.0.0"}).encode("utf-8"),
                                      method='PUT',
                                      headers={"Content-Type": "application/json"})
         try:
             with urllib.request.urlopen(req, timeout=10) as f:
                 f.read()
         except Exception as e:
+            print(e)
             fatal_error("Failed to set ethernet config!")
-
         req = urllib.request.Request("http://10.0.0.1/reboot", data='null'.format(uid).encode("utf-8"), method='PUT', headers={"Content-Type": "application/json"})
         try:
             with urllib.request.urlopen(req, timeout=10) as f:
                 f.read()
         except Exception as e:
-            fatal_error("Failed to initiate reboot!")
+            print("Failed to initiate reboot! Attempting to connect via ethernet anyway.")
 
         result["wifi_test_successful"] = True
 
+    time.sleep(3)
     print("Connecting via ethernet to 192.168.123.123", end="")
     for i in range(30):
         start = time.time()
+        req = urllib.request.Request("http://192.168.123.123/ethernet/config_update",
+                                 data=json.dumps({"enable_ethernet":True,
+                                                  "hostname":ssid,
+                                                  "ip":"0.0.0.0",
+                                                  "gateway":"0.0.0.0",
+                                                  "subnet":"0.0.0.0",
+                                                  "dns":"0.0.0.0",
+                                                  "dns2":"0.0.0.0"}).encode("utf-8"),
+                                 method='PUT',
+                                 headers={"Content-Type": "application/json"})
         try:
-            with urllib.request.urlopen("http://192.168.123.123/hidden_proxy/enable", timeout=1) as f:
+            with urllib.request.urlopen(req, timeout=1) as f:
                 f.read()
                 break
         except:
@@ -100,58 +117,29 @@ def main():
         raise Exception("exit 1")
     print(" Connected.")
 
-    req = urllib.request.Request("http://192.168.123.123/ethernet/config_update",
-                                 data=json.dumps({"enable_ethernet":True,
-                                                  "hostname":"warp2-{}".format(uid),
-                                                  "ip":[0,0,0,0],
-                                                  "gateway":[0,0,0,0],
-                                                  "subnet":[0,0,0,0],
-                                                  "dns":[0,0,0,0],
-                                                  "dns2":[0,0,0,0]}).encode("utf-8"),
-                                 method='PUT',
-                                 headers={"Content-Type": "application/json"})
+    req = urllib.request.Request("http://192.168.123.123/info/version")
     try:
         with urllib.request.urlopen(req, timeout=10) as f:
-            f.read()
+            fw_version = json.loads(f.read().decode("utf-8"))["firmware"].split("-")[0]
     except Exception as e:
-        fatal_error("Failed to reset ethernet config!")
+        fatal_error("Failed to read firmware version!")
 
+    if firmware_type == "warp2":
+        try:
+            with urllib.request.urlopen("http://192.168.123.123/hidden_proxy/enable", timeout=10) as f:
+                f.read()
+        except Exception as e:
+            print(e)
+            fatal_error("Failed to enable hidden_proxy!")
 
+    time.sleep(3)
     ipcon = IPConnection()
     ipcon.connect("192.168.123.123", 4223)
     result["ethernet_test_successful"] = True
     print("Connected. Testing bricklet ports")
 
-    enums = enumerate_devices(ipcon)
-
-    if len(enums) != 6 or any(x.device_identifier != BrickletRGBLEDV2.DEVICE_IDENTIFIER for x in enums):
-        fatal_error("Expected 6 RGB LED 2.0 bricklets but found {}".format("\n\t".join("Port {}: {}".format(x.position, x.device_identifier) for x in enums)))
-
-    enums = sorted(enums, key=lambda x: x.position)
-
-    bricklets = [(enum.position, BrickletRGBLEDV2(enum.uid, ipcon)) for enum in enums]
-    error_count = 0
-    for bricklet_port, rgb in bricklets:
-        rgb.set_rgb_value(127, 127, 0)
-        time.sleep(0.5)
-        if rgb.get_rgb_value() == (127, 127, 0):
-            rgb.set_rgb_value(0, 127, 0)
-        else:
-            print(red("Setting color failed on port {}.".format(bricklet_port)))
-            error_count += 1
-
-    if error_count != 0:
-        fatal_error("")
-
+    test_bricklet_ports(ipcon, ESP_ETHERNET_DEVICE_ID, firmware_type == "warp2")
     result["bricklet_port_test_successful"] = True
-
-    stop_event = threading.Event()
-    blink_thread = threading.Thread(target=blink_thread_fn, args=([x[1] for x in bricklets], stop_event))
-    blink_thread.start()
-    input("Bricklet ports seem to work. Press any key to continue")
-    stop_event.set()
-    blink_thread.join()
-    ipcon.disconnect()
 
     led0 = input("Does the status LED blink blue? [y/n]")
     while led0 not in ("y", "n"):
@@ -178,10 +166,24 @@ def main():
 
     label_success = "n"
     while label_success != "y":
-        run(["python3", "print-esp32-label.py", ssid, passphrase, "-c", "3"])
-        label_success = input("Stick one label on the ESP, put ESP and the other two labels in the ESD bag. Press n to retry printing the labels. [y/n]")
+        run(["python3", "print-esp32-label.py", ssid, passphrase, "-c", "3" if firmware_type == "warp2" else "1"])
+        label_prompt = "Stick one label on the ESP, put ESP{} in the ESD bag. Press n to retry printing the label{}. [y/n]".format(
+                " and the other two labels" if firmware_type == "warp2" else "",
+                "s" if firmware_type == "warp2" else "")
+
+        label_success = input(label_prompt)
         while label_success not in ("y", "n"):
-            label_success = input("Stick one label on the ESP, put ESP and the other two labels in the ESD bag. Press n to retry printing the labels. [y/n]")
+            label_success = input(label_prompt)
+
+    if firmware_type == "esp32_ethernet":
+        bag_label_success = "n"
+        while bag_label_success != "y":
+            run(["python3", "../../flash-test/label/print-label.py", "-c", "1", "ESP32 Ethernet Brick", str(ESP_ETHERNET_DEVICE_ID), datetime.datetime.now().strftime('%Y-%m-%d'), uid, fw_version])
+            bag_label_prompt = "Stick bag label on bag. Press n to retry printing the label. [y/n]"
+
+            bag_label_success = input(bag_label_prompt)
+            while bag_label_success not in ("y", "n"):
+                bag_label_success = input(bag_label_prompt)
 
     print('Done!')
 

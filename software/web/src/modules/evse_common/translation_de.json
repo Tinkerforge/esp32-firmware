@@ -62,7 +62,7 @@
             "charging_current_muted": "Minimum der Ladestromgrenzen",
             "reset_configured_current": "Freigeben",
             "reset_external_slot": "Freigeben",
-            "low_level_state": "Low-Level-Zu&shy;stand",
+            "low_level_state": "Low-Level-Zustand",
             "low_level_state_show": "Anzeigen / Verstecken",
             "led_state": "LED-Zustand",
             "led_state_off": "Aus",

@@ -36,10 +36,13 @@ function update_modules() {
 
     if (first_module_init) {
         let hash = window.location.hash;
-        if (hash == "")
-            hash = "#status";
-        $(`a[href="${hash}"]`).click();
-        $(`a[href="${hash}"]`).parents(".nav-nested.collapse").collapse('show');
+        var elem = $(`a[href="${hash}"]`);
+        if (hash == "" || elem.length == 0 || elem.prop("hidden")) {
+            window.location.hash = "#status";
+            return;
+        }
+        elem.click();
+        elem.parents(".nav-nested.collapse").collapse('show');
         first_module_init = false;
     }
 }
@@ -165,10 +168,13 @@ $(window).on('pageshow', (ev) => {
     window.addEventListener("hashchange", (event) => {
         if (event.oldURL != event.newURL) {
             let hash = window.location.hash;
-            if (hash == "")
-                hash = "#status";
-            $(`a[href="${hash}"]`).click();
-            $(`a[href="${hash}"]`).parents(".nav-nested.collapse").collapse('show');
+            var elem = $(`a[href="${hash}"]`);
+            if (hash == "" || elem.length == 0 || elem.prop("hidden")) {
+                window.location.hash = "#status";
+                return;
+            }
+            elem.click();
+            elem.parents(".nav-nested.collapse").collapse('show');
         }
     });
 

@@ -1,7 +1,7 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-05-10.      *
  *                                                           *
- * C/C++ for Microcontrollers Bindings Version 2.0.0         *
+ * C/C++ for Microcontrollers Bindings Version 2.0.1         *
  *                                                           *
  * If you have a bugfix for this file and want to commit it, *
  * please fix the bug in the generator. You can find a link  *
@@ -1678,7 +1678,7 @@ int tf_dmx_write_frame(TF_DMX *dmx, const uint8_t *frame, uint16_t frame_length)
     if (dmx->magic != 0x5446 || dmx->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
 
     uint32_t _stream_length = frame_length;
     uint32_t _frame_written = 0;
@@ -1717,7 +1717,7 @@ int tf_dmx_read_frame(TF_DMX *dmx, uint8_t *ret_frame, uint16_t *ret_frame_lengt
     if (dmx->magic != 0x5446 || dmx->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     TF_DMX_ReadFrameLLWrapperData _wrapper_data;
     memset(&_wrapper_data, 0, sizeof(_wrapper_data));
     _wrapper_data.ret_frame_number = ret_frame_number;

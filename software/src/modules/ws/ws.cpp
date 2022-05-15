@@ -35,6 +35,7 @@ WS::WS() : web_sockets()
 
 void WS::setup()
 {
+    initialized = true;
 }
 
 void WS::register_urls()

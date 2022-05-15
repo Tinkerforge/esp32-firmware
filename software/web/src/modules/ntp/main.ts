@@ -75,10 +75,10 @@ function save_config() {
 export function init() {
     $('#ntp_browser_timezone').on('click', () => {
         update_timezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
-        $('#ntp_form').trigger('input');
+        $('#ntp_config_form').trigger('input');
     });
 
-    $('#ntp_form').on('input', () => $('#ntp_save_button').prop("disabled", false));
+    $('#ntp_config_form').on('input', () => $('#ntp_save_button').prop("disabled", false));
 
     $('#ntp_timezone_area').on('change', () => {
         let area = <string>$('#ntp_timezone_area').val();
@@ -106,7 +106,7 @@ export function init() {
     $('#ntp_timezone_area').empty().append(options);
     $('#ntp_timezone_area').trigger('change');
 
-    $('#ntp_form').on('submit', function (this: HTMLFormElement, event: Event) {
+    $('#ntp_config_form').on('submit', function (this: HTMLFormElement, event: Event) {
         this.classList.add('was-validated');
         event.preventDefault();
         event.stopPropagation();

@@ -91,6 +91,8 @@ void ESP32Brick::setup()
         led_blink_state = !led_blink_state;
         digitalWrite(BLUE_LED, led_blink_state ? HIGH : LOW);
     }, 0, 1000);
+
+    initialized = true;
 }
 
 void ESP32Brick::register_urls()
