@@ -289,6 +289,9 @@ export function whenLoggedInElseReload(continuation: () => void) {
 // Return an empty string to remove the stored password in this case.
 export function passwordUpdate(input_selector: string) {
     let input = $(input_selector);
+    if (input.length == 0) {
+        console.error(`Input with selector ${input_selector} not found.`);
+    }
     if (input.attr("disabled"))
         return "";
 
