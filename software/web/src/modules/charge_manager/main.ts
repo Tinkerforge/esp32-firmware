@@ -38,7 +38,6 @@ function update_charge_manager_state() {
     let state = API.get('charge_manager/state');
 
     if (state.chargers.length != charger_state_count) {
-        let charger_content = "";
         let charger_status = "";
         for (let i = 0; i < state.chargers.length; i++) {
             if (i % 2 == 0) {
@@ -62,7 +61,6 @@ function update_charge_manager_state() {
             `
         }
         charger_status += '</div>';
-        $('#charge_manager_content').html(charger_content);
         $('#charge_manager_status_chargers').html(charger_status);
         charger_state_count = state.chargers.length;
         $('#charge_manager_status_controlled_chargers').prop('hidden', charger_state_count == 0);

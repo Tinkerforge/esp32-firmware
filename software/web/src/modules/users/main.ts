@@ -447,16 +447,6 @@ export function init() {
         $('#users_add_user_modal').modal('hide');
         $('#users_save_button').prop("disabled", false);
         check_http_auth_allowed();
-
-/*
-        let new_config = collect_nfc_config({
-            tag_name: $('#users_config_tag_new_name').val().toString(),
-            tag_id: fromHexBytes($('#users_config_tag_new_tag_id').val().toString()),
-            tag_type: parseInt($('#users_config_tag_new_tag_type').val().toString())
-        }, null);
-
-        update_nfc_config(new_config, true);
-*/
     });
 
     $('#users_add_user_modal').on("hidden.bs.modal", () => {
