@@ -106,206 +106,69 @@ function scan_wifi() {
 
 
 function update_wifi_sta_config() {
-    let config = API.get('wifi/sta_config');
+    let config = API.default_updater('wifi/sta_config', ['bssid']);
 
-    // Remove the was-validated class to fix a visual bug
-    // where saving the config triggers an update
-    // that fills the elements, but clears the passphrase field.
-    // An empty passphrase is invalid, so the input
-    // field is marked as non-validated, confusing the user.
-    let form = <HTMLFormElement>$('#wifi_sta_config_form')[0];
-    form.classList.remove('was-validated');
+    $('#wifi_sta_config_bssid').val(config.bssid.map((x)=> (x < 16 ? '0' : '') + x.toString(16).toUpperCase()).join(":"));
 
-    $('#wifi_sta_enable_sta').prop("checked", config.enable_sta);
-
-    if (config.ssid != "") {
-        $('#wifi_ap_configuration_state').val(config.ssid);
-    }
-    else {
-        $('#wifi_ap_configuration_state').val(__("wifi.script.no_ap_configured"));
-    }
-
-    $('#wifi_sta_ssid').val(config.ssid);
-    $('#wifi_sta_bssid').val(config.bssid.map((x)=> (x < 16 ? '0' : '') + x.toString(16).toUpperCase()).join(":"));
-    $('#wifi_sta_bssid_lock').prop("checked", config.bssid_lock);
-    $('#wifi_sta_passphrase').val(config.passphrase);
     if(config.ip == "0.0.0.0") {
-        $('#wifi_sta_show_static').val("hide");
+        $('#wifi_sta_config_show_static').val("hide");
         wifi_cfg_toggle_static_ip_collapse("hide");
     } else {
-        $('#wifi_sta_show_static').val("show");
+        $('#wifi_sta_config_show_static').val("show");
         wifi_cfg_toggle_static_ip_collapse("show");
     }
-    $('#wifi_sta_ip').val(config.ip);
-    $('#wifi_sta_gateway').val(config.gateway);
-    $('#wifi_sta_subnet').val(config.subnet);
-    $('#wifi_sta_dns').val(config.dns);
-    $('#wifi_sta_dns2').val(config.dns2);
 }
 
-
-function update_wifi_ap_config() {
+function set_wifi_ap_enable_select() {
     let config = API.get('wifi/ap_config');
 
-    // Remove the was-validated class to fix a visual bug
-    // where saving the config triggers an update
-    // that fills the elements, but clears the passphrase field.
-    // An empty passphrase is invalid, so the input
-    // field is marked as non-validated, confusing the user.
-    let form = <HTMLFormElement>$('#wifi_ap_config_form')[0];
-    form.classList.remove('was-validated');
-
-    $('#wifi_ap_ssid').val(config.ssid);
-    $('#wifi_ap_hide_ssid').prop("checked", config.hide_ssid);
-    $('#wifi_ap_passphrase').val(config.passphrase);
-    $('#wifi_ap_channel').val(config.channel);
-    $('#wifi_ap_ip').val(config.ip);
-    $('#wifi_ap_gateway').val(config.gateway);
-    $('#wifi_ap_subnet').val(config.subnet);
-
     if(config.enable_ap && config.ap_fallback_only)
-        $('#wifi_ap_enable_ap').val(1);
+        $('#wifi_ap_config_enable_ap').val(1);
     else if(config.enable_ap)
-        $('#wifi_ap_enable_ap').val(0);
+        $('#wifi_ap_config_enable_ap').val(0);
     else
-        $('#wifi_ap_enable_ap').val(2);
-
-    $('#wifi_save_enable_ap').prop("checked", config.enable_ap);
-    $('#wifi_save_ap_fallback_only').prop("checked", config.ap_fallback_only);
+        $('#wifi_ap_config_enable_ap').val(2);
 }
 
+function update_wifi_ap_config() {
+    API.default_updater('wifi/ap_config', ['ap_fallback_only', 'enable_ap']);
+    set_wifi_ap_enable_select();
+}
 
 function update_wifi_state() {
-    let state = API.get('wifi/state');
-
-    let sta_button_dict: { [idx: number]: string } = {
-        0: "#wifi_sta_not_configured",
-        1: "#wifi_sta_not_connected",
-        2: "#wifi_sta_connecting",
-        3: "#wifi_sta_connected",
-    };
-
-    let sta_outline_dict: { [idx: number]: string } = {
-        0: "btn-outline-primary",
-        1: "btn-outline-danger",
-        2: "btn-outline-warning",
-        3: "btn-outline-success",
-    };
-
-    let sta_non_outline_dict: { [idx: number]: string } = {
-        0: "btn-primary",
-        1: "btn-danger",
-        2: "btn-warning",
-        3: "btn-success",
-    };
-
-    for (let i = 0; i < 4; ++i) {
-        $(sta_button_dict[i]).removeClass(sta_non_outline_dict[i]);
-        $(sta_button_dict[i]).addClass(sta_outline_dict[i]);
-    }
-
-    let button_to_highlight = state.connection_state;
-    $(sta_button_dict[button_to_highlight]).removeClass(sta_outline_dict[button_to_highlight]);
-    $(sta_button_dict[button_to_highlight]).addClass(sta_non_outline_dict[button_to_highlight]);
-
-
-    let ap_button_dict: { [idx: number]: string } = {
-        0: "#wifi_ap_disabled",
-        1: "#wifi_ap_enabled",
-        2: "#wifi_ap_fallback_inactive",
-        3: "#wifi_ap_fallback_active",
-    };
-
-    let ap_outline_dict: { [idx: number]: string } = {
-        0: "btn-outline-primary",
-        1: "btn-outline-success",
-        2: "btn-outline-success",
-        3: "btn-outline-danger",
-    };
-
-    let ap_non_outline_dict: { [idx: number]: string } = {
-        0: "btn-primary",
-        1: "btn-success",
-        2: "btn-success",
-        3: "btn-danger",
-    };
-
-    for (let i = 0; i < 4; ++i) {
-        $(ap_button_dict[i]).removeClass(ap_non_outline_dict[i]);
-        $(ap_button_dict[i]).addClass(ap_outline_dict[i]);
-    }
-
-    button_to_highlight = state.ap_state
-    $(ap_button_dict[button_to_highlight]).removeClass(ap_outline_dict[button_to_highlight]);
-    $(ap_button_dict[button_to_highlight]).addClass(ap_non_outline_dict[button_to_highlight]);
-
-    $('#wifi_ap_bssid').html(state.ap_bssid);
+    let state = API.default_updater('wifi/state', ['sta_ip', 'sta_rssi', , 'sta_bssid'], false);
 
     if (state.sta_ip != "0.0.0.0") {
-        $('#status_wifi_sta_ip').html(state.sta_ip);
-        $('#status_wifi_sta_rssi').html(wifi_symbol(state.sta_rssi));
+        $('#wifi_state_sta_ip').html(state.sta_ip);
+        $('#wifi_state_sta_rssi').html(wifi_symbol(state.sta_rssi));
     }
 }
 
 function wifi_cfg_toggle_static_ip_collapse(value: string) {
     if (value == "hide") {
-        $('#wifi_sta_static_ip_cfg').collapse('hide');
-        $('#wifi_sta_ip').prop('required', false);
-        $('#wifi_sta_subnet').prop('required', false);
-        $('#wifi_sta_gateway').prop('required', false);
+        $('#wifi_sta_config_static_ip_cfg').collapse('hide');
+        $('#wifi_sta_config_ip').prop('required', false);
+        $('#wifi_sta_config_subnet').prop('required', false);
+        $('#wifi_sta_config_gateway').prop('required', false);
     }
     else if (value == "show") {
-        $('#wifi_sta_static_ip_cfg').collapse('show');
-        $('#wifi_sta_ip').prop('required', true);
-        $('#wifi_sta_subnet').prop('required', true);
-        $('#wifi_sta_gateway').prop('required', true);
+        $('#wifi_sta_config_static_ip_cfg').collapse('show');
+        $('#wifi_sta_config_ip').prop('required', true);
+        $('#wifi_sta_config_subnet').prop('required', true);
+        $('#wifi_sta_config_gateway').prop('required', true);
     }
 }
 
 function connect_to_ap(ssid: string, bssid: string, encryption: number, enable_bssid_lock: boolean) {
-    $('#wifi_sta_ssid').val(ssid);
-    $('#wifi_sta_bssid').val(bssid);
+    $('#wifi_sta_config_ssid').val(ssid);
+    $('#wifi_sta_config_bssid').val(bssid);
     let passphrase_required = API.get("wifi/sta_config").ssid != ssid && encryption != 0;
-    $('#wifi_sta_passphrase').prop("required", passphrase_required);
-    $('#wifi_sta_passphrase').prop("placeholder", passphrase_required ? __("wifi.content.required") : __("wifi.content.unchanged"))
-    $('#wifi_sta_enable_sta').prop("checked", true);
-    $('#wifi_sta_bssid_lock').prop("checked", enable_bssid_lock);
+    $('#wifi_sta_config_passphrase').prop("required", passphrase_required);
+    $('#wifi_sta_config_passphrase').prop("placeholder", passphrase_required ? __("wifi.content.required") : __("wifi.content.unchanged"))
+    $('#wifi_sta_config_enable_sta').prop("checked", true);
+    $('#wifi_sta_config_bssid_lock').prop("checked", enable_bssid_lock);
+    $('#wifi_sta_config_ssid').trigger("input");
     return;
-}
-
-function save_wifi_sta_config() {
-    let dhcp = $('#wifi_sta_show_static').val() != "show";
-
-    API.save('wifi/sta_config', {
-            enable_sta: $('#wifi_sta_enable_sta').is(':checked'),
-            ssid: $('#wifi_sta_ssid').val().toString(),
-            bssid: $('#wifi_sta_bssid').val().toString().split(':').map(x => parseInt(x, 16)),
-            bssid_lock: $('#wifi_sta_bssid_lock').is(':checked'),
-            passphrase: util.passwordUpdate('#wifi_sta_passphrase'),
-            ip: dhcp ? "0.0.0.0": $('#wifi_sta_ip').val().toString(),
-            subnet: dhcp ? "0.0.0.0": $('#wifi_sta_subnet').val().toString(),
-            gateway: dhcp ? "0.0.0.0": $('#wifi_sta_gateway').val().toString(),
-            dns: dhcp ? "0.0.0.0": $('#wifi_sta_dns').val().toString(),
-            dns2: dhcp ? "0.0.0.0": $('#wifi_sta_dns2').val().toString()
-        },
-        __("wifi.script.sta_config_failed"),
-        __("wifi.script.sta_reboot_content_changed"));
-}
-
-function save_wifi_ap_config() {
-    API.save('wifi/ap_config', {
-            enable_ap: $('#wifi_ap_enable_ap').val() != 2,
-            ap_fallback_only: $('#wifi_ap_enable_ap').val() == 1,
-            ssid: $('#wifi_ap_ssid').val().toString(),
-            hide_ssid: $('#wifi_ap_hide_ssid').is(':checked'),
-            passphrase: util.passwordUpdate('#wifi_ap_passphrase'),
-            channel: parseInt($('#wifi_ap_channel').val().toString()),
-            ip: $('#wifi_ap_ip').val().toString(),
-            subnet: $('#wifi_ap_subnet').val().toString(),
-            gateway: $('#wifi_ap_gateway').val().toString(),
-        },
-        __("wifi.script.ap_config_failed"),
-        __("wifi.script.ap_reboot_content_changed"));
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
@@ -333,47 +196,49 @@ export function add_event_listeners(source: API.APIEventTarget) {
 
 export function init() {
     $("#scan_wifi_button").on("click", scan_wifi);
-    $("#wifi_sta_show_passphrase").on("change", util.toggle_password_fn("#wifi_sta_passphrase"));
-    $("#wifi_sta_clear_passphrase").on("change", util.clear_password_fn("#wifi_sta_passphrase"));
-    $("#wifi_ap_show_passphrase").on("change", util.toggle_password_fn("#wifi_ap_passphrase"));
-    $("#wifi_ap_clear_passphrase").on("change", util.clear_password_fn("#wifi_ap_passphrase"));
-    $("#wifi_sta_show_static").on("change", function(this: HTMLInputElement) {wifi_cfg_toggle_static_ip_collapse(this.value);});
+    $("#wifi_sta_config_show_passphrase").on("change", util.toggle_password_fn("#wifi_sta_config_passphrase"));
+    $("#wifi_sta_config_clear_passphrase").on("change", util.clear_password_fn("#wifi_sta_config_passphrase"));
+    $("#wifi_ap_config_show_passphrase").on("change", util.toggle_password_fn("#wifi_ap_passphrase"));
+    $("#wifi_ap_config_clear_passphrase").on("change", util.clear_password_fn("#wifi_ap_passphrase"));
+    $("#wifi_sta_config_show_static").on("change", function(this: HTMLInputElement) {wifi_cfg_toggle_static_ip_collapse(this.value);});
 
-    // Use bootstrap form validation
-    $('#wifi_sta_config_form').on('submit', function (this: HTMLFormElement, event: Event) {
-        $('#wifi_sta_ssid').prop("required", $('#wifi_sta_enable_sta').is(':checked'));
+    API.register_config_form('wifi/sta_config', () => {
+            let dhcp = $('#wifi_sta_config_show_static').val() != "show";
+            return {
+                bssid: $('#wifi_sta_config_bssid').val().toString().split(':').map(x => parseInt(x, 16)),
+                passphrase: util.passwordUpdate('#wifi_sta_config_passphrase'),
+                ip: dhcp ? "0.0.0.0": $('#wifi_sta_config_ip').val().toString(),
+                subnet: dhcp ? "0.0.0.0": $('#wifi_sta_config_subnet').val().toString(),
+                gateway: dhcp ? "0.0.0.0": $('#wifi_sta_config_gateway').val().toString(),
+                dns: dhcp ? "0.0.0.0": $('#wifi_sta_config_dns').val().toString(),
+                dns2: dhcp ? "0.0.0.0": $('#wifi_sta_config_dns2').val().toString()
+            }
+        },
+        () => $('#wifi_sta_config_ssid').prop("required", $('#wifi_sta_config_enable_sta').is(':checked')),
+        __("wifi.script.sta_config_failed"),
+        __("wifi.script.sta_reboot_content_changed")
+    );
 
-        this.classList.add('was-validated');
-        event.preventDefault();
-        event.stopPropagation();
 
-        if (this.checkValidity() === false) {
-            return;
-        }
-        save_wifi_sta_config();
-    });
-
-    $('#wifi_ap_config_form').on('submit', function (this: HTMLFormElement, event: Event) {
-        this.classList.add('was-validated');
-        event.preventDefault();
-        event.stopPropagation();
-
-        if (this.checkValidity() === false) {
-            return;
-        }
-
-        if ($('#wifi_ap_enable_ap').val() == 2) {
+    $('#wifi_ap_config_enable_ap').on('change', () => {
+        if ($('#wifi_ap_config_enable_ap').val() == 2) {
             $('#wifi_ap_disable').modal('show');
-            return;
         }
-
-        save_wifi_ap_config();
     });
 
-    $('#wifi_ap_disable_button').on('click', () => {
-        $('#wifi_ap_disable').modal('hide');
-        save_wifi_ap_config();
+    $('#wifi_ap_not_disable_button').on('click', () => {
+        set_wifi_ap_enable_select();
     });
+
+
+    API.register_config_form('wifi/ap_config', () => ({
+            enable_ap: $('#wifi_ap_config_enable_ap').val() != 2,
+            ap_fallback_only: $('#wifi_ap_config_enable_ap').val() == 1,
+            passphrase: util.passwordUpdate('#wifi_ap_config_passphrase'),
+        }),
+        undefined,
+        __("wifi.script.ap_config_failed"),
+        __("wifi.script.ap_reboot_content_changed"));
 
     $('#scan_wifi_dropdown').on('hidden.bs.dropdown', function (e) {
         $("#wifi_scan_title").html(__("wifi.content.sta_scanning"));

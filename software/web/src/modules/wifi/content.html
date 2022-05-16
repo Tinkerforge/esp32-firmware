@@ -2,10 +2,10 @@
     <div class="row sticky-under-top mb-3 pt-3">
         <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-header-shadow">
             <h1 class="h2" data-i18n="wifi.content.sta_settings"></h1>
-            <button id="wifi_sta_save_button" type="submit" form="wifi_sta_config_form" class="btn btn-primary mb-2" data-i18n="wifi.content.save"></button>
+            <button id="wifi_sta_config_save_button" type="submit" form="wifi_sta_config" class="btn btn-primary mb-2" data-i18n="wifi.content.save" disabled></button>
         </div>
     </div>
-    <form id="wifi_sta_config_form" class="needs-validation" novalidate>
+    <form id="wifi_sta_config" class="needs-validation" novalidate>
         <!--
             Use custom validation instead of the browser default, that is broken on Chrome
             See: https://getbootstrap.com/docs/4.5/components/forms/#validation
@@ -13,21 +13,21 @@
 
         <div class="form-group row">
             <div class="col-lg-3 col-xl-2">
-                <label for="wifi_sta_enable_sta" class="col-form-label form-label" data-i18n="wifi.content.sta_enable_sta"></label>
+                <label for="wifi_sta_config_enable_sta" class="col-form-label form-label" data-i18n="wifi.content.sta_enable_sta"></label>
             </div>
             <div class="col-lg-9 col-xl-6">
                 <div class="borderless-form-control custom-control custom-switch">
-                    <input type="checkbox" class="custom-control-input" id="wifi_sta_enable_sta">
-                    <label class="custom-control-label" for="wifi_sta_enable_sta" data-i18n="wifi.content.sta_enable_sta_desc"></label>
+                    <input type="checkbox" class="custom-control-input" id="wifi_sta_config_enable_sta">
+                    <label class="custom-control-label" for="wifi_sta_config_enable_sta" data-i18n="wifi.content.sta_enable_sta_desc"></label>
                 </div>
             </div>
         </div>
 
         <div class="form-group row">
-            <label for="wifi_sta_ssid"
+            <label for="wifi_sta_config_ssid"
                 class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="wifi.content.sta_ssid"></label>
             <div class="col-lg-9 col-xl-6 input-group">
-                <input id="wifi_sta_ssid" class="form-control" type="text" maxlength="32" required>
+                <input id="wifi_sta_config_ssid" class="form-control" type="text" maxlength="32" required>
                 <div id="scan_wifi_dropdown" class="input-group-append dropdown">
                     <button id="scan_wifi_button" class="form-control btn btn-primary rounded-right dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-i18n="wifi.content.sta_scan" style="color: white !important;"></button>
                     <div class="dropdown-menu  dropdown-menu-right" aria-labelledby="dropdownMenuButton" style="box-shadow: 0rem 0.25rem 0.5rem rgba(0, 0, 0, 0.2); z-index: 1030;">
@@ -46,39 +46,39 @@
         </div>
 
         <div class="form-group row">
-            <label for="wifi_sta_bssid"
+            <label for="wifi_sta_config_bssid"
                 class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="wifi.content.sta_bssid"></label>
             <div class="col-lg-9 col-xl-6">
-                <input id="wifi_sta_bssid" class="form-control" type="text" pattern="([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}" required>
+                <input id="wifi_sta_config_bssid" class="form-control" type="text" pattern="([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}" required>
                 <div class="invalid-feedback"  data-i18n="wifi.content.sta_bssid_invalid"></div>
             </div>
         </div>
 
         <div class="form-group row">
             <div class="col-lg-3 col-xl-2">
-                <label for="wifi_sta_bssid_lock" class="col-form-label form-label" data-i18n="wifi.content.sta_bssid_lock"></label>
+                <label for="wifi_sta_config_bssid_lock" class="col-form-label form-label" data-i18n="wifi.content.sta_bssid_lock"></label>
             </div>
             <div class="col-lg-9 col-xl-6">
                 <div class="borderless-form-control custom-control custom-switch">
-                    <input type="checkbox" class="custom-control-input" id="wifi_sta_bssid_lock">
-                    <label class="custom-control-label" for="wifi_sta_bssid_lock" data-i18n="wifi.content.sta_bssid_lock_desc"></label>
+                    <input type="checkbox" class="custom-control-input" id="wifi_sta_config_bssid_lock">
+                    <label class="custom-control-label" for="wifi_sta_config_bssid_lock" data-i18n="wifi.content.sta_bssid_lock_desc"></label>
                 </div>
             </div>
         </div>
 
         <div class="form-group row" id="wifi_cfg_passphrase_form">
-            <label for="wifi_sta_passphrase" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="wifi.content.sta_passphrase"></label>
+            <label for="wifi_sta_config_passphrase" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="wifi.content.sta_passphrase"></label>
             <div class="col-lg-9 col-xl-6">
                 <div class="input-group">
-                    <input type="password" id="wifi_sta_passphrase" class="form-control" value="" placeholder="" data-i18n="wifi.content.unchanged" data-i18n-attr="placeholder" minlength="8" maxlength="63"/>
+                    <input type="password" id="wifi_sta_config_passphrase" class="form-control" value="" placeholder="" data-i18n="wifi.content.unchanged" data-i18n-attr="placeholder" minlength="8" maxlength="63"/>
                     <div class="input-group-append">
                         <div class="input-group-text custom-control custom-switch" style="padding-left: 2.5rem;">
-                            <input id="wifi_sta_show_passphrase" type="checkbox" class="custom-control-input" aria-label="Show passphrase">
-                            <label class="custom-control-label" for="wifi_sta_show_passphrase" style="line-height: 20px;"><span data-feather="eye"></span></label>
+                            <input id="wifi_sta_config_show_passphrase" type="checkbox" class="custom-control-input" aria-label="Show passphrase">
+                            <label class="custom-control-label" for="wifi_sta_config_show_passphrase" style="line-height: 20px;"><span data-feather="eye"></span></label>
                         </div>
                         <div class="input-group-text custom-control custom-switch" style="padding-left: 2.5rem;">
-                            <input id="wifi_sta_clear_passphrase" type="checkbox" class="custom-control-input" aria-label="Clear passphrase">
-                            <label class="custom-control-label" for="wifi_sta_clear_passphrase" style="line-height: 20px;"><span data-feather="trash-2"></span></label>
+                            <input id="wifi_sta_config_clear_passphrase" type="checkbox" class="custom-control-input" aria-label="Clear passphrase">
+                            <label class="custom-control-label" for="wifi_sta_config_clear_passphrase" style="line-height: 20px;"><span data-feather="trash-2"></span></label>
                         </div>
                     </div>
                     <div class="invalid-feedback" data-i18n="wifi.content.sta_passphrase_invalid"></div>
@@ -87,21 +87,21 @@
         </div>
 
         <div class="form-group row">
-            <label for="wifi_sta_show_static" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="wifi.content.sta_ip_configuration"></label>
+            <label for="wifi_sta_config_show_static" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="wifi.content.sta_ip_configuration"></label>
 
             <div class="col-lg-9 col-xl-6">
-                <select id="wifi_sta_show_static" class="custom-select">
+                <select id="wifi_sta_config_show_static" class="custom-select">
                     <option value="hide" selected data-i18n="wifi.content.sta_dhcp"></option>
                     <option value="show" data-i18n="wifi.content.sta_static"></option>
                 </select>
             </div>
         </div>
-        <div class="collapse" id="wifi_sta_static_ip_cfg">
+        <div class="collapse" id="wifi_sta_config_static_ip_cfg">
             <div class="form-group row">
-                <label for="wifi_sta_ip"
+                <label for="wifi_sta_config_ip"
                     class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="wifi.content.static_ip"></label>
                 <div class="col-lg-9 col-xl-6">
-                    <input id="wifi_sta_ip" class="form-control" type="text"
+                    <input id="wifi_sta_config_ip" class="form-control" type="text"
                         minlength="7" maxlength="15" size="15"
                         pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$">
                     <div class="invalid-feedback"  data-i18n="wifi.content.static_ip_invalid"></div>
@@ -109,10 +109,10 @@
             </div>
 
             <div class="form-group row">
-                <label for="wifi_sta_subnet"
+                <label for="wifi_sta_config_subnet"
                     class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="wifi.content.subnet"></label>
                 <div class="col-lg-9 col-xl-6">
-                    <input id="wifi_sta_subnet" class="form-control" type="text"
+                    <input id="wifi_sta_config_subnet" class="form-control" type="text"
                         minlength="7" maxlength="15" size="15"
                         pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$">
                     <div class="invalid-feedback" data-i18n="wifi.content.subnet_invalid"></div>
@@ -120,10 +120,10 @@
             </div>
 
             <div class="form-group row">
-                <label for="wifi_sta_gateway"
+                <label for="wifi_sta_config_gateway"
                     class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="wifi.content.gateway"></label>
                 <div class="col-lg-9 col-xl-6">
-                    <input id="wifi_sta_gateway" class="form-control" type="text"
+                    <input id="wifi_sta_config_gateway" class="form-control" type="text"
                         minlength="7" maxlength="15" size="15"
                         pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$">
                     <div class="invalid-feedback" data-i18n="wifi.content.gateway_invalid"></div>
@@ -131,9 +131,9 @@
             </div>
 
             <div class="form-group row">
-                <label for="wifi_sta_dns" class="col-lg-3 col-xl-2 col-form-label" data-i18n="wifi.content.dns"></label>
+                <label for="wifi_sta_config_dns" class="col-lg-3 col-xl-2 col-form-label" data-i18n="wifi.content.dns"></label>
                 <div class="col-lg-9 col-xl-6">
-                    <input id="wifi_sta_dns" class="form-control" type="text"
+                    <input id="wifi_sta_config_dns" class="form-control" type="text"
                         minlength="7" maxlength="15" size="15"
                         pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$">
                     <div class="invalid-feedback" data-i18n="wifi.content.dns_invalid"></div>
@@ -141,9 +141,9 @@
             </div>
 
             <div class="form-group row">
-                <label for="wifi_sta_dns2" class="col-lg-3 col-xl-2 col-form-label" data-i18n="wifi.content.dns2"></label>
+                <label for="wifi_sta_config_dns2" class="col-lg-3 col-xl-2 col-form-label" data-i18n="wifi.content.dns2"></label>
                 <div class="col-lg-9 col-xl-6">
-                    <input id="wifi_sta_dns2" class="form-control" type="text"
+                    <input id="wifi_sta_config_dns2" class="form-control" type="text"
                         minlength="7" maxlength="15" size="15"
                         pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$">
                     <div class="invalid-feedback" data-i18n="wifi.content.dns2_invalid"></div>
@@ -158,16 +158,16 @@
     <div class="row sticky-under-top mb-3 pt-3">
         <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-header-shadow">
             <h1 class="h2" data-i18n="wifi.content.ap_settings"></h1>
-            <button id="wifi_ap_save_button" type="submit" form="wifi_ap_config_form" class="btn btn-primary mb-2" data-i18n="wifi.content.save"></button>
+            <button id="wifi_ap_config_save_button" type="submit" form="wifi_ap_config" class="btn btn-primary mb-2" data-i18n="wifi.content.save" disabled></button>
         </div>
     </div>
-    <form id="wifi_ap_config_form" class="needs-validation" novalidate>
+    <form id="wifi_ap_config" class="needs-validation" novalidate>
         <div class="form-group row">
             <div class="col-lg-3 col-xl-2">
-                <label for="wifi_ap_enable_ap" class="col-form-label" data-i18n="wifi.content.ap_enable"></label>
+                <label for="wifi_ap_config_enable_ap" class="col-form-label" data-i18n="wifi.content.ap_enable"></label>
             </div>
             <div class="col-lg-9 col-xl-6">
-                <select id="wifi_ap_enable_ap" class="custom-select">
+                <select id="wifi_ap_config_enable_ap" class="custom-select">
                     <option value="0" data-i18n="wifi.content.ap_enabled"></option>
                     <option value="1" data-i18n="wifi.content.ap_fallback_only"></option>
                     <option value="2" data-i18n="wifi.content.ap_disabled"></option>
@@ -175,40 +175,40 @@
             </div>
         </div>
         <div class="form-group row">
-            <label for="wifi_ap_ssid"
+            <label for="wifi_ap_config_ssid"
                 class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="wifi.content.ap_ssid"></label>
             <div class="col-lg-9 col-xl-6">
-                <input id="wifi_ap_ssid" class="form-control" type="text" maxlength="32" required>
+                <input id="wifi_ap_config_ssid" class="form-control" type="text" maxlength="32" required>
             </div>
         </div>
 
         <div class="form-group row">
             <div class="col-lg-3 col-xl-2">
-                <label for="wifi_ap_hide_ssid" class="col-form-label form-label" data-i18n="wifi.content.ap_hide_ssid"></label>
+                <label for="wifi_ap_config_hide_ssid" class="col-form-label form-label" data-i18n="wifi.content.ap_hide_ssid"></label>
             </div>
             <div class="col-lg-9 col-xl-6">
                 <div class="borderless-form-control custom-control custom-switch">
-                    <input type="checkbox" class="custom-control-input" id="wifi_ap_hide_ssid">
-                    <label class="custom-control-label" for="wifi_ap_hide_ssid">
-                        <span data-i18n="wifi.content.ap_hide_ssid_desc_pre"></span><span id="wifi_ap_bssid"></span><span data-i18n="wifi.content.ap_hide_ssid_desc_post"></span>
+                    <input type="checkbox" class="custom-control-input" id="wifi_ap_config_hide_ssid">
+                    <label class="custom-control-label" for="wifi_ap_config_hide_ssid">
+                        <span data-i18n="wifi.content.ap_hide_ssid_desc_pre"></span><span id="wifi_state_ap_bssid"></span><span data-i18n="wifi.content.ap_hide_ssid_desc_post"></span>
                     </label>
                 </div>
             </div>
         </div>
 
         <div class="form-group row" id="wifi_cfg_passphrase_form">
-            <label for="wifi_ap_passphrase" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="wifi.content.ap_passphrase"></label>
+            <label for="wifi_ap_config_passphrase" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="wifi.content.ap_passphrase"></label>
             <div class="col-lg-9 col-xl-6">
                 <div class="input-group">
-                    <input type="password" id="wifi_ap_passphrase" class="form-control" value="" placeholder="" data-i18n="wifi.content.unchanged" data-i18n-attr="placeholder" minlength="8" maxlength="63"/>
+                    <input type="password" id="wifi_ap_config_passphrase" class="form-control" value="" placeholder="" data-i18n="wifi.content.unchanged" data-i18n-attr="placeholder" minlength="8" maxlength="63"/>
                     <div class="input-group-append">
                         <div class="input-group-text custom-control custom-switch" style="padding-left: 2.5rem;">
-                            <input id="wifi_ap_show_passphrase" type="checkbox" class="custom-control-input" aria-label="Show passphrase">
-                            <label class="custom-control-label" for="wifi_ap_show_passphrase" style="line-height: 20px;"><span data-feather="eye"></span></label>
+                            <input id="wifi_ap_config_show_passphrase" type="checkbox" class="custom-control-input" aria-label="Show passphrase">
+                            <label class="custom-control-label" for="wifi_ap_config_show_passphrase" style="line-height: 20px;"><span data-feather="eye"></span></label>
                         </div>
                         <div class="input-group-text custom-control custom-switch" style="padding-left: 2.5rem;">
-                            <input id="wifi_ap_clear_passphrase" type="checkbox" class="custom-control-input" aria-label="Clear passphrase">
-                            <label class="custom-control-label" for="wifi_ap_clear_passphrase" style="line-height: 20px;"><span data-feather="trash-2"></span></label>
+                            <input id="wifi_ap_config_clear_passphrase" type="checkbox" class="custom-control-input" aria-label="Clear passphrase">
+                            <label class="custom-control-label" for="wifi_ap_config_clear_passphrase" style="line-height: 20px;"><span data-feather="trash-2"></span></label>
                         </div>
                         <div class="invalid-feedback" data-i18n="wifi.content.ap_passphrase_invalid"></div>
                     </div>
@@ -217,10 +217,10 @@
         </div>
 
         <div class="form-group row">
-            <label for="wifi_ap_channel"
+            <label for="wifi_ap_config_channel"
                 class="col-lg-3 col-xl-2 col-form-label" data-i18n="wifi.content.ap_channel"></label>
             <div class="col-lg-9 col-xl-6">
-                <select id="wifi_ap_channel" class="form-control" required>
+                <select id="wifi_ap_config_channel" class="form-control" required>
                     <option value="0" data-i18n="wifi.content.ap_channel_auto_select"></option>
                     <option value="1">1</option>
                     <option value="2">2</option>
@@ -240,10 +240,10 @@
         </div>
 
         <div class="form-group row">
-            <label for="wifi_ap_ip"
+            <label for="wifi_ap_config_ip"
                 class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="wifi.content.ap_ip"></label>
             <div class="col-lg-9 col-xl-6">
-                <input id="wifi_ap_ip" class="form-control" type="text"
+                <input id="wifi_ap_config_ip" class="form-control" type="text"
                     minlength="7" maxlength="15" size="15"
                     pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
                 <div class="invalid-feedback" data-i18n="wifi.content.ap_ip_invalid"></div>
@@ -251,10 +251,10 @@
         </div>
 
         <div class="form-group row">
-            <label for="wifi_ap_subnet"
+            <label for="wifi_ap_config_subnet"
                 class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="wifi.content.ap_subnet"></label>
             <div class="col-lg-9 col-xl-6">
-                <input id="wifi_ap_subnet" class="form-control" type="text"
+                <input id="wifi_ap_config_subnet" class="form-control" type="text"
                     minlength="7" maxlength="15" size="15"
                     pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
                 <div class="invalid-feedback"  data-i18n="wifi.content.ap_subnet_invalid"></div>
@@ -262,10 +262,10 @@
         </div>
 
         <div class="form-group row">
-            <label for="wifi_ap_gateway"
+            <label for="wifi_ap_config_gateway"
                 class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="wifi.content.ap_gateway"></label>
             <div class="col-lg-9 col-xl-6">
-                <input id="wifi_ap_gateway" class="form-control" type="text"
+                <input id="wifi_ap_config_gateway" class="form-control" type="text"
                     minlength="7" maxlength="15" size="15"
                     pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
                 <div class="invalid-feedback" data-i18n="wifi.content.ap_gateway_invalid">
@@ -287,10 +287,10 @@
                 </div>
                 <div class="modal-body" data-i18n="wifi.content.confirm_content"></div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary"
+                    <button id="wifi_ap_not_disable_button", type="button" class="btn btn-secondary"
                         data-dismiss="modal" data-i18n="wifi.content.confirm_abort"></button>
-                    <button id="wifi_ap_disable_button" type="button"
-                        class="btn btn-danger" data-i18n="wifi.content.confirm_confirm"></button>
+                    <button id="wifi_ap_disable_button" type="button" class="btn btn-danger"
+                        data-dismiss="modal" data-i18n="wifi.content.confirm_confirm"></button>
                 </div>
             </div>
         </div>

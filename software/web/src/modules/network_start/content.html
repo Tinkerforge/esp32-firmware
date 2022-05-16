@@ -2,32 +2,32 @@
     <div class="row sticky-under-top mb-3 pt-3">
         <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-header-shadow">
             <h1 class="h2" data-i18n="network.content.settings"></h1>
-            <button id="network_save_button" type="submit" form="network_config_form" class="btn btn-primary mb-2" data-i18n="network.content.save"></button>
+            <button id="network_config_save_button" type="submit" form="network_config" class="btn btn-primary mb-2" data-i18n="network.content.save" disabled></button>
         </div>
     </div>
-    <form id="network_config_form" class="needs-validation" novalidate>
+    <form id="network_config" class="needs-validation" novalidate>
         <!--
             Use custom validation instead of the browser default, that is broken on Chrome
             See: https://getbootstrap.com/docs/4.5/components/forms/#validation
         -->
 
         <div class="form-group row">
-            <label for="network_hostname"
+            <label for="network_config_hostname"
                 class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="network.content.hostname"></label>
             <div class="col-lg-9 col-xl-6">
-                <input id="network_hostname" class="form-control" type="text"  pattern="[a-zA-Z0-9\-]*" maxlength="32" required>
+                <input id="network_config_hostname" class="form-control" type="text"  pattern="[a-zA-Z0-9\-]*" maxlength="32" required>
                 <div class="invalid-feedback"  data-i18n="network.content.hostname_invalid"></div>
             </div>
         </div>
 
         <div class="form-group row">
             <div class="col-lg-3 col-xl-2">
-                <label for="network_enable_mdns" class="col-form-label form-label" data-i18n="network.content.enable_mdns"></label>
+                <label for="network_config_enable_mdns" class="col-form-label form-label" data-i18n="network.content.enable_mdns"></label>
             </div>
             <div class="col-lg-9 col-xl-6">
                 <div class="borderless-form-control custom-control custom-switch">
-                    <input type="checkbox" class="custom-control-input" id="network_enable_mdns">
-                    <label class="custom-control-label" for="network_enable_mdns" data-i18n="network.content.enable_mdns_desc"></label>
+                    <input type="checkbox" class="custom-control-input" id="network_config_enable_mdns">
+                    <label class="custom-control-label" for="network_config_enable_mdns" data-i18n="network.content.enable_mdns_desc"></label>
                 </div>
             </div>
         </div>
