@@ -136,9 +136,7 @@ export function default_saver<T extends keyof ConfigMap>(topic: T, overrides?: P
     let current_config = get(topic);
     let result: Partial<ConfigMap[T]> = {};
     for (let key in current_config) {
-        console.log(key);
         if (overrides && key in overrides) {
-            console.log("override ", overrides[key]);
             result[key] = overrides[key];
             continue;
         }
