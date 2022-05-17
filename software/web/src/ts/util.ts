@@ -15,7 +15,7 @@ export function reboot() {
 }
 
 export function update_button_group(button_group_id: string, index_to_select: number, text_replacement?: string) {
-    let buttons = $("#" + button_group_id + " :button");
+    let buttons = $(`#${button_group_id} :button`);
     let color_suffixes = Array(buttons.length);
     for (let i = 0; i < buttons.length; ++i) {
         let classes = buttons[i].classList;
@@ -289,6 +289,9 @@ export function whenLoggedInElseReload(continuation: () => void) {
 // Return an empty string to remove the stored password in this case.
 export function passwordUpdate(input_selector: string) {
     let input = $(input_selector);
+    if (input.length == 0) {
+        console.error(`Input with selector ${input_selector} not found.`);
+    }
     if (input.attr("disabled"))
         return "";
 
@@ -321,6 +324,5 @@ export function getShowRebootModalFn(changed_value_name: string) {
     return () => {
         $('#reboot_content_changed').html(changed_value_name);
         $('#reboot').modal('show');
-        //$('#ethernet_reboot').modal('show');
     }
 }

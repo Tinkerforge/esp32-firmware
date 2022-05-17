@@ -588,4 +588,8 @@ def main():
         util.embed_data(gzip.compress(html.encode('utf-8')), 'src', 'index_html', 'char')
         util.store_digest(index_html_digest, 'src', 'index_html', env=env)
 
+    print("Checking HTML ID usage")
+    with ChangedDirectory('web'):
+        subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "check_id_usage.py"] + [x.under for x in frontend_modules])
+
 main()

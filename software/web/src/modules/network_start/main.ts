@@ -24,40 +24,19 @@ import * as API from "../../ts/api";
 
 declare function __(s: string): string;
 
-function update_network_config() {
-    let config = API.get('network/config');
-    $('#network_hostname').val(config.hostname);
-    $('#network_enable_mdns').prop("checked", config.enable_mdns);
-}
-
-function save_network_config() {
-    API.save('network/config', {
-            hostname: $('#network_hostname').val().toString(),
-            enable_mdns: $('#network_enable_mdns').is(':checked')
-        },
-        __("network.script.save_failed"),
-        __("network.script.reboot_content_changed"));
-}
-
 export function init() {
     $('#network-group').on('hide.bs.collapse', () => $('#network-chevron').removeClass("rotated-chevron"));
     $('#network-group').on('show.bs.collapse', () => $('#network-chevron').addClass("rotated-chevron"));
 
-    // Use bootstrap form validation
-    $('#network_config_form').on('submit', function (this: HTMLFormElement, event: Event) {
-        this.classList.add('was-validated');
-        event.preventDefault();
-        event.stopPropagation();
-
-        if (this.checkValidity() === false) {
-            return;
-        }
-        save_network_config();
-    });
+    API.register_config_form('network/config',
+        undefined,
+        undefined,
+        __("network.script.save_failed"),
+        __("network.script.reboot_content_changed"));
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
-    source.addEventListener('network/config', update_network_config);
+    source.addEventListener('network/config', () => API.default_updater('network/config'));
 }
 
 export function update_sidebar_state(module_init: any) {

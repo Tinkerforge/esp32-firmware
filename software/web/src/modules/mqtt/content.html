@@ -2,10 +2,10 @@
     <div class="row sticky-under-top mb-3 pt-3">
         <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-header-shadow">
             <h1 class="h2" data-i18n="mqtt.content.mqtt"></h1>
-            <button id="mqtt_save_button" type="submit" form="mqtt_config_form" class="btn btn-primary mb-2" data-i18n="mqtt.content.save"></button>
+            <button id="mqtt_config_save_button" type="submit" form="mqtt_config" class="btn btn-primary mb-2" data-i18n="mqtt.content.save" disabled></button>
         </div>
     </div>
-    <form id="mqtt_config_form" class="needs-validation" novalidate>
+    <form id="mqtt_config" class="needs-validation" novalidate>
         <!--
             Use custom validation instead of the browser default, that is broken on Chrome
             See: https://getbootstrap.com/docs/4.5/components/forms/#validation
@@ -13,52 +13,52 @@
 
         <div class="form-group row">
             <div class="col-lg-3 col-xl-2">
-                <label for="mqtt_enable" class="col-form-label form-label" data-i18n="mqtt.content.enable_mqtt"></label>
+                <label for="mqtt_config_enable_mqtt" class="col-form-label form-label" data-i18n="mqtt.content.enable_mqtt"></label>
             </div>
             <div class="col-lg-9 col-xl-6">
                 <div class="borderless-form-control custom-control custom-switch">
-                    <input type="checkbox" class="custom-control-input" id="mqtt_enable">
-                    <label class="custom-control-label" for="mqtt_enable" data-i18n="mqtt.content.enable_mqtt_desc"></label>
+                    <input type="checkbox" class="custom-control-input" id="mqtt_config_enable_mqtt">
+                    <label class="custom-control-label" for="mqtt_config_enable_mqtt" data-i18n="mqtt.content.enable_mqtt_desc"></label>
                 </div>
             </div>
         </div>
         <div class="form-group row">
-            <label for="mqtt_broker_host"
+            <label for="mqtt_config_broker_host"
                 class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="mqtt.content.broker_host"></label>
             <div class="col-lg-9 col-xl-6">
-                <input id="mqtt_broker_host" class="form-control" type="text" required maxlength="128">
+                <input id="mqtt_config_broker_host" class="form-control" type="text" required maxlength="128">
             </div>
         </div>
 
         <div class="form-group row">
-            <label for="mqtt_broker_port"
+            <label for="mqtt_config_broker_port"
                 class="col-lg-3 col-xl-2 col-form-label" data-i18n="mqtt.content.port"></label>
             <div class="col-lg-9 col-xl-6">
-                <input id="mqtt_broker_port" class="form-control" type="number" min="1" max="65535" value="1883">
+                <input id="mqtt_config_broker_port" class="form-control" type="number" min="1" max="65535" value="1883">
             </div>
         </div>
 
         <div class="form-group row">
-            <label for="mqtt_broker_username"
+            <label for="mqtt_config_broker_username"
                 class="col-lg-3 col-xl-2 col-form-label" data-i18n="mqtt.content.username"></label>
             <div class="col-lg-9 col-xl-6">
-                <input id="mqtt_broker_username" class="form-control" type="text" maxlength="64">
+                <input id="mqtt_config_broker_username" class="form-control" type="text" maxlength="64">
             </div>
         </div>
 
         <div class="form-group row">
-            <label for="mqtt_broker_password" class="col-lg-3 col-xl-2 col-form-label" data-i18n="mqtt.content.password"></label>
+            <label for="mqtt_config_broker_password" class="col-lg-3 col-xl-2 col-form-label" data-i18n="mqtt.content.password"></label>
             <div class="col-lg-9 col-xl-6">
                 <div class="input-group">
-                    <input type="password" id="mqtt_broker_password" class="form-control" value="" maxlength="64" data-i18n="wifi.content.unchanged" data-i18n-attr="placeholder"/>
+                    <input type="password" id="mqtt_config_broker_password" class="form-control" value="" maxlength="64" data-i18n="wifi.content.unchanged" data-i18n-attr="placeholder"/>
                     <div class="input-group-append">
                         <div class="input-group-text custom-control custom-switch" style="padding-left: 2.5rem;">
-                            <input id="mqtt_show_password" type="checkbox" class="custom-control-input" aria-label="Show password">
-                            <label class="custom-control-label" for="mqtt_show_password" style="line-height: 20px;"><span data-feather="eye"></span></label>
+                            <input id="mqtt_config_show_broker_password" type="checkbox" class="custom-control-input" aria-label="Show password">
+                            <label class="custom-control-label" for="mqtt_config_show_broker_password" style="line-height: 20px;"><span data-feather="eye"></span></label>
                         </div>
                         <div class="input-group-text custom-control custom-switch" style="padding-left: 2.5rem;">
-                            <input id="mqtt_clear_password" type="checkbox" class="custom-control-input" aria-label="Clear password">
-                            <label class="custom-control-label" for="mqtt_clear_password" style="line-height: 20px;"><span data-feather="trash-2"></span></label>
+                            <input id="mqtt_config_clear_broker_password" type="checkbox" class="custom-control-input" aria-label="Clear password">
+                            <label class="custom-control-label" for="mqtt_config_clear_broker_password" style="line-height: 20px;"><span data-feather="trash-2"></span></label>
                         </div>
                     </div>
                 </div>
@@ -66,25 +66,25 @@
         </div>
 
         <div class="form-group row">
-            <label for="mqtt_topic_prefix" class="col-lg-3 col-xl-2 col-form-label" data-i18n="mqtt.content.topic_prefix"></label>
+            <label for="mqtt_config_global_topic_prefix" class="col-lg-3 col-xl-2 col-form-label" data-i18n="mqtt.content.topic_prefix"></label>
             <div class="col-lg-9 col-xl-6">
-                <input id="mqtt_topic_prefix" class="form-control" type="text" pattern="^[^#+$][^#+]*" maxlength="64">
+                <input id="mqtt_config_global_topic_prefix" class="form-control" type="text" pattern="^[^#+$][^#+]*" maxlength="64">
                 <div class="invalid-feedback"  data-i18n="mqtt.content.topic_prefix_invalid"></div>
             </div>
         </div>
 
         <div class="form-group row">
-            <label for="mqtt_client_name" class="col-lg-3 col-xl-2 col-form-label" data-i18n="mqtt.content.client_name"></label>
+            <label for="mqtt_config_client_name" class="col-lg-3 col-xl-2 col-form-label" data-i18n="mqtt.content.client_name"></label>
             <div class="col-lg-9 col-xl-6">
-                <input id="mqtt_client_name" class="form-control" type="text" maxlength="64" required>
+                <input id="mqtt_config_client_name" class="form-control" type="text" maxlength="64" required>
             </div>
         </div>
 
         <div class="form-group row">
-            <label for="mqtt_client_name" class="col-lg-3 col-xl-2 col-form-label" data-i18n="mqtt.content.interval"></label>
+            <label for="mqtt_config_interval" class="col-lg-3 col-xl-2 col-form-label" data-i18n="mqtt.content.interval"></label>
             <div class="col-lg-9 col-xl-6">
                 <div class="input-group">
-                    <input id="mqtt_interval" class="form-control" type="number" step="1" min="1" max="4294967296" required>
+                    <input id="mqtt_config_interval" class="form-control" type="number" step="1" min="1" max="4294967296" required>
                     <div class="input-group-append">
                         <div class="input-group-text form-control">s</div>
                     </div>
