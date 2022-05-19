@@ -29,10 +29,12 @@ extern WebServer server;
 extern TaskScheduler task_scheduler;
 
 #if MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
-static char recv_buf[4096] = {0};
+#define RECV_BUF_SIZE 4096
 #else
-static char recv_buf[2048] = {0};
+#define RECV_BUF_SIZE 2048
 #endif
+
+static char recv_buf[RECV_BUF_SIZE] = {0};
 
 static StaticJsonDocument<2048> json_buf;
 
@@ -104,7 +106,7 @@ void Http::addState(size_t stateIdx, const StateRegistration &reg)
 void Http::addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg)
 {
     server.on((String("/") + reg.path).c_str(), HTTP_PUT, [reg](WebServerRequest request) {
-        int bytes_written = request.receive(recv_buf, 4096);
+        int bytes_written = request.receive(recv_buf, RECV_BUF_SIZE);
         if (bytes_written == -1) {
             // buffer was not large enough
             request.send(413);
