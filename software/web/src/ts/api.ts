@@ -115,7 +115,12 @@ export function default_updater<T extends keyof ConfigMap>(topic: T, exclude?: A
         }
 
         if (typeof value == "string" || typeof value == "number") {
-            elem.val(value);
+            if (elem.is("input") || elem.is("select"))
+                elem.val(value);
+            else if (elem.is("span"))
+                elem.text(value);
+            else
+                console.error(`Can't update ${id} from ${topic}[${key}] = ${value} (of type ${typeof value}): ${id} is not an input, select or span`);
         }
     }
 
