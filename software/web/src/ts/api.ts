@@ -195,12 +195,14 @@ export function register_config_form<T extends keyof ConfigMap>(topic: T, overri
         if (validation_override)
             validation_override();
 
-        this.classList.add('was-validated');
         event.preventDefault();
         event.stopPropagation();
 
         if (this.checkValidity() === false) {
+            this.classList.add('was-validated');
             return;
+        } else {
+            this.classList.remove('was-validated');
         }
 
         default_saver(topic, overrides ? overrides() : undefined, error_string, reboot_string);
