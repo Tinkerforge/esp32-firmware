@@ -36,7 +36,7 @@ extern TaskScheduler task_scheduler;
 
 static char recv_buf[RECV_BUF_SIZE] = {0};
 
-static StaticJsonDocument<2048> json_buf;
+static StaticJsonDocument<RECV_BUF_SIZE> json_buf;
 
 Http::Http()
 {
