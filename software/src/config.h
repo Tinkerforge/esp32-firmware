@@ -247,7 +247,7 @@ struct Config {
     template<typename T, typename ConfigT>
     T *as() {
         if (!this->is<ConfigT>()) {
-            logger.printfln("Config has wrong type.");
+            logger.printfln("as: Config has wrong type. This is %s", this->to_string().c_str());
             delay(100);
             return nullptr;
         }
@@ -257,7 +257,7 @@ struct Config {
     template<typename T, typename ConfigT>
     const T *as() const {
         if (!this->is<ConfigT>()) {
-            logger.printfln("Config has wrong type.");
+            logger.printfln("const as: Config has wrong type. This is %s", this->to_string().c_str());
             delay(100);
             return nullptr;
         }
@@ -281,7 +281,7 @@ struct Config {
     template<typename T, typename ConfigT>
     bool update_value(T value) {
         if (!this->is<ConfigT>()) {
-            logger.printfln("Config has wrong type.");
+            logger.printfln("update_value: Config has wrong type. This is %s. new value is %s", this->to_string().c_str(), String(value).c_str());
             delay(100);
             return false;
         }

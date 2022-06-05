@@ -115,7 +115,12 @@ export function default_updater<T extends keyof ConfigMap>(topic: T, exclude?: A
         }
 
         if (typeof value == "string" || typeof value == "number") {
-            elem.val(value);
+            if (elem.is("input") || elem.is("select"))
+                elem.val(value);
+            else if (elem.is("span"))
+                elem.text(value);
+            else
+                console.error(`Can't update ${id} from ${topic}[${key}] = ${value} (of type ${typeof value}): ${id} is not an input, select or span`);
         }
     }
 
@@ -190,12 +195,14 @@ export function register_config_form<T extends keyof ConfigMap>(topic: T, overri
         if (validation_override)
             validation_override();
 
-        this.classList.add('was-validated');
         event.preventDefault();
         event.stopPropagation();
 
         if (this.checkValidity() === false) {
+            this.classList.add('was-validated');
             return;
+        } else {
+            this.classList.remove('was-validated');
         }
 
         default_saver(topic, overrides ? overrides() : undefined, error_string, reboot_string);

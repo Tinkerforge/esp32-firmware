@@ -75,7 +75,7 @@ void read_meter_type_handler(struct TF_RS485 *rs485, uint8_t request_id, int8_t 
 
     if (exception_code != 0) {
         logger.printfln("Request %u: Exception code %d", request_id, exception_code);
-        //ud->done = ModbusReader::UserDataDone::ERROR;
+        ud->done = ModbusReader::UserDataDone::ERROR;
         return;
     }
 
@@ -148,7 +148,17 @@ void write_multiple_registers_handler(struct TF_RS485 *device, uint8_t request_i
         return;
     }
 
-    if (exception_code != 0) {
+
+    // Exclude timeout here:
+    // The SDM72DM has a bug in it's modbus implementation where it responds to
+    // "write multiple registers"-Requests that trigger a reset of the relative energy value
+    // with the wrong DeviceID. It sends ID 0 which is reserved for broadcasts
+    // and never to be used by slaves!
+    // This only happens when writing to 461457, i.e. the reset trigger register.
+    //
+    // In the future we should check that the reset worked by re-reading the energy value,
+    // making sure that it is a small enough value and retrying the reset if not.
+    if (exception_code != 0 && exception_code != TF_RS485_EXCEPTION_CODE_TIMEOUT) {
         logger.printfln("Exception code %d", exception_code);
         ud->done = ModbusReader::UserDataDone::ERROR;
         return;

@@ -586,27 +586,28 @@ def main(stage3):
     print("Electrical tests passed")
     result["electrical_tests_passed"] = True
 
-    print("Removing tracked charges")
-    print("Connecting via ethernet to {}".format(ssid), end="")
-    for i in range(45):
-        start = time.monotonic()
-        try:
-            req = urllib.request.Request("http://{}/charge_tracker/remove_all_charges".format(ssid),
-                            data=json.dumps({"do_i_know_what_i_am_doing":True}).encode("utf-8"),
-                            method='PUT',
-                            headers={"Content-Type": "application/json"})
-            with urllib.request.urlopen(req, timeout=1) as f:
-                f.read()
-                break
-        except Exception as e:
-            pass
-        t = max(0, 1 - (time.monotonic() - start))
-        time.sleep(t)
-        print(".", end="")
-    else:
-        fatal_error("Failed to connect via ethernet!")
-    print(" Connected.")
-    print("Tracked charges removed.")
+    if qr_variant != "B":
+        print("Removing tracked charges")
+        print("Connecting via ethernet to {}".format(ssid), end="")
+        for i in range(45):
+            start = time.monotonic()
+            try:
+                req = urllib.request.Request("http://{}/charge_tracker/remove_all_charges".format(ssid),
+                                data=json.dumps({"do_i_know_what_i_am_doing":True}).encode("utf-8"),
+                                method='PUT',
+                                headers={"Content-Type": "application/json"})
+                with urllib.request.urlopen(req, timeout=1) as f:
+                    f.read()
+                    break
+            except Exception as e:
+                pass
+            t = max(0, 1 - (time.monotonic() - start))
+            time.sleep(t)
+            print(".", end="")
+        else:
+            fatal_error("Failed to connect via ethernet!")
+        print(" Connected.")
+        print("Tracked charges removed.")
     result["end"] = now()
 
     with open("{}_{}_report_stage_2.json".format(ssid, now().replace(":", "-")), "w") as f:
