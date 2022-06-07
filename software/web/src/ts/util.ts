@@ -326,3 +326,31 @@ export function getShowRebootModalFn(changed_value_name: string) {
         $('#reboot').modal('show');
     }
 }
+
+export function timestamp_min_to_date(timestamp_minutes: number, unsynced_string: string = __("charge_tracker.script.unknown_charge_start")) {
+    if (timestamp_minutes == 0) {
+        return unsynced_string;
+    }
+    let date_fmt: any = { year: 'numeric', month: '2-digit', day: '2-digit'};
+    let time_fmt: any = {hour: '2-digit', minute:'2-digit' };
+    let fmt = Object.assign({}, date_fmt, time_fmt);
+
+    let date = new Date(timestamp_minutes * 60000);
+    let result = date.toLocaleString([], fmt);
+
+    let date_result = date.toLocaleDateString([], date_fmt);
+    let time_result = date.toLocaleTimeString([], time_fmt);
+
+    // By default there is a comma between the date and time part of the string.
+    // This comma (even if the whole date is marked as string for CSV) prevents office programs
+    // to understand that this is a date.
+    // Remove this (and only this) comma without assuming anything about the localized string.
+    if (result == date_result + ", " + time_result) {
+        return date_result + " " + time_result;
+    }
+    if (result == time_result + ", " + date_result) {
+        return time_result + " " + date_result;
+    }
+
+    return result;
+}

@@ -44,6 +44,8 @@ int compare_version(uint8_t left_major, uint8_t left_minor, uint8_t left_patch,
 
 bool clock_synced(struct timeval *out_tv_now);
 
+uint32_t timestamp_minutes();
+
 bool for_file_in(const char *dir, bool (*callback)(File *open_file), bool skip_directories = true);
 
 void remove_directory(const char *path);

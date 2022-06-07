@@ -605,6 +605,16 @@ bool clock_synced(struct timeval *out_tv_now)
     return out_tv_now->tv_sec > ((2016 - 1970) * 365 * 24 * 60 * 60);
 }
 
+uint32_t timestamp_minutes()
+{
+    struct timeval tv_now;
+
+    if (!clock_synced(&tv_now))
+        return 0;
+
+    return tv_now.tv_sec / 60;
+}
+
 bool for_file_in(const char *dir, bool (*callback)(File *open_file), bool skip_directories)
 {
     File root = LittleFS.open(dir);

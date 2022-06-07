@@ -23,6 +23,7 @@
 #include "task_scheduler.h"
 
 #include "modules.h"
+#include "tools.h"
 
 #include "digest_auth.h"
 #include <cmath>
@@ -684,16 +685,6 @@ void Users::remove_username_file()
 {
     if (LittleFS.exists(USERNAME_FILE))
         LittleFS.remove(USERNAME_FILE);
-}
-
-uint32_t timestamp_minutes()
-{
-    struct timeval tv_now;
-
-    if (!clock_synced(&tv_now))
-        return 0;
-
-    return tv_now.tv_sec / 60;
 }
 
 bool Users::start_charging(uint8_t user_id, uint16_t current_limit, uint8_t auth_type, Config::ConfVariant auth_info)
