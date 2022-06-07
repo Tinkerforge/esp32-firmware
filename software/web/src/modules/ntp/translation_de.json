@@ -3,6 +3,12 @@
         "navbar": {
             "ntp": "Zeit&shy;synchro&shy;nisierung"
         },
+        "status": {
+            "ntp": "Zeit&shy;synchro&shy;nisierung",
+            "deactivated": "Deaktiviert",
+            "not_synced": "Nicht synchronisiert",
+            "synced": "Synchronisiert"
+        },
         "content": {
             "ntp": "Zeit&shy;synchro&shy;nisierung",
             "enable": "Zeit&shy;synchro&shy;nisierung aktiviert",

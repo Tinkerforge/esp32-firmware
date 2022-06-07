@@ -46,6 +46,12 @@ function update_config() {
     update_timezone(cfg.timezone);
 }
 
+function update_state() {
+    let state = API.get('ntp/state');
+    $('#ntp_state_time').html(util.timestamp_min_to_date(state.time, ""));
+    util.update_button_group('ntp_state_synced', !API.get('ntp/config').enable ? 0 : (state.synced ? 2 : 1))
+}
+
 export function init() {
     $('#ntp_browser_timezone').on('click', () => {
         update_timezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
@@ -93,6 +99,7 @@ export function init() {
 
 export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('ntp/config', update_config);
+    source.addEventListener('ntp/state', update_state);
 }
 
 export function update_sidebar_state(module_init: any) {
