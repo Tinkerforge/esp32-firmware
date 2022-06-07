@@ -164,3 +164,10 @@
 - Fix WiFi scan sometimes not starting
 - Select unoccupied channel when starting WiFi AP
 - Fix LED blink when waiting for not user-related charge release
+
+2022-06-07: 2.0.6 (<unknown>)
+- Increase wifi scan timeout for AP channel selection
+- Fix form validation display on success
+- Add NTP state and synced time to status page
+- Make sure to never start charging when button is pressed (through EVSE 2.0 Bricklet firmware 2.1.5)
+- Fix compatibility with some SDM630 versions (through EVSE 2.0 Bricklet firmware 2.1.5)
