@@ -234,7 +234,7 @@
 - Fix LED blink when waiting for not user-related charge release
 - Fix energy meter graph offset
 
-2022-06-07: 2.0.6 (<unknown>)
+2022-06-07: 2.0.6 (e66e4e51)
 - Increase wifi scan timeout for AP channel selection
 - Fix form validation display on success
 - Add work-around for SDM72DM reset response bug
