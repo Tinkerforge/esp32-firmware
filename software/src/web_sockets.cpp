@@ -30,6 +30,12 @@ extern EventLog logger;
 
 #define KEEP_ALIVE_TIMEOUT_MS 10000
 
+
+void clear_ws_work_item(ws_work_item *wi) {
+    free(wi->payload);
+    wi->payload = nullptr;
+}
+
 bool WebSockets::haveWork(ws_work_item *item)
 {
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
@@ -45,12 +51,13 @@ bool WebSockets::haveWork(ws_work_item *item)
 void WebSockets::cleanUpQueue() {
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
     while (!work_queue.empty()) {
-        ws_work_item &wi = work_queue.front();
+        ws_work_item *wi = &work_queue.front();
         for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
-            if (wi.fds[i] != -1) {
+            if (wi->fds[i] != -1) {
                 return;
             }
         }
+        clear_ws_work_item(wi);
         // Every fd was -1.
         work_queue.pop_front();
     }
@@ -106,7 +113,7 @@ static void work(void *arg)
             work_state = "send_done";
         }
         work_state = "clear";
-        wi.clear();
+        clear_ws_work_item(&wi);
         work_state = "loop_end";
     }
     work_state = "done";
@@ -302,7 +309,9 @@ void WebSockets::pingActiveClients()
     if (queueFull()) {
         return;
     }
-    work_queue.emplace_back(server.httpd, fds, nullptr, 0);
+
+    work_queue.push_back({server.httpd, {}, nullptr, 0});
+    memcpy(work_queue.back().fds, fds, sizeof(fds));
 }
 
 void WebSockets::checkActiveClients()
@@ -346,14 +355,13 @@ void WebSockets::sendToClient(const char *payload, size_t payload_len, int fd)
 
     memcpy(payload_copy, payload, payload_len);
 
-    int fds[MAX_WEB_SOCKET_CLIENTS] = {fd, -1, -1, -1, -1};
-
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
     if (queueFull()) {
         free(payload_copy);
         return;
     }
-    work_queue.emplace_back(server.httpd, fds, payload_copy, payload_len);
+
+    work_queue.push_back({server.httpd, {fd, -1, -1, -1, -1}, payload_copy, payload_len});
 }
 
 bool WebSockets::haveActiveClient()
@@ -395,7 +403,8 @@ void WebSockets::sendToAllOwned(char *payload, size_t payload_len)
         free(payload);
         return;
     }
-    work_queue.emplace_back(server.httpd, fds, payload, payload_len);
+    work_queue.push_back({server.httpd, {}, payload, payload_len});
+    memcpy(work_queue.back().fds, fds, sizeof(fds));
 }
 
 void WebSockets::sendToAll(const char *payload, size_t payload_len)
@@ -421,7 +430,9 @@ void WebSockets::sendToAll(const char *payload, size_t payload_len)
         free(payload_copy);
         return;
     }
-    work_queue.emplace_back(server.httpd, fds, payload_copy, payload_len);
+
+    work_queue.push_back({server.httpd, {}, payload_copy, payload_len});
+    memcpy(work_queue.back().fds, fds, sizeof(fds));
 }
 
 static uint32_t last_worker_run = 0;
