@@ -448,7 +448,11 @@ void WebSockets::triggerHttpThread()
             worker_active = false;
 
             std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
-            work_queue.clear();
+            while (!work_queue.empty()) {
+                ws_work_item *wi = &work_queue.front();
+                clear_ws_work_item(wi);
+                work_queue.pop_front();
+            }
         }
         return;
     }
@@ -468,6 +472,7 @@ void WebSockets::triggerHttpThread()
     // NEVER able to start the worker again.
     worker_active = true;
     if (httpd_queue_work(server.httpd, work, this) != ESP_OK) {
+        logger.printfln("Failed to start WebSocket worker!");
         worker_active = false;
     }
 }
