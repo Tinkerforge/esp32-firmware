@@ -13,7 +13,7 @@
 
 <body>
     <nav class="navbar navbar-expand-md navbar-dark sticky-top flex-md-nowrap p-0 pb-2 pt-2">
-        <a href="/"><img class="pt-2 pb-2 pl-3" src="./modules/{{{logo_module}}}/logo.png" style="max-width: calc(100vw - 72px);"/></a>
+        <a href="/"><img class="pt-2 pb-2 pl-3" src="./modules/{{{logo_module}}}/logo.png" style="max-width: calc(100vw - 72px);" alt="logo"/></a>
         <button class="navbar-toggler d-md-none collapsed pt-2 mr-3" type="button" data-toggle="collapse"
             data-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -45,7 +45,7 @@
                 </div>
             </nav>
 
-            <main id="main" role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4" style="visibility: hidden;">
+            <main id="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4" style="visibility: hidden;">
                 <div class="tab-content" id="v-pills-tabContent">
                     <div id="alert_placeholder" class="alert_placeholder"></div>
 
@@ -65,7 +65,7 @@
                             </div>
 
                             <div class="form-group row">
-                                <label for="password" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="main.login_password"></label>
+                                <label for="main_login_password" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="main.login_password"></label>
                                 <div class="col-lg-9 col-xl-6">
                                     <div class="input-group">
                                         <input type="password" id="main_login_password" class="form-control" value=""/>

@@ -49,7 +49,7 @@ function update_config() {
 function update_state() {
     let state = API.get('ntp/state');
     $('#ntp_state_time').html(util.timestamp_min_to_date(state.time, ""));
-    util.update_button_group('ntp_state_synced', !API.get('ntp/config').enable ? 0 : (state.synced ? 2 : 1))
+    util.update_button_group('ntp_state_synced_group', !API.get('ntp/config').enable ? 0 : (state.synced ? 2 : 1))
 }
 
 export function init() {
