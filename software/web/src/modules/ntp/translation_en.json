@@ -3,6 +3,12 @@
         "navbar": {
             "ntp": "Time Synchronization"
         },
+        "status": {
+            "ntp": "Time Synchronization",
+            "deactivated": "Deactivated",
+            "not_synced": "Not synchronized",
+            "synced": "Synchronized"
+        },
         "content": {
             "ntp": "Time Synchronization",
             "enable": "Time synchronization enabled",
