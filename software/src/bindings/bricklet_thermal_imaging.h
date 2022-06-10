@@ -1,7 +1,7 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-05-10.      *
+ * This file was automatically generated on 2022-06-10.      *
  *                                                           *
- * C/C++ for Microcontrollers Bindings Version 2.0.1         *
+ * C/C++ for Microcontrollers Bindings Version 2.0.2         *
  *                                                           *
  * If you have a bugfix for this file and want to commit it, *
  * please fix the bug in the generator. You can find a link  *
@@ -429,7 +429,7 @@ int tf_thermal_imaging_register_high_contrast_image_low_level_callback(TF_Therma
  * Registers the given \c handler to the High Contrast Image callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
  *
- * Signature: \code void callback(uint16_t image_chunk_offset, uint8_t image_chunk_data[62], void *user_data) \endcode
+ * Signature: \code void callback(uint8_t *image, uint16_t image_length, void *user_data) \endcode
  *
  * This callback is triggered with every new high contrast image if the transfer image
  * config is configured for high contrast callback (see {@link tf_thermal_imaging_set_image_transfer_config}).
@@ -471,7 +471,7 @@ int tf_thermal_imaging_register_temperature_image_low_level_callback(TF_ThermalI
  * Registers the given \c handler to the Temperature Image callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
  *
- * Signature: \code void callback(uint16_t image_chunk_offset, uint16_t image_chunk_data[31], void *user_data) \endcode
+ * Signature: \code void callback(uint16_t *image, uint16_t image_length, void *user_data) \endcode
  *
  * This callback is triggered with every new temperature image if the transfer image
  * config is configured for temperature callback (see {@link tf_thermal_imaging_set_image_transfer_config}).

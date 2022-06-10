@@ -1,7 +1,7 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-05-10.      *
+ * This file was automatically generated on 2022-06-10.      *
  *                                                           *
- * C/C++ for Microcontrollers Bindings Version 2.0.1         *
+ * C/C++ for Microcontrollers Bindings Version 2.0.2         *
  *                                                           *
  * If you have a bugfix for this file and want to commit it, *
  * please fix the bug in the generator. You can find a link  *
@@ -485,7 +485,7 @@ int tf_dmx_register_frame_low_level_callback(TF_DMX *dmx, TF_DMX_FrameLowLevelHa
  * Registers the given \c handler to the Frame callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
  *
- * Signature: \code void callback(uint16_t frame_length, uint16_t frame_chunk_offset, uint8_t frame_chunk_data[56], uint32_t frame_number, void *user_data) \endcode
+ * Signature: \code void callback(uint8_t *frame, uint16_t frame_length, uint32_t frame_number, void *user_data) \endcode
  *
  * This callback is called as soon as a new frame is available
  * (written by the DMX master).

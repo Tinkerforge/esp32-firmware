@@ -1,7 +1,7 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-05-10.      *
+ * This file was automatically generated on 2022-06-10.      *
  *                                                           *
- * C/C++ for Microcontrollers Bindings Version 2.0.1         *
+ * C/C++ for Microcontrollers Bindings Version 2.0.2         *
  *                                                           *
  * If you have a bugfix for this file and want to commit it, *
  * please fix the bug in the generator. You can find a link  *
@@ -436,7 +436,7 @@ int tf_sound_pressure_level_register_spectrum_low_level_callback(TF_SoundPressur
  * Registers the given \c handler to the Spectrum callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
  *
- * Signature: \code void callback(uint16_t spectrum_length, uint16_t spectrum_chunk_offset, uint16_t spectrum_chunk_data[30], void *user_data) \endcode
+ * Signature: \code void callback(uint16_t *spectrum, uint16_t spectrum_length, void *user_data) \endcode
  *
  * This callback is triggered periodically according to the configuration set by
  * {@link tf_sound_pressure_level_set_spectrum_callback_configuration}.

@@ -1,7 +1,7 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-05-10.      *
+ * This file was automatically generated on 2022-06-10.      *
  *                                                           *
- * C/C++ for Microcontrollers Bindings Version 2.0.1         *
+ * C/C++ for Microcontrollers Bindings Version 2.0.2         *
  *                                                           *
  * If you have a bugfix for this file and want to commit it, *
  * please fix the bug in the generator. You can find a link  *
@@ -533,7 +533,7 @@ int tf_can_v2_register_frame_read_low_level_callback(TF_CANV2 *can_v2, TF_CANV2_
  * Registers the given \c handler to the Frame Read callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
  *
- * Signature: \code void callback(uint8_t frame_type, uint32_t identifier, uint8_t data_length, uint8_t data_data[15], void *user_data) \endcode
+ * Signature: \code void callback(uint8_t frame_type, uint32_t identifier, uint8_t *data, uint8_t data_length, void *user_data) \endcode
  *
  * This callback is triggered if a data or remote frame was received by the CAN
  * transceiver.
