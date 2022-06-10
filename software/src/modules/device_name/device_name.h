@@ -21,7 +21,8 @@
 
 #include "config.h"
 
-class DeviceName {
+class DeviceName
+{
 public:
     DeviceName();
     void setup();

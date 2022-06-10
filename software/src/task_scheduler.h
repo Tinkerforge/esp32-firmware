@@ -44,7 +44,8 @@ struct Task {
 
 bool compare(const Task &a, const Task &b);
 
-class TaskScheduler {
+class TaskScheduler
+{
 public:
     TaskScheduler() : tasks(&compare)
     {

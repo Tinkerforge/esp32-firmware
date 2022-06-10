@@ -70,7 +70,7 @@ void DeviceName::updateDisplayType()
 {
     String display_type = BUILD_DISPLAY_NAME;
 #if defined BUILD_NAME_WARP || defined BUILD_NAME_WARP2
-    display_type += getWarpDisplayName();  // FIXME: Also add more details for WARP Energy Manager, similar to WARP[2] here?
+    display_type += getWarpDisplayName(); // FIXME: Also add more details for WARP Energy Manager, similar to WARP[2] here?
 #endif
 
     if (name.get("display_type")->updateString(display_type)) {

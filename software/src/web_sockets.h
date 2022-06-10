@@ -47,10 +47,10 @@ struct ws_work_item {
     size_t payload_len;
 };
 
-
 void clear_ws_work_item(ws_work_item *wi);
 
-class WebSockets {
+class WebSockets
+{
 public:
     WebSockets()
     {

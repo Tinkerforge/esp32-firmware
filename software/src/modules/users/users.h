@@ -21,7 +21,8 @@
 
 #include "config.h"
 
-class Users {
+class Users
+{
 public:
     Users();
     void setup();

@@ -21,7 +21,8 @@
 
 #include "config.h"
 
-class Network {
+class Network
+{
 public:
     Network();
     void setup();

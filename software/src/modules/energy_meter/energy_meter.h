@@ -30,7 +30,8 @@
 #define ENERGY_METER_TYPE_SDM630 2
 #define ENERGY_METER_TYPE_SDM72DMV2 3
 
-class EnergyMeter {
+class EnergyMeter
+{
 public:
     EnergyMeter();
     void setup();

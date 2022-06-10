@@ -21,7 +21,8 @@
 
 #include "api.h"
 
-class Http : public IAPIBackend {
+class Http : public IAPIBackend
+{
 public:
     Http();
     void setup();

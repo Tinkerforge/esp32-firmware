@@ -23,7 +23,8 @@
 
 #include "config.h"
 
-class Debug {
+class Debug
+{
 public:
     Debug();
     void setup();

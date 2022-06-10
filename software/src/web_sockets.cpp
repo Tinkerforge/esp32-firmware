@@ -30,8 +30,8 @@ extern EventLog logger;
 
 #define KEEP_ALIVE_TIMEOUT_MS 10000
 
-
-void clear_ws_work_item(ws_work_item *wi) {
+void clear_ws_work_item(ws_work_item *wi)
+{
     free(wi->payload);
     wi->payload = nullptr;
 }
@@ -48,7 +48,8 @@ bool WebSockets::haveWork(ws_work_item *item)
     return true;
 }
 
-void WebSockets::cleanUpQueue() {
+void WebSockets::cleanUpQueue()
+{
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
     while (!work_queue.empty()) {
         ws_work_item *wi = &work_queue.front();
@@ -248,8 +249,8 @@ void WebSockets::keepAliveRemove(int fd)
 
     {
         std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
-        for(int i = 0; i < work_queue.size(); ++i)
-            for(int j = 0; j < MAX_WEB_SOCKET_CLIENTS; ++j)
+        for (int i = 0; i < work_queue.size(); ++i)
+            for (int j = 0; j < MAX_WEB_SOCKET_CLIENTS; ++j)
                 if (work_queue[i].fds[j] == fd)
                     work_queue[i].fds[j] = -1;
     }
@@ -513,7 +514,7 @@ void WebSockets::start(const char *uri)
         logger.printfln("last_worker_run %u", last_worker_run);
         logger.printfln("queue_len %u", work_queue.size());
 
-        for(int i = 0; i < work_queue.size(); ++i) {
+        for (int i = 0; i < work_queue.size(); ++i) {
             logger.printfln("    q[%d] to {%d %d %d %d %d} len %u %.30s",
                             i,
                             work_queue[i].fds[0],

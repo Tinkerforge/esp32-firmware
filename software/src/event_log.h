@@ -32,7 +32,8 @@
 // Length of a timestamp with two spaces at the end. For example "2022-02-11 12:34:56,789"
 #define TIMESTAMP_LEN 25
 
-class EventLog {
+class EventLog
+{
 public:
     std::mutex event_buf_mutex;
     TF_Ringbuffer<char, 10000, uint32_t, malloc_32bit_addressed, heap_caps_free> event_buf;

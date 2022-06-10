@@ -137,12 +137,14 @@ Wifi::Wifi()
     wifi_scan_config = Config::Null();
 }
 
-float rssi_to_weight(int rssi) {
+float rssi_to_weight(int rssi)
+{
     return pow(2, (float)(128 + rssi) / 10);
 }
 
-void apply_weight(float *channels, int channel, float weight) {
-    for(int i = MAX(1, channel - 2); i <= MIN(13, channel + 2); ++i) {
+void apply_weight(float *channels, int channel, float weight)
+{
+    for (int i = MAX(1, channel - 2); i <= MIN(13, channel + 2); ++i) {
         if (i == channel - 2 || i == channel + 2)
             channels[i] += weight / 2;
         else
@@ -200,15 +202,15 @@ void Wifi::apply_soft_ap_config_and_start()
 
         memcpy(channels_smeared, channels, sizeof(channels_smeared) / sizeof(channels_smeared[0]));
 
-        for(int i = 1; i <= 13; ++i) {
+        for (int i = 1; i <= 13; ++i) {
             if (i > 1)
-                channels_smeared[i] += channels[i-1];
+                channels_smeared[i] += channels[i - 1];
             if (i < 13)
-                channels_smeared[i] += channels[i+1];
+                channels_smeared[i] += channels[i + 1];
         }
 
         int min = 1;
-        for(int i = 1; i <= 13; ++i) {
+        for (int i = 1; i <= 13; ++i) {
             if (channels_smeared[i] < channels_smeared[min])
                 min = i;
         }
@@ -219,7 +221,6 @@ void Wifi::apply_soft_ap_config_and_start()
         channel_to_use = (esp_random() % 4) * 4 + 1;
         logger.printfln("Channel selection scan timeout elapsed! Randomly selected channel %u", channel_to_use);
     }
-
 
     IPAddress ip, gateway, subnet;
     ip.fromString(wifi_ap_config_in_use.get("ip")->asCStr());
@@ -558,7 +559,8 @@ void Wifi::check_for_scan_completion()
 #endif
 }
 
-void Wifi::start_scan() {
+void Wifi::start_scan()
+{
     // Abort if a scan is running. This is save, because
     // the state will change to SCAN_FAILED if it timed out.
     if (WiFi.scanComplete() == WIFI_SCAN_RUNNING)
@@ -568,7 +570,7 @@ void Wifi::start_scan() {
     WiFi.scanDelete();
 
     // WIFI_SCAN_FAILED also means the scan is done.
-    if(WiFi.scanComplete() != WIFI_SCAN_FAILED)
+    if (WiFi.scanComplete() != WIFI_SCAN_FAILED)
         return;
 
     if (WiFi.scanNetworks(true, true) != WIFI_SCAN_FAILED) {

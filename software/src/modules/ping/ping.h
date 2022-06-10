@@ -21,7 +21,8 @@
 
 #include "config.h"
 
-class Ping {
+class Ping
+{
 public:
     Ping();
     void setup();

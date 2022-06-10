@@ -30,7 +30,8 @@ enum class EthernetState {
     CONNECTED
 };
 
-class Ethernet {
+class Ethernet
+{
 public:
     Ethernet();
     void setup();

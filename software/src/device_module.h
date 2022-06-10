@@ -48,7 +48,8 @@ template <typename DeviceT,
           int (*get_bootloader_mode_function)(DeviceT *, uint8_t *),
           int (*reset_function)(DeviceT *),
           int (*destroy_function)(DeviceT *)>
-class DeviceModule {
+class DeviceModule
+{
 public:
     DeviceModule(const char *url_prefix,
                  const char *device_name,

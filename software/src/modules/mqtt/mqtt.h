@@ -44,7 +44,8 @@ struct MqttState {
     uint32_t last_send_ms;
 };
 
-class Mqtt : public IAPIBackend {
+class Mqtt : public IAPIBackend
+{
 public:
     Mqtt();
     void setup();

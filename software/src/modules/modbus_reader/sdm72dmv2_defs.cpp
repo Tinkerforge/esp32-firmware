@@ -6,11 +6,11 @@ static const RegRead sdm72dmv2_slow[] {
     {343, 4}
 };
 
-static const RegRead sdm72dmv2_fast[] {
+static const RegRead sdm72dmv2_fast[]{
     {1, 12},  // current per phase
-    {53, 2}, // power
+    {53, 2},  // power
     {343, 2}, // energy_abs
-    {385, 2} // energy_rel
+    {385, 2}  // energy_rel
 };
 
 static const uint16_t sdm72dmv2_registers_to_read[] = {
@@ -37,7 +37,8 @@ static const uint16_t sdm72dmv2_registers_fast_to_read[] = {
 	53, 343, 385, 1, 3, 5, 7, 9, 11 // power, energy_abs, energy_rel, voltage per phase, current per phase
 };
 
-static void sdm72dmv2_fast_read_done(const uint16_t *all_regs) {
+static void sdm72dmv2_fast_read_done(const uint16_t *all_regs)
+{
     float fast_values[sizeof(sdm72dmv2_registers_fast_to_read)/sizeof(sdm72dmv2_registers_fast_to_read[0])];
     convert_to_float(all_regs, fast_values, sdm72dmv2_registers_fast_to_read, sizeof(sdm72dmv2_registers_fast_to_read) / sizeof(sdm72dmv2_registers_fast_to_read[0]));
 
@@ -59,12 +60,13 @@ static void sdm72dmv2_fast_read_done(const uint16_t *all_regs) {
     energy_meter.updateMeterPhases(phases_connected, phases_active);
 }
 
-static void sdm72dmv2_slow_read_done(const uint16_t *all_regs) {
+static void sdm72dmv2_slow_read_done(const uint16_t *all_regs)
+{
     //float all_values[ALL_VALUES_COUNT];
     //convert_to_float(all_regs, all_values, sdm72dmv2_registers_to_read, sizeof(sdm72dmv2_registers_to_read) / sizeof(sdm72dmv2_registers_to_read[0]));
 
     size_t read = 0;
-    for(size_t i = 0; i < ALL_VALUES_COUNT; ++i) {
+    for (size_t i = 0; i < ALL_VALUES_COUNT; ++i) {
         if (!sdm_registers_available_in_sdm72v2[i])
             continue;
 

@@ -22,7 +22,8 @@
 #include <stdint.h>
 #include "web_server.h"
 
-class FirmwareUpdate {
+class FirmwareUpdate
+{
 public:
     FirmwareUpdate();
     void setup();

@@ -121,7 +121,8 @@ int check(int rc, const char *msg)
     return rc;
 }
 
-class LogSilencer {
+class LogSilencer
+{
 public:
     LogSilencer(const char *tag) : tag(tag), level_to_restore(ESP_LOG_NONE)
     {
@@ -495,7 +496,8 @@ static bool flash_firmware(TF_Unknown *bricklet, const uint8_t *firmware, size_t
 #define FIRMWARE_MINOR_OFFSET 11
 #define FIRMWARE_PATCH_OFFSET 12
 
-class TFPSwap {
+class TFPSwap
+{
 public:
     TFPSwap(TF_TFP *tfp) :
         tfp(tfp),

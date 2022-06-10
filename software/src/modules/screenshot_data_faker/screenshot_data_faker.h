@@ -19,7 +19,8 @@
 
 #pragma once
 
-class ScreenshotDataFaker {
+class ScreenshotDataFaker
+{
 public:
     ScreenshotDataFaker();
     void setup();

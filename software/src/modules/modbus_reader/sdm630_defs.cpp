@@ -12,8 +12,8 @@ static const RegRead sdm630_slow[] {
     {335, 48}
 };
 
-static const RegRead sdm630_fast[] {
-    {1, 12},  // current per phase
+static const RegRead sdm630_fast[]{
+    {1, 12}, // current per phase
     {53, 2}, // power
     {343, 2} // energy_abs
 };
@@ -37,7 +37,8 @@ static const uint16_t sdm630_registers_fast_to_read[] = {
 	53, 343, 1, 3, 5, 7, 9, 11 // power, energy_abs, voltage per phase, current per phase
 };
 
-static void sdm630_fast_read_done(const uint16_t *all_regs) {
+static void sdm630_fast_read_done(const uint16_t *all_regs)
+{
     static bool first_run = true;
     if (first_run) {
         first_run = false;
@@ -65,7 +66,8 @@ static void sdm630_fast_read_done(const uint16_t *all_regs) {
     energy_meter.updateMeterPhases(phases_connected, phases_active);
 }
 
-static void sdm630_slow_read_done(const uint16_t *all_regs) {
+static void sdm630_slow_read_done(const uint16_t *all_regs)
+{
     float all_values[ALL_VALUES_COUNT];
     convert_to_float(all_regs, all_values, sdm630_registers_to_read, sizeof(sdm630_registers_to_read) / sizeof(sdm630_registers_to_read[0]));
 

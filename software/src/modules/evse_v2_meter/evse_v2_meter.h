@@ -21,7 +21,8 @@
 
 #include "config.h"
 
-class EVSEV2Meter {
+class EVSEV2Meter
+{
 public:
     EVSEV2Meter();
     void setup();

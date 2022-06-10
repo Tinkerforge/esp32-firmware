@@ -33,7 +33,8 @@ class ModbusReader : public DeviceModule<TF_RS485,
                                          tf_rs485_create,
                                          tf_rs485_get_bootloader_mode,
                                          tf_rs485_reset,
-                                         tf_rs485_destroy> {
+                                         tf_rs485_destroy>
+{
 public:
     ModbusReader();
     void setup();

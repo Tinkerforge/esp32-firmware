@@ -53,7 +53,8 @@ class EVSEV2 : public DeviceModule<TF_EVSEV2,
                                    tf_evse_v2_create,
                                    tf_evse_v2_get_bootloader_mode,
                                    tf_evse_v2_reset,
-                                   tf_evse_v2_destroy>  {
+                                   tf_evse_v2_destroy>
+{
 public:
     EVSEV2();
     void setup();

@@ -19,7 +19,8 @@
 
 #pragma once
 
-class ESP32Brick {
+class ESP32Brick
+{
 public:
     ESP32Brick();
     void setup();

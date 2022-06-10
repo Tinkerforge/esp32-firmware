@@ -21,7 +21,8 @@
 
 #include "config.h"
 
-class APIMeter {
+class APIMeter
+{
 public:
     APIMeter();
     void setup();

@@ -51,7 +51,8 @@ struct RawCommandRegistration {
     bool is_action;
 };
 
-class IAPIBackend {
+class IAPIBackend
+{
 public:
     virtual void addCommand(size_t commandIdx, const CommandRegistration &reg) = 0;
     virtual void addState(size_t stateIdx, const StateRegistration &reg) = 0;
@@ -61,7 +62,8 @@ public:
     virtual void wifiAvailable() = 0;
 };
 
-class API {
+class API
+{
 public:
     API();
 
