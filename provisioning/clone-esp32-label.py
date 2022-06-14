@@ -25,7 +25,7 @@ def main():
         print('SSID:', ssid)
         print('Passphrase:', passphrase)
 
-        subprocess.check_call(['./print-esp32-label.py', ssid, passphrase, '-s'])
+        subprocess.check_call(['./print-esp32-label.py', ssid, passphrase])
 
         break
 
