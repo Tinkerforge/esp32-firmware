@@ -51,6 +51,11 @@
                 </div>
                 <div class="modal-body">
                     <form id="users_add_user_form" class="needs-validation" novalidate>
+                        <!--
+                            Use custom validation instead of the browser default, that is broken on Chrome
+                            See: https://getbootstrap.com/docs/4.5/components/forms/#validation
+                        -->
+
                         <div class="form-group">
                             <label for="users_config_user_new_username">
                                 <span class="form-label pr-2" data-i18n="users.content.add_user_modal_username"></span>

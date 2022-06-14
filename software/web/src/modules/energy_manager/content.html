@@ -7,6 +7,11 @@
     </div>
 
     <form id="energy_manager_config_form" class="needs-validation" novalidate>
+        <!--
+            Use custom validation instead of the browser default, that is broken on Chrome
+            See: https://getbootstrap.com/docs/4.5/components/forms/#validation
+        -->
+
         <div class="form-group row">
             <div class="col-lg-3 col-xl-2">
                 <label for="energy_manager_excess_charging_enable" class="col-form-label form-label" data-i18n="energy_manager.content.excess_charging"></label>

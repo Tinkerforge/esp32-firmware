@@ -33,6 +33,11 @@
                 </div>
                 <div class="modal-body">
                     <form id="nfc_add_tag_form" class="needs-validation" novalidate>
+                        <!--
+                            Use custom validation instead of the browser default, that is broken on Chrome
+                            See: https://getbootstrap.com/docs/4.5/components/forms/#validation
+                        -->
+
                         <div class="form-group">
                             <label class="form-label" for="nfc_config_tag_new_user_id" data-i18n="nfc.content.add_tag_modal_user_id"></label>
                             <select id="nfc_config_tag_new_user_id" class="form-control custom-select nfc-user-select" required>
