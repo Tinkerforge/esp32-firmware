@@ -136,7 +136,7 @@ function update_wifi_ap_config() {
 }
 
 function update_wifi_state() {
-    let state = API.default_updater('wifi/state', ['sta_ip', 'sta_rssi', , 'sta_bssid'], false);
+    let state = API.default_updater('wifi/state', ['sta_ip', 'sta_rssi', 'sta_bssid'], false);
 
     if (state.sta_ip != "0.0.0.0") {
         $('#wifi_state_sta_ip').html(state.sta_ip);
