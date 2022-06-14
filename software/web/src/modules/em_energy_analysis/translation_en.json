@@ -1,13 +1,13 @@
 {
-    "energy_manager_energy_analysis": {
+    "em_energy_analysis": {
         "status": {
-            "energy_manager_energy_analysis": "Energy Analysis"
+            "em_energy_analysis": "Energy Analysis"
         },
         "navbar": {
-            "energy_manager_energy_analysis": "Energy Analysis"
+            "em_energy_analysis": "Energy Analysis"
         },
         "content": {
-            "energy_manager_energy_analysis": "Energy Analysis"
+            "em_energy_analysis": "Energy Analysis"
         },
         "script": {
         }

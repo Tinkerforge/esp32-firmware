@@ -31,5 +31,5 @@ export function add_event_listeners(source: API.APIEventTarget) {
 }
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-energy-manager-energy-analysis').prop('hidden', !module_init.energy_manager);
+    $('#sidebar-em-energy-analysis').prop('hidden', !module_init.energy_manager);
 }

@@ -11,7 +11,7 @@
             "ethernet": "LAN Connection"
         },
         "content": {
-            "settings": "LAN Connection",
+            "ethernet": "LAN Connection",
             "enable": "Connection enabled",
             "enable_desc": "Automatically connects to the configured network on start-up",
 

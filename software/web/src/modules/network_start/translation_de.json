@@ -6,7 +6,7 @@
             "network": "Allgemein"
         },
         "content": {
-            "settings": "Netzwerk",
+            "network": "Netzwerk",
             "hostname": "Hostname",
             "hostname_invalid": "Der Hostname darf nur aus den Groß- und Kleinbuchstaben A-Z und a-z, sowie den Ziffern 0-9 und Bindestrichen bestehen. Zum Beispiel warp-A1c",
             "enable_mdns": "mDNS aktiviert",

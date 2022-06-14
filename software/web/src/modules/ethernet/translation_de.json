@@ -11,7 +11,7 @@
             "ethernet": "LAN-Verbindung"
         },
         "content": {
-            "settings": "LAN-Verbindung",
+            "ethernet": "LAN-Verbindung",
             "enable": "Verbindung aktiviert",
             "enable_desc": null,
 
