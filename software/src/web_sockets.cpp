@@ -29,6 +29,8 @@ extern WebServer server;
 extern EventLog logger;
 
 #define KEEP_ALIVE_TIMEOUT_MS 10000
+#define WORKER_START_ERROR_THRES 60 * 10
+#define WORKER_START_ERROR_MIN_UPTIME_FOR_REBOOT 60 * 60 * 1000
 
 void clear_ws_work_item(ws_work_item *wi)
 {
@@ -118,6 +120,7 @@ static void work(void *arg)
         work_state = "loop_end";
     }
     work_state = "done";
+    ws->worker_start_errors = 0;
     ws->worker_active = false;
 }
 
@@ -437,6 +440,7 @@ void WebSockets::sendToAll(const char *payload, size_t payload_len)
 }
 
 static uint32_t last_worker_run = 0;
+
 void WebSockets::triggerHttpThread()
 {
     if (worker_active) {
@@ -447,6 +451,8 @@ void WebSockets::triggerHttpThread()
             logger.printfln("WebSocket worker ran %u seconds. Control socket drop? Restarting worker.", (KEEP_ALIVE_TIMEOUT_MS * 2) / 1000);
             last_worker_run = millis();
             worker_active = false;
+
+            worker_start_errors += (KEEP_ALIVE_TIMEOUT_MS * 2) / 100; // count a hanging worker as if we've attempted to start the worker the whole time.
 
             std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
             while (!work_queue.empty()) {
@@ -459,14 +465,14 @@ void WebSockets::triggerHttpThread()
     }
 
     last_worker_run = millis();
-
+/*
     {
         std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
         if (work_queue.empty()) {
             return;
         }
     }
-
+*/
     // If we don't set worker_active to true BEFORE enqueueing the worker,
     // we can be preempted after enqueueing, but before we set worker_active to true
     // the worker can then run to completion, we then set worker_active to true and are
@@ -475,6 +481,7 @@ void WebSockets::triggerHttpThread()
     if (httpd_queue_work(server.httpd, work, this) != ESP_OK) {
         logger.printfln("Failed to start WebSocket worker!");
         worker_active = false;
+        ++worker_start_errors;
     }
 }
 
@@ -495,6 +502,21 @@ void WebSockets::start(const char *uri)
     task_scheduler.scheduleWithFixedDelay([this](){
         this->triggerHttpThread();
     }, 100, 100);
+
+    task_scheduler.scheduleWithFixedDelay([this]() {
+        if (millis() < WORKER_START_ERROR_MIN_UPTIME_FOR_REBOOT)
+            return;
+
+        if (this->worker_start_errors > WORKER_START_ERROR_THRES) {
+            logger.printfln("Websocket worker was not able to start for five minutes. The control socket is probably dead. Restarting ESP in one minute.");
+            task_scheduler.scheduleOnce([](){
+                ESP.restart();
+            }, 60 * 1000);
+            // reset error counter to not hit this condition in the next run.
+            this->worker_start_errors = 0;
+        }
+
+    }, 1000, 1000);
 
     task_scheduler.scheduleWithFixedDelay([this](){
         this->pingActiveClients();
