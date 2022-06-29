@@ -45,7 +45,7 @@
 #define IND_NAG 1003
 
 #define TOKEN_LIFETIME_MS 30000
-#define DETECTION_THRESHOLD_MS 500
+#define DETECTION_THRESHOLD_MS 1000
 
 extern EventLog logger;
 
