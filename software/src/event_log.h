@@ -40,6 +40,7 @@ public:
 
     void write(const char *buf, size_t len);
 
+    void printfln(const char *fmt, va_list args);
     void printfln(const char *fmt, ...) __attribute__((__format__(__printf__, 2, 3)));
 
     void drop(size_t count);

@@ -85,23 +85,26 @@ void EventLog::write(const char *buf, size_t len)
     }
 }
 
-void EventLog::printfln(const char *fmt, ...)
-{
+void EventLog::printfln(const char *fmt, va_list args) {
     char buf[256];
     auto buf_size = sizeof(buf) / sizeof(buf[0]);
     memset(buf, 0, buf_size);
 
-    va_list args;
-    va_start(args, fmt);
     auto written = vsnprintf(buf, buf_size, fmt, args);
-    va_end(args);
-
     if (written >= buf_size) {
         write("Next log message was truncated. Bump EventLog::printfln buffer size!", 69);
         written = buf_size;
     }
 
     write(buf, written);
+}
+
+void EventLog::printfln(const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    this->printfln(fmt, args);
+    va_end(args);
 }
 
 void EventLog::drop(size_t count)
