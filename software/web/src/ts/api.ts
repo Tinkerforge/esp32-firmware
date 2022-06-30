@@ -180,7 +180,7 @@ export function default_saver<T extends keyof ConfigMap>(topic: T, overrides?: P
 // like this: register_config_form(..., () => ({a: 1, b:2}), ...
 export function register_config_form<T extends keyof ConfigMap>(topic: T, overrides?: () => Partial<ConfigMap[T]>, validation_override?: () => void, error_string?: string, reboot_string?: string) {
     let prefix = topic.replace('/', '_');
-    let form = $(`#${prefix}`);
+    let form = $(`#${prefix}_form`);
     let save_btn = $(`#${prefix}_save_button`);
 
     if (form.length == 0) {
