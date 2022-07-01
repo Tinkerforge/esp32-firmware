@@ -46,5 +46,10 @@
             "ap_hide_ssid_desc_pre": "Der Energiemanager ist unter der BSSID ",
             "confirm_content": "Soll der WLAN-Access-Point wirklich komplett deaktiviert werden? Falls zukünftig keine Verbindung zu einem konfigurierten Netzwerk möglich ist, <b>kann nicht mehr auf den Energiemanager zugegriffen werden</b>. Der Energiemanager muss dann auf den Werkszustand zurückgesetzt werden. <a href=\"{{{manual_url}}}\">Siehe Betriebsanleitung für Details.</a>"
         }
+    },
+    "charge_tracker": {
+        "content": {
+            "charge_tracker_remove_modal_text": "Alle aufgezeichneten Ladevorgänge und der Benutzernamen-Verlauf werden gelöscht. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Danach wird der Energiemanager neugestartet."
+        }
     }
 }

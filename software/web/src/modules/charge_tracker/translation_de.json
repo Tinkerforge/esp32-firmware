@@ -30,7 +30,7 @@
             "remove_desc": "{{{empty_text}}}",
             "remove_btn": "Ladevorgänge löschen",
 
-            "charge_tracker_remove_modal_text": "Alle aufgezeichneten Ladevorgänge und der Benutzernamen-Verlauf werden gelöscht. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b>",
+            "charge_tracker_remove_modal_text": null,
             "abort_remove": "Abbrechen",
             "confirm_remove": "Löschen"
         },
