@@ -92,7 +92,7 @@ export function hasFeature(feature: string) {
 export function default_updater<T extends keyof ConfigMap>(topic: T, exclude?: Array<keyof ConfigMap[T]>, has_save_button=true) {
     let prefix = topic.replace('/', '_');
     let config = get(topic);
-    let form = $(`#${prefix}`);
+    let form = $(`#${prefix}_form`);
     let save_btn = $(`#${prefix}_save_button`);
 
     if (has_save_button && save_btn.length == 0) {
@@ -203,7 +203,7 @@ export function register_config_form<T extends keyof ConfigMap>(topic: T, overri
     let save_btn = $(`#${prefix}_save_button`);
 
     if (form.length == 0) {
-        console.error(`Cant register config form ${topic}. Form with id ${prefix} not found.`);
+        console.error(`Cant register config form ${topic}. Form with id ${prefix}_form not found.`);
     }
 
     if (save_btn.length == 0) {
