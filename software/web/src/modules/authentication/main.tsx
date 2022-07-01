@@ -24,6 +24,11 @@ import YaMD5 from '../../ts/yamd5';
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
+import { h, render } from "preact";
+import { ConfigPageHeader } from "../../ts/config_page_header"
+
+render(<ConfigPageHeader page="authentication" />, $('#authentication_header')[0]);
+
 declare function __(s: string): string;
 
 function update_authentication_config() {
@@ -56,6 +61,9 @@ function save_authentication_config() {
 }
 
 export function init() {
+    // FIXME: save button enable/disable logic currently missing, just enable the save button
+    $("#authentication_config_save_button").prop("disabled", false);
+
     $("#authentication_show_password").on("change", util.toggle_password_fn("#authentication_password"));
 
     $("#authentication_enable").on("change", function(this: HTMLInputElement, ev: Event) {

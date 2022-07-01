@@ -22,15 +22,10 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-function update_config()
-{
-    // Get current config from state "tutorial_phase_2/config" after receiving
-    // a change from the backend
-    let config = API.get("tutorial_phase_2/config");
+import { h, render } from "preact";
+import { PageHeader } from "../../ts/page_header"
 
-    // Update HTML element with current color value
-    $("#tutorial_phase_2_color").val(config.color);
-}
+render(<PageHeader page="tutorial_phase_1" />, $('#tutorial_phase_1_header')[0]);
 
 export function init()
 {
@@ -38,12 +33,9 @@ export function init()
 
 export function add_event_listeners(source: API.APIEventTarget)
 {
-    // Create event listener for state "tutorial_phase_2/config" to call the
-    // update_config function if changes to that state are reported.
-    source.addEventListener("tutorial_phase_2/config", update_config);
 }
 
 export function update_sidebar_state(module_init: any)
 {
-    $("#sidebar-tutorial-phase-2").prop("hidden", !module_init.tutorial_phase_2);
+    $("#sidebar-tutorial-phase-1").prop("hidden", !module_init.tutorial_phase_1);
 }

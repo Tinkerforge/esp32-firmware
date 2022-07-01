@@ -22,6 +22,11 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
+import { h, render } from "preact";
+import { PageHeader } from "../../ts/page_header"
+
+render(<PageHeader page="firmware_update" />, $('#firmware_update_header')[0]);
+
 declare function __(s: string): string;
 
 import bsCustomFileInput from "../../ts/bs-custom-file-input";
@@ -42,7 +47,7 @@ function update_version() {
 }
 
 function check_upload(type: string) {
-    let file_select = <HTMLInputElement>$(`#${type}_file_select`)[0];
+    let file_select = $(`#${type}_file_select`)[0] as HTMLInputElement;
 
     $.ajax({
         timeout: 0,
@@ -79,7 +84,7 @@ function check_upload(type: string) {
 function upload(type: string) {
     util.pauseWebSockets();
 
-    let file_select = <HTMLInputElement>$(`#${type}_file_select`)[0];
+    let file_select = $(`#${type}_file_select`)[0] as HTMLInputElement;
     let progress = $(`#${type}-progress`);
     let select = $(`#upload_${type}_form`);
     let progress_bar = $(`#${type}-progress-bar`);

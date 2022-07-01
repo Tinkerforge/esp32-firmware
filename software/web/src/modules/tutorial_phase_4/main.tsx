@@ -22,54 +22,45 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
+import { h, render } from "preact";
+import { PageHeader } from "../../ts/page_header"
+
+render(<PageHeader page="tutorial_phase_4" />, $('#tutorial_phase_4_header')[0]);
+
 function update_config()
 {
-    // Get current config from state "tutorial_phase_5/config" after receiving
+    // Get current config from state "tutorial_phase_4/config" after receiving
     // a change from the backend
-    let config = API.get("tutorial_phase_5/config");
+    let config = API.get("tutorial_phase_4/config");
 
     // Update HTML element with current color value
-    $("#tutorial_phase_5_color").val(config.color);
+    $("#tutorial_phase_4_color").val(config.color);
 }
 
 function save_config()
 {
     // Get current color value from the HTML element and create new config
-    let config = {"color": $("#tutorial_phase_5_color").val().toString()}
+    let config = {"color": $("#tutorial_phase_4_color").val().toString()}
 
-    // Send new config to backend as state "tutorial_phase_5/config"
-    API.save("tutorial_phase_5/config", config, __("tutorial_phase_5.script.save_config_failed"));
-}
-
-function update_state()
-{
-    // Get current state from state "tutorial_phase_5/state" after receiving
-    // a change from the backend
-    let state = API.get("tutorial_phase_5/state");
-
-    // Update HTML element with current button value
-    $("#tutorial_phase_5_button").val(state.button ? __("tutorial_phase_5.script.button_pressed") : __("tutorial_phase_5.script.button_released"));
+    // Send new config to backend as state "tutorial_phase_4/config"
+    API.save("tutorial_phase_4/config", config, __("tutorial_phase_4.script.save_config_failed"));
 }
 
 export function init()
 {
     // Attach the save_config function to the change event of the HTML
     // element to be able to send color changes to the backend.
-    $("#tutorial_phase_5_color").on("change", save_config);
+    $("#tutorial_phase_4_color").on("change", save_config);
 }
 
 export function add_event_listeners(source: API.APIEventTarget)
 {
-    // Create event listener for state "tutorial_phase_5/config" to call the
+    // Create event listener for state "tutorial_phase_4/config" to call the
     // update_config function if changes to that state are reported.
-    source.addEventListener("tutorial_phase_5/config", update_config);
-
-    // Create event listener for state "tutorial_phase_5/state" to call the
-    // update_state function if changes to that state are reported.
-    source.addEventListener("tutorial_phase_5/state", update_state);
+    source.addEventListener("tutorial_phase_4/config", update_config);
 }
 
 export function update_sidebar_state(module_init: any)
 {
-    $("#sidebar-tutorial-phase-5").prop("hidden", !module_init.tutorial_phase_5);
+    $("#sidebar-tutorial-phase-4").prop("hidden", !module_init.tutorial_phase_4);
 }

@@ -24,11 +24,15 @@ import feather from "../../ts/feather";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
+import { h, render } from "preact";
+import { ConfigPageHeader } from "../../ts/config_page_header"
+
+render(<ConfigPageHeader page="ping" />, $('#ping_header')[0]);
+
 declare function __(s: string): string;
 
-
 function update_config(force: boolean = false) {
-    if (!force && !$('#ping_save_button').prop("disabled"))
+    if (!force && !$('#ping_config_save_button').prop("disabled"))
         return;
 
     let cfg = API.get('ping/config');
@@ -42,22 +46,20 @@ function update_state() {
 }
 
 function save_config() {
-API.save("ping/config", {
+    API.save("ping/config", {
                 enable: $('#ping_enabled').prop("checked"),
                 host: $('#ping_host').val().toString(),
                 interval: parseInt($('#ping_interval').val().toString())
             },
             __("ping.script.save_failed"),
             __("ping.script.reboot_content_changed"))
-        .then(() => $('#ping_save_button').prop("disabled", true));
+        .then(() => $('#ping_config_save_button').prop("disabled", true));
 }
 
 export function init() {
+    $('#ping_config_form').on('input', () => $('#ping_config_save_button').prop("disabled", false));
 
-    $('#ping_form').on('input', () => $('#ping_save_button').prop("disabled", false));
-
-
-    $('#ping_form').on('submit', function (this: HTMLFormElement, event: Event) {
+    $('#ping_config_form').on('submit', function (this: HTMLFormElement, event: Event) {
         this.classList.add('was-validated');
         event.preventDefault();
         event.stopPropagation();

@@ -22,6 +22,11 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
+import { h, render } from "preact";
+import { ConfigPageHeader } from "../../ts/config_page_header"
+
+render(<ConfigPageHeader page="energy_manager" />, $('#energy_manager_header')[0]);
+
 function update_energy_manager_state() {
     let state = API.get('energy_manager/state');
 
@@ -168,7 +173,7 @@ function allow_debug(b: boolean) {
             // returnValue is not a boolean, but the string to be shown
             // in the "are you sure you want to close this tab" message
             // box. However this string is only shown in some browsers.
-            e.returnValue = <any>__("energy_manager.script.tab_close_warning");
+            e.returnValue = __("energy_manager.script.tab_close_warning") as any;
         }
     } else {
         window.onbeforeunload = null;
@@ -177,7 +182,7 @@ function allow_debug(b: boolean) {
 
 function debug_start() {
     debug_log = "";
-    let status = <HTMLInputElement>$('#debug_label')[0];
+    let status = $('#debug_label')[0] as HTMLInputElement;
     status.value = __("energy_manager.script.loading_debug_report");
     allow_debug(false);
     $.get("/debug_report")
@@ -214,7 +219,7 @@ function debug_start() {
 
 
 function debug_stop() {
-    let status = <HTMLInputElement>$('#debug_label')[0];
+    let status = $('#debug_label')[0] as HTMLInputElement;
 
     allow_debug(true);
 

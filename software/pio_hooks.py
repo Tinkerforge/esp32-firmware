@@ -381,7 +381,7 @@ def main():
             with open(os.path.join(mod_path, 'status.html'), encoding='utf-8') as f:
                 status_entries.append(f.read())
 
-        if os.path.exists(os.path.join(mod_path, 'main.ts')):
+        if os.path.exists(os.path.join(mod_path, 'main.ts')) or os.path.exists(os.path.join(mod_path, 'main.tsx')):
             main_ts_entries.append(frontend_module.under)
 
         if os.path.exists(os.path.join(mod_path, 'api.ts')):

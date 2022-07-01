@@ -24,6 +24,11 @@ import feather from "../../ts/feather";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
+import { h, render } from "preact";
+import { ConfigPageHeader } from "../../ts/config_page_header"
+
+render(<ConfigPageHeader page="ntp" />, $('#ntp_header')[0]);
+
 import timezones from "./timezones";
 
 declare function __(s: string): string;
@@ -55,19 +60,19 @@ function update_state() {
 export function init() {
     $('#ntp_browser_timezone').on('click', () => {
         update_timezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
-        $('#ntp_config').trigger('input');
+        $('#ntp_config_form').trigger('input');
     });
 
     $('#ntp_config_timezone_area').on('change', () => {
-        let area = <string>$('#ntp_config_timezone_area').val();
+        let area = $('#ntp_config_timezone_area').val() as string;
         let options = Object.keys(timezones[area]).sort().map((x) => `<option value="${x}">${x}</option>`).join("");
         $('#ntp_config_timezone_location').empty().append(options);
         $('#ntp_config_timezone_location').trigger('change');
     });
 
     $('#ntp_config_timezone_location').on('change', () => {
-        let area = <string>$('#ntp_config_timezone_area').val();
-        let loc = <string>$('#ntp_config_timezone_location').val();
+        let area = $('#ntp_config_timezone_area').val() as string;
+        let loc = $('#ntp_config_timezone_location').val() as string;
         let sub_loc = timezones[area][loc];
         if (sub_loc === null) {
             $('#ntp_config_timezone_sublocation').prop("hidden", true);

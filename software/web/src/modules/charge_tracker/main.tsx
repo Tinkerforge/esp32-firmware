@@ -20,10 +20,14 @@
 import $ from "../../ts/jq";
 
 import * as util from "../../ts/util";
-
 import * as API from "../../ts/api";
 
 import feather from "../../ts/feather";
+
+import { h, render } from "preact";
+import { PageHeader } from "../../ts/page_header"
+
+render(<PageHeader page="charge_tracker" />, $('#charge_tracker_header')[0]);
 
 declare function __(s: string): string;
 

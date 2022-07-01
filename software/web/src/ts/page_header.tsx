@@ -17,20 +17,22 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "../../ts/jq";
+import { h, Component } from "preact";
 
-import * as util from "../../ts/util";
-import * as API from "../../ts/api";
-
-export function init()
-{
+export interface PageHeaderProps {
+    page: string
 }
 
-export function add_event_listeners(source: API.APIEventTarget)
-{
-}
-
-export function update_sidebar_state(module_init: any)
-{
-    $("#sidebar-tutorial-phase-1").prop("hidden", !module_init.tutorial_phase_1);
+export class PageHeader extends Component<PageHeaderProps, any> {
+    render() {
+        let title_data_i18n = this.props.page + ".content." + this.props.page;
+    
+        return (
+            <div class="row sticky-under-top mb-3 pt-3">
+                <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-header-shadow">
+                    <h1 class="h2" data-i18n={title_data_i18n}></h1>
+                </div>
+            </div>
+        );
+    }
 }

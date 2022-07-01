@@ -24,6 +24,11 @@ import feather from "../../ts/feather";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
+import { h, render } from "preact";
+import { ConfigPageHeader } from "../../ts/config_page_header"
+
+render(<ConfigPageHeader page="charge_manager" />, $('#charge_manager_header')[0]);
+
 declare function __(s: string): string;
 
 let charger_state_count = -1;
@@ -124,7 +129,7 @@ function update_charge_manager_config(config: ChargeManagerConfig = API.get('cha
 
     update_available_current(config.default_available_current);
 
-    if (!force && !$('#charge_manager_save_button').prop("disabled"))
+    if (!force && !$('#charge_manager_config_save_button').prop("disabled"))
         return;
 
     $('#charge_manager_enable').prop("checked", config.enable_charge_manager);
@@ -179,7 +184,7 @@ function update_charge_manager_config(config: ChargeManagerConfig = API.get('cha
         feather.replace();
         for (let i = 0; i < config.chargers.length; i++) {
             $(`#charge_manager_content_${i}_remove`).on("click", () => {
-                $('#charge_manager_save_button').prop("disabled", false);
+                $('#charge_manager_config_save_button').prop("disabled", false);
                 update_charge_manager_config(collect_charge_manager_config(null, i), true);
             });
         }
@@ -216,9 +221,9 @@ function collect_charge_manager_config(new_charger: ChargerConfig = null, remove
        enable_charge_manager: $('#charge_manager_enable').is(':checked'),
        enable_watchdog: $('#charge_manager_enable_watchdog').is(':checked'),
        verbose: $('#charge_manager_verbose').is(':checked'),
-       default_available_current: Math.round(<number>$('#charge_manager_default_available_current').val() * 1000),
-       maximum_available_current: Math.round(<number>$('#charge_manager_maximum_available_current').val() * 1000),
-       minimum_current: Math.round(<number>$('#charge_manager_minimum_current').val() * 1000),
+       default_available_current: Math.round(($('#charge_manager_default_available_current').val() as number) * 1000),
+       maximum_available_current: Math.round(($('#charge_manager_maximum_available_current').val() as number) * 1000),
+       minimum_current: Math.round(($('#charge_manager_minimum_current').val() as number) * 1000),
        chargers: chargers
     };
 }
@@ -226,11 +231,11 @@ function collect_charge_manager_config(new_charger: ChargerConfig = null, remove
 function save_charge_manager_config() {
     let payload = collect_charge_manager_config();
     API.save('charge_manager/config', payload, __("charge_manager.script.save_failed"), __("charge_manager.script.reboot_content_changed"))
-       .then(() => $('#charge_manager_save_button').prop("disabled", true));
+       .then(() => $('#charge_manager_config_save_button').prop("disabled", true));
 }
 
 export function init() {
-    $('#charge_manager_config_form').on('input', () => $('#charge_manager_save_button').prop("disabled", false));
+    $('#charge_manager_config_form').on('input', () => $('#charge_manager_config_save_button').prop("disabled", false));
 
     $('#charge_manager_config_form').on('submit', function (this: HTMLFormElement, event: Event) {
         $('#charge_manager_default_available_current').prop("max", $('#charge_manager_maximum_available_current').val());
@@ -247,7 +252,7 @@ export function init() {
     });
 
     $('#charge_manager_add_charger_form').on("submit", (event: Event) => {
-        let form = <HTMLFormElement>$('#charge_manager_add_charger_form')[0];
+        let form = $('#charge_manager_add_charger_form')[0] as HTMLFormElement;
 
         form.classList.add('was-validated');
         event.preventDefault();
@@ -258,7 +263,7 @@ export function init() {
         }
 
         $('#charge_manager_add_charger_modal').modal('hide');
-        $('#charge_manager_save_button').prop("disabled", false);
+        $('#charge_manager_config_save_button').prop("disabled", false);
 
         let new_config = collect_charge_manager_config({
             host: $(`#charge_manager_config_charger_new_host`).val().toString(),
@@ -283,7 +288,7 @@ export function init() {
             return;
         }
 
-        set_available_current(Math.round(<number>$('#charge_manager_status_available_current').val() * 1000));
+        set_available_current(Math.round(($('#charge_manager_status_available_current').val() as number) * 1000));
     });
 }
 

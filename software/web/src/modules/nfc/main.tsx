@@ -24,6 +24,11 @@ import * as API from "../../ts/api";
 
 import feather from "../../ts/feather";
 
+import { h, render } from "preact";
+import { ConfigPageHeader } from "../../ts/config_page_header"
+
+render(<ConfigPageHeader page="nfc" />, $('#nfc_header')[0]);
+
 declare function __(s: string): string;
 
 const MAX_AUTHORIZED_TAGS = 16;
@@ -38,7 +43,7 @@ let nfc_card_delete_symbol = '<svg xmlns="http://www.w3.org/2000/svg" width="24"
 let nfc_card_add_symbol = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user-x mr-2"><g transform="matrix(1.33 0 0 -1.33 -51.7 105) translate(0 0)"><g transform="matrix(.0118 0 0 .0118 39.3 61.8)" fill="currentColor"><path d="m5.51 1345-2.79-149c-.457-23.2-5.91-570 .043-726 9.85-253 24.2-393 122-470h227c-10.9 2.55-21.6 5.48-32.4 9.28-150 52.7-176 187-194 474-2.98 49.9-4.48 145-4.48 250 0 108 1.14 225 2.33 315l456-456v179l-573 573"></path><path d="m798 55.1 2.79 149c.461 23.2 5.91 570-.046 725-9.84 252-24.2 393-122 470h-227c10.9-2.55 21.7-5.48 32.4-9.27 150-52.7 176-187 194-474 2.98-49.9 4.49-145 4.49-250 0-108-1.15-225-2.34-315l-456 456v-179l573-573"></path></g></g><line x1="20" y1="9" x2="20" y2="15"></line><line x1="23" y1="12" x2="17" y2="12"></line></svg>';
 
 function update_nfc_config(cfg: NFCConfig = API.get('nfc/config'), force: boolean) {
-    if (!force && !$('#nfc_save_button').prop('disabled'))
+    if (!force && !$('#nfc_config_save_button').prop('disabled'))
         return;
 
     if (cfg.authorized_tags.length != authorized_tag_count) {
@@ -101,7 +106,7 @@ function update_nfc_config(cfg: NFCConfig = API.get('nfc/config'), force: boolea
         feather.replace();
         for (let i = 0; i < cfg.authorized_tags.length; i++) {
             $(`#nfc_authorized_tag_${i}_remove`).on("click", () => {
-                $('#nfc_save_button').prop("disabled", false);
+                $('#nfc_config_save_button').prop("disabled", false);
                 update_nfc_config(collect_nfc_config(null, i), true)
             });
         }
@@ -143,7 +148,7 @@ function save_nfc_config() {
     let payload = collect_nfc_config();
 
     API.save('nfc/config', payload, __("nfc.script.save_failed"), __("nfc.script.reboot_content_changed"))
-       .then(() => $('#nfc_save_button').prop("disabled", true));
+       .then(() => $('#nfc_config_save_button').prop("disabled", true));
 }
 
 
@@ -242,7 +247,7 @@ function update_users_config() {
 
 export function init() {
 
-    $('#nfc_config_form').on('input', (event: Event) => $('#nfc_save_button').prop("disabled", false));
+    $('#nfc_config_form').on('input', (event: Event) => $('#nfc_config_save_button').prop("disabled", false));
 
     $('#nfc_config_form').on('submit', function (this: HTMLFormElement, event: Event) {
         this.classList.add('was-validated');
@@ -262,7 +267,7 @@ export function init() {
             btns.first().trigger("click");
         }
 
-        let form = <HTMLFormElement>$('#nfc_add_tag_form')[0];
+        let form = $('#nfc_add_tag_form')[0] as HTMLFormElement;
         form.classList.add('was-validated');
         event.preventDefault();
         event.stopPropagation();
@@ -272,7 +277,7 @@ export function init() {
         }
 
         $('#nfc_add_tag_modal').modal('hide');
-        $('#nfc_save_button').prop("disabled", false);
+        $('#nfc_config_save_button').prop("disabled", false);
 
         let new_config = collect_nfc_config({
             user_id: parseInt($('#nfc_config_tag_new_user_id').val().toString()),
@@ -284,7 +289,7 @@ export function init() {
     });
 
     $('#nfc_add_tag_modal').on("hidden.bs.modal", () => {
-        let form = <HTMLFormElement>$('#nfc_add_tag_form')[0];
+        let form = $('#nfc_add_tag_form')[0] as HTMLFormElement;
         form.reset();
     })
 }

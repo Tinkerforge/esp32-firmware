@@ -1,12 +1,6 @@
 <div class="tab-pane fade" role="tabpanel" aria-labelledby="sidebar-wireguard" id="wireguard">
-    <div class="row sticky-under-top mb-3 pt-3">
-        <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-header-shadow">
-            <h1 class="h2" data-i18n="wireguard.content.wireguard"></h1>
-            <button id="wireguard_save_button" type="submit" form="wireguard_config_form" class="btn btn-primary mb-2" disabled>
-                <span data-i18n="wireguard.content.save"></span>
-            </button>
-        </div>
-    </div>
+    <div id="wireguard_header"></div>
+
     <form id="wireguard_config_form" class="needs-validation" novalidate>
         <!--
             Use custom validation instead of the browser default, that is broken on Chrome

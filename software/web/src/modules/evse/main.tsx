@@ -24,6 +24,11 @@ import feather from "../../ts/feather";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
+import { h, render } from "preact";
+import { PageHeader } from "../../ts/page_header"
+
+render(<PageHeader page="evse" />, $('#evse_header')[0]);
+
 declare function __(s: string): string;
 
 function update_evse_status_start_charging_button() {
@@ -230,7 +235,7 @@ function allow_debug(b: boolean) {
             // returnValue is not a boolean, but the string to be shown
             // in the "are you sure you want to close this tab" message
             // box. However this string is only shown in some browsers.
-            e.returnValue = <any>__("evse.script.tab_close_warning");
+            e.returnValue = __("evse.script.tab_close_warning") as any;
         }
     } else {
         window.onbeforeunload = null;
@@ -239,7 +244,7 @@ function allow_debug(b: boolean) {
 
 function debug_start() {
     debug_log = "";
-    let status = <HTMLInputElement>$('#debug_label')[0];
+    let status = $('#debug_label')[0] as HTMLInputElement;
     status.value = __("evse.script.loading_debug_report");
     allow_debug(false);
     $.get("/debug_report")
@@ -276,7 +281,7 @@ function debug_start() {
 
 
 function debug_stop() {
-    let status = <HTMLInputElement>$('#debug_label')[0];
+    let status = $('#debug_label')[0] as HTMLInputElement;
 
     allow_debug(true);
 
@@ -348,18 +353,18 @@ export function init() {
             return;
         }
 
-        set_charging_current(Math.round(<number>input.val() * 1000));
+        set_charging_current(Math.round((input.val() as number) * 1000));
     });
 
     $('#user_calibration_upload').on("change",(evt: Event) => {
-        let files = (<HTMLInputElement>evt.target).files;
+        let files = (evt.target as HTMLInputElement).files;
         if (files.length < 1) {
             return;
         }
         let reader = new FileReader();
         reader.onload = (event) => {
             API.save("evse/user_calibration",
-                JSON.parse(<string>event.target.result),
+                JSON.parse(event.target.result as string),
                 __("evse.script.user_calibration_upload_failed")
             );
         };

@@ -22,6 +22,11 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
+import { h, render } from "preact";
+import { ConfigPageHeader } from "../../ts/config_page_header"
+
+render(<ConfigPageHeader page="em_meter_config" />, $('#em_meter_config_header')[0]);
+
 declare function __(s: string): string;
 
 function update_em_meter_config() {
@@ -81,8 +86,8 @@ export function init() {
     $("#em-meter-config-type").on("change", update_em_meter_config_html_visibility);
 
     // Use bootstrap form validation
-    $('#em_meter_config_form').on('submit', function (this: HTMLFormElement, event: Event) {
-        console.log("em_meter_config_form on submit");
+    $('#em_meter_config_config_form').on('submit', function (this: HTMLFormElement, event: Event) {
+        console.log("em_meter_config_config_form on submit");
         this.classList.add('was-validated');
         event.preventDefault();
         event.stopPropagation();

@@ -22,6 +22,11 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
+import { h, render } from "preact";
+import { PageHeader } from "../../ts/page_header"
+
+render(<PageHeader page="debug" />, $('#debug_header')[0]);
+
 function update_debug_state() {
     let state = API.get('debug/state');
     $('#debug_uptime').val(util.format_timespan(Math.round(state.uptime / 1000)));

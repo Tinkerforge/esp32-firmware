@@ -22,6 +22,11 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
+import { h, render } from "preact";
+import { PageHeader } from "../../ts/page_header"
+
+render(<PageHeader page="proxy" />, $('#proxy_header')[0]);
+
 declare function __(s: string): string;
 
 function update_devices() {
@@ -85,5 +90,5 @@ export function add_event_listeners(source: API.APIEventTarget) {
 }
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-bricklets').prop('hidden', !module_init.proxy);
+    $('#sidebar-proxy').prop('hidden', !module_init.proxy);
 }
