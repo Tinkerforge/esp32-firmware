@@ -6,7 +6,6 @@ gulp.task("bundle-js", function () {
     const glob = require("glob");
     const browserify = require("browserify");
     const tsify = require("tsify");
-    const fancy_log = require("fancy-log");
     const source = require("vinyl-source-stream");
     const buffer = require("vinyl-buffer");
     const uglify = require("gulp-uglify");
@@ -23,7 +22,6 @@ gulp.task("bundle-js", function () {
     })
         .plugin(tsify, {files: []}) // Compile typescript
         .bundle()
-        .on("error", fancy_log)
         .pipe(source("bundle.js")) // Collect in bundle.js
         .pipe(buffer())
         // TODO: for some reason meter_chart_change_time gets removed by the default config
