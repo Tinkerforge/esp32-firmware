@@ -8,9 +8,7 @@
         -->
 
         <div class="form-group row">
-            <div class="col-lg-3 col-xl-2">
-                <label for="ethernet_config_enable_ethernet" class="col-form-label form-label" data-i18n="ethernet.content.enable"></label>
-            </div>
+            <label for="ethernet_config_enable_ethernet" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="ethernet.content.enable"></label>
             <div class="col-lg-9 col-xl-6">
                 <div class="borderless-form-control custom-control custom-switch">
                     <input type="checkbox" class="custom-control-input" id="ethernet_config_enable_ethernet">
@@ -21,7 +19,6 @@
 
         <div class="form-group row">
             <label for="ethernet_config_show_static" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="ethernet.content.ip_configuration"></label>
-
             <div class="col-lg-9 col-xl-6">
                 <select id="ethernet_config_show_static" class="custom-select">
                     <option value="hide" selected data-i18n="ethernet.content.dhcp"></option>
@@ -64,7 +61,7 @@
             </div>
 
             <div class="form-group row">
-                <label for="ethernet_config_dns" class="col-lg-3 col-xl-2 col-form-label" data-i18n="ethernet.content.dns"></label>
+                <label for="ethernet_config_dns" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="ethernet.content.dns"></label>
                 <div class="col-lg-9 col-xl-6">
                     <input id="ethernet_config_dns" class="form-control" type="text"
                         minlength="7" maxlength="15" size="15"
@@ -74,7 +71,10 @@
             </div>
 
             <div class="form-group row">
-                <label for="ethernet_config_dns2" class="col-lg-3 col-xl-2 col-form-label" data-i18n="ethernet.content.dns2"></label>
+                <label for="ethernet_config_dns2" class="col-lg-3 col-xl-2 col-form-label">
+                    <span class="form-label pr-2" data-i18n="ethernet.content.dns2"></span>
+                    <span class="text-muted" data-i18n="ethernet.content.dns2_muted"></span>
+                </label>
                 <div class="col-lg-9 col-xl-6">
                     <input id="ethernet_config_dns2" class="form-control" type="text"
                         minlength="7" maxlength="15" size="15"

@@ -88,7 +88,6 @@
 
         <div class="form-group row">
             <label for="wifi_sta_config_show_static" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="wifi.content.sta_ip_configuration"></label>
-
             <div class="col-lg-9 col-xl-6">
                 <select id="wifi_sta_config_show_static" class="custom-select">
                     <option value="hide" selected data-i18n="wifi.content.sta_dhcp"></option>
@@ -131,7 +130,7 @@
             </div>
 
             <div class="form-group row">
-                <label for="wifi_sta_config_dns" class="col-lg-3 col-xl-2 col-form-label" data-i18n="wifi.content.dns"></label>
+                <label for="wifi_sta_config_dns" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="wifi.content.dns"></label>
                 <div class="col-lg-9 col-xl-6">
                     <input id="wifi_sta_config_dns" class="form-control" type="text"
                         minlength="7" maxlength="15" size="15"
@@ -141,7 +140,10 @@
             </div>
 
             <div class="form-group row">
-                <label for="wifi_sta_config_dns2" class="col-lg-3 col-xl-2 col-form-label" data-i18n="wifi.content.dns2"></label>
+                <label for="wifi_sta_config_dns2" class="col-lg-3 col-xl-2 col-form-label">
+                    <span class="form-label pr-2" data-i18n="wifi.content.dns2"></span>
+                    <span class="text-muted" data-i18n="wifi.content.dns2_muted"></span>
+                </label>
                 <div class="col-lg-9 col-xl-6">
                     <input id="wifi_sta_config_dns2" class="form-control" type="text"
                         minlength="7" maxlength="15" size="15"
@@ -168,9 +170,10 @@
         -->
 
         <div class="form-group row">
-            <div class="col-lg-3 col-xl-2">
-                <label for="wifi_ap_config_enable_ap" class="col-form-label" data-i18n="wifi.content.ap_enable"></label>
-            </div>
+            <label for="wifi_ap_config_enable_ap" class="col-lg-3 col-xl-2 col-form-label">
+                <span class="form-label pr-2" data-i18n="wifi.content.ap_enable"></span>
+                <span class="text-muted" data-i18n="wifi.content.ap_enable_muted"></span>
+            </label>
             <div class="col-lg-9 col-xl-6">
                 <select id="wifi_ap_config_enable_ap" class="custom-select">
                     <option value="0" data-i18n="wifi.content.ap_enabled"></option>
@@ -222,8 +225,10 @@
         </div>
 
         <div class="form-group row">
-            <label for="wifi_ap_config_channel"
-                class="col-lg-3 col-xl-2 col-form-label" data-i18n="wifi.content.ap_channel"></label>
+            <label for="wifi_ap_config_channel" class="col-lg-3 col-xl-2 col-form-label">
+                <span class="form-label pr-2" data-i18n="wifi.content.ap_channel"></span>
+                <span class="text-muted" data-i18n="wifi.content.ap_channel_muted"></span>
+            </label>
             <div class="col-lg-9 col-xl-6">
                 <select id="wifi_ap_config_channel" class="form-control" required>
                     <option value="0" data-i18n="wifi.content.ap_channel_auto_select"></option>
