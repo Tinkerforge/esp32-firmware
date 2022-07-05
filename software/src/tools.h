@@ -49,3 +49,6 @@ uint32_t timestamp_minutes();
 bool for_file_in(const char *dir, bool (*callback)(File *open_file), bool skip_directories = true);
 
 void remove_directory(const char *path);
+
+bool is_in_subnet(IPAddress ip, IPAddress subnet, IPAddress to_check);
+bool is_valid_subnet_mask(IPAddress subnet);

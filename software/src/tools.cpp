@@ -35,6 +35,8 @@
 #include "esp_log.h"
 #include "build.h"
 
+#include <arpa/inet.h>
+
 extern EventLog logger;
 
 bool deadline_elapsed(uint32_t deadline_ms)
@@ -650,4 +652,24 @@ void remove_directory(const char *path)
         });
 
     ::rmdir((String("/spiffs/") + path).c_str());
+}
+
+
+bool is_in_subnet(IPAddress ip, IPAddress subnet, IPAddress to_check) {
+    return (((uint32_t)ip) & ((uint32_t)subnet)) == (((uint32_t)to_check) & ((uint32_t)subnet));
+}
+
+bool is_valid_subnet_mask(IPAddress subnet) {
+    bool zero_seen = false;
+    // IPAddress is in network byte order!
+    uint32_t addr = ntohl((uint32_t) subnet);
+    for (int i = 31; i >= 0; --i) {
+        bool bit_is_one = (addr & (1 << i));
+        if (zero_seen && bit_is_one) {
+            return false;
+        } else if (!zero_seen && !bit_is_one) {
+            zero_seen = true;
+        }
+    }
+    return true;
 }

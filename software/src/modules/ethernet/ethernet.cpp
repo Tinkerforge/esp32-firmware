@@ -31,6 +31,7 @@
 #include "task_scheduler.h"
 #include "build.h"
 #include "modules.h"
+#include "tools.h"
 
 extern API api;
 extern TaskScheduler task_scheduler;
@@ -52,16 +53,25 @@ Ethernet::Ethernet()
         const char *dns = cfg.get("dns")->asCStr();
         const char *dns2 = cfg.get("dns2")->asCStr();
 
-        IPAddress unused;
+        IPAddress ip_addr, subnet_mask, gateway_addr, unused;
 
-        if (!unused.fromString(ip))
+        if (!ip_addr.fromString(ip))
             return "Failed to parse \"ip\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!unused.fromString(gateway))
+        if (!gateway_addr.fromString(gateway))
             return "Failed to parse \"gateway\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!unused.fromString(subnet))
-            return "Failed to parse \"subnet\": Expected format is dotted decimal, i.e. 10.0.0.1";
+        if (!subnet_mask.fromString(subnet))
+            return "Failed to parse \"subnet\": Expected format is dotted decimal, i.e. 255.255.255.0";
+
+        if (!is_valid_subnet_mask(subnet_mask))
+            return "Invalid subnet mask passed: Expected format is 255.255.255.0";
+
+        if (ip_addr != IPAddress(0,0,0,0) && is_in_subnet(ip_addr, subnet_mask, IPAddress(127,0,0,1)))
+            return "Invalid IP or subnet mask passed: This configuration would route localhost (127.0.0.1) to the ethernet interface.";
+
+        if (gateway_addr != IPAddress(0,0,0,0) && !is_in_subnet(ip_addr, subnet_mask, gateway_addr))
+            return "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask.";
 
         if (!unused.fromString(dns))
             return "Failed to parse \"dns\": Expected format is dotted decimal, i.e. 10.0.0.1";
