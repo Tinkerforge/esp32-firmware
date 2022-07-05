@@ -28,6 +28,11 @@ import YaMD5 from "../../ts/yamd5";
 
 import {getAllUsernames} from "../charge_tracker/main";
 
+import { h, render } from "preact";
+import { ConfigPageHeader } from "../../ts/config_page_header"
+
+render(<ConfigPageHeader page="users" />, $('#users_header')[0]);
+
 declare function __(s: string): string;
 
 const MAX_ACTIVE_USERS = 16;
@@ -107,7 +112,7 @@ async function save_users_config() {
         have.push({
             id: parseInt($(`#users_authorized_user_${i}_id`).val().toString()),
             roles: parseInt($(`#users_authorized_user_${i}_roles`).val().toString()),
-            current: Math.round(<number>$(`#users_authorized_user_${i}_current`).val() * 1000),
+            current: Math.round(($(`#users_authorized_user_${i}_current`).val() as number) * 1000),
             display_name: $(`#users_authorized_user_${i}_display_name`).val().toString(),
             username: username,
             digest_hash: digest
@@ -212,7 +217,7 @@ function generate_user_ui(user: User, password: string) {
     feather.replace();
     $(`#users_authorized_user_${i}_remove`).on("click", () => {
         $(`#users_authorized_user_${i}_remove`).parent().parent().parent().remove();
-        $('#users_save_button').prop("disabled", false);
+        $('#users_config_save_button').prop("disabled", false);
         check_http_auth_allowed();
     });
 }
@@ -227,10 +232,10 @@ function update_users_config(force: boolean) {
 
     $('#users_authentication_enable').prop("checked", cfg.http_auth_enabled);
 
-    if (!force && !$('#users_save_button').prop('disabled') && gui_created)
+    if (!force && !$('#users_config_save_button').prop('disabled') && gui_created)
         return;
 
-    $('#users_save_button').prop('disabled', true);
+    $('#users_config_save_button').prop('disabled', true);
     gui_created = true;
 
     if (cfg.users.length != authorized_users_count) {
@@ -312,7 +317,7 @@ function update_users_config(force: boolean) {
         for (let i = 0; i < cfg.users.length; i++) {
             $(`#users_authorized_user_${i}_remove`).on("click", () => {
                 $(`#users_authorized_user_${i}_remove`).parent().parent().parent().remove();
-                $('#users_save_button').prop("disabled", false);
+                $('#users_config_save_button').prop("disabled", false);
                 check_http_auth_allowed();
             });
         }
@@ -370,7 +375,7 @@ function check_http_auth_allowed() {
 }
 
 export function init() {
-    $('#users_config_form').on('input', () => $('#users_save_button').prop("disabled", false));
+    $('#users_config_form').on('input', () => $('#users_config_save_button').prop("disabled", false));
     $('#users_config_form').on('input', check_http_auth_allowed);
 
     $('#users_config_form').on('submit', async function (event: Event) {
@@ -378,15 +383,15 @@ export function init() {
         event.preventDefault();
         event.stopPropagation();
 
-        if ((<HTMLFormElement>this).checkValidity() === false) {
+        if ((this as HTMLFormElement).checkValidity() === false) {
             return;
         }
 
-        $('#users_save_spinner').prop('hidden', false);
+        $('#users_config_save_spinner').prop('hidden', false);
         await save_users_config()
-            .then(() => $('#users_save_button').prop("disabled", true))
+            .then(() => $('#users_config_save_button').prop("disabled", true))
             .then(util.getShowRebootModalFn(__("users.script.reboot_content_changed")))
-            .finally(() => $('#users_save_spinner').prop('hidden', true));
+            .finally(() => $('#users_config_save_spinner').prop('hidden', true));
     });
 
     $('#users_add_user_form').on("input", () => {
@@ -409,7 +414,7 @@ export function init() {
 
         const [usernames, _] = await getAllUsernames().catch(err => {
             util.add_alert("download-usernames", "danger", __("users.script.download_usernames_failed"), err);
-            return <[string[], string[]]>[null, null];
+            return [null, null] as [string[], string[]];
         });
 
         if (usernames == null)
@@ -423,7 +428,7 @@ export function init() {
             return;
         }
 
-        let form = <HTMLFormElement>$('#users_add_user_form')[0];
+        let form = $('#users_add_user_form')[0] as HTMLFormElement;
         if (!form.checkValidity()) {
             form.classList.add('was-validated');
             return;
@@ -438,19 +443,19 @@ export function init() {
         generate_user_ui({
             id: -1,
             username: username,
-            current: Math.round(<number>current * 1000),
+            current: Math.round((current as number) * 1000),
             display_name: $('#users_config_user_new_display_name').val().toString(),
             roles: 0xFFFF,
             digest_hash: ""
         }, $('#users_config_user_new_password').val().toString());
 
         $('#users_add_user_modal').modal('hide');
-        $('#users_save_button').prop("disabled", false);
+        $('#users_config_save_button').prop("disabled", false);
         check_http_auth_allowed();
     });
 
     $('#users_add_user_modal').on("hidden.bs.modal", () => {
-        let form = <HTMLFormElement>$('#users_add_user_form')[0];
+        let form = $('#users_add_user_form')[0] as HTMLFormElement;
         form.reset();
     })
 
