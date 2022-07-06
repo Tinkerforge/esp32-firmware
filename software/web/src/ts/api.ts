@@ -196,8 +196,21 @@ export function default_saver<T extends keyof ConfigMap>(topic: T, overrides?: P
 // Take the overrides as a function that returns the dictionary,
 // so that we can control when the entries are evaluated.
 // This makes calling this a bit uglier, because we have to pass the overrides
-// like this: register_config_form(..., () => ({a: 1, b:2}), ...
-export function register_config_form<T extends keyof ConfigMap>(topic: T, overrides?: () => Partial<ConfigMap[T]>, validation_override?: () => void, error_string?: string, reboot_string?: string) {
+// like this: register_config_form(..., {overrides: () => ({a: 1, b:2}), ...})
+export function register_config_form<T extends keyof ConfigMap>(topic: T, p: {
+        // Replacements to be made before running the default HTML form validation
+        overrides?: () => Partial<ConfigMap[T]>,
+        // Custom validation to be checked before running the default HTML form validation.
+        // Use this to reset validation changes (i.e. is-invalid classes, changed invalid-feedback texts)
+        // done in post_validation.
+        pre_validation?: () => boolean,
+        // Custom validation to be checked after running the default HTML form validation.
+        post_validation?: () => boolean,
+        // Translated string to show in error message if calling API fails.
+        error_string?: string,
+        // Translated string to show in modal if calling API succeeds. No modal is shown if this is left undefined.
+        reboot_string?: string
+    }) {
     let prefix = topic.replace('/', '_');
     let form = $(`#${prefix}_form`);
     let save_btn = $(`#${prefix}_save_button`);
@@ -211,20 +224,23 @@ export function register_config_form<T extends keyof ConfigMap>(topic: T, overri
     }
 
     form.on('submit', function (this: HTMLFormElement, event: Event) {
-        if (validation_override)
-            validation_override();
+        this.classList.remove('was-validated');
 
         event.preventDefault();
         event.stopPropagation();
 
+        if (p.pre_validation && !p.pre_validation())
+            return;
+
         if (this.checkValidity() === false) {
             this.classList.add('was-validated');
             return;
-        } else {
-            this.classList.remove('was-validated');
         }
 
-        default_saver(topic, overrides ? overrides() : undefined, error_string, reboot_string);
+        if (p.post_validation && !p.post_validation())
+            return;
+
+        default_saver(topic, p.overrides ? p.overrides() : undefined, p.error_string, p.reboot_string);
     });
 
     form.on('input', () => save_btn.prop("disabled", false));

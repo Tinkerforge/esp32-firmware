@@ -373,3 +373,35 @@ export function timestamp_min_to_date(timestamp_minutes: number, unsynced_string
 
     return result;
 }
+
+export function reset_static_ip_config_validation(ip_id: string, subnet_id: string, gateway_id: string) {
+    $(`#${gateway_id}`).removeClass("is-invalid");
+    $(`#${gateway_id} + .invalid-feedback`).html(__("wifi.content.gateway_invalid"));
+
+    $(`#${subnet_id}`).removeClass("is-invalid");
+    $(`#${subnet_id} + .invalid-feedback`).html(__("wifi.content.subnet_invalid"));
+    return true;
+}
+
+export function validate_static_ip_config(ip_id: string, subnet_id: string, gateway_id: string, dhcp: boolean) {
+    if (dhcp)
+        return true;
+
+    let ip = $(`#${ip_id}`).val().toString().split(".").map((x, i, _) => parseInt(x, 10) * (1 << (8 * (3 - i)))).reduce((a, b) => a+b);
+    let subnet = $(`#${subnet_id}`).val().toString().split(".").map((x, i, _) => parseInt(x, 10) * (1 << (8 * (3 - i)))).reduce((a, b) => a+b);
+    let gateway = $(`#${gateway_id}`).val().toString().split(".").map((x, i, _) => parseInt(x, 10) * (1 << (8 * (3 - i)))).reduce((a, b) => a+b);
+
+    let result = true;
+    if (gateway != 0 && (ip & subnet) != (gateway & subnet)) {
+        $(`#${gateway_id}`).addClass("is-invalid");
+        $(`#${gateway_id} + .invalid-feedback`).html(__("wifi.content.gateway_out_of_subnet"));
+        result = false;
+    }
+
+    if ((ip & subnet) == (0x7F000001 & subnet)) {
+        $(`#${subnet_id}`).addClass("is-invalid");
+        $(`#${subnet_id} + .invalid-feedback`).html(__("wifi.content.subnet_captures_localhost"));
+        result = false;
+    }
+    return result;
+}

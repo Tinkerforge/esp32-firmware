@@ -202,21 +202,24 @@ export function init() {
     $("#wifi_ap_config_clear_passphrase").on("change", util.clear_password_fn("#wifi_ap_passphrase"));
     $("#wifi_sta_config_show_static").on("change", function(this: HTMLInputElement) {wifi_cfg_toggle_static_ip_collapse(this.value);});
 
-    API.register_config_form('wifi/sta_config', () => {
-            let dhcp = $('#wifi_sta_config_show_static').val() != "show";
-            return {
-                bssid: $('#wifi_sta_config_bssid').val().toString().split(':').map(x => parseInt(x, 16)),
-                passphrase: util.passwordUpdate('#wifi_sta_config_passphrase'),
-                ip: dhcp ? "0.0.0.0": $('#wifi_sta_config_ip').val().toString(),
-                subnet: dhcp ? "0.0.0.0": $('#wifi_sta_config_subnet').val().toString(),
-                gateway: dhcp ? "0.0.0.0": $('#wifi_sta_config_gateway').val().toString(),
-                dns: dhcp ? "0.0.0.0": $('#wifi_sta_config_dns').val().toString(),
-                dns2: dhcp ? "0.0.0.0": $('#wifi_sta_config_dns2').val().toString()
-            }
-        },
-        () => $('#wifi_sta_config_ssid').prop("required", $('#wifi_sta_config_enable_sta').is(':checked')),
-        __("wifi.script.sta_config_failed"),
-        __("wifi.script.sta_reboot_content_changed")
+    API.register_config_form('wifi/sta_config', {
+            overrides: () => {
+                let dhcp = $('#wifi_sta_config_show_static').val() != "show";
+                return {
+                    bssid: $('#wifi_sta_config_bssid').val().toString().split(':').map(x => parseInt(x, 16)),
+                    passphrase: util.passwordUpdate('#wifi_sta_config_passphrase'),
+                    ip: dhcp ? "0.0.0.0": $('#wifi_sta_config_ip').val().toString(),
+                    subnet: dhcp ? "0.0.0.0": $('#wifi_sta_config_subnet').val().toString(),
+                    gateway: dhcp ? "0.0.0.0": $('#wifi_sta_config_gateway').val().toString(),
+                    dns: dhcp ? "0.0.0.0": $('#wifi_sta_config_dns').val().toString(),
+                    dns2: dhcp ? "0.0.0.0": $('#wifi_sta_config_dns2').val().toString()
+                }
+            },
+            pre_validation: () => util.reset_static_ip_config_validation('wifi_sta_config_ip', 'wifi_sta_config_subnet', 'wifi_sta_config_gateway'),
+            post_validation: () => util.validate_static_ip_config('wifi_sta_config_ip', 'wifi_sta_config_subnet', 'wifi_sta_config_gateway', $('#wifi_sta_config_show_static').val() != "show"),
+            error_string: __("wifi.script.sta_config_failed"),
+            reboot_string: __("wifi.script.sta_reboot_content_changed")
+        }
     );
 
 
@@ -231,14 +234,17 @@ export function init() {
     });
 
 
-    API.register_config_form('wifi/ap_config', () => ({
-            enable_ap: $('#wifi_ap_config_enable_ap').val() != 2,
-            ap_fallback_only: $('#wifi_ap_config_enable_ap').val() == 1,
-            passphrase: util.passwordUpdate('#wifi_ap_config_passphrase'),
-        }),
-        undefined,
-        __("wifi.script.ap_config_failed"),
-        __("wifi.script.ap_reboot_content_changed"));
+    API.register_config_form('wifi/ap_config', {
+            overrides: () => ({
+                enable_ap: $('#wifi_ap_config_enable_ap').val() != 2,
+                ap_fallback_only: $('#wifi_ap_config_enable_ap').val() == 1,
+                passphrase: util.passwordUpdate('#wifi_ap_config_passphrase'),
+            }),
+            pre_validation: () => util.reset_static_ip_config_validation('wifi_ap_config_ip', 'wifi_ap_config_subnet', 'wifi_ap_config_gateway'),
+            post_validation: () => util.validate_static_ip_config('wifi_ap_config_ip', 'wifi_ap_config_subnet', 'wifi_ap_config_gateway', false),
+            error_string: __("wifi.script.ap_config_failed"),
+            reboot_string: __("wifi.script.ap_reboot_content_changed")
+        });
 
     $('#scan_wifi_dropdown').on('hidden.bs.dropdown', function (e) {
         $("#wifi_scan_title").html(__("wifi.content.sta_scanning"));

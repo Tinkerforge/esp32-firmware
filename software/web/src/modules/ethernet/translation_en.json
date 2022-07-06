@@ -22,6 +22,7 @@
 
             "static_ip": "IP address",
             "subnet": "Subnet mask",
+            "subnet_placeholder": "Select subnet mask...",
             "gateway": "Gateway",
             "dns": "DNS server",
             "dns2": "Alternative DNS server",

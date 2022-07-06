@@ -74,19 +74,22 @@ export function add_event_listeners(source: API.APIEventTarget) {
 }
 
 export function init() {
-    API.register_config_form('ethernet/config', () => {
-            let dhcp = $('#ethernet_config_show_static').val() != "show";
-            return {
-                ip: dhcp ? "0.0.0.0" : $('#ethernet_config_ip').val().toString(),
-                subnet: dhcp ? "0.0.0.0" : $('#ethernet_config_subnet').val().toString(),
-                gateway: dhcp ? "0.0.0.0" : $('#ethernet_config_gateway').val().toString(),
-                dns: dhcp ? "0.0.0.0" : $('#ethernet_config_dns').val().toString(),
-                dns2: dhcp ? "0.0.0.0" : $('#ethernet_config_dns2').val().toString()
-            };
-        },
-        undefined,
-        __("ethernet.script.config_failed"),
-        __("ethernet.script.reboot_content_changed")
+    API.register_config_form('ethernet/config', {
+            overrides: () => {
+                let dhcp = $('#ethernet_config_show_static').val() != "show";
+                return {
+                    ip: dhcp ? "0.0.0.0" : $('#ethernet_config_ip').val().toString(),
+                    subnet: dhcp ? "0.0.0.0" : $('#ethernet_config_subnet').val().toString(),
+                    gateway: dhcp ? "0.0.0.0" : $('#ethernet_config_gateway').val().toString(),
+                    dns: dhcp ? "0.0.0.0" : $('#ethernet_config_dns').val().toString(),
+                    dns2: dhcp ? "0.0.0.0" : $('#ethernet_config_dns2').val().toString()
+                };
+            },
+            pre_validation: () => util.reset_static_ip_config_validation('ethernet_config_ip', 'ethernet_config_subnet', 'ethernet_config_gateway'),
+            post_validation: () => util.validate_static_ip_config('ethernet_config_ip', 'ethernet_config_subnet', 'ethernet_config_gateway', $('#ethernet_config_show_static').val() != "show"),
+            error_string: __("ethernet.script.config_failed"),
+            reboot_string: __("ethernet.script.reboot_content_changed")
+        }
     );
 
     // No => here: we want "this" to be the changed element

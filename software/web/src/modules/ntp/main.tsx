@@ -89,16 +89,18 @@ export function init() {
     $('#ntp_config_timezone_area').empty().append(options);
     $('#ntp_config_timezone_area').trigger('change');
 
-    API.register_config_form('ntp/config', () => {
-            let timezone = $('#ntp_config_timezone_area').val() +
-                            "/" + $('#ntp_config_timezone_location').val() +
-                            ($('#ntp_config_timezone_sublocation').prop("hidden") ? "" : ("/" + $('#ntp_config_timezone_sublocation').val()));
-            return {
-                timezone: timezone
-            };
-        }, undefined,
-        __("ntp.script.save_failed"),
-        __("ntp.script.reboot_content_changed")
+    API.register_config_form('ntp/config', {
+            overrides: () => {
+                    let timezone = $('#ntp_config_timezone_area').val() +
+                                    "/" + $('#ntp_config_timezone_location').val() +
+                                    ($('#ntp_config_timezone_sublocation').prop("hidden") ? "" : ("/" + $('#ntp_config_timezone_sublocation').val()));
+                    return {
+                        timezone: timezone
+                    };
+                },
+            error_string: __("ntp.script.save_failed"),
+            reboot_string: __("ntp.script.reboot_content_changed")
+        }
     );
 }
 

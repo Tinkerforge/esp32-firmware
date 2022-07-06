@@ -46,13 +46,17 @@ export function init() {
     $("#mqtt_config_show_broker_password").on("change", util.toggle_password_fn("#mqtt_config_broker_password"));
     $("#mqtt_config_clear_broker_password").on("change", util.clear_password_fn("#mqtt_config_broker_password"));
 
-    API.register_config_form('mqtt/config', () => ({
-            broker_password: util.passwordUpdate('#mqtt_config_broker_password')
-        }), () => {
-            $('#mqtt_config_broker_host').prop("required", $('#mqtt_config_enable_mqtt').is(':checked'));
-        },
-        __("mqtt.script.save_failed"),
-        __("mqtt.script.reboot_content_changed")
+    API.register_config_form('mqtt/config', {
+            overrides: () => ({
+                broker_password: util.passwordUpdate('#mqtt_config_broker_password')
+            }),
+            pre_validation: () => {
+                $('#mqtt_config_broker_host').prop("required", $('#mqtt_config_enable_mqtt').is(':checked'));
+                return true;
+            },
+            error_string: __("mqtt.script.save_failed"),
+            reboot_string: __("mqtt.script.reboot_content_changed")
+        }
     );
 }
 

@@ -33,11 +33,10 @@ export function init() {
     $('#network-group').on('hide.bs.collapse', () => $('#network-chevron').removeClass("rotated-chevron"));
     $('#network-group').on('show.bs.collapse', () => $('#network-chevron').addClass("rotated-chevron"));
 
-    API.register_config_form('network/config',
-        undefined,
-        undefined,
-        __("network.script.save_failed"),
-        __("network.script.reboot_content_changed"));
+    API.register_config_form('network/config', {
+            error_string: __("network.script.save_failed"),
+            reboot_string: __("network.script.reboot_content_changed")
+        });
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
