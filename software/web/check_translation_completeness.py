@@ -36,13 +36,13 @@ def main():
     ts_files = []
     for root, dirs, files in os.walk("./src/ts"):
         for name in files:
-            if not name.endswith(".ts"):
+            if not name.endswith(".ts") and not name.endswith(".tsx"):
                 continue
             ts_files.append(os.path.join(root, name))
 
     for root, dirs, files in os.walk("./src/typings"):
         for name in files:
-            if not name.endswith(".ts"):
+            if not name.endswith(".ts") and not name.endswith(".tsx"):
                 continue
             ts_files.append(os.path.join(root, name))
     ts_files.append(os.path.join("src", "main.ts"))
@@ -52,6 +52,9 @@ def main():
 
         if os.path.exists(os.path.join(folder, "main.ts")):
             ts_files.append(os.path.join(folder, "main.ts"))
+
+        if os.path.exists(os.path.join(folder, "main.tsx")):
+            ts_files.append(os.path.join(folder, "main.tsx"))
 
         if os.path.exists(os.path.join(folder, "translation_de.ts")):
             ts_files.append(os.path.join(folder, "translation_de.ts"))
