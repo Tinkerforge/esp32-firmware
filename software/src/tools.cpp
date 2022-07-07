@@ -673,3 +673,18 @@ bool is_valid_subnet_mask(IPAddress subnet) {
     }
     return true;
 }
+
+void led_blink(int8_t led_pin, int interval, int blinks_per_interval, int off_time_ms) {
+    int t_in_second = millis() % interval;
+    if (off_time_ms != 0 && (interval - t_in_second <= off_time_ms)) {
+        digitalWrite(led_pin, 1);
+        return;
+    }
+
+    // We want blinks_per_interval blinks and blinks_per_interval pauses between them. The off_time counts as pause.
+    int state_count = ((2 * blinks_per_interval) - (off_time_ms != 0 ? 1 : 0));
+    int state_interval = (interval - off_time_ms) / state_count;
+    bool led = (t_in_second / state_interval) % 2 != 0;
+
+    digitalWrite(led_pin, led);
+}

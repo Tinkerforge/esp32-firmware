@@ -87,10 +87,8 @@ void ESP32Brick::setup()
     button_pin = BUTTON;
 
     task_scheduler.scheduleWithFixedDelay([](){
-        static bool led_blink_state = false;
-        led_blink_state = !led_blink_state;
-        digitalWrite(BLUE_LED, led_blink_state ? HIGH : LOW);
-    }, 0, 1000);
+        led_blink(BLUE_LED, 2000, 1, 0);
+    }, 0, 100);
 
     initialized = true;
 }
