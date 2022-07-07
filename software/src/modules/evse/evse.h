@@ -47,6 +47,8 @@
 #define CHARGER_STATE_CHARGING 3
 #define CHARGER_STATE_ERROR 4
 
+#define DATA_STORE_PAGE_CHARGE_TRACKER 0
+
 class EVSE : public DeviceModule<TF_EVSE,
                                  evse_bricklet_firmware_bin_data,
                                  evse_bricklet_firmware_bin_length,
