@@ -341,6 +341,13 @@ void EVSEV2::setup()
     if (!device_found)
         return;
 
+    task_scheduler.scheduleOnce([this](){
+        uint32_t press_time = 0;
+        tf_evse_v2_get_button_press_boot_time(&device, true, &press_time);
+        if (press_time != 0)
+            logger.printfln("Reset boot button press time");
+    }, 40000);
+
     // Get all data once before announcing the EVSE feature.
     update_all_data();
     api.addFeature("evse");

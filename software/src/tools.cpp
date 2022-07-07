@@ -688,3 +688,18 @@ void led_blink(int8_t led_pin, int interval, int blinks_per_interval, int off_ti
 
     digitalWrite(led_pin, led);
 }
+
+uint16_t internet_checksum(const uint8_t* data, size_t length) {
+    uint32_t checksum=0xffff;
+
+    for (size_t i = 0; i < length - 1; i += 2) {
+        uint16_t buf;
+        memcpy(&buf, data + i, 2);
+        checksum += buf;
+    }
+
+    uint32_t carry = checksum >> 16;
+    checksum = (checksum & 0xFFFF) + carry;
+    checksum = ~checksum;
+    return checksum;
+}
