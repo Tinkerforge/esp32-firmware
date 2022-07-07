@@ -85,12 +85,14 @@ public:
     bool hasFeature(const char *name);
 
     static void writeConfig(String path, ConfigRoot *config);
+    static void removeConfig(String path);
+    static void removeAllConfig();
 
     void blockCommand(String path, String reason);
     void unblockCommand(String path);
     String getCommandBlockedReason(size_t commandIdx);
 
-    bool restorePersistentConfig(String path, ConfigRoot *config);
+    static bool restorePersistentConfig(String path, ConfigRoot *config);
 
     void registerDebugUrl(WebServer *server);
 

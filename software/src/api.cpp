@@ -172,6 +172,25 @@ void API::writeConfig(String path, ConfigRoot *config)
     LittleFS.rename(tmp_path, cfg_path);
 }
 
+void API::removeConfig(String path) {
+    String path_copy = path;
+    path_copy.replace('/', '_');
+    String cfg_path = String("/config/") + path_copy;
+    String tmp_path = String("/config/.") + path_copy;
+
+    if (LittleFS.exists(tmp_path)) {
+        LittleFS.remove(tmp_path);
+    }
+
+    if (LittleFS.exists(cfg_path)) {
+        LittleFS.remove(cfg_path);
+    }
+}
+
+void API::removeAllConfig() {
+    remove_directory("/config");
+}
+
 void API::blockCommand(String path, String reason)
 {
     for (auto &reg : commands) {

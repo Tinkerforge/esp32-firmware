@@ -403,7 +403,7 @@ void FirmwareUpdate::register_urls()
             }
 #endif
 
-            remove_directory("/config");
+            API::removeAllConfig();
             ESP.restart();
         }, 3000);
 
