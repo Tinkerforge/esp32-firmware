@@ -18,7 +18,7 @@
 
 struct TF_HAL {
     SPISettings spi_settings;
-    SPIClass hspi;
+    SPIClass *hspi;
     TF_HALCommon hal_common;
 };
 

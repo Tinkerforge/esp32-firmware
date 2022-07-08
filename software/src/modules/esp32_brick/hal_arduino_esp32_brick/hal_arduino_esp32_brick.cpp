@@ -44,11 +44,11 @@ int tf_hal_create(TF_HAL *hal) {
 
     hal->spi_settings = SPISettings(1400000, SPI_MSBFIRST, SPI_MODE3);
 
-    hal->hspi = SPIClass(HSPI);
-    hal->hspi.begin();
+    hal->hspi = new SPIClass(HSPI);
+    hal->hspi->begin();
 
-    hal->vspi = SPIClass(VSPI);
-    hal->vspi.begin();
+    hal->vspi = new SPIClass(VSPI);
+    hal->vspi->begin();
 
     for (int i = 0; i < PORT_COUNT; ++i) {
         pinMode(ports[i].chip_select_pin, OUTPUT);
@@ -59,8 +59,8 @@ int tf_hal_create(TF_HAL *hal) {
 }
 
 int tf_hal_destroy(TF_HAL *hal) {
-    hal->hspi.end();
-    hal->vspi.end();
+    hal->hspi->end();
+    hal->vspi->end();
 
     return TF_E_OK;
 }
@@ -69,9 +69,9 @@ static SPIClass *get_spi(TF_HAL *hal, uint8_t port_id) {
     SPIClass *spi = NULL;
 
     if (ports[port_id].spi == HSPI) {
-        spi = &hal->hspi;
+        spi = hal->hspi;
     } else if (ports[port_id].spi == VSPI) {
-        spi = &hal->vspi;
+        spi = hal->vspi;
     }
 
     return spi;
