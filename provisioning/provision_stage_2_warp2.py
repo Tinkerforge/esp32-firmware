@@ -616,7 +616,7 @@ def main(stage3):
     print('Uploading empty electrical test report for next test')
     handle_electrical_test_report('upload', None, 180)
 
-    print('Downloading complete electrical test report from this text')
+    print('Downloading complete electrical test report from this test')
     handle_electrical_test_report('download', qr_serial, 300)
 
     print('Done!')
