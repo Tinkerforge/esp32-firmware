@@ -58,7 +58,7 @@ function update() {
     let progress = document.getElementById("p_firmware");
     xhr.onreadystatechange = function (e) {
         if (xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
-            progress.innerHTML = e.responseText
+            progress.innerHTML = xhr.responseText
         } else if (xhr.status == 0)
             progress.innerHTML = "Server closed the connection abruptly!";
         else
