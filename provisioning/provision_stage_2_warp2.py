@@ -328,11 +328,12 @@ def main(stage3):
     result["qr_code"] = match.group(0)
 
     if qr_accessories == '0':
+        qr_stand = False
         qr_supply_cable = 0.0
         qr_cee = False
     else:
-        # E:2.5;C:1;;;
-        pattern = r'^E:(\d+\.\d+);C:(0|1);;;*$'
+        # S:1;E:2.5;C:1;;;
+        pattern = r'^(?:S:(0|1);)?E:(\d+\.\d+);C:(0|1);;;*$'
         qr_code = my_input("Scan the accessories QR code")
         match = re.match(pattern, qr_code)
 
@@ -340,11 +341,13 @@ def main(stage3):
             qr_code = my_input("Scan the accessories QR code", red)
             match = re.match(pattern, qr_code)
 
-        qr_supply_cable = float(match.group(1))
-        qr_cee = bool(int(match.group(2)))
+        qr_stand = bool(int(match.group(1))) if match.group(1) != None else False
+        qr_supply_cable = float(match.group(2))
+        qr_cee = bool(int(match.group(3)))
 
         print("Accessories QR code data:")
-        print("    {} m".format(qr_supply_cable))
+        print("    Stand: {}".format(qr_stand))
+        print("    Supply Cable: {} m".format(qr_supply_cable))
         print("    CEE: {}".format(qr_cee))
 
         result["accessories_qr_code"] = match.group(0)
@@ -358,7 +361,7 @@ def main(stage3):
             qr_code = getpass.getpass(red("Scan the ESP Brick QR code"))
             match = re.match(pattern, qr_code)
 
-        if qr_supply_cable != 0 or qr_cee:
+        if qr_stand or qr_supply_cable != 0 or qr_cee:
             stage3.power_on('CEE')
         else:
             stage3.power_on({"B": "Basic", "S": "Smart", "P": "Pro"}[qr_variant])
@@ -537,7 +540,7 @@ def main(stage3):
             fatal_error("Failed to configure NFC tags! {} {}!".format(e, e.read()))
         result["nfc_tags_configured"] = True
     else:
-        if qr_supply_cable != 0 or qr_cee:
+        if qr_stand or qr_supply_cable != 0 or qr_cee:
             stage3.power_on('CEE')
         else:
             stage3.power_on({"B": "Basic", "S": "Smart", "P": "Pro"}[qr_variant])
