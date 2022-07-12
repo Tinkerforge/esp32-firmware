@@ -80,7 +80,7 @@ def main():
         except Exception as e:
             print(e)
             fatal_error("Failed to set ethernet config!")
-        req = urllib.request.Request("http://10.0.0.1/reboot", data='null'.format(uid).encode("utf-8"), method='PUT', headers={"Content-Type": "application/json"})
+        req = urllib.request.Request("http://10.0.0.1/reboot", data=b'null', method='PUT', headers={"Content-Type": "application/json"})
         try:
             with urllib.request.urlopen(req, timeout=10) as f:
                 f.read()
