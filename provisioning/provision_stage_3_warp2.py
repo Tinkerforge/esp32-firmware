@@ -661,6 +661,13 @@ class Stage3:
         self.try_action('03B', lambda device: device.set_beep(400, volume, beep_duration))
         time.sleep((beep_duration) / 1000)
 
+    def beep_notify(self):
+        volume = 5
+        beep_duration = 150
+
+        self.try_action('03B', lambda device: device.set_beep(2400, volume, beep_duration))
+        time.sleep(beep_duration / 1000)
+
     # requires power_on
     def test_wallbox(self):
         assert self.has_evse_error_function != None

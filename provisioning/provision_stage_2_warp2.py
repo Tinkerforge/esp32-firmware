@@ -74,7 +74,7 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, ssid, stag
 
                 return local_seen_tags
 
-            seen_tags = collect_nfc_tag_ids(stage3, download_seen_tags)
+            seen_tags = collect_nfc_tag_ids(stage3, download_seen_tags, True)
         else:
             with urllib.request.urlopen('http://{}/nfc/seen_tags'.format(ssid), timeout=3) as f:
                 nfc_str = f.read()
@@ -303,7 +303,7 @@ def connect_to_ethernet(ssid, url):
     print(" Connected.")
     return result
 
-def collect_nfc_tag_ids(stage3, getter):
+def collect_nfc_tag_ids(stage3, getter, beep_notify):
     print(green("Waiting for NFC tags"), end="")
     seen_tags = []
     last_len = 0
@@ -311,6 +311,8 @@ def collect_nfc_tag_ids(stage3, getter):
     while len(seen_tags) < 3:
         seen_tags = [x for x in getter() if any(y != 0 for y in x.tag_id)]
         if len(seen_tags) != last_len:
+            if beep_notify:
+                stage3.beep_notify()
             if len(seen_tags) == 0:
                 start_blink(3)
             elif len(seen_tags) == 1:
@@ -418,7 +420,7 @@ def main(stage3):
         print("    UID: {}".format(esp_uid_qr))
 
         if not qr_stand:
-            seen_tags = collect_nfc_tag_ids(stage3, stage3.get_nfc_tag_ids)
+            seen_tags = collect_nfc_tag_ids(stage3, stage3.get_nfc_tag_ids, False)
 
         result["uid"] = esp_uid_qr
 
