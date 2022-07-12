@@ -155,7 +155,7 @@ def retry_wrapper(fn, s):
         try:
             return fn()
         except Exception as e:
-            print("Failed to {}. ".format(s),end='')
+            print("Failed to {}. ".format(s), end='')
             if i == 2:
                 print("(3/3) Giving up.")
                 raise e
@@ -268,9 +268,9 @@ def factory_reset(ssid):
         start = time.monotonic()
         try:
             req = urllib.request.Request("http://{}/factory_reset".format(ssid),
-                            data=json.dumps({"do_i_know_what_i_am_doing":True}).encode("utf-8"),
-                            method='PUT',
-                            headers={"Content-Type": "application/json"})
+                                         data=json.dumps({"do_i_know_what_i_am_doing": True}).encode("utf-8"),
+                                         method='PUT',
+                                         headers={"Content-Type": "application/json"})
             with urllib.request.urlopen(req, timeout=1) as f:
                 f.read()
                 break
@@ -487,7 +487,7 @@ def main(stage3):
             with urllib.request.urlopen("http://{}/users/config".format(ssid), timeout=5) as f:
                 user_config = json.loads(f.read())
         except Exception as e:
-                fatal_error("Failed to get users config: {} {}!".format(e, e.read()))
+            fatal_error("Failed to get users config: {} {}!".format(e, e.read()))
 
         do_factory_reset = False
         do_configure_users = True
@@ -497,11 +497,11 @@ def main(stage3):
             print("hier")
             for i, u in enumerate(user_config["users"][1:]):
                 print(u)
-                if (u["roles"] != 2**16-1
-                   or u["current"] != 32000
-                   or u["display_name"] != "Benutzer {}".format(i+1)
-                   or u["username"] != "user{}".format(i+1)
-                   or u["digest_hash"] != ""):
+                if u["roles"] != 2 ** 16 - 1 or \
+                   u["current"] != 32000 or \
+                   u["display_name"] != "Benutzer {}".format(i + 1) or \
+                   u["username"] != "user{}".format(i + 1) or \
+                   u["digest_hash"] != "":
                     do_factory_reset = True
                     break
             else:
@@ -526,16 +526,16 @@ def main(stage3):
                     "digest_hash": ""
                 }).encode("utf-8")
                 req = urllib.request.Request("http://{}/users/add".format(ssid),
-                                        data=json.dumps({
-                                            "id":i+1,
-                                            "roles": 2**16-1,
-                                            "current": 32000,
-                                            "display_name": "Benutzer {}".format(i+1),
-                                            "username": "user{}".format(i+1),
-                                            "digest_hash": ""
-                                        }).encode("utf-8"),
-                                        method='PUT',
-                                        headers={"Content-Type": "application/json"})
+                                             data=json.dumps({
+                                                 "id": i + 1,
+                                                 "roles": 2 ** 16 - 1,
+                                                 "current": 32000,
+                                                 "display_name": "Benutzer {}".format(i + 1),
+                                                 "username": "user{}".format(i + 1),
+                                                 "digest_hash": ""
+                                             }).encode("utf-8"),
+                                             method='PUT',
+                                             headers={"Content-Type": "application/json"})
                 try:
                     with urllib.request.urlopen(req, timeout=6) as f:
                         print(f.read())
@@ -544,22 +544,25 @@ def main(stage3):
 
         print("Configuring tags")
         req = urllib.request.Request("http://{}/nfc/config_update".format(ssid),
-                                 data=json.dumps({"authorized_tags": [{
-                                                    "user_id": 1,
-                                                    "tag_type": seen_tags[0].tag_type,
-                                                    "tag_id": ":".join("{:02x}".format(i) for i in seen_tags[0].tag_id)
-                                                    }, {
-                                                    "user_id": 2,
-                                                    "tag_type": seen_tags[1].tag_type,
-                                                    "tag_id": ":".join("{:02x}".format(i) for i in seen_tags[1].tag_id)
-                                                    }, {
-                                                    "user_id": 3,
-                                                    "tag_type": seen_tags[2].tag_type,
-                                                    "tag_id": ":".join("{:02x}".format(i) for i in seen_tags[2].tag_id)
-                                                    }
-                                                  ]}).encode("utf-8"),
-                                 method='PUT',
-                                 headers={"Content-Type": "application/json"})
+                                     data=json.dumps({
+                                         "authorized_tags": [
+                                             {
+                                                 "user_id": 1,
+                                                 "tag_type": seen_tags[0].tag_type,
+                                                 "tag_id": ":".join("{:02x}".format(i) for i in seen_tags[0].tag_id)
+                                             }, {
+                                                 "user_id": 2,
+                                                 "tag_type": seen_tags[1].tag_type,
+                                                 "tag_id": ":".join("{:02x}".format(i) for i in seen_tags[1].tag_id)
+                                             }, {
+                                                 "user_id": 3,
+                                                 "tag_type": seen_tags[2].tag_type,
+                                                 "tag_id": ":".join("{:02x}".format(i) for i in seen_tags[2].tag_id)
+                                             }
+                                         ]
+                                     }).encode("utf-8"),
+                                     method='PUT',
+                                     headers={"Content-Type": "application/json"})
         try:
             with urllib.request.urlopen(req, timeout=1) as f:
                 f.read()
@@ -623,9 +626,9 @@ def main(stage3):
             start = time.monotonic()
             try:
                 req = urllib.request.Request("http://{}/charge_tracker/remove_all_charges".format(ssid),
-                                data=json.dumps({"do_i_know_what_i_am_doing":True}).encode("utf-8"),
-                                method='PUT',
-                                headers={"Content-Type": "application/json"})
+                                             data=json.dumps({"do_i_know_what_i_am_doing":True}).encode("utf-8"),
+                                             method='PUT',
+                                             headers={"Content-Type": "application/json"})
                 with urllib.request.urlopen(req, timeout=1) as f:
                     f.read()
                     break
