@@ -582,7 +582,8 @@ class Stage3:
         time.sleep(RELAY_SETTLE_DURATION)
 
     # requires power_on
-    def test_front_panel_button(self):
+    def test_front_panel_button(self, automatic):
+        # FIXME: handle automatic == False
         assert self.is_front_panel_button_pressed_function != None
 
         servo = '20C'

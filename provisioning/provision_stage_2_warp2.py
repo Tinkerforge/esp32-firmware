@@ -30,12 +30,13 @@ from tinkerforge.ip_connection import IPConnection, base58encode, base58decode, 
 from tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
 
 from provision_common.provision_common import *
+from provision_common.bricklet_nfc import SimpleGetTagID
 from provision_common.bricklet_evse_v2 import BrickletEVSEV2
 from provision_stage_3_warp2 import Stage3
 
 evse = None
 
-def run_bricklet_tests(ipcon, result, qr_variant, qr_power, ssid, stage3):
+def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, ssid, stage3):
     global evse
     enumerations = enumerate_devices(ipcon)
 
@@ -55,6 +56,35 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, ssid, stage3):
 
     is_smart = not is_basic and energy_meter_type == 0
     is_pro = not is_basic and energy_meter_type != 0
+
+    stage3.test_front_panel_button(not qr_stand)
+    result["front_panel_button_tested"] = True
+
+    seen_tags = []
+    if is_smart or is_pro:
+        if qr_stand:
+            def download_seen_tags():
+                with urllib.request.urlopen('http://{}/nfc/seen_tags'.format(ssid), timeout=3) as f:
+                    nfc_str = f.read()
+
+                local_seen_tags = []
+
+                for tag_info in json.loads(nfc_str):
+                    local_seen_tags.append(SimpleGetTagID(tag_info['tag_type'], [int(x, base=16) for x in tag_info['tag_id'].split(':')], tag_info['last_seen']))
+
+                return local_seen_tags
+
+            seen_tags = collect_nfc_tag_ids(stage3, download_seen_tags)
+        else:
+            with urllib.request.urlopen('http://{}/nfc/seen_tags'.format(ssid), timeout=3) as f:
+                nfc_str = f.read()
+
+            nfc_data = json.loads(nfc_str)
+
+            if nfc_data[0]['tag_type'] != 2 or \
+               nfc_data[0]['tag_id'] != "04:BA:38:42:EF:6C:80" or \
+               nfc_data[0]['last_seen'] > 100:
+                fatal_error("Did not find NFC tag: {}".format(nfc_str))
 
     d = {"P": "Pro", "S": "Smart", "B": "Basic"}
 
@@ -110,18 +140,7 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, ssid, stage3):
 
         result["energy_meter_reachable"] = True
 
-    stage3.test_front_panel_button()
-    result["front_panel_button_tested"] = True
-
-    if is_smart or is_pro:
-        nfc_str = urllib.request.urlopen('http://{}/nfc/seen_tags'.format(ssid), timeout=3).read()
-        nfc_data = json.loads(nfc_str)
-
-        if nfc_data[0]['tag_type'] != 2 or \
-           nfc_data[0]['tag_id'] != "04:BA:38:42:EF:6C:80" or \
-           nfc_data[0]['last_seen'] > 100:
-            fatal_error("Did not find NFC tag: {}".format(nfc_str))
-
+    return seen_tags
 
 def exists_evse_test_report(evse_uid):
     with open(os.path.join("evse_v2_test_report", "full_test_log.csv"), newline='') as csvfile:
@@ -284,6 +303,30 @@ def connect_to_ethernet(ssid, url):
     print(" Connected.")
     return result
 
+def collect_nfc_tag_ids(stage3, getter):
+    print(green("Waiting for NFC tags"), end="")
+    seen_tags = []
+    last_len = 0
+    start_blink(3)
+    while len(seen_tags) < 3:
+        seen_tags = [x for x in getter() if any(y != 0 for y in x.tag_id)]
+        if len(seen_tags) != last_len:
+            if len(seen_tags) == 0:
+                start_blink(3)
+            elif len(seen_tags) == 1:
+                start_blink(2)
+            elif len(seen_tags) == 2:
+                start_blink(1)
+            else:
+                start_blink(0)
+            last_len = len(seen_tags)
+        print(green("\rWaiting for NFC tags. {} seen".format(len(seen_tags))), end="")
+        blink_tick(stage3)
+        time.sleep(0.1)
+    stop_blink(stage3)
+    print("\r3 NFC tags seen." + " " * 20)
+    return seen_tags
+
 def main(stage3):
     result = {"start": now()}
 
@@ -374,27 +417,8 @@ def main(stage3):
         print("    Hardware type: {}".format(hardware_type))
         print("    UID: {}".format(esp_uid_qr))
 
-        print(green("Waiting for NFC tags"), end="")
-        seen_tags = []
-        last_len = 0
-        start_blink(3)
-        while len(seen_tags) < 3:
-            seen_tags = [x for x in stage3.get_nfc_tag_ids() if any(y != 0 for y in x.tag_id)]
-            if len(seen_tags) != last_len:
-                if len(seen_tags) == 0:
-                    start_blink(3)
-                elif len(seen_tags) == 1:
-                    start_blink(2)
-                elif len(seen_tags) == 2:
-                    start_blink(1)
-                else:
-                    start_blink(0)
-                last_len = len(seen_tags)
-            print(green("\rWaiting for NFC tags. {} seen".format(len(seen_tags))), end="")
-            blink_tick(stage3)
-            time.sleep(0.1)
-        stop_blink(stage3)
-        print("\r3 NFC tags seen." + " " * 20)
+        if not qr_stand:
+            seen_tags = collect_nfc_tag_ids(stage3, stage3.get_nfc_tag_ids)
 
         result["uid"] = esp_uid_qr
 
@@ -454,7 +478,10 @@ def main(stage3):
         except Exception as e:
             fatal_error("Failed to connect to ESP proxy. Is the router's DHCP cache full?")
 
-        run_bricklet_tests(ipcon, result, qr_variant, qr_power, ssid, stage3)
+        seen_tags2 = run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, ssid, stage3)
+
+        if qr_stand:
+            seen_tags = seen_tags2
 
         try:
             with urllib.request.urlopen("http://{}/users/config".format(ssid), timeout=5) as f:
@@ -550,7 +577,7 @@ def main(stage3):
         ipcon = IPConnection()
         ipcon.connect("localhost", 4223)
 
-        run_bricklet_tests(ipcon, result, qr_variant, qr_power, None, stage3)
+        run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, None, stage3)
         print("Flashing EVSE")
         run(["python3", "comcu_flasher.py", result["evse_uid"], evse_path])
         result["evse_firmware"] = evse_path.split("/")[-1]
