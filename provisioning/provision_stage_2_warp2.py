@@ -70,6 +70,9 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, ssid, stag
                 local_seen_tags = []
 
                 for tag_info in json.loads(nfc_str):
+                    if len(tag_info['tag_id']) == 0:
+                        continue
+
                     local_seen_tags.append(SimpleGetTagID(tag_info['tag_type'], [int(x, base=16) for x in tag_info['tag_id'].split(':')], tag_info['last_seen']))
 
                 return local_seen_tags

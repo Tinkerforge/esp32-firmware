@@ -635,7 +635,8 @@ class Stage3:
                 while self.is_front_panel_button_pressed_function():
                     time.sleep(0.25)
 
-                print('Front panel button is releaseed')
+                print('Front panel button is released')
+                self.beep_notify()
 
             button_after = self.is_front_panel_button_pressed_function()
             led_after = self.is_front_panel_led_on() if automatic else True
@@ -680,7 +681,7 @@ class Stage3:
         time.sleep((beep_duration) / 1000)
 
     def beep_notify(self):
-        volume = 5
+        volume = 8
         beep_duration = 150
 
         self.try_action('03B', lambda device: device.set_beep(2400, volume, beep_duration))
