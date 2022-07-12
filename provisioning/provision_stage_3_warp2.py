@@ -23,7 +23,7 @@ from tinkerforge.bricklet_piezo_speaker_v2 import BrickletPiezoSpeakerV2
 
 from provision_common.bricklet_nfc import BrickletNFC
 from provision_common.inventory import Inventory
-from provision_common.provision_common import FatalError, fatal_error
+from provision_common.provision_common import FatalError, fatal_error, green
 
 IPCON_HOST = 'localhost'
 IPCON_TIMEOUT = 1.0 # seconds
@@ -583,7 +583,6 @@ class Stage3:
 
     # requires power_on
     def test_front_panel_button(self, automatic):
-        # FIXME: handle automatic == False
         assert self.is_front_panel_button_pressed_function != None
 
         servo = '20C'
@@ -591,7 +590,7 @@ class Stage3:
 
         try:
             button_before = self.is_front_panel_button_pressed_function()
-            led_before = self.is_front_panel_led_on()
+            led_before = self.is_front_panel_led_on() if automatic else True
 
             if button_before:
                 fatal_error('Front panel button is already pressed before test')
@@ -599,19 +598,29 @@ class Stage3:
             if not led_before:
                 fatal_error('Front panel LED is not on before test')
 
-            self.set_servo_position(servo, channel, -3000)
+            if automatic:
+                self.set_servo_position(servo, channel, -3000)
 
-            if not self.try_action(servo, lambda device: device.get_enabled(channel)):
-                self.try_action(servo, lambda device: device.set_enable(channel, True))
+                if not self.try_action(servo, lambda device: device.get_enabled(channel)):
+                    self.try_action(servo, lambda device: device.set_enable(channel, True))
 
-            self.set_servo_position(servo, channel, 2100)
-            time.sleep(0.5) # wait for Color Bricklet 2.0 integration time
+                self.set_servo_position(servo, channel, 2100)
+                time.sleep(0.5) # wait for Color Bricklet 2.0 integration time
+            else:
+                print(green('Waiting for front panel button press'))
+                self.beep_notify()
+
+                while not self.is_front_panel_button_pressed_function():
+                    time.sleep(0.25)
+
+                print('Front panel button is pressed')
 
             button_pressed = self.is_front_panel_button_pressed_function()
-            led_pressed = self.is_front_panel_led_on()
+            led_pressed = self.is_front_panel_led_on() if automatic else False
 
-            self.set_servo_position(servo, channel, -3000)
-            time.sleep(0.5) # wait for Color Bricklet 2.0 integration time
+            if automatic:
+                self.set_servo_position(servo, channel, -3000)
+                time.sleep(0.5) # wait for Color Bricklet 2.0 integration time
 
             if not button_pressed:
                 fatal_error('Front panel button is not pressed during test')
@@ -619,8 +628,17 @@ class Stage3:
             if led_pressed:
                 fatal_error('Front panel LED is still on during test')
 
+            if not automatic:
+                print(green('Waiting for front panel button release'))
+                self.beep_notify()
+
+                while self.is_front_panel_button_pressed_function():
+                    time.sleep(0.25)
+
+                print('Front panel button is releaseed')
+
             button_after = self.is_front_panel_button_pressed_function()
-            led_after = self.is_front_panel_led_on()
+            led_after = self.is_front_panel_led_on() if automatic else True
 
             if button_after:
                 fatal_error('Front panel button is still pressed after test')
