@@ -23,7 +23,7 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
 import { h, render } from "preact";
-import { PageHeader } from "../../ts/page_header"
+import { PageHeader } from "../../ts/page_header";
 
 render(<PageHeader page="tutorial_phase_3" />, $('#tutorial_phase_3_header')[0]);
 

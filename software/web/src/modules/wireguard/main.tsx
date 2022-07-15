@@ -26,7 +26,7 @@ import feather from "../../ts/feather";
 import YaMD5 from "../../ts/yamd5";
 
 import { h, render } from "preact";
-import { ConfigPageHeader } from "../../ts/config_page_header"
+import { ConfigPageHeader } from "../../ts/config_page_header";
 
 render(<ConfigPageHeader page="wireguard" />, $('#wireguard_header')[0]);
 

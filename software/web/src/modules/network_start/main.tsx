@@ -23,7 +23,7 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
 import { h, render } from "preact";
-import { ConfigPageHeader } from "../../ts/config_page_header"
+import { ConfigPageHeader } from "../../ts/config_page_header";
 
 render(<ConfigPageHeader page="network" />, $('#network_header')[0]);
 
