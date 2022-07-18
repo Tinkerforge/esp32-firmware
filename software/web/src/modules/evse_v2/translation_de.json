@@ -3,8 +3,8 @@
         "content": {
             "error_dc_fault_current": "DC-Fehlerstromschutz",
             "energy_meter_type": "Stromzählertyp",
-            "adc_names": "CP/PE vor Widerstand (PWM High), CP/PE nach Widerstand (PWM High)</br>CP/PE vor Widerstand (PWM Low), CP/PE nach Widerstand (PWM Low)</br>PP/PE, +12V Rail</br>-12V Rail",
-            "voltage_names": "CP/PE vor Widerstand (PWM High), CP/PE nach Widerstand (PWM High)</br>CP/PE vor Widerstand (PWM Low), CP/PE nach Widerstand (PWM Low)</br>PP/PE, +12V Rail</br>-12V Rail",
+            "adc_names": "CP/PE vor Widerstand (PWM High), CP/PE nach Widerstand (PWM High)<br/>CP/PE vor Widerstand (PWM Low), CP/PE nach Widerstand (PWM Low)<br/>PP/PE, +12V Rail<br/>-12V Rail",
+            "voltage_names": "CP/PE vor Widerstand (PWM High), CP/PE nach Widerstand (PWM High)<br/>CP/PE vor Widerstand (PWM Low), CP/PE nach Widerstand (PWM Low)<br/>PP/PE, +12V Rail<br/>-12V Rail",
             "gpio_names_0": "Stromkonfiguration 0, Motorfehler, Gleichstromfehler, Stromkonfiguration 1",
             "gpio_names_1": "DC-Fehlerstromschutz-Test, Abschaltung, Taster, CP-PWM",
             "gpio_names_2": "Motoreingangsschalter, Schützsteuerung, Konfigurierbarer Ausgang, CP-Trennung",

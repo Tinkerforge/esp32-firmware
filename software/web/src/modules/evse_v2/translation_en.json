@@ -3,8 +3,8 @@
         "content": {
             "error_dc_fault_current": "DC fault protector error",
             "energy_meter_type": "Energy meter type",
-            "adc_names": "CP/PE before resistor (PWM high), CP/PE after resistor (PWM high)</br>CP/PE before resistor (PWM low), CP/PE after resistor (PWM low)</br>PP/PE, +12V rail</br>-12V rail",
-            "voltage_names": "CP/PE before resistor (PWM high), CP/PE after resistor (PWM high)</br>CP/PE before resistor (PWM low), CP/PE after resistor (PWM low)</br>PP/PE, +12V rail</br>-12V rail",
+            "adc_names": "CP/PE before resistor (PWM high), CP/PE after resistor (PWM high)<br/>CP/PE before resistor (PWM low), CP/PE after resistor (PWM low)<br/>PP/PE, +12V rail<br/>-12V rail",
+            "voltage_names": "CP/PE before resistor (PWM high), CP/PE after resistor (PWM high)<br/>CP/PE before resistor (PWM low), CP/PE after resistor (PWM low)<br/>PP/PE, +12V rail<br/>-12V rail",
             "gpio_names_0": "current configuration 0, motor fault, DC fault, current configuration 1",
             "gpio_names_1": "DC fault protector test, shutdown, button, CP-PWM",
             "gpio_names_2": "motor input switch, contactor, GP output, CP separation",
