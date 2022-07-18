@@ -29,10 +29,10 @@
             "relay": "Relais",
             "inputs": "Eingänge",
             "meter": "Stromzähler",
-            "always_1phase": "Immer 1-phasig",
-            "always_3phase": "Immer 3-phasig",
-            "1phase": "1-phasig",
-            "3phase": "3-phasig",
+            "always_one_phase": "Immer 1-phasig",
+            "always_three_phase": "Immer 3-phasig",
+            "one_phase": "1-phasig",
+            "three_phase": "3-phasig",
             "automatic": "Automatisch",
             "contactor": "Schützüberwachung",
             "deactivated": "Deaktiviert",
@@ -58,9 +58,8 @@
             "input4": "Eingang 4",
             "open": "Offen",
             "phase_switching": "Phasenumschaltung",
-            "greater0": ">=0 kW",
-            "smaller0": "<=0 kW",
-            "save": "Speichern"
+            "greater0": "&gte; 0 kW",
+            "smaller0": "&lte; 0 kW"
         },
         "script": {
             "loading_debug_report": "Lade Debug-Report",

@@ -8,7 +8,6 @@
         "content": {
             "nfc": "NFC-Freigabe",
 
-            "save": "Speichern",
             "authorized_tags": "Berechtigte Tags",
 
             "add_tag_modal_title": "Tag hinzufügen",

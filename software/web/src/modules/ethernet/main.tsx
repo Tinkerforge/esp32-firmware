@@ -25,9 +25,10 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
 import { h, render } from "preact";
+import { translate } from "../../ts/translation";
 import { ConfigPageHeader } from "../../ts/config_page_header";
 
-render(<ConfigPageHeader page="ethernet" />, $('#ethernet_header')[0]);
+render(<ConfigPageHeader prefix="ethernet" title={translate("ethernet.content.ethernet")} />, $('#ethernet_header')[0]);
 
 declare function __(s: string): string;
 

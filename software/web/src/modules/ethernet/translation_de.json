@@ -18,7 +18,6 @@
             "ip_configuration": "IP-Konfiguration",
             "dhcp": "automatisch (DHCP)",
             "static": "statisch",
-            "save": "Speichern",
 
             "static_ip": "IP-Adresse",
             "subnet": "Subnetzmaske",

@@ -23,9 +23,10 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
 import { h, render } from "preact";
+import { translate } from "../../ts/translation";
 import { PageHeader } from "../../ts/page_header";
 
-render(<PageHeader page="em_energy_analysis" />, $('#em_energy_analysis_header')[0]);
+render(<PageHeader title={translate("em_energy_analysis.content.em_energy_analysis")} />, $('#em_energy_analysis_header')[0]);
 
 export function init() {
 

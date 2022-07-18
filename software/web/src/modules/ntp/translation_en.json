@@ -18,8 +18,7 @@
             "timezone": "Time zone",
             "use_browser_timezone": "Use browser timezone",
             "server": "Time server",
-            "server2": "Alternative time server",
-            "save": "Save"
+            "server2": "Alternative time server"
         },
         "script": {
             "save_failed": "Failed to save the Time synchronization configuration.",

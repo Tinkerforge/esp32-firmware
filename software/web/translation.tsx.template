@@ -1,0 +1,68 @@
+/* esp32-firmware
+ * Copyright (C) 2022 Matthias Bolte <matthias@tinkerforge.com>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
+import { JSX } from "preact";
+
+{{{translation}}}
+
+type GetDictValue<T extends string, O> =
+    T extends `${infer A}.${infer B}`
+    ? A extends keyof O
+        ? GetDictValue<B, O[A]>
+        : never
+    : T extends keyof O
+        ? O[T]
+        : never
+
+// T is the dictionary, S ist the next string part of the object property path
+// If S does not match dict shape, return its next expected properties
+type DeepKeys<T, S extends string> =
+    T extends object
+    ? S extends `${infer I1}.${infer I2}`
+        ? I1 extends keyof T
+            ? `${I1}.${DeepKeys<T[I1], I2>}`
+            : keyof T & string
+        : S extends keyof T
+            ? `${S}`
+            : keyof T & string
+    : ""
+
+let active_translation: Translation = translation['en'];
+
+for (let language of navigator.languages) {
+    language = language.substr(0, 2);
+
+    if (translation.hasOwnProperty(language)) {
+        active_translation = translation[language];
+        break;
+    }
+
+    console.log("Sorry, got no translation for " + language);
+}
+
+export function translate<S extends string>(key: DeepKeys<Translation, S>): GetDictValue<S, Translation> {
+    let key_parts = key.split(".");
+    let subtranslation: any = active_translation;
+
+    while (key_parts.length > 0) {
+        subtranslation = subtranslation[key_parts.shift() as any];
+    }
+
+    return subtranslation as any;
+}

@@ -12,7 +12,6 @@
         },
         "content": {
             "wireguard": "WireGuard",
-            "save": "Save",
             "enable_wireguard": "WireGuard enabled",
             "enable_wireguard_desc": "Connection will be established when network time synchronization is available.",
             "default_if": "Use as default interface",

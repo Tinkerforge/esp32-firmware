@@ -18,7 +18,6 @@
             "ip_configuration": "IP configuration",
             "dhcp": "automatic (DHCP)",
             "static": "static",
-            "save": "Save",
 
             "static_ip": "IP address",
             "subnet": "Subnet mask",

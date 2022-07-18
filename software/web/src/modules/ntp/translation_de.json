@@ -18,8 +18,7 @@
             "timezone": "Zeitzone",
             "use_browser_timezone": "Zeitzone aus Browser übernehmen",
             "server": "Zeitserver",
-            "server2": "Alternativer Zeitserver",
-            "save": "Speichern"
+            "server2": "Alternativer Zeitserver"
         },
         "script": {
             "save_failed": "Speichern der Zeit&shy;synchronisierungs-Einstellungen fehlgeschlagen.",

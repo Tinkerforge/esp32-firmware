@@ -28,9 +28,7 @@
             "sdm630_power": "FIXME",
             "sdm630_energy": "FIXME",
             "sdm630_energy_since_reset": "FIXME",
-            "sdm630_energy_lifetime": "FIXME",
-
-            "save": "FIXME"
+            "sdm630_energy_lifetime": "FIXME"
         },
         "script": {
 

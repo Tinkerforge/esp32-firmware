@@ -13,6 +13,11 @@
         "abort": "Abort",
         "reboot": "Reboot"
     },
+    "component": {
+        "config_page_header": {
+            "save": "Save"
+        }
+    },
     "util": {
         "reboot_title": "Rebooting...",
         "reboot_text": "The web interface will be reloaded automatically after the restart.",

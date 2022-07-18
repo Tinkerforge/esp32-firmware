@@ -29,10 +29,10 @@
             "relay": "FIXME",
             "inputs": "FIXME",
             "meter": "FIXME",
-            "always_1phase": "FIXME",
-            "always_3phase": "FIXME",
-            "1phase": "FIXME",
-            "3phase": "FIXME",
+            "always_one_phase": "FIXME",
+            "always_three_phase": "FIXME",
+            "one_phase": "FIXME",
+            "three_phase": "FIXME",
             "automatic": "FIXME",
             "contactor": "FIXME",
             "deactivated": "FIXME",
@@ -58,9 +58,8 @@
             "input4": "FIXME",
             "open": "FIXME",
             "phase_switching": "FIXME",
-            "greater0": ">=0 kW",
-            "smaller0": "<=0 kW",
-            "save": "FIXME"
+            "greater0": "&gte; 0 kW",
+            "smaller0": "&lte; 0 kW"
         },
         "script": {
             "loading_debug_report": "FIXME",

@@ -17,20 +17,18 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Component } from "preact";
+import { h, Component, JSX } from "preact";
 
 export interface PageHeaderProps {
-    page: string
+    title: JSX.Element
 }
 
 export class PageHeader extends Component<PageHeaderProps, any> {
     render() {
-        let title_data_i18n = this.props.page + ".content." + this.props.page;
-    
         return (
             <div class="row sticky-under-top mb-3 pt-3">
                 <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-header-shadow">
-                    <h1 class="h2" data-i18n={title_data_i18n}></h1>
+                    <h1 class="h2">{this.props.title}</h1>
                 </div>
             </div>
         );

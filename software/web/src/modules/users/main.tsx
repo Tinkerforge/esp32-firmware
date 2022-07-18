@@ -29,9 +29,10 @@ import YaMD5 from "../../ts/yamd5";
 import {getAllUsernames} from "../charge_tracker/main";
 
 import { h, render } from "preact";
+import { translate } from "../../ts/translation";
 import { ConfigPageHeader } from "../../ts/config_page_header";
 
-render(<ConfigPageHeader page="users" />, $('#users_header')[0]);
+render(<ConfigPageHeader prefix="users" title={translate("users.content.users")} />, $('#users_header')[0]);
 
 declare function __(s: string): string;
 

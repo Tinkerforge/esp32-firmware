@@ -37,8 +37,6 @@
             "add_charger_modal_abort": "Verwerfen",
             "add_charger_modal_save": "Hinzufügen",
 
-            "save": "Speichern",
-
             "managed_boxes": "Kontrollierte Wallboxen"
         },
         "script": {

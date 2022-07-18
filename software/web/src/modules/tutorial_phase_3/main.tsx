@@ -23,9 +23,10 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
 import { h, render } from "preact";
+import { translate } from "../../ts/translation";
 import { PageHeader } from "../../ts/page_header";
 
-render(<PageHeader page="tutorial_phase_3" />, $('#tutorial_phase_3_header')[0]);
+render(<PageHeader title={translate("tutorial_phase_3.content.title")} />, $('#tutorial_phase_3_header')[0]);
 
 function update_config()
 {

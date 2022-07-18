@@ -26,8 +26,7 @@
             "topic_prefix_invalid": "Der Topic-Präfix darf nicht mit $ beginnen, oder ein # oder + enthalten.",
             "client_name": "Client-ID",
             "interval": "Maximales Sendeintervall",
-            "interval_muted": "Daten werden nur bei Änderung übertragen",
-            "save": "Speichern"
+            "interval_muted": "Daten werden nur bei Änderung übertragen"
         },
         "script": {
             "save_failed": "Speichern der MQTT-Einstellungen fehlgeschlagen.",

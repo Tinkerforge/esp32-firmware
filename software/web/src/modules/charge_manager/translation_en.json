@@ -37,8 +37,6 @@
             "add_charger_modal_abort": "Discard",
             "add_charger_modal_save": "Save",
 
-            "save": "Save",
-
             "managed_boxes": "Managed chargers"
         },
         "script": {

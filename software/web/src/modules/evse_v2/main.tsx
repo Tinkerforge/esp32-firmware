@@ -25,9 +25,10 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
 import { h, render } from "preact";
+import { translate } from "../../ts/translation";
 import { PageHeader } from "../../ts/page_header";
 
-render(<PageHeader page="evse" />, $('#evse_header')[0]);
+render(<PageHeader title={translate("evse.content.evse")} />, $('#evse_header')[0]);
 
 declare function __(s: string): string;
 

@@ -25,9 +25,10 @@ import * as API from "../../ts/api";
 import feather from "../../ts/feather";
 
 import { h, render } from "preact";
+import { translate } from "../../ts/translation";
 import { PageHeader } from "../../ts/page_header";
 
-render(<PageHeader page="charge_tracker" />, $('#charge_tracker_header')[0]);
+render(<PageHeader title={translate("charge_tracker.content.charge_tracker")} />, $('#charge_tracker_header')[0]);
 
 declare function __(s: string): string;
 

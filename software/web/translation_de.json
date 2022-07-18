@@ -13,6 +13,11 @@
         "abort": "Abbrechen",
         "reboot": "Neu starten"
     },
+    "component": {
+        "config_page_header": {
+            "save": "Speichern"
+        }
+    },
     "util": {
         "reboot_title": "Starte neu...",
         "reboot_text": "Das Webinterface wird nach dem Neustart automatisch neu geladen.",

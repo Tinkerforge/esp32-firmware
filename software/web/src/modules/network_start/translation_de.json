@@ -10,8 +10,7 @@
             "hostname": "Hostname",
             "hostname_invalid": "Der Hostname darf nur aus den Groß- und Kleinbuchstaben A-Z und a-z, sowie den Ziffern 0-9 und Bindestrichen bestehen. Zum Beispiel warp-A1c",
             "enable_mdns": "mDNS aktiviert",
-            "enable_mdns_desc": null,
-            "save": "Speichern"
+            "enable_mdns_desc": null
         },
         "script": {
             "save_failed": "Speichern der Netzwerk&shy;einstellungen fehlgeschlagen",

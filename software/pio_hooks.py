@@ -472,6 +472,55 @@ def main():
         '{{{api_cache_entries}}}': '\n    '.join(api_cache_entries),
     })
 
+    translation_str = ''
+
+    def format_translation(translation, type_only, indent):
+        output = ['{\n']
+
+        assert isinstance(translation, (dict, str)), type(translation)
+
+        for key, value in sorted(translation.items()):
+            output += [indent + '    ', key, ': ']
+
+            if isinstance(value, dict):
+                output += format_translation(value, type_only, indent + '    ')
+            elif type_only:
+                output += ['JSX.Element,\n']
+            else:
+                string = "<>{0}</>".format(value)
+
+                if '{{{' in string:
+                    string = string.replace('{{{empty_text}}}', '') # FIXME: remove this placeholder once translation libary is removed
+                    string = string.replace('{{{display_name}}}', display_name)
+                    string = string.replace('{{{manual_url}}}', manual_url)
+                    string = string.replace('{{{apidoc_url}}}', apidoc_url)
+                    string = string.replace('{{{firmware_url}}}', firmware_url)
+
+                output += [string, ',\n']
+
+        output += [indent, '}']
+
+        if len(indent) > 0:
+            output += [',\n']
+
+        return output
+
+    translation_str += 'type Translation = ' + ''.join(format_translation(translation['en'], True, '')) + '\n\n'
+
+    for language in sorted(translation):
+        translation_str += 'const translation_{0}: Translation = {1} as const\n\n'.format(language, ''.join(format_translation(translation[language], False, '')))
+
+    translation_str += 'const translation: {[index: string]: Translation} = {\n'
+
+    for language in sorted(translation):
+        translation_str += '    "{0}": translation_{0},\n'.format(language)
+
+    translation_str += '} as const\n'
+
+    specialize_template(os.path.join("web", "translation.tsx.template"), os.path.join("web", "src", "ts", "translation.tsx"), {
+        '{{{translation}}}': translation_str,
+    })
+
     # Check translation completeness
     print('Checking translation completeness')
 
