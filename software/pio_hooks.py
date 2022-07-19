@@ -229,7 +229,7 @@ def main():
     apidoc_url = env.GetProjectOption("custom_apidoc_url")
     firmware_url = env.GetProjectOption("custom_firmware_url")
     require_firmware_info = env.GetProjectOption("custom_require_firmware_info")
-    src_filter = env.GetProjectOption("src_filter")
+    build_src_filter = env.GetProjectOption("build_src_filter")
 
     try:
         oldest_version, version = get_changelog_version(name)
@@ -237,10 +237,10 @@ def main():
         print('Error: Could not get changelog version: {0}'.format(e))
         sys.exit(1)
 
-    if src_filter[0] == '+<empty.c>':
-        src_filter = None
+    if build_src_filter[0] == '+<empty.c>':
+        build_src_filter = None
     else:
-        src_filter = ['+<*>', '-<empty.c>']
+        build_src_filter = ['+<*>', '-<empty.c>']
 
     if not os.path.isdir("build"):
         os.makedirs("build")
@@ -291,11 +291,11 @@ def main():
             with ChangedDirectory(mod_path):
                 subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py"], env=environ)
 
-    if src_filter != None:
+    if build_src_filter != None:
         for excluded_backend_module in excluded_backend_modules:
-            src_filter.append('-<modules/{0}/*>'.format(excluded_backend_module))
+            build_src_filter.append('-<modules/{0}/*>'.format(excluded_backend_module))
 
-        env.Replace(SRC_FILTER=[' '.join(src_filter)])
+        env.Replace(SRC_FILTER=[' '.join(build_src_filter)])
 
     specialize_template("main.cpp.template", os.path.join("src", "main.cpp"), {
         '{{{module_includes}}}': '\n'.join(['#include "modules/{0}/{0}.h"'.format(x.under) for x in backend_modules]),
