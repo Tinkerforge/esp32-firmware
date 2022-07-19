@@ -346,7 +346,7 @@ export function getShowRebootModalFn(changed_value_name: string) {
     }
 }
 
-export function timestamp_min_to_date(timestamp_minutes: number, unsynced_string: string = __("charge_tracker.script.unknown_charge_start")) {
+export function timestamp_min_to_date(timestamp_minutes: number, unsynced_string: string) {
     if (timestamp_minutes == 0) {
         return unsynced_string;
     }
@@ -376,10 +376,10 @@ export function timestamp_min_to_date(timestamp_minutes: number, unsynced_string
 
 export function reset_static_ip_config_validation(ip_id: string, subnet_id: string, gateway_id: string) {
     $(`#${gateway_id}`).removeClass("is-invalid");
-    $(`#${gateway_id} + .invalid-feedback`).html(__("wifi.content.gateway_invalid"));
+    $(`#${gateway_id} + .invalid-feedback`).html(__("util.gateway_invalid"));
 
     $(`#${subnet_id}`).removeClass("is-invalid");
-    $(`#${subnet_id} + .invalid-feedback`).html(__("wifi.content.subnet_invalid"));
+    $(`#${subnet_id} + .invalid-feedback`).html(__("util.subnet_invalid"));
     return true;
 }
 
@@ -394,13 +394,13 @@ export function validate_static_ip_config(ip_id: string, subnet_id: string, gate
     let result = true;
     if (gateway != 0 && (ip & subnet) != (gateway & subnet)) {
         $(`#${gateway_id}`).addClass("is-invalid");
-        $(`#${gateway_id} + .invalid-feedback`).html(__("wifi.content.gateway_out_of_subnet"));
+        $(`#${gateway_id} + .invalid-feedback`).html(__("util.gateway_out_of_subnet"));
         result = false;
     }
 
     if ((ip & subnet) == (0x7F000001 & subnet)) {
         $(`#${subnet_id}`).addClass("is-invalid");
-        $(`#${subnet_id} + .invalid-feedback`).html(__("wifi.content.subnet_captures_localhost"));
+        $(`#${subnet_id} + .invalid-feedback`).html(__("util.subnet_captures_localhost"));
         result = false;
     }
     return result;

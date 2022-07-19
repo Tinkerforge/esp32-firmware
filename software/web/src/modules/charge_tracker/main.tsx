@@ -50,7 +50,7 @@ function update_last_charges() {
         <div class="row">
             <div class="col">
                 <div class="mb-2"><span class="mr-1" data-feather="user"></span><span style="vertical-align: middle;">${display_name}</span></div>
-                <div><span class="mr-1" data-feather="calendar"></span><span style="vertical-align: middle;">${util.timestamp_min_to_date(user.timestamp_minutes)}</span></div>
+                <div><span class="mr-1" data-feather="calendar"></span><span style="vertical-align: middle;">${util.timestamp_min_to_date(user.timestamp_minutes, __("charge_tracker.script.unknown_charge_start"))}</span></div>
             </div>
             <div class="col-auto">
                 <div class="mb-2"><span class="mr-1" data-feather="battery-charging"></span><span style="vertical-align: middle;">${user.energy_charged === null ? "N/A" : util.toLocaleFixed(user.energy_charged, 3)} kWh</span></div>
@@ -68,7 +68,7 @@ function update_last_charges() {
 function update_state() {
     let state = API.get('charge_tracker/state');
     $('#charge_tracker_tracked_charges').val(state.tracked_charges);
-    $('#charge_tracker_first_charge_timestamp').val(util.timestamp_min_to_date(state.first_charge_timestamp));
+    $('#charge_tracker_first_charge_timestamp').val(util.timestamp_min_to_date(state.first_charge_timestamp, __("charge_tracker.script.unknown_charge_start")));
 }
 
 function to_csv_line(vals: string[]) {
@@ -203,7 +203,7 @@ async function downloadChargeLog() {
                     }
 
                     let line = [
-                        util.timestamp_min_to_date(timestamp_minutes),
+                        util.timestamp_min_to_date(timestamp_minutes, __("charge_tracker.script.unknown_charge_start")),
                         display_name,
                         charged_string,
                         charge_duration.toString(),
@@ -250,7 +250,7 @@ function update_current_charge() {
     $('#users_status_charging_user').html(cc.user_id == 0 ? __("charge_tracker.script.unknown_user") : user_display_name);
     $('#users_status_charging_time').html(util.format_timespan(time_charging));
     $('#users_status_charged_energy').html(cc.meter_start == null ? "N/A" : util.toLocaleFixed(energy_charged, 3) + " kWh");
-    $('#users_status_charging_start').html(util.timestamp_min_to_date(cc.timestamp_minutes));
+    $('#users_status_charging_start').html(util.timestamp_min_to_date(cc.timestamp_minutes, __("charge_tracker.script.unknown_charge_start")));
 }
 
 function update_user_filter_dropdown() {

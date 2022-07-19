@@ -46,8 +46,6 @@
             "gateway_invalid": "The gateway IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1",
             "dns_invalid": "The DNS server IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1, or be empty.",
             "dns2_invalid": "The alternative DNS server IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1, or be empty.",
-            "gateway_out_of_subnet": "Gateway address not in the configured subnet",
-            "subnet_captures_localhost": "Specified IP address and subnet mask not allowed: Would capture localhost (127.0.0.1).",
 
             "ap_settings": "WiFi Access Point",
             "ap_enable": "Access point",
