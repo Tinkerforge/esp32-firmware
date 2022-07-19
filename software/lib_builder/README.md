@@ -14,6 +14,7 @@ Install debootstrap and ubuntu-keyring.
     logout
 
 ### Boot container
+
     sudo systemd-nspawn --resolv-conf=replace-host -b -D ./esp32-lib-builder
     [login as root]
     adduser user
@@ -33,6 +34,7 @@ Install debootstrap and ubuntu-keyring.
     cp sdkconfig sdkconfig.vanilla
 
 ### Clone esp32-firmware
+
     cd ~
     git clone https://github.com/Tinkerforge/esp32-firmware
 
@@ -43,13 +45,17 @@ For example apply ./components/esp_littlefs/src/littlefs/ in ~/esp32-arduino-lib
 (Replace esp32brick with esp32ethernetbrick in the next sections if necessary)
 
 ### To modify settings:
+
     ~/esp32-firmware/software/lib-builder/menuconfig.py ~/esp32-arduino-lib-builder ~/esp32-firmware/software/lib-builder/defconfig.esp32brick
-    Press S Enter to write sdkconfig (don't change the filename!), ~/esp32-firmware/software/lib-builder/defconfig.esp32brick will be updated automatically
+
+Press S Enter to write sdkconfig (don't change the filename!), ~/esp32-firmware/software/lib-builder/defconfig.esp32brick will be updated automatically
 
 ### To build the libs:
+
     ~/esp32-firmware/software/lib-builder/build_idf_libs.py ~/esp32-arduino-lib-builder ~/esp32-firmware/software/lib-builder/defconfig.esp32brick
 
 ### Add built libs to arduino-esp32 Repo:
+
     (git clone https://github.com/Tinkerforge/arduino-esp32)
     cd ~/arduino-esp32
     git switch master
@@ -58,4 +64,5 @@ For example apply ./components/esp_littlefs/src/littlefs/ in ~/esp32-arduino-lib
     rm platform.txt
     rm -r tools/sdk
     cp ~/esp32-arduino-lib-builder/out/* ~/arduino-esp32/
-    Apply all patches in ~/esp32-firmware/software/patches/arduino-esp32/
+
+Apply all patches in ~/esp32-firmware/software/patches/arduino-esp32/
