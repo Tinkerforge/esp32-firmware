@@ -548,10 +548,24 @@ def main():
 
         util.remove_digest('web', 'node_modules', env=env)
 
-        try:
-            shutil.rmtree('web/node_modules')
-        except FileNotFoundError:
-            pass
+        rmtree_tries = 10
+
+        while rmtree_tries > 0:
+            try:
+                shutil.rmtree('web/node_modules')
+                break
+            except FileNotFoundError:
+                break
+            except:
+                # on windows for some unknown reason sometimes a directory stays
+                # or becomes non-empty during the shutil.rmtree call and and
+                # cannot be removed anymore. if that happens jus try again
+                time.sleep(0.5)
+
+                rmtree_tries -= 1
+
+                if rmtree_tries == 0:
+                    raise
 
         with ChangedDirectory('web'):
             npm_version = subprocess.check_output(['npm', '--version'], shell=sys.platform == 'win32', encoding='utf-8').strip()
