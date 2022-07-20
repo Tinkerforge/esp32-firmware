@@ -1,5 +1,8 @@
 ## Tutorial to build the precompiled ESP-IDF libs for the arduino-esp32 fork used in our firmwares.
 
+Ignore this if you only want to build/modify firmwares!
+This is only relevant if you want to build updates for https://github.com/Tinkerforge/arduino-esp32.
+
 (Skip to "Setup lib builder" if on debian-esque distribution)
 
 ### Create container
