@@ -525,7 +525,7 @@ def main():
     print('Checking translation override completeness')
 
     with ChangedDirectory('web'):
-        subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "check_override_completeness.py"] + [x.under for x in frontend_modules])
+        subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "check_override_completeness.py"])
 
     # Generate web interface
     print('Checking web interface dependencies')
