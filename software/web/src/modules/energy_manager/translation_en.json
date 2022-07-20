@@ -66,12 +66,15 @@
             "loading_debug_report_failed": "FIXME",
             "loading_event_log": "FIXME",
             "loading_event_log_failed": "FIXME",
+            "tab_close_warning": "Event log capture will be aborted if this tab is closed.",
             "starting_debug": "FIXME",
             "starting_debug_failed": "FIXME",
             "debug_running": "FIXME",
             "debug_stop_failed": "FIXME",
             "debug_stopped": "FIXME",
-            "debug_done": "FIXME"
+            "debug_done": "FIXME",
+            "config_failed": "Failed to save energy manager configuration.",
+            "reboot_content_changed": "energy manager configuration"
         }
     }
 }

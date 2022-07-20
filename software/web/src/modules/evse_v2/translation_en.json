@@ -37,7 +37,7 @@
             "control_pilot_automatic": "Automatic",
 
             "dc_fault_current_state": "DC fault protector state",
-            "dc_fault_current_state_desc": "{{{empty_text}}}",
+            "dc_fault_current_state_desc": "",
             "dc_fault_current_ok": "OK",
             "dc_fault_current_6_ma": "DC fault",
             "dc_fault_current_system": "System error",
@@ -53,7 +53,12 @@
         "script": {
             "control_pilot_configuration_failed": "Updating the control pilot configuration failed",
             "reset_dc_fault_current_failed": "Reset of the DC fault protector failed",
-            "gpio_configuration_failed": "Updating the GPIO configuration failed"
+            "gpio_configuration_failed": "Updating the GPIO configuration failed",
+
+            "meter_type_0": "No energy meter found",
+            "meter_type_1": "SDM72",
+            "meter_type_2": "SDM630",
+            "meter_type_3": "SDM72V2"
         }
     }
 }

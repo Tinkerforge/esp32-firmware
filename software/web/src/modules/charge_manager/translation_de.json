@@ -72,7 +72,7 @@
             "ampere_supported": "A unterstützt",
             "delete": "Löschen",
             "last_update_prefix": "Gestört seit ",
-            "last_update_suffix": "{{{empty_text}}}",
+            "last_update_suffix": "",
             "save_failed": "Speichern der Lastmanager-Konfiguration fehlgeschlagen",
             "set_available_current_failed": "Setzen des verfügbaren Stroms fehlgeschlagen",
             "add_charger": "Wallbox hinzufügen",

@@ -99,7 +99,7 @@
             "external_enable": "Erlaubt einer externen Steuerung (z.B. <a href=\"https://evcc.io/\">EVCC</a>) diese Wallbox zu steuern",
 
             "reset_description": "Aktionen",
-            "reset_description_muted": "{{{empty_text}}}",
+            "reset_description_muted": "",
             "reset_evse": "Neu starten",
             "reflash_evse": "Neu flashen",
             "charging_time": "Lädt seit",
@@ -150,12 +150,7 @@
             "slot_5": "Konfiguration",
             "slot_6": "Benutzer",
             "slot_7": "Lastmanagement",
-            "slot_8": "externe Steuerung",
-
-            "meter_type_0": "Kein Stromzähler angeschlossen",
-            "meter_type_1": "SDM72",
-            "meter_type_2": "SDM630",
-            "meter_type_3": "SDM72V2"
+            "slot_8": "externe Steuerung"
         }
     }
 }

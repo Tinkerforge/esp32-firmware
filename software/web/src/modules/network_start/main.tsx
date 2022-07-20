@@ -23,12 +23,10 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
 import { h, render } from "preact";
-import { translate } from "../../ts/translation";
+import { __ } from "../../ts/translation";
 import { ConfigPageHeader } from "../../ts/config_page_header";
 
-render(<ConfigPageHeader prefix="network" title={translate("network.content.network")} />, $('#network_header')[0]);
-
-declare function __(s: string): string;
+render(<ConfigPageHeader prefix="network" title={__("network.content.network")} />, $('#network_header')[0]);
 
 export function init() {
     $('#network-group').on('hide.bs.collapse', () => $('#network-chevron').removeClass("rotated-chevron"));

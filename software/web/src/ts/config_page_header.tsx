@@ -18,11 +18,11 @@
  */
 
 import { h, Component, JSX } from "preact";
-import { translate } from "./translation";
+import { __ } from "./translation";
 
 export interface ConfigPageHeaderProps {
     prefix: string,
-    title: JSX.Element
+    title: string
 }
 
 export class ConfigPageHeader extends Component<ConfigPageHeaderProps, any> {
@@ -34,9 +34,9 @@ export class ConfigPageHeader extends Component<ConfigPageHeaderProps, any> {
         return (
             <div class="row sticky-under-top mb-3 pt-3">
                 <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-header-shadow">
-                    <h1 class="h2">{this.props.title}</h1>
+                    <h1 class="h2" dangerouslySetInnerHTML={{__html: this.props.title}}></h1>
                     <button id={button_id} type="submit" form={config_form} class="btn btn-primary mb-2" disabled>
-                        {translate("component.config_page_header.save")}
+                        {__("component.config_page_header.save")}
                         <span id={spinner_id} class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden></span>
                     </button>
                 </div>

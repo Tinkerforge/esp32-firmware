@@ -25,12 +25,10 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
 import { h, render } from "preact";
-import { translate } from "../../ts/translation";
+import { __, translate_unchecked } from "../../ts/translation";
 import { ConfigPageHeader } from "../../ts/config_page_header";
 
-render(<ConfigPageHeader prefix="charge_manager" title={translate("charge_manager.content.charge_manager")} />, $('#charge_manager_header')[0]);
-
-declare function __(s: string): string;
+render(<ConfigPageHeader prefix="charge_manager" title={__("charge_manager.content.charge_manager")} />, $('#charge_manager_header')[0]);
 
 let charger_state_count = -1;
 
@@ -83,7 +81,7 @@ function update_charge_manager_state() {
                 $(`#charge_manager_status_charger_${i}_info`).text(__("charge_manager.script.charge_state_blocked_by_other_box_details"));
             } else {
                 $(`#charge_manager_status_charger_${i}_body`).removeClass("bg-danger text-white bg-disabled");
-                $(`#charge_manager_status_charger_${i}_state`).text(__(`charge_manager.script.charge_state_${s.state}`));
+                $(`#charge_manager_status_charger_${i}_state`).text(translate_unchecked(`charge_manager.script.charge_state_${s.state}`));
                 $(`#charge_manager_status_charger_${i}_info`).text(util.toLocaleFixed(s.allocated_current / 1000.0, 3) + " " + __("charge_manager.script.ampere_allocated"));
             }
         }
@@ -94,7 +92,7 @@ function update_charge_manager_state() {
                 $(`#charge_manager_status_charger_${i}_state`).text(__("charge_manager.script.charge_error_type_client"));
 
             $(`#charge_manager_status_charger_${i}_body`).addClass("bg-danger text-white bg-disabled");
-            $(`#charge_manager_status_charger_${i}_info`).text(__(`charge_manager.script.charge_error_${s.error}`));
+            $(`#charge_manager_status_charger_${i}_info`).text(translate_unchecked(`charge_manager.script.charge_error_${s.error}`));
         }
 
         let last_update = Math.floor((state.uptime - s.last_update) / 1000);

@@ -17,8 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { JSX } from "preact";
-
 {{{translation}}}
 
 type GetDictValue<T extends string, O> =
@@ -56,7 +54,7 @@ for (let language of navigator.languages) {
     console.log("Sorry, got no translation for " + language);
 }
 
-export function translate<S extends string>(key: DeepKeys<Translation, S>): GetDictValue<S, Translation> {
+function translate<S extends string>(key: string): GetDictValue<S, Translation> {
     let key_parts = key.split(".");
     let subtranslation: any = active_translation;
 
@@ -64,5 +62,47 @@ export function translate<S extends string>(key: DeepKeys<Translation, S>): GetD
         subtranslation = subtranslation[key_parts.shift() as any];
     }
 
-    return subtranslation as any;
+    return subtranslation;
+}
+
+export function __<S extends string>(key: DeepKeys<Translation, S>): GetDictValue<S, Translation> {
+    // type script has verified that the key is known, so no need to futher check it
+    return translate(key);
+}
+
+export function translate_unchecked<S extends string>(key: string): string {
+    let value = translate(key);
+
+    if (value !== undefined) {
+        return value;
+    }
+
+    console.log('ERROR: Translation is missing:', key);
+
+    return 'TRANSLATION-IS-MISSING';
+}
+
+export function translate_data_i18n() {
+    let elements = Array.from(document.querySelectorAll('[data-i18n]'));
+
+    elements.forEach(function (element) {
+        let _element$getAttribute, _element$getAttribute2;
+        let keys = (_element$getAttribute = element.getAttribute('data-i18n')) === null || _element$getAttribute === void 0 ? void 0 : _element$getAttribute.split(/\s/g);
+        let attributes = element === null || element === void 0 ? void 0 : (_element$getAttribute2 = element.getAttribute('data-i18n-attr')) === null || _element$getAttribute2 === void 0 ? void 0 : _element$getAttribute2.split(/\s/g);
+
+        if (attributes && keys.length != attributes.length) {
+            console.log('ERROR: Mismatching translation attributes:', keys, attributes, element);
+        }
+
+        keys.forEach(function (key, index) {
+            let text = translate_unchecked(key);
+            let attr = attributes ? attributes[index] : 'innerHTML';
+
+            if (attr == 'innerHTML') {
+                element[attr] = text;
+            } else {
+                element.setAttribute(attr, text);
+            }
+        });
+    });
 }

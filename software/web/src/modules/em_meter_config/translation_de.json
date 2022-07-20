@@ -31,7 +31,8 @@
             "sdm630_energy_lifetime": "seit Herstellung des Stromzählers"
         },
         "script": {
-
+            "config_failed": "Speichern der Stromzähler-Konfiguration fehlgeschlagen.",
+            "reboot_content_changed": "Stromzähler-Konfiguration"
         }
     }
 }

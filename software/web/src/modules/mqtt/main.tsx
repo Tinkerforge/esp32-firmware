@@ -23,12 +23,10 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
 import { h, render } from "preact";
-import { translate } from "../../ts/translation";
+import { __ } from "../../ts/translation";
 import { ConfigPageHeader } from "../../ts/config_page_header";
 
-render(<ConfigPageHeader prefix="mqtt" title={translate("mqtt.content.mqtt")} />, $('#mqtt_header')[0]);
-
-declare function __(s: string): string;
+render(<ConfigPageHeader prefix="mqtt" title={__("mqtt.content.mqtt")} />, $('#mqtt_header')[0]);
 
 function update_mqtt_state() {
     let state = API.default_updater('mqtt/state', ['last_error'], false);

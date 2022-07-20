@@ -24,7 +24,7 @@ import feather from "../../ts/feather";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-declare function __(s: string): string;
+import { __ } from "../../ts/translation";
 
 function wifi_symbol(rssi: number) {
     if(rssi >= -60)

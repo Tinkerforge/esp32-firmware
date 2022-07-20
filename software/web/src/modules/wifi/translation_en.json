@@ -86,7 +86,6 @@
 
             "sta_config_failed": "Failed to save connection configuration.",
             "ap_config_failed": "Failed to save access point configuration.",
-            "no_ap_configured": "No connection configured",
             "sta_reboot_content_changed": "connection configuration",
             "ap_reboot_content_changed": "access point configuration"
         }

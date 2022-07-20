@@ -23,10 +23,10 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
 import { h, render } from "preact";
-import { translate } from "../../ts/translation";
+import { __ } from "../../ts/translation";
 import { PageHeader } from "../../ts/page_header";
 
-render(<PageHeader title={translate("debug.content.debug")} />, $('#debug_header')[0]);
+render(<PageHeader title={__("debug.content.debug")} />, $('#debug_header')[0]);
 
 function update_debug_state() {
     let state = API.get('debug/state');

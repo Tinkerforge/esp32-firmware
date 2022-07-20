@@ -25,12 +25,10 @@ import * as API from "../../ts/api";
 import feather from "../../ts/feather";
 
 import { h, render } from "preact";
-import { translate } from "../../ts/translation";
+import { __, translate_unchecked } from "../../ts/translation";
 import { ConfigPageHeader } from "../../ts/config_page_header";
 
-render(<ConfigPageHeader prefix="nfc" title={translate("nfc.content.nfc")} />, $('#nfc_header')[0]);
-
-declare function __(s: string): string;
+render(<ConfigPageHeader prefix="nfc" title={__("nfc.content.nfc")} />, $('#nfc_header')[0]);
 
 const MAX_AUTHORIZED_TAGS = 16;
 
@@ -222,7 +220,7 @@ outer_loop:
 
     for(let i = 0; i < unauth_tag_list_length; ++i) {
         $(`#nfc_seen_tag_${i}_id`).text(unauth_seen_tags[i].tag_id);
-        $(`#nfc_seen_tag_${i}_type`).text(__(`nfc.content.type_${unauth_seen_tags[i].tag_type}`));
+        $(`#nfc_seen_tag_${i}_type`).text(translate_unchecked(`nfc.content.type_${unauth_seen_tags[i].tag_type}`));
         $(`#nfc_seen_tag_${i}_last_seen`).text(__("nfc.content.last_seen") + util.format_timespan(Math.floor(unauth_seen_tags[i].last_seen / 1000)) + __("nfc.content.last_seen_suffix"));
 
         $(`#nfc_seen_tag_${i}`).on("click", () => {

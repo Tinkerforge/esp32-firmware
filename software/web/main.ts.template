@@ -23,15 +23,11 @@ import "bootstrap";
 
 import feather = require("feather-icons");
 
-import Translator from '@andreasremdt/simple-translator';
-
 import * as util from "./ts/util";
-
 import * as API from "./ts/api";
+import { __, translate_data_i18n } from "./ts/translation";
 
 {{{module_imports}}}
-
-{{{translation_imports}}}
 
 interface Module {
     init(): void;
@@ -163,21 +159,7 @@ $(window).on('pageshow', (ev) => {
         timeout: 5000
     });
 
-    var translator = new Translator();
-
-{{{translation_adds}}}
-
-    translator.config.defaultLanguage = 'en';
-    for (let l of navigator.languages) {
-        let lang = l.substr(0, 2);
-        if (translator.languages.has(lang)) {
-            translator.config.defaultLanguage = lang;
-            break;
-        }
-        console.log("Sorry, got no translation for " + l);
-    }
-
-    translator.translatePageTo();
+    translate_data_i18n();
 
     $('a[data-toggle="tab"]').on('show.bs.tab', () => {
         $('a[data-toggle="tab"]').not(<Element>event.target).removeClass("active");

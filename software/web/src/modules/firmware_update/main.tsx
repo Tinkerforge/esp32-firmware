@@ -23,12 +23,10 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
 import { h, render } from "preact";
-import { translate } from "../../ts/translation";
+import { __, translate_unchecked } from "../../ts/translation";
 import { PageHeader } from "../../ts/page_header";
 
-render(<PageHeader title={translate("firmware_update.content.firmware_update")} />, $('#firmware_update_header')[0]);
-
-declare function __(s: string): string;
+render(<PageHeader title={__("firmware_update.content.firmware_update")} />, $('#firmware_update_header')[0]);
 
 import bsCustomFileInput from "../../ts/bs-custom-file-input";
 
@@ -66,7 +64,7 @@ function check_upload(type: string) {
             else {
                 try {
                     let e = JSON.parse(xhr.responseText)
-                    let error_message = __/* hide this from the translation checker */(e["error"])
+                    let error_message = translate_unchecked(e["error"])
                     if (e["error"] == "firmware_update.script.downgrade") {
                         error_message = error_message.replace("%fw%", e["fw"]).replace("%installed%", e["installed"]);
                         $('#downgrade_text').text(error_message);
@@ -122,7 +120,7 @@ function upload(type: string) {
             if (xhr.status == 423)
                 util.add_alert("firmware_update_failed", "alert-danger", __("firmware_update.script.flash_fail"), __("firmware_update.script.vehicle_connected"));
             else {
-                let txt = xhr.responseText.startsWith("firmware_update.") ? __/* hide this from the translation checker */(xhr.responseText) : error + ": " + xhr.responseText;
+                let txt = xhr.responseText.startsWith("firmware_update.") ? translate_unchecked(xhr.responseText) : error + ": " + xhr.responseText;
                 util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.flash_fail"), txt);
             }
             util.resumeWebSockets();

@@ -14,9 +14,9 @@
             "download_btn": "Ladelog herunterladen",
 
             "tracked_charges": "Aufgezeichnete Ladevorgänge",
-            "tracked_charges_muted": "{{{empty_text}}}",
+            "tracked_charges_muted": "",
             "first_charge_timestamp": "Ältester aufgezeichneter Ladevorgang",
-            "first_charge_timestamp_muted": "{{{empty_text}}}",
+            "first_charge_timestamp_muted": "",
             "user_filter": "Benutzerfilter",
             "user_filter_muted": "CSV-Datei wird nur Ladevorgänge des ausgewählten Benutzers beinhalten",
 
@@ -27,7 +27,7 @@
             "last_charges": "Letzte Ladevorgänge",
             "last_charges_desc": "bis zu 30 Ladevorgänge werden angezeigt",
             "remove": "Aufgezeichnete Ladevorgänge löschen",
-            "remove_desc": "{{{empty_text}}}",
+            "remove_desc": "",
             "remove_btn": "Ladevorgänge löschen",
 
             "charge_tracker_remove_modal_text": null,

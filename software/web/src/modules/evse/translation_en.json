@@ -13,7 +13,7 @@
             "resistance_2700": "Resistance calibration 2700Ω",
             "resistance_880": "Resistance calibration 880Ω",
             "user_calibration_description": "Calibration",
-            "user_calibration_description_muted": "{{{empty_text}}}",
+            "user_calibration_description_muted": "",
             "user_calibration_download": "Download",
             "user_calibration_browse": "Upload",
             "user_calibration_select_file": "Select calibration file",

@@ -37,7 +37,7 @@
             "control_pilot_automatic": "Automatisch",
 
             "dc_fault_current_state": "DC-Fehlerstrom&shy;zustand",
-            "dc_fault_current_state_desc": "{{{empty_text}}}",
+            "dc_fault_current_state_desc": "",
             "dc_fault_current_ok": "OK",
             "dc_fault_current_6_ma": "Gleichstromfehler",
             "dc_fault_current_system": "Systemfehler",
@@ -53,7 +53,12 @@
         "script": {
             "control_pilot_configuration_failed": "Speichern der Control-Pilot-Konfiguration fehlgeschlagen",
             "reset_dc_fault_current_failed": "Zurücksetzen des DC-Fehlerstromschutzmoduls fehlgeschlagen",
-            "gpio_configuration_failed": "Speichern der GPIO-Konfiguration fehlgeschlagen"
+            "gpio_configuration_failed": "Speichern der GPIO-Konfiguration fehlgeschlagen",
+
+            "meter_type_0": "Kein Stromzähler angeschlossen",
+            "meter_type_1": "SDM72",
+            "meter_type_2": "SDM630",
+            "meter_type_3": "SDM72V2"
         }
     }
 }

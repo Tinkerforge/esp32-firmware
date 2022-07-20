@@ -25,12 +25,10 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
 import { h, render } from "preact";
-import { translate } from "../../ts/translation";
+import { __, translate_unchecked } from "../../ts/translation";
 import { PageHeader } from "../../ts/page_header";
 
-render(<PageHeader title={translate("evse.content.evse")} />, $('#evse_header')[0]);
-
-declare function __(s: string): string;
+render(<PageHeader title={__("evse.content.evse")} />, $('#evse_header')[0]);
 
 function update_evse_status_start_charging_button() {
     let state = API.get('evse/state');
@@ -216,7 +214,7 @@ function update_evse_slots() {
         if (!s.active || s.max_current != real_maximum)
             continue;
 
-        status_list.push(__(`evse.script.slot_${i}`));
+        status_list.push(translate_unchecked(`evse.script.slot_${i}`));
     }
 
     status_string += status_list.join(", ");

@@ -25,12 +25,10 @@ import * as API from "../../ts/api";
 import feather from "../../ts/feather";
 
 import { h, render } from "preact";
-import { translate } from "../../ts/translation";
+import { __ } from "../../ts/translation";
 import { PageHeader } from "../../ts/page_header";
 
-render(<PageHeader title={translate("charge_tracker.content.charge_tracker")} />, $('#charge_tracker_header')[0]);
-
-declare function __(s: string): string;
+render(<PageHeader title={__("charge_tracker.content.charge_tracker")} />, $('#charge_tracker_header')[0]);
 
 function update_last_charges() {
     let charges = API.get('charge_tracker/last_charges');

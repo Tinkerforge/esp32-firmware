@@ -26,12 +26,10 @@ import feather from "../../ts/feather";
 import YaMD5 from "../../ts/yamd5";
 
 import { h, render } from "preact";
-import { translate } from "../../ts/translation";
+import { __ } from "../../ts/translation";
 import { ConfigPageHeader } from "../../ts/config_page_header";
 
-render(<ConfigPageHeader prefix="wireguard" title={translate("wireguard.content.wireguard")} />, $('#wireguard_header')[0]);
-
-declare function __(s: string): string;
+render(<ConfigPageHeader prefix="wireguard" title={__("wireguard.content.wireguard")} />, $('#wireguard_header')[0]);
 
 function update_wireguard_state() {
     let state = API.get("wireguard/state").state;

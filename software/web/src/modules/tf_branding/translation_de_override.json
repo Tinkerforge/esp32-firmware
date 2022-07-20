@@ -17,10 +17,10 @@
     "firmware_update": {
         "content": {
             "factory_reset_modal_text": "Hiermit wird die gesamte Konfiguration auf den Werkszustand zurückgesetzt. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Der Brick öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus dem Etikett auf der Rückseite des Bricks. Fortfahren?",
-            "reboot_desc": "{{{empty_text}}}",
-            "config_reset_modal_text": "{{{empty_text}}}",
+            "reboot_desc": "",
+            "config_reset_modal_text": "",
             "factory_reset_desc": "löscht die gesamte Konfiguration",
-            "config_reset_desc": "{{{empty_text}}}"
+            "config_reset_desc": ""
         },
         "script": {
             "no_info_page": "Firmware-Datei ist beschädigt (Firmware-Info-Seite fehlt)",

@@ -422,17 +422,14 @@ def main():
         print('Error: Translation missing')
         sys.exit(1)
 
-    for language in sorted(translation):
-        with open(os.path.join('web', 'src', 'ts', 'translation_{0}.ts'.format(language)), 'w', encoding='utf-8') as f:
-            data = json.dumps(translation[language], indent=4, ensure_ascii=False)
-            data = data.replace('{{{empty_text}}}', '\u200b') # Zero Width Space to work around a bug in the translation library: empty strings are replaced with "null"
-            data = data.replace('{{{display_name}}}', display_name)
-            data = data.replace('{{{manual_url}}}', manual_url)
-            data = data.replace('{{{apidoc_url}}}', apidoc_url)
-            data = data.replace('{{{firmware_url}}}', firmware_url)
+    with open(os.path.join('web', 'src', 'ts', 'translation.json'), 'w', encoding='utf-8') as f:
+        data = json.dumps(translation, indent=4, ensure_ascii=False)
+        data = data.replace('{{{display_name}}}', display_name)
+        data = data.replace('{{{manual_url}}}', manual_url)
+        data = data.replace('{{{apidoc_url}}}', apidoc_url)
+        data = data.replace('{{{firmware_url}}}', firmware_url)
 
-            f.write('export const translation_{0}: {{[index: string]:any}} = '.format(language))
-            f.write(data + ';\n')
+        f.write(data)
 
     if favicon_path == None:
         print('Error: Favison missing')
@@ -456,8 +453,6 @@ def main():
     specialize_template(os.path.join("web", "main.ts.template"), os.path.join("web", "src", "main.ts"), {
         '{{{module_imports}}}': '\n'.join(['import * as {0} from "./modules/{0}/main";'.format(x) for x in main_ts_entries]),
         '{{{modules}}}': ', '.join([x for x in main_ts_entries]),
-        '{{{translation_imports}}}': '\n'.join(['import {{translation_{0}}} from "./ts/translation_{0}";'.format(x) for x in sorted(translation)]),
-        '{{{translation_adds}}}': '\n'.join(["    translator.add('{0}', translation_{0});".format(x) for x in sorted(translation)])
     })
 
     specialize_template(os.path.join("web", "main.scss.template"), os.path.join("web", "src", "main.scss"), {
@@ -485,12 +480,11 @@ def main():
             if isinstance(value, dict):
                 output += format_translation(value, type_only, indent + '    ')
             elif type_only:
-                output += ['JSX.Element,\n']
+                output += ['string,\n']
             else:
-                string = "<>{0}</>".format(value)
+                string = '"{0}"'.format(value.replace('"', '\\"'))
 
                 if '{{{' in string:
-                    string = string.replace('{{{empty_text}}}', '') # FIXME: remove this placeholder once translation libary is removed
                     string = string.replace('{{{display_name}}}', display_name)
                     string = string.replace('{{{manual_url}}}', manual_url)
                     string = string.replace('{{{apidoc_url}}}', apidoc_url)

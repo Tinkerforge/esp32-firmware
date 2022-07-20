@@ -73,7 +73,7 @@
 
             "delete": "Delete",
             "last_update_prefix": "Unavailable since",
-            "last_update_suffix": "{{{empty_text}}}",
+            "last_update_suffix": "",
             "save_failed": "Failed to save the charge manager configuration",
             "set_available_current_failed": "Failed to set the available current",
             "add_charger": "Add charger",

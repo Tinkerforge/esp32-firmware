@@ -25,12 +25,10 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
 import { h, render } from "preact";
-import { translate } from "../../ts/translation";
+import { __ } from "../../ts/translation";
 import { ConfigPageHeader } from "../../ts/config_page_header";
 
-render(<ConfigPageHeader prefix="ethernet" title={translate("ethernet.content.ethernet")} />, $('#ethernet_header')[0]);
-
-declare function __(s: string): string;
+render(<ConfigPageHeader prefix="ethernet" title={__("ethernet.content.ethernet")} />, $('#ethernet_header')[0]);
 
 function update_ethernet_config() {
     let config = API.default_updater('ethernet/config');

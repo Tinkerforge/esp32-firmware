@@ -20,8 +20,7 @@
 import $ from "jquery";
 
 import * as API from "./api";
-
-declare function __(s: string): string;
+import { __ } from "./translation";
 
 export function reboot() {
     $.ajax({

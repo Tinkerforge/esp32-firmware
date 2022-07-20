@@ -23,12 +23,10 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
 import { h, render } from "preact";
-import { translate } from "../../ts/translation";
+import { __ } from "../../ts/translation";
 import { ConfigPageHeader } from "../../ts/config_page_header";
 
-render(<ConfigPageHeader prefix="em_meter_config" title={translate("em_meter_config.content.em_meter_config")} />, $('#em_meter_config_header')[0]);
-
-declare function __(s: string): string;
+render(<ConfigPageHeader prefix="em_meter_config" title={__("em_meter_config.content.em_meter_config")} />, $('#em_meter_config_header')[0]);
 
 function update_em_meter_config() {
     let config = API.get('energy_manager/meter_config');

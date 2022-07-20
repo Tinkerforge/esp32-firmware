@@ -276,7 +276,7 @@ void FirmwareUpdate::register_urls()
     });
 
     server.on("/check_firmware", HTTP_POST, [this](WebServerRequest request){
-        request.send(200, "text/plain", "{\"error\":\"firmware_update.script.ok\"}");
+        request.send(200);
     },[this](WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final){
         if (index == 0) {
             this->reset_firmware_info();

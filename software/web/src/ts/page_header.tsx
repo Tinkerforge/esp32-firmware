@@ -20,7 +20,7 @@
 import { h, Component, JSX } from "preact";
 
 export interface PageHeaderProps {
-    title: JSX.Element
+    title: string
 }
 
 export class PageHeader extends Component<PageHeaderProps, any> {
@@ -28,7 +28,7 @@ export class PageHeader extends Component<PageHeaderProps, any> {
         return (
             <div class="row sticky-under-top mb-3 pt-3">
                 <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-header-shadow">
-                    <h1 class="h2">{this.props.title}</h1>
+                    <h1 class="h2" dangerouslySetInnerHTML={{__html: this.props.title}}></h1>
                 </div>
             </div>
         );

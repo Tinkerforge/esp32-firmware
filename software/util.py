@@ -190,20 +190,14 @@ def merge(left, right, path=[]):
             left[key] = right[key]
     return left
 
-def parse_ts_file(path, name, translation, used_placeholders, template_literals):
-    START_PATTERN = "{[index: string]:any} = "
-    END_PATTERN = "};"
-
-    with open(path) as f:
+def parse_ts_file(path, name, used_placeholders, template_literals):
+    with open(path, 'r') as f:
         content = f.read()
 
     placeholders = re.findall('__\(([^\)]*)', content)
-    try:
-        placeholders.remove("s: string")
-    except:
-        pass
+    placeholders_unchecked = re.findall('translate_unchecked\(([^\)]*)', content)
 
-    template_literal_keys = [x for x in placeholders if x[0] == '`' and x[-1] == '`' and '${' in x and '}' in x]
+    template_literal_keys = [x for x in placeholders_unchecked if x[0] == '`' and x[-1] == '`' and '${' in x and '}' in x]
     placeholders = [x for x in placeholders if x not in template_literal_keys]
 
     template_literals.update({x[1:-1]: [] for x in template_literal_keys})
@@ -214,36 +208,14 @@ def parse_ts_file(path, name, translation, used_placeholders, template_literals)
 
     used_placeholders += [x[1:-1] for x in placeholders]
 
-    if not name.startswith("translation_") or not name.endswith(".ts"):
-        return
-
-    language = name[len('translation_'):-len('.ts')]
-    start = content.find(START_PATTERN)
-    while start >= 0:
-        content = content[start+len(START_PATTERN):]
-        end = content.find(END_PATTERN)
-        json_dict = content[:end+1]
-        json_dict = re.sub(",\s*\}", "}", json_dict)
-        for x in re.findall('"([^"]*)":\s*""', json_dict):
-            print('error: key "{}" in {} has empty value. Use {{{{{{empty_text}}}}}} instead.'.format(x, name))
-        json_dict = json_dict.replace("{{{empty_text}}}", '""')
-        try:
-            merge(translation, {language: json.loads(json_dict)})
-        except Exception as e:
-            print("error:", e, json_dict)
-
-        content = content[end+len(END_PATTERN):]
-        start = content.find(START_PATTERN)
-
 def parse_ts_files(files):
-    translation = {}
     used_placeholders = []
     template_literals = {}
 
     for f in files:
-        parse_ts_file(f, os.path.basename(f), translation, used_placeholders, template_literals)
+        parse_ts_file(f, os.path.basename(f), used_placeholders, template_literals)
 
-    return translation, used_placeholders, template_literals
+    return used_placeholders, template_literals
 
 def get_nested_keys(d, path=""):
     r = []

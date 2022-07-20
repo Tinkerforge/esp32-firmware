@@ -100,7 +100,7 @@
             "external_enable": "Enables an external control system (for example <a href=\"https://evcc.io/\">EVCC</a>) to control this charger",
 
             "reset_description": "Actions",
-            "reset_description_muted": "{{{empty_text}}}",
+            "reset_description_muted": "",
             "reset_evse": "Restart",
             "reflash_evse": "Reflash",
             "charging_time": "Charging for",
@@ -151,12 +151,7 @@
             "slot_5": "Configuration",
             "slot_6": "User",
             "slot_7": "Charge management",
-            "slot_8": "External control",
-
-            "meter_type_0": "No energy meter found",
-            "meter_type_1": "SDM72",
-            "meter_type_2": "SDM630",
-            "meter_type_3": "SDM72V2"
+            "slot_8": "External control"
         }
     }
 }

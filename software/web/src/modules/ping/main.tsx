@@ -25,12 +25,10 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
 import { h, render } from "preact";
-import { translate } from "../../ts/translation";
+import { __ } from "../../ts/translation";
 import { ConfigPageHeader } from "../../ts/config_page_header";
 
-render(<ConfigPageHeader prefix="ping" title={translate("ping.content.ping")} />, $('#ping_header')[0]);
-
-declare function __(s: string): string;
+render(<ConfigPageHeader prefix="ping" title={__("ping.content.ping")} />, $('#ping_header')[0]);
 
 function update_config(force: boolean = false) {
     if (!force && !$('#ping_config_save_button').prop("disabled"))

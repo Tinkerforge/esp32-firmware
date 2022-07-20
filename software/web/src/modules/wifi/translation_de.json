@@ -86,7 +86,6 @@
 
             "sta_config_failed": "Speichern der Verbindungseinstellungen fehlgeschlagen.",
             "ap_config_failed": "Speichern der Access Point-Einstellungen fehlgeschlagen.",
-            "no_ap_configured": "Keine Verbindung konfiguriert",
             "sta_reboot_content_changed": "Verbindungseinstellungen",
             "ap_reboot_content_changed": "Access-Point-Einstellungen"
         }

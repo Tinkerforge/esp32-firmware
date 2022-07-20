@@ -50,28 +50,28 @@
             "detailed_average_line_to_neutral_volts_desc": "to neutral",
 
             "detailed_average_line_current": "Average current",
-            "detailed_average_line_current_desc": "{{{empty_text}}}",
+            "detailed_average_line_current_desc": "",
 
             "detailed_sum_of_line_currents": "Sum of phase currents",
-            "detailed_sum_of_line_currents_desc": "{{{empty_text}}}",
+            "detailed_sum_of_line_currents_desc": "",
 
             "detailed_total_system_power": "Total active power",
-            "detailed_total_system_power_desc": "{{{empty_text}}}",
+            "detailed_total_system_power_desc": "",
 
             "detailed_total_system_volt_amps": "Total apparent power",
-            "detailed_total_system_volt_amps_desc": "{{{empty_text}}}",
+            "detailed_total_system_volt_amps_desc": "",
 
             "detailed_total_system_var": "Total reactive power",
-            "detailed_total_system_var_desc": "{{{empty_text}}}",
+            "detailed_total_system_var_desc": "",
 
             "detailed_total_system_power_factor": "Total power factor",
-            "detailed_total_system_power_factor_desc": "{{{empty_text}}}",
+            "detailed_total_system_power_factor_desc": "",
 
             "detailed_total_system_phase_angle": "Total phase angle",
-            "detailed_total_system_phase_angle_desc": "{{{empty_text}}}",
+            "detailed_total_system_phase_angle_desc": "",
 
             "detailed_frequency_of_supply_voltages": "Frequency of supply voltage",
-            "detailed_frequency_of_supply_voltages_desc": "{{{empty_text}}}",
+            "detailed_frequency_of_supply_voltages_desc": "",
 
             "detailed_total_import_kwh": "Active energy (Import)",
             "detailed_total_import_kwh_desc": "transfered to vehicle",
@@ -86,10 +86,10 @@
             "detailed_total_export_kvarh_desc": "transfered from vehicle",
 
             "detailed_total_vah": "Total apparent power",
-            "detailed_total_vah_desc": "{{{empty_text}}}",
+            "detailed_total_vah_desc": "",
 
             "detailed_ah": "Transported electric charge",
-            "detailed_ah_desc": "{{{empty_text}}}",
+            "detailed_ah_desc": "",
 
             "detailed_total_system_power_demand": "Active power demand",
             "detailed_total_system_power_demand_desc": "import - export",
@@ -104,25 +104,25 @@
             "detailed_maximum_total_system_va_demand_desc": "highest value measured",
 
             "detailed_neutral_current_demand": "Neutral current demand",
-            "detailed_neutral_current_demand_desc": "{{{empty_text}}}",
+            "detailed_neutral_current_demand_desc": "",
 
             "detailed_maximum_neutral_current_demand": "Maximum neutral current demand",
             "detailed_maximum_neutral_current_demand_desc": "highest value measured",
 
             "detailed_line1_to_line2_volts": "L1 to L2 voltage",
-            "detailed_line1_to_line2_volts_desc": "{{{empty_text}}}",
+            "detailed_line1_to_line2_volts_desc": "",
 
             "detailed_line2_to_line3_volts": "L2 to L3 voltage",
-            "detailed_line2_to_line3_volts_desc": "{{{empty_text}}}",
+            "detailed_line2_to_line3_volts_desc": "",
 
             "detailed_line3_to_line1_volts": "L3 to L1 voltage",
-            "detailed_line3_to_line1_volts_desc": "{{{empty_text}}}",
+            "detailed_line3_to_line1_volts_desc": "",
 
             "detailed_average_line_to_line_volts": "Average voltage between phases",
-            "detailed_average_line_to_line_volts_desc": "{{{empty_text}}}",
+            "detailed_average_line_to_line_volts_desc": "",
 
             "detailed_neutral_current": "Neutral current",
-            "detailed_neutral_current_desc": "{{{empty_text}}}",
+            "detailed_neutral_current_desc": "",
 
             "detailed_ln_volts_thd": "Voltage Total Harmonic Distortion (THD)",
             "detailed_ln_volts_thd_desc": "L1, L2, L3",
@@ -131,10 +131,10 @@
             "detailed_current_thd_desc": "L1, L2, L3",
 
             "detailed_average_line_to_neutral_volts_thd": "Average voltage THD",
-            "detailed_average_line_to_neutral_volts_thd_desc": "{{{empty_text}}}",
+            "detailed_average_line_to_neutral_volts_thd_desc": "",
 
             "detailed_average_line_current_thd": "Average current THD",
-            "detailed_average_line_current_thd_desc": "{{{empty_text}}}",
+            "detailed_average_line_current_thd_desc": "",
 
             "detailed_current_demand": "Current demand",
             "detailed_current_demand_desc": "L1, L2, L3",
@@ -143,16 +143,16 @@
             "detailed_maximum_current_demand_desc": "L1, L2, L3; highest value measured",
 
             "detailed_line1_to_line2_volts_thd": "Voltage THD L1 to L2",
-            "detailed_line1_to_line2_volts_thd_desc": "{{{empty_text}}}",
+            "detailed_line1_to_line2_volts_thd_desc": "",
 
             "detailed_line2_to_line3_volts_thd": "Voltage THD L2 to L3",
-            "detailed_line2_to_line3_volts_thd_desc": "{{{empty_text}}}",
+            "detailed_line2_to_line3_volts_thd_desc": "",
 
             "detailed_line3_to_line1_volts_thd": "Voltage THD L3 to L1",
-            "detailed_line3_to_line1_volts_thd_desc": "{{{empty_text}}}",
+            "detailed_line3_to_line1_volts_thd_desc": "",
 
             "detailed_average_line_to_line_volts_thd": "Average voltage THD between phases",
-            "detailed_average_line_to_line_volts_thd_desc": "{{{empty_text}}}",
+            "detailed_average_line_to_line_volts_thd_desc": "",
 
             "detailed_total_kwh_sum": "Sum of total active energies",
             "detailed_total_kwh_sum_desc": "Import + Export of all phases",
