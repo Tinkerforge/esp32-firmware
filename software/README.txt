@@ -2,7 +2,7 @@ Build instructions
 ------------------
 
 - Install Node.js and NPM >= 8 (left as exercise for the reader)
-- Install PlatformIO: pip install -U platformio
+- Install PlatformIO >= 6: pip install -U platformio
 - Update local packages: platformio run -e prepare
 - The firmwares are organized as PlatformIO environments:
   - "platformio run -e warp" builds the WARP Charger firmware
