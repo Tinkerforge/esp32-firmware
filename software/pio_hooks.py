@@ -220,6 +220,8 @@ def check_translation(translation, parent_key=None):
             check_translation(value, parent_key=parent_key + [key])
 
 def main():
+    subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "update_packages.py"])
+
     # Add build flags
     timestamp = int(time.time())
     name = env.GetProjectOption("custom_name")
@@ -229,7 +231,6 @@ def main():
     apidoc_url = env.GetProjectOption("custom_apidoc_url")
     firmware_url = env.GetProjectOption("custom_firmware_url")
     require_firmware_info = env.GetProjectOption("custom_require_firmware_info")
-    build_src_filter = env.GetProjectOption("build_src_filter")
 
     try:
         oldest_version, version = get_changelog_version(name)
@@ -237,10 +238,7 @@ def main():
         print('Error: Could not get changelog version: {0}'.format(e))
         sys.exit(1)
 
-    if build_src_filter[0] == '+<empty.c>':
-        build_src_filter = None
-    else:
-        build_src_filter = ['+<*>', '-<empty.c>']
+    build_src_filter = ['+<*>']
 
     if not os.path.isdir("build"):
         os.makedirs("build")
