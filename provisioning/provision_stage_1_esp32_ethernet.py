@@ -60,6 +60,7 @@ def main():
     ssid = ("warp2-" if firmware_type == "warp2" else "esp32-") + uid
 
     run(["systemctl", "restart", "NetworkManager.service"])
+    run(["iw", "reg", "set", "DE"])
 
     print("Waiting for ESP wifi. Takes about one minute.")
     if not wait_for_wifi(ssid, 90):
