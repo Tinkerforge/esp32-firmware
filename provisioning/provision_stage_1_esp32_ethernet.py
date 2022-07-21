@@ -41,6 +41,9 @@ def main():
 
     check_label_printer()
 
+    with open('printer_host_bag.txt', 'r') as f:
+        printer_host_bag = f.read().strip()
+
     print("Checking ESP state")
     mac_address = check_if_esp_is_sane_and_get_mac()
     print("MAC Address is {}".format(mac_address))
@@ -178,7 +181,7 @@ def main():
     if firmware_type == "esp32_ethernet":
         bag_label_success = "n"
         while bag_label_success != "y":
-            run(["python3", "../../flash-test/label/print-label.py", "-c", "1", "ESP32 Ethernet Brick", str(ESP_ETHERNET_DEVICE_ID), datetime.datetime.now().strftime('%Y-%m-%d'), uid, fw_version])
+            run(["python3", "../../flash-test/label/print-label.py", '-p', printer_host_bag, "-c", "1", "ESP32 Ethernet Brick", str(ESP_ETHERNET_DEVICE_ID), datetime.datetime.now().strftime('%Y-%m-%d'), uid, fw_version])
             bag_label_prompt = "Stick bag label on bag. Press n to retry printing the label. [y/n]"
 
             bag_label_success = input(bag_label_prompt)
