@@ -31,6 +31,7 @@ Install debootstrap and ubuntu-keyring.
     sudo apt update
     sudo apt-get install jq git wget curl libssl-dev libncurses-dev flex bison gperf python3 python-is-python3 python3-pip python3-setuptools python3-serial python3-click python3-cryptography python3-future python3-pyparsing python3-pyelftools cmake ninja-build ccache python3-venv libffi-dev libssl-dev dfu-util libusb-1.0-0
     sudo pip install --upgrade pip
+    cd ~
     git clone https://github.com/espressif/esp32-arduino-lib-builder
     cd esp32-arduino-lib-builder
     ./build.sh -t esp32 -b menuconfig
@@ -45,7 +46,7 @@ Install debootstrap and ubuntu-keyring.
 Apply all patches in ~/esp32-firmware/software/patches/lib-builder. Subdirectories should be matching.
 For example apply ./components/esp_littlefs/src/littlefs/ in ~/esp32-arduino-lib-builder/components/esp_littlefs/src/littlefs/
 
-(Replace esp32brick with esp32ethernetbrick in the next sections if necessary)
+(Replace .esp32brick with .esp32ethernetbrick in the next sections if necessary)
 
 ### To modify settings:
 
