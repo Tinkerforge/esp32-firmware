@@ -26,6 +26,10 @@ for name in os.listdir('packages'):
     if name == 'config.json':
         continue
 
+    if name.endswith('-dev'):
+        print('Ignoring {0}'.format(name))
+        continue
+
     if name not in config:
         print('Removing {0}'.format(name))
 
