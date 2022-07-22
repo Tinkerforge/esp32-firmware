@@ -194,7 +194,7 @@ async function downloadChargeLog() {
 
                     let charged = (Number.isNaN(meter_start) || Number.isNaN(meter_end)) ? NaN : (meter_end - meter_start);
                     let charged_string;
-                    if (charged == NaN || charged < 0) {
+                    if (Number.isNaN(charged) || charged < 0) {
                         charged_string = 'N/A';
                     } else {
                         charged_string = util.toLocaleFixed(charged, 3);
