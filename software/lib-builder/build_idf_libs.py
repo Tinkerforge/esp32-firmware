@@ -29,7 +29,7 @@ shutil.move(os.path.join(root, "configs", "defconfig.esp32"), os.path.join(root,
 try:
     shutil.copy(os.path.join(sys.argv[2]), os.path.join(root, "configs", "defconfig.esp32"))
     with ChangedDirectory(os.path.join(root)):
-        subprocess.call("./build.sh -t esp32 -b idf_libs", shell=True, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
+        subprocess.call("./build.sh -t esp32", shell=True, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
 
 finally:
     shutil.move(os.path.join(root, "configs", "defconfig.esp32vanilla"), os.path.join(root, "configs", "defconfig.esp32"))

@@ -30,6 +30,8 @@ Install debootstrap and ubuntu-keyring.
 
     sudo apt update
     sudo apt-get install jq git wget curl libssl-dev libncurses-dev flex bison gperf python3 python-is-python3 python3-pip python3-setuptools python3-serial python3-click python3-cryptography python3-future python3-pyparsing python3-pyelftools cmake ninja-build ccache python3-venv libffi-dev libssl-dev dfu-util libusb-1.0-0
+    git config --global user.name username
+    git config --global user.email user@example.com
     sudo pip install --upgrade pip
     cd ~
     git clone https://github.com/espressif/esp32-arduino-lib-builder
@@ -43,9 +45,9 @@ Install debootstrap and ubuntu-keyring.
     cd ~
     git clone https://github.com/Tinkerforge/esp32-firmware
 
-### Apply patches
-Apply all patches in `~/esp32-firmware/software/patches/lib-builder`. Subdirectories should be matching.
-For example apply `./components/esp_littlefs/src/littlefs/` in `~/esp32-arduino-lib-builder/components/esp_littlefs/src/littlefs/`
+### Apply patches to ESP-IDF and components
+
+    ~/esp32-firmware/software/lib-builder/apply_patches.py ~/esp32-arduino-lib-builder ~/esp32-firmware/software/patches/lib-builder
 
 (Replace .esp32brick with .esp32ethernetbrick in the next sections if necessary)
 
@@ -70,4 +72,6 @@ Press S Enter to write sdkconfig (don't change the filename!), ~/esp32-firmware/
     rm -r tools/sdk
     cp ~/esp32-arduino-lib-builder/out/* ~/arduino-esp32/
 
-Apply all patches in ~/esp32-firmware/software/patches/arduino-esp32/
+### Apply patches to arduino-esp32
+
+    ~/esp32-firmware/software/lib-builder/apply_patches.py ~/arduino-esp32 ../patches/arduino-esp32
