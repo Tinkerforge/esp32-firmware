@@ -4,6 +4,7 @@ build/
 data/spiffs.json
 data/wifi_sta_config.json
 data/wifi_soft_ap_config.json
+packages/*-dev
 src/**/*.digest
 src/**/*.embedded.h
 src/**/*.embedded.cpp
