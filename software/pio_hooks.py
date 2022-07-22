@@ -342,7 +342,7 @@ def main():
     api_path_pattern = re.compile("//APIPath:([^\n]*)\n")
 
     favicon_path = None
-    logo_module = None
+    logo_path = None
 
     for frontend_module in frontend_modules:
         mod_path = os.path.join('web', 'src', 'modules', frontend_module.under)
@@ -350,13 +350,6 @@ def main():
         if not os.path.exists(mod_path) or not os.path.isdir(mod_path):
             print("Error: Frontend module {} not found.".format(frontend_module.space, mod_path))
             sys.exit(1)
-
-        if os.path.exists(os.path.join(mod_path, 'logo.png')):
-            if logo_module != None:
-                print('Error: Logo module collision ' + frontend_module.under + ' vs ' + logo_module)
-                sys.exit(1)
-
-            logo_module = frontend_module.under
 
         potential_favicon_path = os.path.join(mod_path, 'favicon.png')
 
@@ -366,6 +359,15 @@ def main():
                 sys.exit(1)
 
             favicon_path = potential_favicon_path
+
+        potential_logo_path = os.path.join(mod_path, 'logo.png')
+
+        if os.path.exists(potential_logo_path):
+            if logo_path != None:
+                print('Error: Logo path collision ' + potential_logo_path + ' vs ' + logo_path)
+                sys.exit(1)
+
+            logo_path = potential_logo_path
 
         if os.path.exists(os.path.join(mod_path, 'navbar.html')):
             with open(os.path.join(mod_path, 'navbar.html'), encoding='utf-8') as f:
@@ -433,16 +435,19 @@ def main():
         print('Error: Favison missing')
         sys.exit(1)
 
-    if logo_module == None:
-        print('Error: Logo missing')
-        sys.exit(1)
-
     with open(favicon_path, 'rb') as f:
         favicon = b64encode(f.read()).decode('ascii')
 
+    if logo_path == None:
+        print('Error: Logo missing')
+        sys.exit(1)
+
+    with open(logo_path, 'rb') as f:
+        logo = b64encode(f.read()).decode('ascii')
+
     specialize_template(os.path.join("web", "index.html.template"), os.path.join("web", "src", "index.html"), {
         '{{{favicon}}}': favicon,
-        '{{{logo_module}}}': logo_module,
+        '{{{logo}}}': logo,
         '{{{navbar}}}': '\n                        '.join(navbar_entries),
         '{{{content}}}': '\n                    '.join(content_entries),
         '{{{status}}}': '\n                            '.join(status_entries)
