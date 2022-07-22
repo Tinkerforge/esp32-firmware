@@ -35,6 +35,7 @@ Install debootstrap and ubuntu-keyring.
     git clone https://github.com/espressif/esp32-arduino-lib-builder
     cd esp32-arduino-lib-builder
     ./build.sh -t esp32 -b menuconfig
+    [Press S Enter to write sdkconfig, Q to quit]
     cp sdkconfig sdkconfig.vanilla
 
 ### Clone esp32-firmware
@@ -43,8 +44,8 @@ Install debootstrap and ubuntu-keyring.
     git clone https://github.com/Tinkerforge/esp32-firmware
 
 ### Apply patches
-Apply all patches in ~/esp32-firmware/software/patches/lib-builder. Subdirectories should be matching.
-For example apply ./components/esp_littlefs/src/littlefs/ in ~/esp32-arduino-lib-builder/components/esp_littlefs/src/littlefs/
+Apply all patches in `~/esp32-firmware/software/patches/lib-builder`. Subdirectories should be matching.
+For example apply `./components/esp_littlefs/src/littlefs/` in `~/esp32-arduino-lib-builder/components/esp_littlefs/src/littlefs/`
 
 (Replace .esp32brick with .esp32ethernetbrick in the next sections if necessary)
 
