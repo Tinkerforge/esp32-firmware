@@ -26,7 +26,7 @@ import { h, render } from "preact";
 import { __ } from "../../ts/translation";
 import { PageHeader } from "../../ts/page_header";
 
-render(<PageHeader title={__("tutorial_phase_3.content.title")} />, $('#tutorial_phase_3_header')[0]);
+render(<PageHeader title={__("tutorial_phase_3.content.tutorial_phase_3")} />, $('#tutorial_phase_3_header')[0]);
 
 function update_config()
 {
