@@ -631,15 +631,15 @@ def main():
             pass
 
         with ChangedDirectory('web'):
-            subprocess.check_call(['npx', 'gulp'], shell=sys.platform == 'win32')
+            subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "build.py"])
 
-        with open('web/build/main.css', 'r', encoding='utf-8') as f:
+        with open('web/build/main.min.css', 'r', encoding='utf-8') as f:
             css = f.read()
 
-        with open('web/build/bundle.js', 'r', encoding='utf-8') as f:
+        with open('web/build/bundle.min.js', 'r', encoding='utf-8') as f:
             js = f.read()
 
-        with open('web/build/index.html', 'r', encoding='utf-8') as f:
+        with open('web/build/index.min.html', 'r', encoding='utf-8') as f:
             html = f.read()
 
         html = html.replace('<link href=css/main.css rel=stylesheet>', '<style rel=stylesheet>{0}</style>'.format(css))
