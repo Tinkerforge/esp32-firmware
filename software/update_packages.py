@@ -21,6 +21,7 @@ config = {}
 
 for c in config_json:
     config[c['base'] + '#' + c['branch']] = c
+    config[c['base'] + '-' + c['branch']] = c
 
 for name in sorted(os.listdir('packages')):
     if name == 'config.json':
@@ -56,6 +57,12 @@ for name in sorted(os.listdir('packages')):
 
         with open(package_json_path, 'w') as f:
             f.write(package_json)
+
+        with open(os.path.join(package_path, '.gitignore'), 'w') as f:
+            if '#' in name:
+                f.write('*\n!package.json\n')
+            else:
+                f.write('*\n')
     else:
         tinkerforge_json_path = os.path.join('packages', name, 'tinkerforge.json')
 
