@@ -39,6 +39,46 @@
 
 extern EventLog logger;
 
+const char *tf_reset_reason()
+{
+    esp_reset_reason_t reason = esp_reset_reason();
+
+    switch (reason) {
+        case ESP_RST_POWERON:
+            return ("Reset due to power-on.");
+
+        case ESP_RST_EXT:
+            return ("Reset by external pin.");
+
+        case ESP_RST_SW:
+            return ("Software reset via esp_restart.");
+
+        case ESP_RST_PANIC:
+            return ("Software reset due to exception/panic.");
+
+        case ESP_RST_INT_WDT:
+            return ("Reset due to interrupt watchdog.");
+
+        case ESP_RST_TASK_WDT:
+            return ("Reset due to task watchdog.");
+
+        case ESP_RST_WDT:
+            return ("Reset due to some watchdog.");
+
+        case ESP_RST_DEEPSLEEP:
+            return ("Reset after exiting deep sleep mode.");
+
+        case ESP_RST_BROWNOUT:
+            return ("Brownout reset.");
+
+        case ESP_RST_SDIO:
+            return ("Reset over SDIO.");
+
+        default:
+            return ("Reset reason unknown.");
+    }
+}
+
 bool deadline_elapsed(uint32_t deadline_ms)
 {
     uint32_t now = millis();

@@ -149,6 +149,8 @@ void setup(void) {
     logger.printfln("         %dK RAM SYSTEM   %d HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());
     logger.printfln("READY.");
 
+    logger.printfln("Last reset reason was: %s", tf_reset_reason());
+
     TF_ESP_PREINIT
 
     if(!mount_or_format_spiffs()) {

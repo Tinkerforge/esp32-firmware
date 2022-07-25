@@ -27,6 +27,8 @@
 
 #include "bindings/hal_common.h"
 
+const char *tf_reset_reason();
+
 bool deadline_elapsed(uint32_t deadline_ms);
 
 void read_efuses(uint32_t *ret_uid_num, char *ret_uid_str, char *ret_passphrase);
