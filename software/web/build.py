@@ -101,8 +101,7 @@ def main():
     print('postcss...')
     subprocess.check_call([
         'npx',
-        'browserslist@latest',
-        '--update-db'
+        'update-browserslist-db'
     ], shell=sys.platform == 'win32')
 
     subprocess.check_call([
