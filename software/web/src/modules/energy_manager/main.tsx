@@ -74,7 +74,7 @@ function update_energy_manager_html_visibility() {
         let element_html = element.html();
         let found = true;
         for (let option of options) {
-            if(!element_html.includes(translate_unchecked(`energy_manager.content.${option.name}`))) {
+            if(element_html.indexOf(translate_unchecked(`energy_manager.content.${option.name}`)) < 0) {
                 found = false;
                 break;
             }

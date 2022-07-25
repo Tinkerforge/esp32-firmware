@@ -21,8 +21,7 @@ import $ from "jquery";
 
 import "bootstrap";
 
-import feather = require("feather-icons");
-
+import * as feather from 'feather-icons';
 import * as util from "./ts/util";
 import * as API from "./ts/api";
 import { __, translate_data_i18n } from "./ts/translation";

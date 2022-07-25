@@ -86,7 +86,7 @@ export function call<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T],
 }
 
 export function hasFeature(feature: string) {
-    return get('info/features').includes(feature);
+    return get('info/features').indexOf(feature) >= 0;
 }
 
 export function default_updater<T extends keyof ConfigMap>(topic: T, exclude?: Array<keyof ConfigMap[T]>, has_save_button=true) {
@@ -107,7 +107,7 @@ export function default_updater<T extends keyof ConfigMap>(topic: T, exclude?: A
     }
 
     for (let key in config) {
-        if (exclude && exclude.includes(key))
+        if (exclude && exclude.indexOf(key) >= 0)
             continue;
 
         let value = config[key];

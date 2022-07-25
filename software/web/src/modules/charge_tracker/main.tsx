@@ -148,7 +148,7 @@ async function downloadChargeLog() {
                     case -2:
                         return false;
                     case -1:
-                        return !known_users.includes(x);
+                        return known_users.indexOf(x) < 0;
                     default:
                         return x != user_filter;
                 }
@@ -260,24 +260,26 @@ function update_user_filter_dropdown() {
 }
 
 export function init() {
-    $('#charge_tracker_download').on("click", () =>{
+    $('#charge_tracker_download').on("click", () => {
         $('#charge_tracker_download_spinner').prop("hidden", false);
-        downloadChargeLog().finally(() => $('#charge_tracker_download_spinner').prop("hidden", true));
+        let finally_fn = () => $('#charge_tracker_download_spinner').prop("hidden", true);
+
+        downloadChargeLog().then(finally_fn, finally_fn);
     });
 
     $('#charge_tracker_remove').on("click", () => $('#charge_tracker_remove_modal').modal('show'));
 
-    $('#charge_tracker_remove_confirm').on("click", () =>
+    $('#charge_tracker_remove_confirm').on("click", () => {
+        let finally_fn = () => $('#charge_tracker_remove_modal').modal('hide');
+
         API.call('charge_tracker/remove_all_charges', {
             "do_i_know_what_i_am_doing": true
         }, __("charge_tracker.script.remove_failed"))
         .then(() => {
             util.postReboot(__("charge_tracker.script.remove_init"), __("util.reboot_text"));
         })
-        .finally(() => {
-            $('#charge_tracker_remove_modal').modal('hide');
-        })
-    );
+        .then(finally_fn, finally_fn);
+    });
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {

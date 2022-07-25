@@ -141,7 +141,7 @@ export function setNumericInput(id: string, i: number, fractionDigits: number) {
     // Unfortunately, setting the value to a localized number (i.e. with , instead of . for German)
     // does not raise an exception, instead only a warning on the console is shown.
     // So to make everyone happy, we use user agent detection.
-    if (navigator.userAgent.includes("Gecko/")) {
+    if (navigator.userAgent.indexOf("Gecko/") >= 0) {
         (<HTMLInputElement> document.getElementById(id)).value = toLocaleFixed(i, fractionDigits);
     } else {
         (<HTMLInputElement> document.getElementById(id)).value = i.toFixed(fractionDigits);

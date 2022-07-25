@@ -120,21 +120,21 @@ async function save_users_config() {
 
     let have_ids = have.map(x => x.id);
     let old_ids = users_config.users.map(x => x.id);
-    let to_remove = old_ids.filter(x => !have_ids.includes(x));
-    let to_add = have_ids.filter(x => !old_ids.includes(x));
-    let to_modify = old_ids.filter(x => have_ids.includes(x));
+    let to_remove = old_ids.filter(x => have_ids.indexOf(x) < 0);
+    let to_add = have_ids.filter(x => old_ids.indexOf(x) < 0);
+    let to_modify = old_ids.filter(x => have_ids.indexOf(x) >= 0);
 
     for(let i of to_remove) {
         await remove_user(i);
     }
 
     for(let i of have) {
-        if (to_modify.includes(i.id) && !user_unmodified(i))
+        if (to_modify.indexOf(i.id) >= 0 && !user_unmodified(i))
             await modify_user(i);
     }
 
     for(let i of have) {
-        if (to_add.includes(i.id)) {
+        if (to_add.indexOf(i.id) >= 0) {
             if (i.digest_hash == null)
                 i.digest_hash = "";
             await add_user(i);
@@ -387,10 +387,12 @@ export function init() {
         }
 
         $('#users_config_save_spinner').prop('hidden', false);
+        let finally_fn = () => $('#users_config_save_spinner').prop('hidden', true);
+
         await save_users_config()
             .then(() => $('#users_config_save_button').prop("disabled", true))
             .then(util.getShowRebootModalFn(__("users.script.reboot_content_changed")))
-            .finally(() => $('#users_config_save_spinner').prop('hidden', true));
+            .then(finally_fn, finally_fn);
     });
 
     $('#users_add_user_form').on("input", () => {

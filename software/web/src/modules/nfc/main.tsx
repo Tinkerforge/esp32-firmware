@@ -198,7 +198,7 @@ outer_loop:
     }
 
     for (let i = 0; i < current_nfc_config.authorized_tags.length; ++i) {
-        if (auth_seen_ids.includes(i))
+        if (auth_seen_ids.indexOf(i) >= 0)
             continue;
     }
 
