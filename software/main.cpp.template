@@ -143,6 +143,8 @@ static void register_default_urls(void) {
 void setup(void) {
     Serial.begin(115200);
 
+    logger.setup();
+
     logger.printfln("    **** TINKERFORGE {{{display_name_upper}}} V" BUILD_VERSION_FULL_STR " ****");
     logger.printfln("         %dK RAM SYSTEM   %d HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());
     logger.printfln("READY.");

@@ -27,6 +27,11 @@
 
 extern WebServer server;
 
+void EventLog::setup()
+{
+    event_buf.setup();
+}
+
 void EventLog::get_timestamp(char buf[TIMESTAMP_LEN + 1])
 {
     struct timeval tv_now;
@@ -134,6 +139,7 @@ void EventLog::register_urls()
             for (int i = 0; i < to_write; ++i) {
                 event_buf.peek_offset((char *)(chunk_buf + i), index + i);
             }
+
             request.sendChunk(chunk_buf, to_write);
         }
 

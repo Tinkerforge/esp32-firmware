@@ -21,6 +21,8 @@
 
 void ValueHistory::setup()
 {
+    history.setup();
+    live.setup();
     history.clear();
     live.clear();
 

@@ -38,6 +38,8 @@ public:
     std::mutex event_buf_mutex;
     TF_Ringbuffer<char, 10000, uint32_t, malloc_32bit_addressed, heap_caps_free> event_buf;
 
+    void setup();
+
     void write(const char *buf, size_t len);
 
     void printfln(const char *fmt, va_list args);
