@@ -1,12 +1,26 @@
 [
     {
+        "active": true,
         "base": "arduino-esp32",
         "branch": "warp-2.0.7",
         "url": "https://github.com/Tinkerforge/arduino-esp32"
     },
     {
+        "active": true,
         "base": "arduino-esp32",
         "branch": "warp2-2.0.8",
+        "url": "https://github.com/Tinkerforge/arduino-esp32"
+    },
+    {
+        "active": false,
+        "base": "arduino-esp32",
+        "branch": "warp-2.0.2",
+        "url": "https://github.com/Tinkerforge/arduino-esp32"
+    },
+    {
+        "active": false,
+        "base": "arduino-esp32",
+        "branch": "warp2-2.0.2",
         "url": "https://github.com/Tinkerforge/arduino-esp32"
     }
 ]
