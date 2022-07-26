@@ -80,14 +80,14 @@ void TaskScheduler::loop()
     }
 }
 
-void TaskScheduler::scheduleOnce(std::function<void(void)> &&fn, uint32_t delay)
+void TaskScheduler::scheduleOnce(std::function<void(void)> &&fn, uint32_t delay_ms)
 {
     std::lock_guard<std::mutex> l{this->task_mutex};
-    tasks.emplace(fn, delay, 0, true);
+    tasks.emplace(fn, delay_ms, 0, true);
 }
 
-void TaskScheduler::scheduleWithFixedDelay(std::function<void(void)> &&fn, uint32_t first_delay, uint32_t delay)
+void TaskScheduler::scheduleWithFixedDelay(std::function<void(void)> &&fn, uint32_t first_delay_ms, uint32_t delay_ms)
 {
     std::lock_guard<std::mutex> l{this->task_mutex};
-    tasks.emplace(fn, first_delay, delay, false);
+    tasks.emplace(fn, first_delay_ms, delay_ms, false);
 }
