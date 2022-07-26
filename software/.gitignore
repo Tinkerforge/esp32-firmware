@@ -1,5 +1,6 @@
 .pio
 .vscode
+default_wifi.json
 build/
 data/spiffs.json
 data/wifi_sta_config.json

@@ -362,14 +362,24 @@ const char *reason2str(uint8_t reason)
 
 void Wifi::setup()
 {
-    String default_ssid = String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str);
-    String default_passphrase = String(passphrase);
+    String default_ap_ssid = String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str);
+    String default_ap_passphrase = String(passphrase);
 
-    api.restorePersistentConfig("wifi/sta_config", &wifi_sta_config);
+    if (!api.restorePersistentConfig("wifi/sta_config", &wifi_sta_config)) {
+#ifdef DEFAULT_WIFI_STA_ENABLE
+        wifi_sta_config.get("enable_sta")->updateBool(DEFAULT_WIFI_STA_ENABLE);
+#endif
+#ifdef DEFAULT_WIFI_STA_SSID
+        wifi_sta_config.get("ssid")->updateString(String(DEFAULT_WIFI_STA_SSID));
+#endif
+#ifdef DEFAULT_WIFI_STA_PASSPHRASE
+        wifi_sta_config.get("passphrase")->updateString(String(DEFAULT_WIFI_STA_PASSPHRASE));
+#endif
+    }
 
     if (!api.restorePersistentConfig("wifi/ap_config", &wifi_ap_config)) {
-        wifi_ap_config.get("ssid")->updateString(default_ssid);
-        wifi_ap_config.get("passphrase")->updateString(default_passphrase);
+        wifi_ap_config.get("ssid")->updateString(default_ap_ssid);
+        wifi_ap_config.get("passphrase")->updateString(default_ap_passphrase);
     }
 
     wifi_ap_config_in_use = wifi_ap_config;

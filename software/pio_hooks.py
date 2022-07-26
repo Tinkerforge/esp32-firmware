@@ -231,6 +231,7 @@ def main():
     apidoc_url = env.GetProjectOption("custom_apidoc_url")
     firmware_url = env.GetProjectOption("custom_firmware_url")
     require_firmware_info = env.GetProjectOption("custom_require_firmware_info")
+    build_flags = env.GetProjectOption("build_flags")
 
     try:
         oldest_version, version = get_changelog_version(name)
@@ -242,6 +243,23 @@ def main():
 
     if not os.path.isdir("build"):
         os.makedirs("build")
+
+    try:
+        with open(os.path.join('default_wifi.json'), 'r', encoding='utf-8') as f:
+            default_wifi = json.loads(f.read())
+    except FileNotFoundError:
+        default_wifi = {}
+
+    if 'sta_enable' in default_wifi:
+        build_flags.append('-DDEFAULT_WIFI_STA_ENABLE={0}'.format(default_wifi['sta_enable']))
+
+    if 'sta_ssid' in default_wifi:
+        build_flags.append('-DDEFAULT_WIFI_STA_SSID="\\"{0}\\""'.format(default_wifi['sta_ssid']))
+
+    if 'sta_passphrase' in default_wifi:
+        build_flags.append('-DDEFAULT_WIFI_STA_PASSPHRASE="\\"{0}\\""'.format(default_wifi['sta_passphrase']))
+
+    env.Replace(BUILD_FLAGS=build_flags)
 
     write_firmware_info(display_name, *version, timestamp)
 
