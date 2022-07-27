@@ -255,10 +255,10 @@ def main():
 
     rename_firmware = False
     if 'sta_ssid' in default_wifi:
-        rename_firmware = True
         build_flags.append('-DDEFAULT_WIFI_STA_SSID="\\"{0}\\""'.format(default_wifi['sta_ssid']))
 
     if 'sta_passphrase' in default_wifi:
+        rename_firmware = True
         build_flags.append('-DDEFAULT_WIFI_STA_PASSPHRASE="\\"{0}\\""'.format(default_wifi['sta_passphrase']))
 
     env.Replace(BUILD_FLAGS=build_flags)
