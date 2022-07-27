@@ -91,7 +91,7 @@ void UptimeTracker::setup()
             logger.printfln("Wrote last uptime to flash");
         }
 
-    }, 5000);
+    }, 1000 * 60 * 5);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
             uint32_t tmp = data.uptime;
@@ -100,7 +100,7 @@ void UptimeTracker::setup()
             data.checksum = internet_checksum((uint8_t *)&data.uptime, sizeof(uint32_t));
             if (tmp > data.uptime)
                 data.overflow_count++;
-        }, 0, 1000);
+        }, 0, 10000);
 }
 
 void UptimeTracker::loop()
