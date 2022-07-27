@@ -253,7 +253,9 @@ def main():
     if 'sta_enable' in default_wifi:
         build_flags.append('-DDEFAULT_WIFI_STA_ENABLE={0}'.format(default_wifi['sta_enable']))
 
+    rename_firmware = False
     if 'sta_ssid' in default_wifi:
+        rename_firmware = True
         build_flags.append('-DDEFAULT_WIFI_STA_SSID="\\"{0}\\""'.format(default_wifi['sta_ssid']))
 
     if 'sta_passphrase' in default_wifi:
@@ -284,7 +286,10 @@ def main():
         f.write('#define BUILD_VERSION_FULL_STR "{}.{}.{}-{:x}"\n'.format(*version, timestamp))
 
     with open(os.path.join(env.subst('$BUILD_DIR'), 'firmware_basename'), 'w', encoding='utf-8') as f:
-        f.write('{}_firmware_{}_{:x}'.format(name, '_'.join(version), timestamp))
+        if rename_firmware:
+            f.write('{}_firmware-WITH-WIFI-PASSPHRASE-DO-NOT-DISTRIBUTE_{}_{:x}'.format(name, '_'.join(version), timestamp))
+        else:
+            f.write('{}_firmware_{}_{:x}'.format(name, '_'.join(version), timestamp))
 
     # Handle backend modules
     excluded_backend_modules = list(os.listdir('src/modules'))
