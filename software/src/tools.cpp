@@ -27,6 +27,7 @@
 #include "esp_spiffs.h"
 #include "LittleFS.h"
 #include "esp_littlefs.h"
+#include "esp_system.h"
 
 #include <soc/efuse_reg.h>
 #include "bindings/base58.h"
@@ -45,37 +46,37 @@ const char *tf_reset_reason()
 
     switch (reason) {
         case ESP_RST_POWERON:
-            return ("Reset due to power-on.");
+            return "Reset due to power-on.";
 
         case ESP_RST_EXT:
-            return ("Reset by external pin.");
+            return "Reset by external pin.";
 
         case ESP_RST_SW:
-            return ("Software reset via esp_restart.");
+            return "Software reset via esp_restart.";
 
         case ESP_RST_PANIC:
-            return ("Software reset due to exception/panic.");
+            return "Software reset due to exception/panic.";
 
         case ESP_RST_INT_WDT:
-            return ("Reset due to interrupt watchdog.");
+            return "Reset due to interrupt watchdog.";
 
         case ESP_RST_TASK_WDT:
-            return ("Reset due to task watchdog.");
+            return "Reset due to task watchdog.";
 
         case ESP_RST_WDT:
-            return ("Reset due to some watchdog.");
+            return "Reset due to some watchdog.";
 
         case ESP_RST_DEEPSLEEP:
-            return ("Reset after exiting deep sleep mode.");
+            return "Reset after exiting deep sleep mode.";
 
         case ESP_RST_BROWNOUT:
-            return ("Brownout reset.");
+            return "Brownout reset.";
 
         case ESP_RST_SDIO:
-            return ("Reset over SDIO.");
+            return "Reset over SDIO.";
 
         default:
-            return ("Reset reason unknown.");
+            return "Reset reason unknown.";
     }
 }
 
