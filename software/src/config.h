@@ -197,7 +197,15 @@ struct Config {
             delay(100);
             return false;
         }
+
         std::vector<Config> &children = strict_variant::get<Config::ConfArray>(&value)->value;
+        auto max_elements = strict_variant::get<Config::ConfArray>(&value)->maxElements;
+        if (children.size() >= max_elements) {
+            logger.printfln("Tried to add to an ConfArray that already has the max allowed number of elements (%u).", max_elements);
+            delay(100);
+            return false;
+        }
+
         children.push_back(*strict_variant::get<Config::ConfArray>(&value)->prototype);
         return true;
     }
