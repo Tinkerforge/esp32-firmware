@@ -215,7 +215,7 @@ Users::Users()
             0, MAX_ACTIVE_USERS,
             Config::type_id<Config::ConfObject>()
         )},
-        {"next_user_id", Config::Uint8(1)},
+        {"next_user_id", Config::Uint8(0)},
         {"http_auth_enabled", Config::Bool(false)}
     });
 
@@ -236,6 +236,9 @@ Users::Users()
             if (user_api_blocked)
                 return "Still applying the last operation. Please retry.";
         }
+
+        if (user_config.get("next_user_id")->asUint() == 0)
+            return "Cant add user. All user IDs in use.";
 
         if (add.get("id")->asUint() != user_config.get("next_user_id")->asUint())
             return "Can't add user. Wrong next user ID";
@@ -326,6 +329,11 @@ void Users::setup()
             this->rename_user(user->get("id")->asUint(), user->get("username")->asCStr(), user->get("display_name")->asCStr());
         }
     }
+
+    // Next user id is 0 if there is no free user left.
+    // After a reboot maybe tracked charges were removed.
+    if (user_config.get("next_user_id")->asUint() == 0)
+        search_next_free_user();
 
     bool charge_start_tracked = charge_tracker.currentlyCharging();
     bool charging = get_charger_state() == 2 || get_charger_state() == 3;
@@ -421,6 +429,29 @@ void Users::setup()
 
         logger.printfln("Web interface authentication enabled.");
     }
+}
+
+void Users::search_next_free_user() {
+    uint8_t user_id = user_config.get("next_user_id")->asUint();
+    uint8_t start_uid = user_id;
+    user_id++;
+    {
+        File f = LittleFS.open(USERNAME_FILE, "r+");
+        while(start_uid != user_id) {
+            if (user_id == 0)
+                user_id++;
+            f.seek(user_id * USERNAME_ENTRY_LENGTH, SeekMode::SeekSet);
+            char user_name_byte = 0;
+            f.readBytes(&user_name_byte, 1);
+            if (user_name_byte == '\0')
+                break;
+            user_id++;
+        };
+    }
+    if (user_id == start_uid)
+        user_id = 0;
+
+    user_config.get("next_user_id")->updateUint(user_id);
 }
 
 void Users::register_urls()
@@ -531,12 +562,7 @@ void Users::register_urls()
         user->get("username")->updateString(add.get("username")->asString());
         user->get("digest_hash")->updateString(add.get("digest_hash")->asCStr());
 
-        uint8_t user_id = user_config.get("next_user_id")->asUint();
-        ++user_id;
-        if (user_id == 0)
-            user_id = 1;
-
-        user_config.get("next_user_id")->updateUint(user_id);
+        search_next_free_user();
 
         API::writeConfig("users/config", &user_config);
         this->rename_user(user->get("id")->asUint(), user->get("username")->asCStr(), user->get("display_name")->asCStr());
@@ -569,7 +595,14 @@ void Users::register_urls()
         API::writeConfig("nfc/config", &nfc.config);
 
         if (!charge_tracker.is_user_tracked(remove.get("id")->asUint()))
+        {
             this->rename_user(remove.get("id")->asUint(), "", "");
+            if (user_config.get("next_user_id")->asUint() == 0)
+            {
+                user_config.get("next_user_id")->updateUint(remove.get("id")->asUint());
+                API::writeConfig("users/config", &user_config);
+            }
+        }
 
         user_api_blocked = false;
     }, true);
@@ -632,6 +665,11 @@ void Users::remove_from_username_file(uint8_t user_id)
     }
 
     this->rename_user(user_id, "", "");
+    if (user_config.get("next_user_id")->asUint() == 0)
+    {
+        user_config.get("next_user_id")->updateUint(user_id);
+        API::writeConfig("users/config", &user_config);
+    }
 }
 
 // Only returns true if the triggered action was a charge start.
