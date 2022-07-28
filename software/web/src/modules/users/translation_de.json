@@ -15,6 +15,8 @@
 
             "authorized_users": "Berechtigte Benutzer",
 
+            "unknown_username": "Anzeigename des unbekannten Benutzers",
+
             "add_user_modal_title": "Benutzer hinzufügen",
             "add_user_modal_username": "Benutzername",
             "add_user_modal_username_desc": "zur Anmeldung im Webinterface",

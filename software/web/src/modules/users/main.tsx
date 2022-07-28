@@ -64,6 +64,15 @@ function modify_user(user: User) {
     return retry_once(() => API.call("users/modify", user, __("users.script.save_failed")), "users_modify_failed");
 }
 
+function modify_unknown_user(name: string) {
+    return retry_once(() => API.call("users/modify", {  "id": 0,
+                                                        "display_name": name,
+                                                        "username": null,
+                                                        "current": null,
+                                                        "digest_hash": null,
+                                                        "roles": null}, __("users.script.save_failed")), "users_modify_failed");
+}
+
 let next_user_id = 0;
 
 function add_user(user: User) {
@@ -100,6 +109,15 @@ async function save_users_config() {
         // while no user without password is configured.
         await save_authentication_config();
     }
+
+    let new_unknown_username = $('#users_unknown_username').val().toString();
+    if (new_unknown_username == __('charge_tracker.script.unknown_user'))
+        new_unknown_username = "Anonymous"
+
+    if (util.passwordUpdate('#users_unknown_username') === "")
+        await modify_unknown_user("Anonymous");
+    else if (new_unknown_username != users_config.users[0].display_name)
+        await modify_unknown_user(new_unknown_username);
 
     let have: User[] = [];
 
@@ -230,6 +248,7 @@ function update_users_config(force: boolean) {
     next_user_id = cfg.next_user_id;
 
     $('#users_authentication_enable').prop("checked", cfg.http_auth_enabled);
+    $('#users_unknown_username').val(cfg.users[0].display_name == "Anonymous" ? __("charge_tracker.script.unknown_user") : cfg.users[0].display_name);
 
     if (!force && !$('#users_config_save_button').prop('disabled') && gui_created)
         return;
@@ -380,6 +399,8 @@ function check_http_auth_allowed() {
 export function init() {
     $('#users_config_form').on('input', () => $('#users_config_save_button').prop("disabled", false));
     $('#users_config_form').on('input', check_http_auth_allowed);
+
+    $('#users_clear_unknown_username').on("change", util.clear_password_fn("#users_unknown_username"));
 
     $('#users_config_form').on('submit', async function (event: Event) {
         this.classList.add('was-validated');

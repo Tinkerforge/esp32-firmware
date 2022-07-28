@@ -36,10 +36,11 @@ function update_last_charges() {
 
     let last_charges_html = charges.map((user) => {
         let display_name = __("charge_tracker.script.unknown_user")
+        
+        let filtered = users_config.users.filter(x => x.id == user.user_id);
 
-        if (user.user_id != 0) {
+        if (user.user_id != 0 || filtered[0].display_name != "Anonymous") {
             display_name = __("charge_tracker.script.deleted_user")
-            let filtered = users_config.users.filter(x => x.id == user.user_id);
             if (filtered.length == 1)
                 display_name = filtered[0].display_name
         }
@@ -180,7 +181,10 @@ async function downloadChargeLog() {
                     let display_name = "";
                     let username = ""
                     if (user_id == 0) {
-                        display_name = __("charge_tracker.script.unknown_user");
+                        if (filtered[0].display_name == "Anonymous")
+                            display_name = __("charge_tracker.script.unknown_user");
+                        else
+                            display_name = filtered[0].display_name;
                         username = __("charge_tracker.script.unknown_user");
                     }
                     else if (filtered.length == 1) {
@@ -235,7 +239,7 @@ function update_current_charge() {
 
     let filtered = uc.users.filter((x) => x.id == cc.user_id);
     let user_display_name = __("charge_tracker.script.unknown_user");
-    if (filtered.length > 0 && cc.user_id != 0)
+    if (filtered.length > 0 && (cc.user_id != 0 || filtered[0].display_name != "Anonymous"))
         user_display_name = filtered[0].display_name;
 
     let energy_charged = mv.energy_abs - cc.meter_start;
@@ -245,7 +249,10 @@ function update_current_charge() {
 
     time_charging = Math.floor(time_charging / 1000);
 
-    $('#users_status_charging_user').html(cc.user_id == 0 ? __("charge_tracker.script.unknown_user") : user_display_name);
+    if (filtered[0].display_name == "Anonymous" && cc.user_id == 0)
+        $('#users_status_charging_user').html(__("charge_tracker.script.unknown_user"));
+    else
+        $('#users_status_charging_user').html(user_display_name);
     $('#users_status_charging_time').html(util.format_timespan(time_charging));
     $('#users_status_charged_energy').html(cc.meter_start == null ? "N/A" : util.toLocaleFixed(energy_charged, 3) + " kWh");
     $('#users_status_charging_start').html(util.timestamp_min_to_date(cc.timestamp_minutes, __("charge_tracker.script.unknown_charge_start")));
@@ -254,7 +261,7 @@ function update_current_charge() {
 function update_user_filter_dropdown() {
     let uc = API.get('users/config');
 
-    let options = uc.users.map((x) => `<option value=${x.id}>${x.id == 0 ? __("charge_tracker.script.unknown_users") : x.display_name}</option>`);
+    let options = uc.users.map((x) => `<option value=${x.id}>${(x.display_name == "Anonymous" && x.id == 0) ? __("charge_tracker.script.unknown_users") : x.display_name}</option>`);
     options.unshift(`<option value=-2>${__("charge_tracker.script.all_users")}</option>`, `<option value=-1>${__("charge_tracker.script.deleted_users")}</option>`);
     $('#charge_tracker_user_filter').empty().append(options.join(""));
 }

@@ -481,7 +481,14 @@ void Users::register_urls()
 
         uint8_t id = doc["id"].as<uint8_t>();
         if (id == 0) {
-            return "Can't modify the anonymous user.";
+            if (doc["username"] != nullptr)
+                return String("Username needs to be empty.");
+            if (doc["roles"] != nullptr)
+                return String("Roles need to be empty.");
+            if (doc["current"] != nullptr)
+                return String("Current needs to be empty.");
+            if (doc["digest_hash"] != nullptr)
+                return String("Digest_hash needs to be empty.");
         }
 
         Config *user = nullptr;
