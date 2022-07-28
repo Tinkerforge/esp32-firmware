@@ -306,7 +306,7 @@ function update_users_config(force: boolean) {
             </div>
             <div class="card-body">
                 <button id="users_add_user" type="button" class="btn btn-light btn-lg btn-block" style="height: 100%;" data-toggle="modal" data-target="#users_add_user_modal">${__("users.script.add_user")}</button>
-                <span id="users_add_user_disabled" hidden>${__("users.script.add_user_disabled_prefix") + (MAX_ACTIVE_USERS - 1 /* anonymous */) + __("users.script.add_user_disabled_suffix")}</span>
+                <span id="users_add_user_disabled" hidden></span>
             </div>
         </div>
     </div>`;
@@ -322,8 +322,12 @@ function update_users_config(force: boolean) {
         }
     }
 
-    $('#users_add_user').prop("hidden", cfg.users.length >= MAX_ACTIVE_USERS);
-    $('#users_add_user_disabled').prop("hidden", cfg.users.length < MAX_ACTIVE_USERS);
+    $('#users_add_user').prop("hidden", cfg.users.length >= MAX_ACTIVE_USERS || next_user_id == 0);
+    $('#users_add_user_disabled').prop("hidden", cfg.users.length < MAX_ACTIVE_USERS && next_user_id != 0);
+    if (cfg.users.length >= MAX_ACTIVE_USERS)
+        $('#users_add_user_disabled').html(__("users.script.add_user_disabled_prefix") + (MAX_ACTIVE_USERS - 1 /* anonymous */) + __("users.script.add_user_disabled_suffix"));
+    else if (next_user_id == 0)
+        $('#users_add_user_disabled').html(__("users.script.add_user_disabled_user_ids_exhausted"));
 
     for (let i = 0; i < cfg.users.length; i++) {
         const s = cfg.users[i];
