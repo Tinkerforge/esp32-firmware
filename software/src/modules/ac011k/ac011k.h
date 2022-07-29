@@ -20,14 +20,36 @@
 
 #pragma once
 
-#include "bindings/bricklet_evse.h"
+//#include "bindings/bricklet_evse.h"
 
 #include "config.h"
 #include "web_server.h"
 
-class ENplus {
+#define CHARGING_SLOT_INCOMING_CABLE 0
+#define CHARGING_SLOT_OUTGOING_CABLE 1
+#define CHARGING_SLOT_SHUTDOWN_INPUT 2
+#define CHARGING_SLOT_GP_INPUT 3
+#define CHARGING_SLOT_AUTOSTART_BUTTON 4
+#define CHARGING_SLOT_GLOBAL 5
+#define CHARGING_SLOT_USER 6
+#define CHARGING_SLOT_CHARGE_MANAGER 7
+#define CHARGING_SLOT_EXTERNAL 8
+
+#define IEC_STATE_A 0
+#define IEC_STATE_B 1
+#define IEC_STATE_C 2
+#define IEC_STATE_D 3
+#define IEC_STATE_EF 4
+
+#define CHARGER_STATE_NOT_PLUGGED_IN 0
+#define CHARGER_STATE_WAITING_FOR_RELEASE 1
+#define CHARGER_STATE_READY_TO_CHARGE 2
+#define CHARGER_STATE_CHARGING 3
+#define CHARGER_STATE_ERROR 4
+
+class AC011K {
 public:
-    ENplus();
+    AC011K();
     void setup();
     void register_urls();
     void loop();
@@ -38,7 +60,6 @@ public:
     /* GD Firmware updater */
     bool firmware_update_running = false;
 
-private:
     void setup_evse();
     void update_evse_state();
     void update_evse_low_level_state();
@@ -51,9 +72,20 @@ private:
     bool flash_firmware();
     bool flash_plugin(int regular_plugin_upto);
     bool wait_for_bootloader_mode(int mode);
+
     String get_evse_debug_header();
     String get_evse_debug_line();
     void set_managed_current(uint16_t current);
+
+    void set_user_current(uint16_t current);
+
+    bool apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear);
+    void apply_defaults();
+
+    void factory_reset();
+
+    bool debug = false;
+
     String get_hex_privcomm_line(byte *data);
     void Serial2write(byte *data, int size);
     void PrivCommSend(byte cmd, uint16_t datasize, byte *data);
@@ -62,41 +94,60 @@ private:
     void sendTime(byte cmd, byte action, byte len, byte sendSequenceNumber);
     void sendTimeLong (byte sendSequenceNumber);
     void update_evseStatus(uint8_t evseStatus);
+    time_t now();
+    void filltime(byte *year, byte *month, byte *day, byte *hour, byte *minute, byte *second);
 
     #define PRIV_COMM_BUFFER_MAX_SIZE 1024
     byte PrivCommRxBuffer[PRIV_COMM_BUFFER_MAX_SIZE] = {'0'};
     byte PrivCommTxBuffer[PRIV_COMM_BUFFER_MAX_SIZE] = {0xFA, 0x03, 0x00, 0x00}; // Magic byte, Version, 16 bit Address - always the same
     char PrivCommHexBuffer[PRIV_COMM_BUFFER_MAX_SIZE*3] = {'0'};
 
-    bool debug = false;
-
     int bs_evse_start_charging();
     int bs_evse_stop_charging();
     int bs_evse_set_charging_autostart(bool autostart);
     int bs_evse_set_max_charging_current(uint16_t max_current);
     int bs_evse_persist_config();
-    int bs_evse_get_state(uint8_t *ret_iec61851_state, uint8_t *ret_vehicle_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint8_t *ret_charge_release, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state, uint32_t *ret_time_since_state_change, uint32_t *ret_uptime);
+    int bs_evse_get_state(uint8_t *ret_iec61851_state, uint8_t *ret_charger_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint8_t *ret_charge_release, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state, uint32_t *ret_time_since_state_change, uint32_t *ret_uptime);
 
     const char* timeStr(byte *data, uint8_t offset);
 
-    void sendChargingLimit1(time_t t, uint8_t currentLimit, byte sendSequenceNumber);
-    void sendChargingLimit2(time_t t, uint8_t currentLimit, byte sendSequenceNumber);
-    void sendChargingLimit3(time_t t, uint8_t currentLimit, byte sendSequenceNumber);
+    void sendChargingLimit1(uint8_t currentLimit, byte sendSequenceNumber);
+    void sendChargingLimit2(uint8_t currentLimit, byte sendSequenceNumber);
+    void sendChargingLimit3(uint8_t currentLimit, byte sendSequenceNumber);
 
     ConfigRoot evse_config;
     ConfigRoot evse_state;
     ConfigRoot evse_hardware_configuration;
     ConfigRoot evse_low_level_state;
+    ConfigRoot evse_energy_meter_values;
+    ConfigRoot evse_energy_meter_errors;
+    ConfigRoot evse_slots;
+    ConfigRoot evse_stop_charging;
+    ConfigRoot evse_start_charging;
     ConfigRoot evse_max_charging_current;
     ConfigRoot evse_auto_start_charging;
     ConfigRoot evse_auto_start_charging_update;
+    ConfigRoot evse_global_current;
+    ConfigRoot evse_global_current_update;
     ConfigRoot evse_current_limit;
-    ConfigRoot evse_stop_charging;
-    ConfigRoot evse_start_charging;
+    ConfigRoot evse_management_enabled;
+    ConfigRoot evse_management_enabled_update;
+    ConfigRoot evse_user_current;
+    ConfigRoot evse_user_enabled;
+    ConfigRoot evse_user_enabled_update;
+    ConfigRoot evse_external_enabled;
+    ConfigRoot evse_external_enabled_update;
+    ConfigRoot evse_external_defaults;
+    ConfigRoot evse_external_defaults_update;
+    ConfigRoot evse_management_current;
+    ConfigRoot evse_management_current_update;
+    ConfigRoot evse_external_current;
+    ConfigRoot evse_external_current_update;
+    ConfigRoot evse_external_clear_on_disconnect;
+    ConfigRoot evse_external_clear_on_disconnect_update;
     ConfigRoot evse_managed;
     ConfigRoot evse_managed_update;
     ConfigRoot evse_managed_current;
-    ConfigRoot evse_user_calibration;
     ConfigRoot evse_privcomm;
     uint32_t last_current_update = 0;
     bool shutdown_logged = false;

@@ -18,7 +18,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "enplus_hardware.h"
+#include "ac011k_hardware.h"
+
 #include <Arduino.h>
 
 #include "tools.h"
@@ -40,12 +41,12 @@ extern int8_t green_led_pin;
 extern int8_t button_pin;
 extern bool factory_reset_requested;
 
-ENplusHardware::ENplusHardware()
+AC011KHardware::AC011KHardware()
 {
 
 }
 
-void ENplusHardware::setup()
+void AC011KHardware::setup()
 {
     pinMode(GREEN_LED, OUTPUT);
     pinMode(BLUE_LED, OUTPUT);
@@ -55,19 +56,18 @@ void ENplusHardware::setup()
     blue_led_pin = BLUE_LED;
     button_pin = BUTTON;
 
-    task_scheduler.scheduleWithFixedDelay("led_blink", [](){
+    task_scheduler.scheduleWithFixedDelay([](){
         static bool led_blink_state = false;
         led_blink_state = !led_blink_state;
         digitalWrite(BLUE_LED, led_blink_state ? HIGH : LOW);
     }, 0, 1000);
 }
 
-void ENplusHardware::register_urls()
+void AC011KHardware::register_urls()
 {
-
 }
 
-void ENplusHardware::loop()
+void AC011KHardware::loop()
 {
     static bool last_btn_value = false;
     static uint32_t last_btn_change = 0;
@@ -76,15 +76,15 @@ void ENplusHardware::loop()
     if (!factory_reset_requested)
         digitalWrite(GREEN_LED, btn);
 
-    if(btn != last_btn_value) {
+    if (btn != last_btn_value) {
         last_btn_change = millis();
     }
 
     last_btn_value = btn;
 
-    if(!btn && deadline_elapsed(last_btn_change + 10000)) {
-        logger.printfln("IO0 button was pressed for 10 seconds. Resetting to factory defaults.");
-        last_btn_change = millis();
-        factory_reset_requested = true;
-    }
+    /* if (!btn && deadline_elapsed(last_btn_change + 10000)) { */
+    /*     logger.printfln("IO0 button was pressed for 10 seconds. Resetting to factory defaults."); */
+    /*     last_btn_change = millis(); */
+    /*     factory_reset_requested = true; */
+    /* } */
 }

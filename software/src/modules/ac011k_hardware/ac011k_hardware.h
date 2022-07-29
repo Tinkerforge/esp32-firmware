@@ -20,9 +20,9 @@
 
 #pragma once
 
-class ENplusHardware {
+class AC011KHardware {
 public:
-    ENplusHardware();
+    AC011KHardware();
     void setup();
     void register_urls();
     void loop();
