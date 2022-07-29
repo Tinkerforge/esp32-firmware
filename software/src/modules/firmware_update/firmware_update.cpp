@@ -309,10 +309,6 @@ void FirmwareUpdate::register_urls()
             return;
 
         this->firmware_update_running = false;
-        if (!firmware_update_allowed) {
-            request.send(423, "text/plain", "vehicle connected");
-            return;
-        }
 
         if(!Update.hasError()) {
             logger.printfln("Firmware flashed successfully! Rebooting in one second.");
@@ -321,11 +317,7 @@ void FirmwareUpdate::register_urls()
 
         request.send(Update.hasError() ? 400: 200, "text/plain", Update.hasError() ? Update.errorString() : "Update OK");
     },[this](WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final){
-        if (!firmware_update_allowed) {
-            request.send(423, "text/plain", "vehicle connected");
-            this->firmware_update_running = false;
-            return false;
-        }
+        
         this->firmware_update_running = true;
         return handle_update_chunk(U_FLASH, request, index, data, len, final, request.contentLength());
     });
