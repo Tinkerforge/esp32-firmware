@@ -20,7 +20,8 @@
             "user_calibration_reset": "Zurücksetzen"
         },
         "script": {
-            "user_calibration_upload_failed": "Aktualisieren der Kalibrierung fehlgeschlagen"
+            "user_calibration_upload_failed": "Aktualisieren der Kalibrierung fehlgeschlagen",
+            "slot_4": "Autostart, Taster oder Schlüsselschalter"
         }
     }
 }

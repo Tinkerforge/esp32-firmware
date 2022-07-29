@@ -20,7 +20,8 @@
             "user_calibration_reset": "Reset"
         },
         "script": {
-            "user_calibration_upload_failed": "Updating the calibration failed"
+            "user_calibration_upload_failed": "Updating the calibration failed",
+            "slot_4": "Auto-Start, Button or key switch"
         }
     }
 }

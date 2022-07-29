@@ -33,9 +33,10 @@ render(<PageHeader title={__("evse.content.evse")} />, $('#evse_header')[0]);
 function update_evse_status_start_charging_button() {
     let state = API.get('evse/state');
     let slots = API.get('evse/slots');
+    let ll_state = API.get('evse/low_level_state');
 
     // It is not helpful to enable the button if auto start is active, but we are blocked for some other reason.
-    $('#status_start_charging').prop("disabled", state.iec61851_state != 1 || slots[4].max_current != 0);
+    $('#status_start_charging').prop("disabled", state.iec61851_state != 1 || slots[4].max_current != 0 || ll_state.gpio[0]);
 }
 
 function update_evse_state() {
@@ -74,6 +75,7 @@ function update_evse_low_level_state() {
     let last_iec_state = API.get('evse/state').iec61851_state;
 
     util.update_button_group("btn_group_led_state", state.led_state);
+
 
     for(let i = 0; i < state.gpio.length; ++i) {
         //intentionally inverted: the high button is the first
@@ -485,6 +487,7 @@ export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener("evse/user_calibration", update_evse_user_calibration);
     source.addEventListener("evse/state", update_evse_status_start_charging_button);
     source.addEventListener("evse/slots", update_evse_status_start_charging_button);
+    source.addEventListener("evse/low_level_state", update_evse_status_start_charging_button);
 
     source.addEventListener("evse/debug_header", function (e) {
         debug_log += e.data + "\n";
