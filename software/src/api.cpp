@@ -110,8 +110,8 @@ void API::addState(String path, ConfigRoot *config, std::initializer_list<String
 
 bool API::addPersistentConfig(String path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms)
 {
-    if (path.length() > 29) {
-        logger.printfln("The maximum allowed config path length is 29 bytes. Got %u bytes instead.", path.length());
+    if (path.length() > 63) {
+        logger.printfln("The maximum allowed config path length is 63 bytes. Got %u bytes instead.", path.length());
         return false;
     }
 
