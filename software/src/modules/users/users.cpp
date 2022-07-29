@@ -92,7 +92,7 @@ uint8_t get_charger_state()
 Config *get_user_slot()
 {
 #if MODULE_EVSE_AVAILABLE()
-    return evse.evse_slots.get(CHARGING_SLOT_USER);
+    return (Config *)evse.evse_slots.get(CHARGING_SLOT_USER);
 #elif MODULE_EVSE_V2_AVAILABLE()
     return (Config *)evse_v2.evse_slots.get(CHARGING_SLOT_USER);
 #endif
