@@ -223,12 +223,12 @@ struct Config {
 
     const ConstWrap get(uint16_t i) const;
 
-    bool add()
+    Wrap add()
     {
         if (!this->is<Config::ConfArray>()) {
             logger.printfln("Tried to add to a node that is not an array!");
             delay(100);
-            return false;
+            return Wrap(nullptr);
         }
 
         std::vector<Config> &children = strict_variant::get<Config::ConfArray>(&value)->value;
@@ -236,11 +236,11 @@ struct Config {
         if (children.size() >= max_elements) {
             logger.printfln("Tried to add to an ConfArray that already has the max allowed number of elements (%u).", max_elements);
             delay(100);
-            return false;
+            return Wrap(nullptr);
         }
 
         children.push_back(*strict_variant::get<Config::ConfArray>(&value)->prototype);
-        return true;
+        return Wrap(strict_variant::get<Config::ConfArray>(&value)->prototype);
     }
 
     bool removeLast()
