@@ -85,7 +85,7 @@ function update_history_meter() {
     $.get("/meter/history").done(function (values: Number[]) {
         const HISTORY_MINUTE_INTERVAL = 4;
         const VALUE_COUNT = 48 * (60 / HISTORY_MINUTE_INTERVAL);
-        const LABEL_COUNT = 9;
+        const LABEL_COUNT = window.innerWidth < 500 ? 5 : 9;
         const VALUES_PER_LABEL = VALUE_COUNT / (LABEL_COUNT - 1); // - 1 for the last label that has no values
 
         if (values.length != VALUE_COUNT) {
