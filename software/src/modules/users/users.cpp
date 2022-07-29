@@ -94,7 +94,7 @@ Config *get_user_slot()
 #if MODULE_EVSE_AVAILABLE()
     return evse.evse_slots.get(CHARGING_SLOT_USER);
 #elif MODULE_EVSE_V2_AVAILABLE()
-    return evse_v2.evse_slots.get(CHARGING_SLOT_USER);
+    return (Config *)evse_v2.evse_slots.get(CHARGING_SLOT_USER);
 #endif
     return nullptr;
 }
@@ -325,7 +325,7 @@ void Users::setup()
         logger.printfln("Username list does not exist! Recreating now.");
         create_username_file();
         for (int i = 0; i < user_config.get("users")->count(); ++i) {
-            Config *user = user_config.get("users")->get(i);
+            Config *user = (Config *)user_config.get("users")->get(i);
             this->rename_user(user->get("id")->asUint(), user->get("username")->asCStr(), user->get("display_name")->asCStr());
         }
     }
@@ -494,7 +494,7 @@ void Users::register_urls()
         Config *user = nullptr;
         for(int i = 0; i < user_config.get("users")->count(); ++i) {
             if (user_config.get("users")->get(i)->get("id")->asUint() == id) {
-                user = user_config.get("users")->get(i);
+                user = (Config *)user_config.get("users")->get(i);
                 break;
             }
         }
@@ -560,7 +560,7 @@ void Users::register_urls()
     api.addState("users/config", &user_config, {"digest_hash"}, 10000);
     api.addCommand("users/add", &add, {"digest_hash"}, [this](){
         user_config.get("users")->add();
-        Config *user = user_config.get("users")->get(user_config.get("users")->count() - 1);
+        Config *user = (Config *)user_config.get("users")->get(user_config.get("users")->count() - 1);
 
         user->get("id")->updateUint(add.get("id")->asUint());
         user->get("roles")->updateUint(add.get("roles")->asUint());
@@ -593,7 +593,7 @@ void Users::register_urls()
         user_config.get("users")->remove(idx);
         API::writeConfig("users/config", &user_config);
 
-        Config *tags = nfc.config.get("authorized_tags");
+        Config *tags = (Config *)nfc.config.get("authorized_tags");
 
         for(int i = 0; i < tags->count(); ++i) {
             if(tags->get(i)->get("user_id")->asUint() == remove.get("id")->asUint())
@@ -664,7 +664,7 @@ void Users::rename_user(uint8_t user_id, const char *username, const char *displ
 
 void Users::remove_from_username_file(uint8_t user_id)
 {
-    Config *users = user_config.get("users");
+    Config *users = (Config *)user_config.get("users");
     for (int i = 0; i < users->count(); ++i) {
         if (users->get(i)->get("id")->asUint() == user_id) {
             return;
@@ -689,7 +689,7 @@ bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::Co
     // I.e. when holding an NFC tag at the box or when calling the start_charging API
 
     uint16_t current_limit = 0;
-    Config *users = user_config.get("users");
+    Config *users = (Config *)user_config.get("users");
     for (int i = 0; i < users->count(); ++i) {
         if (users->get(i)->get("id")->asUint() != user_id)
             continue;

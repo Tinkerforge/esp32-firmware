@@ -693,48 +693,54 @@ Config Config::Int32(int32_t i)
     return Config::Int(i, std::numeric_limits<int32_t>::lowest(), std::numeric_limits<int32_t>::max());
 }
 
-Config *Config::get(String s)
+Config::Wrap Config::get(String s)
+{
+
+    if (!this->is<Config::ConfObject>()) {
+        logger.printfln("Config key %s not in this node: is not an object!", s.c_str());
+        delay(100);
+        return Wrap(nullptr);
+    }
+    Wrap wrap(strict_variant::get<Config::ConfObject>(&value)->get(s));
+
+    return wrap;
+}
+
+ Config::Wrap Config::get(uint16_t i)
+{
+
+    if (!this->is<Config::ConfArray>()) {
+        logger.printfln("Config index %u not in this node: is not an array!", i);
+        delay(100);
+        return Wrap(nullptr);
+    }
+    Wrap wrap(strict_variant::get<Config::ConfArray>(&value)->get(i));
+
+    return wrap;
+}
+
+const Config::ConstWrap Config::get(String s) const
 {
     if (!this->is<Config::ConfObject>()) {
         logger.printfln("Config key %s not in this node: is not an object!", s.c_str());
         delay(100);
-        return nullptr;
+        return ConstWrap(nullptr);
     }
+    ConstWrap wrap(strict_variant::get<Config::ConfObject>(&value)->get(s));
 
-    return strict_variant::get<Config::ConfObject>(&value)->get(s);
+    return wrap;
 }
 
-Config *Config::get(uint16_t i)
+const Config::ConstWrap Config::get(uint16_t i) const
 {
     if (!this->is<Config::ConfArray>()) {
         logger.printfln("Config index %u not in this node: is not an array!", i);
         delay(100);
-        return nullptr;
+        return ConstWrap(nullptr);
     }
+    ConstWrap wrap(strict_variant::get<Config::ConfArray>(&value)->get(i));
 
-    return strict_variant::get<Config::ConfArray>(&value)->get(i);
-}
-
-const Config *Config::get(String s) const
-{
-    if (!this->is<Config::ConfObject>()) {
-        logger.printfln("Config key %s not in this node: is not an object!", s.c_str());
-        delay(100);
-        return nullptr;
-    }
-
-    return strict_variant::get<Config::ConfObject>(&value)->get(s);
-}
-
-const Config *Config::get(uint16_t i) const
-{
-    if (!this->is<Config::ConfArray>()) {
-        logger.printfln("Config index %u not in this node: is not an array!", i);
-        delay(100);
-        return nullptr;
-    }
-
-    return strict_variant::get<Config::ConfArray>(&value)->get(i);
+    return wrap;
 }
 
 const String &Config::asString() const
@@ -1081,4 +1087,14 @@ String ConfigRoot::validate()
         return this->validator(*this);
     }
     return "";
+}
+
+Config::Wrap::Wrap(Config *_conf)
+{
+    conf = _conf;
+}
+
+Config::ConstWrap::ConstWrap(const Config *_conf)
+{
+    conf = _conf;
 }
