@@ -57,6 +57,7 @@ bool ready_for_next_chunk = false;
 size_t MAXLENGTH;
 byte flash_seq;
 uint32_t last_flash = 0;
+bool log_heartbeat = false;
 
 // Charging profile:
 // 10A ESP> W (2021-06-06 11:05:10) [PRIV_COMM, 1859]: Tx(cmd_AD len:122) :  FA 03 00 00 AD 1D 70 00 00 44 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 15 06 06 0B 05 0A 00 00 00 00 0A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 01 00 00 00 00 00 00 00 00 00 00 CE 75
@@ -339,7 +340,7 @@ void AC011K::PrivCommAck(byte cmd, byte *data) {
     data[9] = crc & 0xFF;
     data[10] = crc >> 8;
 
-    if(cmd!=2) { // be silent for the heartbeat //TODO show it at first and after an hour?
+    if(log_heartbeat || cmd!=2) { // be silent for the heartbeat //TODO show it at first and after an hour?
         get_hex_privcomm_line(data); // PrivCommHexBuffer now holds the hex representation of the buffer
         logger.printfln("Tx cmd_%.2X seq:%.2X, crc:%.4X", data[4], data[5], crc);
     }
@@ -382,7 +383,7 @@ void AC011K::sendChargingLimit2(uint8_t currentLimit, byte sendSequenceNumber) {
 void AC011K::sendChargingLimit3(uint8_t currentLimit, byte sendSequenceNumber) {  //  AD 01 91
     filltime(&ChargingLimit3[56], &ChargingLimit3[57], &ChargingLimit3[58], &ChargingLimit3[59], &ChargingLimit3[60], &ChargingLimit3[61]);
     ChargingLimit3[56] = ChargingLimit3[56] +100;  // adds 100 to the year, because it starts at the year 1900
-    //ChargingLimit3[70] = currentLimit;
+    //ChargingLimit3[70] = currentLimit; //TODO
     ChargingLimit3[70] = 9;
     sendCommand(ChargingLimit3, sizeof(ChargingLimit3), sendSequenceNumber);
 }
@@ -1035,7 +1036,7 @@ void AC011K::loop()
                             logger.printfln("PRIVCOMM BUG: process the next command albeit the last one was not finished. Buggy! cmd:%.2X len:%d cut off:%d", cmd, len, PrivCommRxBufferPointer-4);
                             PrivCommRxState = PRIVCOMM_CMD;
                             PrivCommRxBufferPointer = 4;
-                            if(cmd!=2) { // be silent for the heartbeat //TODO show it at first and after an hour?
+                            if(log_heartbeat || cmd!=2) { // be silent for the heartbeat //TODO show it at first and after an hour?
                                 get_hex_privcomm_line(PrivCommRxBuffer); // PrivCommHexBuffer now holds the hex representation of the buffer
                                 evse_privcomm.get("RX")->updateString(PrivCommHexBuffer);
                             }
@@ -1047,7 +1048,7 @@ void AC011K::loop()
                     if(PrivCommRxBufferPointer == len + 10) {
             //Serial.println();
                         PrivCommRxState = PRIVCOMM_MAGIC;
-                        if(cmd!=2) { // be silent for the heartbeat //TODO show it at first and after an hour?
+                        if(log_heartbeat || cmd!=2) { // be silent for the heartbeat //TODO show it at first and after an hour?
                             get_hex_privcomm_line(PrivCommRxBuffer); // PrivCommHexBuffer now holds the hex representation of the buffer
                         }
                         crc = (uint16_t)(PrivCommRxBuffer[len + 9] << 8 | PrivCommRxBuffer[len + 8]);
@@ -1063,7 +1064,7 @@ void AC011K::loop()
                             break;
                         }
                         // log the whole packet?, but logger.printfln only writes 128 bytes / for now Serial.print on Serial2.read it is.
-                        if(cmd!=2) { // be silent for the heartbeat //TODO show it at first and after an hour?
+                        if(log_heartbeat || cmd!=2) { // be silent for the heartbeat //TODO show it at first and after an hour?
                             evse_privcomm.get("RX")->updateString(PrivCommHexBuffer);
                         }
                         cmd_to_process = true;
@@ -1082,7 +1083,9 @@ void AC011K::loop()
             case 0x02: // Info: Serial number, Version
 //W (1970-01-01 00:08:52) [PRIV_COMM, 1919]: Rx(cmd_02 len:135) :  FA 03 00 00 02 26 7D 00 53 4E 31 30 30 35 32 31 30 31 31 39 33 35 37 30 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 24 D1 00 41 43 30 31 31 4B 2D 41 55 2D 32 35 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 31 2E 31 2E 32 37 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 09 00 00 00 00 00 5A 00 1E 00 00 00 00 00 00 00 00 00 D9 25
 //W (1970-01-01 00:08:52) [PRIV_COMM, 1764]: Tx(cmd_A2 len:11) :  FA 03 00 00 A2 26 01 00 00 99 E0
-                //logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Serial number and version.", cmd, seq, len, crc);
+                if(log_heartbeat || cmd!=2) { // be silent for the heartbeat //TODO show it at first and after an hour?
+                    logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Serial number and version.", cmd, seq, len, crc);
+                }
                 sprintf(str, "%s", PrivCommRxBuffer+8);
                 evse_hardware_configuration.get("SerialNumber")->updateString(str);
                 sprintf(str, "%s",PrivCommRxBuffer+43);
@@ -2061,22 +2064,6 @@ bool AC011K::handle_update_chunk2(int command, WebServerRequest request, size_t 
 #endif
 
 
-time_t AC011K::now()
-{
-    struct timeval tv_now;
-    struct tm timeinfo;
-
-    if (clock_synced(&tv_now)) {
-        localtime_r(&tv_now.tv_sec, &timeinfo);
-
-    /* } else { */
-    /*     auto now = millis(); */
-    /*     auto secs = now / 1000; */
-    }
-    return tv_now.tv_sec;
-
-}
-
 void AC011K::filltime(byte *year, byte *month, byte *day, byte *hour, byte *minute, byte *second)
 {
     struct timeval tv_now;
@@ -2092,7 +2079,9 @@ void AC011K::filltime(byte *year, byte *month, byte *day, byte *hour, byte *minu
         *minute = (byte)(timeinfo.tm_min);
         *second = (byte)(timeinfo.tm_sec);
 
-    /* } else { */
+        logger.printfln("time fill success %d/%d/%d %d:%d:%d", *year, *month, *day, *hour, *minute, *second);
+    } else {
+        logger.printfln("time fill FAIL - clock_synced false");
     /*     auto now = millis(); */
     /*     auto secs = now / 1000; */
     }
