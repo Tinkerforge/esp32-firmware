@@ -1657,6 +1657,15 @@ void AC011K::setup_evse()
         /*     } */
         /* }, 5000); */
 
+    char buffer[13];
+    sprintf(buffer, "%06d", transactionNumber);
+    for (int i=0; i<6; i++) {  // patch transaction number into command templates
+        StartChargingA7[i+1] = byte(buffer[i]);
+        StopChargingA7[i+1] = byte(buffer[i]);
+        StopChargingA6[i+33] = byte(buffer[i]);
+    }
+    logger.printfln("Initial transaction number %05d", transactionNumber);
+            
     initialized = true;
 }
 
