@@ -57,7 +57,8 @@ bool ready_for_next_chunk = false;
 size_t MAXLENGTH;
 byte flash_seq;
 uint32_t last_flash = 0;
-bool log_heartbeat = false;
+//bool log_heartbeat = false;
+bool log_heartbeat = true;
 
 // Charging profile:
 // 10A ESP> W (2021-06-06 11:05:10) [PRIV_COMM, 1859]: Tx(cmd_AD len:122) :  FA 03 00 00 AD 1D 70 00 00 44 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 15 06 06 0B 05 0A 00 00 00 00 0A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 01 00 00 00 00 00 00 00 00 00 00 CE 75
@@ -383,8 +384,7 @@ void AC011K::sendChargingLimit2(uint8_t currentLimit, byte sendSequenceNumber) {
 void AC011K::sendChargingLimit3(uint8_t currentLimit, byte sendSequenceNumber) {  //  AD 01 91
     filltime(&ChargingLimit3[56], &ChargingLimit3[57], &ChargingLimit3[58], &ChargingLimit3[59], &ChargingLimit3[60], &ChargingLimit3[61]);
     ChargingLimit3[56] = ChargingLimit3[56] +100;  // adds 100 to the year, because it starts at the year 1900
-    //ChargingLimit3[70] = currentLimit; //TODO
-    ChargingLimit3[70] = 9;
+    ChargingLimit3[70] = currentLimit;
     sendCommand(ChargingLimit3, sizeof(ChargingLimit3), sendSequenceNumber);
 }
 
@@ -1827,7 +1827,7 @@ void AC011K::update_evseStatus(uint8_t evseStatus) {
 	if(evse_auto_start_charging.get("auto_start_charging")->asBool()
            && evseStatus == 2 || (evseStatus == 6 && last_evseStatus == 0)) { // just plugged in or already plugged in at startup
             logger.printfln("Start charging automatically");
-            update_evseStatus(evseStatus);
+            //update_evseStatus(evseStatus); TODO stört dies beim ladestart?
             bs_evse_start_charging();
         }
     }
@@ -2081,8 +2081,15 @@ void AC011K::filltime(byte *year, byte *month, byte *day, byte *hour, byte *minu
 
         logger.printfln("time fill success %d/%d/%d %d:%d:%d", *year, *month, *day, *hour, *minute, *second);
     } else {
-        logger.printfln("time fill FAIL - clock_synced false");
+
+        *year   = 22;
+        *month  = 1;
+        *day    = 2;
+        *hour   = 3;
+        *minute = 4;
+        *second = 5;
     /*     auto now = millis(); */
     /*     auto secs = now / 1000; */
+        logger.printfln("time fill FAKE %d/%d/%d %d:%d:%d", *year, *month, *day, *hour, *minute, *second);
     }
 }
