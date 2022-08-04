@@ -238,7 +238,7 @@ Users::Users()
         }
 
         if (user_config.get("next_user_id")->asUint() == 0)
-            return "Cant add user. All user IDs in use.";
+            return "Can't add user. All user IDs in use.";
 
         if (add.get("id")->asUint() != user_config.get("next_user_id")->asUint())
             return "Can't add user. Wrong next user ID";
