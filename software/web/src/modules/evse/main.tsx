@@ -35,7 +35,7 @@ function update_evse_status_start_charging_button() {
     let slots = API.get('evse/slots');
     let ll_state = API.get('evse/low_level_state');
 
-    // It is not helpful to enable the button if auto start is active, but we are blocked for some other reason.
+    // It is not helpful to enable the button if auto-start is active, but we are blocked for some other reason.
     $('#status_start_charging').prop("disabled", state.iec61851_state != 1 || slots[4].max_current != 0 || ll_state.gpio[0]);
 }
 

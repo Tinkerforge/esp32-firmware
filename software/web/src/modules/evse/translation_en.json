@@ -21,7 +21,7 @@
         },
         "script": {
             "user_calibration_upload_failed": "Updating the calibration failed",
-            "slot_4": "Auto-Start, Button or key switch"
+            "slot_4": "Auto-start, button or key switch"
         }
     }
 }
