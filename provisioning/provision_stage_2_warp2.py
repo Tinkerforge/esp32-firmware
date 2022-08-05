@@ -347,7 +347,7 @@ def main(stage3):
     firmware_path = os.path.join(firmware_directory, firmware_path)
 
     # T:WARP2-CP-22KW-50;V:2.1;S:5000000001;B:2021-09;A:0;;;
-    pattern = r'^T:WARP2-C(B|S|P)-(11|22)KW-(50|75);V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2});A:(0|1);;;*$'
+    pattern = r'^T:WARP2-C(B|S|P)-(11|22)KW-(50|75);V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?;;;*$'
     qr_code = my_input("Scan the wallbox QR code")
     match = re.match(pattern, qr_code)
 
@@ -362,6 +362,9 @@ def main(stage3):
     qr_serial = match.group(5)
     qr_built = match.group(6)
     qr_accessories = match.group(7)
+
+    if qr_accessories == None:
+        qr_accessories = '0'
 
     print("Wallbox QR code data:")
     print("    WARP Charger {}".format({"B": "Basic", "S": "Smart", "P": "Pro"}[qr_variant]))
