@@ -22,7 +22,6 @@
 
 extern API api;
 extern EventLog logger;
-extern TF_HAL hal;
 extern TaskScheduler task_scheduler;
 
 RTC_NOINIT_ATTR uptime_data_t data;

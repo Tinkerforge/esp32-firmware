@@ -24,8 +24,6 @@
 #include "api.h"
 #include "event_log.h"
 #include "task_scheduler.h"
-#include "bindings/hal_common.h"
-#include "bindings/errors.h"
 #include "time.h"
 
 #define MAX_UPTIMES 10
