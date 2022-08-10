@@ -60,12 +60,12 @@ else:
 
 if args.erase:
     print(red("Erasing flash on port {}".format(port)))
-    os.system("pio pkg exec esptool.py --port {} --chip esp32 erase_flash".format(port))
+    os.system("pio pkg exec esptool.py -- --port {} --chip esp32 erase_flash".format(port))
 
 if not args.serial_only:
     print(green("Flashing firmware {} to port {}".format(firmware, port)))
 
-    os.system("pio pkg exec esptool.py --port {} --chip esp32 --baud 921600 --before default_reset --after hard_reset write_flash --flash_mode dio --flash_freq 40m --flash_size 16MB 0x1000 {}".format(port, firmware))
+    os.system("pio pkg exec esptool.py -- --port {} --chip esp32 --baud 921600 --before default_reset --after hard_reset write_flash --flash_mode dio --flash_freq 40m --flash_size 16MB 0x1000 {}".format(port, firmware))
 
 if not args.no_serial:
    with serial.Serial(port, 115200, timeout=1) as ser:
