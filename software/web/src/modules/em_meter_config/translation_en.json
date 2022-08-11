@@ -1,16 +1,15 @@
 {
     "em_meter_config": {
         "status": {
-            "em_meter_config": "Electricity Meter"
+            "em_meter_config": "Energy Meter"
         },
         "navbar": {
-            "em_meter_config": "Electricity Meter"
+            "em_meter_config": "Energy Meter"
         },
         "content": {
-            "em_meter_config": "Electricity Meter Configuration",
+            "em_meter_config": "Energy Meter",
             "meter_type": "FIXME",
-            "meter_type_description": "FIXME",
-            "meter_type_description_muted": "FIXME",
+            "meter_type_muted": "FIXME",
             "type_none": "FIXME",
             "type_sdm630": "FIXME",
             "type_sunspec": "FIXME",

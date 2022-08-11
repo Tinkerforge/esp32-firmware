@@ -7,10 +7,9 @@
             "em_meter_config": "Stromzähler"
         },
         "content": {
-            "em_meter_config": "Stromzähler-Konfiguration",
+            "em_meter_config": "Stromzähler",
             "meter_type": "Stromzähler-Typ",
-            "meter_type_description": "Stromzähler wählen",
-            "meter_type_description_muted": "zum Messen der Strombilanz am Hausanschluss",
+            "meter_type_muted": "zum Messen der Strombilanz am Hausanschluss",
             "type_none": "Kein Stromzähler",
             "type_sdm630": "SDM630 am WARP Energy Manager",
             "type_sunspec": "SunSpec-kompatibler Stromzähler per Modbus TCP",
