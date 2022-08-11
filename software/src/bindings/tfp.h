@@ -17,6 +17,7 @@
 #include "macros.h"
 #include "packet_buffer.h"
 #include "tfp_header.h"
+#include "config.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,6 +42,9 @@ typedef struct TF_TFP {
     TF_TFP_CallbackHandler cb_handler;
 
     uint16_t device_id;
+#if TF_NET_ENABLE != 0
+    uint8_t spitfp_timeout_counter;
+#endif
 } TF_TFP;
 
 void tf_tfp_create(TF_TFP *tfp, uint32_t uid_num, uint16_t device_id, TF_SPITFP *spitfp) TF_ATTRIBUTE_NONNULL_ALL;
