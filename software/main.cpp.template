@@ -169,15 +169,15 @@ void setup(void) {
 }
 
 void loop(void) {
-    // Prioritize proxy performance over web interface and WiFi responsitivity
-    tf_hal_tick(&hal, 1000);
-    tf_hal_tick(&hal, 1000);
-    tf_hal_tick(&hal, 1000);
-    tf_hal_tick(&hal, 1000);
-    tf_hal_tick(&hal, 1000);
-    tf_hal_tick(&hal, 1000);
-    tf_hal_tick(&hal, 1000);
-    tf_hal_tick(&hal, 1000);
+    /* // Prioritize proxy performance over web interface and WiFi responsitivity */
+    /* tf_hal_tick(&hal, 1000); */
+    /* tf_hal_tick(&hal, 1000); */
+    /* tf_hal_tick(&hal, 1000); */
+    /* tf_hal_tick(&hal, 1000); */
+    /* tf_hal_tick(&hal, 1000); */
+    /* tf_hal_tick(&hal, 1000); */
+    /* tf_hal_tick(&hal, 1000); */
+    /* tf_hal_tick(&hal, 1000); */
 
     task_scheduler.loop();
     api.loop();

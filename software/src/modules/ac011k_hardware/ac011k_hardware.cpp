@@ -23,7 +23,7 @@
 #include <Arduino.h>
 
 #include "tools.h"
-#include "hal_arduino_esp32_brick/hal_arduino_esp32_brick.h"
+//#include "hal_arduino_esp32_brick.h"
 #include "task_scheduler.h"
 
 extern TaskScheduler task_scheduler;
@@ -32,7 +32,7 @@ extern TaskScheduler task_scheduler;
 #define BLUE_LED 33
 #define BUTTON T9
 
-TF_HAL hal;
+//TF_HAL hal;
 extern uint32_t uid_numeric;
 extern char uid[7];
 extern char passphrase[20];
