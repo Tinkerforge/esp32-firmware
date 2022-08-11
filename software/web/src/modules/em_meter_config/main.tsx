@@ -42,6 +42,7 @@ function update_em_meter_config_state() {
     $('#energy_manager_meter_power').val(util.toLocaleFixed(state.energy_meter_power, 0) + " W");
     $('#energy_manager_meter_energy_rel').val(util.toLocaleFixed(state.energy_meter_energy_rel, 3) + " kWh");
     $('#energy_manager_meter_energy_abs').val(util.toLocaleFixed(state.energy_meter_energy_abs, 3) + " kWh");
+    $('#em-meter-config-sdm630-details').prop('hidden', state.energy_meter_type == 0);
 }
 
 // Only show the relevant html elements, drop-down boxes and options
@@ -59,12 +60,6 @@ function update_em_meter_config_html_visibility() {
     }
     else if (meter_type == "3") {
         $('#em-meter-config-modbus-tcp').collapse('show')
-    }
-
-    if (meter_type == "1") {
-        $('#em-meter-config-sdm630-details').collapse('show')
-    } else {
-        $('#em-meter-config-sdm630-details').collapse('hide')    
     }
 }
 
