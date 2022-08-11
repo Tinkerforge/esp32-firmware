@@ -417,11 +417,6 @@ static TF_TFPHeader enumerate_request_header = {
 #endif
 
 int tf_hal_tick(TF_HAL *hal, uint32_t timeout_us) {
-#if TF_NET_ENABLE != 0
-    // Calculate deadline here to include the callback_tick execution time.
-    uint32_t deadline_us = tf_hal_current_time_us(hal) + timeout_us;
-#endif
-
     tf_hal_callback_tick(hal, timeout_us);
 
 #if TF_NET_ENABLE != 0
