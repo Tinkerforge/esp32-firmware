@@ -365,6 +365,7 @@ void AC011K::sendTimeLong(byte sendSequenceNumber) {
     PrivCommTxBuffer[PayloadStart + 2] = 0x06;
     PrivCommTxBuffer[PayloadStart + 3] = 0x00;
     filltime(&PrivCommTxBuffer[PayloadStart + 4], &PrivCommTxBuffer[PayloadStart + 5], &PrivCommTxBuffer[PayloadStart + 6], &PrivCommTxBuffer[PayloadStart + 7], &PrivCommTxBuffer[PayloadStart + 8], &PrivCommTxBuffer[PayloadStart + 9]);
+    logger.printfln("set GD time to: %s", timeStr(&PrivCommTxBuffer[PayloadStart + 4]));
     PrivCommSend(0xAA, 10, PrivCommTxBuffer);
 }
 
@@ -948,6 +949,8 @@ void AC011K::loop()
 {
     static uint32_t last_check = 0;
     static uint32_t nextMillis = 2000;
+    static bool ntp_clock_synced = false;
+    static struct timeval tv_now;
     static uint8_t evseStatus = 0;
     static uint8_t cmd;
     static uint8_t seq;
@@ -957,6 +960,11 @@ void AC011K::loop()
     static byte PrivCommRxState = PRIVCOMM_MAGIC;
     static int PrivCommRxBufferPointer = 0;
     byte rxByte;
+
+    if (!ntp_clock_synced && clock_synced(&tv_now)) {
+        sendTimeLong(sendSequenceNumber++);
+        ntp_clock_synced = true;
+    }
 
     if(evse_found && !initialized && deadline_elapsed(last_check + 10000)) {
         last_check = millis();
@@ -1104,18 +1112,14 @@ void AC011K::loop()
                         );
                     evse_hardware_configuration.get("initialized")->updateBool(initialized);
                     evse_hardware_configuration.get("GDFirmwareVersion")->updateUint(evse_hardware_configuration.get("FirmwareVersion")->asString().substring(4).toInt());
+                    logger.printfln("EVSE serial: %s hw: %s fw: %s", 
+                        evse_hardware_configuration.get("SerialNumber")->asString().c_str(),
+                        evse_hardware_configuration.get("Hardware")->asString().c_str(),
+                        evse_hardware_configuration.get("FirmwareVersion")->asString().c_str());
                     if(initialized) {
                         logger.printfln("EN+ GD EVSE initialized.");
-                        logger.printfln("EVSE serial: %s hw: %s fw: %s", 
-                            evse_hardware_configuration.get("SerialNumber")->asString().c_str(),
-                            evse_hardware_configuration.get("Hardware")->asString().c_str(),
-                            evse_hardware_configuration.get("FirmwareVersion")->asString().c_str());
                     } else {
                         logger.printfln("EN+ GD EVSE Firmware Version or Hardware is not supported.");
-                        logger.printfln("EVSE serial: %s hw: %s fw: %s", 
-                            evse_hardware_configuration.get("SerialNumber")->asString().c_str(),
-                            evse_hardware_configuration.get("Hardware")->asString().c_str(),
-                            evse_hardware_configuration.get("FirmwareVersion")->asString().c_str());
                     }
                 }
                 PrivCommAck(cmd, PrivCommTxBuffer); // privCommCmdA2InfoSynAck
@@ -1140,6 +1144,8 @@ void AC011K::loop()
                         update_evseStatus(evseStatus);
                     }
                 }
+                // I think there is the time in the 03 cmd - log it!
+                logger.printfln("       time?: %d/%d/%d %d:%d.%d", PrivCommRxBuffer[14],PrivCommRxBuffer[15],PrivCommRxBuffer[16],PrivCommRxBuffer[17],PrivCommRxBuffer[18],PrivCommRxBuffer[19]);
                 sendTime(0xA3, 0x10, 8, seq);  // send ack
                 break;
 
