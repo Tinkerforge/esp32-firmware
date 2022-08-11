@@ -598,6 +598,10 @@ int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose,
         flash_required |= firmware_version[i] != embedded_firmware_version[i];
     }
 
+    uint8_t mode;
+    tf_unknown_get_bootloader_mode(&bricklet, &mode);
+    flash_required |= mode != TF_UNKNOWN_BOOTLOADER_MODE_FIRMWARE;
+
     if (flash_required) {
         if (force) {
             logger->printfln("Forcing %s firmware update to %d.%d.%d. Flashing firmware...",
