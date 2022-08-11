@@ -34,7 +34,6 @@
 
 extern EventLog logger;
 
-extern TF_HAL hal;
 extern WebServer server;
 extern TaskScheduler task_scheduler;
 
@@ -91,7 +90,7 @@ void read_meter_type_handler(struct TF_RS485 *rs485, uint8_t request_id, int8_t 
 
     uint16_t meter_id = *ud->value_to_write;
 
-    for(size_t i = 0; i < sizeof(supported_meters) / sizeof(supported_meters[0]); ++i) {
+    for (size_t i = 0; i < sizeof(supported_meters) / sizeof(supported_meters[0]); ++i) {
         if (meter_id != supported_meters[i]->meter_id)
             continue;
 
@@ -107,7 +106,7 @@ void read_meter_type_handler(struct TF_RS485 *rs485, uint8_t request_id, int8_t 
 }
 
 void read_input_registers_handler(struct TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, uint16_t *input_registers, uint16_t input_registers_length, void *user_data) {
-    ModbusReader::UserData *ud = (ModbusReader::UserData *) user_data;
+    ModbusReader::UserData *ud = (ModbusReader::UserData *)user_data;
 
     if (request_id != ud->expected_request_id || ud->expected_request_id == 0) {
         logger.printfln("Unexpected request id %u, expected %u", request_id, ud->expected_request_id);
@@ -147,7 +146,6 @@ void write_multiple_registers_handler(struct TF_RS485 *device, uint8_t request_i
         ud->done = ModbusReader::UserDataDone::ERROR;
         return;
     }
-
 
     // Exclude timeout here:
     // The SDM72DM has a bug in it's modbus implementation where it responds to
@@ -247,7 +245,8 @@ void ModbusReader::register_urls()
     this->DeviceModule::register_urls();
 }
 
-const RegRead *ModbusReader::getNextRead(bool *trigger_fast_read_done, bool *trigger_slow_read_done) {
+const RegRead *ModbusReader::getNextRead(bool *trigger_fast_read_done, bool *trigger_slow_read_done)
+{
     *trigger_fast_read_done = false;
     *trigger_slow_read_done = false;
 
@@ -304,7 +303,7 @@ void ModbusReader::loop()
     if (reset_requested) {
         reset_requested = false;
 
-        if (meter_in_use->custom_reset_fn != nullptr){
+        if (meter_in_use->custom_reset_fn != nullptr) {
             meter_in_use->custom_reset_fn();
         } else {
             user_data.done = UserDataDone::NOT_DONE;

@@ -12,7 +12,6 @@
             "enable_authentication_desc": "Beim Aufrufen des Webinterfaces oder bei Verwendung der HTTP-API muss eine Anmeldung mit den konfigurierten Zugangsdaten durchgeführt werden",
             "username": "Benutzername",
             "password": "Passwort",
-            "save": "Speichern",
             "username_invalid": "Der Benutzername darf nicht leer sein.",
             "password_invalid": "Das Passwort darf nicht leer sein.",
             "confirm_title": "Anmeldung aktivieren?",

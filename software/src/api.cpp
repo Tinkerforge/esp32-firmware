@@ -108,8 +108,8 @@ void API::addState(String path, ConfigRoot *config, std::initializer_list<String
 
 bool API::addPersistentConfig(String path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms)
 {
-    if (path.length() > 29) {
-        logger.printfln("The maximum allowed config path length is 29 bytes. Got %u bytes instead.", path.length());
+    if (path.length() > 63) {
+        logger.printfln("The maximum allowed config path length is 63 bytes. Got %u bytes instead.", path.length());
         return false;
     }
 
@@ -168,6 +168,25 @@ void API::writeConfig(String path, ConfigRoot *config)
     }
 
     LittleFS.rename(tmp_path, cfg_path);
+}
+
+void API::removeConfig(String path) {
+    String path_copy = path;
+    path_copy.replace('/', '_');
+    String cfg_path = String("/config/") + path_copy;
+    String tmp_path = String("/config/.") + path_copy;
+
+    if (LittleFS.exists(tmp_path)) {
+        LittleFS.remove(tmp_path);
+    }
+
+    if (LittleFS.exists(cfg_path)) {
+        LittleFS.remove(cfg_path);
+    }
+}
+
+void API::removeAllConfig() {
+    remove_directory("/config");
 }
 
 void API::blockCommand(String path, String reason)

@@ -9,7 +9,7 @@
         "content": {
             "event_log": "Ereignis-Log",
             "event_log_desc": "Ereignis-Log",
-            "event_log_desc_muted": "{{{empty_text}}}",
+            "event_log_desc_muted": "",
             "debug_report": "Debug-Report + Ereignis-Log",
             "debug_report_desc": "Debug-Report",
             "debug_report_desc_muted": null,

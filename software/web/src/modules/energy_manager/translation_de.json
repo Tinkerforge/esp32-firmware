@@ -29,10 +29,10 @@
             "relay": "Relais",
             "inputs": "Eingänge",
             "meter": "Stromzähler",
-            "always_1phase": "Immer 1-phasig",
-            "always_3phase": "Immer 3-phasig",
-            "1phase": "1-phasig",
-            "3phase": "3-phasig",
+            "always_one_phase": "Immer 1-phasig",
+            "always_three_phase": "Immer 3-phasig",
+            "one_phase": "1-phasig",
+            "three_phase": "3-phasig",
             "automatic": "Automatisch",
             "contactor": "Schützüberwachung",
             "deactivated": "Deaktiviert",
@@ -58,21 +58,23 @@
             "input4": "Eingang 4",
             "open": "Offen",
             "phase_switching": "Phasenumschaltung",
-            "greater0": ">=0 kW",
-            "smaller0": "<=0 kW",
-            "save": "Speichern"
+            "greater0": "&gte; 0 kW",
+            "smaller0": "&lte; 0 kW"
         },
         "script": {
             "loading_debug_report": "Lade Debug-Report",
             "loading_debug_report_failed": "Laden des Debug-Reports fehlgeschlagen",
             "loading_event_log": "Lade Event-Log",
             "loading_event_log_failed": "Laden des Event-Logs fehlgeschlagen",
+            "tab_close_warning": "Die Aufzeichnung des Event-Logs wird abgebrochen, wenn der Tab geschlossen wird.",
             "starting_debug": "Aktiviere Aufzeichnung des Ladecontroller-Logs.",
             "starting_debug_failed": "Aktivierung der Aufzeichung des Ladecontroller-Logs fehlgeschlagen.",
             "debug_running": "Aufzeichnung läuft. Tab nicht schließen!",
             "debug_stop_failed": "Stoppen der Aufzeichnung des Ladecontroller-Logs fehlgeschlagen.",
             "debug_stopped": "Aufzeichung des Ladecontroller-Logs gestoppt.",
-            "debug_done": "Abgeschlossen."
+            "debug_done": "Abgeschlossen.",
+            "config_failed": "Speichern der Energiemanager-Einstellungen fehlgeschlagen.",
+            "reboot_content_changed": "Energiemanager-Einstellungen"
         }
     }
 }

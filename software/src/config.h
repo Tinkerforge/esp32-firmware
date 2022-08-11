@@ -182,24 +182,65 @@ struct Config {
 
     static Config Int64(int32_t i);
 
-    Config *get(String s);
+    class Wrap
+    {
+        public:
+            Wrap(Config *_conf);
 
-    Config *get(uint16_t i);
+            Config *operator->()
+            {
+                return conf;
+            }
 
-    const Config *get(String s) const;
+            explicit operator Config*(){return conf;}
 
-    const Config *get(uint16_t i) const;
+        private:
+            Config *conf;
+            
+    };
 
-    bool add()
+    class ConstWrap
+    {
+        public:
+            ConstWrap(const Config *_conf);
+
+            const Config *operator->() const
+            {
+                return conf;
+            }
+
+            explicit operator const Config*() const {return conf;} 
+
+        private:
+            const Config *conf;
+    };
+
+    Wrap get(String s);
+
+    Wrap get(uint16_t i);
+
+    const ConstWrap get(String s) const;
+
+    const ConstWrap get(uint16_t i) const;
+
+    Wrap add()
     {
         if (!this->is<Config::ConfArray>()) {
             logger.printfln("Tried to add to a node that is not an array!");
             delay(100);
-            return false;
+            return Wrap(nullptr);
         }
+
         std::vector<Config> &children = strict_variant::get<Config::ConfArray>(&value)->value;
+        auto max_elements = strict_variant::get<Config::ConfArray>(&value)->maxElements;
+        if (children.size() >= max_elements) {
+            logger.printfln("Tried to add to an ConfArray that already has the max allowed number of elements (%u).", max_elements);
+            delay(100);
+            return Wrap(nullptr);
+        }
+
         children.push_back(*strict_variant::get<Config::ConfArray>(&value)->prototype);
-        return true;
+        return Wrap(strict_variant::get<Config::ConfArray>(&value)->prototype);
     }
 
     bool removeLast()

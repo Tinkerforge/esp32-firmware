@@ -7,5 +7,6 @@ export interface config {
 }
 
 export interface state {
-    synced: boolean
+    synced: boolean,
+    time: number
 }

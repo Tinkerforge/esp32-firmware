@@ -13,7 +13,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "net_config.h"
+#include "config.h"
 
 #include "macros.h"
 #include "packet_buffer.h"

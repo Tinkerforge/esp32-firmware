@@ -13,13 +13,22 @@
         "abort": "Abort",
         "reboot": "Reboot"
     },
+    "component": {
+        "config_page_header": {
+            "save": "Save"
+        }
+    },
     "util": {
         "reboot_title": "Rebooting...",
         "reboot_text": "The web interface will be reloaded automatically after the restart.",
         "event_connection_lost_title": null,
         "event_connection_lost": "Connection will be reestablished...",
         "to_be_cleared": "Will be cleared on save.",
-        "unchanged": "unchanged"
+        "unchanged": "unchanged",
+        "subnet_invalid": "The subnet mask must have four groups between 0 and 255 separated with a dot. For example 255.255.255.0",
+        "gateway_invalid": "The gateway IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1",
+        "gateway_out_of_subnet": "Gateway address not in the configured subnet",
+        "subnet_captures_localhost": "Specified IP address and subnet mask not allowed: Would capture localhost (127.0.0.1)."
     },
     "days": "days",
     "day": "day"

@@ -33,7 +33,8 @@ enum class POTI_POS {
     PLUS_150
 };
 
-class PowerCycleTester {
+class PowerCycleTester
+{
 public:
     PowerCycleTester();
     void setup();

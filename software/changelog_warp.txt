@@ -223,7 +223,7 @@
 2022-05-04: 2.0.4 (70af7ef1)
 - Fix race condition resulting in unusable web interface
 
-2022-05-13: 2.0.5 (<unknown>)
+2022-05-13: 2.0.5 (bce0b522)
 - More WebSocket fixes
 - Improve button/key stop logic (through EVSE Bricklet firmware 2.1.2)
 - Fix initialized flag not being set for some modules
@@ -233,3 +233,12 @@
 - Select unoccupied channel when starting WiFi AP
 - Fix LED blink when waiting for not user-related charge release
 - Fix energy meter graph offset
+
+2022-06-07: 2.0.6 (e66e4e51)
+- Increase wifi scan timeout for AP channel selection
+- Fix form validation display on success
+- Add work-around for SDM72DM reset response bug
+- Add NTP state and synced time to status page
+- Make sure to never start charging when key switch is turned off (through EVSE Bricklet firmware 2.1.3)
+- Wait even longer for ID.3 state changes (through EVSE Bricklet firmware 2.1.3)
+- Make sure LED turns on until standby for every state change (through EVSE Bricklet firmware 2.1.3)

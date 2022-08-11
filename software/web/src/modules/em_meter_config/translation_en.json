@@ -1,15 +1,38 @@
 {
-    "energy_manager_meter_configuration": {
+    "em_meter_config": {
         "status": {
-            "energy_manager_meter_configuration": "Electricity Meter"
+            "em_meter_config": "Electricity Meter"
         },
         "navbar": {
-            "energy_manager_meter_configuration": "Electricity Meter"
+            "em_meter_config": "Electricity Meter"
         },
         "content": {
-            "energy_manager_meter_configuration": "Electricity Meter Configuration"
+            "em_meter_config": "Electricity Meter Configuration",
+            "meter_type": "FIXME",
+            "meter_type_description": "FIXME",
+            "meter_type_description_muted": "FIXME",
+            "type_none": "FIXME",
+            "type_sdm630": "FIXME",
+            "type_sunspec": "FIXME",
+            "type_modbus_tcp": "FIXME",
+            "conf_sdm630": "FIXME",
+            "conf_sunspec": "FIXME",
+            "conf_modbus_tcp": "FIXME",
+
+            "sdm630_no": "FIXME",
+            "sdm630_yes": "FIXME",
+            "sdm630_details": "FIXME",
+            "sdm630_available": "FIXME",
+            "sdm630_statistics": "FIXME",
+            "sdm630_reset_statistics": "FIXME",
+            "sdm630_power": "FIXME",
+            "sdm630_energy": "FIXME",
+            "sdm630_energy_since_reset": "FIXME",
+            "sdm630_energy_lifetime": "FIXME"
         },
         "script": {
+            "config_failed": "Failed to save electricity meter configuration.",
+            "reboot_content_changed": "electricity meter configuration"
         }
     }
 }

@@ -47,13 +47,20 @@
 #define CHARGER_STATE_CHARGING 3
 #define CHARGER_STATE_ERROR 4
 
+#define DATA_STORE_PAGE_CHARGE_TRACKER 0
+#define DATA_STORE_PAGE_RECOVERY 15
+
+void evse_v2_button_recovery_handler();
+#define TF_ESP_PREINIT evse_v2_button_recovery_handler();
+
 class EVSEV2 : public DeviceModule<TF_EVSEV2,
                                    evse_v2_bricklet_firmware_bin_data,
                                    evse_v2_bricklet_firmware_bin_length,
                                    tf_evse_v2_create,
                                    tf_evse_v2_get_bootloader_mode,
                                    tf_evse_v2_reset,
-                                   tf_evse_v2_destroy>  {
+                                   tf_evse_v2_destroy>
+{
 public:
     EVSEV2();
     void setup();

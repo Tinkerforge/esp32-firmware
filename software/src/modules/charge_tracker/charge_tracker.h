@@ -28,7 +28,8 @@
 #define CHARGE_TRACKER_AUTH_TYPE_NFC 2
 #define CHARGE_TRACKER_AUTH_TYPE_NFC_INJECTION 3
 
-class ChargeTracker {
+class ChargeTracker
+{
 public:
     ChargeTracker();
     void setup();

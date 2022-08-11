@@ -32,7 +32,8 @@ enum class WifiState {
     CONNECTED
 };
 
-class Wifi {
+class Wifi
+{
 public:
     Wifi();
     void setup();

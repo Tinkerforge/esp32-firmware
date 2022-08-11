@@ -13,8 +13,9 @@
             "enable_authentication_desc": "A successful login as one of the configured users is required to open the Web interface or call the HTTP API",
             "enable_authentication_invalid": "To enable the login at least one user with a configured password is required.",
 
-            "save": "Save",
             "authorized_users": "Authorized users",
+
+            "unknown_username": "Unknown user display name",
 
             "add_user_modal_title": "Add user",
             "add_user_modal_username": "Username",
@@ -40,6 +41,7 @@
             "add_user": "Add user",
             "add_user_disabled_prefix": "Only up to ",
             "add_user_disabled_suffix": " users are supported.",
+            "add_user_disabled_user_ids_exhausted": "The maximum number of users has tracked charges. To be able to add a new user, tracked charges or a user without tracked charges have to be removed.",
             "unchanged": "unchanged",
             "reboot_content_changed": "User configuration",
             "login_disabled": "Login disabled",

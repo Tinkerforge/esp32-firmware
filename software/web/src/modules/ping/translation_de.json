@@ -8,8 +8,7 @@
             "enable": "Ping aktiviert",
             "enable_desc": "Sendet periodisch ein Ping an den konfigurierten Host",
             "host": "Host",
-            "interval": "Sendeintervall",
-            "save": "Speichern"
+            "interval": "Sendeintervall"
         },
         "script": {
             "save_failed": "Speichern der Ping-Einstellungen fehlgeschlagen.",

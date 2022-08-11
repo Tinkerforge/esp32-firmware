@@ -155,7 +155,7 @@
 2022-05-04: 2.0.4 (70af7ef1)
 - Fix race condition resulting in unusable web interface
 
-2022-05-13: 2.0.5 (<unknown>)
+2022-05-13: 2.0.5 (bce0b522)
 - More WebSocket fixes
 - Improve button/key stop logic (through EVSE 2.0 Bricklet firmware 2.1.4)
 - Fix initialized flag not being set for some modules
@@ -164,3 +164,14 @@
 - Fix WiFi scan sometimes not starting
 - Select unoccupied channel when starting WiFi AP
 - Fix LED blink when waiting for not user-related charge release
+
+2022-06-07: 2.0.6 (e66e4e51)
+- Increase wifi scan timeout for AP channel selection
+- Fix form validation display on success
+- Add NTP state and synced time to status page
+- Make sure to never start charging when button is pressed (through EVSE 2.0 Bricklet firmware 2.1.5)
+- Fix compatibility with some SDM630 versions (through EVSE 2.0 Bricklet firmware 2.1.5)
+
+2022-06-09: 2.0.7 (c5b8c584)
+- Fix memory leak in WebSocket queue cleanup
+- Fix wrongly detecting an SDM630 if no energy meter is connected (through EVSE 2.0 Bricklet firmware 2.1.6)

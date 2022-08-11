@@ -12,7 +12,6 @@
         },
         "content": {
             "wireguard": "WireGuard",
-            "save": "Speichern",
             "enable_wireguard": "WireGuard aktiviert",
             "enable_wireguard_desc": "Verbindung wird automatisch aufgebaut, sobald eine Netzwerk-Zeitsynchronisierung besteht.",
             "default_if": "Als Default-Interface verwenden",

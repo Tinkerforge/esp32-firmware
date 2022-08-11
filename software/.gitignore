@@ -1,9 +1,11 @@
 .pio
 .vscode
+default_wifi.json
 build/
 data/spiffs.json
 data/wifi_sta_config.json
 data/wifi_soft_ap_config.json
+packages/*-dev
 src/**/*.digest
 src/**/*.embedded.h
 src/**/*.embedded.cpp
@@ -18,5 +20,5 @@ web/src/main.ts
 web/src/main.scss
 web/src/index.html
 web/src/ts/api_defs.ts
-web/src/ts/translation_*.ts
-packages/
+web/src/ts/translation.tsx
+web/src/ts/translation.json

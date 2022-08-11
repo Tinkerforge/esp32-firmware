@@ -1,10 +1,5 @@
 <div class="tab-pane fade" role="tabpanel" aria-labelledby="sidebar-charge_manager" id="charge_manager">
-    <div class="row sticky-under-top mb-3 pt-3">
-        <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-header-shadow">
-            <h1 class="h2" data-i18n="charge_manager.content.charge_manager"></h1>
-            <button id="charge_manager_save_button" type="submit" form="charge_manager_config_form" class="btn btn-primary mb-2" data-i18n="charge_manager.content.save" disabled></button>
-        </div>
-    </div>
+    <div id="charge_manager_header"></div>
 
     <form id="charge_manager_config_form" class="needs-validation" novalidate>
         <!--
@@ -13,7 +8,10 @@
         -->
 
         <div class="form-group row">
-            <label for="charge_manager_enable" class="col-lg-3 col-xl-2 col-form-label" data-i18n="charge_manager.content.enable_charge_manager"></label>
+            <label for="charge_manager_enable" class="col-lg-3 col-xl-2 col-form-label">
+                <span class="form-label pr-2" data-i18n="charge_manager.content.enable_charge_manager"></span>
+                <span class="text-muted" data-i18n="charge_manager.content.enable_charge_manager_muted"></span>
+            </label>
             <div class="col-lg-9 col-xl-6">
                 <div class="borderless-form-control custom-control custom-switch">
                     <input type="checkbox" class="custom-control-input" id="charge_manager_enable">
@@ -23,7 +21,10 @@
         </div>
 
         <div class="form-group row">
-            <label for="charge_manager_enable_watchdog" class="col-lg-3 col-xl-2 col-form-label" data-i18n="charge_manager.content.enable_watchdog"></label>
+            <label for="charge_manager_enable_watchdog" class="col-lg-3 col-xl-2 col-form-label">
+                <span class="form-label pr-2" data-i18n="charge_manager.content.enable_watchdog"></span>
+                <span class="text-muted" data-i18n="charge_manager.content.enable_watchdog_muted"></span>
+            </label>
             <div class="col-lg-9 col-xl-6">
                 <div class="borderless-form-control custom-control custom-switch">
                     <input type="checkbox" class="custom-control-input" id="charge_manager_enable_watchdog">
@@ -43,8 +44,10 @@
         </div>
 
         <div class="form-group row">
-            <label for="charge_manager_default_available_current"
-                class="col-lg-3 col-xl-2 col-form-label" data-i18n="charge_manager.content.default_available_current"></label>
+            <label for="charge_manager_default_available_current" class="col-lg-3 col-xl-2 col-form-label">
+                <span class="form-label pr-2" data-i18n="charge_manager.content.default_available_current"></span>
+                <span class="text-muted" data-i18n="charge_manager.content.default_available_current_muted"></span>
+            </label>
             <div class="col-lg-9 col-xl-6 input-group has-validation">
                 <input id="charge_manager_default_available_current" class="form-control" type="number" min="0" step="any" required>
                 <div class="input-group-append">
@@ -55,8 +58,10 @@
         </div>
 
         <div class="form-group row">
-            <label for="charge_manager_maximum_available_current"
-                class="col-lg-3 col-xl-2 col-form-label" data-i18n="charge_manager.content.maximum_available_current"></label>
+            <label for="charge_manager_maximum_available_current" class="col-lg-3 col-xl-2 col-form-label">
+                <span class="form-label pr-2" data-i18n="charge_manager.content.maximum_available_current"></span>
+                <span class="text-muted" data-i18n="charge_manager.content.maximum_available_current_muted"></span>
+            </label>
             <div class="col-lg-9 col-xl-6 input-group">
                 <input id="charge_manager_maximum_available_current" class="form-control" type="number" min="0" step="any" required>
                 <div class="input-group-append">
@@ -66,8 +71,10 @@
         </div>
 
         <div class="form-group row">
-            <label for="charge_manager_minimum_current"
-                class="col-lg-3 col-xl-2 col-form-label" data-i18n="charge_manager.content.minimum_current"></label>
+            <label for="charge_manager_minimum_current" class="col-lg-3 col-xl-2 col-form-label">
+                <span class="form-label pr-2" data-i18n="charge_manager.content.minimum_current"></span>
+                <span class="text-muted" data-i18n="charge_manager.content.minimum_current_muted"></span>
+            </label>
             <div class="col-lg-9 col-xl-6 input-group">
                 <input id="charge_manager_minimum_current" class="form-control" type="number" min="6" max="32" step="any" required>
                 <div class="input-group-append">
@@ -78,11 +85,10 @@
 
         <div class="form-group row">
             <label class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="charge_manager.content.managed_boxes"></label>
-                <div class="col-lg-9 col-xl-6">
-                    <div id="charge_manager_configs" class="row row-cols-1 row-cols-md-2">
-
-                    </div>
+            <div class="col-lg-9 col-xl-6">
+                <div id="charge_manager_configs" class="row row-cols-1 row-cols-md-2">
                 </div>
+            </div>
         </div>
     </form>
 

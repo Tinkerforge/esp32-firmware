@@ -54,25 +54,25 @@ void tf_spitfp_packet_processed(TF_SPITFP *spitfp) {
 }
 
 static uint8_t bytes_to_recv(TF_SPITFP *spitfp, uint8_t bytes_missing, uint8_t bytes_to_send) {
-    uint8_t result = tf_packet_buffer_get_free(&spitfp->recv_buf);
+    uint8_t free_in_buf = tf_packet_buffer_get_free(&spitfp->recv_buf);
 
     if (bytes_missing > 0) {
         if (bytes_to_send > 0) {
             // Send or receive the next packet.
-            return MIN(MIN(result, bytes_missing), bytes_to_send);
+            return MIN(MIN(free_in_buf, bytes_missing), bytes_to_send);
         } else {
             // Receive the next packet
-            return MIN(result, bytes_missing);
+            return MIN(free_in_buf, bytes_missing);
         }
     }
 
     if (bytes_to_send > 0) {
         // Send the next packet
-        return MIN(result, bytes_to_send);
+        return MIN(free_in_buf, bytes_to_send);
     }
 
     // Receive single bytes if we don't have any other information
-    return MIN(result, 1);
+    return MIN(free_in_buf, 1);
 }
 
 static bool process_packets(TF_SPITFP *spitfp, uint8_t *bytes_missing) {

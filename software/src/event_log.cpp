@@ -27,6 +27,11 @@
 
 extern WebServer server;
 
+void EventLog::setup()
+{
+    event_buf.setup();
+}
+
 void EventLog::get_timestamp(char buf[TIMESTAMP_LEN + 1])
 {
     struct timeval tv_now;
@@ -85,23 +90,26 @@ void EventLog::write(const char *buf, size_t len)
     }
 }
 
-void EventLog::printfln(const char *fmt, ...)
-{
+void EventLog::printfln(const char *fmt, va_list args) {
     char buf[256];
     auto buf_size = sizeof(buf) / sizeof(buf[0]);
     memset(buf, 0, buf_size);
 
-    va_list args;
-    va_start(args, fmt);
     auto written = vsnprintf(buf, buf_size, fmt, args);
-    va_end(args);
-
     if (written >= buf_size) {
         write("Next log message was truncated. Bump EventLog::printfln buffer size!", 69);
         written = buf_size;
     }
 
     write(buf, written);
+}
+
+void EventLog::printfln(const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    this->printfln(fmt, args);
+    va_end(args);
 }
 
 void EventLog::drop(size_t count)
@@ -131,6 +139,7 @@ void EventLog::register_urls()
             for (int i = 0; i < to_write; ++i) {
                 event_buf.peek_offset((char *)(chunk_buf + i), index + i);
             }
+
             request.sendChunk(chunk_buf, to_write);
         }
 

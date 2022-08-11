@@ -1,18 +1,32 @@
+/* esp32-firmware
+ * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
 import $ from "jquery";
 
 import "bootstrap";
 
-import feather = require("feather-icons");
-
-import Translator from '@andreasremdt/simple-translator';
-
+import * as feather from 'feather-icons';
 import * as util from "./ts/util";
-
 import * as API from "./ts/api";
+import { __, translate_data_i18n } from "./ts/translation";
 
 {{{module_imports}}}
-
-{{{translation_imports}}}
 
 interface Module {
     init(): void;
@@ -144,21 +158,7 @@ $(window).on('pageshow', (ev) => {
         timeout: 5000
     });
 
-    var translator = new Translator();
-
-{{{translation_adds}}}
-
-    translator.config.defaultLanguage = 'en';
-    for (let l of navigator.languages) {
-        let lang = l.substr(0, 2);
-        if (translator.languages.has(lang)) {
-            translator.config.defaultLanguage = lang;
-            break;
-        }
-        console.log("Sorry, got no translation for " + l);
-    }
-
-    translator.translatePageTo();
+    translate_data_i18n();
 
     $('a[data-toggle="tab"]').on('show.bs.tab', () => {
         $('a[data-toggle="tab"]').not(<Element>event.target).removeClass("active");

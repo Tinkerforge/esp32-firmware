@@ -1,7 +1,7 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-05-10.      *
+ * This file was automatically generated on 2022-07-12.      *
  *                                                           *
- * C/C++ for Microcontrollers Bindings Version 2.0.1         *
+ * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
  * If you have a bugfix for this file and want to commit it, *
  * please fix the bug in the generator. You can find a link  *
@@ -193,6 +193,11 @@ typedef struct TF_EVSEV2 {
  * \ingroup TF_EVSEV2
  */
 #define TF_EVSE_V2_FUNCTION_FACTORY_RESET 30
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_GET_BUTTON_PRESS_BOOT_TIME 31
 
 /**
  * \ingroup TF_EVSEV2
@@ -942,6 +947,13 @@ int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_co
  * TODO
  */
 int tf_evse_v2_factory_reset(TF_EVSEV2 *evse_v2, uint32_t password);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_get_button_press_boot_time(TF_EVSEV2 *evse_v2, bool reset, uint32_t *ret_button_press_boot_time);
 
 /**
  * \ingroup TF_EVSEV2

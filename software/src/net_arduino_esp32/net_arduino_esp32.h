@@ -58,11 +58,11 @@ typedef struct TF_Request {
 } TF_Request;
 
 typedef struct TF_Net {
-    TF_NetClient clients[TF_MAX_CLIENT_COUNT];
+    TF_NetClient clients[TF_NET_MAX_CLIENT_COUNT];
     uint8_t clients_used;
     int server_fd;
 
-    TF_Request open_requests[TF_MAX_OPEN_REQUEST_COUNT];
+    TF_Request open_requests[TF_NET_MAX_OPEN_REQUEST_COUNT];
     uint8_t open_request_count;
     uint16_t send_buf_timeout_us;
     uint32_t recv_timeout_ms;

@@ -23,6 +23,7 @@
 #include "task_scheduler.h"
 
 #include "modules.h"
+#include "tools.h"
 
 #include "digest_auth.h"
 #include <cmath>
@@ -47,18 +48,18 @@ extern TaskScheduler task_scheduler;
 void set_data_storage(uint8_t *buf)
 {
 #if MODULE_EVSE_AVAILABLE()
-    tf_evse_set_data_storage(&evse.device, 0, buf);
+    tf_evse_set_data_storage(&evse.device, DATA_STORE_PAGE_CHARGE_TRACKER, buf);
 #elif MODULE_EVSE_V2_AVAILABLE()
-    tf_evse_v2_set_data_storage(&evse_v2.device, 0, buf);
+    tf_evse_v2_set_data_storage(&evse_v2.device, DATA_STORE_PAGE_CHARGE_TRACKER, buf);
 #endif
 }
 
 void get_data_storage(uint8_t *buf)
 {
 #if MODULE_EVSE_AVAILABLE()
-    tf_evse_get_data_storage(&evse.device, 0, buf);
+    tf_evse_get_data_storage(&evse.device, DATA_STORE_PAGE_CHARGE_TRACKER, buf);
 #elif MODULE_EVSE_V2_AVAILABLE()
-    tf_evse_v2_get_data_storage(&evse_v2.device, 0, buf);
+    tf_evse_v2_get_data_storage(&evse_v2.device, DATA_STORE_PAGE_CHARGE_TRACKER, buf);
 #endif
 }
 
@@ -91,9 +92,9 @@ uint8_t get_charger_state()
 Config *get_user_slot()
 {
 #if MODULE_EVSE_AVAILABLE()
-    return evse.evse_slots.get(CHARGING_SLOT_USER);
+    return (Config *)evse.evse_slots.get(CHARGING_SLOT_USER);
 #elif MODULE_EVSE_V2_AVAILABLE()
-    return evse_v2.evse_slots.get(CHARGING_SLOT_USER);
+    return (Config *)evse_v2.evse_slots.get(CHARGING_SLOT_USER);
 #endif
     return nullptr;
 }
@@ -214,7 +215,7 @@ Users::Users()
             0, MAX_ACTIVE_USERS,
             Config::type_id<Config::ConfObject>()
         )},
-        {"next_user_id", Config::Uint8(1)},
+        {"next_user_id", Config::Uint8(0)},
         {"http_auth_enabled", Config::Bool(false)}
     });
 
@@ -235,6 +236,9 @@ Users::Users()
             if (user_api_blocked)
                 return "Still applying the last operation. Please retry.";
         }
+
+        if (user_config.get("next_user_id")->asUint() == 0)
+            return "Can't add user. All user IDs in use.";
 
         if (add.get("id")->asUint() != user_config.get("next_user_id")->asUint())
             return "Can't add user. Wrong next user ID";
@@ -321,10 +325,15 @@ void Users::setup()
         logger.printfln("Username list does not exist! Recreating now.");
         create_username_file();
         for (int i = 0; i < user_config.get("users")->count(); ++i) {
-            Config *user = user_config.get("users")->get(i);
+            Config *user = (Config *)user_config.get("users")->get(i);
             this->rename_user(user->get("id")->asUint(), user->get("username")->asCStr(), user->get("display_name")->asCStr());
         }
     }
+
+    // Next user id is 0 if there is no free user left.
+    // After a reboot maybe tracked charges were removed.
+    if (user_config.get("next_user_id")->asUint() == 0)
+        search_next_free_user();
 
     bool charge_start_tracked = charge_tracker.currentlyCharging();
     bool charging = get_charger_state() == 2 || get_charger_state() == 3;
@@ -422,6 +431,29 @@ void Users::setup()
     }
 }
 
+void Users::search_next_free_user() {
+    uint8_t user_id = user_config.get("next_user_id")->asUint();
+    uint8_t start_uid = user_id;
+    user_id++;
+    {
+        File f = LittleFS.open(USERNAME_FILE, "r+");
+        while(start_uid != user_id) {
+            if (user_id == 0)
+                user_id++;
+            f.seek(user_id * USERNAME_ENTRY_LENGTH, SeekMode::SeekSet);
+            char user_name_byte = 0;
+            f.readBytes(&user_name_byte, 1);
+            if (user_name_byte == '\0')
+                break;
+            user_id++;
+        };
+    }
+    if (user_id == start_uid)
+        user_id = 0;
+
+    user_config.get("next_user_id")->updateUint(user_id);
+}
+
 void Users::register_urls()
 {
     api.addRawCommand("users/modify", [this](char *c, size_t s) -> String {
@@ -449,13 +481,20 @@ void Users::register_urls()
 
         uint8_t id = doc["id"].as<uint8_t>();
         if (id == 0) {
-            return "Can't modify the anonymous user.";
+            if (doc["username"] != nullptr)
+                return String("Username needs to be empty.");
+            if (doc["roles"] != nullptr)
+                return String("Roles need to be empty.");
+            if (doc["current"] != nullptr)
+                return String("Current needs to be empty.");
+            if (doc["digest_hash"] != nullptr)
+                return String("Digest_hash needs to be empty.");
         }
 
         Config *user = nullptr;
         for(int i = 0; i < user_config.get("users")->count(); ++i) {
             if (user_config.get("users")->get(i)->get("id")->asUint() == id) {
-                user = user_config.get("users")->get(i);
+                user = (Config *)user_config.get("users")->get(i);
                 break;
             }
         }
@@ -521,7 +560,7 @@ void Users::register_urls()
     api.addState("users/config", &user_config, {"digest_hash"}, 10000);
     api.addCommand("users/add", &add, {"digest_hash"}, [this](){
         user_config.get("users")->add();
-        Config *user = user_config.get("users")->get(user_config.get("users")->count() - 1);
+        Config *user = (Config *)user_config.get("users")->get(user_config.get("users")->count() - 1);
 
         user->get("id")->updateUint(add.get("id")->asUint());
         user->get("roles")->updateUint(add.get("roles")->asUint());
@@ -530,12 +569,7 @@ void Users::register_urls()
         user->get("username")->updateString(add.get("username")->asString());
         user->get("digest_hash")->updateString(add.get("digest_hash")->asCStr());
 
-        uint8_t user_id = user_config.get("next_user_id")->asUint();
-        ++user_id;
-        if (user_id == 0)
-            user_id = 1;
-
-        user_config.get("next_user_id")->updateUint(user_id);
+        search_next_free_user();
 
         API::writeConfig("users/config", &user_config);
         this->rename_user(user->get("id")->asUint(), user->get("username")->asCStr(), user->get("display_name")->asCStr());
@@ -559,7 +593,7 @@ void Users::register_urls()
         user_config.get("users")->remove(idx);
         API::writeConfig("users/config", &user_config);
 
-        Config *tags = nfc.config.get("authorized_tags");
+        Config *tags = (Config *)nfc.config.get("authorized_tags");
 
         for(int i = 0; i < tags->count(); ++i) {
             if(tags->get(i)->get("user_id")->asUint() == remove.get("id")->asUint())
@@ -568,7 +602,14 @@ void Users::register_urls()
         API::writeConfig("nfc/config", &nfc.config);
 
         if (!charge_tracker.is_user_tracked(remove.get("id")->asUint()))
+        {
             this->rename_user(remove.get("id")->asUint(), "", "");
+            if (user_config.get("next_user_id")->asUint() == 0)
+            {
+                user_config.get("next_user_id")->updateUint(remove.get("id")->asUint());
+                API::writeConfig("users/config", &user_config);
+            }
+        }
 
         user_api_blocked = false;
     }, true);
@@ -623,7 +664,7 @@ void Users::rename_user(uint8_t user_id, const char *username, const char *displ
 
 void Users::remove_from_username_file(uint8_t user_id)
 {
-    Config *users = user_config.get("users");
+    Config *users = (Config *)user_config.get("users");
     for (int i = 0; i < users->count(); ++i) {
         if (users->get(i)->get("id")->asUint() == user_id) {
             return;
@@ -631,6 +672,11 @@ void Users::remove_from_username_file(uint8_t user_id)
     }
 
     this->rename_user(user_id, "", "");
+    if (user_config.get("next_user_id")->asUint() == 0)
+    {
+        user_config.get("next_user_id")->updateUint(user_id);
+        API::writeConfig("users/config", &user_config);
+    }
 }
 
 // Only returns true if the triggered action was a charge start.
@@ -643,7 +689,7 @@ bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::Co
     // I.e. when holding an NFC tag at the box or when calling the start_charging API
 
     uint16_t current_limit = 0;
-    Config *users = user_config.get("users");
+    Config *users = (Config *)user_config.get("users");
     for (int i = 0; i < users->count(); ++i) {
         if (users->get(i)->get("id")->asUint() != user_id)
             continue;
@@ -684,16 +730,6 @@ void Users::remove_username_file()
 {
     if (LittleFS.exists(USERNAME_FILE))
         LittleFS.remove(USERNAME_FILE);
-}
-
-uint32_t timestamp_minutes()
-{
-    struct timeval tv_now;
-
-    if (!clock_synced(&tv_now))
-        return 0;
-
-    return tv_now.tv_sec / 60;
 }
 
 bool Users::start_charging(uint8_t user_id, uint16_t current_limit, uint8_t auth_type, Config::ConfVariant auth_info)

@@ -1,7 +1,7 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-05-10.      *
+ * This file was automatically generated on 2022-07-12.      *
  *                                                           *
- * C/C++ for Microcontrollers Bindings Version 2.0.1         *
+ * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
  * If you have a bugfix for this file and want to commit it, *
  * please fix the bug in the generator. You can find a link  *
@@ -1977,6 +1977,65 @@ int tf_evse_v2_factory_reset(TF_EVSEV2 *evse_v2, uint32_t password) {
     _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
+    }
+
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
+}
+
+int tf_evse_v2_get_button_press_boot_time(TF_EVSEV2 *evse_v2, bool reset, uint32_t *ret_button_press_boot_time) {
+    if (evse_v2 == NULL) {
+        return TF_E_NULL;
+    }
+
+    if (evse_v2->magic != 0x5446 || evse_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
+    TF_HAL *_hal = evse_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(_hal)->locked) {
+        return TF_E_LOCKED;
+    }
+
+    bool _response_expected = true;
+    tf_tfp_prepare_send(evse_v2->tfp, TF_EVSE_V2_FUNCTION_GET_BUTTON_PRESS_BOOT_TIME, 1, _response_expected);
+
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(evse_v2->tfp);
+
+    _send_buf[0] = reset ? 1 : 0;
+
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
+
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(evse_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+
+    if (_result < 0) {
+        return _result;
+    }
+
+    if (_result & TF_TICK_TIMEOUT) {
+        return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(evse_v2->tfp);
+        if (_error_code != 0 || _length != 4) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_button_press_boot_time != NULL) { *ret_button_press_boot_time = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
+        tf_tfp_packet_processed(evse_v2->tfp);
+    }
+
+    _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
+
+    if (_error_code == 0 && _length != 4) {
         return TF_E_WRONG_RESPONSE_LENGTH;
     }
 

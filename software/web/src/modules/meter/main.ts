@@ -21,8 +21,7 @@ import $ from "../../ts/jq";
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-
-declare function __(s: string): string;
+import { __, translate_unchecked } from "../../ts/translation";
 
 import Chartist from "../../ts/chartist"
 import ctAxisTitle from "../../ts/chartist-plugin-axistitle";
@@ -86,7 +85,7 @@ function update_history_meter() {
     $.get("/meter/history").done(function (values: Number[]) {
         const HISTORY_MINUTE_INTERVAL = 4;
         const VALUE_COUNT = 48 * (60 / HISTORY_MINUTE_INTERVAL);
-        const LABEL_COUNT = 9;
+        const LABEL_COUNT = window.innerWidth < 500 ? 5 : 9;
         const VALUES_PER_LABEL = VALUE_COUNT / (LABEL_COUNT - 1); // - 1 for the last label that has no values
 
         if (values.length != VALUE_COUNT) {
@@ -285,7 +284,7 @@ interface DetailedViewEntry {
 }
 
 function entry(name: string, three_phase: boolean, unit: string, sdm630_only: boolean) : DetailedViewEntry {
-    return {i: 0, name: __(`meter.content.detailed_${name}`), desc: __(`meter.content.detailed_${name}_desc`), three_phase: three_phase, unit: unit, sdm630_only: sdm630_only}
+    return {i: 0, name: translate_unchecked(`meter.content.detailed_${name}`), desc: translate_unchecked(`meter.content.detailed_${name}_desc`), three_phase: three_phase, unit: unit, sdm630_only: sdm630_only}
 }
 
 function entry_to_string(e: DetailedViewEntry) : string {

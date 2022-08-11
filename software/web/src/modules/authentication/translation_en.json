@@ -12,7 +12,6 @@
             "enable_authentication_desc": "The configured credentials must be entered to open the web interface or use the HTTP API",
             "username": "Username",
             "password": "Password",
-            "save": "Save",
             "username_invalid": "An empty username is not allowed.",
             "password_invalid": "An empty password is not allowed.",
             "confirm_title": "Enable authentication?",

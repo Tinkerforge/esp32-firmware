@@ -28,12 +28,11 @@
             "sdm630_power": "Leistungs&shy;aufnahme",
             "sdm630_energy": "Strom&shy;verbrauch",
             "sdm630_energy_since_reset": "seit dem letzten Zurücksetzen",
-            "sdm630_energy_lifetime": "seit Herstellung des Stromzählers",
-
-            "save": "Speichern"
+            "sdm630_energy_lifetime": "seit Herstellung des Stromzählers"
         },
         "script": {
-
+            "config_failed": "Speichern der Stromzähler-Konfiguration fehlgeschlagen.",
+            "reboot_content_changed": "Stromzähler-Konfiguration"
         }
     }
 }

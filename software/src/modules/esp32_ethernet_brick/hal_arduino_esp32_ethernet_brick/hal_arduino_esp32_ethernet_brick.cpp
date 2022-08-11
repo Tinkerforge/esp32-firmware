@@ -61,8 +61,8 @@ int tf_hal_create(TF_HAL *hal) {
     }
 
     hal->spi_settings = SPISettings(1400000, SPI_MSBFIRST, SPI_MODE3);
-    hal->hspi = SPIClass(HSPI);
-    hal->hspi.begin(CLK_PIN, MISO_PIN, MOSI_PIN);
+    hal->hspi = new SPIClass(HSPI);
+    hal->hspi->begin(CLK_PIN, MISO_PIN, MOSI_PIN);
 
     pinMode(CS_PIN_0, OUTPUT);
     pinMode(CS_PIN_1, OUTPUT);
@@ -73,18 +73,18 @@ int tf_hal_create(TF_HAL *hal) {
 }
 
 int tf_hal_destroy(TF_HAL *hal) {
-    hal->hspi.end();
+    hal->hspi->end();
 
     return TF_E_OK;
 }
 
 int tf_hal_chip_select(TF_HAL *hal, uint8_t port_id, bool enable) {
     if (enable) {
-        hal->hspi.beginTransaction(hal->spi_settings);
+        hal->hspi->beginTransaction(hal->spi_settings);
         select_demux(port_id);
     } else {
         deselect_demux();
-        hal->hspi.endTransaction();
+        hal->hspi->endTransaction();
     }
 
     return TF_E_OK;
@@ -92,7 +92,7 @@ int tf_hal_chip_select(TF_HAL *hal, uint8_t port_id, bool enable) {
 
 int tf_hal_transceive(TF_HAL *hal, uint8_t port_id, const uint8_t *write_buffer, uint8_t *read_buffer, uint32_t length) {
     memcpy(read_buffer, write_buffer, length);
-    hal->hspi.transfer(read_buffer, length);
+    hal->hspi->transfer(read_buffer, length);
 
     return TF_E_OK;
 }

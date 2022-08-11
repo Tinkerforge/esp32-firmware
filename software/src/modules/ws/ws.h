@@ -22,7 +22,8 @@
 #include "api.h"
 #include "web_sockets.h"
 
-class WS : public IAPIBackend {
+class WS : public IAPIBackend
+{
 public:
     WS();
     void setup();

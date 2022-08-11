@@ -220,6 +220,8 @@ def check_translation(translation, parent_key=None):
             check_translation(value, parent_key=parent_key + [key])
 
 def main():
+    subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "update_packages.py"])
+
     # Add build flags
     timestamp = int(time.time())
     name = env.GetProjectOption("custom_name")
@@ -229,7 +231,7 @@ def main():
     apidoc_url = env.GetProjectOption("custom_apidoc_url")
     firmware_url = env.GetProjectOption("custom_firmware_url")
     require_firmware_info = env.GetProjectOption("custom_require_firmware_info")
-    src_filter = env.GetProjectOption("src_filter")
+    build_flags = env.GetProjectOption("build_flags")
 
     try:
         oldest_version, version = get_changelog_version(name)
@@ -237,13 +239,29 @@ def main():
         print('Error: Could not get changelog version: {0}'.format(e))
         sys.exit(1)
 
-    if src_filter[0] == '+<empty.c>':
-        src_filter = None
-    else:
-        src_filter = ['+<*>', '-<empty.c>']
+    build_src_filter = ['+<*>']
 
     if not os.path.isdir("build"):
         os.makedirs("build")
+
+    try:
+        with open(os.path.join('default_wifi.json'), 'r', encoding='utf-8') as f:
+            default_wifi = json.loads(f.read())
+    except FileNotFoundError:
+        default_wifi = {}
+
+    if 'sta_enable' in default_wifi:
+        build_flags.append('-DDEFAULT_WIFI_STA_ENABLE={0}'.format(default_wifi['sta_enable']))
+
+    rename_firmware = False
+    if 'sta_ssid' in default_wifi:
+        build_flags.append('-DDEFAULT_WIFI_STA_SSID="\\"{0}\\""'.format(default_wifi['sta_ssid']))
+
+    if 'sta_passphrase' in default_wifi:
+        rename_firmware = True
+        build_flags.append('-DDEFAULT_WIFI_STA_PASSPHRASE="\\"{0}\\""'.format(default_wifi['sta_passphrase']))
+
+    env.Replace(BUILD_FLAGS=build_flags)
 
     write_firmware_info(display_name, *version, timestamp)
 
@@ -268,7 +286,10 @@ def main():
         f.write('#define BUILD_VERSION_FULL_STR "{}.{}.{}-{:x}"\n'.format(*version, timestamp))
 
     with open(os.path.join(env.subst('$BUILD_DIR'), 'firmware_basename'), 'w', encoding='utf-8') as f:
-        f.write('{}_firmware_{}_{:x}'.format(name, '_'.join(version), timestamp))
+        if rename_firmware:
+            f.write('{}_firmware-WITH-WIFI-PASSPHRASE-DO-NOT-DISTRIBUTE_{}_{:x}'.format(name, '_'.join(version), timestamp))
+        else:
+            f.write('{}_firmware_{}_{:x}'.format(name, '_'.join(version), timestamp))
 
     # Handle backend modules
     excluded_backend_modules = list(os.listdir('src/modules'))
@@ -291,11 +312,11 @@ def main():
             with ChangedDirectory(mod_path):
                 subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py"], env=environ)
 
-    if src_filter != None:
+    if build_src_filter != None:
         for excluded_backend_module in excluded_backend_modules:
-            src_filter.append('-<modules/{0}/*>'.format(excluded_backend_module))
+            build_src_filter.append('-<modules/{0}/*>'.format(excluded_backend_module))
 
-        env.Replace(SRC_FILTER=[' '.join(src_filter)])
+        env.Replace(SRC_FILTER=[' '.join(build_src_filter)])
 
     specialize_template("main.cpp.template", os.path.join("src", "main.cpp"), {
         '{{{module_includes}}}': '\n'.join(['#include "modules/{0}/{0}.h"'.format(x.under) for x in backend_modules]),
@@ -344,7 +365,7 @@ def main():
     api_path_pattern = re.compile("//APIPath:([^\n]*)\n")
 
     favicon_path = None
-    logo_module = None
+    logo_path = None
 
     for frontend_module in frontend_modules:
         mod_path = os.path.join('web', 'src', 'modules', frontend_module.under)
@@ -352,13 +373,6 @@ def main():
         if not os.path.exists(mod_path) or not os.path.isdir(mod_path):
             print("Error: Frontend module {} not found.".format(frontend_module.space, mod_path))
             sys.exit(1)
-
-        if os.path.exists(os.path.join(mod_path, 'logo.png')):
-            if logo_module != None:
-                print('Error: Logo module collision ' + frontend_module.under + ' vs ' + logo_module)
-                sys.exit(1)
-
-            logo_module = frontend_module.under
 
         potential_favicon_path = os.path.join(mod_path, 'favicon.png')
 
@@ -368,6 +382,15 @@ def main():
                 sys.exit(1)
 
             favicon_path = potential_favicon_path
+
+        potential_logo_path = os.path.join(mod_path, 'logo.png')
+
+        if os.path.exists(potential_logo_path):
+            if logo_path != None:
+                print('Error: Logo path collision ' + potential_logo_path + ' vs ' + logo_path)
+                sys.exit(1)
+
+            logo_path = potential_logo_path
 
         if os.path.exists(os.path.join(mod_path, 'navbar.html')):
             with open(os.path.join(mod_path, 'navbar.html'), encoding='utf-8') as f:
@@ -381,7 +404,7 @@ def main():
             with open(os.path.join(mod_path, 'status.html'), encoding='utf-8') as f:
                 status_entries.append(f.read())
 
-        if os.path.exists(os.path.join(mod_path, 'main.ts')):
+        if os.path.exists(os.path.join(mod_path, 'main.ts')) or os.path.exists(os.path.join(mod_path, 'main.tsx')):
             main_ts_entries.append(frontend_module.under)
 
         if os.path.exists(os.path.join(mod_path, 'api.ts')):
@@ -422,32 +445,32 @@ def main():
         print('Error: Translation missing')
         sys.exit(1)
 
-    for language in sorted(translation):
-        with open(os.path.join('web', 'src', 'ts', 'translation_{0}.ts'.format(language)), 'w', encoding='utf-8') as f:
-            data = json.dumps(translation[language], indent=4, ensure_ascii=False)
-            data = data.replace('{{{empty_text}}}', '\u200b') # Zero Width Space to work around a bug in the translation library: empty strings are replaced with "null"
-            data = data.replace('{{{display_name}}}', display_name)
-            data = data.replace('{{{manual_url}}}', manual_url)
-            data = data.replace('{{{apidoc_url}}}', apidoc_url)
-            data = data.replace('{{{firmware_url}}}', firmware_url)
+    with open(os.path.join('web', 'src', 'ts', 'translation.json'), 'w', encoding='utf-8') as f:
+        data = json.dumps(translation, indent=4, ensure_ascii=False)
+        data = data.replace('{{{display_name}}}', display_name)
+        data = data.replace('{{{manual_url}}}', manual_url)
+        data = data.replace('{{{apidoc_url}}}', apidoc_url)
+        data = data.replace('{{{firmware_url}}}', firmware_url)
 
-            f.write('export const translation_{0}: {{[index: string]:any}} = '.format(language))
-            f.write(data + ';\n')
+        f.write(data)
 
     if favicon_path == None:
         print('Error: Favison missing')
         sys.exit(1)
 
-    if logo_module == None:
-        print('Error: Logo missing')
-        sys.exit(1)
-
     with open(favicon_path, 'rb') as f:
         favicon = b64encode(f.read()).decode('ascii')
 
+    if logo_path == None:
+        print('Error: Logo missing')
+        sys.exit(1)
+
+    with open(logo_path, 'rb') as f:
+        logo = b64encode(f.read()).decode('ascii')
+
     specialize_template(os.path.join("web", "index.html.template"), os.path.join("web", "src", "index.html"), {
         '{{{favicon}}}': favicon,
-        '{{{logo_module}}}': logo_module,
+        '{{{logo}}}': logo,
         '{{{navbar}}}': '\n                        '.join(navbar_entries),
         '{{{content}}}': '\n                    '.join(content_entries),
         '{{{status}}}': '\n                            '.join(status_entries)
@@ -456,8 +479,6 @@ def main():
     specialize_template(os.path.join("web", "main.ts.template"), os.path.join("web", "src", "main.ts"), {
         '{{{module_imports}}}': '\n'.join(['import * as {0} from "./modules/{0}/main";'.format(x) for x in main_ts_entries]),
         '{{{modules}}}': ', '.join([x for x in main_ts_entries]),
-        '{{{translation_imports}}}': '\n'.join(['import {{translation_{0}}} from "./ts/translation_{0}";'.format(x) for x in sorted(translation)]),
-        '{{{translation_adds}}}': '\n'.join(["    translator.add('{0}', translation_{0});".format(x) for x in sorted(translation)])
     })
 
     specialize_template(os.path.join("web", "main.scss.template"), os.path.join("web", "src", "main.scss"), {
@@ -472,6 +493,54 @@ def main():
         '{{{api_cache_entries}}}': '\n    '.join(api_cache_entries),
     })
 
+    translation_str = ''
+
+    def format_translation(translation, type_only, indent):
+        output = ['{\n']
+
+        assert isinstance(translation, (dict, str)), type(translation)
+
+        for key, value in sorted(translation.items()):
+            output += [indent + '    ', key, ': ']
+
+            if isinstance(value, dict):
+                output += format_translation(value, type_only, indent + '    ')
+            elif type_only:
+                output += ['string,\n']
+            else:
+                string = '"{0}"'.format(value.replace('"', '\\"'))
+
+                if '{{{' in string:
+                    string = string.replace('{{{display_name}}}', display_name)
+                    string = string.replace('{{{manual_url}}}', manual_url)
+                    string = string.replace('{{{apidoc_url}}}', apidoc_url)
+                    string = string.replace('{{{firmware_url}}}', firmware_url)
+
+                output += [string, ',\n']
+
+        output += [indent, '}']
+
+        if len(indent) > 0:
+            output += [',\n']
+
+        return output
+
+    translation_str += 'type Translation = ' + ''.join(format_translation(translation['en'], True, '')) + '\n\n'
+
+    for language in sorted(translation):
+        translation_str += 'const translation_{0}: Translation = {1} as const\n\n'.format(language, ''.join(format_translation(translation[language], False, '')))
+
+    translation_str += 'const translation: {[index: string]: Translation} = {\n'
+
+    for language in sorted(translation):
+        translation_str += '    "{0}": translation_{0},\n'.format(language)
+
+    translation_str += '} as const\n'
+
+    specialize_template(os.path.join("web", "translation.tsx.template"), os.path.join("web", "src", "ts", "translation.tsx"), {
+        '{{{translation}}}': translation_str,
+    })
+
     # Check translation completeness
     print('Checking translation completeness')
 
@@ -482,7 +551,7 @@ def main():
     print('Checking translation override completeness')
 
     with ChangedDirectory('web'):
-        subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "check_override_completeness.py"] + [x.under for x in frontend_modules])
+        subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "check_override_completeness.py"])
 
     # Generate web interface
     print('Checking web interface dependencies')
@@ -505,10 +574,24 @@ def main():
 
         util.remove_digest('web', 'node_modules', env=env)
 
-        try:
-            shutil.rmtree('web/node_modules')
-        except FileNotFoundError:
-            pass
+        rmtree_tries = 10
+
+        while rmtree_tries > 0:
+            try:
+                shutil.rmtree('web/node_modules')
+                break
+            except FileNotFoundError:
+                break
+            except:
+                # on windows for some unknown reason sometimes a directory stays
+                # or becomes non-empty during the shutil.rmtree call and and
+                # cannot be removed anymore. if that happens jus try again
+                time.sleep(0.5)
+
+                rmtree_tries -= 1
+
+                if rmtree_tries == 0:
+                    raise
 
         with ChangedDirectory('web'):
             npm_version = subprocess.check_output(['npm', '--version'], shell=sys.platform == 'win32', encoding='utf-8').strip()
@@ -571,15 +654,15 @@ def main():
             pass
 
         with ChangedDirectory('web'):
-            subprocess.check_call(['npx', 'gulp'], shell=sys.platform == 'win32')
+            subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "build.py"])
 
-        with open('web/build/main.css', 'r', encoding='utf-8') as f:
+        with open('web/build/main.min.css', 'r', encoding='utf-8') as f:
             css = f.read()
 
-        with open('web/build/bundle.js', 'r', encoding='utf-8') as f:
+        with open('web/build/bundle.min.js', 'r', encoding='utf-8') as f:
             js = f.read()
 
-        with open('web/build/index.html', 'r', encoding='utf-8') as f:
+        with open('web/build/index.min.html', 'r', encoding='utf-8') as f:
             html = f.read()
 
         html = html.replace('<link href=css/main.css rel=stylesheet>', '<style rel=stylesheet>{0}</style>'.format(css))

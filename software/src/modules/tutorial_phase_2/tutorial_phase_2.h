@@ -21,7 +21,8 @@
 
 #include "config.h"
 
-class TutorialPhase2 {
+class TutorialPhase2
+{
 public:
     TutorialPhase2();
     void setup();

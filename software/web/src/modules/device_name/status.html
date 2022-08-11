@@ -3,6 +3,11 @@
         <div class="row pt-3 border-bottom tab-header-shadow">
             <h1 class="col-4 col-xl-6 h2 pb-2" data-i18n="device_name.status.status"></h1>
             <form id="device_name_form" class="col-8 col-xl-6 needs-validation" novalidate>
+                <!--
+                    Use custom validation instead of the browser default, that is broken on Chrome
+                    See: https://getbootstrap.com/docs/4.5/components/forms/#validation
+                -->
+
                 <div class="input-group">
                     <input id="display_name" class="form-control" type="text" placeholder="...">
                     <div class="input-group-append">

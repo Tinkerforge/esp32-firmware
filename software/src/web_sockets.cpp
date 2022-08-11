@@ -29,6 +29,14 @@ extern WebServer server;
 extern EventLog logger;
 
 #define KEEP_ALIVE_TIMEOUT_MS 10000
+#define WORKER_START_ERROR_THRES 60 * 10
+#define WORKER_START_ERROR_MIN_UPTIME_FOR_REBOOT 60 * 60 * 1000
+
+void clear_ws_work_item(ws_work_item *wi)
+{
+    free(wi->payload);
+    wi->payload = nullptr;
+}
 
 bool WebSockets::haveWork(ws_work_item *item)
 {
@@ -42,15 +50,17 @@ bool WebSockets::haveWork(ws_work_item *item)
     return true;
 }
 
-void WebSockets::cleanUpQueue() {
+void WebSockets::cleanUpQueue()
+{
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
     while (!work_queue.empty()) {
-        ws_work_item &wi = work_queue.front();
+        ws_work_item *wi = &work_queue.front();
         for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
-            if (wi.fds[i] != -1) {
+            if (wi->fds[i] != -1) {
                 return;
             }
         }
+        clear_ws_work_item(wi);
         // Every fd was -1.
         work_queue.pop_front();
     }
@@ -106,10 +116,11 @@ static void work(void *arg)
             work_state = "send_done";
         }
         work_state = "clear";
-        wi.clear();
+        clear_ws_work_item(&wi);
         work_state = "loop_end";
     }
     work_state = "done";
+    ws->worker_start_errors = 0;
     ws->worker_active = false;
 }
 
@@ -241,8 +252,8 @@ void WebSockets::keepAliveRemove(int fd)
 
     {
         std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
-        for(int i = 0; i < work_queue.size(); ++i)
-            for(int j = 0; j < MAX_WEB_SOCKET_CLIENTS; ++j)
+        for (int i = 0; i < work_queue.size(); ++i)
+            for (int j = 0; j < MAX_WEB_SOCKET_CLIENTS; ++j)
                 if (work_queue[i].fds[j] == fd)
                     work_queue[i].fds[j] = -1;
     }
@@ -302,7 +313,9 @@ void WebSockets::pingActiveClients()
     if (queueFull()) {
         return;
     }
-    work_queue.emplace_back(server.httpd, fds, nullptr, 0);
+
+    work_queue.push_back({server.httpd, {}, nullptr, 0});
+    memcpy(work_queue.back().fds, fds, sizeof(fds));
 }
 
 void WebSockets::checkActiveClients()
@@ -346,14 +359,13 @@ void WebSockets::sendToClient(const char *payload, size_t payload_len, int fd)
 
     memcpy(payload_copy, payload, payload_len);
 
-    int fds[MAX_WEB_SOCKET_CLIENTS] = {fd, -1, -1, -1, -1};
-
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
     if (queueFull()) {
         free(payload_copy);
         return;
     }
-    work_queue.emplace_back(server.httpd, fds, payload_copy, payload_len);
+
+    work_queue.push_back({server.httpd, {fd, -1, -1, -1, -1}, payload_copy, payload_len});
 }
 
 bool WebSockets::haveActiveClient()
@@ -395,7 +407,8 @@ void WebSockets::sendToAllOwned(char *payload, size_t payload_len)
         free(payload);
         return;
     }
-    work_queue.emplace_back(server.httpd, fds, payload, payload_len);
+    work_queue.push_back({server.httpd, {}, payload, payload_len});
+    memcpy(work_queue.back().fds, fds, sizeof(fds));
 }
 
 void WebSockets::sendToAll(const char *payload, size_t payload_len)
@@ -421,10 +434,13 @@ void WebSockets::sendToAll(const char *payload, size_t payload_len)
         free(payload_copy);
         return;
     }
-    work_queue.emplace_back(server.httpd, fds, payload_copy, payload_len);
+
+    work_queue.push_back({server.httpd, {}, payload_copy, payload_len});
+    memcpy(work_queue.back().fds, fds, sizeof(fds));
 }
 
 static uint32_t last_worker_run = 0;
+
 void WebSockets::triggerHttpThread()
 {
     if (worker_active) {
@@ -436,28 +452,36 @@ void WebSockets::triggerHttpThread()
             last_worker_run = millis();
             worker_active = false;
 
+            worker_start_errors += (KEEP_ALIVE_TIMEOUT_MS * 2) / 100; // count a hanging worker as if we've attempted to start the worker the whole time.
+
             std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
-            work_queue.clear();
+            while (!work_queue.empty()) {
+                ws_work_item *wi = &work_queue.front();
+                clear_ws_work_item(wi);
+                work_queue.pop_front();
+            }
         }
         return;
     }
 
     last_worker_run = millis();
-
+/*
     {
         std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
         if (work_queue.empty()) {
             return;
         }
     }
-
+*/
     // If we don't set worker_active to true BEFORE enqueueing the worker,
     // we can be preempted after enqueueing, but before we set worker_active to true
     // the worker can then run to completion, we then set worker_active to true and are
     // NEVER able to start the worker again.
     worker_active = true;
     if (httpd_queue_work(server.httpd, work, this) != ESP_OK) {
+        logger.printfln("Failed to start WebSocket worker!");
         worker_active = false;
+        ++worker_start_errors;
     }
 }
 
@@ -479,6 +503,21 @@ void WebSockets::start(const char *uri)
         this->triggerHttpThread();
     }, 100, 100);
 
+    task_scheduler.scheduleWithFixedDelay([this]() {
+        if (millis() < WORKER_START_ERROR_MIN_UPTIME_FOR_REBOOT)
+            return;
+
+        if (this->worker_start_errors > WORKER_START_ERROR_THRES) {
+            logger.printfln("Websocket worker was not able to start for five minutes. The control socket is probably dead. Restarting ESP in one minute.");
+            task_scheduler.scheduleOnce([](){
+                ESP.restart();
+            }, 60 * 1000);
+            // reset error counter to not hit this condition in the next run.
+            this->worker_start_errors = 0;
+        }
+
+    }, 1000, 1000);
+
     task_scheduler.scheduleWithFixedDelay([this](){
         this->pingActiveClients();
     }, 1000, 1000);
@@ -497,7 +536,7 @@ void WebSockets::start(const char *uri)
         logger.printfln("last_worker_run %u", last_worker_run);
         logger.printfln("queue_len %u", work_queue.size());
 
-        for(int i = 0; i < work_queue.size(); ++i) {
+        for (int i = 0; i < work_queue.size(); ++i) {
             logger.printfln("    q[%d] to {%d %d %d %d %d} len %u %.30s",
                             i,
                             work_queue[i].fds[0],

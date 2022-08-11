@@ -371,7 +371,8 @@ void WebServerRequest::requestAuthentication()
     send(401);
 }
 
-class CustomString : public String {
+class CustomString : public String
+{
 public:
     void setLength(int len)
     {

@@ -67,7 +67,8 @@ struct response_packet {
     bool managed;
 } __attribute__((packed));
 
-class CMNetworking {
+class CMNetworking
+{
 public:
     CMNetworking();
     void setup();

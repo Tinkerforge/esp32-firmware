@@ -21,7 +21,8 @@
 
 #include "net_arduino_esp32/net_arduino_esp32.h"
 
-class HiddenProxy {
+class HiddenProxy
+{
 public:
     HiddenProxy();
     void setup();

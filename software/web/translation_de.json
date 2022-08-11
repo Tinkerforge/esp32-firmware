@@ -13,13 +13,22 @@
         "abort": "Abbrechen",
         "reboot": "Neu starten"
     },
+    "component": {
+        "config_page_header": {
+            "save": "Speichern"
+        }
+    },
     "util": {
         "reboot_title": "Starte neu...",
         "reboot_text": "Das Webinterface wird nach dem Neustart automatisch neu geladen.",
         "event_connection_lost_title": null,
         "event_connection_lost": "Verbindung wird wiederhergestellt...",
         "to_be_cleared": "Wird beim Speichern geleert",
-        "unchanged": "unverändert"
+        "unchanged": "unverändert",
+        "subnet_invalid": "Die Subnetzmaske muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrent durch einen Punkt, bestehen. Zum Beispiel 255.255.255.0",
+        "gateway_invalid": "Die IP des Gateways muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrent durch einen Punkt, bestehen. Zum Beispiel 10.0.0.1",
+        "gateway_out_of_subnet": "Gateway-Adresse liegt außerhalb des konfigurierten Subnetzes!",
+        "subnet_captures_localhost": "Kombination aus IP-Adresse und Subnetzmaske nicht erlaubt, da sie localhost (127.0.0.1) übernehmen würde."
     },
     "days": "Tage",
     "day": "Tag"

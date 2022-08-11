@@ -42,10 +42,11 @@ extern WebServer server;
 
 #define RING_BUF_SIZE (HISTORY_HOURS * (60 / HISTORY_MINUTE_INTERVAL) + 1)
 
-class ValueHistory {
+class ValueHistory
+{
 public:
-    ValueHistory() {
-
+    ValueHistory()
+    {
     }
 
     void setup();

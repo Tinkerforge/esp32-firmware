@@ -3,8 +3,8 @@
         "content": {
             "error_dc_fault_current": "DC-Fehlerstromschutz",
             "energy_meter_type": "Stromzählertyp",
-            "adc_names": "CP/PE vor Widerstand (PWM High), CP/PE nach Widerstand (PWM High)</br>CP/PE vor Widerstand (PWM Low), CP/PE nach Widerstand (PWM Low)</br>PP/PE, +12V Rail</br>-12V Rail",
-            "voltage_names": "CP/PE vor Widerstand (PWM High), CP/PE nach Widerstand (PWM High)</br>CP/PE vor Widerstand (PWM Low), CP/PE nach Widerstand (PWM Low)</br>PP/PE, +12V Rail</br>-12V Rail",
+            "adc_names": "CP/PE vor Widerstand (PWM High), CP/PE nach Widerstand (PWM High)<br/>CP/PE vor Widerstand (PWM Low), CP/PE nach Widerstand (PWM Low)<br/>PP/PE, +12V Rail<br/>-12V Rail",
+            "voltage_names": "CP/PE vor Widerstand (PWM High), CP/PE nach Widerstand (PWM High)<br/>CP/PE vor Widerstand (PWM Low), CP/PE nach Widerstand (PWM Low)<br/>PP/PE, +12V Rail<br/>-12V Rail",
             "gpio_names_0": "Stromkonfiguration 0, Motorfehler, Gleichstromfehler, Stromkonfiguration 1",
             "gpio_names_1": "DC-Fehlerstromschutz-Test, Abschaltung, Taster, CP-PWM",
             "gpio_names_2": "Motoreingangsschalter, Schützsteuerung, Konfigurierbarer Ausgang, CP-Trennung",
@@ -37,7 +37,7 @@
             "control_pilot_automatic": "Automatisch",
 
             "dc_fault_current_state": "DC-Fehlerstrom&shy;zustand",
-            "dc_fault_current_state_desc": "{{{empty_text}}}",
+            "dc_fault_current_state_desc": "",
             "dc_fault_current_ok": "OK",
             "dc_fault_current_6_ma": "Gleichstromfehler",
             "dc_fault_current_system": "Systemfehler",
@@ -53,7 +53,14 @@
         "script": {
             "control_pilot_configuration_failed": "Speichern der Control-Pilot-Konfiguration fehlgeschlagen",
             "reset_dc_fault_current_failed": "Zurücksetzen des DC-Fehlerstromschutzmoduls fehlgeschlagen",
-            "gpio_configuration_failed": "Speichern der GPIO-Konfiguration fehlgeschlagen"
+            "gpio_configuration_failed": "Speichern der GPIO-Konfiguration fehlgeschlagen",
+
+            "meter_type_0": "Kein Stromzähler angeschlossen",
+            "meter_type_1": "SDM72",
+            "meter_type_2": "SDM630",
+            "meter_type_3": "SDM72V2",
+
+            "slot_4": "Autostart oder Taster"
         }
     }
 }

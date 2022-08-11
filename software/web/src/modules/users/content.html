@@ -1,15 +1,5 @@
 <div class="tab-pane fade" role="tabpanel" aria-labelledby="sidebar-users" id="users">
-    <div class="row sticky-under-top mb-3 pt-3">
-        <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-header-shadow">
-            <h1 class="h2" data-i18n="users.content.users"></h1>
-            <button id="users_save_button" type="submit" form="users_config_form" class="btn btn-primary mb-2"disabled>
-                <span data-i18n="users.content.save"></span>
-                    <span id="users_save_spinner" class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden>
-                        <span class="sr-only">Saving...</span>
-                    </span>
-            </button>
-        </div>
-    </div>
+    <div id="users_header"></div>
 
     <form id="users_config_form" class="needs-validation" novalidate>
         <!--
@@ -26,6 +16,22 @@
                     <input type="checkbox" class="custom-control-input" id="users_authentication_enable">
                     <label class="custom-control-label" for="users_authentication_enable" data-i18n="users.content.enable_authentication_desc"></label>
                     <div class="invalid-feedback" data-i18n="users.content.enable_authentication_invalid"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="users_unknown_username"
+                class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="users.content.unknown_username"></label>
+            <div class="col-lg-9 col-xl-6">
+                <div class="input-group">
+                    <input id="users_unknown_username" class="form-control" type="text" required maxlength="32">
+                    <div class="input-group-append">
+                        <div class="input-group-text custom-control custom-switch" style="padding-left: 2.5rem;">
+                            <input id="users_clear_unknown_username" type="checkbox" class="custom-control-input" aria-label="Clear unknown username">
+                            <label class="custom-control-label" for="users_clear_unknown_username" style="line-height: 20px;"><span data-feather="trash-2"></span></label>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -51,6 +57,11 @@
                 </div>
                 <div class="modal-body">
                     <form id="users_add_user_form" class="needs-validation" novalidate>
+                        <!--
+                            Use custom validation instead of the browser default, that is broken on Chrome
+                            See: https://getbootstrap.com/docs/4.5/components/forms/#validation
+                        -->
+
                         <div class="form-group">
                             <label for="users_config_user_new_username">
                                 <span class="form-label pr-2" data-i18n="users.content.add_user_modal_username"></span>

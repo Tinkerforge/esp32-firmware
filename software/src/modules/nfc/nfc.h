@@ -38,7 +38,8 @@ class NFC : public DeviceModule<TF_NFC,
                                 tf_nfc_create,
                                 tf_nfc_get_bootloader_mode,
                                 tf_nfc_reset,
-                                tf_nfc_destroy> {
+                                tf_nfc_destroy>
+{
 public:
     NFC();
     void setup();

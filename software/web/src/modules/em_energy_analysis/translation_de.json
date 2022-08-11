@@ -1,17 +1,15 @@
 {
-    "energy_manager_energy_analysis": {
+    "em_energy_analysis": {
         "status": {
-            "energy_manager_energy_analysis": "Energiebilanz"
+            "em_energy_analysis": "Energiebilanz"
         },
         "navbar": {
-            "energy_manager_energy_analysis": "Energiebilanz"
+            "em_energy_analysis": "Energiebilanz"
         },
         "content": {
-            "energy_manager_energy_analysis": "Energiebilanz"
-
+            "em_energy_analysis": "Energiebilanz"
         },
         "script": {
-
         }
     }
 }

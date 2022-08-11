@@ -45,11 +45,10 @@
 #define IND_NAG 1003
 
 #define TOKEN_LIFETIME_MS 30000
-#define DETECTION_THRESHOLD_MS 500
+#define DETECTION_THRESHOLD_MS 1000
 
 extern EventLog logger;
 
-extern TF_HAL hal;
 extern TaskScheduler task_scheduler;
 
 extern API api;
@@ -79,7 +78,7 @@ NFC::NFC() : DeviceModule("nfc", "NFC", "NFC", std::bind(&NFC::setup_nfc, this))
             Config::type_id<Config::ConfObject>())
         }
     }), [this](Config &cfg) -> String {
-        Config *tags = cfg.get("authorized_tags");
+        Config *tags = (Config *)cfg.get("authorized_tags");
         for(int tag = 0; tag < tags->count(); ++tag) {
             String id_copy = tags->get(tag)->get("tag_id")->asString();
             id_copy.toUpperCase();
@@ -167,10 +166,10 @@ uint8_t NFC::get_user_id(tag_info_t *tag, uint8_t *tag_idx)
     if (tag->last_seen >= TOKEN_LIFETIME_MS)
         return false;
 
-    Config *auth_tags = config_in_use.get("authorized_tags");
+    Config *auth_tags = (Config *)config_in_use.get("authorized_tags");
 
     for (uint8_t auth_tag_idx = 0; auth_tag_idx < auth_tags->count(); ++auth_tag_idx) {
-        Config *auth_tag = auth_tags->get(auth_tag_idx);
+        Config *auth_tag = (Config *)auth_tags->get(auth_tag_idx);
 
         if (auth_tag->get("tag_type")->asUint() == tag->tag_type && auth_tag->get("tag_id")->asString() == tag->tag_id) {
             *tag_idx = auth_tag_idx;

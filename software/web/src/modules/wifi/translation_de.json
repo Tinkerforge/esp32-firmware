@@ -36,9 +36,11 @@
 
             "static_ip": "IP-Adresse",
             "subnet": "Subnetzmaske",
+            "subnet_placeholder": "Subnetzmaske auswählen...",
             "gateway": "Gateway",
-            "dns": "<span class=\"form-label pr-2\">DNS-Server</span>",
-            "dns2": "<span class=\"form-label pr-2\">Alternativer DNS-Server</span><span class=\"text-muted\">optional</span>",
+            "dns": "DNS-Server",
+            "dns2": "Alternativer DNS-Server",
+            "dns2_muted": "optional",
             "static_ip_invalid": "Die IP-Adresse muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrent durch einen Punkt, bestehen. Zum Beispiel 10.0.0.2",
             "subnet_invalid": "Die Subnetzmaske muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrent durch einen Punkt, bestehen. Zum Beispiel 255.255.255.0",
             "gateway_invalid": "Die IP des Gateways muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrent durch einen Punkt, bestehen. Zum Beispiel 10.0.0.1",
@@ -46,7 +48,8 @@
             "dns2_invalid": "Die IP des alternativen DNS-Servers muss entweder leer bleiben, oder aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrent durch einen Punkt, bestehen. Zum Beispiel 10.0.0.1.",
 
             "ap_settings": "WLAN-Access-Point",
-            "ap_enable": "<span class=\"form-label pr-2\">Access Point</span><span class=\"text-muted\"><a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a></span></label>",
+            "ap_enable": "Access Point",
+            "ap_enable_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
             "ap_enabled": "aktiviert",
             "ap_fallback_only": "nur als Fallback",
             "ap_disabled": "deaktiviert",
@@ -56,7 +59,8 @@
             "ap_hide_ssid_desc_post": " erreichbar",
             "ap_passphrase": "Passphrase",
             "ap_passphrase_invalid": "Die Passphrase muss zwischen 8 und 63 ASCII-Zeichen lang sein.",
-            "ap_channel": "<span class=\"form-label pr-2\">Kanal</span><span class=\"text-muted\">ignoriert wenn WLAN-Verbindung aktiv ist</span>",
+            "ap_channel": "Kanal",
+            "ap_channel_muted": "ignoriert wenn WLAN-Verbindung aktiv ist",
             "ap_channel_auto_select": "automatische Auswahl",
             "ap_ip": "IP-Adresse",
             "ap_subnet": "Subnetzmaske",
@@ -82,7 +86,6 @@
 
             "sta_config_failed": "Speichern der Verbindungseinstellungen fehlgeschlagen.",
             "ap_config_failed": "Speichern der Access Point-Einstellungen fehlgeschlagen.",
-            "no_ap_configured": "Keine Verbindung konfiguriert",
             "sta_reboot_content_changed": "Verbindungseinstellungen",
             "ap_reboot_content_changed": "Access-Point-Einstellungen"
         }

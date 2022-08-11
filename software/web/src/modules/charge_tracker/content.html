@@ -1,9 +1,5 @@
 <div class="tab-pane fade" role="tabpanel" aria-labelledby="sidebar-charge_tracker" id="charge_tracker">
-    <div class="row sticky-under-top mb-3 pt-3">
-        <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-header-shadow">
-            <h1 class="h2" data-i18n="charge_tracker.content.charge_tracker"></h1>
-        </div>
-    </div>
+    <div id="charge_tracker_header"></div>
 
     <div class="form-group row">
         <div class="col-lg-3 col-xl-2">
@@ -28,13 +24,13 @@
             <div class="col-md-6">
                 <div class="input-group">
                     <div class="input-group-prepend"><span class="input-group-text" data-i18n="charge_tracker.content.from"></span></div>
-                    <input id="charge_tracker_start_date_filter" placeholder="..." type="date" class="form-control charge-tracker-input-group-prepend">
+                    <input id="charge_tracker_start_date_filter" type="date" class="form-control charge-tracker-input-group-prepend">
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="input-group">
                     <div class="input-group-prepend charge-tracker-input-group-append"><span class="input-group-text" data-i18n="charge_tracker.content.to"></span></div>
-                    <input id="charge_tracker_end_date_filter" placeholder="..." type="date" class="form-control">
+                    <input id="charge_tracker_end_date_filter" type="date" class="form-control">
                 </div>
             </div>
         </div>
@@ -50,9 +46,7 @@
             <button type="button" id="charge_tracker_download" class="form-control btn btn-primary d-flex align-items-center justify-content-center">
                 <span data-i18n="charge_tracker.content.download_btn" class="mr-2"></span>
                 <span data-feather="download"></span>
-                <span id="charge_tracker_download_spinner" class="ml-2 spinner-border spinner-border-sm" role="status" hidden>
-                    <span class="sr-only">Loading...</span>
-                </span>
+                <span id="charge_tracker_download_spinner" class="ml-2 spinner-border spinner-border-sm" role="status" hidden></span>
             </button>
         </div>
     </div>

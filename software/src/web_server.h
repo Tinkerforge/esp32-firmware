@@ -26,7 +26,8 @@
 
 #include <Arduino.h>
 
-class WebServerRequest {
+class WebServerRequest
+{
 public:
     WebServerRequest(httpd_req_t *req, bool keep_alive = false);
 
@@ -89,7 +90,8 @@ struct WebServerHandler {
     wshUploadCallback uploadCallback;
 };
 
-class WebServer {
+class WebServer
+{
 public:
     WebServer() : httpd(nullptr), handlers()
     {

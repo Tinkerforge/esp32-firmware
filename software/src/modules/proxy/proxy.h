@@ -22,7 +22,8 @@
 #include "net_arduino_esp32/net_arduino_esp32.h"
 #include "config.h"
 
-class Proxy {
+class Proxy
+{
 public:
     Proxy();
     void setup();

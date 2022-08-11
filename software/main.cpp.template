@@ -32,6 +32,10 @@
 #include "web_server.h"
 #include "build_timestamp.h"
 
+#ifndef TF_ESP_PREINIT
+#define TF_ESP_PREINIT
+#endif
+
 const char* DISPLAY_NAME = "{{{display_name}}}";
 
 WebServer server;
@@ -139,9 +143,15 @@ static void register_default_urls(void) {
 void setup(void) {
     Serial.begin(115200);
 
+    logger.setup();
+
     logger.printfln("    **** TINKERFORGE {{{display_name_upper}}} V" BUILD_VERSION_FULL_STR " ****");
     logger.printfln("         %dK RAM SYSTEM   %d HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());
     logger.printfln("READY.");
+
+    logger.printfln("Last reset reason was: %s", tf_reset_reason());
+
+    TF_ESP_PREINIT
 
     if(!mount_or_format_spiffs()) {
         logger.printfln("Failed to mount SPIFFS.");
@@ -169,18 +179,22 @@ void setup(void) {
 }
 
 void loop(void) {
-    /* // Prioritize proxy performance over web interface and WiFi responsitivity */
-    /* tf_hal_tick(&hal, 1000); */
-    /* tf_hal_tick(&hal, 1000); */
-    /* tf_hal_tick(&hal, 1000); */
-    /* tf_hal_tick(&hal, 1000); */
-    /* tf_hal_tick(&hal, 1000); */
-    /* tf_hal_tick(&hal, 1000); */
-    /* tf_hal_tick(&hal, 1000); */
-    /* tf_hal_tick(&hal, 1000); */
+    // Prioritize proxy performance over web interface and WiFi responsitivity
+    /* tf_hal_tick(&hal, 0); */
+    /* tf_hal_tick(&hal, 0); */
+    /* tf_hal_tick(&hal, 0); */
 
     task_scheduler.loop();
+
+    /* tf_hal_tick(&hal, 0); */
+    /* tf_hal_tick(&hal, 0); */
+    /* tf_hal_tick(&hal, 0); */
+
     api.loop();
+
+    /* tf_hal_tick(&hal, 0); */
+    /* tf_hal_tick(&hal, 0); */
+    /* tf_hal_tick(&hal, 0); */
 
     {{{module_loop}}}
 }

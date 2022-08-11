@@ -21,7 +21,8 @@
 
 #include "config.h"
 
-class EMMeter {
+class EMMeter
+{
 public:
     EMMeter();
     void setup();

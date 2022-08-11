@@ -422,8 +422,6 @@ void ChargeTracker::register_urls()
             return;
         }
 
-        request.addResponseHeader("Content-Length", file_size_string.c_str());
-
         request.beginChunkedResponse(200, "application/octet-stream");
         for (int i = this->first_charge_record; i <= this->last_charge_record; ++i) {
             File f = LittleFS.open(chargeRecordFilename(i));

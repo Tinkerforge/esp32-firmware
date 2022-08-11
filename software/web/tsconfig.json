@@ -2,6 +2,12 @@
     "compilerOptions": {
         "noImplicitAny": true,
         "esModuleInterop": true,
-        "target": "es5"
-    }
+        "target": "es6",
+        "jsx": "react",
+        "jsxFactory": "h",
+        "jsxFragmentFactory": "Fragment",
+        "noEmit": true,
+        "moduleResolution": "node"
+    },
+    "include": ["src/typings/*.ts", "src/main.ts"]
 }

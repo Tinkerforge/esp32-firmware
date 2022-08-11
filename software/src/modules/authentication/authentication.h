@@ -21,7 +21,8 @@
 
 #include "config.h"
 
-class Authentication {
+class Authentication
+{
 public:
     Authentication();
     void setup();

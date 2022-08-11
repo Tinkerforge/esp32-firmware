@@ -1,8 +1,26 @@
+/* esp32-firmware
+ * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
 import $ from "jquery";
 
 import * as API from "./api";
-
-declare function __(s: string): string;
+import { __ } from "./translation";
 
 export function reboot() {
     $.ajax({
@@ -123,7 +141,7 @@ export function setNumericInput(id: string, i: number, fractionDigits: number) {
     // Unfortunately, setting the value to a localized number (i.e. with , instead of . for German)
     // does not raise an exception, instead only a warning on the console is shown.
     // So to make everyone happy, we use user agent detection.
-    if (navigator.userAgent.includes("Gecko/")) {
+    if (navigator.userAgent.indexOf("Gecko/") >= 0) {
         (<HTMLInputElement> document.getElementById(id)).value = toLocaleFixed(i, fractionDigits);
     } else {
         (<HTMLInputElement> document.getElementById(id)).value = i.toFixed(fractionDigits);
@@ -325,4 +343,64 @@ export function getShowRebootModalFn(changed_value_name: string) {
         $('#reboot_content_changed').html(changed_value_name);
         $('#reboot').modal('show');
     }
+}
+
+export function timestamp_min_to_date(timestamp_minutes: number, unsynced_string: string) {
+    if (timestamp_minutes == 0) {
+        return unsynced_string;
+    }
+    let date_fmt: any = { year: 'numeric', month: '2-digit', day: '2-digit'};
+    let time_fmt: any = {hour: '2-digit', minute:'2-digit' };
+    let fmt = Object.assign({}, date_fmt, time_fmt);
+
+    let date = new Date(timestamp_minutes * 60000);
+    let result = date.toLocaleString([], fmt);
+
+    let date_result = date.toLocaleDateString([], date_fmt);
+    let time_result = date.toLocaleTimeString([], time_fmt);
+
+    // By default there is a comma between the date and time part of the string.
+    // This comma (even if the whole date is marked as string for CSV) prevents office programs
+    // to understand that this is a date.
+    // Remove this (and only this) comma without assuming anything about the localized string.
+    if (result == date_result + ", " + time_result) {
+        return date_result + " " + time_result;
+    }
+    if (result == time_result + ", " + date_result) {
+        return time_result + " " + date_result;
+    }
+
+    return result;
+}
+
+export function reset_static_ip_config_validation(ip_id: string, subnet_id: string, gateway_id: string) {
+    $(`#${gateway_id}`).removeClass("is-invalid");
+    $(`#${gateway_id} + .invalid-feedback`).html(__("util.gateway_invalid"));
+
+    $(`#${subnet_id}`).removeClass("is-invalid");
+    $(`#${subnet_id} + .invalid-feedback`).html(__("util.subnet_invalid"));
+    return true;
+}
+
+export function validate_static_ip_config(ip_id: string, subnet_id: string, gateway_id: string, dhcp: boolean) {
+    if (dhcp)
+        return true;
+
+    let ip = $(`#${ip_id}`).val().toString().split(".").map((x, i, _) => parseInt(x, 10) * (1 << (8 * (3 - i)))).reduce((a, b) => a+b);
+    let subnet = $(`#${subnet_id}`).val().toString().split(".").map((x, i, _) => parseInt(x, 10) * (1 << (8 * (3 - i)))).reduce((a, b) => a+b);
+    let gateway = $(`#${gateway_id}`).val().toString().split(".").map((x, i, _) => parseInt(x, 10) * (1 << (8 * (3 - i)))).reduce((a, b) => a+b);
+
+    let result = true;
+    if (gateway != 0 && (ip & subnet) != (gateway & subnet)) {
+        $(`#${gateway_id}`).addClass("is-invalid");
+        $(`#${gateway_id} + .invalid-feedback`).html(__("util.gateway_out_of_subnet"));
+        result = false;
+    }
+
+    if ((ip & subnet) == (0x7F000001 & subnet)) {
+        $(`#${subnet_id}`).addClass("is-invalid");
+        $(`#${subnet_id} + .invalid-feedback`).html(__("util.subnet_captures_localhost"));
+        result = false;
+    }
+    return result;
 }

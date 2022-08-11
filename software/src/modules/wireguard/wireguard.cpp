@@ -30,7 +30,8 @@ extern TaskScheduler task_scheduler;
 
 #include "mbedtls/base64.h"
 
-String check_key(String key, bool enable) {
+String check_key(String key, bool enable)
+{
     if (key.length() > 0) {
         if (key.length() != 44)
             return " had unexpected length. Expecting a base64 encoded string of length 44.";
@@ -40,7 +41,7 @@ String check_key(String key, bool enable) {
             return " contained unexpected character. Expecting a base64 encoded string.";
         if (written != 32)
             return " decodes to a key of unexpected length. Expecting a base64 encoded string that decodes to a 32 byte long key.";
-    } else if(enable) {
+    } else if (enable) {
         return " is empty, but Wireguard shall be enabed. Set this key to be able to enable Wireguard.";
     }
     return "";
@@ -116,7 +117,8 @@ Wireguard::Wireguard()
     });
 }
 
-void Wireguard::start_wireguard() {
+void Wireguard::start_wireguard()
+{
     static bool done = false;
     if (done)
         return;

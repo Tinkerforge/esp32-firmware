@@ -21,7 +21,8 @@
 
 #include "config.h"
 
-class ChargeManager {
+class ChargeManager
+{
 public:
     ChargeManager();
     void setup();

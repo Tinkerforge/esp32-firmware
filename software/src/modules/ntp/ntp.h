@@ -21,7 +21,8 @@
 
 #include "config.h"
 
-class NTP {
+class NTP
+{
 public:
     NTP();
     void setup();

@@ -8,7 +8,6 @@
         "content": {
             "nfc": "NFC-Freigabe",
 
-            "save": "Speichern",
             "authorized_tags": "Berechtigte Tags",
 
             "add_tag_modal_title": "Tag hinzufügen",
@@ -19,7 +18,7 @@
             "add_tag_modal_abort": "Verwerfen",
             "add_tag_modal_save": "Hinzufügen",
             "last_seen": "Erkannt vor ",
-            "last_seen_suffix": "{{{empty_text}}}",
+            "last_seen_suffix": "",
             "select_type": "Tag-Typ auswählen...",
             "type_0": "Mifare Classic",
             "type_1": "NFC Forum Typ 1",

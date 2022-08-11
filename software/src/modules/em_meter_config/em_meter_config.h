@@ -22,7 +22,8 @@
 #include "config.h"
 #include "device_module.h"
 
-class EMMeterConfig {
+class EMMeterConfig
+{
 public:
     EMMeterConfig();
     void setup();

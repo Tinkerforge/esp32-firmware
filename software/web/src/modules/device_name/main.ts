@@ -23,8 +23,7 @@ import feather from "../../ts/feather";
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-
-declare function __(s: string): string;
+import { __ } from "../../ts/translation";
 
 function update_config() {
     let config = API.get('info/display_name');

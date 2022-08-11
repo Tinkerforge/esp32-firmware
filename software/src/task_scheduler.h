@@ -44,7 +44,8 @@ struct Task {
 
 bool compare(const Task &a, const Task &b);
 
-class TaskScheduler {
+class TaskScheduler
+{
 public:
     TaskScheduler() : tasks(&compare)
     {
@@ -55,8 +56,8 @@ public:
 
     bool initialized = false;
 
-    void scheduleOnce(std::function<void(void)> &&fn, uint32_t delay);
-    void scheduleWithFixedDelay(std::function<void(void)> &&fn, uint32_t first_delay, uint32_t delay);
+    void scheduleOnce(std::function<void(void)> &&fn, uint32_t delay_ms);
+    void scheduleWithFixedDelay(std::function<void(void)> &&fn, uint32_t first_delay_ms, uint32_t delay_ms);
 
 private:
     std::mutex task_mutex;

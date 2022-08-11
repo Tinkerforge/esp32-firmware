@@ -89,12 +89,13 @@ typedef struct {
 } EnergyManagerAllData;
 
 class EnergyManager : public DeviceModule<TF_WARPEnergyManager,
-                                 warp_energy_manager_bricklet_firmware_bin_data,
-                                 warp_energy_manager_bricklet_firmware_bin_length,
-                                 tf_warp_energy_manager_create,
-                                 tf_warp_energy_manager_get_bootloader_mode,
-                                 tf_warp_energy_manager_reset,
-                                 tf_warp_energy_manager_destroy>  {
+                                          warp_energy_manager_bricklet_firmware_bin_data,
+                                          warp_energy_manager_bricklet_firmware_bin_length,
+                                          tf_warp_energy_manager_create,
+                                          tf_warp_energy_manager_get_bootloader_mode,
+                                          tf_warp_energy_manager_reset,
+                                          tf_warp_energy_manager_destroy>
+{
 public:
     EnergyManager();
     void setup();

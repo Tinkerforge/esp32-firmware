@@ -21,10 +21,10 @@
 
 #include "config.h"
 
-
 #include <WireGuard-ESP32.h>
 
-class Wireguard {
+class Wireguard
+{
 public:
     Wireguard();
     void setup();

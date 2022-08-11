@@ -36,9 +36,11 @@
 
             "static_ip": "IP address",
             "subnet": "Subnet mask",
+            "subnet_placeholder": "Select subnet mask...",
             "gateway": "Gateway",
-            "dns": "<span class=\"form-label pr-2\">DNS server</span>",
-            "dns2": "<span class=\"form-label pr-2\">Alternative DNS server</span><span class=\"text-muted\">optional</span>",
+            "dns": "DNS server",
+            "dns2": "Alternative DNS server",
+            "dns2_muted": "optional",
             "static_ip_invalid": "The IP address must have four groups between 0 and 255 separated with a dot. For example 10.0.0.2",
             "subnet_invalid": "The subnet mask must have four groups between 0 and 255 separated with a dot. For example 255.255.255.0",
             "gateway_invalid": "The gateway IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1",
@@ -46,7 +48,8 @@
             "dns2_invalid": "The alternative DNS server IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1, or be empty.",
 
             "ap_settings": "WiFi Access Point",
-            "ap_enable": "<span class=\"form-label pr-2\">Access point</span><span class=\"text-muted\"><a href=\"{{{manual_url}}}\">see manual for details</a></span></label>",
+            "ap_enable": "Access point",
+            "ap_enable_muted": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
             "ap_enabled": "activated",
             "ap_fallback_only": "as fallback only",
             "ap_disabled": "deactivated",
@@ -56,7 +59,8 @@
             "ap_hide_ssid_desc_post": ".",
             "ap_passphrase": "Passphrase",
             "ap_passphrase_invalid": "The passphrase must be 8-63 ASCII characters.",
-            "ap_channel": "<span class=\"form-label pr-2\">Channel</span><span class=\"text-muted\">ignored if WiFi connection is active</span>",
+            "ap_channel": "Channel",
+            "ap_channel_muted": "ignored if WiFi connection is active",
             "ap_channel_auto_select": "selected automatically",
             "ap_ip": "IP address",
             "ap_subnet": "Subnet mask",
@@ -82,7 +86,6 @@
 
             "sta_config_failed": "Failed to save connection configuration.",
             "ap_config_failed": "Failed to save access point configuration.",
-            "no_ap_configured": "No connection configured",
             "sta_reboot_content_changed": "connection configuration",
             "ap_reboot_content_changed": "access point configuration"
         }

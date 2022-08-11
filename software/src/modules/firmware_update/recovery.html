@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Recovery interface</title>
@@ -7,6 +8,7 @@
             margin-bottom: 0.5rem;
         }
     </style>
+    <link rel="shortcut icon" href="data:image/gif;base64,R0lGODlhAQABAAAAADs=" />
 </head>
 
 <h3 style="margin-top: 0.5rem;">Firmware update</h3>
@@ -58,7 +60,7 @@ function update() {
     let progress = document.getElementById("p_firmware");
     xhr.onreadystatechange = function (e) {
         if (xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
-            progress.innerHTML = e.responseText
+            progress.innerHTML = xhr.responseText
         } else if (xhr.status == 0)
             progress.innerHTML = "Server closed the connection abruptly!";
         else
@@ -67,7 +69,7 @@ function update() {
 
     xhr.upload.addEventListener("progress", function (e) {
         if (e.lengthComputable)
-            progress.innerHTML = e.loaded / e.total * 100 + "% (" + e.loaded + " / " + e.total + ")";
+            progress.innerHTML = (e.loaded / e.total * 100).toFixed(2) + "% (" + e.loaded + " / " + e.total + ")";
     }, false);
 
     xhr.open("POST", "/flash_firmware", true);
