@@ -27,16 +27,16 @@
 
 #include "meter_defs.h"
 
-class ModbusReader : public DeviceModule<TF_RS485,
-                                         rs485_bricklet_firmware_bin_data,
-                                         rs485_bricklet_firmware_bin_length,
-                                         tf_rs485_create,
-                                         tf_rs485_get_bootloader_mode,
-                                         tf_rs485_reset,
-                                         tf_rs485_destroy>
+class ModbusMeter : public DeviceModule<TF_RS485,
+                                        rs485_bricklet_firmware_bin_data,
+                                        rs485_bricklet_firmware_bin_length,
+                                        tf_rs485_create,
+                                        tf_rs485_get_bootloader_mode,
+                                        tf_rs485_reset,
+                                        tf_rs485_destroy>
 {
 public:
-    ModbusReader();
+    ModbusMeter();
     void setup();
     void register_urls();
     void loop();

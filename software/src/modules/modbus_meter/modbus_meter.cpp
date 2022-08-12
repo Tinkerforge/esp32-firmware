@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "modbus_reader.h"
+#include "modbus_meter.h"
 
 #include "bindings/errors.h"
 
@@ -50,7 +50,7 @@ static MeterInfo *supported_meters[] = {
 
 static MeterInfo *meter_in_use = nullptr;
 
-ModbusReader::ModbusReader() : DeviceModule("rs485", "RS485", "energy meter", std::bind(&ModbusReader::setupRS485, this))
+ModbusMeter::ModbusMeter() : DeviceModule("rs485", "RS485", "modbus meter", std::bind(&ModbusMeter::setupRS485, this))
 {
     error_counters = Config::Object({
         {"meter", Config::Uint32(0)},
@@ -60,33 +60,33 @@ ModbusReader::ModbusReader() : DeviceModule("rs485", "RS485", "energy meter", st
 
     user_data.expected_request_id = 0;
     user_data.value_to_write = nullptr;
-    user_data.done = ModbusReader::UserDataDone::DONE;
+    user_data.done = ModbusMeter::UserDataDone::DONE;
 }
 
 void read_meter_type_handler(struct TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, uint16_t *holding_registers, uint16_t holding_registers_length, void *user_data) {
-    ModbusReader::UserData *ud = (ModbusReader::UserData *) user_data;
+    ModbusMeter::UserData *ud = (ModbusMeter::UserData *) user_data;
 
     if (request_id != ud->expected_request_id || ud->expected_request_id == 0) {
         logger.printfln("Unexpected request id %u, expected %u", request_id, ud->expected_request_id);
-        ud->done = ModbusReader::UserDataDone::ERROR;
+        ud->done = ModbusMeter::UserDataDone::ERROR;
         return;
     }
 
     if (exception_code != 0) {
         logger.printfln("Request %u: Exception code %d", request_id, exception_code);
-        ud->done = ModbusReader::UserDataDone::ERROR;
+        ud->done = ModbusMeter::UserDataDone::ERROR;
         return;
     }
 
     if (ud->value_to_write == nullptr) {
         logger.printfln("value to write was nullptr");
-        ud->done = ModbusReader::UserDataDone::ERROR;
+        ud->done = ModbusMeter::UserDataDone::ERROR;
         return;
     }
 
     memcpy(ud->value_to_write, holding_registers, holding_registers_length * sizeof(uint16_t));
 
-    ud->done = ModbusReader::UserDataDone::DONE;
+    ud->done = ModbusMeter::UserDataDone::DONE;
 
     uint16_t meter_id = *ud->value_to_write;
 
@@ -106,23 +106,23 @@ void read_meter_type_handler(struct TF_RS485 *rs485, uint8_t request_id, int8_t 
 }
 
 void read_input_registers_handler(struct TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, uint16_t *input_registers, uint16_t input_registers_length, void *user_data) {
-    ModbusReader::UserData *ud = (ModbusReader::UserData *)user_data;
+    ModbusMeter::UserData *ud = (ModbusMeter::UserData *)user_data;
 
     if (request_id != ud->expected_request_id || ud->expected_request_id == 0) {
         logger.printfln("Unexpected request id %u, expected %u", request_id, ud->expected_request_id);
-        ud->done = ModbusReader::UserDataDone::ERROR;
+        ud->done = ModbusMeter::UserDataDone::ERROR;
         return;
     }
 
     if (exception_code != 0) {
         logger.printfln("Request %u: Exception code %d", request_id, exception_code);
-        ud->done = ModbusReader::UserDataDone::ERROR;
+        ud->done = ModbusMeter::UserDataDone::ERROR;
         return;
     }
 
     if (ud->value_to_write == nullptr) {
         logger.printfln("value to write was nullptr");
-        ud->done = ModbusReader::UserDataDone::ERROR;
+        ud->done = ModbusMeter::UserDataDone::ERROR;
         return;
     }
 
@@ -134,16 +134,16 @@ void read_input_registers_handler(struct TF_RS485 *rs485, uint8_t request_id, in
     if (energy_meter.state.get("state")->asUint() != 2)
         energy_meter.updateMeterState(2);
 
-    ud->done = ModbusReader::UserDataDone::DONE;
+    ud->done = ModbusMeter::UserDataDone::DONE;
 }
 
 void write_multiple_registers_handler(struct TF_RS485 *device, uint8_t request_id, int8_t exception_code, void *user_data)
 {
-    ModbusReader::UserData *ud = (ModbusReader::UserData *)user_data;
+    ModbusMeter::UserData *ud = (ModbusMeter::UserData *)user_data;
 
     if (request_id != ud->expected_request_id || ud->expected_request_id == 0) {
         logger.printfln("Unexpected request id %u, expected %u", request_id, ud->expected_request_id);
-        ud->done = ModbusReader::UserDataDone::ERROR;
+        ud->done = ModbusMeter::UserDataDone::ERROR;
         return;
     }
 
@@ -158,14 +158,14 @@ void write_multiple_registers_handler(struct TF_RS485 *device, uint8_t request_i
     // making sure that it is a small enough value and retrying the reset if not.
     if (exception_code != 0 && exception_code != TF_RS485_EXCEPTION_CODE_TIMEOUT) {
         logger.printfln("Exception code %d", exception_code);
-        ud->done = ModbusReader::UserDataDone::ERROR;
+        ud->done = ModbusMeter::UserDataDone::ERROR;
         return;
     }
 
-    ud->done = ModbusReader::UserDataDone::DONE;
+    ud->done = ModbusMeter::UserDataDone::DONE;
 }
 
-void ModbusReader::setupRS485()
+void ModbusMeter::setupRS485()
 {
     if (!this->DeviceModule::setup_device()) {
         return;
@@ -205,7 +205,7 @@ void ModbusReader::setupRS485()
     initialized = true;
 }
 
-void ModbusReader::checkRS485State()
+void ModbusMeter::checkRS485State()
 {
     uint8_t mode = 0;
     int result = tf_rs485_get_mode(&device, &mode);
@@ -223,7 +223,7 @@ void ModbusReader::checkRS485State()
     }
 }
 
-void ModbusReader::setup()
+void ModbusMeter::setup()
 {
     setupRS485();
     if (!device_found)
@@ -234,7 +234,7 @@ void ModbusReader::setup()
     }, 5 * 60 * 1000, 5 * 60 * 1000);
 }
 
-void ModbusReader::register_urls()
+void ModbusMeter::register_urls()
 {
     api.addState("meter/error_counters", &error_counters, {}, 1000);
 
@@ -245,7 +245,7 @@ void ModbusReader::register_urls()
     this->DeviceModule::register_urls();
 }
 
-const RegRead *ModbusReader::getNextRead(bool *trigger_fast_read_done, bool *trigger_slow_read_done)
+const RegRead *ModbusMeter::getNextRead(bool *trigger_fast_read_done, bool *trigger_slow_read_done)
 {
     *trigger_fast_read_done = false;
     *trigger_slow_read_done = false;
@@ -283,7 +283,7 @@ const RegRead *ModbusReader::getNextRead(bool *trigger_fast_read_done, bool *tri
     return result;
 }
 
-void ModbusReader::loop()
+void ModbusMeter::loop()
 {
     this->DeviceModule::loop();
     if (!initialized || meter_in_use == nullptr)
