@@ -120,8 +120,8 @@ void set_user_current(uint16_t current)
 
 float get_energy()
 {
-    bool meter_avail = energy_meter.state.get("state")->asUint() == 2;
-    return !meter_avail ? NAN : energy_meter.values.get("energy_abs")->asFloat();
+    bool meter_avail = meter.state.get("state")->asUint() == 2;
+    return !meter_avail ? NAN : meter.values.get("energy_abs")->asFloat();
 }
 
 #define USER_SLOT_INFO_VERSION 1

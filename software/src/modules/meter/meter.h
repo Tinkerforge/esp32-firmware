@@ -23,17 +23,17 @@
 
 #include "value_history.h"
 
-#define ALL_VALUES_COUNT 85
+#define METER_ALL_VALUES_COUNT 85
 
-#define ENERGY_METER_TYPE_NONE 0
-#define ENERGY_METER_TYPE_SDM72DM 1
-#define ENERGY_METER_TYPE_SDM630 2
-#define ENERGY_METER_TYPE_SDM72DMV2 3
+#define METER_TYPE_NONE 0
+#define METER_TYPE_SDM72DM 1
+#define METER_TYPE_SDM630 2
+#define METER_TYPE_SDM72DMV2 3
 
-class EnergyMeter
+class Meter
 {
 public:
-    EnergyMeter();
+    Meter();
     void setup();
     void register_urls();
     void loop();
@@ -45,7 +45,7 @@ public:
     void updateMeterPhases(bool phases_connected[3], bool phases_active[3]);
 
     void updateMeterAllValues(int idx, float val);
-    void updateMeterAllValues(float values[ALL_VALUES_COUNT]);
+    void updateMeterAllValues(float values[METER_ALL_VALUES_COUNT]);
     void registerResetCallback(std::function<void(void)> cb);
 
     void setupMeter(uint8_t meter_type);
@@ -61,8 +61,6 @@ public:
     ConfigRoot last_reset;
 
     ValueHistory power_hist;
-
-    char uid[7] = {0};
 
     std::vector<std::function<void(void)>> reset_callbacks;
 };

@@ -95,14 +95,14 @@ void read_meter_type_handler(struct TF_RS485 *rs485, uint8_t request_id, int8_t 
             continue;
 
         meter_in_use = supported_meters[i];
-        energy_meter.updateMeterState(2, meter_in_use->meter_type);
+        meter.updateMeterState(2, meter_in_use->meter_type);
         logger.printfln("%s detected.", meter_in_use->meter_name);
         return;
     }
 
     logger.printfln("Found unknown meter type 0x%x. Assuming this is a SDM72DM.", meter_id);
     meter_in_use = supported_meters[0];
-    energy_meter.updateMeterState(2, meter_in_use->meter_type);
+    meter.updateMeterState(2, meter_in_use->meter_type);
 }
 
 void read_input_registers_handler(struct TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, uint16_t *input_registers, uint16_t input_registers_length, void *user_data) {
@@ -128,11 +128,11 @@ void read_input_registers_handler(struct TF_RS485 *rs485, uint8_t request_id, in
 
     memcpy(ud->value_to_write, input_registers, input_registers_length * sizeof(uint16_t));
 
-    //if (energy_meter.state.get("state")->asUint() == 0 && value.f == 0)
-    //    energy_meter.updateMeterState(1);
+    //if (meter.state.get("state")->asUint() == 0 && value.f == 0)
+    //    meter.updateMeterState(1);
 
-    if (energy_meter.state.get("state")->asUint() != 2)
-        energy_meter.updateMeterState(2);
+    if (meter.state.get("state")->asUint() != 2)
+        meter.updateMeterState(2);
 
     ud->done = ModbusMeter::UserDataDone::DONE;
 }
@@ -238,7 +238,7 @@ void ModbusMeter::register_urls()
 {
     api.addState("meter/error_counters", &error_counters, {}, 1000);
 
-    energy_meter.registerResetCallback([this]() {
+    meter.registerResetCallback([this]() {
         this->reset_requested = true;
     });
 

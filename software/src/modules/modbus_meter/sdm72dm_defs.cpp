@@ -23,7 +23,7 @@ static void sdm72dm_fast_read_done(const uint16_t *all_regs)
     float fast_values[3];
     convert_to_float(all_regs, fast_values, sdm72dm_registers_fast_to_read, sizeof(sdm72dm_registers_fast_to_read) / sizeof(sdm72dm_registers_fast_to_read[0]));
 
-    energy_meter.updateMeterValues(fast_values[Power], fast_values[EnergyRel], fast_values[EnergyAbs]);
+    meter.updateMeterValues(fast_values[Power], fast_values[EnergyRel], fast_values[EnergyAbs]);
 }
 
 static void sdm72dm_slow_read_done(const uint16_t *all_regs)

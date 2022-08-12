@@ -43,7 +43,7 @@ static void sdm72dmv2_fast_read_done(const uint16_t *all_regs)
     convert_to_float(all_regs, fast_values, sdm72dmv2_registers_fast_to_read, sizeof(sdm72dmv2_registers_fast_to_read) / sizeof(sdm72dmv2_registers_fast_to_read[0]));
 
     // TODO: Handle reset
-    energy_meter.updateMeterValues(fast_values[Power], fast_values[EnergyRel], fast_values[EnergyAbs]);
+    meter.updateMeterValues(fast_values[Power], fast_values[EnergyRel], fast_values[EnergyAbs]);
 
     bool phases_active[3] = {
         fast_values[CurrentPhase0] > PHASE_ACTIVE_CURRENT_THRES,
@@ -57,26 +57,26 @@ static void sdm72dmv2_fast_read_done(const uint16_t *all_regs)
         fast_values[VoltagePhase2] > PHASE_CONNECTED_VOLTAGE_THRES
     };
 
-    energy_meter.updateMeterPhases(phases_connected, phases_active);
+    meter.updateMeterPhases(phases_connected, phases_active);
 }
 
 static void sdm72dmv2_slow_read_done(const uint16_t *all_regs)
 {
-    //float all_values[ALL_VALUES_COUNT];
+    //float all_values[METER_ALL_VALUES_COUNT];
     //convert_to_float(all_regs, all_values, sdm72dmv2_registers_to_read, sizeof(sdm72dmv2_registers_to_read) / sizeof(sdm72dmv2_registers_to_read[0]));
 
     size_t read = 0;
-    for (size_t i = 0; i < ALL_VALUES_COUNT; ++i) {
+    for (size_t i = 0; i < METER_ALL_VALUES_COUNT; ++i) {
         if (!sdm_registers_available_in_sdm72v2[i])
             continue;
 
         float val;
         convert_to_float(all_regs, &val, &sdm72dmv2_registers_to_read[read], 1),
-        energy_meter.updateMeterAllValues(i, val);
+        meter.updateMeterAllValues(i, val);
         ++read;
     }
 
-    //energy_meter.updateMeterAllValues(all_values);
+    //meter.updateMeterAllValues(all_values);
 }
 
 MeterInfo sdm72dmv2 {

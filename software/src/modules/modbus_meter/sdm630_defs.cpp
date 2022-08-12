@@ -49,7 +49,7 @@ static void sdm630_fast_read_done(const uint16_t *all_regs)
     convert_to_float(all_regs, fast_values, sdm630_registers_fast_to_read, sizeof(sdm630_registers_fast_to_read) / sizeof(sdm630_registers_fast_to_read[0]));
 
     // TODO: Handle reset
-    energy_meter.updateMeterValues(fast_values[Power], fast_values[EnergyAbs] - sdm630_reset.asFloat(), fast_values[EnergyAbs]);
+    meter.updateMeterValues(fast_values[Power], fast_values[EnergyAbs] - sdm630_reset.asFloat(), fast_values[EnergyAbs]);
 
     bool phases_active[3] = {
         fast_values[CurrentPhase0] > PHASE_ACTIVE_CURRENT_THRES,
@@ -63,15 +63,15 @@ static void sdm630_fast_read_done(const uint16_t *all_regs)
         fast_values[VoltagePhase2] > PHASE_CONNECTED_VOLTAGE_THRES
     };
 
-    energy_meter.updateMeterPhases(phases_connected, phases_active);
+    meter.updateMeterPhases(phases_connected, phases_active);
 }
 
 static void sdm630_slow_read_done(const uint16_t *all_regs)
 {
-    float all_values[ALL_VALUES_COUNT];
+    float all_values[METER_ALL_VALUES_COUNT];
     convert_to_float(all_regs, all_values, sdm630_registers_to_read, sizeof(sdm630_registers_to_read) / sizeof(sdm630_registers_to_read[0]));
 
-    energy_meter.updateMeterAllValues(all_values);
+    meter.updateMeterAllValues(all_values);
 }
 
 MeterInfo sdm630 {
@@ -85,7 +85,7 @@ MeterInfo sdm630 {
     sdm630_fast_read_done,
     "SDM630",
     [](){
-        sdm630_reset.updateFloat(energy_meter.values.get("energy_abs")->asFloat());
+        sdm630_reset.updateFloat(meter.values.get("energy_abs")->asFloat());
         api.writeConfig("meter/sdm630_reset", &sdm630_reset);
     }
 };
