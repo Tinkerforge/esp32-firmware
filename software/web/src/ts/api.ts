@@ -99,8 +99,9 @@ export function default_updater<T extends keyof ConfigMap>(topic: T, exclude?: A
         console.error(`save btn not found #${prefix}_save_button`);
     }
 
-    if (has_save_button && !save_btn.prop("disabled"))
-        return;
+    if (has_save_button && !save_btn.prop("disabled")) {
+        return config;
+    }
 
     if (form.length != 0) {
         form.removeClass('was-validated');
