@@ -24,7 +24,12 @@ import feather from "../../ts/feather";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
+import { h, render } from "preact";
 import { __ } from "../../ts/translation";
+import { ConfigPageHeader } from "../../ts/config_page_header";
+
+render(<ConfigPageHeader prefix="wifi_sta" title={__("wifi.content.sta_settings")} />, $('#wifi_sta_header')[0]);
+render(<ConfigPageHeader prefix="wifi_ap" title={__("wifi.content.ap_settings")} />, $('#wifi_ap_header')[0]);
 
 function wifi_symbol(rssi: number) {
     if(rssi >= -60)
@@ -74,7 +79,7 @@ function update_wifi_scan_results(data: Readonly<WifiInfo[]>) {
     $.each(data, (i, v: WifiInfo) => {
         $(`#wifi_scan_result_${i}`).on("click", (event) => {
             event.preventDefault();
-            connect_to_ap(v.ssid, v.bssid, v.encryption, <boolean>tups[2*i+1]);
+            connect_to_ap(v.ssid, v.bssid, v.encryption, tups[2*i+1] as boolean);
         });
     });
 
