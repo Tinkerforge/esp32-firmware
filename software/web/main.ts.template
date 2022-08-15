@@ -42,6 +42,11 @@ $('.navbar-collapse a').on("click", function () {
 
 let first_module_init = true;
 
+function show_page() {
+    $('#nav-list').removeAttr("style");
+    $('#main').removeAttr("style");
+}
+
 function update_modules() {
     let module_init = API.get('info/modules');
     for (let m of modules) {
@@ -55,10 +60,12 @@ function update_modules() {
             // FIXME: brute force solution to allow hidden meter module in
             //        energy manager firmware. should be solved in a better way
         }
-        else if (hash == "" || elem.length == 0 || elem.prop("hidden")) {
+        else if (hash == "" || hash == '#status' || elem.length == 0 || elem.prop("hidden")) {
             window.location.hash = "#status";
+            show_page();
             return;
         }
+        elem.one('shown.bs.tab', show_page);
         elem.click();
         elem.parents(".nav-nested.collapse").collapse('show');
         first_module_init = false;
@@ -111,8 +118,7 @@ function login() {
 }
 
 function setup_normal() {
-    window.setTimeout(() => $('#nav-list').removeAttr("style"), 200);
-    window.setTimeout(() => $('#main').removeAttr("style"), 200);
+    window.setTimeout(show_page, 1000);
 
     $('#sidebar-login').prop('hidden', true);
     $('#sidebar-status').addClass('active');
@@ -122,8 +128,7 @@ function setup_normal() {
 }
 
 function setup_login() {
-    window.setTimeout(() => $('#nav-list').removeAttr("style"), 200);
-    window.setTimeout(() => $('#main').removeAttr("style"), 200);
+    window.setTimeout(show_page, 1000);
 
     $('#sidebar-status').prop('hidden', true);
     $('#sidebar-login').addClass('active');
