@@ -130,15 +130,15 @@ export function default_updater<T extends keyof ConfigMap>(topic: T, exclude?: A
         }
 
         if (typeof value == "boolean") {
-            elem.prop("checked", value);
+            elem.prop("checked", value).trigger("change");
             continue;
         }
 
         if (typeof value == "string" || typeof value == "number") {
             if (elem.is("input") || elem.is("select"))
-                elem.val(value);
+                elem.val(value).trigger("change");
             else if (elem.is("span"))
-                elem.text(value);
+                elem.text(value).trigger("change");
             else
                 console.error(`Can't update ${id} from ${topic}[${key}] = ${value} (of type ${typeof value}): ${id} is not an input, select or span`);
         }
