@@ -1,20 +1,10 @@
 {
-    "network": {
+    "network_start": {
         "status": {},
         "navbar": {
-            "network_start": "Network",
-            "network": "General"
+            "network_start": "Network"
         },
-        "content": {
-            "network": "Network",
-            "hostname": "Hostname",
-            "hostname_invalid": "The hostname must contain only upper and lower case letters A-Z and a-z the digits 0-9 or dashes. For example warp-A1c",
-            "enable_mdns": "mDNS enabled",
-            "enable_mdns_desc": null
-        },
-        "script": {
-            "save_failed": "Failed to save the network settings",
-            "reboot_content_changed": "network settings"
-        }
+        "content": {},
+        "script": {}
     }
 }
