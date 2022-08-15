@@ -34,23 +34,23 @@ function update_em_meter_config() {
 
 function update_em_meter_config_state() {
     let state = API.get('energy_manager/state');
-    util.update_button_group("btn_group_em_meter_config_meter_available", state.energy_meter_type == 0 ? 0 : 1);
+    util.update_button_group("btn_group_em_meter_config_meter_available", Math.max(state.energy_meter_type - 1, 0));
     $('#em_meter_config_meter_power').val(util.toLocaleFixed(state.energy_meter_power, 0) + " W");
     $('#em_meter_config_meter_energy_rel').val(util.toLocaleFixed(state.energy_meter_energy_rel, 3) + " kWh");
     $('#em_meter_config_meter_energy_abs').val(util.toLocaleFixed(state.energy_meter_energy_abs, 3) + " kWh");
-    $('#em-meter-config-sdm630-details').prop('hidden', state.energy_meter_type == 0);
+    $('#em-meter-config-sdm-details').prop('hidden', state.energy_meter_type == 0);
 }
 
 // Only show the relevant html elements, drop-down boxes and options
 function update_em_meter_config_html_collapse(value: string) {
     let state: { [id: string]: "show" | "hide" } = {
-        '#em-meter-config-sdm630': 'hide',
+        '#em-meter-config-sdm': 'hide',
         '#em-meter-config-sunspec': 'hide',
         '#em-meter-config-modbus-tcp': 'hide'
     }
 
     if (value == "1") {
-        state['#em-meter-config-sdm630'] = 'show';
+        state['#em-meter-config-sdm'] = 'show';
     }
     else if (value == "2") {
         state['#em-meter-config-sunspec'] = 'show';
