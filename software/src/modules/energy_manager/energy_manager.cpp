@@ -95,7 +95,7 @@ void EnergyManager::apply_defaults()
 void EnergyManager::handle_relay_config_if_input(uint8_t input)
 {
     if (input > 1) {
-        logger.printfln("Unkown handle_relay_config_if input: %u", input);
+        logger.printfln("Unknown handle_relay_config_if input: %u", input);
         return;
     }
 
@@ -155,7 +155,7 @@ void EnergyManager::update_io()
         }
     }
 
-    // We "over-sample" the two imputs compared to the other data in the all_data struct
+    // We "over-sample" the two inputs compared to the other data in the all_data struct
     // to make sure that we can always react in a timely manner to input changes
     int rc = tf_warp_energy_manager_get_input(&device, all_data.input);
     if (rc != TF_E_OK) {
