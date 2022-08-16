@@ -547,8 +547,11 @@ int tf_net_create(TF_Net *net, const char* listen_addr, uint16_t port, const cha
     net->send_buf_timeout_us = 20000;
     net->recv_timeout_ms = 60000;
     net->auth_secret = auth_secret;
-    wifi_mode_t _wifi_mode;
 
+    if (auth_secret == nullptr)
+        return 0;
+
+    wifi_mode_t _wifi_mode;
     if (esp_wifi_get_mode(&_wifi_mode) == ESP_ERR_WIFI_NOT_INIT) {
         tf_hal_log_error("tf_net_create: Authentication requested but wifi is not initialized. Server nonce could be pseudo-random!");
     }
