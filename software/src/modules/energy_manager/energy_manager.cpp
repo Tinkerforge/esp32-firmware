@@ -72,8 +72,8 @@ EnergyManager::EnergyManager() : DeviceModule("energy_manager", "WARP Energy Man
     energy_manager_config = Config::Object({
         {"excess_charging_enable", Config::Bool(false)},
         {"phase_switching", Config::Uint8(2)},
-        {"mains_power_reception", Config::Float(22)},
-        {"minimum_charging", Config::Float(1.4)},
+        {"mains_power_reception", Config::Uint32(22000)},
+        {"minimum_charging", Config::Uint32(1400)},
         {"relay_config", Config::Uint8(0)},
         {"relay_config_if", Config::Uint8(0)},
         {"relay_config_is", Config::Uint8(0)},
@@ -181,12 +181,11 @@ void EnergyManager::update_energy()
         return;
     }
 
-    const float power_at_house_connection = all_data.power;
-    const float power_max_from_grid       = energy_manager_config_in_use.get("mains_power_reception")->asFloat();
-    const float power_minimum_charging    = energy_manager_config_in_use.get("minimum_charging")->asFloat();
-    const bool  is_3phase                 = all_data.contactor_value;
-
-    const float power_allowed             = power_max_from_grid - ((power_at_house_connection < 0) ? power_at_house_connection : 0);
+    const int32_t power_at_house_connection = all_data.power * 1000; // watt
+    const int32_t power_max_from_grid       = energy_manager_config_in_use.get("mains_power_reception")->asUint(); // watt
+    const int32_t power_minimum_charging    = energy_manager_config_in_use.get("minimum_charging")->asUint(); // watt
+    const bool    is_3phase                 = all_data.contactor_value;
+    const int32_t power_allowed             = power_max_from_grid - ((power_at_house_connection < 0) ? power_at_house_connection : 0); // watt
 
     if (power_allowed < power_minimum_charging) {
         // TODO: Turn charging off if running
@@ -195,9 +194,9 @@ void EnergyManager::update_energy()
 
     uint32_t ma_allowed;
     if (is_3phase) { // 3phase
-        ma_allowed = (uint32_t)(1000 * power_allowed * 10000 / (3 * 230.0));
+        ma_allowed = power_allowed * 1000 / (3 * 230);
     } else { // 1phase
-        ma_allowed = (uint32_t)(1000 * power_allowed * 10000 / (1 * 230.0));
+        ma_allowed = power_allowed * 1000 / (1 * 230);
     }
 
     // We can not charge with less than 6A.
