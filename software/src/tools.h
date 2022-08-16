@@ -27,6 +27,8 @@
 
 #include "bindings/hal_common.h"
 
+#include "esp_log.h"
+
 const char *tf_reset_reason();
 
 bool deadline_elapsed(uint32_t deadline_ms);
@@ -58,3 +60,12 @@ bool is_valid_subnet_mask(IPAddress subnet);
 void led_blink(int8_t led_pin, int interval, int blinks_per_interval, int off_time_ms);
 
 uint16_t internet_checksum(const uint8_t* data, size_t length);
+
+class LogSilencer
+{
+public:
+    LogSilencer();
+    ~LogSilencer();
+
+    vprintf_like_t old_fn;
+};

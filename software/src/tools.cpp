@@ -164,26 +164,23 @@ int check(int rc, const char *msg)
     return rc;
 }
 
-class LogSilencer
-{
-public:
-    LogSilencer(const char *tag) : tag(tag), level_to_restore(ESP_LOG_NONE)
-    {
-        level_to_restore = esp_log_level_get(tag);
-        esp_log_level_set(tag, ESP_LOG_NONE);
-    }
+int vprintf_dev_null(const char *format, va_list ap) {
+    return 0;
+}
 
-    ~LogSilencer()
-    {
-        esp_log_level_set(tag, level_to_restore);
-    }
-    const char *tag;
-    esp_log_level_t level_to_restore;
-};
+LogSilencer::LogSilencer() : old_fn(nullptr)
+{
+    old_fn = esp_log_set_vprintf(vprintf_dev_null);
+}
+
+LogSilencer::~LogSilencer()
+{
+    esp_log_set_vprintf(old_fn);
+}
 
 bool is_spiffs_available(const char *part_label, const char *base_path)
 {
-    LogSilencer ls{"SPIFFS"};
+    LogSilencer ls;
 
     esp_vfs_spiffs_conf_t conf = {
         .base_path = base_path,
@@ -207,7 +204,7 @@ bool is_spiffs_available(const char *part_label, const char *base_path)
 
 bool is_littlefs_available(const char *part_label, const char *base_path)
 {
-    LogSilencer ls{"esp_littlefs"};
+    LogSilencer ls;
 
     esp_vfs_littlefs_conf_t conf = {
         .base_path = base_path,
@@ -301,8 +298,7 @@ bool mount_or_format_spiffs(void)
 
         logger.printfln("Formatting core dump partition as LittleFS.");
         {
-            LogSilencer ls{"esp_littlefs"};
-            LogSilencer ls2{"ARDUINO"};
+            LogSilencer ls;
             LittleFS.begin(false, "/conf_backup", 10, "coredump");
         }
         LittleFS.format();
@@ -326,8 +322,7 @@ bool mount_or_format_spiffs(void)
 
         logger.printfln("Formatting data partition as LittleFS.");
         {
-            LogSilencer ls{"esp_littlefs"};
-            LogSilencer ls2{"ARDUINO"};
+            LogSilencer ls;
             LittleFS.begin(false, "/spiffs", 10, "spiffs");
         }
         LittleFS.format();
@@ -351,7 +346,7 @@ bool mount_or_format_spiffs(void)
     if (!is_littlefs_available("spiffs", "/spiffs")) {
         logger.printfln("Data partition is not mountable as LittleFS. Formatting now.");
         {
-            LogSilencer ls{"esp_littlefs"};
+            LogSilencer ls;
             LittleFS.begin(false, "/spiffs", 10, "spiffs");
         }
         LittleFS.format();
