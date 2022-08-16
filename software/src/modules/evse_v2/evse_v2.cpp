@@ -131,7 +131,7 @@ EVSEV2::EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE 2.0", std::bind(&EVSEV
     });
 
     Config *evse_charging_slot = new Config{Config::Object({
-        {"max_current", Config::Uint8(0)},
+        {"max_current", Config::Uint32(0)},
         {"active", Config::Bool(false)},
         {"clear_on_disconnect", Config::Bool(false)}
     })};
