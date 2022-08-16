@@ -151,7 +151,7 @@ void EnergyManager::update_io()
             case RELAY_CONFIG_IF_INPUT4:          handle_relay_config_if_input(1);          break;
             case RELAY_CONFIG_IF_PHASE_SWITCHING: handle_relay_config_if_phase_switching(); break;
             case RELAY_CONFIG_IF_METER:           handle_relay_config_if_meter();           break;
-            default: logger.printfln("Unkown RELAY_CONFIG_IF: %u", relay_config_if);        break;
+            default: logger.printfln("Unknown RELAY_CONFIG_IF: %u", relay_config_if);        break;
         }
     }
 
@@ -169,7 +169,7 @@ void EnergyManager::update_io()
             case INPUT_CONFIG_DEACTIVATED:                                                         break;
             case INPUT_CONFIG_RULES_BASED:     handle_input_config_rule_based(input);              break;
             case INPUT_CONFIG_CONTACTOR_CHECK: handle_input_config_contactor_check(input);         break;
-            default: logger.printfln("Unkown INPUT_CONFIG: %u for input %u", input_config, input); break;
+            default: logger.printfln("Unknown INPUT_CONFIG: %u for input %u", input_config, input); break;
         }
     }
 }
