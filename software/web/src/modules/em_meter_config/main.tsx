@@ -65,8 +65,6 @@ function update_em_meter_config_html_collapse(value: string) {
 }
 
 export function init() {
-    console.log("em-meter-config init");
-
     API.register_config_form('energy_manager/meter_config', {
             error_string: __("em_meter_config.script.config_failed"),
             reboot_string: __("em_meter_config.script.reboot_content_changed")
