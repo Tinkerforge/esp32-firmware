@@ -58,8 +58,8 @@
             "input4": "Eingang 4",
             "open": "Offen",
             "phase_switching": "Phasenumschaltung",
-            "greater0": "&gte; 0 kW",
-            "smaller0": "&lte; 0 kW"
+            "greater0": "≥ 0 kW",
+            "smaller0": "≤ 0 kW"
         },
         "script": {
             "loading_debug_report": "Lade Debug-Report",

@@ -58,8 +58,8 @@
             "input4": "FIXME",
             "open": "FIXME",
             "phase_switching": "FIXME",
-            "greater0": "&gte; 0 kW",
-            "smaller0": "&lte; 0 kW"
+            "greater0": "≥ 0 kW",
+            "smaller0": "≤ 0 kW"
         },
         "script": {
             "loading_debug_report": "FIXME",
