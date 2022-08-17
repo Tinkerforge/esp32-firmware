@@ -632,7 +632,7 @@ void ChargeManager::distribute_current()
 
 void ChargeManager::register_urls()
 {
-    api.addPersistentConfig("charge_manager/config", &charge_manager_config, {"password"}, 1000);
+    api.addPersistentConfig("charge_manager/config", &charge_manager_config, {}, 1000);
     api.addState("charge_manager/state", &charge_manager_state, {}, 1000);
     api.addState("charge_manager/available_current", &charge_manager_available_current, {}, 1000);
     api.addCommand("charge_manager/available_current_update", &charge_manager_available_current, {}, [this](){
