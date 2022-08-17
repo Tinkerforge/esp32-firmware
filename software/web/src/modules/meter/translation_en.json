@@ -16,7 +16,7 @@
             "power": "Power draw",
             "energy": "Energy consumption",
             "energy_since_reset": "since last reset",
-            "energy_lifetime": "since manufactoring of the energy meter",
+            "energy_lifetime": "since manufacturing of the energy meter",
 
             "phases_active": "Active phases",
             "phases_active_desc": "L1, L2, L3",
@@ -74,16 +74,16 @@
             "detailed_frequency_of_supply_voltages_desc": "",
 
             "detailed_total_import_kwh": "Active energy (Import)",
-            "detailed_total_import_kwh_desc": "transfered to vehicle",
+            "detailed_total_import_kwh_desc": "transferred to vehicle",
 
             "detailed_total_export_kwh": "Active energy (Export)",
-            "detailed_total_export_kwh_desc": "transfered from vehicle",
+            "detailed_total_export_kwh_desc": "transferred from vehicle",
 
             "detailed_total_import_kvarh": "Reactive energy (Import)",
-            "detailed_total_import_kvarh_desc": "transfered to vehicle",
+            "detailed_total_import_kvarh_desc": "transferred to vehicle",
 
             "detailed_total_export_kvarh": "Reactive energy (Export)",
-            "detailed_total_export_kvarh_desc": "transfered from vehicle",
+            "detailed_total_export_kvarh_desc": "transferred from vehicle",
 
             "detailed_total_vah": "Total apparent power",
             "detailed_total_vah_desc": "",
@@ -161,19 +161,19 @@
             "detailed_total_kvarh_sum_desc": "Import + Export of all phases",
 
             "detailed_import_kwh": "Active energies (Import)",
-            "detailed_import_kwh_desc": "L1, L2, L3; transfered to vehicle",
+            "detailed_import_kwh_desc": "L1, L2, L3; transferred to vehicle",
 
             "detailed_export_kwh": "Active energies (Export)",
-            "detailed_export_kwh_desc": "L1, L2, L3; transfered from vehicle",
+            "detailed_export_kwh_desc": "L1, L2, L3; transferred from vehicle",
 
             "detailed_total_kwh": "Total active energies",
             "detailed_total_kwh_desc": "L1, L2, L3; import + export",
 
             "detailed_import_kvarh": "Reactive energies (Import)",
-            "detailed_import_kvarh_desc": "L1, L2, L3; transfered to vehicle",
+            "detailed_import_kvarh_desc": "L1, L2, L3; transferred to vehicle",
 
             "detailed_export_kvarh": "Reactive energies (Export)",
-            "detailed_export_kvarh_desc": "L1, L2, L3; transfered from vehicle",
+            "detailed_export_kvarh_desc": "L1, L2, L3; transferred from vehicle",
 
             "detailed_total_kvarh": "Total reactive energies",
             "detailed_total_kvarh_desc": "L1, L2, L3; import + export"

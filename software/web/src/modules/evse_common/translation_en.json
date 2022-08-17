@@ -123,7 +123,7 @@
             "stop_charging_failed": "Failed to stop charging",
             "tab_close_warning": "Charge log capture will be aborted if this tab is closed.",
             "loading_debug_report": "Loading debug report",
-            "loading_debug_report_failed": "Loading debug reprot failed",
+            "loading_debug_report_failed": "Loading debug report failed",
             "loading_event_log": "Loading event log",
             "loading_event_log_failed": "Loading event log failed",
             "starting_debug": "Starting charge log capture",
@@ -135,7 +135,7 @@
 
             "by": "by",
 
-            "save_failed": "(De)Activating the charge mananagement failed",
+            "save_failed": "(De)Activating the charge management failed",
 
             "slot_disabled": "not active",
             "slot_blocks": "blocks",
