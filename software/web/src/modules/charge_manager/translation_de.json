@@ -39,8 +39,8 @@
             "add_charger_modal_found": "Gefundene Wallboxen",
 
             "disabled": "Lastmanagement deaktiviert",
-            "wrong_version": "Falsche Firmwareversion",
-            "invalid_box": "Box ungültig",
+            "wrong_version": "Firmwareversion inkompatibel",
+            "invalid_box": "Wallbox ungültig",
 
             "managed_boxes": "Kontrollierte Wallboxen"
         },
@@ -89,7 +89,7 @@
             "display_name": "Anzeigename",
             "host": "Host",
 
-            "scan_failed": "Scan failed"
+            "scan_failed": "Scan fehlgeschlagen"
         }
     }
 }

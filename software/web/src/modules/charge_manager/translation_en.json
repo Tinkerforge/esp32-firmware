@@ -39,8 +39,8 @@
             "add_charger_modal_found": "Discovered chargers",
 
             "disabled": "Charge Management disabled",
-            "wrong_version": "Wrong firmware version",
-            "invalid_box": "Invalid box",
+            "wrong_version": "firmware version incompatible",
+            "invalid_box": "Charger invalid",
 
             "managed_boxes": "Managed chargers"
         },
