@@ -27,6 +27,7 @@
 #include <lwip/netdb.h>
 
 #include "mdns.h"
+#include "TFJson.h"
 
 #include <functional>
 
@@ -127,12 +128,11 @@ private:
 
     void start_scan();
 
-    bool check_txt_entries(mdns_result_t *entry);
-
-    String display_name;
-    String error;
+    #define SCAN_RESULT_ERROR_OK 0
+    #define SCAN_RESULT_ERROR_FIRMWARE_MISMATCH 1
+    #define SCAN_RESULT_ERROR_MANAGEMENT_DISABLED 2
+    void add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer &json);
+    size_t build_scan_result_json(mdns_result_t *list, char *buf, size_t len);
 
     ConfigRoot scan_cfg;
-
-    uint8_t num_services = 0;
 };

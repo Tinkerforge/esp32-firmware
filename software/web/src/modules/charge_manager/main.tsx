@@ -291,19 +291,19 @@ function update_scan_results(data: Readonly<ServCharger[]>)
             $(`#charge_manager_config_charger_scan_result_${i}`).prop("disabled", false);
             $(`#disabled_${i}`).prop("hidden", true);
 
-            if (v.error == "1")
+            if (v.error == 1)
             {
                 $(`#charge_manager_config_charger_scan_result_${i}`).prop("disabled", true);
                 $(`#disabled_${i}`).prop("hidden", false);
                 $(`#disabled_${i}`).text(__('charge_manager.content.wrong_version'));
             }
-            else if (v.error == "2")
+            else if (v.error == 2)
             {
                 $(`#charge_manager_config_charger_scan_result_${i}`).prop("disabled", true);
                 $(`#disabled_${i}`).prop("hidden", false);
                 $(`#disabled_${i}`).text(__('charge_manager.content.disabled'));
             }
-            else if (v.error == "3")
+            else if (v.error == 3)
             {
                 $(`#charge_manager_config_charger_scan_result_${i}`).prop("disabled", true);
                 $(`#disabled_${i}`).prop("hidden", false);

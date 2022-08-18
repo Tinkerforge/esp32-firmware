@@ -28,6 +28,8 @@
 #include <ESPmDNS.h>
 #include "NetBIOS.h"
 
+#include "TFJson.h"
+
 extern TaskScheduler task_scheduler;
 extern API api;
 extern EventLog logger;
@@ -400,38 +402,65 @@ void CMNetworking::start_scan()
     });
 }
 
-bool CMNetworking::check_txt_entries(mdns_result_t *entry)
+void CMNetworking::add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer &json)
 {
-    String version = "0";
-    String enabled = "false";
-    display_name = "[no_display_name]";
-    error = "3";
+    const char *version = "0";
+    const char *enabled = "false";
+    const char *display_name = "[no_display_name]";
 
     if (entry->txt_count < 3)
-        return false;
+        return;
 
-    if (String(entry->txt[0].key) == "enabled" && entry->txt_value_len[0] > 0)
-        enabled = entry->txt[0].value;
-    else
-        return false;
+    int found = 0;
+    for(size_t i = 0; i < entry->txt_count; ++i) {
+        if (String(entry->txt[i].key) == "enabled" && entry->txt_value_len[i] > 0) {
+            enabled = entry->txt[i].value;
+            ++found;
+        }
+        else if (String(entry->txt[i].key) == "display_name" && entry->txt_value_len[i] > 0) {
+            display_name = entry->txt[i].value;
+            ++found;
+        }
+        else if (String(entry->txt[i].key) == "version" && entry->txt_value_len[i] > 0) {
+            version = entry->txt[i].value;
+            ++found;
+        }
+    }
 
-    if (String(entry->txt[1].key) == "display_name" && entry->txt_value_len[1] > 0)
-        display_name = entry->txt[1].value;
-    else
-        return false;
+    if (found < 3)
+        return;
 
-    if (String(entry->txt[2].key) == "version" && entry->txt_value_len[2] > 0)
-        version = entry->txt[2].value;
-    else
-        return false;
+    uint8_t error = SCAN_RESULT_ERROR_OK;
 
-    if ((version == String(PROTOCOL_VERSION)) == 0)
-        error = "1";
-    else if (enabled == "false")
-        error = "2";
-    else
-        error = "0";
-    return true;
+    if (String(version) != String(PROTOCOL_VERSION))
+        error = SCAN_RESULT_ERROR_FIRMWARE_MISMATCH;
+    else if (String(enabled) != "true")
+        error = SCAN_RESULT_ERROR_MANAGEMENT_DISABLED;
+
+    json.addObject();
+        json.add("hostname", entry->hostname);
+
+        char buf[32] = "[no_address]";
+        if (entry->addr && entry->addr->addr.type == IPADDR_TYPE_V4)
+            esp_ip4addr_ntoa(&entry->addr->addr.u_addr.ip4, buf, ARRAY_SIZE(buf));
+        json.add("ip", buf);
+
+        json.add("display_name", display_name);
+        json.add("error", error);
+    json.endObject();
+}
+
+size_t CMNetworking::build_scan_result_json(mdns_result_t *list, char *buf, size_t len) {
+    TFJsonSerializer json{buf, len};
+    json.addArray();
+
+    while (list != nullptr) {
+        add_scan_result_entry(list, json);
+        list = list->next;
+    }
+
+    json.endArray();
+    return json.end();
 }
 
 String CMNetworking::get_scan_results()
@@ -440,42 +469,13 @@ String CMNetworking::get_scan_results()
     if (scan_results == nullptr)
         return "In progress or not started";
 
-    String result = "No services found.";
+    size_t payload_size = build_scan_result_json(scan_results, nullptr, 0);
 
-    mdns_result_t *list = scan_results;
+    StringWithSettableLength result;
+    result.reserve(payload_size);
 
-    result = "";
-
-    result += "[";
-
-    for (int i = 0; list; i++)
-    {
-        if (!check_txt_entries(list))
-        {
-            list = list->next;
-            continue;
-        }
-
-        if (i != 0)
-            result += ", ";
-
-        char buff[32] = "[no address]";
-        if (list->addr && list->addr->addr.type == IPADDR_TYPE_V4)
-           esp_ip4addr_ntoa(&list->addr->addr.u_addr.ip4, buff, 32);
-
-        result += "{\"hostname\": \"";
-        result += list->hostname;
-        result += "\", \"ip\": \"";
-        result += buff;
-        result += "\", \"display_name\": \"";
-        result += display_name;
-        result += "\", \"error\": \"";
-        result += error;
-        result += "\"}";
-
-        list = list->next;
-    }
-    result += "]";
+    build_scan_result_json(scan_results, result.begin(), payload_size);
+    result.setLength(payload_size);
 
     return result;
 }
