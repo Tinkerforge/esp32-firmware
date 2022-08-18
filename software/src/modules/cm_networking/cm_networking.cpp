@@ -33,26 +33,6 @@ extern API api;
 extern EventLog logger;
 extern WebServer server;
 
-#if MODULE_EVSE_AVAILABLE() || MODULE_EVSE_V2_AVAILABLE()
-
-static void managed_state_task()
-{
-    MDNS.addServiceTxt("tf-warp-cm", "udp", "display_name", device_name.display_name.get("display_name")->asString());
-#if MODULE_EVSE_AVAILABLE()
-    if (evse.evse_management_enabled.get("enabled")->asBool())
-        MDNS.addServiceTxt("tf-warp-cm", "udp", "enabled", "true");
-    else
-        MDNS.addServiceTxt("tf-warp-cm", "udp", "enabled", "false");
-#elif MODULE_EVSE_V2_AVAILABLE()
-    if (evse_v2.evse_management_enabled.get("enabled")->asBool())
-        MDNS.addServiceTxt("tf-warp-cm", "udp", "enabled", "true");
-    else
-        MDNS.addServiceTxt("tf-warp-cm", "udp", "enabled", "false");
-#endif
-}
-
-#endif
-
 CMNetworking::CMNetworking()
 {
     scan_cfg = Config::Null();
@@ -79,10 +59,25 @@ void CMNetworking::register_urls()
         request.send(200, "application/json; charset=utf-8", result.c_str());
     });
 
+// If we don't have the evse or evse_v2 module, but have cm_networking, this is probably an energy manager.
+// We only want to announce manageable chargers, not managers.
 #if MODULE_EVSE_AVAILABLE() || MODULE_EVSE_V2_AVAILABLE()
     MDNS.addService("tf-warp-cm", "udp", 34127);
     MDNS.addServiceTxt("tf-warp-cm", "udp", "version", String(PROTOCOL_VERSION));
-    task_scheduler.scheduleWithFixedDelay(managed_state_task, 0, 10000);
+    task_scheduler.scheduleWithFixedDelay([](){
+        #if MODULE_DEVICE_NAME_AVAILABLE()
+            MDNS.addServiceTxt("tf-warp-cm", "udp", "display_name", device_name.display_name.get("display_name")->asString());
+        #endif
+
+            bool management_enabled = false;
+        #if MODULE_EVSE_AVAILABLE()
+            management_enabled = evse.evse_management_enabled.get("enabled")->asBool();
+        #elif MODULE_EVSE_V2_AVAILABLE()
+            management_enabled = evse_v2.evse_management_enabled.get("enabled")->asBool();
+        #endif
+
+        MDNS.addServiceTxt("tf-warp-cm", "udp", "enabled", management_enabled ? "true" : "false");
+    }, 0, 10000);
 #endif
 }
 
@@ -368,10 +363,8 @@ bool CMNetworking::send_client_update(uint8_t iec61851_state,
 
 bool CMNetworking::check_results()
 {
-    if (scan && !mdns_query_async_get_results(scan, 200, &scan_results))
-    {
-        return false;
-    }
+    if (!mdns_query_async_get_results(scan, 0, &scan_results))
+        return false; // This should never happen as check_results is only called if we are notified the search has finished.
 
     mdns_query_async_delete(scan);
 
@@ -385,11 +378,6 @@ bool CMNetworking::check_results()
     return true;
 }
 
-void notify_task(mdns_search_once_t *search)
-{
-    task_scheduler.scheduleOnce([](){cm_networking.check_results()}, 0);
-}
-
 void CMNetworking::start_scan()
 {
     if (scanning)
@@ -401,8 +389,11 @@ void CMNetworking::start_scan()
         mdns_query_results_free(scan_results);
         scan_results = nullptr;
     }
+
     results_ready = false;
-    scan = mdns_query_async_new(NULL, "_tf-warp-cm", "_udp", MDNS_TYPE_PTR, 1000, INT8_MAX, notify_task);
+    scan = mdns_query_async_new(NULL, "_tf-warp-cm", "_udp", MDNS_TYPE_PTR, 1000, INT8_MAX, [](mdns_search_once_t *search) {
+        task_scheduler.scheduleOnce([](){ cm_networking.check_results(); }, 0);
+    });
 }
 
 bool CMNetworking::check_txt_entries(mdns_result_t *entry)
@@ -443,7 +434,7 @@ String CMNetworking::get_scan_results()
 {
     if (!results_ready)
         return "In progress";
-    if (!scan_results)
+    if (!scan_results != nullptr)
         return "Failed";
 
     String result = "No services found.";
