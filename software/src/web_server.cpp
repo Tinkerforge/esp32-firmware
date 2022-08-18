@@ -25,6 +25,8 @@
 #include "task_scheduler.h"
 #include "digest_auth.h"
 
+#include "tools.h"
+
 #include <memory>
 
 extern TaskScheduler task_scheduler;
@@ -371,22 +373,13 @@ void WebServerRequest::requestAuthentication()
     send(401);
 }
 
-class CustomString : public String
-{
-public:
-    void setLength(int len)
-    {
-        setLen(len);
-    }
-};
-
 String WebServerRequest::header(const char *header_name)
 {
     auto buf_len = httpd_req_get_hdr_value_len(req, header_name) + 1;
     if (buf_len == 1)
         return String("");
 
-    CustomString result;
+    StringWithSettableLength result;
     result.reserve(buf_len);
     char *buf = result.begin();
     /* Copy null terminated value string into buffer */

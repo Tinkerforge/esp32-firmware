@@ -69,3 +69,14 @@ public:
 
     vprintf_like_t old_fn;
 };
+
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+
+class StringWithSettableLength : public String
+{
+public:
+    void setLength(int len)
+    {
+        setLen(len);
+    }
+};
