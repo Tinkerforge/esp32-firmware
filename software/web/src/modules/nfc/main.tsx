@@ -235,6 +235,8 @@ outer_loop:
 function update_users_config() {
     let cfg = API.get('users/config');
     let nfc_config = API.get('nfc/config');
+    if (nfc_config == null)
+        return;
 
     let options = cfg.users.map((x) => `<option value=${x.id}>${x.id == 0 ? __("nfc.script.not_assigned") : x.display_name}</option>`).join("");
     $('.nfc-user-select').empty().append(options);
