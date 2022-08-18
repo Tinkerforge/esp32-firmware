@@ -27,8 +27,11 @@ import * as API from "../../ts/api";
 import { h, render } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { ConfigPageHeader } from "../../ts/config_page_header";
+import { FixedScaleAxis } from "chartist";
 
 render(<ConfigPageHeader prefix="charge_manager" title={__("charge_manager.content.charge_manager")} />, $('#charge_manager_header')[0]);
+
+type ServCharger = Exclude<API.getType['charge_manager/scan_result'], string>[0];
 
 let charger_state_count = -1;
 
@@ -233,7 +236,117 @@ function save_charge_manager_config() {
        .then(() => $('#charge_manager_config_save_button').prop("disabled", true));
 }
 
+function is_in_use(v: ServCharger): Boolean
+{
+    for (let i = 0; $(`#charge_manager_config_charger_${i}_host`).length > 0; i++)
+    {
+        if ($(`#charge_manager_config_charger_${i}_host`).val().toString() == v.ip)
+            return true;
+    }
+    return false
+}
+
+function is_in_list(a: ServCharger)
+{
+    let i = 0;
+    while ($(`#hostname_id_${i}`).length > 0)
+    {
+        if ($(`#hostname_id_${i}`).text() == a.hostname + ".local")
+        {
+            return i;
+        }
+        i++;
+    }
+    return -1;
+}
+
+function update_scan_results(data: Readonly<ServCharger[]>)
+{
+    $.each(data, (i, v: ServCharger) => {
+        let prev_element = i;
+        if (is_in_use(v) == false)
+        {
+            let num_elements = is_in_list(v);
+            if (num_elements == -1)
+            {
+                i = $('#charge_manager_config_charger_scan_results').children().length;
+                $('#charge_manager_config_charger_scan_results').append(`<button type="button" id="charge_manager_config_charger_scan_result_${i}" class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between">
+                    <span class="h5 text-left" id="charger_scan_id_${i}"></span>
+                    <span class="text-right" id="disabled_${i}" style="color:red" data-i18n="charge_manager.content.disabled" hidden></span>
+                </div>
+                <div class="d-flex w-100 justify-content-between">
+                    <span id="hostname_id_${i}"></span>
+                    <span id="ip_${i}"></span>
+                </div>
+                </button>`);
+            }
+            else
+                i = num_elements;
+
+            $(`#charger_scan_id_${i}`).text(v.display_name);
+            $(`#hostname_id_${i}`).text(v.hostname + ".local");
+            $(`#ip_${i}`).text(v.ip);
+
+            $(`#charge_manager_config_charger_scan_result_${i}`).prop("disabled", false);
+            $(`#disabled_${i}`).prop("hidden", true);
+
+            if (v.error == "1")
+            {
+                $(`#charge_manager_config_charger_scan_result_${i}`).prop("disabled", true);
+                $(`#disabled_${i}`).prop("hidden", false);
+                $(`#disabled_${i}`).text(__('charge_manager.content.wrong_version'));
+            }
+            else if (v.error == "2")
+            {
+                $(`#charge_manager_config_charger_scan_result_${i}`).prop("disabled", true);
+                $(`#disabled_${i}`).prop("hidden", false);
+                $(`#disabled_${i}`).text(__('charge_manager.content.disabled'));
+            }
+            else if (v.error == "3")
+            {
+                $(`#charge_manager_config_charger_scan_result_${i}`).prop("disabled", true);
+                $(`#disabled_${i}`).prop("hidden", false);
+                $(`#disabled_${i}`).text(__('charge_manager.content.invalid_box'));
+            }
+
+            $(`#charge_manager_config_charger_scan_result_${i}`).on("click", () => {
+                $("#charge_manager_config_charger_new_name").val(v.display_name);
+                $("#charge_manager_config_charger_new_host").val(v.ip);
+            })
+        }
+        i = prev_element;
+    })
+    // if ($('#charge_manager_add_charger_modal').is(':visible') == false)
+    //     $('#charge_manager_config_charger_scan_results').children().remove();
+}
+
+let scan_timeout: number = null;
+function scan_services()
+{
+    API.call('charge_manager/scan', {}, __("charge_manager.script.scan_failed"))
+        .then(() => {
+            if (scan_timeout != null)
+                window.clearTimeout(scan_timeout);
+
+            scan_timeout = window.setTimeout(function () {
+                scan_timeout = null;
+
+                $.get("/network/scan_result").done(function (data: ServCharger[]) {
+                    update_scan_results(data);
+                    });
+            }, 12000);
+        })
+}
+
 export function init() {
+    var intervalID: number;
+    $('#charge_manager_add_charger_modal').on('shown.bs.modal', scan_services);
+    $('#charge_manager_add_charger_modal').on('shown.bs.modal', () => intervalID = setInterval(scan_services, 10000));
+    $('#charge_manager_add_charger_modal').on('hidden.bs.modal', () => {
+        $('#charge_manager_config_charger_scan_results').children().remove();
+        clearInterval(intervalID);
+    });
     $('#charge_manager_config_form').on('input', () => $('#charge_manager_config_save_button').prop("disabled", false));
 
     $('#charge_manager_config_form').on('submit', function (this: HTMLFormElement, event: Event) {
@@ -295,6 +408,13 @@ export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('charge_manager/state', update_charge_manager_state);
     source.addEventListener('charge_manager/config', () => update_charge_manager_config(undefined, false));
     source.addEventListener('charge_manager/available_current', () => update_available_current());
+    source.addEventListener('charge_manager/scan_result', (e) => {
+        window.clearTimeout(scan_timeout);
+        scan_timeout = null;
+
+        if (typeof e.data !== "string")
+            update_scan_results(e.data);
+    }, false)
 }
 
 export function update_sidebar_state(module_init: any) {

@@ -36,6 +36,11 @@
             "add_charger_modal_host": "IP-Adresse (Hostnamen werden noch nicht unterstützt)",
             "add_charger_modal_abort": "Verwerfen",
             "add_charger_modal_save": "Hinzufügen",
+            "add_charger_modal_found": "Gefundene Wallboxen",
+
+            "disabled": "Lastmanagement deaktiviert",
+            "wrong_version": "Falsche Firmwareversion",
+            "invalid_box": "Box ungültig",
 
             "managed_boxes": "Kontrollierte Wallboxen"
         },
@@ -82,7 +87,9 @@
             "reboot_content_changed": "Lastmanagement-Einstellungen",
 
             "display_name": "Anzeigename",
-            "host": "Host"
+            "host": "Host",
+
+            "scan_failed": "Scan failed"
         }
     }
 }

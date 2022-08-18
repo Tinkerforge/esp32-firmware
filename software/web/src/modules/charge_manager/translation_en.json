@@ -36,6 +36,11 @@
             "add_charger_modal_host": "IP address (Hostnames are not supported yet)",
             "add_charger_modal_abort": "Discard",
             "add_charger_modal_save": "Save",
+            "add_charger_modal_found": "Discovered chargers",
+
+            "disabled": "Charge Management disabled",
+            "wrong_version": "Wrong firmware version",
+            "invalid_box": "Invalid box",
 
             "managed_boxes": "Managed chargers"
         },
@@ -82,7 +87,9 @@
 
             "reboot_content_changed": "charge manager configuration",
             "display_name": "Display name",
-            "host": "Host"
+            "host": "Host",
+
+            "scan_failed": "Scan failed"
         }
     }
 }

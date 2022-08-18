@@ -26,6 +26,8 @@
 #include "lwip/sys.h"
 #include <lwip/netdb.h>
 
+#include "mdns.h"
+
 #include <functional>
 
 #define CHARGE_MANAGER_PORT 34127
@@ -104,6 +106,16 @@ public:
                             uint16_t supported_current,
                             bool managed);
 
+    String get_scan_results();
+
+    bool check_results();
+
+    bool results_ready = false;
+    bool scanning = false;
+
+    mdns_search_once_t *scan;
+    mdns_result_t *results = 0;
+
 private:
     int manager_sock;
     struct sockaddr_in dest_addrs[MAX_CLIENTS] = {};
@@ -111,4 +123,15 @@ private:
     int client_sock;
     bool source_addr_valid = false;
     struct sockaddr_storage source_addr;
+
+    void start_scan();
+
+    bool check_txt_entries(mdns_result_t *entry);
+
+    String display_name;
+    String error;
+
+    ConfigRoot scan_cfg;
+
+    uint8_t num_services = 0;
 };

@@ -23,7 +23,37 @@
 
 #include "task_scheduler.h"
 
+#include "modules.h"
+
+#include "nvs_flash.h"
+#include <ESPmDNS.h>
+#include "NetBIOS.h"
+
 extern TaskScheduler task_scheduler;
+extern API api;
+extern EventLog logger;
+extern WebServer server;
+
+#if MODULE_EVSE_AVAILABLE() || MODULE_EVSE_V2_AVAILABLE()
+
+static std::function<void()> managed_state_task()
+{
+    MDNS.addServiceTxt("tf-warp-cm", "udp", "display_name", device_name.display_name.get("display_name")->asString());
+#if MODULE_EVSE_AVAILABLE()
+    if (evse.evse_management_enabled.get("enabled")->asBool())
+        MDNS.addServiceTxt("tf-warp-cm", "udp", "enabled", "true");
+    else
+        MDNS.addServiceTxt("tf-warp-cm", "udp", "enabled", "false");
+#elif MODULE_EVSE_V2_AVAILABLE()
+    if (evse_v2.evse_management_enabled.get("enabled")->asBool())
+        MDNS.addServiceTxt("tf-warp-cm", "udp", "enabled", "true");
+    else
+        MDNS.addServiceTxt("tf-warp-cm", "udp", "enabled", "false");
+#endif
+    return 0;
+}
+
+#endif
 
 CMNetworking::CMNetworking()
 {
@@ -31,11 +61,37 @@ CMNetworking::CMNetworking()
 
 void CMNetworking::setup()
 {
+
+    scan_cfg = Config::Null();
+
+    ESP_ERROR_CHECK(nvs_flash_init());
+    ESP_ERROR_CHECK(esp_netif_init());
+    // ESP_ERROR_CHECK(esp_event_loop_create_default());
+    ESP_ERROR_CHECK(mdns_init());
+
     initialized = true;
 }
 
 void CMNetworking::register_urls()
 {
+    api.addCommand("charge_manager/scan", &scan_cfg, {}, [this]() {
+        start_scan();
+    }, true);
+
+    server.on("/charge_manager/scan_result", HTTP_GET, [this](WebServerRequest request) {
+        String result = cm_networking.get_scan_results();
+
+        if (result == "In progess" || result == "Failed")
+            request.send(200, "text/plain; charset=utf-8", result.c_str());
+        
+        request.send(200, "application/json; charset=utf-8", result.c_str());
+    });
+
+#if MODULE_EVSE_AVAILABLE() || MODULE_EVSE_V2_AVAILABLE()
+    MDNS.addService("tf-warp-cm", "udp", 34127);
+    MDNS.addServiceTxt("tf-warp-cm", "udp", "version", String(PROTOCOL_VERSION));
+    task_scheduler.scheduleWithFixedDelay(managed_state_task, 0, 10000);
+#endif
 }
 
 void CMNetworking::loop()
@@ -316,4 +372,134 @@ bool CMNetworking::send_client_update(uint8_t iec61851_state,
     }
 
     return true;
+}
+
+bool CMNetworking::check_results()
+{
+    logger.printfln("Checking for mDNS results");
+    if (scan && !mdns_query_async_get_results(scan, 200, &results))
+    {
+        task_scheduler.scheduleOnce([this]() {
+            check_results();
+        }, 500);
+        return false;
+    }
+
+    mdns_query_async_delete(scan);
+
+    scanning = false;
+    results_ready = true;
+
+#if MODULE_WS_AVAILABLE()
+    String s = get_scan_results();
+    ws.pushRawStateUpdate(s, "charge_manager/scan_result");
+#endif
+    return true;
+}
+
+void notify_task(mdns_search_once_t *search)
+{
+    task_scheduler.scheduleOnce([]() {
+            cm_networking.check_results();
+        }, 500);
+}
+
+void CMNetworking::start_scan()
+{
+    if (scanning)
+        return;
+    scanning = true;
+    logger.printfln("Starting mDNS scan");
+    if (results)
+    {
+        mdns_query_results_free(results);
+        results = 0;
+    }
+    results_ready = false;
+    scan = mdns_query_async_new(NULL, "_tf-warp-cm", "_udp", MDNS_TYPE_PTR, 5000, INT8_MAX, notify_task);
+}
+
+bool CMNetworking::check_txt_entries(mdns_result_t *entry)
+{
+    String version = "0";
+    String enabled = "false";
+    display_name = "[no_display_name]";
+    error = "3";
+
+    if (entry->txt_count < 3)
+        return false;
+
+    if (String(entry->txt[0].key) == "enabled" && entry->txt_value_len[0] > 0)
+        enabled = entry->txt[0].value;
+    else
+        return false;
+
+    if (String(entry->txt[1].key) == "display_name" && entry->txt_value_len[1] > 0)
+        display_name = entry->txt[1].value;
+    else
+        return false;
+
+    if (String(entry->txt[2].key) == "version" && entry->txt_value_len[2] > 0)
+        version = entry->txt[2].value;
+    else
+        return false;
+
+    if ((version == String(PROTOCOL_VERSION)) == 0)
+        error = "1";
+    else if (enabled == "false")
+        error = "2";
+    else
+        error = "0";
+    return true;
+}
+
+String CMNetworking::get_scan_results()
+{
+    logger.printfln("Getting mDNS results");
+
+    if (!results_ready)
+        return "In progess";
+    if (!results)
+        return "Failed";
+
+    String result = "No services found.";
+
+    mdns_result_t *list = results;
+
+    result = "";
+
+    result += "[";
+
+    for (int i = 0; list; i++)
+    {
+        if (!check_txt_entries(list))
+        {
+            list = list->next;
+            continue;
+        }
+
+        if (list != results)
+            result += ", ";
+
+        char buff[32] = "[no address]";
+        if (list->addr && list->addr->addr.type == IPADDR_TYPE_V4)
+           esp_ip4addr_ntoa(&list->addr->addr.u_addr.ip4, buff, 32);
+
+        result += "{\"hostname\": \"";
+        result += list->hostname;
+        result += "\", \"ip\": \"";
+        result += buff;
+        result += "\", \"display_name\": \"";
+        result += display_name;
+        result += "\", \"error\": \"";
+        result += error;
+        result += "\"}";
+
+        list = list->next;
+    }
+    result += "]";
+
+    logger.printfln("Got mDNS results");
+
+    return result;
 }
