@@ -25,7 +25,6 @@
 
 #include "modules.h"
 
-#include "nvs_flash.h"
 #include <ESPmDNS.h>
 #include "NetBIOS.h"
 
@@ -36,7 +35,7 @@ extern WebServer server;
 
 #if MODULE_EVSE_AVAILABLE() || MODULE_EVSE_V2_AVAILABLE()
 
-static std::function<void()> managed_state_task()
+static void managed_state_task()
 {
     MDNS.addServiceTxt("tf-warp-cm", "udp", "display_name", device_name.display_name.get("display_name")->asString());
 #if MODULE_EVSE_AVAILABLE()
@@ -50,25 +49,18 @@ static std::function<void()> managed_state_task()
     else
         MDNS.addServiceTxt("tf-warp-cm", "udp", "enabled", "false");
 #endif
-    return 0;
 }
 
 #endif
 
 CMNetworking::CMNetworking()
 {
+    scan_cfg = Config::Null();
 }
 
 void CMNetworking::setup()
 {
-
-    scan_cfg = Config::Null();
-
-    ESP_ERROR_CHECK(nvs_flash_init());
-    ESP_ERROR_CHECK(esp_netif_init());
-    // ESP_ERROR_CHECK(esp_event_loop_create_default());
-    ESP_ERROR_CHECK(mdns_init());
-
+    mdns_init();
     initialized = true;
 }
 
@@ -81,9 +73,9 @@ void CMNetworking::register_urls()
     server.on("/charge_manager/scan_result", HTTP_GET, [this](WebServerRequest request) {
         String result = cm_networking.get_scan_results();
 
-        if (result == "In progess" || result == "Failed")
+        if (result == "In progress" || result == "Failed")
             request.send(200, "text/plain; charset=utf-8", result.c_str());
-        
+
         request.send(200, "application/json; charset=utf-8", result.c_str());
     });
 
@@ -454,10 +446,9 @@ bool CMNetworking::check_txt_entries(mdns_result_t *entry)
 
 String CMNetworking::get_scan_results()
 {
-
     if (!results_ready)
-        return "In progess";
-    if (!results)
+        return "In progress";
+    if (!scan_results)
         return "Failed";
 
     String result = "No services found.";
