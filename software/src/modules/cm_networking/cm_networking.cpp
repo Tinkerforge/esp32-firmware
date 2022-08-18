@@ -370,9 +370,6 @@ bool CMNetworking::check_results()
 {
     if (scan && !mdns_query_async_get_results(scan, 200, &scan_results))
     {
-        task_scheduler.scheduleOnce([this]() {
-            check_results();
-        }, 500);
         return false;
     }
 
@@ -390,9 +387,7 @@ bool CMNetworking::check_results()
 
 void notify_task(mdns_search_once_t *search)
 {
-    task_scheduler.scheduleOnce([]() {
-            cm_networking.check_results();
-        }, 500);
+    task_scheduler.scheduleOnce([](){cm_networking.check_results()}, 0);
 }
 
 void CMNetworking::start_scan()
@@ -407,7 +402,7 @@ void CMNetworking::start_scan()
         scan_results = nullptr;
     }
     results_ready = false;
-    scan = mdns_query_async_new(NULL, "_tf-warp-cm", "_udp", MDNS_TYPE_PTR, 5000, INT8_MAX, notify_task);
+    scan = mdns_query_async_new(NULL, "_tf-warp-cm", "_udp", MDNS_TYPE_PTR, 1000, INT8_MAX, notify_task);
 }
 
 bool CMNetworking::check_txt_entries(mdns_result_t *entry)

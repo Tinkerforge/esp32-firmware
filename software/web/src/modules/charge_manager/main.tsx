@@ -342,7 +342,7 @@ function scan_services()
 export function init() {
     var intervalID: number;
     $('#charge_manager_add_charger_modal').on('shown.bs.modal', scan_services);
-    $('#charge_manager_add_charger_modal').on('shown.bs.modal', () => intervalID = setInterval(scan_services, 10000));
+    $('#charge_manager_add_charger_modal').on('shown.bs.modal', () => intervalID = setInterval(scan_services, 3000));
     $('#charge_manager_add_charger_modal').on('hidden.bs.modal', () => {
         $('#charge_manager_config_charger_scan_results').children().remove();
         clearInterval(intervalID);
