@@ -335,7 +335,7 @@ function scan_services()
                 $.get("/network/scan_result").done(function (data: ServCharger[]) {
                     update_scan_results(data);
                     });
-            }, 12000);
+            }, 3000);
         })
 }
 
