@@ -376,7 +376,6 @@ bool CMNetworking::send_client_update(uint8_t iec61851_state,
 
 bool CMNetworking::check_results()
 {
-    logger.printfln("Checking for mDNS results");
     if (scan && !mdns_query_async_get_results(scan, 200, &results))
     {
         task_scheduler.scheduleOnce([this]() {
@@ -409,7 +408,6 @@ void CMNetworking::start_scan()
     if (scanning)
         return;
     scanning = true;
-    logger.printfln("Starting mDNS scan");
     if (results)
     {
         mdns_query_results_free(results);
@@ -455,7 +453,6 @@ bool CMNetworking::check_txt_entries(mdns_result_t *entry)
 
 String CMNetworking::get_scan_results()
 {
-    logger.printfln("Getting mDNS results");
 
     if (!results_ready)
         return "In progess";
@@ -499,7 +496,6 @@ String CMNetworking::get_scan_results()
     }
     result += "]";
 
-    logger.printfln("Got mDNS results");
 
     return result;
 }
