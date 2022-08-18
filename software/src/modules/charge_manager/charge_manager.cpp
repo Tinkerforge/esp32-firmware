@@ -306,7 +306,6 @@ void ChargeManager::check_watchdog()
 
 void ChargeManager::distribute_current()
 {
-    std::lock_guard<std::mutex> lock(state_mutex);
     uint32_t available_current = charge_manager_available_current.get("current")->asUint();
 
     static bool verbose = charge_manager_config_in_use.get("verbose")->asBool();

@@ -41,7 +41,6 @@ public:
     ConfigRoot charge_manager_config;
     ConfigRoot charge_manager_config_in_use;
 
-    std::mutex state_mutex;
     ConfigRoot charge_manager_state;
 
     ConfigRoot charge_manager_available_current;
