@@ -456,7 +456,7 @@ String CMNetworking::get_scan_results()
             continue;
         }
 
-        if (list != scan_results)
+        if (i != 0)
             result += ", ";
 
         char buff[32] = "[no address]";
