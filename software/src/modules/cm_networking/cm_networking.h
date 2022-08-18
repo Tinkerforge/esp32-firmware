@@ -113,7 +113,9 @@ public:
     bool scanning = false;
 
     mdns_search_once_t *scan;
-    mdns_result_t *scan_results = 0;
+
+    std::mutex scan_results_mutex;
+    mdns_result_t *scan_results = nullptr;
 
 private:
     int manager_sock;

@@ -363,8 +363,11 @@ bool CMNetworking::send_client_update(uint8_t iec61851_state,
 
 bool CMNetworking::check_results()
 {
-    if (!mdns_query_async_get_results(scan, 0, &scan_results))
-        return false; // This should never happen as check_results is only called if we are notified the search has finished.
+    {
+        std::lock_guard<std::mutex> lock{scan_results_mutex};
+        if (!mdns_query_async_get_results(scan, 0, &scan_results))
+            return false; // This should never happen as check_results is only called if we are notified the search has finished.
+    }
 
     mdns_query_async_delete(scan);
 
@@ -383,10 +386,13 @@ void CMNetworking::start_scan()
         return;
     scanning = true;
 
-    if (scan_results != nullptr)
     {
-        mdns_query_results_free(scan_results);
-        scan_results = nullptr;
+        std::lock_guard<std::mutex> lock{scan_results_mutex};
+        if (scan_results != nullptr)
+        {
+            mdns_query_results_free(scan_results);
+            scan_results = nullptr;
+        }
     }
 
     scan = mdns_query_async_new(NULL, "_tf-warp-cm", "_udp", MDNS_TYPE_PTR, 1000, INT8_MAX, [](mdns_search_once_t *search) {
@@ -430,6 +436,7 @@ bool CMNetworking::check_txt_entries(mdns_result_t *entry)
 
 String CMNetworking::get_scan_results()
 {
+    std::lock_guard<std::mutex> lock{scan_results_mutex};
     if (scan_results == nullptr)
         return "In progress or not started";
 
