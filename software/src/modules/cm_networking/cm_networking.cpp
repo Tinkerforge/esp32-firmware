@@ -376,7 +376,7 @@ bool CMNetworking::send_client_update(uint8_t iec61851_state,
 
 bool CMNetworking::check_results()
 {
-    if (scan && !mdns_query_async_get_results(scan, 200, &results))
+    if (scan && !mdns_query_async_get_results(scan, 200, &scan_results))
     {
         task_scheduler.scheduleOnce([this]() {
             check_results();
@@ -408,10 +408,11 @@ void CMNetworking::start_scan()
     if (scanning)
         return;
     scanning = true;
-    if (results)
+
+    if (scan_results)
     {
-        mdns_query_results_free(results);
-        results = 0;
+        mdns_query_results_free(scan_results);
+        scan_results = nullptr;
     }
     results_ready = false;
     scan = mdns_query_async_new(NULL, "_tf-warp-cm", "_udp", MDNS_TYPE_PTR, 5000, INT8_MAX, notify_task);
@@ -461,7 +462,7 @@ String CMNetworking::get_scan_results()
 
     String result = "No services found.";
 
-    mdns_result_t *list = results;
+    mdns_result_t *list = scan_results;
 
     result = "";
 
@@ -475,7 +476,7 @@ String CMNetworking::get_scan_results()
             continue;
         }
 
-        if (list != results)
+        if (list != scan_results)
             result += ", ";
 
         char buff[32] = "[no address]";
@@ -495,7 +496,6 @@ String CMNetworking::get_scan_results()
         list = list->next;
     }
     result += "]";
-
 
     return result;
 }

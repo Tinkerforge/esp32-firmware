@@ -114,7 +114,7 @@ public:
     bool scanning = false;
 
     mdns_search_once_t *scan;
-    mdns_result_t *results = 0;
+    mdns_result_t *scan_results = 0;
 
 private:
     int manager_sock;
