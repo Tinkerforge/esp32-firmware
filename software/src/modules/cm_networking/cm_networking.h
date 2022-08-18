@@ -110,7 +110,6 @@ public:
 
     bool check_results();
 
-    bool results_ready = false;
     bool scanning = false;
 
     mdns_search_once_t *scan;

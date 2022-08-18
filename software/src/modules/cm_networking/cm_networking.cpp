@@ -53,7 +53,7 @@ void CMNetworking::register_urls()
     server.on("/charge_manager/scan_result", HTTP_GET, [this](WebServerRequest request) {
         String result = cm_networking.get_scan_results();
 
-        if (result == "In progress" || result == "Failed")
+        if (result == "In progress or not started")
             request.send(200, "text/plain; charset=utf-8", result.c_str());
 
         request.send(200, "application/json; charset=utf-8", result.c_str());
@@ -369,7 +369,6 @@ bool CMNetworking::check_results()
     mdns_query_async_delete(scan);
 
     scanning = false;
-    results_ready = true;
 
 #if MODULE_WS_AVAILABLE()
     String s = get_scan_results();
@@ -384,13 +383,12 @@ void CMNetworking::start_scan()
         return;
     scanning = true;
 
-    if (scan_results)
+    if (scan_results != nullptr)
     {
         mdns_query_results_free(scan_results);
         scan_results = nullptr;
     }
 
-    results_ready = false;
     scan = mdns_query_async_new(NULL, "_tf-warp-cm", "_udp", MDNS_TYPE_PTR, 1000, INT8_MAX, [](mdns_search_once_t *search) {
         task_scheduler.scheduleOnce([](){ cm_networking.check_results(); }, 0);
     });
@@ -432,10 +430,8 @@ bool CMNetworking::check_txt_entries(mdns_result_t *entry)
 
 String CMNetworking::get_scan_results()
 {
-    if (!results_ready)
-        return "In progress";
-    if (!scan_results != nullptr)
-        return "Failed";
+    if (scan_results == nullptr)
+        return "In progress or not started";
 
     String result = "No services found.";
 
