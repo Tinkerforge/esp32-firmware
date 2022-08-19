@@ -4,6 +4,17 @@
             "confirm_content": "Soll die Anmeldung wirklich aktiviert werden? Falls das Passwort vergessen wird, muss der Brick auf den Werkszustand zurückgesetzt werden. <a href=\"{{{manual_url}}}\">Siehe Betriebsanleitung für Details.</a>"
         }
     },
+    "charge_manager": {
+        "status": {
+            "charge_manager": "Lastmanager"
+        },
+        "navbar": {
+            "charge_manager": "Lastmanager"
+        },
+        "content": {
+            "charge_manager": "Lastmanager"
+        }
+    },
     "ethernet": {
         "content": {
             "enable_desc": "Der Brick verbindet sich automatisch beim Start oder wenn ein Kabel eingesteckt wird"

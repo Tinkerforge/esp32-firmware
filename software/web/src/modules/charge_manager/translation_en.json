@@ -1,7 +1,7 @@
 {
     "charge_manager": {
         "status": {
-            "charge_manager": "Charge manager",
+            "charge_manager": null,
             "not_configured": "Deactivated",
             "manager": "Activated",
             "error": "Error",
@@ -11,10 +11,10 @@
             "available_current_maximum": "..."
         },
         "navbar": {
-            "charge_manager": "Charge Manager"
+            "charge_manager": null
         },
         "content": {
-            "charge_manager": "Charge Manager",
+            "charge_manager": null,
             "enable_charge_manager": "Charge manager enabled",
             "enable_charge_manager_muted": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
             "enable_charge_manager_desc": "Controls multiple WARP Chargers to make sure a configured maximum current is never exceeded",

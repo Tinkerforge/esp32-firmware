@@ -4,6 +4,17 @@
             "confirm_content": "Soll die Anmeldung wirklich aktiviert werden? Falls das Passwort vergessen wird, muss der Energiemanager auf den Werkszustand zurückgesetzt werden. <a href=\"{{{manual_url}}}\">Siehe Betriebsanleitung für Details.</a>"
         }
     },
+    "charge_manager": {
+        "status": {
+            "charge_manager": "Wallboxen"
+        },
+        "navbar": {
+            "charge_manager": "Wallboxen"
+        },
+        "content": {
+            "charge_manager": "Wallboxen"
+        }
+    },
     "ethernet": {
         "content": {
             "enable_desc": "Der Energiemanager verbindet sich beim Start automatisch zum konfigurierten Netzwerk"
