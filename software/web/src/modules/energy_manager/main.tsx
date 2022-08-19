@@ -45,9 +45,9 @@ function update_energy_manager_state() {
 }
 
 function update_energy_manager_config() {
-    let config = API.default_updater('energy_manager/config', ['mains_power_reception', 'maximum_available_current', 'minimum_current']);
+    let config = API.default_updater('energy_manager/config', ['maximum_power_from_grid', 'maximum_available_current', 'minimum_current']);
 
-    util.setNumericInput("energy_manager_config_mains_power_reception", config.mains_power_reception / 1000, 3);
+    util.setNumericInput("energy_manager_config_maximum_power_from_grid", config.maximum_power_from_grid / 1000, 3);
     util.setNumericInput("energy_manager_config_maximum_available_current", config.maximum_available_current / 1000, 3);
     util.setNumericInput("energy_manager_config_minimum_current", config.minimum_current / 1000, 3);
 }
@@ -202,7 +202,7 @@ export function init() {
 
     API.register_config_form('energy_manager/config', {
             overrides: () => ({
-                mains_power_reception: Math.round(($('#energy_manager_config_mains_power_reception').val() as number) * 1000),
+                maximum_power_from_grid: Math.round(($('#energy_manager_config_maximum_power_from_grid').val() as number) * 1000),
                 maximum_available_current: Math.round(($('#energy_manager_config_maximum_available_current').val() as number) * 1000),
                 minimum_current: Math.round(($('#energy_manager_config_minimum_current').val() as number) * 1000)
             }),
