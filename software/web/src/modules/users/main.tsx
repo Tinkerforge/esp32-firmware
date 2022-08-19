@@ -111,7 +111,7 @@ async function save_users_config() {
     }
 
     let new_unknown_username = $('#users_unknown_username').val().toString();
-    if (new_unknown_username == __('charge_tracker.script.unknown_user'))
+    if (new_unknown_username == __("charge_tracker.script.unknown_user"))
         new_unknown_username = "Anonymous"
 
     if (util.passwordUpdate('#users_unknown_username') === "")
