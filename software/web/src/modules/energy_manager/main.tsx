@@ -45,7 +45,11 @@ function update_energy_manager_state() {
 }
 
 function update_energy_manager_config() {
-    API.default_updater('energy_manager/config');
+    let config = API.default_updater('energy_manager/config', ['mains_power_reception', 'maximum_available_current', 'minimum_current']);
+
+    util.setNumericInput("energy_manager_config_mains_power_reception", config.mains_power_reception / 1000, 3);
+    util.setNumericInput("energy_manager_config_maximum_available_current", config.maximum_available_current / 1000, 3);
+    util.setNumericInput("energy_manager_config_minimum_current", config.minimum_current / 1000, 3);
 }
 
 // Only show the relevant html elements, drop-down boxes and options
@@ -197,6 +201,11 @@ export function init() {
     $("#debug_stop").on("click", debug_stop);
 
     API.register_config_form('energy_manager/config', {
+            overrides: () => ({
+                mains_power_reception: Math.round(($('#energy_manager_config_mains_power_reception').val() as number) * 1000),
+                maximum_available_current: Math.round(($('#energy_manager_config_maximum_available_current').val() as number) * 1000),
+                minimum_current: Math.round(($('#energy_manager_config_minimum_current').val() as number) * 1000)
+            }),
             error_string: __("energy_manager.script.config_failed"),
             reboot_string: __("energy_manager.script.reboot_content_changed")
         });

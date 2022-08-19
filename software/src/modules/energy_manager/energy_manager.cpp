@@ -72,8 +72,9 @@ EnergyManager::EnergyManager() : DeviceModule("energy_manager", "WARP Energy Man
     energy_manager_config = Config::Object({
         {"excess_charging_enable", Config::Bool(false)},
         {"phase_switching", Config::Uint8(2)},
-        {"mains_power_reception", Config::Uint32(22000)},
-        {"minimum_charging", Config::Uint32(1400)},
+        {"mains_power_reception", Config::Int32(0)},
+        {"maximum_available_current", Config::Uint32(0)}, // Keep in sync with charge_manager.cpp
+        {"minimum_current", Config::Uint(6000, 6000, 32000)}, // Keep in sync with charge_manager.cpp
         {"relay_config", Config::Uint8(0)},
         {"relay_config_if", Config::Uint8(0)},
         {"relay_config_is", Config::Uint8(0)},
@@ -182,12 +183,12 @@ void EnergyManager::update_energy()
     }
 
     const int32_t power_at_house_connection = all_data.power * 1000; // watt
-    const int32_t power_max_from_grid       = energy_manager_config_in_use.get("mains_power_reception")->asUint(); // watt
-    const int32_t power_minimum_charging    = energy_manager_config_in_use.get("minimum_charging")->asUint(); // watt
+    const int32_t power_max_from_grid       = energy_manager_config_in_use.get("mains_power_reception")->asInt(); // watt
+    const int32_t power_minimum_current     = energy_manager_config_in_use.get("minimum_current")->asUint(); // ampere
     const bool    is_3phase                 = all_data.contactor_value;
     const int32_t power_allowed             = power_max_from_grid - ((power_at_house_connection < 0) ? power_at_house_connection : 0); // watt
 
-    if (power_allowed < power_minimum_charging) {
+    if (power_allowed < power_minimum_current) {
         // TODO: Turn charging off if running
         return;
     }

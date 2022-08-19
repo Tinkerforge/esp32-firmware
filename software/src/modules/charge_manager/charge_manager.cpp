@@ -62,21 +62,34 @@ static char distribution_log[DISTRIBUTION_LOG_LEN] = {0};
 
 #define WATCHDOG_TIMEOUT_MS 30000
 
+#if MODULE_ENERGY_MANAGER_AVAILABLE()
+static void apply_enegry_manager_config(Config &conf)
+{
+    conf.get("enable_charge_manager")->updateBool(true);
+    conf.get("enable_watchdog")->updateBool(false);
+    conf.get("default_available_current")->updateUint(0);
+    conf.get("maximum_available_current")->updateUint(energy_manager.energy_manager_config_in_use.get("maximum_available_current")->asUint());
+    conf.get("minimum_current")->updateUint(energy_manager.energy_manager_config_in_use.get("minimum_current")->asUint());
+}
+#endif
+
 ChargeManager::ChargeManager()
 {
     charge_manager_config = ConfigRoot{Config::Object({
         {"enable_charge_manager", Config::Bool(false)},
         {"enable_watchdog", Config::Bool(false)},
         {"default_available_current", Config::Uint32(0)},
-        {"maximum_available_current", Config::Uint32(0xFFFFFFFF)},
-        {"minimum_current", Config::Uint(6000, 6000, 32000)},
+        {"maximum_available_current", Config::Uint32(0xFFFFFFFF)}, // Keep in sync with energy_manager.cpp
+        {"minimum_current", Config::Uint(6000, 6000, 32000)}, // Keep in sync with energy_manager.cpp
         {"verbose", Config::Bool(false)},
         {"chargers", Config::Array(
             {
+#if !MODULE_ENERGY_MANAGER_AVAILABLE()
                 Config::Object({
                     {"host", Config::Str("127.0.0.1", 0, 64)},
                     {"name", Config::Str("Lokale Wallbox", 0, 32)} // FIXME: needs to be translated
                 })
+#endif
             },
             new Config{Config::Object({
                 {"host", Config::Str("", 0, 64)},
@@ -85,6 +98,9 @@ ChargeManager::ChargeManager()
             0, MAX_CLIENTS, Config::type_id<Config::ConfObject>()
         )}
     }), [](Config &conf) -> String {
+#if MODULE_ENERGY_MANAGER_AVAILABLE()
+        apply_enegry_manager_config(conf);
+#else
         uint32_t default_available_current = conf.get("default_available_current")->asUint();
         uint32_t maximum_available_current = conf.get("maximum_available_current")->asUint();
 
@@ -94,6 +110,8 @@ ChargeManager::ChargeManager()
 
         if (default_available_current > maximum_available_current)
             return "default_available_current can not be greater than maximum_available_current";
+#endif
+
         return "";
     }};
 
@@ -251,10 +269,13 @@ int idx_array[MAX_CLIENTS] = {0};
 
 void ChargeManager::setup()
 {
-    String default_hostname = String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str);
     if (!api.restorePersistentConfig("charge_manager/config", &charge_manager_config)) {
-        charge_manager_config.get("chargers")->get(0)->get("name")->updateString(default_hostname);
+#if MODULE_ENERGY_MANAGER_AVAILABLE()
+        apply_enegry_manager_config(charge_manager_config);
+#else
+        charge_manager_config.get("chargers")->get(0)->get("name")->updateString(String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str));
         charge_manager_config.get("maximum_available_current")->updateUint(0);
+#endif
     }
 
     charge_manager_config_in_use = charge_manager_config;

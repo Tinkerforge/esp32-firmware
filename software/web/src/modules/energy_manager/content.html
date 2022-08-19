@@ -32,21 +32,46 @@
         </div>
 
         <div class="form-group row">
-            <label for="energy_manager_config_mains_power_reception" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="energy_manager.content.mains_power_reception"></label>
+            <div class="col-lg-3 col-xl-2">
+                <label for="energy_manager_config_mains_power_reception" class="col-form-label">
+                    <span class="form-label pr-2" data-i18n="energy_manager.content.mains_power_reception"></span>
+                    <span class="text-muted" data-i18n="energy_manager.content.mains_power_reception_muted"></span>
+                </label>
+            </div>
             <div class="col-lg-9 col-xl-6 input-group">
-                <input id="energy_manager_config_mains_power_reception" class="form-control" type="number" min="0" max="22000" step="any" required>
+                <input id="energy_manager_config_mains_power_reception" class="form-control" type="number" min="0" step="any" required>
                 <div class="input-group-append">
-                    <div class="input-group-text form-control">W</div>
+                    <div class="input-group-text form-control">kW</div>
                 </div>
             </div>
         </div>
 
         <div class="form-group row">
-            <label for="energy_manager_config_minimum_charging" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="energy_manager.content.minimum_charging"></label>
+            <div class="col-lg-3 col-xl-2">
+                <label for="energy_manager_config_maximum_available_current" class="col-form-label">
+                    <span class="form-label pr-2" data-i18n="energy_manager.content.maximum_available_current"></span>
+                    <span class="text-muted" data-i18n="energy_manager.content.maximum_available_current_muted"></span>
+                </label>
+            </div>
             <div class="col-lg-9 col-xl-6 input-group">
-                <input id="energy_manager_config_minimum_charging" class="form-control" type="number" min="0" max="22000" step="any" required>
+                <input id="energy_manager_config_maximum_available_current" class="form-control" type="number" min="0" step="any" required>
                 <div class="input-group-append">
-                    <div class="input-group-text form-control">W</div>
+                    <div class="input-group-text form-control">A</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-lg-3 col-xl-2">
+                <label for="energy_manager_config_minimum_current" class="col-form-label">
+                    <span class="form-label pr-2" data-i18n="energy_manager.content.minimum_current"></span>
+                    <span class="text-muted" data-i18n="energy_manager.content.minimum_current_muted"></span>
+                </label>
+            </div>
+            <div class="col-lg-9 col-xl-6 input-group">
+                <input id="energy_manager_config_minimum_current" class="form-control" type="number" min="6" max="32" step="any" required>
+                <div class="input-group-append">
+                    <div class="input-group-text form-control">A</div>
                 </div>
             </div>
         </div>
