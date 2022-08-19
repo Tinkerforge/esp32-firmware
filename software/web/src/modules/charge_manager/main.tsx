@@ -419,4 +419,9 @@ export function add_event_listeners(source: API.APIEventTarget) {
 
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-charge_manager').prop('hidden', !module_init.charge_manager);
+    $('#charge_manager_enable_row').prop('hidden', module_init.energy_manager);
+    $('#charge_manager_enable_watchdog_row').prop('hidden', module_init.energy_manager);
+    $('#charge_manager_default_available_current_row').prop('hidden', module_init.energy_manager);
+    $('#charge_manager_maximum_available_current_row').prop('hidden', module_init.energy_manager);
+    $('#charge_manager_minimum_current_row').prop('hidden', module_init.energy_manager);
 }
