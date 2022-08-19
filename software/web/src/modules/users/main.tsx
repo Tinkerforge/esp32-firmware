@@ -170,7 +170,7 @@ function generate_user_ui(user: User, password: string) {
                             <span data-feather="user"></span>
                             <button type="button" class="btn btn-sm btn-outline-dark"
                                 id="users_authorized_user_${i}_remove">
-                                <span data-feather="user-x" class="mr-2"></span><span style="font-size: 1rem; vertical-align: middle;" data-i18n="users.script.delete"></span>
+                                <span data-feather="user-x" class="mr-2"></span><span style="font-size: 1rem; vertical-align: middle;">${__("users.script.delete")}</span>
                             </button>
                         </div>
 
@@ -320,7 +320,7 @@ function update_users_config(force: boolean) {
                 <span data-feather="user-plus"></span>
                 <button type="button" class="btn btn-sm btn-outline-dark"
                                 id="blah" disabled style="visibility: hidden;">
-                                <span data-feather="user-x" class="mr-2"></span><span style="font-size: 1rem; vertical-align: middle;" data-i18n="users.script.delete"></span>
+                                <span data-feather="user-x" class="mr-2"></span><span style="font-size: 1rem; vertical-align: middle;">${__("users.script.delete")}</span>
                             </button>
             </div>
             <div class="card-body">

@@ -273,7 +273,7 @@ function update_scan_results(data: Readonly<ServCharger[]>)
                 $('#charge_manager_config_charger_scan_results').append(`<button type="button" id="charge_manager_config_charger_scan_result_${i}" class="list-group-item list-group-item-action">
                 <div class="d-flex w-100 justify-content-between">
                     <span class="h5 text-left" id="charger_scan_id_${i}"></span>
-                    <span class="text-right" id="disabled_${i}" style="color:red" data-i18n="charge_manager.content.disabled" hidden></span>
+                    <span class="text-right" id="disabled_${i}" style="color:red" hidden></span>
                 </div>
                 <div class="d-flex w-100 justify-content-between">
                     <span id="hostname_id_${i}"></span>
