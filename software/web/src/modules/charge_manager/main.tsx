@@ -286,10 +286,15 @@ function update_scan_results(data: Readonly<ServCharger[]>)
 
             $(`#charger_scan_id_${i}`).text(v.display_name);
             $(`#hostname_id_${i}`).text(v.hostname + ".local");
-            $(`#ip_${i}`).text(v.ip);
+
+            if (v.ip != "[no_address]" || $(`#ip_${i}`).text().length == 0)
+                $(`#ip_${i}`).text(v.ip);
 
             $(`#charge_manager_config_charger_scan_result_${i}`).prop("disabled", false);
             $(`#disabled_${i}`).prop("hidden", true);
+
+            if ($(`#ip_${i}`).text() == "[no_address]")
+                $(`#charge_manager_config_charger_scan_result_${i}`).prop("disabled", true);
 
             if (v.error == 1)
             {
