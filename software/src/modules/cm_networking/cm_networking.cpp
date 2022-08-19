@@ -308,7 +308,6 @@ void CMNetworking::register_client(std::function<void(uint16_t)> client_callback
         }
 
         last_seen_seq_num = request.header.seq_num;
-        source_addr_valid = false;
 
         source_addr = temp_addr;
 
