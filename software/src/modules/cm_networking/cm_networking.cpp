@@ -275,6 +275,8 @@ void CMNetworking::register_client(std::function<void(uint16_t)> client_callback
 
     task_scheduler.scheduleWithFixedDelay([this, client_callback](){
         static uint8_t last_seen_seq_num = 255;
+        static uint32_t last_successful_recv = millis();
+
         request_packet recv_buf[2] = {};
 
         struct sockaddr_storage temp_addr;
@@ -284,6 +286,12 @@ void CMNetworking::register_client(std::function<void(uint16_t)> client_callback
         if (len < 0) {
             if (errno != EAGAIN && errno != EWOULDBLOCK)
                 logger.printfln("recvfrom failed: errno %d", errno);
+
+            // If we have not received a valid packet for one minute, devalidate source_addr.
+            // Otherwise we would send response packets to this address forever.
+            if (deadline_elapsed(last_successful_recv + 60 * 1000))
+                source_addr_valid = false;
+
             return;
         }
 
@@ -309,6 +317,7 @@ void CMNetworking::register_client(std::function<void(uint16_t)> client_callback
 
         last_seen_seq_num = request.header.seq_num;
 
+        last_successful_recv = millis();
         source_addr = temp_addr;
 
         source_addr_valid = true;
