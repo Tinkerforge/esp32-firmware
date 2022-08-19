@@ -33,7 +33,9 @@
 
             "add_charger_modal_title": "Add charger",
             "add_charger_modal_name": "Display name",
+            "add_charger_modal_name_invalid": "Cannot be empty",
             "add_charger_modal_host": "IP address (Hostnames are not supported yet)",
+            "add_charger_modal_host_invalid": "Cannot be empty",
             "add_charger_modal_abort": "Discard",
             "add_charger_modal_save": "Save",
             "add_charger_modal_found": "Discovered chargers",

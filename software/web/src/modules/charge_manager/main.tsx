@@ -357,12 +357,14 @@ export function init() {
     $('#charge_manager_config_form').on('submit', function (this: HTMLFormElement, event: Event) {
         $('#charge_manager_default_available_current').prop("max", $('#charge_manager_maximum_available_current').val());
 
-        this.classList.add('was-validated');
         event.preventDefault();
         event.stopPropagation();
 
         if (this.checkValidity() === false) {
+            this.classList.add('was-validated');
             return;
+        } else {
+            this.classList.remove('was-validated');
         }
 
         save_charge_manager_config();
@@ -371,12 +373,14 @@ export function init() {
     $('#charge_manager_add_charger_form').on("submit", (event: Event) => {
         let form = $('#charge_manager_add_charger_form')[0] as HTMLFormElement;
 
-        form.classList.add('was-validated');
         event.preventDefault();
         event.stopPropagation();
 
         if (form.checkValidity() === false) {
+            form.classList.add('was-validated');
             return;
+        } else {
+            form.classList.remove('was-validated');
         }
 
         $('#charge_manager_add_charger_modal').modal('hide');
@@ -407,6 +411,11 @@ export function init() {
 
         set_available_current(Math.round(($('#charge_manager_status_available_current').val() as number) * 1000));
     });
+
+    $('#charge_manager_add_charger_modal').on("hidden.bs.modal", () => {
+        let form = $('#charge_manager_add_charger_form')[0] as HTMLFormElement;
+        form.reset();
+    })
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
