@@ -36,6 +36,12 @@ export function get<T extends keyof ConfigMap>(topic: T): Readonly<ConfigMap[T]>
     return api_cache[topic];
 }
 
+export function get_maybe<T extends string>(topic: T): (T extends keyof ConfigMap ? Readonly<ConfigMap[T]> : any) {
+    if (topic in api_cache)
+        return api_cache[topic as keyof ConfigMap] as any;
+    return null;
+}
+
 // Based on https://43081j.com/2020/11/typed-events-in-typescript
 // and https://stackoverflow.com/questions/51343322/extending-eventtarget-in-typescript-angular-2
 export class APIEventTarget implements EventTarget {
@@ -62,6 +68,12 @@ export function trigger<T extends keyof ConfigMap>(topic: T, event_source: APIEv
 
 export function save<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T], error_string: string, reboot_string?: string) {
     return call(<any>(topic + "_update"), payload, error_string, reboot_string);
+}
+
+export function save_maybe<T extends string>(topic: T, payload: (T extends keyof ConfigMap ? ConfigMap[T] : any), error_string: string, reboot_string?: string) {
+    if (topic in api_cache)
+        return call(<any>(topic + "_update"), payload, error_string, reboot_string);
+    return Promise.resolve();
 }
 
 export function call<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T], error_string: string, reboot_string?: string) {
