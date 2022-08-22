@@ -70,6 +70,12 @@ struct response_packet {
     bool managed;
 } __attribute__((packed));
 
+struct resolved_hosts {
+    in_addr *addr;
+    char host[65];
+    bool in_progress;
+} __attribute__((packed));
+
 class CMNetworking
 {
 public:
@@ -109,6 +115,8 @@ public:
 
     String get_scan_results();
 
+    void resolve_hostname(resolved_hosts *resolved);
+
     bool check_results();
 
     bool scanning = false;
@@ -116,11 +124,14 @@ public:
     mdns_search_once_t *scan;
 
     std::mutex scan_results_mutex;
+    std::mutex dns_resolve_mutex;
     mdns_result_t *scan_results = nullptr;
 
 private:
     int manager_sock;
     struct sockaddr_in dest_addrs[MAX_CLIENTS] = {};
+
+    struct resolved_hosts resolved[MAX_CLIENTS] = {};
 
     int client_sock;
     bool source_addr_valid = false;

@@ -27,6 +27,10 @@
 
 #include <ESPmDNS.h>
 #include "NetBIOS.h"
+#include "lwip/ip_addr.h"
+#include "lwip/opt.h"
+#include "lwip/dns.h"
+#include <cstring>
 
 #include "TFJson.h"
 
@@ -123,6 +127,44 @@ int CMNetworking::create_socket(uint16_t port)
     return sock;
 }
 
+static void dns_callback(const char *host, const ip_addr_t *ip, void *args)
+{
+    resolved_hosts *resolved = (resolved_hosts *)args;
+
+    std::lock_guard<std::mutex> lock{cm_networking.dns_resolve_mutex};
+
+    resolved->in_progress = false;
+}
+
+void CMNetworking::resolve_hostname(resolved_hosts *resolved)
+{
+
+    std::lock_guard<std::mutex> lock{cm_networking.dns_resolve_mutex};
+
+    if (resolved->in_progress == false)
+    {
+        resolved->in_progress = true;
+
+        ip_addr_t ip;
+        int err = dns_gethostbyname(resolved->host, &ip, dns_callback, resolved);
+
+        if (err == ERR_OK)
+        {
+            if (ip.type == IPADDR_TYPE_V4)
+            {
+                // using memcpy to guaranty alignment https://mail.gnu.org/archive/html/lwip-users/2008-08/msg00166.html
+                std::memcpy(&resolved->addr->s_addr, &ip.u_addr, sizeof(ip4_addr_t));
+                resolved->in_progress = false;
+            }
+        }
+        else if (err == ERR_ARG)
+        {
+            perror("DNS Resolver");
+            esp_system_abort(NULL);
+        }
+    }
+}
+
 void CMNetworking::register_manager(const std::vector<String> &hosts,
                                     const std::vector<String> &names,
                                     std::function<void(uint8_t,  // client_id
@@ -138,7 +180,11 @@ void CMNetworking::register_manager(const std::vector<String> &hosts,
 {
 
     for (int i = 0; i < names.size(); ++i) {
-        dest_addrs[i].sin_addr.s_addr = inet_addr(hosts[i].c_str());
+        resolved[i].addr = &dest_addrs[i].sin_addr;
+
+        std::strncpy(resolved[i].host, hosts[i].c_str(), 64);
+        resolve_hostname(&resolved[i]);
+    
         dest_addrs[i].sin_family = AF_INET;
         dest_addrs[i].sin_port = htons(CHARGE_MANAGEMENT_PORT);
     }
@@ -243,7 +289,11 @@ bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_cur
 
     request.allocated_current = allocated_current;
 
-    int err = sendto(manager_sock, &request, sizeof(request), 0, (sockaddr *)&dest_addrs[client_id], sizeof(dest_addrs[client_id]));
+    int err = -1;
+
+
+    resolve_hostname(&resolved[client_id]);
+    err = sendto(manager_sock, &request, sizeof(request), 0, (sockaddr *)&dest_addrs[client_id], sizeof(dest_addrs[client_id]));
 
     if (err < 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK)

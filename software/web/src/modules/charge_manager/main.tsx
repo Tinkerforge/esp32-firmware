@@ -240,7 +240,7 @@ function is_in_use(v: ServCharger): Boolean
 {
     for (let i = 0; $(`#charge_manager_config_charger_${i}_host`).length > 0; i++)
     {
-        if ($(`#charge_manager_config_charger_${i}_host`).val().toString() == v.ip)
+        if ($(`#charge_manager_config_charger_${i}_host`).val().toString() == v.ip || $(`#charge_manager_config_charger_${i}_host`).val().toString() == v.hostname + ".local")
             return true;
     }
     return false
@@ -317,7 +317,7 @@ function update_scan_results(data: Readonly<ServCharger[]>)
 
             $(`#charge_manager_config_charger_scan_result_${i}`).on("click", () => {
                 $("#charge_manager_config_charger_new_name").val(v.display_name);
-                $("#charge_manager_config_charger_new_host").val(v.ip);
+                $("#charge_manager_config_charger_new_host").val(v.hostname + ".local");
             })
         }
         i = prev_element;
