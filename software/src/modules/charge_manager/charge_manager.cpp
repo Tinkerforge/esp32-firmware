@@ -183,7 +183,7 @@ void ChargeManager::start_manager_task()
         names.push_back(chargers[i].get("name")->asString());
     }
 
-    cm_networking.register_manager(hosts, names, [this, chargers](
+    cm_networking.register_manager(std::move(hosts), names, [this, chargers](
             uint8_t client_id,
             uint8_t iec61851_state,
             uint8_t charger_state,

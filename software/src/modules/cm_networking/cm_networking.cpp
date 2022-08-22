@@ -129,43 +129,40 @@ int CMNetworking::create_socket(uint16_t port)
 
 static void dns_callback(const char *host, const ip_addr_t *ip, void *args)
 {
-    resolved_hosts *resolved = (resolved_hosts *)args;
-
     std::lock_guard<std::mutex> lock{cm_networking.dns_resolve_mutex};
-
-    resolved->in_progress = false;
-}
-
-void CMNetworking::resolve_hostname(resolved_hosts *resolved)
-{
-
-    std::lock_guard<std::mutex> lock{cm_networking.dns_resolve_mutex};
-
-    if (resolved->in_progress == false)
-    {
-        resolved->in_progress = true;
-
-        ip_addr_t ip;
-        int err = dns_gethostbyname(resolved->host, &ip, dns_callback, resolved);
-
-        if (err == ERR_OK)
-        {
-            if (ip.type == IPADDR_TYPE_V4)
-            {
-                // using memcpy to guaranty alignment https://mail.gnu.org/archive/html/lwip-users/2008-08/msg00166.html
-                std::memcpy(&resolved->addr->s_addr, &ip.u_addr, sizeof(ip4_addr_t));
-                resolved->in_progress = false;
-            }
-        }
-        else if (err == ERR_ARG)
-        {
-            perror("DNS Resolver");
-            esp_system_abort(NULL);
-        }
+    uint8_t *resolve_state = (uint8_t*)args;
+    if (ip == nullptr && *resolve_state != RESOLVE_STATE_NOT_RESOLVED) {
+        *resolve_state = RESOLVE_STATE_NOT_RESOLVED;
+        logger.printfln("Failed to resolve %s", host);
     }
 }
 
-void CMNetworking::register_manager(const std::vector<String> &hosts,
+void CMNetworking::resolve_hostname(uint8_t charger_idx)
+{
+    ip_addr_t ip;
+    int err = dns_gethostbyname(hostnames[charger_idx].c_str(), &ip, dns_callback, &resolve_state[charger_idx]);
+
+    if (err == ERR_VAL)
+        logger.printfln("Charge manager has charger configured with hostname %s, but no DNS server is configured!", hostnames[charger_idx].c_str());
+
+    if (err != ERR_OK || ip.type != IPADDR_TYPE_V4)
+        return;
+
+    in_addr_t in;
+
+    // using memcpy to guaranty alignment https://mail.gnu.org/archive/html/lwip-users/2008-08/msg00166.html
+    std::memcpy(&in, &ip.u_addr, sizeof(ip4_addr_t));
+
+    std::lock_guard<std::mutex> lock{dns_resolve_mutex};
+    if (resolve_state[charger_idx] != RESOLVE_STATE_RESOLVED || dest_addrs[charger_idx].sin_addr.s_addr != in) {
+        logger.printfln("Resolved %s to %s", hostnames[charger_idx].c_str(), ipaddr_ntoa(&ip));
+    }
+
+    dest_addrs[charger_idx].sin_addr.s_addr = in;
+    resolve_state[charger_idx] = RESOLVE_STATE_RESOLVED;
+}
+
+void CMNetworking::register_manager(std::vector<String> &&hosts,
                                     const std::vector<String> &names,
                                     std::function<void(uint8_t,  // client_id
                                                        uint8_t,  // iec61851_state
@@ -178,13 +175,12 @@ void CMNetworking::register_manager(const std::vector<String> &hosts,
                                                        )> manager_callback,
                                     std::function<void(uint8_t, uint8_t)> manager_error_callback)
 {
+    hostnames = hosts;
 
     for (int i = 0; i < names.size(); ++i) {
-        resolved[i].addr = &dest_addrs[i].sin_addr;
-
-        std::strncpy(resolved[i].host, hosts[i].c_str(), 64);
-        resolve_hostname(&resolved[i]);
-    
+        dest_addrs[i].sin_addr.s_addr = 0;
+        resolve_state[i] = RESOLVE_STATE_UNKNOWN;
+        resolve_hostname(i);
         dest_addrs[i].sin_family = AF_INET;
         dest_addrs[i].sin_port = htons(CHARGE_MANAGEMENT_PORT);
     }
@@ -227,8 +223,10 @@ void CMNetworking::register_manager(const std::vector<String> &hosts,
                 break;
             }
 
+        // Don't log in the first 20 seconds after startup: We are probably still resolving hostnames.
         if (charger_idx == -1) {
-            logger.printfln("Received packet from unknown %s. Is the config complete?", inet_ntoa(source_addr.sin_addr));
+            if (deadline_elapsed(20000))
+                logger.printfln("Received packet from unknown %s. Is the config complete?", inet_ntoa(source_addr.sin_addr));
             return;
         }
 
@@ -292,7 +290,7 @@ bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_cur
     int err = -1;
 
 
-    resolve_hostname(&resolved[client_id]);
+    resolve_hostname(client_id);
     err = sendto(manager_sock, &request, sizeof(request), 0, (sockaddr *)&dest_addrs[client_id], sizeof(dest_addrs[client_id]));
 
     if (err < 0) {

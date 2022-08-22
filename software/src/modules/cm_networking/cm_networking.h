@@ -70,12 +70,6 @@ struct response_packet {
     bool managed;
 } __attribute__((packed));
 
-struct resolved_hosts {
-    in_addr *addr;
-    char host[65];
-    bool in_progress;
-} __attribute__((packed));
-
 class CMNetworking
 {
 public:
@@ -88,7 +82,7 @@ public:
 
     int create_socket(uint16_t port);
 
-    void register_manager(const std::vector<String> &hosts,
+    void register_manager(std::vector<String> &&hosts,
                           const std::vector<String> &names,
                           std::function<void(uint8_t,  // client_id
                                              uint8_t,  // iec61851_state
@@ -115,7 +109,7 @@ public:
 
     String get_scan_results();
 
-    void resolve_hostname(resolved_hosts *resolved);
+    void resolve_hostname(uint8_t charger_idx);
 
     bool check_results();
 
@@ -129,9 +123,14 @@ public:
 
 private:
     int manager_sock;
-    struct sockaddr_in dest_addrs[MAX_CLIENTS] = {};
 
-    struct resolved_hosts resolved[MAX_CLIENTS] = {};
+    #define RESOLVE_STATE_UNKNOWN 0
+    #define RESOLVE_STATE_NOT_RESOLVED 1
+    #define RESOLVE_STATE_RESOLVED 2
+
+    uint8_t resolve_state[MAX_CLIENTS] = {};
+    struct sockaddr_in dest_addrs[MAX_CLIENTS] = {};
+    std::vector<String> hostnames;
 
     int client_sock;
     bool source_addr_valid = false;
