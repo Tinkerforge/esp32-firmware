@@ -39,7 +39,7 @@ export function get<T extends keyof ConfigMap>(topic: T): Readonly<ConfigMap[T]>
 export function get_maybe<T extends string>(topic: T): (T extends keyof ConfigMap ? Readonly<ConfigMap[T]> : any) {
     if (topic in api_cache)
         return api_cache[topic as keyof ConfigMap] as any;
-    return null;
+    return null as any;
 }
 
 // Based on https://43081j.com/2020/11/typed-events-in-typescript

@@ -425,7 +425,7 @@ def main():
                 api_imports.append("import * as {} from '../modules/{}/api';".format(api_module, frontend_module.under))
 
                 api_config_map_entries += ["'{}{}': {}.{},".format(api_path, x, api_module, x) for x in api_exports]
-                api_cache_entries += ["'{}{}': null,".format(api_path, x) for x in api_exports]
+                api_cache_entries += ["'{}{}': null as any,".format(api_path, x) for x in api_exports]
 
         for phase, scss_paths in [('pre', pre_scss_paths), ('post', post_scss_paths)]:
             scss_path = os.path.join(mod_path, phase + '.scss')

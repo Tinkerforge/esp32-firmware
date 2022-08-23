@@ -12,8 +12,12 @@ export interface ConfigMap {
     'info/features': Features
 };
 
+// It is save to use null here:
+// All api cache accesses only happen after the websocket connection is established.
+// The first message contains a complete dump of the ESP's state.
+// All cache values are then initialized.
 export let api_cache: {[key in keyof ConfigMap]: ConfigMap[key]} = {
     {{{api_cache_entries}}}
-    'info/modules': null,
-    'info/features': null
+    'info/modules': null as any,
+    'info/features': null as any
 };
