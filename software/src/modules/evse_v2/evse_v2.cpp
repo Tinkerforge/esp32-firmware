@@ -751,7 +751,7 @@ void EVSEV2::register_urls()
     api.addState("evse/control_pilot_configuration", &evse_control_pilot_configuration, {}, 1000);
     api.addCommand("evse/control_pilot_configuration_update", &evse_control_pilot_configuration_update, {}, [this](){
         auto cp = evse_control_pilot_configuration_update.get("control_pilot")->asUint();
-        int rc = tf_evse_v2_set_control_pilot_configuration(&device, cp);
+        int rc = tf_evse_v2_set_control_pilot_configuration(&device, cp, nullptr);
         logger.printfln("updating control pilot to %u. rc %d", cp, rc);
         is_in_bootloader(rc);
     }, true);
@@ -903,6 +903,7 @@ void EVSEV2::update_all_data()
     uint32_t button_release_time;
     bool button_pressed;
     uint8_t control_pilot;
+    bool control_pilot_connected;
 
     // get_low_level_state - 57 byte
     uint8_t led_state;
@@ -955,7 +956,8 @@ void EVSEV2::update_all_data()
                                    &button_press_time,
                                    &button_release_time,
                                    &button_pressed,
-                                   &control_pilot);
+                                   &control_pilot,
+                                   &control_pilot_connected);
 
     if (rc != TF_E_OK) {
         logger.printfln("all_data_2 %d", rc);
