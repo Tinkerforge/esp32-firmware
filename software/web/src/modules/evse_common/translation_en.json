@@ -92,7 +92,6 @@
 
             "user_description": "User authorization",
             "user_description_muted": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
-            "user_enable": "Requires a user authorization (via NFC card) to charge",
 
 
             "external_description": "External control",

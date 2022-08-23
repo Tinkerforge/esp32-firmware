@@ -396,6 +396,13 @@ function check_http_auth_allowed() {
     }
 }
 
+
+function update_evse_user() {
+    let x = API.get_maybe('evse/user_enabled');
+    $('#evse_user').prop("checked", x.enabled);
+}
+
+
 export function init() {
     $('#users_config_form').on('input', () => $('#users_config_save_button').prop("disabled", false));
     $('#users_config_form').on('input', check_http_auth_allowed);
@@ -486,10 +493,16 @@ export function init() {
     })
 
     $(`#users_config_user_show_password`).on("change", util.toggle_password_fn(`#users_config_user_new_password`));
+
+    $('#evse_user').on("change", () => {
+        let enable = $('#evse_user').is(":checked");
+        API.save_maybe('evse/user_enabled', {"enabled": enable}, __("evse.script.save_failed"));
+    });
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('users/config', () => update_users_config(false));
+    source.addEventListener("evse/user_enabled", update_evse_user);
 }
 
 export function update_sidebar_state(module_init: any) {
