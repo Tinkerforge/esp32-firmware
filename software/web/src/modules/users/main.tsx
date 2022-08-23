@@ -160,6 +160,9 @@ async function save_users_config() {
     }
 
     await save_authentication_config();
+
+    let nfc_auth_enable = $('#evse_user').is(":checked");
+    await API.save_maybe('evse/user_enabled', {"enabled": nfc_auth_enable}, __("evse.script.save_failed"));
 }
 
 function generate_user_ui(user: User, password: string) {
@@ -493,11 +496,6 @@ export function init() {
     })
 
     $(`#users_config_user_show_password`).on("change", util.toggle_password_fn(`#users_config_user_new_password`));
-
-    $('#evse_user').on("change", () => {
-        let enable = $('#evse_user').is(":checked");
-        API.save_maybe('evse/user_enabled', {"enabled": enable}, __("evse.script.save_failed"));
-    });
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
