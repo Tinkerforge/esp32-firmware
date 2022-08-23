@@ -90,9 +90,6 @@
             "charge_management_description_muted": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
             "charge_management_enable": "Requires the clearance of a charge manager (of this or another WARP charger) to charge",
 
-            "user_description": "User authorization",
-            "user_description_muted": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
-
 
             "external_description": "External control",
             "external_description_muted": "<a href=\"https://www.warp-charger.com/evcc.html?v=2\">see setup tutorial for details</a>",
