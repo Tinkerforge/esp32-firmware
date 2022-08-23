@@ -30,7 +30,7 @@ import {getAllUsernames} from "../charge_tracker/main";
 
 import { h, render } from "preact";
 import { __ } from "../../ts/translation";
-import { ConfigPageHeader } from "../../ts/config_page_header";
+import { ConfigPageHeader } from "../../ts/components/config_page_header";
 
 render(<ConfigPageHeader prefix="users" title={__("users.content.users")} />, $('#users_header')[0]);
 

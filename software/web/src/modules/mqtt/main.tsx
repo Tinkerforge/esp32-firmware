@@ -24,7 +24,7 @@ import * as API from "../../ts/api";
 
 import { h, render } from "preact";
 import { __ } from "../../ts/translation";
-import { ConfigPageHeader } from "../../ts/config_page_header";
+import { ConfigPageHeader } from "../../ts/components/config_page_header";
 
 render(<ConfigPageHeader prefix="mqtt" title={__("mqtt.content.mqtt")} />, $('#mqtt_header')[0]);
 

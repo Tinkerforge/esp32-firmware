@@ -24,7 +24,7 @@ import * as API from "../../ts/api";
 
 import { h, render } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
-import { PageHeader } from "../../ts/page_header";
+import { PageHeader } from "../../ts/components/page_header";
 
 render(<PageHeader title={__("firmware_update.content.firmware_update")} />, $('#firmware_update_header')[0]);
 

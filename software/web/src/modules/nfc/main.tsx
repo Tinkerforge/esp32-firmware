@@ -26,7 +26,7 @@ import feather from "../../ts/feather";
 
 import { h, render } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
-import { ConfigPageHeader } from "../../ts/config_page_header";
+import { ConfigPageHeader } from "../../ts/components/config_page_header";
 
 render(<ConfigPageHeader prefix="nfc" title={__("nfc.content.nfc")} />, $('#nfc_header')[0]);
 

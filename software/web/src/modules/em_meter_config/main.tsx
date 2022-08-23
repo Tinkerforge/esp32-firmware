@@ -24,7 +24,7 @@ import * as API from "../../ts/api";
 
 import { h, render } from "preact";
 import { __ } from "../../ts/translation";
-import { ConfigPageHeader } from "../../ts/config_page_header";
+import { ConfigPageHeader } from "../../ts/components/config_page_header";
 
 render(<ConfigPageHeader prefix="energy_manager_meter" title={__("em_meter_config.content.em_meter_config")} />, $('#em_meter_config_header')[0]);
 

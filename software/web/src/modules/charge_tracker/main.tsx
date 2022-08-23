@@ -26,7 +26,7 @@ import feather from "../../ts/feather";
 
 import { h, render } from "preact";
 import { __ } from "../../ts/translation";
-import { PageHeader } from "../../ts/page_header";
+import { PageHeader } from "../../ts/components/page_header";
 
 render(<PageHeader title={__("charge_tracker.content.charge_tracker")} />, $('#charge_tracker_header')[0]);
 
@@ -36,7 +36,7 @@ function update_last_charges() {
 
     let last_charges_html = charges.map((user) => {
         let display_name = __("charge_tracker.script.unknown_user")
-        
+
         let filtered = users_config.users.filter(x => x.id == user.user_id);
 
         if (user.user_id != 0 || filtered[0].display_name != "Anonymous") {

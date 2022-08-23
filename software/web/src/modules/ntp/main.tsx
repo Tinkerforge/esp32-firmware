@@ -26,7 +26,7 @@ import * as API from "../../ts/api";
 
 import { h, render } from "preact";
 import { __ } from "../../ts/translation";
-import { ConfigPageHeader } from "../../ts/config_page_header";
+import { ConfigPageHeader } from "../../ts/components/config_page_header";
 
 render(<ConfigPageHeader prefix="ntp" title={__("ntp.content.ntp")} />, $('#ntp_header')[0]);
 

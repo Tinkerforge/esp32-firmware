@@ -24,7 +24,7 @@ import * as API from "../../ts/api";
 
 import { h, render } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
-import { ConfigPageHeader } from "../../ts/config_page_header";
+import { ConfigPageHeader } from "../../ts/components/config_page_header";
 
 render(<ConfigPageHeader prefix="energy_manager" title={__("energy_manager.content.energy_manager")} />, $('#energy_manager_header')[0]);
 

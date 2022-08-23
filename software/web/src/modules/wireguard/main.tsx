@@ -27,7 +27,7 @@ import YaMD5 from "../../ts/yamd5";
 
 import { h, render } from "preact";
 import { __ } from "../../ts/translation";
-import { ConfigPageHeader } from "../../ts/config_page_header";
+import { ConfigPageHeader } from "../../ts/components/config_page_header";
 
 render(<ConfigPageHeader prefix="wireguard" title={__("wireguard.content.wireguard")} />, $('#wireguard_header')[0]);
 

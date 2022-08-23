@@ -18,7 +18,7 @@
  */
 
 import { h, Component, JSX } from "preact";
-import { __ } from "./translation";
+import { __ } from "../translation";
 
 export interface ConfigPageHeaderProps {
     prefix: string,
@@ -30,7 +30,7 @@ export class ConfigPageHeader extends Component<ConfigPageHeaderProps, any> {
         let button_id = this.props.prefix + "_config_save_button";
         let spinner_id = this.props.prefix + "_config_save_spinner";
         let config_form = this.props.prefix + "_config_form";
-    
+
         return (
             <div class="row sticky-under-top mb-3 pt-3">
                 <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-header-shadow">

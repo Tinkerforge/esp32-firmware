@@ -26,7 +26,7 @@ import * as API from "../../ts/api";
 
 import { h, render } from "preact";
 import { __ } from "../../ts/translation";
-import { ConfigPageHeader } from "../../ts/config_page_header";
+import { ConfigPageHeader } from "../../ts/components/config_page_header";
 
 render(<ConfigPageHeader prefix="wifi_sta" title={__("wifi.content.sta_settings")} />, $('#wifi_sta_header')[0]);
 render(<ConfigPageHeader prefix="wifi_ap" title={__("wifi.content.ap_settings")} />, $('#wifi_ap_header')[0]);

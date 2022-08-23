@@ -26,7 +26,7 @@ import * as API from "../../ts/api";
 
 import { h, render } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
-import { PageHeader } from "../../ts/page_header";
+import { PageHeader } from "../../ts/components/page_header";
 
 render(<PageHeader title={__("evse.content.evse")} />, $('#evse_header')[0]);
 

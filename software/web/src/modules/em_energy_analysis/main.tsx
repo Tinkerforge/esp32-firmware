@@ -24,7 +24,7 @@ import * as API from "../../ts/api";
 
 import { h, render } from "preact";
 import { __ } from "../../ts/translation";
-import { PageHeader } from "../../ts/page_header";
+import { PageHeader } from "../../ts/components/page_header";
 
 render(<PageHeader title={__("em_energy_analysis.content.em_energy_analysis")} />, $('#em_energy_analysis_header')[0]);
 
