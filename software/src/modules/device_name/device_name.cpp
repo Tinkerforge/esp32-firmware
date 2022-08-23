@@ -44,23 +44,23 @@ DeviceName::DeviceName()
 #if defined BUILD_NAME_WARP || defined BUILD_NAME_WARP2
 String getWarpDisplayName()
 {
-    String display_type = api.hasFeature("meter") ? " Pro " : " Smart ";
+    String display_type = api.hasFeature("meter") ? " Pro" : " Smart";
 
     if (api.hasFeature("evse")) {
-        display_type += api.getState("evse/slots")->get(1)->get("max_current")->asUint() <= 20000 ? "11" : "22";
-        display_type += "kW ";
+        display_type += api.getState("evse/slots")->get(1)->get("max_current")->asUint() <= 20000 ? " 11" : " 22";
+        display_type += "kW";
     } else {
-        display_type += "without EVSE ";
+        display_type += " without EVSE";
     }
 
 #if defined BUILD_NAME_WARP
     if (api.hasFeature("nfc")) {
-        display_type += "+NFC ";
+        display_type += " +NFC";
     }
 #endif
 
     if (api.hasFeature("rtc")) {
-        display_type += "+RTC";
+        display_type += " +RTC";
     }
     return display_type;
 }
