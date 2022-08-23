@@ -36,7 +36,15 @@ class EventLog
 {
 public:
     std::mutex event_buf_mutex;
-    TF_Ringbuffer<char, 10000, uint32_t, malloc_32bit_addressed, heap_caps_free> event_buf;
+    TF_Ringbuffer<char,
+                  10000,
+                  uint32_t,
+#if defined(BOARD_HAS_PSRAM)
+                  malloc_psram,
+#else
+                  malloc_32bit_addressed,
+#endif
+                  heap_caps_free> event_buf;
 
     void setup();
 
