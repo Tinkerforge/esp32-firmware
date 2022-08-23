@@ -304,7 +304,7 @@ void API::registerDebugUrl(WebServer *server)
     });
 
     this->addState("info/features", &features, {}, 1000);
-    this->addState("info/version", &version, {}, 10000);
+    this->addState("info/version", &version, {}, 1000);
 }
 
 void API::registerBackend(IAPIBackend *backend)

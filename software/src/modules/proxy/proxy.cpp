@@ -119,7 +119,7 @@ void Proxy::setup()
 void Proxy::register_urls()
 {
     api.addState("proxy/error_counters", &error_counters, {}, 1000);
-    api.addState("proxy/devices", &devices, {}, 10000);
+    api.addState("proxy/devices", &devices, {}, 1000);
 
     task_scheduler.scheduleWithFixedDelay([this](){
         for(char c = 'A'; c <= 'F'; ++c) {
