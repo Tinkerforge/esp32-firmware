@@ -116,17 +116,17 @@ ChargeManager::ChargeManager()
                 {"name", Config::Str("", 0, 32)},
                 {"last_update", Config::Uint32(0)},
                 {"uptime", Config::Uint32(0)},
-                {"supported_current", Config::Uint16(0)},
-                {"allowed_current", Config::Uint16(0)},
+                {"supported_current", Config::Uint16(0)}, // maximum current supported by the charger
+                {"allowed_current", Config::Uint16(0)}, // last current limit reported by the charger
                 {"wants_to_charge", Config::Bool(false)},
                 {"wants_to_charge_low_priority", Config::Bool(false)},
                 {"is_charging", Config::Bool(false)},
 
                 {"last_sent_config", Config::Uint32(0)},
-                {"allocated_current", Config::Uint16(0)},
+                {"allocated_current", Config::Uint16(0)}, // last current limit send to the charger
 
-                {"state", Config::Uint8(0)}, //0 - no vehicle, 1 - user blocked, 2 - manager blocked, 3, car blocked, 4 - charging, 5 - error, 6 - charged
-                {"error", Config::Uint8(0)} //0 - OK, 1 - Unreachable, 2 - FW mismatch, 3 - not managed
+                {"state", Config::Uint8(0)}, // 0 - no vehicle, 1 - user blocked, 2 - manager blocked, 3 - car blocked, 4 - charging, 5 - error, 6 - charged
+                {"error", Config::Uint8(0)} // 0 - okay, 1 - unreachable, 2 - FW mismatch, 3 - not managed
             })},
             0, MAX_CLIENTS, Config::type_id<Config::ConfObject>()
         )}
