@@ -50,7 +50,7 @@ String check_key(String key, bool enable)
 Wireguard::Wireguard()
 {
     config = ConfigRoot{Config::Object({
-        {"enable", Config::Bool(false)},
+        {"enabled", Config::Bool(false)},
         {"make_default_interface", Config::Bool(true)},
 
         {"internal_ip",      Config::Str("0.0.0.0", 7, 15)},
@@ -91,7 +91,7 @@ Wireguard::Wireguard()
             return "Failed to parse \"allowed_subnet\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
 
-        bool enable = cfg.get("enable")->asBool();
+        bool enable = cfg.get("enabled")->asBool();
         String private_key = cfg.get("private_key")->asString();
         String result = check_key(private_key, enable);
         if (result != "")
@@ -171,7 +171,7 @@ void Wireguard::setup()
 
     initialized = true;
 
-    if (!config.get("enable")->asBool())
+    if (!config.get("enabled")->asBool())
         return;
 
     logger.printfln("WireGuard enabled. Waiting for NTP time sync.");
