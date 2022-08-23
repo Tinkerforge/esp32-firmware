@@ -92,6 +92,7 @@ public:
     ConfigRoot evse_button_state;
     ConfigRoot evse_slots;
     ConfigRoot evse_indicator_led;
+    ConfigRoot evse_control_pilot_connected;
     ConfigRoot evse_reset_dc_fault_current_state;
     ConfigRoot evse_stop_charging;
     ConfigRoot evse_start_charging;

@@ -185,6 +185,10 @@ EVSEV2::EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE 2.0", std::bind(&EVSEV
         {"control_pilot", Config::Uint8(0)}
     });
 
+    evse_control_pilot_connected = Config::Object({
+        {"connected", Config::Bool(true)}
+    });
+
     evse_auto_start_charging = Config::Object({
         {"auto_start_charging", Config::Bool(true)}
     });
@@ -684,6 +688,7 @@ void EVSEV2::register_urls()
     api.addState("evse/button_state", &evse_button_state, {}, 250);
     api.addState("evse/slots", &evse_slots, {}, 1000);
     api.addState("evse/indicator_led", &evse_indicator_led, {}, 1000);
+    api.addState("evse/control_pilot_connected", &evse_control_pilot_connected, {}, 1000);
 
     // Actions
     api.addCommand("evse/reset_dc_fault_current_state", &evse_reset_dc_fault_current_state, {}, [this](){
@@ -892,7 +897,7 @@ void EVSEV2::update_all_data()
     bool phases_connected[3];
     uint32_t error_count[6];
 
-    // get_all_data_2 - 18 byte
+    // get_all_data_2 - 19 byte
     uint8_t shutdown_input_configuration;
     uint8_t input_configuration;
     uint8_t output_configuration;
@@ -1120,6 +1125,7 @@ void EVSEV2::update_all_data()
 
     // get_control_pilot
     evse_control_pilot_configuration.get("control_pilot")->updateUint(control_pilot);
+    evse_control_pilot_connected.get("connected")->updateBool(control_pilot_connected);
 
     // get_indicator_led
     evse_indicator_led.get("indication")->updateInt(indication);
