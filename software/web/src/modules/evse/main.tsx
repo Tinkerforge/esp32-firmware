@@ -145,11 +145,6 @@ function update_evse_user_calibration() {
     $('#resistance_880').val(c.resistance_880.join(", "));
 }
 
-function update_evse_managed() {
-    let x = API.get('evse/management_enabled');
-    $('#evse_charge_management').prop("checked", x.enabled);
-}
-
 
 function update_evse_user() {
     let x = API.get('evse/user_enabled');
@@ -389,11 +384,6 @@ export function init() {
 
     allow_debug(true);
 
-    $('#evse_charge_management').on("change", () => {
-        let enable = $('#evse_charge_management').is(":checked");
-        API.save('evse/management_enabled', {"enabled": enable}, __("evse.script.save_failed"));
-    });
-
     $('#evse_user').on("change", () => {
         let enable = $('#evse_user').is(":checked");
         API.save('evse/user_enabled', {"enabled": enable}, __("evse.script.save_failed"));
@@ -480,7 +470,6 @@ export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('evse/state', update_evse_low_level_state);
     source.addEventListener('evse/hardware_configuration', update_evse_hardware_configuration);
     source.addEventListener('evse/auto_start_charging', update_evse_auto_start_charging);
-    source.addEventListener("evse/management_enabled", update_evse_managed);
     source.addEventListener("evse/user_enabled", update_evse_user);
     source.addEventListener("evse/external_enabled", update_evse_external);
     source.addEventListener("evse/slots", update_evse_slots);

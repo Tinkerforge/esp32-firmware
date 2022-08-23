@@ -124,6 +124,31 @@ function update_available_current(current: number = API.get('charge_manager/avai
     }
 }
 
+function insert_local_host(config: ChargeManagerConfig = API.get('charge_manager/config'))
+{
+    let name = API.get("info/display_name");
+
+    let local_is_there = false;
+
+    config.chargers.forEach((v, i) => {
+        if (v.host == "127.0.0.1")
+        {
+            local_is_there = true;
+            return
+        }
+    })
+
+    if (!local_is_there)
+    {
+        let c: ChargerConfig = {
+            host: "127.0.0.1",
+            name: name.display_name,
+        }
+        config.chargers.unshift(c);
+    }
+    update_charge_manager_config(config, true);
+}
+
 function update_charge_manager_config(config: ChargeManagerConfig = API.get('charge_manager/config'), force: boolean) {
     $('#charge_manager_status_available_current').prop("max", config.maximum_available_current / 1000.0);
     $("#charge_manager_status_available_current_maximum").on("click", () => set_available_current(config.default_available_current));
@@ -199,6 +224,11 @@ function update_charge_manager_config(config: ChargeManagerConfig = API.get('cha
         const s = config.chargers[i];
         $(`#charge_manager_config_charger_${i}_name`).val(s.name);
         $(`#charge_manager_config_charger_${i}_host`).val(s.host);
+        if (s.host == "127.0.0.1")
+        {
+            $(`#charge_manager_content_${i}_remove`).css("visibility","hidden");
+            $(`#charge_manager_config_charger_${i}_host`).prop("disabled", true);
+        }
     }
 }
 
@@ -219,8 +249,10 @@ function collect_charge_manager_config(new_charger: ChargerConfig = null, remove
     if (new_charger != null)
         chargers.push(new_charger);
 
+    let enabled = $('#charge_manager_mode_dropdown').val() == "2";
+
     return {
-       enable_charge_manager: $('#charge_manager_enable').is(':checked'),
+       enable_charge_manager: enabled,
        enable_watchdog: $('#charge_manager_enable_watchdog').is(':checked'),
        verbose: $('#charge_manager_verbose').is(':checked'),
        default_available_current: Math.round(($('#charge_manager_default_available_current').val() as number) * 1000),
@@ -230,9 +262,13 @@ function collect_charge_manager_config(new_charger: ChargerConfig = null, remove
     };
 }
 
-function save_charge_manager_config() {
+async function save_charge_manager_config() {
     let payload = collect_charge_manager_config();
-    API.save('charge_manager/config', payload, __("charge_manager.script.save_failed"), __("charge_manager.script.reboot_content_changed"))
+    let evse_enabled = false;
+    if ($('#charge_manager_mode_dropdown').val() == "1" || $('#charge_manager_mode_dropdown').val() == "2")
+        evse_enabled = true;
+    await API.save_maybe('evse/management_enabled', {"enabled": evse_enabled}, translate_unchecked("evse.script.save_failed"));
+    await API.save('charge_manager/config', payload, __("charge_manager.script.save_failed"), __("charge_manager.script.reboot_content_changed"))
        .then(() => $('#charge_manager_config_save_button').prop("disabled", true));
 }
 
@@ -344,6 +380,33 @@ function scan_services()
         })
 }
 
+function show_cfg_body()
+{
+    if ($('#charge_manager_mode_dropdown').val() == "2")
+    {
+        $('#charge_manager_config_body').collapse("show");
+    }
+    else
+        $('#charge_manager_config_body').collapse("hide");
+}
+
+function set_dropdown()
+{
+    let x = API.get_maybe('evse/management_enabled');
+    let y = API.get('charge_manager/config');
+
+    if (x)
+    {
+        if (x.enabled == true && y.enable_charge_manager == true)
+            $('#charge_manager_mode_dropdown').val("2");
+        else if (x.enabled == true)
+            $('#charge_manager_mode_dropdown').val("1");
+        else
+            $('#charge_manager_mode_dropdown').val("0");
+    }
+    show_cfg_body();
+}
+
 export function init() {
     var intervalID: number;
     $('#charge_manager_add_charger_modal').on('shown.bs.modal', scan_services);
@@ -416,19 +479,30 @@ export function init() {
         let form = $('#charge_manager_add_charger_form')[0] as HTMLFormElement;
         form.reset();
     })
+    $('#charge_manager_mode_dropdown').on("input", () => {
+        if ($('#charge_manager_mode_dropdown').val() == 2)
+            insert_local_host();
+        show_cfg_body();
+    });
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('charge_manager/state', update_charge_manager_state);
-    source.addEventListener('charge_manager/config', () => update_charge_manager_config(undefined, false));
+    source.addEventListener('charge_manager/config', () => {
+        set_dropdown();
+        update_charge_manager_config(undefined, false);
+    });
     source.addEventListener('charge_manager/available_current', () => update_available_current());
+    source.addEventListener('evse/management_enabled' as any,() => {
+        set_dropdown();
+    });
     source.addEventListener('charge_manager/scan_result', (e) => {
         window.clearTimeout(scan_timeout);
         scan_timeout = null;
 
         if (typeof e.data !== "string")
             update_scan_results(e.data);
-    }, false)
+    }, false);
 }
 
 export function update_sidebar_state(module_init: any) {

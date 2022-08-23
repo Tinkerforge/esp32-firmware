@@ -82,15 +82,7 @@ ChargeManager::ChargeManager()
         {"maximum_available_current", Config::Uint32(0xFFFFFFFF)}, // Keep in sync with energy_manager.cpp
         {"minimum_current", Config::Uint(6000, 6000, 32000)}, // Keep in sync with energy_manager.cpp
         {"verbose", Config::Bool(false)},
-        {"chargers", Config::Array(
-            {
-#if !MODULE_ENERGY_MANAGER_AVAILABLE()
-                Config::Object({
-                    {"host", Config::Str("127.0.0.1", 0, 64)},
-                    {"name", Config::Str("Lokale Wallbox", 0, 32)} // FIXME: needs to be translated
-                })
-#endif
-            },
+        {"chargers", Config::Array({},
             new Config{Config::Object({
                 {"host", Config::Str("", 0, 64)},
                 {"name", Config::Str("", 0, 32)}
@@ -273,7 +265,6 @@ void ChargeManager::setup()
 #if MODULE_ENERGY_MANAGER_AVAILABLE()
         apply_enegry_manager_config(charge_manager_config);
 #else
-        charge_manager_config.get("chargers")->get(0)->get("name")->updateString(String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str));
         charge_manager_config.get("maximum_available_current")->updateUint(0);
 #endif
     }
