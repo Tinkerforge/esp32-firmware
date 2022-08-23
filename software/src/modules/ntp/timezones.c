@@ -1,5 +1,5 @@
 /*
-2022a;2022-03-29T07:20:08.109907
+2022c;2022-08-23T07:00:17.839214
 */
 /* esp32-firmware
  * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
@@ -747,7 +747,7 @@ static const TableValue Asia_vals[] = {
     {true, {"CST-8"}},
     {true, {"<+05>-5"}},
     {true, {"<+04>-4"}},
-    {true, {"<+0330>-3:30<+0430>,J79/24,J263/24"}},
+    {true, {"<+0330>-3:30"}},
     {true, {"IST-2IDT,M3.4.4/26,M10.5.0"}},
     {true, {"<+06>-6"}},
     {true, {"<+06>-6"}},
@@ -957,6 +957,7 @@ static const char * const Europe_keys[] = {
     "Kaliningrad",
     "Kiev",
     "Kirov",
+    "Kyiv",
     "Lisbon",
     "Ljubljana",
     "London",
@@ -1023,6 +1024,7 @@ static const TableValue Europe_vals[] = {
     {true, {"EET-2"}},
     {true, {"EET-2EEST,M3.5.0/3,M10.5.0/4"}},
     {true, {"<+03>-3"}},
+    {true, {"EET-2EEST,M3.5.0/3,M10.5.0/4"}},
     {true, {"WET0WEST,M3.5.0/1,M10.5.0"}},
     {true, {"CET-1CEST,M3.5.0,M10.5.0/3"}},
     {true, {"GMT0BST,M3.5.0/1,M10.5.0"}},
@@ -1064,7 +1066,7 @@ static const TableValue Europe_vals[] = {
     {true, {"CET-1CEST,M3.5.0,M10.5.0/3"}},
 };
 
-static const Table Europe = {Europe_keys, Europe_vals, 63};
+static const Table Europe = {Europe_keys, Europe_vals, 64};
 
 static const char * const Indian_keys[] = {
     "Antananarivo",

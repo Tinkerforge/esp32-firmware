@@ -1,5 +1,5 @@
 /*
-2022a;2022-03-29T07:20:08.110610
+2022c;2022-08-23T07:00:17.839927
 */
 /* esp32-firmware
  * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
@@ -492,6 +492,7 @@ let timezones: {[key: string]: {[key: string]: null | {[key: string]: null}}} = 
         "Sofia": null,
         "Belgrade": null,
         "Warsaw": null,
+        "Kyiv": null,
         "Copenhagen": null,
         "Vatican": null,
         "Skopje": null,
