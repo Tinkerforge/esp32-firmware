@@ -180,7 +180,7 @@ let ws: WebSocket = null;
 
 const RECONNECT_TIME = 12000;
 
-let eventTarget: API.APIEventTarget = null;
+export let eventTarget: API.APIEventTarget = new API.APIEventTarget();
 
 export function setupEventSource(first: boolean, keep_as_first: boolean, continuation: (ws: WebSocket, eventTarget: API.APIEventTarget) => void) {
     if (!first) {
@@ -191,7 +191,6 @@ export function setupEventSource(first: boolean, keep_as_first: boolean, continu
         ws.close();
     }
     ws = new WebSocket((location.protocol == 'https:' ? 'wss://' : 'ws://') + location.host + '/ws');
-    eventTarget = new API.APIEventTarget();
 
     if (wsReconnectTimeout != null) {
         clearTimeout(wsReconnectTimeout);
