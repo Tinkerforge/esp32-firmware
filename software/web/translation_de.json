@@ -16,6 +16,10 @@
     "component": {
         "config_page_header": {
             "save": "Speichern"
+        },
+        "input_password": {
+            "to_be_cleared": "Wird beim Speichern geleert",
+            "unchanged": "unverändert"
         }
     },
     "util": {

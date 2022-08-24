@@ -16,6 +16,10 @@
     "component": {
         "config_page_header": {
             "save": "Save"
+        },
+        "input_password": {
+            "to_be_cleared": "Will be cleared on save.",
+            "unchanged": "unchanged"
         }
     },
     "util": {
