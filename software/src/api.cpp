@@ -88,11 +88,6 @@ void API::addCommand(String path, ConfigRoot *config, std::initializer_list<Stri
         return;
 
     commands.push_back({path, config, callback, keys_to_censor_in_debug_report, is_action, ""});
-    // auto commandIdx = commands.size() - 1;
-
-    // for (auto *backend : this->backends) {
-    //     backend->addCommand(commandIdx, commands[commandIdx]);
-    // }
 }
 
 void API::addState(String path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms)
