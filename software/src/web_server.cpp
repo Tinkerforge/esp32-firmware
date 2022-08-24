@@ -25,13 +25,16 @@
 #include "task_scheduler.h"
 #include "digest_auth.h"
 
+#include "modules.h"
+
 #include "tools.h"
 
 #include <memory>
 
+#define MAX_URI_HANDLERS 128
+
 extern TaskScheduler task_scheduler;
 
-#define MAX_URI_HANDLERS 128
 
 void WebServer::start()
 {
@@ -45,6 +48,11 @@ void WebServer::start()
     config.max_uri_handlers = MAX_URI_HANDLERS;
     config.global_user_ctx = this;
     config.max_open_sockets = 10;
+
+#if MODULE_HTTP_AVAILABLE()
+    config.uri_match_fn = custom_uri_match;
+#endif
+
     /*config.task_priority = tskIDLE_PRIORITY+7;
     config.core_id = 1;*/
 
