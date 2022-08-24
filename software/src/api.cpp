@@ -88,6 +88,11 @@ void API::addCommand(String path, ConfigRoot *config, std::initializer_list<Stri
         return;
 
     commands.push_back({path, config, callback, keys_to_censor_in_debug_report, is_action, ""});
+    auto commandIdx = commands.size() - 1;
+
+    for (auto *backend : this->backends) {
+        backend->addCommand(commandIdx, commands[commandIdx]);
+    }
 }
 
 void API::addState(String path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms)
@@ -96,6 +101,11 @@ void API::addState(String path, ConfigRoot *config, std::initializer_list<String
         return;
 
     states.push_back({path, config, keys_to_censor, interval_ms, millis()});
+    auto stateIdx = states.size() - 1;
+
+    for (auto *backend : this->backends) {
+        backend->addState(stateIdx, states[stateIdx]);
+    }
 }
 
 bool API::addPersistentConfig(String path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms)
@@ -124,6 +134,11 @@ void API::addRawCommand(String path, std::function<String(char *, size_t)> callb
         return;
 
     raw_commands.push_back({path, callback, is_action});
+    auto rawCommandIdx = raw_commands.size() - 1;
+
+    for (auto *backend : this->backends) {
+        backend->addRawCommand(rawCommandIdx, raw_commands[rawCommandIdx]);
+    }
 }
 
 bool API::hasFeature(const char *name)
