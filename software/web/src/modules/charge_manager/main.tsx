@@ -382,29 +382,23 @@ function scan_services()
 
 function show_cfg_body()
 {
-    if ($('#charge_manager_mode_dropdown').val() == "2")
-    {
-        $('#charge_manager_config_body').collapse("show");
-    }
-    else
-        $('#charge_manager_config_body').collapse("hide");
+    $('#charge_manager_config_body').collapse($('#charge_manager_mode_dropdown').val() == "2" ? "show" : "hide");
 }
 
 function set_dropdown()
 {
+    if(!$('#charge_manager_config_save_button').prop("disabled"))
+        return;
+
     let x = API.get_maybe('evse/management_enabled');
     let y = API.get('charge_manager/config');
+    let new_val = "0";
+    if (y.enable_charge_manager == true)
+        new_val = "2";
+    else if (x && x.enabled == true)
+        new_val = "1";
 
-    if (x)
-    {
-        if (x.enabled == true && y.enable_charge_manager == true)
-            $('#charge_manager_mode_dropdown').val("2");
-        else if (x.enabled == true)
-            $('#charge_manager_mode_dropdown').val("1");
-        else
-            $('#charge_manager_mode_dropdown').val("0");
-    }
-    show_cfg_body();
+    $('#charge_manager_mode_dropdown').val(new_val);
 }
 
 export function init() {
@@ -490,6 +484,7 @@ export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('charge_manager/state', update_charge_manager_state);
     source.addEventListener('charge_manager/config', () => {
         set_dropdown();
+        show_cfg_body();
         update_charge_manager_config(undefined, false);
     });
     source.addEventListener('charge_manager/available_current', () => update_available_current());
