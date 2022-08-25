@@ -312,8 +312,8 @@ function update_scan_results(data: Readonly<ServCharger[]>)
                     <span class="text-right" id="disabled_${i}" style="color:red" hidden></span>
                 </div>
                 <div class="d-flex w-100 justify-content-between">
-                    <span id="hostname_id_${i}"></span>
-                    <span id="ip_${i}"></span>
+                    <a id="hostname_id_${i}" target="_blank" rel="noopener noreferrer"></a>
+                    <a id="ip_${i}" target="_blank" rel="noopener noreferrer"></a>
                 </div>
                 </button>`);
             }
@@ -322,41 +322,39 @@ function update_scan_results(data: Readonly<ServCharger[]>)
 
             $(`#charger_scan_id_${i}`).text(v.display_name);
             $(`#hostname_id_${i}`).text(v.hostname + ".local");
+            $(`#hostname_id_${i}`).prop("href", `http://${v.hostname}.local`);
 
-            if (v.ip != "[no_address]" || $(`#ip_${i}`).text().length == 0)
+            if (v.ip != "[no_address]" || $(`#ip_${i}`).text().length == 0) {
                 $(`#ip_${i}`).text(v.ip);
+                $(`#ip_${i}`).prop("href", `http://${v.ip}`);
+            }
 
-            $(`#charge_manager_config_charger_scan_result_${i}`).prop("disabled", false);
-            $(`#disabled_${i}`).prop("hidden", true);
+            let has_error = v.error != 0;
+
+            $(`#charge_manager_config_charger_scan_result_${i}`).toggleClass("list-group-item-light", has_error);
+            $(`#disabled_${i}`).prop("hidden", !has_error);
+
+            if (has_error) {
+                $(`#charge_manager_config_charger_scan_result_${i}`).off("click");
+                $(`#charge_manager_config_charger_scan_result_${i}`).attr("style", "background-color: #eeeeee !important;");
+            } else{
+                $(`#charge_manager_config_charger_scan_result_${i}`).on("click", () => {
+                    $("#charge_manager_config_charger_new_name").val(v.display_name);
+                    $("#charge_manager_config_charger_new_host").val(v.hostname + ".local");
+                })
+                $(`#charge_manager_config_charger_scan_result_${i}`).removeAttr("style");
+            }
 
             if (v.error == 1)
-            {
-                $(`#charge_manager_config_charger_scan_result_${i}`).prop("disabled", true);
-                $(`#disabled_${i}`).prop("hidden", false);
                 $(`#disabled_${i}`).text(__("charge_manager.content.wrong_version"));
-            }
             else if (v.error == 2)
-            {
-                $(`#charge_manager_config_charger_scan_result_${i}`).prop("disabled", true);
-                $(`#disabled_${i}`).prop("hidden", false);
                 $(`#disabled_${i}`).text(__("charge_manager.content.disabled"));
-            }
             else if (v.error == 3)
-            {
-                $(`#charge_manager_config_charger_scan_result_${i}`).prop("disabled", true);
-                $(`#disabled_${i}`).prop("hidden", false);
                 $(`#disabled_${i}`).text(__("charge_manager.content.invalid_box"));
-            }
 
-            $(`#charge_manager_config_charger_scan_result_${i}`).on("click", () => {
-                $("#charge_manager_config_charger_new_name").val(v.display_name);
-                $("#charge_manager_config_charger_new_host").val(v.hostname + ".local");
-            })
         }
         i = prev_element;
     })
-    // if ($('#charge_manager_add_charger_modal').is(':visible') == false)
-    //     $('#charge_manager_config_charger_scan_results').children().remove();
 }
 
 let scan_timeout: number = null;
