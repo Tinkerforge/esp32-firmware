@@ -75,59 +75,71 @@ void Http::setup()
     initialized = true;
 }
 
-WebServerRequestReturnProtect api_handler(WebServerRequest req) {
+static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cmdidx)
+{
+    String reason = api.getCommandBlockedReason(cmdidx);
+    if (reason != "") {
+        return req.send(400, "text/plain", reason.c_str());
+    }
+
+    // TODO: Use streamed parsing
+    int bytes_written = req.receive(recv_buf, 4096);
+    if (bytes_written == -1) {
+    // buffer was not large enough
+        return req.send(413);
+    } else if (bytes_written <= 0) {
+        logger.printfln("Failed to receive command payload: error code %d", bytes_written);
+        return req.send(400);
+    }
+
+    //json_buf.clear(); // happens implicitly in deserializeJson
+    DeserializationError error = deserializeJson(json_buf, recv_buf, bytes_written);
+    if (error) {
+        logger.printfln("Failed to parse command payload: %s", error.c_str());
+        return req.send(400);
+    }
+    JsonVariant json = json_buf.as<JsonVariant>();
+    String message = api.commands[cmdidx].config->update_from_json(json);
+
+    CommandRegistration reg = api.commands[cmdidx];
+
+    if (message == "") {
+        task_scheduler.scheduleOnce([reg](){reg.callback();}, 0);
+        return req.send(200, "text/html", "");
+    }
+    return req.send(400, "text/html", message.c_str());
+}
+
+WebServerRequestReturnProtect api_handler_get(WebServerRequest req)
+{
     for (size_t i = 0; i < api.states.size(); i++)
     {
-        // strcmp is save here: both String::c_str() and req.uriCStr() return null terminated strings.
-        // Also we know (because of the custom matcher) that req.uriCStr() contains an API path,
-        // we only have to find out which one.
-        // Use + 1 to compare: req.uriCStr() starts with /; the api paths don't.
+        //strcmp is save here: both String::c_str() and req.uniCStr() return null terminated strings.
         if (strcmp(api.states[i].path.c_str(), req.uriCStr() + 1) == 0)
         {
             String response = api.states[i].config->to_string_except(api.states[i].keys_to_censor);
             return req.send(200, "application/json; charset=utf-8", response.c_str());
         }
     }
-    for (size_t i = 0; i < api.commands.size(); i++) {
-        // strcmp is save here: both String::c_str() and req.uriCStr() return null terminated strings.
-        // Also we know (because of the custom matcher) that req.uriCStr() contains an API path,
-        // we only have to find out which one.
-        // Use + 1 to compare: req.uriCStr() starts with /; the api paths don't.
+    for (size_t i = 0; i < api.commands.size(); i++)
+    {
+        //strcmp is save here: both String::c_str() and req.uniCStr() return null terminated strings.
+        if (strcmp(api.commands[i].path.c_str(), req.uriCStr() + 1) == 0 && api.commands[i].config->is<std::nullptr_t>())
+        {
+            return run_command(req, i);
+        }
+    }
+
+    return req.send(404);
+}
+
+WebServerRequestReturnProtect api_handler_put(WebServerRequest req) {
+    for (size_t i = 0; i < api.commands.size(); i++)
+    {
+        //strcmp is save here: both String::c_str() and req.uniCStr() return null terminated strings.
         if (strcmp(api.commands[i].path.c_str(), req.uriCStr() + 1) == 0)
         {
-            String reason = api.getCommandBlockedReason(i);
-            if (reason != "") {
-                return req.send(400, "text/plain", reason.c_str());
-            }
-
-            // TODO: Use streamed parsing
-            int bytes_written = req.receive(recv_buf, 4096);
-            if (bytes_written == -1) {
-                // buffer was not large enough
-                return req.send(413);
-            }
-
-            if (bytes_written <= 0) {
-                logger.printfln("Failed to receive command payload: error code %d", bytes_written);
-                return req.send(400);
-            }
-
-            //json_buf.clear(); // happens implicitly in deserializeJson
-            DeserializationError error = deserializeJson(json_buf, recv_buf, bytes_written);
-            if (error) {
-                logger.printfln("Failed to parse command payload: %s", error.c_str());
-                return req.send(400);
-            }
-            JsonVariant json = json_buf.as<JsonVariant>();
-            String message = api.commands[i].config->update_from_json(json);
-
-            CommandRegistration reg = api.commands[i];
-
-            if (message == "") {
-                task_scheduler.scheduleOnce([reg](){reg.callback();}, 0);
-                return req.send(200, "text/html", "");
-            }
-            return req.send(400, "text/html", message.c_str());
+            return run_command(req, i);
         }
     }
     for (size_t i = 0; i < api.raw_commands.size(); i++)
@@ -154,13 +166,35 @@ WebServerRequestReturnProtect api_handler(WebServerRequest req) {
             return req.send(400, "text/html", message.c_str());
         }
     }
+
+    if (!req.uri().endsWith("_update"))
+    {
+        for (size_t i = 0; i < api.states.size(); i++)
+        {
+            //strcmp is save here: both String::c_str() and req.uniCStr() return null terminated strings.
+            if (!strcmp(api.states[i].path.c_str(), req.uriCStr() + 1))
+            {
+                String uri_update = req.uri() + "_update";
+                for (size_t a = 0; a < api.commands.size(); a++)
+                {
+                    //strcmp is save here: both String::c_str() and req.uniCStr() return null terminated strings.
+                    if (!strcmp(api.commands[a].path.c_str(), uri_update.c_str() + 1))
+                    {
+                        return run_command(req, a);
+                    }
+                }
+            }
+        }
+    }
+
     return req.send(404);
 }
 
 void Http::register_urls()
 {
-    server.on("/*", HTTP_GET, api_handler);
-    server.on("/*", HTTP_PUT, api_handler);
+    server.on("/*", HTTP_GET, api_handler_get);
+    server.on("/*", HTTP_PUT, api_handler_put);
+    server.on("/*", HTTP_POST, api_handler_put);
 }
 
 void Http::loop()
