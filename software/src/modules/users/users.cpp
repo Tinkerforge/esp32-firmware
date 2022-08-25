@@ -28,6 +28,8 @@
 #include "digest_auth.h"
 #include <cmath>
 
+#include <memory>
+
 #define USERNAME_LENGTH 32
 #define DISPLAY_NAME_LENGTH 32
 #define USERNAME_ENTRY_LENGTH (USERNAME_LENGTH + DISPLAY_NAME_LENGTH)
@@ -627,7 +629,7 @@ void Users::register_urls()
     server.on("/users/all_usernames", HTTP_GET, [this](WebServerRequest request) {
         //std::lock_guard<std::mutex> lock{records_mutex};
         size_t len = MAX_PASSIVE_USERS * USERNAME_ENTRY_LENGTH;
-        char *buf = (char *)malloc(len);
+        auto buf = std::unique_ptr<char[]>(new char[len]);
         if (buf == nullptr) {
             request.send(507);
             return;
@@ -635,10 +637,8 @@ void Users::register_urls()
 
         File f = LittleFS.open(USERNAME_FILE, "r");
 
-        size_t read = f.read((uint8_t *)buf, len);
-        request.send(200, "application/octet-stream", buf, read);
-
-        free(buf);
+        size_t read = f.read((uint8_t *)buf.get(), len);
+        request.send(200, "application/octet-stream", buf.get(), read);
     });
 }
 
