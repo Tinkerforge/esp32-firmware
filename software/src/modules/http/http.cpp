@@ -41,8 +41,11 @@ static StaticJsonDocument<RECV_BUF_SIZE> json_buf;
 
 bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
 {
-    if (!strncmp(ref_uri, in_uri, len + 1))
+    if (!strncmp(ref_uri, in_uri, len))
         return true;
+
+    if (strncmp(ref_uri, "/*", 2) != 0)
+        return false;
 
     for (size_t i = 0; i < api.commands.size(); i++)
     {
