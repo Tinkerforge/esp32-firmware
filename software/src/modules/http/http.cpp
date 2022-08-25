@@ -77,7 +77,10 @@ void Http::setup()
 
 void api_handler(WebServerRequest req) {
     for (size_t i = 0; i < api.commands.size(); i++) {
-        //strcmp is save here: both String::c_str() and req.uniCStr() return null terminated strings.
+        // strcmp is save here: both String::c_str() and req.uriCStr() return null terminated strings.
+        // Also we know (because of the custom matcher) that req.uriCStr() contains an API path,
+        // we only have to find out which one.
+        // Use + 1 to compare: req.uriCStr() starts with /; the api paths don't.
         if (strcmp(api.commands[i].path.c_str(), req.uriCStr() + 1) == 0)
         {
             String reason = api.getCommandBlockedReason(i);
@@ -121,7 +124,10 @@ void api_handler(WebServerRequest req) {
     }
     for (size_t i = 0; i < api.states.size(); i++)
     {
-        //strcmp is save here: both String::c_str() and req.uniCStr() return null terminated strings.
+        // strcmp is save here: both String::c_str() and req.uriCStr() return null terminated strings.
+        // Also we know (because of the custom matcher) that req.uriCStr() contains an API path,
+        // we only have to find out which one.
+        // Use + 1 to compare: req.uriCStr() starts with /; the api paths don't.
         if (strcmp(api.states[i].path.c_str(), req.uriCStr() + 1) == 0)
         {
             String response = api.states[i].config->to_string_except(api.states[i].keys_to_censor);
@@ -131,7 +137,10 @@ void api_handler(WebServerRequest req) {
     }
     for (size_t i = 0; i < api.raw_commands.size(); i++)
     {
-        //strcmp is save here: both String::c_str() and req.uniCStr() return null terminated strings.
+        // strcmp is save here: both String::c_str() and req.uriCStr() return null terminated strings.
+        // Also we know (because of the custom matcher) that req.uriCStr() contains an API path,
+        // we only have to find out which one.
+        // Use + 1 to compare: req.uriCStr() starts with /; the api paths don't.
         if (strcmp(api.raw_commands[i].path.c_str(), req.uriCStr() + 1) == 0)
         {
             int bytes_written = req.receive(recv_buf, RECV_BUF_SIZE);
