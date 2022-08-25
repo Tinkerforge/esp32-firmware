@@ -329,9 +329,6 @@ function update_scan_results(data: Readonly<ServCharger[]>)
             $(`#charge_manager_config_charger_scan_result_${i}`).prop("disabled", false);
             $(`#disabled_${i}`).prop("hidden", true);
 
-            if ($(`#ip_${i}`).text() == "[no_address]")
-                $(`#charge_manager_config_charger_scan_result_${i}`).prop("disabled", true);
-
             if (v.error == 1)
             {
                 $(`#charge_manager_config_charger_scan_result_${i}`).prop("disabled", true);
