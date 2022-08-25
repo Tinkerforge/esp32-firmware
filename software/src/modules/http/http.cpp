@@ -76,6 +76,18 @@ void Http::setup()
 }
 
 WebServerRequestReturnProtect api_handler(WebServerRequest req) {
+    for (size_t i = 0; i < api.states.size(); i++)
+    {
+        // strcmp is save here: both String::c_str() and req.uriCStr() return null terminated strings.
+        // Also we know (because of the custom matcher) that req.uriCStr() contains an API path,
+        // we only have to find out which one.
+        // Use + 1 to compare: req.uriCStr() starts with /; the api paths don't.
+        if (strcmp(api.states[i].path.c_str(), req.uriCStr() + 1) == 0)
+        {
+            String response = api.states[i].config->to_string_except(api.states[i].keys_to_censor);
+            return req.send(200, "application/json; charset=utf-8", response.c_str());
+        }
+    }
     for (size_t i = 0; i < api.commands.size(); i++) {
         // strcmp is save here: both String::c_str() and req.uriCStr() return null terminated strings.
         // Also we know (because of the custom matcher) that req.uriCStr() contains an API path,
@@ -116,18 +128,6 @@ WebServerRequestReturnProtect api_handler(WebServerRequest req) {
                 return req.send(200, "text/html", "");
             }
             return req.send(400, "text/html", message.c_str());
-        }
-    }
-    for (size_t i = 0; i < api.states.size(); i++)
-    {
-        // strcmp is save here: both String::c_str() and req.uriCStr() return null terminated strings.
-        // Also we know (because of the custom matcher) that req.uriCStr() contains an API path,
-        // we only have to find out which one.
-        // Use + 1 to compare: req.uriCStr() starts with /; the api paths don't.
-        if (strcmp(api.states[i].path.c_str(), req.uriCStr() + 1) == 0)
-        {
-            String response = api.states[i].config->to_string_except(api.states[i].keys_to_censor);
-            return req.send(200, "application/json; charset=utf-8", response.c_str());
         }
     }
     for (size_t i = 0; i < api.raw_commands.size(); i++)
