@@ -26,6 +26,8 @@
 #include "task_scheduler.h"
 #include "tools.h"
 
+#include <memory>
+
 extern TaskScheduler task_scheduler;
 
 struct ChargeStart {
@@ -406,7 +408,7 @@ void ChargeTracker::register_urls()
     server.on("/charge_tracker/charge_log", HTTP_GET, [this](WebServerRequest request) {
         std::lock_guard<std::mutex> lock{records_mutex};
 
-        char *url_buf = (char *)malloc(CHARGE_RECORD_MAX_FILE_SIZE);
+        auto url_buf = std::unique_ptr<char[]>(new char[CHARGE_RECORD_MAX_FILE_SIZE]);
         if (url_buf == nullptr) {
             request.send(507);
             return;
@@ -430,7 +432,6 @@ void ChargeTracker::register_urls()
             request.sendChunk(url_buf, trunc);
         }
         request.endChunkedResponse();
-        free(url_buf);
     });
 
     api.addState("charge_tracker/last_charges", &last_charges, {}, 1000);
