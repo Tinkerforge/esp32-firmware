@@ -74,6 +74,10 @@ public:
         return String(req->uri);
     }
 
+    const char *uriCStr() {
+        return req->uri;
+    }
+
 private:
     httpd_req_t *req;
 };

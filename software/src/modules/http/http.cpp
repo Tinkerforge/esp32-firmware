@@ -44,22 +44,22 @@ bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
     if (!strncmp(ref_uri, in_uri, len))
         return true;
 
-    if (strncmp(ref_uri, "/*", 2) != 0)
+    if (strncmp(ref_uri, "/*", 2) != 0 || len < 2)
         return false;
 
     for (size_t i = 0; i < api.commands.size(); i++)
     {
-        if ("/" + api.commands[i].path == in_uri)
+        if (strncmp(api.commands[i].path.c_str(), in_uri + 1, len) == 0)
             return true;
     }
     for (size_t i = 0; i < api.states.size(); i++)
     {
-        if ("/" + api.states[i].path == in_uri)
+        if (strncmp(api.states[i].path.c_str(), in_uri + 1, len) == 0)
             return true;
     }
     for (size_t i = 0; i < api.raw_commands.size(); i++)
     {
-        if ("/" + api.raw_commands[i].path == in_uri)
+        if (strncmp(api.raw_commands[i].path.c_str(), in_uri + 1, len) == 0)
             return true;
     }
     return false;
@@ -80,7 +80,8 @@ static esp_err_t http_ll_handler(httpd_req_t *req)
 
     for (size_t i = 0; i < api.commands.size(); i++)
     {
-        if ("/" + api.commands[i].path == req->uri)
+        //strcmp is save here: both String::c_str() and req.uniCStr() return null terminated strings.
+        if (strcmp(api.commands[i].path.c_str(), req.uriCStr() + 1) == 0)
         {
             String reason = api.getCommandBlockedReason(i);
             if (reason != "") {
@@ -122,7 +123,8 @@ static esp_err_t http_ll_handler(httpd_req_t *req)
     }
     for (size_t i = 0; i < api.states.size(); i++)
     {
-        if ("/" + api.states[i].path == req->uri)
+        //strcmp is save here: both String::c_str() and req.uniCStr() return null terminated strings.
+        if (strcmp(api.states[i].path.c_str(), req.uriCStr() + 1) == 0)
         {
             String response = api.states[i].config->to_string_except(api.states[i].keys_to_censor);
             request.send(200, "application/json; charset=utf-8", response.c_str());
@@ -131,7 +133,8 @@ static esp_err_t http_ll_handler(httpd_req_t *req)
     }
     for (size_t i = 0; i < api.raw_commands.size(); i++)
     {
-        if ("/" + api.raw_commands[i].path == req->uri)
+        //strcmp is save here: both String::c_str() and req.uniCStr() return null terminated strings.
+        if (strcmp(api.raw_commands[i].path.c_str(), req.uriCStr() + 1) == 0)
         {
             int bytes_written = request.receive(recv_buf, RECV_BUF_SIZE);
             if (bytes_written == -1) {
