@@ -65,99 +65,6 @@ bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
     return false;
 }
 
-static esp_err_t http_ll_handler(httpd_req_t *req)
-{
-    WebServerRequest request = WebServerRequest{req};
-
-    if (server.auth_fn && !server.auth_fn(request)) {
-        if (server.on_not_authorized) {
-            server.on_not_authorized(request);
-            return ESP_OK;
-        }
-        request.requestAuthentication();
-        return ESP_OK;
-    }
-
-    for (size_t i = 0; i < api.commands.size(); i++)
-    {
-        //strcmp is save here: both String::c_str() and req.uniCStr() return null terminated strings.
-        if (strcmp(api.commands[i].path.c_str(), req.uriCStr() + 1) == 0)
-        {
-            String reason = api.getCommandBlockedReason(i);
-            if (reason != "") {
-                request.send(400, "text/plain", reason.c_str());
-                return ESP_OK;
-            }
-
-            // TODO: Use streamed parsing
-            int bytes_written = request.receive(recv_buf, 4096);
-            if (bytes_written == -1) {
-                // buffer was not large enough
-                request.send(413);
-                return ESP_OK;
-            } else if (bytes_written <= 0) {
-                logger.printfln("Failed to receive command payload: error code %d", bytes_written);
-                request.send(400);
-            }
-
-            //json_buf.clear(); // happens implicitly in deserializeJson
-            DeserializationError error = deserializeJson(json_buf, recv_buf, bytes_written);
-            if (error) {
-                logger.printfln("Failed to parse command payload: %s", error.c_str());
-                request.send(400);
-                return ESP_OK;
-            }
-            JsonVariant json = json_buf.as<JsonVariant>();
-            String message = api.commands[i].config->update_from_json(json);
-
-            CommandRegistration reg = api.commands[i];
-
-            if (message == "") {
-                task_scheduler.scheduleOnce([reg](){reg.callback();}, 0);
-                request.send(200, "text/html", "");
-            } else {
-                request.send(400, "text/html", message.c_str());
-            }
-            return ESP_OK;
-        }
-    }
-    for (size_t i = 0; i < api.states.size(); i++)
-    {
-        //strcmp is save here: both String::c_str() and req.uniCStr() return null terminated strings.
-        if (strcmp(api.states[i].path.c_str(), req.uriCStr() + 1) == 0)
-        {
-            String response = api.states[i].config->to_string_except(api.states[i].keys_to_censor);
-            request.send(200, "application/json; charset=utf-8", response.c_str());
-            return ESP_OK;
-        }
-    }
-    for (size_t i = 0; i < api.raw_commands.size(); i++)
-    {
-        //strcmp is save here: both String::c_str() and req.uniCStr() return null terminated strings.
-        if (strcmp(api.raw_commands[i].path.c_str(), req.uriCStr() + 1) == 0)
-        {
-            int bytes_written = request.receive(recv_buf, RECV_BUF_SIZE);
-            if (bytes_written == -1) {
-                // buffer was not large enough
-                request.send(413);
-                return ESP_OK;
-            } else if (bytes_written <= 0) {
-                logger.printfln("Failed to receive raw command payload: error code %d", bytes_written);
-                request.send(400);
-            }
-
-            String message = api.raw_commands[i].callback(recv_buf, bytes_written);
-            if (message == "") {
-                request.send(200, "text/html", "");
-            } else {
-                request.send(400, "text/html", message.c_str());
-            }
-            return ESP_OK;
-        }
-    }
-    return ESP_OK;
-}
-
 Http::Http()
 {
     api.registerBackend(this);
@@ -168,24 +75,91 @@ void Http::setup()
     initialized = true;
 }
 
+void api_handler(WebServerRequest req) {
+    for (size_t i = 0; i < api.commands.size(); i++) {
+        //strcmp is save here: both String::c_str() and req.uniCStr() return null terminated strings.
+        if (strcmp(api.commands[i].path.c_str(), req.uriCStr() + 1) == 0)
+        {
+            String reason = api.getCommandBlockedReason(i);
+            if (reason != "") {
+                req.send(400, "text/plain", reason.c_str());
+                return;
+            }
+
+            // TODO: Use streamed parsing
+            int bytes_written = req.receive(recv_buf, 4096);
+            if (bytes_written == -1) {
+                // buffer was not large enough
+                req.send(413);
+                return;
+            } else if (bytes_written <= 0) {
+                logger.printfln("Failed to receive command payload: error code %d", bytes_written);
+                req.send(400);
+                return;
+            }
+
+            //json_buf.clear(); // happens implicitly in deserializeJson
+            DeserializationError error = deserializeJson(json_buf, recv_buf, bytes_written);
+            if (error) {
+                logger.printfln("Failed to parse command payload: %s", error.c_str());
+                req.send(400);
+                return;
+            }
+            JsonVariant json = json_buf.as<JsonVariant>();
+            String message = api.commands[i].config->update_from_json(json);
+
+            CommandRegistration reg = api.commands[i];
+
+            if (message == "") {
+                task_scheduler.scheduleOnce([reg](){reg.callback();}, 0);
+                req.send(200, "text/html", "");
+            } else {
+                req.send(400, "text/html", message.c_str());
+            }
+            return;
+        }
+    }
+    for (size_t i = 0; i < api.states.size(); i++)
+    {
+        //strcmp is save here: both String::c_str() and req.uniCStr() return null terminated strings.
+        if (strcmp(api.states[i].path.c_str(), req.uriCStr() + 1) == 0)
+        {
+            String response = api.states[i].config->to_string_except(api.states[i].keys_to_censor);
+            req.send(200, "application/json; charset=utf-8", response.c_str());
+            return;
+        }
+    }
+    for (size_t i = 0; i < api.raw_commands.size(); i++)
+    {
+        //strcmp is save here: both String::c_str() and req.uniCStr() return null terminated strings.
+        if (strcmp(api.raw_commands[i].path.c_str(), req.uriCStr() + 1) == 0)
+        {
+            int bytes_written = req.receive(recv_buf, RECV_BUF_SIZE);
+            if (bytes_written == -1) {
+                // buffer was not large enough
+                req.send(413);
+                return;
+            } else if (bytes_written <= 0) {
+                logger.printfln("Failed to receive raw command payload: error code %d", bytes_written);
+                req.send(400);
+                return;
+            }
+
+            String message = api.raw_commands[i].callback(recv_buf, bytes_written);
+            if (message == "") {
+                req.send(200, "text/html", "");
+            } else {
+                req.send(400, "text/html", message.c_str());
+            }
+            return;
+        }
+    }
+}
+
 void Http::register_urls()
 {
-    {
-        httpd_uri_t ll_handler = {};
-        ll_handler.uri       = "/*";
-        ll_handler.method    = HTTP_GET;
-        ll_handler.handler   = http_ll_handler;
-
-        httpd_register_uri_handler(server.httpd, &ll_handler);
-    }
-    {
-        httpd_uri_t ll_handler = {};
-        ll_handler.uri       = "/*";
-        ll_handler.method    = HTTP_PUT;
-        ll_handler.handler   = http_ll_handler;
-
-        httpd_register_uri_handler(server.httpd, &ll_handler);
-    }
+    server.on("/*", HTTP_GET, api_handler);
+    server.on("/*", HTTP_PUT, api_handler);
 }
 
 void Http::loop()
