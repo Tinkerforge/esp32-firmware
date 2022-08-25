@@ -77,6 +77,9 @@ void Http::setup()
 
 static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cmdidx)
 {
+
+    CommandRegistration reg = api.commands[cmdidx];
+
     String reason = api.getCommandBlockedReason(cmdidx);
     if (reason != "") {
         return req.send(400, "text/plain", reason.c_str());
@@ -87,10 +90,15 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
     if (bytes_written == -1) {
     // buffer was not large enough
         return req.send(413);
-    } else if (bytes_written <= 0) {
+    } else if (bytes_written < 0) {
         logger.printfln("Failed to receive command payload: error code %d", bytes_written);
         return req.send(400);
+    } else if (bytes_written == 0 && reg.config->is<std::nullptr_t>())
+    {
+        task_scheduler.scheduleOnce([reg](){reg.callback();}, 0);
+        return req.send(200, "text/html", "");
     }
+
 
     //json_buf.clear(); // happens implicitly in deserializeJson
     DeserializationError error = deserializeJson(json_buf, recv_buf, bytes_written);
@@ -99,9 +107,7 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
         return req.send(400);
     }
     JsonVariant json = json_buf.as<JsonVariant>();
-    String message = api.commands[cmdidx].config->update_from_json(json);
-
-    CommandRegistration reg = api.commands[cmdidx];
+    String message = reg.config->update_from_json(json);
 
     if (message == "") {
         task_scheduler.scheduleOnce([reg](){reg.callback();}, 0);
