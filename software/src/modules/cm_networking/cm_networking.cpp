@@ -60,9 +60,9 @@ void CMNetworking::register_urls()
         String result = cm_networking.get_scan_results();
 
         if (result == "In progress or not started")
-            request.send(200, "text/plain; charset=utf-8", result.c_str());
+            return request.send(200, "text/plain; charset=utf-8", result.c_str());
 
-        request.send(200, "application/json; charset=utf-8", result.c_str());
+        return request.send(200, "application/json; charset=utf-8", result.c_str());
     });
 
 // If we don't have the evse or evse_v2 module, but have cm_networking, this is probably an energy manager.

@@ -71,22 +71,21 @@ static bool is_safari(const String &user_agent) {
            user_agent.indexOf("Chromium/") == -1;
 }
 
-static void send_index_html(WebServerRequest &request) {
+static WebServerRequestReturnProtect send_index_html(WebServerRequest &request) {
     request.addResponseHeader("Content-Encoding", "gzip");
     request.addResponseHeader("ETag", BUILD_TIMESTAMP_HEX_STR);
     request.addResponseHeader("X-Clacks-Overhead", "GNU Terry Pratchett");
 
     if (request.header("If-None-Match") == BUILD_TIMESTAMP_HEX_STR) {
-        request.send(304);
-        return;
+        return request.send(304);
     }
 
-    request.send(200, "text/html", index_html_data, index_html_length);
+    return request.send(200, "text/html", index_html_data, index_html_length);
 }
 
 static void register_default_urls(void) {
     server.on("/", HTTP_GET, [](WebServerRequest request) {
-        send_index_html(request);
+        return send_index_html(request);
     });
 
     reboot = ConfigRoot{Config::Null()};
@@ -101,7 +100,7 @@ static void register_default_urls(void) {
 
     server.on("/force_reboot", HTTP_GET, [](WebServerRequest request) {
         ESP.restart();
-        request.send(200, "text/html", "Forced reboot.");
+        return request.send(200, "text/html", "Forced reboot.");
     });
 
     server.onNotAuthorized([](WebServerRequest request) {
@@ -110,31 +109,28 @@ static void register_default_urls(void) {
             // as it does not proactively send the credentials if the same url is known to have an unauthenticated
             // version.
             if (is_safari(request.header("User-Agent"))) {
-                request.requestAuthentication();
-                return;
+                return request.requestAuthentication();
             }
 
-            send_index_html(request);
+            return send_index_html(request);
         } else if (request.uri() == "/login_state") {
             // Same reasoning as above. If we don't force Safari, it does not send credentials, which breaks the login_state check.
             if (is_safari(request.header("User-Agent"))) {
-                request.requestAuthentication();
-                return;
+                return request.requestAuthentication();
             }
 
-            request.send(200, "text/plain", "Not logged in");
+            return request.send(200, "text/plain", "Not logged in");
         } else {
-            request.requestAuthentication();
-            return;
+            return request.requestAuthentication();
         }
     });
 
     server.on("/credential_check", HTTP_GET, [](WebServerRequest request) {
-        request.send(200, "text/plain", "Credentials okay");
+        return request.send(200, "text/plain", "Credentials okay");
     });
 
     server.on("/login_state", HTTP_GET, [](WebServerRequest request) {
-        request.send(200, "text/plain", "Logged in");
+        return request.send(200, "text/plain", "Logged in");
     });
 
     api.registerDebugUrl(&server);

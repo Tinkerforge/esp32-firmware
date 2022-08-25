@@ -272,11 +272,11 @@ void FirmwareUpdate::register_urls()
         req.addResponseHeader("ETag", "dontcachemeplease");
         // Intentionally don't handle the If-None-Match header:
         // This makes sure that a cached version is never used.
-        req.send(200, "text/html", recovery_html_data, recovery_html_length);
+        return req.send(200, "text/html", recovery_html_data, recovery_html_length);
     });
 
     server.on("/check_firmware", HTTP_POST, [this](WebServerRequest request){
-        request.send(200);
+        return request.send(200);
     },[this](WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final){
         if (index == 0) {
             this->reset_firmware_info();
@@ -306,7 +306,7 @@ void FirmwareUpdate::register_urls()
 
     server.on("/flash_firmware", HTTP_POST, [this](WebServerRequest request){
         if (update_aborted)
-            return;
+            return request.unsafe_ResponseAlreadySent(); // Already sent in upload callback.
 
         this->firmware_update_running = false;
 
@@ -315,9 +315,9 @@ void FirmwareUpdate::register_urls()
             task_scheduler.scheduleOnce([](){ESP.restart();}, 1000);
         }
 
-        request.send(Update.hasError() ? 400: 200, "text/plain", Update.hasError() ? Update.errorString() : "Update OK");
+        return request.send(Update.hasError() ? 400: 200, "text/plain", Update.hasError() ? Update.errorString() : "Update OK");
     },[this](WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final){
-        
+
         this->firmware_update_running = true;
         return handle_update_chunk(U_FLASH, request, index, data, len, final, request.contentLength());
     });
@@ -328,7 +328,7 @@ void FirmwareUpdate::register_urls()
             task_scheduler.scheduleOnce([](){ESP.restart();}, 1000);
         }
 
-        request.send(Update.hasError() ? 400: 200, "text/plain", Update.hasError() ? Update.errorString() : "Update OK");
+        return request.send(Update.hasError() ? 400: 200, "text/plain", Update.hasError() ? Update.errorString() : "Update OK");
     },[this](WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final){
         return handle_update_chunk(U_SPIFFS, request, index, data, len, final, request.contentLength());
     });

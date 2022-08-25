@@ -631,14 +631,13 @@ void Users::register_urls()
         size_t len = MAX_PASSIVE_USERS * USERNAME_ENTRY_LENGTH;
         auto buf = std::unique_ptr<char[]>(new char[len]);
         if (buf == nullptr) {
-            request.send(507);
-            return;
+            return request.send(507);
         }
 
         File f = LittleFS.open(USERNAME_FILE, "r");
 
         size_t read = f.read((uint8_t *)buf.get(), len);
-        request.send(200, "application/octet-stream", buf.get(), read);
+        return request.send(200, "application/octet-stream", buf.get(), read);
     });
 }
 

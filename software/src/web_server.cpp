@@ -277,18 +277,18 @@ const char *httpStatusCodeToString(int code)
     }
 }
 
-void WebServerRequest::send(uint16_t code, const char *content_type, const char *content, size_t content_len)
+WebServerRequestReturnProtect WebServerRequest::send(uint16_t code, const char *content_type, const char *content, size_t content_len)
 {
     auto result = httpd_resp_set_type(req, content_type);
     if (result != ESP_OK) {
         printf("Failed to set response type: %d\n", result);
-        return;
+        return WebServerRequestReturnProtect{};
     }
 
     result = httpd_resp_set_status(req, httpStatusCodeToString(code));
     if (result != ESP_OK) {
         printf("Failed to set response status: %d\n", result);
-        return;
+        return WebServerRequestReturnProtect{};
     }
 
     struct httpd_req_aux *ra = (struct httpd_req_aux *)req->aux;
@@ -327,8 +327,8 @@ void WebServerRequest::send(uint16_t code, const char *content_type, const char 
 
     if (result != ESP_OK) {
         printf("Failed to send response: %d\n", result);
-        return;
     }
+    return WebServerRequestReturnProtect{};
 }
 
 void WebServerRequest::beginChunkedResponse(uint16_t code, const char *content_type)
@@ -355,13 +355,13 @@ void WebServerRequest::sendChunk(const char *chunk, size_t chunk_len)
     }
 }
 
-void WebServerRequest::endChunkedResponse()
+WebServerRequestReturnProtect WebServerRequest::endChunkedResponse()
 {
     auto result = httpd_resp_send_chunk(req, nullptr, 0);
     if (result != ESP_OK) {
         printf("Failed to end chunked response: %d\n", result);
-        return;
     }
+    return WebServerRequestReturnProtect{};
 }
 
 void WebServerRequest::addResponseHeader(const char *field, const char *value)
@@ -373,12 +373,12 @@ void WebServerRequest::addResponseHeader(const char *field, const char *value)
     }
 }
 
-void WebServerRequest::requestAuthentication()
+WebServerRequestReturnProtect WebServerRequest::requestAuthentication()
 {
     String payload = "Digest ";
     payload.concat(requestDigestAuthentication(nullptr));
     addResponseHeader("WWW-Authenticate", payload.c_str());
-    send(401);
+    return send(401);
 }
 
 String WebServerRequest::header(const char *header_name)

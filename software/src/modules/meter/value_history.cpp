@@ -84,7 +84,7 @@ void ValueHistory::register_urls(String base_url)
         if (buf_written < buf_size)
             buf_written += snprintf(buf + buf_written, buf_size - buf_written, "%c", ']');
 
-        request.send(200, "application/json; charset=utf-8", buf, buf_written);
+        return request.send(200, "application/json; charset=utf-8", buf, buf_written);
     });
 
     server.on(("/" + base_url + "live").c_str(), HTTP_GET, [this](WebServerRequest request) {
@@ -112,7 +112,7 @@ void ValueHistory::register_urls(String base_url)
         }
         if (buf_written < buf_size)
             buf_written += snprintf(buf + buf_written, buf_size - buf_written, "%s", "]}");
-        request.send(200, "application/json; charset=utf-8", buf, buf_written);
+        return request.send(200, "application/json; charset=utf-8", buf, buf_written);
     });
 }
 
