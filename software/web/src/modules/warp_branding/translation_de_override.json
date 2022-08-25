@@ -9,10 +9,10 @@
             "charge_manager": "Lastmanager"
         },
         "navbar": {
-            "charge_manager": "Lastmanager"
+            "charge_manager": "Lastmanagement"
         },
         "content": {
-            "charge_manager": "Lastmanager"
+            "charge_manager": "Lastmanagement"
         }
     },
     "ethernet": {

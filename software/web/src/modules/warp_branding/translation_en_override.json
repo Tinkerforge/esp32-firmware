@@ -9,10 +9,10 @@
             "charge_manager": "Charge Manager"
         },
         "navbar": {
-            "charge_manager": "Charge Manager"
+            "charge_manager": "Charge Management"
         },
         "content": {
-            "charge_manager": "Charge Manager"
+            "charge_manager": "Charge Management"
         }
     },
     "event_log": {

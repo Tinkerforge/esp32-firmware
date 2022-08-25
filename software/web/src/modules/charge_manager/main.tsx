@@ -164,6 +164,7 @@ function update_charge_manager_config(config: ChargeManagerConfig = API.get('cha
     $('#charge_manager_verbose').prop("checked", config.verbose);
     util.setNumericInput("charge_manager_default_available_current", config.default_available_current / 1000, 3);
     util.setNumericInput("charge_manager_maximum_available_current", config.maximum_available_current / 1000, 3);
+    util.setNumericInput("charge_manager_available_current", config.maximum_available_current / 1000, 3);
     util.setNumericInput("charge_manager_minimum_current", config.minimum_current / 1000, 3);
 
     if (config.chargers.length != charger_config_count) {
@@ -251,12 +252,24 @@ function collect_charge_manager_config(new_charger: ChargerConfig = null, remove
 
     let enabled = $('#charge_manager_mode_dropdown').val() == "2";
 
+    let expert = $('#charge_manager_config_expert_collapse').hasClass("show");
+
+    let max_current = Math.round(($('#charge_manager_default_available_current').val() as number) * 1000);
+    let def_current = Math.round(($('#charge_manager_minimum_current').val() as number) * 1000);
+
+    let current = Math.round(($('#charge_manager_available_current').val() as number) * 1000);
+
+    if (!expert) {
+        max_current = current;
+        def_current = current;
+    }
+
     return {
        enable_charge_manager: enabled,
        enable_watchdog: $('#charge_manager_enable_watchdog').is(':checked'),
        verbose: $('#charge_manager_verbose').is(':checked'),
-       default_available_current: Math.round(($('#charge_manager_default_available_current').val() as number) * 1000),
-       maximum_available_current: Math.round(($('#charge_manager_maximum_available_current').val() as number) * 1000),
+       default_available_current: def_current,
+       maximum_available_current: max_current,
        minimum_current: Math.round(($('#charge_manager_minimum_current').val() as number) * 1000),
        chargers: chargers
     };
@@ -380,6 +393,10 @@ function show_cfg_body()
     $('#charge_manager_config_body').collapse($('#charge_manager_mode_dropdown').val() == "2" ? "show" : "hide");
 }
 
+function set_dropdown_explainer() {
+    $('#charge_manager_mode_explainer').html(translate_unchecked(`charge_manager.script.mode_explainer_${$('#charge_manager_mode_dropdown').val()}`));
+}
+
 function set_dropdown()
 {
     if(!$('#charge_manager_config_save_button').prop("disabled"))
@@ -394,6 +411,7 @@ function set_dropdown()
         new_val = "1";
 
     $('#charge_manager_mode_dropdown').val(new_val);
+    set_dropdown_explainer();
 }
 
 export function init() {
@@ -472,6 +490,7 @@ export function init() {
         if ($('#charge_manager_mode_dropdown').val() == 2)
             insert_local_host();
         show_cfg_body();
+        set_dropdown_explainer();
     });
 }
 
