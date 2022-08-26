@@ -136,7 +136,9 @@ WebServerRequestReturnProtect api_handler_get(WebServerRequest req)
         }
     }
 
-    return req.send(404);
+    // If we reach this point, the url matcher found an API with the req.uri() as path, but we did not.
+    // This was probably a raw command or a command that requires a payload. Return 405 - Method not allowed
+    return req.send(405, "text/html", "Request method for this URI is not handled by server");
 }
 
 WebServerRequestReturnProtect api_handler_put(WebServerRequest req) {
@@ -193,7 +195,9 @@ WebServerRequestReturnProtect api_handler_put(WebServerRequest req) {
         }
     }
 
-    return req.send(404);
+    // If we reach this point, the url matcher found an API with the req.uri() as path, but we did not.
+    // This was probably a raw command or a command that requires a payload. Return 405 - Method not allowed
+    return req.send(405, "text/html", "Request method for this URI is not handled by server");
 }
 
 void Http::register_urls()
