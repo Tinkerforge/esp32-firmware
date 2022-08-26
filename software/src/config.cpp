@@ -813,15 +813,6 @@ size_t Config::fillInt32Array(int32_t *arr, size_t elements)
     return fillArray<int32_t, Config::ConfInt>(arr, elements);
 }
 
-size_t Config::fillUint64Array(uint32_t *arr, size_t elements)
-{
-    return fillArray<uint32_t, Config::ConfUint>(arr, elements);
-}
-
-size_t Config::fillInt64Array(int32_t *arr, size_t elements)
-{
-    return fillArray<int32_t, Config::ConfInt>(arr, elements);
-}
 
 size_t Config::json_size(bool zero_copy) const
 {

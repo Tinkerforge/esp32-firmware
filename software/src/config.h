@@ -172,15 +172,11 @@ struct Config {
 
     static Config Uint32(uint32_t u);
 
-    static Config Uint64(uint32_t u);
-
     static Config Int8(int8_t i);
 
     static Config Int16(int16_t i);
 
     static Config Int32(int32_t i);
-
-    static Config Int64(int32_t i);
 
     class Wrap
     {
@@ -196,7 +192,7 @@ struct Config {
 
         private:
             Config *conf;
-            
+
     };
 
     class ConstWrap
@@ -209,7 +205,7 @@ struct Config {
                 return conf;
             }
 
-            explicit operator const Config*() const {return conf;} 
+            explicit operator const Config*() const {return conf;}
 
         private:
             const Config *conf;
@@ -390,12 +386,10 @@ struct Config {
     size_t fillUint8Array(uint8_t *arr, size_t elements);
     size_t fillUint16Array(uint16_t *arr, size_t elements);
     size_t fillUint32Array(uint32_t *arr, size_t elements);
-    size_t fillUint64Array(uint32_t *arr, size_t elements);
 
     size_t fillInt8Array(int8_t *arr, size_t elements);
     size_t fillInt16Array(int16_t *arr, size_t elements);
     size_t fillInt32Array(int32_t *arr, size_t elements);
-    size_t fillInt64Array(int32_t *arr, size_t elements);
 /*
     template<typename T, typename ConfigT>
     void fromArray(T *arr, size_t elements) {
