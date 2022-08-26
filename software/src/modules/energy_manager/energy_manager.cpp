@@ -325,14 +325,14 @@ void EnergyManager::register_urls()
             ws.pushRawStateUpdate(this->get_energy_manager_debug_header(), "energy_manager/debug_header");
             debug = true;
         }, 0);
-        request.send(200);
+        return request.send(200);
     });
 
     server.on("/energy_manager/stop_debug", HTTP_GET, [this](WebServerRequest request){
         task_scheduler.scheduleOnce([this](){
             debug = false;
         }, 0);
-        request.send(200);
+        return request.send(200);
     });
 #endif
 
