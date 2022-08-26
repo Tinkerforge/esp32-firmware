@@ -48,20 +48,17 @@ bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
         return false;
 
     for (size_t i = 0; i < api.commands.size(); i++)
-    {
         if (strncmp(api.commands[i].path.c_str(), in_uri + 1, len) == 0)
             return true;
-    }
+
     for (size_t i = 0; i < api.states.size(); i++)
-    {
         if (strncmp(api.states[i].path.c_str(), in_uri + 1, len) == 0)
             return true;
-    }
+
     for (size_t i = 0; i < api.raw_commands.size(); i++)
-    {
         if (strncmp(api.raw_commands[i].path.c_str(), in_uri + 1, len) == 0)
             return true;
-    }
+
     return false;
 }
 
@@ -77,28 +74,24 @@ void Http::setup()
 
 static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cmdidx)
 {
-
     CommandRegistration reg = api.commands[cmdidx];
 
     String reason = api.getCommandBlockedReason(cmdidx);
-    if (reason != "") {
+    if (reason != "")
         return req.send(400, "text/plain", reason.c_str());
-    }
 
     // TODO: Use streamed parsing
     int bytes_written = req.receive(recv_buf, 4096);
     if (bytes_written == -1) {
-    // buffer was not large enough
+        // buffer was not large enough
         return req.send(413);
     } else if (bytes_written < 0) {
         logger.printfln("Failed to receive command payload: error code %d", bytes_written);
         return req.send(400);
-    } else if (bytes_written == 0 && reg.config->is<std::nullptr_t>())
-    {
+    } else if (bytes_written == 0 && reg.config->is<std::nullptr_t>()) {
         task_scheduler.scheduleOnce([reg](){reg.callback();}, 0);
         return req.send(200, "text/html", "");
     }
-
 
     //json_buf.clear(); // happens implicitly in deserializeJson
     DeserializationError error = deserializeJson(json_buf, recv_buf, bytes_written);
@@ -116,25 +109,24 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
     return req.send(400, "text/html", message.c_str());
 }
 
+// strcmp is save here: both String::c_str() and req.uriCStr() return null terminated strings.
+// Also we know (because of the custom matcher) that req.uriCStr() contains an API path,
+// we only have to find out which one.
+// Use + 1 to compare: req.uriCStr() starts with /; the api paths don't.
 WebServerRequestReturnProtect api_handler_get(WebServerRequest req)
 {
     for (size_t i = 0; i < api.states.size(); i++)
     {
-        //strcmp is save here: both String::c_str() and req.uniCStr() return null terminated strings.
-        if (strcmp(api.states[i].path.c_str(), req.uriCStr() + 1) == 0)
-        {
-            String response = api.states[i].config->to_string_except(api.states[i].keys_to_censor);
-            return req.send(200, "application/json; charset=utf-8", response.c_str());
-        }
+        if (strcmp(api.states[i].path.c_str(), req.uriCStr() + 1) != 0)
+            continue;
+
+        String response = api.states[i].config->to_string_except(api.states[i].keys_to_censor);
+        return req.send(200, "application/json; charset=utf-8", response.c_str());
     }
+
     for (size_t i = 0; i < api.commands.size(); i++)
-    {
-        //strcmp is save here: both String::c_str() and req.uniCStr() return null terminated strings.
         if (strcmp(api.commands[i].path.c_str(), req.uriCStr() + 1) == 0 && api.commands[i].config->is<std::nullptr_t>())
-        {
             return run_command(req, i);
-        }
-    }
 
     // If we reach this point, the url matcher found an API with the req.uri() as path, but we did not.
     // This was probably a raw command or a command that requires a payload. Return 405 - Method not allowed
@@ -143,56 +135,43 @@ WebServerRequestReturnProtect api_handler_get(WebServerRequest req)
 
 WebServerRequestReturnProtect api_handler_put(WebServerRequest req) {
     for (size_t i = 0; i < api.commands.size(); i++)
-    {
-        //strcmp is save here: both String::c_str() and req.uniCStr() return null terminated strings.
         if (strcmp(api.commands[i].path.c_str(), req.uriCStr() + 1) == 0)
-        {
             return run_command(req, i);
-        }
-    }
+
     for (size_t i = 0; i < api.raw_commands.size(); i++)
     {
-        // strcmp is save here: both String::c_str() and req.uriCStr() return null terminated strings.
-        // Also we know (because of the custom matcher) that req.uriCStr() contains an API path,
-        // we only have to find out which one.
-        // Use + 1 to compare: req.uriCStr() starts with /; the api paths don't.
-        if (strcmp(api.raw_commands[i].path.c_str(), req.uriCStr() + 1) == 0)
-        {
-            int bytes_written = req.receive(recv_buf, RECV_BUF_SIZE);
-            if (bytes_written == -1) {
-                // buffer was not large enough
-                return req.send(413);
-            } else if (bytes_written <= 0) {
-                logger.printfln("Failed to receive raw command payload: error code %d", bytes_written);
-                return req.send(400);
-            }
+        if (strcmp(api.raw_commands[i].path.c_str(), req.uriCStr() + 1) != 0)
+            continue;
 
-            String message = api.raw_commands[i].callback(recv_buf, bytes_written);
-            if (message == "") {
-                return req.send(200, "text/html", "");
-            }
-            return req.send(400, "text/html", message.c_str());
+        int bytes_written = req.receive(recv_buf, RECV_BUF_SIZE);
+        if (bytes_written == -1) {
+            // buffer was not large enough
+            return req.send(413);
+        } else if (bytes_written <= 0) {
+            logger.printfln("Failed to receive raw command payload: error code %d", bytes_written);
+            return req.send(400);
         }
+
+        String message = api.raw_commands[i].callback(recv_buf, bytes_written);
+        if (message == "") {
+            return req.send(200, "text/html", "");
+        }
+        return req.send(400, "text/html", message.c_str());
     }
 
-    if (!req.uri().endsWith("_update"))
+    if (req.uri().endsWith("_update")) {
+        return req.send(405, "text/html", "Request method for this URI is not handled by server");
+    }
+
+    for (size_t i = 0; i < api.states.size(); i++)
     {
-        for (size_t i = 0; i < api.states.size(); i++)
-        {
-            //strcmp is save here: both String::c_str() and req.uniCStr() return null terminated strings.
-            if (!strcmp(api.states[i].path.c_str(), req.uriCStr() + 1))
-            {
-                String uri_update = req.uri() + "_update";
-                for (size_t a = 0; a < api.commands.size(); a++)
-                {
-                    //strcmp is save here: both String::c_str() and req.uniCStr() return null terminated strings.
-                    if (!strcmp(api.commands[a].path.c_str(), uri_update.c_str() + 1))
-                    {
-                        return run_command(req, a);
-                    }
-                }
-            }
-        }
+        if (strcmp(api.states[i].path.c_str(), req.uriCStr() + 1) != 0)
+            continue;
+
+        String uri_update = req.uri() + "_update";
+        for (size_t a = 0; a < api.commands.size(); a++)
+            if (!strcmp(api.commands[a].path.c_str(), uri_update.c_str() + 1))
+                return run_command(req, a);
     }
 
     // If we reach this point, the url matcher found an API with the req.uri() as path, but we did not.
