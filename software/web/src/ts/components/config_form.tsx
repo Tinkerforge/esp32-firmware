@@ -26,7 +26,7 @@ interface ConfigFormState {
 }
 
 interface ConfigFormProps {
-    children: VNode[]
+    children: VNode | VNode[]
     id: string
     title: string
     onSave: () => Promise<void>
