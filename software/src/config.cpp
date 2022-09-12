@@ -20,6 +20,8 @@
 #include "config.h"
 #include "math.h"
 
+uint32_t uint_buff[UINT_ARR_LEN];
+
 struct printer {
     void operator()(const Config::ConfString &x) const
     {
@@ -94,10 +96,10 @@ struct default_validator {
 
     String operator()(const Config::ConfUint &x) const
     {
-        if (x.value < x.min)
-            return String(String("Unsigned integer value ") + x.value + " was less than the allowed minimum of " + x.min);
-        if (x.value > x.max)
-            return String(String("Unsigned integer value ") + x.value + " was more than the allowed maximum of " + x.max);
+        if (*x.getValue() < *x.getMin())
+            return String(String("Unsigned integer value ") + *x.getValue() + " was less than the allowed minimum of " + *x.getMin());
+        if (*x.getValue() > *x.getMax())
+            return String(String("Unsigned integer value ") + *x.getValue() + " was more than the allowed maximum of " + *x.getMax());
         return String("");
     }
 
@@ -146,23 +148,23 @@ struct default_validator {
 struct to_json {
     void operator()(const Config::ConfString &x)
     {
-        insertHere.set(x.value);
+        insertHere.set(*x.getValue());
     }
     void operator()(const Config::ConfFloat &x)
     {
-        insertHere.set(x.value);
+        insertHere.set(*x.getValue());
     }
     void operator()(const Config::ConfInt &x)
     {
-        insertHere.set(x.value);
+        insertHere.set(*x.getValue());
     }
     void operator()(const Config::ConfUint &x)
     {
-        insertHere.set(x.value);
+        insertHere.set(*x.getValue());
     }
     void operator()(const Config::ConfBool &x)
     {
-        insertHere.set(x.value);
+        insertHere.set(*x.getValue());
     }
     void operator()(const std::nullptr_t x)
     {
@@ -337,7 +339,7 @@ struct from_json {
 
         if (!json_node.is<uint32_t>())
             return "JSON node was not an unsigned integer.";
-        x.value = json_node.as<uint32_t>();
+        *x.getValue() = json_node.as<uint32_t>();
         return String("");
     }
     String operator()(Config::ConfBool &x)
@@ -469,7 +471,7 @@ struct from_update {
         } else {
             new_val = *(update->get<uint32_t>());
         }
-        x.value = new_val;
+        *x.getValue() = new_val;
         return String("");
     }
     String operator()(Config::ConfBool &x)
@@ -638,9 +640,70 @@ Config Config::Int(int32_t i, int32_t min, int32_t max)
     return Config{ConfInt{i, min, max}, (uint8_t)0xFF};
 }
 
-Config Config::Uint(uint32_t u, uint32_t min, uint32_t max)
+size_t g_num_uint = 0;
+
+Config::ConfUint::ConfUint()
 {
-    return Config{ConfUint{u, min, max}, (uint8_t)0xFF};
+    g_num_uint++;
+    for (size_t i = 0; i <= UINT_ARR_LEN / 3; i++)
+    {
+        if (i == UINT_ARR_LEN / 3)
+        {
+            printf("Slot %zu\n", i);
+            esp_system_abort("Max uintConf reached!");
+        }
+
+        if (uint_buff[i * 3 + 1] == 0 && uint_buff[i * 3 + 2] == 0)
+        {
+            printf("Slot @ %zu\n", i);
+            value = i;
+            *this->getMin() = 1;
+            *this->getMax() = 1;
+            break;
+        }
+    }
+}
+
+Config::ConfUint::ConfUint(const ConfUint &cpy)
+{
+    g_num_uint++;
+    for (size_t i = 0; i <= UINT_ARR_LEN / 3; i++)
+    {
+        if (i == UINT_ARR_LEN / 3)
+        {
+            printf("Slot %zu\n", i);
+            esp_system_abort("Max uintConf reached!");
+        }
+
+        if (uint_buff[i * 3 + 1] == 0 && uint_buff[i * 3 + 2] == 0)
+        {
+            printf("Slot @ %zu\n", i);
+            value = i;
+            *this->getValue() = *cpy.getValue();
+            *this->getMin() = *cpy.getMin();
+            *this->getMax() = *cpy.getMax();
+            break;
+        }
+    }
+}
+
+Config::ConfUint::~ConfUint()
+{
+    g_num_uint--;
+    *this->getValue() = 0;
+    *this->getMin() = 0;
+    *this->getMax() = 0;
+}
+
+Config Config::Uint(uint32_t u, int32_t min, int32_t max)
+{
+    num_uint++;
+
+    ConfUint new_uint;
+    *new_uint.getValue() = u;
+    *new_uint.getMin() = min;
+    *new_uint.getMax() = max;
+    return Config{new_uint, (uint8_t)0xFF};
 }
 
 Config Config::Bool(bool b)
