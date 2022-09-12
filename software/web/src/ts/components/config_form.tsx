@@ -52,6 +52,8 @@ export class ConfigForm extends Component<ConfigFormProps,ConfigFormState> {
         this.props.onSave().then(() => {
             this.setState({saveDisabled: true, wasValidated: false});
             this.props.onDirtyChange(false);
+        }).catch(() => {
+            this.setState({saveDisabled: false, wasValidated: false});
         });
     }
 
