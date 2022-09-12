@@ -644,18 +644,15 @@ size_t g_num_uint = 0;
 
 Config::ConfUint::ConfUint()
 {
-    g_num_uint++;
     for (size_t i = 0; i <= UINT_ARR_LEN / 3; i++)
     {
         if (i == UINT_ARR_LEN / 3)
         {
-            printf("Slot %zu\n", i);
             esp_system_abort("Max uintConf reached!");
         }
 
         if (uint_buff[i * 3 + 1] == 0 && uint_buff[i * 3 + 2] == 0)
         {
-            printf("Slot @ %zu\n", i);
             value = i;
             *this->getMin() = 1;
             *this->getMax() = 1;
@@ -666,18 +663,15 @@ Config::ConfUint::ConfUint()
 
 Config::ConfUint::ConfUint(const ConfUint &cpy)
 {
-    g_num_uint++;
     for (size_t i = 0; i <= UINT_ARR_LEN / 3; i++)
     {
         if (i == UINT_ARR_LEN / 3)
         {
-            printf("Slot %zu\n", i);
             esp_system_abort("Max uintConf reached!");
         }
 
         if (uint_buff[i * 3 + 1] == 0 && uint_buff[i * 3 + 2] == 0)
         {
-            printf("Slot @ %zu\n", i);
             value = i;
             *this->getValue() = *cpy.getValue();
             *this->getMin() = *cpy.getMin();
@@ -689,7 +683,6 @@ Config::ConfUint::ConfUint(const ConfUint &cpy)
 
 Config::ConfUint::~ConfUint()
 {
-    g_num_uint--;
     *this->getValue() = 0;
     *this->getMin() = 0;
     *this->getMax() = 0;
@@ -697,8 +690,6 @@ Config::ConfUint::~ConfUint()
 
 Config Config::Uint(uint32_t u, int32_t min, int32_t max)
 {
-    num_uint++;
-
     ConfUint new_uint;
     *new_uint.getValue() = u;
     *new_uint.getMin() = min;
