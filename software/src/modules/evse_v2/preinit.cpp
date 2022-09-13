@@ -152,6 +152,8 @@ void evse_v2_button_recovery_handler() {
         // Stage 3 - ESP still crashed after formatting the data partition. The firmware is unrecoverably broken. To prevent a fast boot loop, delay here.
         case 3:
             logger.printfln("Running stage 3: Firmware is probably broken. Delaying next crash for a minute.");
+            delay(60 * 1000);
+            logger.printfln("Stage 3 done");
             break;
     }
 }
