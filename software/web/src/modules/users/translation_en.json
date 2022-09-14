@@ -30,7 +30,7 @@
             "add_user_modal_abort": "Discard",
             "add_user_modal_save": "Add",
 
-            "evse_user_description": "User authorization",
+            "evse_user_description": "Charge release",
             "evse_user_description_muted": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
 
             "evse_user_enable": "Requires a user authorization (via NFC card) to charge"

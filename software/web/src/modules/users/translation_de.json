@@ -30,10 +30,10 @@
             "add_user_modal_abort": "Verwerfen",
             "add_user_modal_save": "Hinzufügen",
 
-            "evse_user_description": "Benutzer&shy;autorisierung",
+            "evse_user_description": "Ladefreigabe",
             "evse_user_description_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
 
-            "evse_user_enable": "Verlangt eine Benutzerautorisierung (z.B. per NFC-Tag) zum Laden"
+            "evse_user_enable": "Verlangt eine Freigabe des Ladevorgangs durch einen Benutzer zum Laden (z.B. per NFC-Tag)"
         },
         "script": {
             "id": "ID",
