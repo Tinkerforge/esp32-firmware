@@ -243,7 +243,7 @@
 - Wait even longer for ID.3 state changes (through EVSE Bricklet firmware 2.1.3)
 - Make sure LED turns on until standby for every state change (through EVSE Bricklet firmware 2.1.3)
 
-2022-09-14: 2.0.7 (<unknown>)
+2022-09-14: 2.0.7 (3eb8c6ac)
 - Rework charge manager configuration UI
 - Add charger auto-detection via mDNS to charge manager
 - Add host name resolution to charge manager
