@@ -23,7 +23,7 @@ import { JSXInternal } from "preact/src/jsx";
 
 interface InputSelectProps extends Omit<JSXInternal.HTMLAttributes<HTMLSelectElement>, "id" | "type" | "onInput"> {
     idContext?: Context<string>
-    items: {[key: string]: string};
+    items: [string, string][];
     onValue: (value: string) => void
     placeholder?: string
     classList?: string
@@ -32,16 +32,14 @@ interface InputSelectProps extends Omit<JSXInternal.HTMLAttributes<HTMLSelectEle
 export function InputSelect(props: InputSelectProps) {
     let {idContext, items, onValue, placeholder, classList, ...p} = props;
 
-    let id = useContext(idContext);
-
     return (
         <select {...p}
                class={(classList ?? "") + " custom-select"}
-               id={id}
+               id={idContext === undefined ? "" : useContext(idContext)}
                onChange={(e) => onValue((e.target as HTMLSelectElement).value)}
                >
             {
-                 (placeholder ? [<option value="" disabled selected>{placeholder}</option>] : []).concat(Object.keys(items).map((k) => <option value={k} key={k}>{items[k]}</option>))
+                 (placeholder ? [<option value="" disabled selected>{placeholder}</option>] : []).concat(items.map((k) => <option value={k[0]} key={k[0]}>{k[1]}</option>))
             }
         </select>
     );

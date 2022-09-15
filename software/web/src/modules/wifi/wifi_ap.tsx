@@ -82,11 +82,11 @@ export class WifiAP extends ConfigComponent<{}, APConfig> {
                                     this.show_modal = true;
                                 this.setState({"enable_ap": v != "2", "ap_fallback_only": v == "1"});
                             }}
-                            items={{
-                                "0": __("wifi.content.ap_enabled"),
-                                "1": __("wifi.content.ap_fallback_only"),
-                                "2": __("wifi.content.ap_disabled")
-                            }}
+                            items={[
+                                ["0", __("wifi.content.ap_enabled")],
+                                ["1", __("wifi.content.ap_fallback_only")],
+                                ["2", __("wifi.content.ap_disabled")]
+                            ]}
                         />
                     </FormRow>
 
@@ -116,22 +116,22 @@ export class WifiAP extends ConfigComponent<{}, APConfig> {
                         <InputSelect
                             value={state.channel}
                             onValue={(v) => this.setState({channel: parseInt(v)})}
-                            items={{
-                                "0": __("wifi.content.ap_channel_auto_select"),
-                                "1": "1",
-                                "2": "2",
-                                "3": "3",
-                                "4": "4",
-                                "5": "5",
-                                "6": "6",
-                                "7": "7",
-                                "8": "8",
-                                "9": "9",
-                                "10": "10",
-                                "11": "11",
-                                "12": "12",
-                                "13": "13"
-                            }}
+                            items={[
+                                ["0", __("wifi.content.ap_channel_auto_select")],
+                                ["1", "1"],
+                                ["2", "2"],
+                                ["3", "3"],
+                                ["4", "4"],
+                                ["5", "5"],
+                                ["6", "6"],
+                                ["7", "7"],
+                                ["8", "8"],
+                                ["9", "9"],
+                                ["10", "10"],
+                                ["11", "11"],
+                                ["12", "12"],
+                                ["13", "13"]
+                            ]}
                         />
                     </FormRow>
 
