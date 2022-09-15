@@ -26,6 +26,7 @@ interface InputPasswordProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputEl
     idContext?: Context<string>
     value: string | null
     onValue: (value: string | null) => void
+    hideClear?: boolean
 }
 
 interface InputPasswordState {
@@ -65,10 +66,13 @@ export class InputPassword extends Component<InputPasswordProps, InputPasswordSt
                         <input id={id+"-show"} type="checkbox" class="custom-control-input" aria-label="Show password" onClick={() => this.setState({show: !this.state.show})} />
                         <label class="custom-control-label" for={id+"-show"} style="line-height: 20px;"><span data-feather="eye"></span></label>
                     </div>
-                    <div class="input-group-text custom-control custom-switch" style="padding-left: 2.5rem;">
-                        <input id={id+"-clear"} type="checkbox" class="custom-control-input" aria-label="Clear password"  onClick={() => this.toggleClear()} />
-                        <label class="custom-control-label" for={id+"-clear"} style="line-height: 20px;"><span data-feather="trash-2"></span></label>
-                    </div>
+                    { props.hideClear !== true ?
+                        <div class="input-group-text custom-control custom-switch" style="padding-left: 2.5rem;">
+                            <input id={id+"-clear"} type="checkbox" class="custom-control-input" aria-label="Clear password"  onClick={() => this.toggleClear()} />
+                            <label class="custom-control-label" for={id+"-clear"} style="line-height: 20px;"><span data-feather="trash-2"></span></label>
+                        </div>
+                        : ""
+                    }
                 </div>
             </div>
         );

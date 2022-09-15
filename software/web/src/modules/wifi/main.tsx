@@ -28,8 +28,11 @@ import { h, render } from "preact";
 import { __ } from "../../ts/translation";
 import { ConfigPageHeader } from "../../ts/components/config_page_header";
 
+import { WifiAP } from "./wifi_ap";
+
 render(<ConfigPageHeader prefix="wifi_sta" title={__("wifi.content.sta_settings")} />, $('#wifi_sta_header')[0]);
-render(<ConfigPageHeader prefix="wifi_ap" title={__("wifi.content.ap_settings")} />, $('#wifi_ap_header')[0]);
+
+render(<WifiAP/>, $('#wifi-ap')[0])
 
 function wifi_symbol(rssi: number) {
     if(rssi >= -60)
@@ -124,24 +127,8 @@ function update_wifi_sta_config() {
     }
 }
 
-function set_wifi_ap_enable_select() {
-    let config = API.get('wifi/ap_config');
-
-    if(config.enable_ap && config.ap_fallback_only)
-        $('#wifi_ap_config_enable_ap').val(1);
-    else if(config.enable_ap)
-        $('#wifi_ap_config_enable_ap').val(0);
-    else
-        $('#wifi_ap_config_enable_ap').val(2);
-}
-
-function update_wifi_ap_config() {
-    API.default_updater('wifi/ap_config', ['ap_fallback_only', 'enable_ap']);
-    set_wifi_ap_enable_select();
-}
-
 function update_wifi_state() {
-    let state = API.default_updater('wifi/state', ['sta_ip', 'sta_rssi', 'sta_bssid'], false);
+    let state = API.default_updater('wifi/state', ['sta_ip', 'sta_rssi', 'sta_bssid', 'ap_bssid'], false);
 
     if (state.sta_ip != "0.0.0.0") {
         $('#wifi_state_sta_ip').html(state.sta_ip);
@@ -179,7 +166,6 @@ function connect_to_ap(ssid: string, bssid: string, encryption: number, enable_b
 export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('wifi/state', update_wifi_state);
     source.addEventListener('wifi/sta_config', update_wifi_sta_config);
-    source.addEventListener('wifi/ap_config', update_wifi_ap_config);
 
     source.addEventListener('wifi/scan_results', (e) => {
         if (e.data == "scan in progress")
@@ -203,8 +189,6 @@ export function init() {
     $("#scan_wifi_button").on("click", scan_wifi);
     $("#wifi_sta_config_show_passphrase").on("change", util.toggle_password_fn("#wifi_sta_config_passphrase"));
     $("#wifi_sta_config_clear_passphrase").on("change", util.clear_password_fn("#wifi_sta_config_passphrase"));
-    $("#wifi_ap_config_show_passphrase").on("change", util.toggle_password_fn("#wifi_ap_passphrase"));
-    $("#wifi_ap_config_clear_passphrase").on("change", util.clear_password_fn("#wifi_ap_passphrase"));
     $("#wifi_sta_config_show_static").on("change", function(this: HTMLInputElement) {wifi_cfg_toggle_static_ip_collapse(this.value);});
 
     API.register_config_form('wifi/sta_config', {
@@ -226,30 +210,6 @@ export function init() {
             reboot_string: __("wifi.script.sta_reboot_content_changed")
         }
     );
-
-
-    $('#wifi_ap_config_enable_ap').on('change', () => {
-        if ($('#wifi_ap_config_enable_ap').val() == 2) {
-            $('#wifi_ap_disable').modal('show');
-        }
-    });
-
-    $('#wifi_ap_not_disable_button').on('click', () => {
-        set_wifi_ap_enable_select();
-    });
-
-
-    API.register_config_form('wifi/ap_config', {
-            overrides: () => ({
-                enable_ap: $('#wifi_ap_config_enable_ap').val() != 2,
-                ap_fallback_only: $('#wifi_ap_config_enable_ap').val() == 1,
-                passphrase: util.passwordUpdate('#wifi_ap_config_passphrase'),
-            }),
-            pre_validation: () => util.reset_static_ip_config_validation('wifi_ap_config_ip', 'wifi_ap_config_subnet', 'wifi_ap_config_gateway'),
-            post_validation: () => util.validate_static_ip_config('wifi_ap_config_ip', 'wifi_ap_config_subnet', 'wifi_ap_config_gateway', false),
-            error_string: __("wifi.script.ap_config_failed"),
-            reboot_string: __("wifi.script.ap_reboot_content_changed")
-        });
 
     $('#scan_wifi_dropdown').on('hidden.bs.dropdown', function (e) {
         $("#wifi_scan_title").html(__("wifi.content.sta_scanning"));

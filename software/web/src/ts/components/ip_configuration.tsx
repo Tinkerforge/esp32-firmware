@@ -25,6 +25,7 @@ import { FormRow } from "./form_row";
 import { InputIP } from "./input_ip";
 
 import Collapse from 'react-bootstrap/Collapse';
+import { InputSelect } from "./input_select";
 
 export interface IPConfig {
     ip: string,
@@ -90,47 +91,49 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
                          onValue={(v) => this.onUpdate("gateway", v)}/>
             </FormRow>
             <FormRow label={__("component.ip_configuration.subnet")}>
-                <select class={"custom-select" + (subnet_captures_localhost ? " is-invalid" : "")}
+                <InputSelect classList={subnet_captures_localhost ? "is-invalid" : ""}
                         required={!props.showDhcp || !dhcp}
                         value={props.value.subnet}
-                        onChange={(e) => this.onUpdate("subnet", (e.target as HTMLSelectElement).value)}>
-                    <option value="" disabled selected>{__("component.ip_configuration.subnet_placeholder")}</option>
-                    <option value="255.255.255.255">255.255.255.255 (/32)</option>
-                    <option value="255.255.255.254">255.255.255.254 (/31)</option>
-                    <option value="255.255.255.252">255.255.255.252 (/30)</option>
-                    <option value="255.255.255.248">255.255.255.248 (/29)</option>
-                    <option value="255.255.255.240">255.255.255.240 (/28)</option>
-                    <option value="255.255.255.224">255.255.255.224 (/27)</option>
-                    <option value="255.255.255.192">255.255.255.192 (/26)</option>
-                    <option value="255.255.255.128">255.255.255.128 (/25)</option>
+                        onValue={(v) => this.onUpdate("subnet", v)}
+                        placeholder={__("component.ip_configuration.subnet_placeholder")}
+                        items={{
+                            "255.255.255.255": "255.255.255.255 (/32)",
+                            "255.255.255.254": "255.255.255.254 (/31)",
+                            "255.255.255.252": "255.255.255.252 (/30)",
+                            "255.255.255.248": "255.255.255.248 (/29)",
+                            "255.255.255.240": "255.255.255.240 (/28)",
+                            "255.255.255.224": "255.255.255.224 (/27)",
+                            "255.255.255.192": "255.255.255.192 (/26)",
+                            "255.255.255.128": "255.255.255.128 (/25)",
 
-                    <option value="255.255.255.0">255.255.255.0 (/24)</option>
-                    <option value="255.255.254.0">255.255.254.0 (/23)</option>
-                    <option value="255.255.252.0">255.255.252.0 (/22)</option>
-                    <option value="255.255.248.0">255.255.248.0 (/21)</option>
-                    <option value="255.255.240.0">255.255.240.0 (/20)</option>
-                    <option value="255.255.224.0">255.255.224.0 (/19)</option>
-                    <option value="255.255.192.0">255.255.192.0 (/18)</option>
-                    <option value="255.255.128.0">255.255.128.0 (/17)</option>
+                            "255.255.255.0": "255.255.255.0 (/24)",
+                            "255.255.254.0": "255.255.254.0 (/23)",
+                            "255.255.252.0": "255.255.252.0 (/22)",
+                            "255.255.248.0": "255.255.248.0 (/21)",
+                            "255.255.240.0": "255.255.240.0 (/20)",
+                            "255.255.224.0": "255.255.224.0 (/19)",
+                            "255.255.192.0": "255.255.192.0 (/18)",
+                            "255.255.128.0": "255.255.128.0 (/17)",
 
-                    <option value="255.255.0.0">255.255.0.0 (/16)</option>
-                    <option value="255.254.0.0">255.254.0.0 (/15)</option>
-                    <option value="255.252.0.0">255.252.0.0 (/14)</option>
-                    <option value="255.248.0.0">255.248.0.0 (/13)</option>
-                    <option value="255.240.0.0">255.240.0.0 (/12)</option>
-                    <option value="255.224.0.0">255.224.0.0 (/11)</option>
-                    <option value="255.192.0.0">255.192.0.0 (/10)</option>
-                    <option value="255.128.0.0">255.128.0.0 (/9)</option>
+                            "255.255.0.0": "255.255.0.0 (/16)",
+                            "255.254.0.0": "255.254.0.0 (/15)",
+                            "255.252.0.0": "255.252.0.0 (/14)",
+                            "255.248.0.0": "255.248.0.0 (/13)",
+                            "255.240.0.0": "255.240.0.0 (/12)",
+                            "255.224.0.0": "255.224.0.0 (/11)",
+                            "255.192.0.0": "255.192.0.0 (/10)",
+                            "255.128.0.0": "255.128.0.0 (/9)",
 
-                    <option value="255.0.0.0">255.0.0.0 (/8)</option>
-                    <option value="254.0.0.0">254.0.0.0 (/7)</option>
-                    <option value="252.0.0.0">252.0.0.0 (/6)</option>
-                    <option value="248.0.0.0">248.0.0.0 (/5)</option>
-                    <option value="240.0.0.0">240.0.0.0 (/4)</option>
-                    <option value="224.0.0.0">224.0.0.0 (/3)</option>
-                    <option value="192.0.0.0">192.0.0.0 (/2)</option>
-                    <option value="128.0.0.0">128.0.0.0 (/1)</option>
-                </select>
+                            "255.0.0.0": "255.0.0.0 (/8)",
+                            "254.0.0.0": "254.0.0.0 (/7)",
+                            "252.0.0.0": "252.0.0.0 (/6)",
+                            "248.0.0.0": "248.0.0.0 (/5)",
+                            "240.0.0.0": "240.0.0.0 (/4)",
+                            "224.0.0.0": "224.0.0.0 (/3)",
+                            "192.0.0.0": "192.0.0.0 (/2)",
+                            "128.0.0.0": "128.0.0.0 (/1)"
+                        }}
+                    />
                 <div class="invalid-feedback" dangerouslySetInnerHTML={{__html:__("component.ip_configuration.subnet_captures_localhost")}}></div>
             </FormRow>
 
@@ -158,28 +161,32 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
         return (
             <>
                 <FormRow label={__("component.ip_configuration.ip_configuration")}>
-                    <select class="custom-select" value={dhcp ? "hide" : "show"} onChange={(e) => {
-                        if ((e.target as HTMLSelectElement).value == "hide")
-                            props.onValue({
-                                ip: "0.0.0.0",
-                                gateway: "0.0.0.0",
-                                subnet: "0.0.0.0",
-                                dns: null,
-                                dns2: null
-                            });
-                        else {
-                            props.onValue({
-                                ip: "",
-                                gateway: "",
-                                subnet: "",
-                                dns: "",
-                                dns2: ""
-                            });
-                        }
-                    }}>
-                        <option value="hide" selected data-i18n="component.ip_configuration.dhcp"></option>
-                        <option value="show" data-i18n="component.ip_configuration.static"></option>
-                    </select>
+                    <InputSelect
+                        value={dhcp ? "hide" : "show"}
+                        onValue={(v) => {
+                                if (v == "hide")
+                                    props.onValue({
+                                        ip: "0.0.0.0",
+                                        gateway: "0.0.0.0",
+                                        subnet: "0.0.0.0",
+                                        dns: null,
+                                        dns2: null
+                                    });
+                                else {
+                                    props.onValue({
+                                        ip: "",
+                                        gateway: "",
+                                        subnet: "",
+                                        dns: "",
+                                        dns2: ""
+                                    });
+                                }
+                            }}
+                        items={{
+                            "hide": __("component.ip_configuration.dhcp"),
+                            "show": __("component.ip_configuration.static")
+                        }}
+                        />
                 </FormRow>
 
                 <Collapse in={!dhcp}>
