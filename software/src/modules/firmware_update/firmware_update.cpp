@@ -109,6 +109,7 @@ void FirmwareUpdate::reset_firmware_info()
     info_offset = 0;
     checksum_offset = 0;
     update_aborted = false;
+    info_found = false;
 }
 
 bool FirmwareUpdate::handle_firmware_info_chunk(size_t chunk_index, uint8_t *data, size_t chunk_length)
@@ -151,7 +152,8 @@ bool FirmwareUpdate::handle_firmware_info_chunk(size_t chunk_index, uint8_t *dat
         checksum_offset += to_write;
     }
 
-    return checksum_offset == sizeof(checksum) && info.magic[0] == 0x12CE2171 && (info.magic[1] & 0x00FFFFFF) == 0x6E12F0;
+    info_found = checksum_offset == sizeof(checksum) && info.magic[0] == 0x12CE2171 && (info.magic[1] & 0x00FFFFFF) == 0x6E12F0;
+    return info_found;
 }
 
 String FirmwareUpdate::check_firmware_info(bool firmware_info_found, bool detect_downgrade, bool log)
@@ -276,6 +278,9 @@ void FirmwareUpdate::register_urls()
     });
 
     server.on("/check_firmware", HTTP_POST, [this](WebServerRequest request){
+        if (!this->info_found && BUILD_REQUIRE_FIRMWARE_INFO) {
+            return request.send(400, "text/plain", "{\"error\":\"firmware_update.script.no_info_page\"}");
+        }
         return request.send(200);
     },[this](WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final){
         if (index == 0) {

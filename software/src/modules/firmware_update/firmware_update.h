@@ -52,4 +52,5 @@ private:
     uint32_t checksum = 0;
     uint32_t checksum_offset = 0;
     bool update_aborted = false;
+    bool info_found = false;
 };
