@@ -566,7 +566,7 @@ int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose,
     int rc = tf_unknown_create(&bricklet, tfp);
 
     if (rc != TF_E_OK) {
-        logger->printfln("%s init failed (rc %d). Disabling %s support.", name, rc, purpose);
+        logger->printfln("%s init failed (rc %d).", name, rc);
         return -1;
     }
 
@@ -575,7 +575,7 @@ int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose,
     rc = tf_unknown_get_identity(&bricklet, nullptr, nullptr, nullptr, nullptr, firmware_version, nullptr);
 
     if (rc != TF_E_OK) {
-        logger->printfln("%s get identity failed (rc %d). Disabling %s support.", name, rc, purpose);
+        logger->printfln("%s get identity failed (rc %d).", name, rc);
         return -1;
     }
 
@@ -610,7 +610,7 @@ int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose,
         }
 
         if (!flash_firmware(&bricklet, firmware, firmware_len, logger)) {
-            logger->printfln("%s flashing failed. Disabling %s support.", name, purpose);
+            logger->printfln("%s flashing failed.", name);
             return -1;
         }
     }
