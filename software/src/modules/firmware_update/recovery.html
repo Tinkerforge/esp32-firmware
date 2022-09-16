@@ -83,7 +83,6 @@ function reboot() {
 }
 
 function freset() {
-    console.log("hier");
     fetch("/factory_reset", {
         method: "PUT",
         credentials: 'same-origin',

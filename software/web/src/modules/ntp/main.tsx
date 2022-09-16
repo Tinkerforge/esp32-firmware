@@ -73,7 +73,6 @@ export class NTP extends ConfigComponent<{}, NTPConfig> {
         if (!state || Object.keys(state).length == 0)
             return (<></>);
 
-        console.log(state);
         let splt = state.timezone.split("/");
 
         return (

@@ -70,7 +70,6 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
             if (!isNaN(ip) && !isNaN(subnet) && !isNaN(gateway)){
                 gateway_out_of_subnet = gateway != 0 && (ip & subnet) != (gateway & subnet);
                 subnet_captures_localhost = (ip & subnet) == (0x7F000001 & subnet);
-                console.log(ip, subnet, gateway, gateway_out_of_subnet, subnet_captures_localhost);
             }
         }
 
