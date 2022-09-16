@@ -403,3 +403,28 @@ export function validate_static_ip_config(ip_id: string, subnet_id: string, gate
     }
     return result;
 }
+
+export function upload(data: Blob, url: string, progress: (i: number) => void, contentType?: string) {
+    const xhr = new XMLHttpRequest();
+    progress(0);
+    return new Promise<void>((resolve, reject) => {
+      xhr.upload.addEventListener("progress", (event) => {
+        if (event.lengthComputable) {
+            progress(event.loaded / event.total);
+        }
+      });
+      xhr.addEventListener("readystatechange", () => {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+            progress(1);
+            if (xhr.status === 200)
+                resolve();
+            else
+                reject(xhr);
+        }
+      });
+      xhr.open("POST", url, true);
+      if (contentType)
+        xhr.setRequestHeader("Content-Type", contentType);
+      xhr.send(data);
+    });
+}
