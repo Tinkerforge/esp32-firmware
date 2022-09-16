@@ -1,31 +1,3 @@
 <div class="tab-pane fade" role="tabpanel" aria-labelledby="sidebar-network" id="network">
-    <div id="network_header" class="sticky-under-top"></div>
 
-    <form id="network_config_form" class="needs-validation" novalidate>
-        <!--
-            Use custom validation instead of the browser default, that is broken on Chrome
-            See: https://getbootstrap.com/docs/4.5/components/forms/#validation
-        -->
-
-        <div class="form-group row">
-            <label for="network_config_hostname"
-                class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="network.content.hostname"></label>
-            <div class="col-lg-9 col-xl-6">
-                <input id="network_config_hostname" class="form-control" type="text"  pattern="[a-zA-Z0-9\-]*" maxlength="32" required>
-                <div class="invalid-feedback"  data-i18n="network.content.hostname_invalid"></div>
-            </div>
-        </div>
-
-        <div class="form-group row">
-            <div class="col-lg-3 col-xl-2">
-                <label for="network_config_enable_mdns" class="col-form-label form-label" data-i18n="network.content.enable_mdns"></label>
-            </div>
-            <div class="col-lg-9 col-xl-6">
-                <div class="borderless-form-control custom-control custom-switch">
-                    <input type="checkbox" class="custom-control-input" id="network_config_enable_mdns">
-                    <label class="custom-control-label" for="network_config_enable_mdns" data-i18n="network.content.enable_mdns_desc"></label>
-                </div>
-            </div>
-        </div>
-    </form>
 </div>

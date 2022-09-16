@@ -22,22 +22,70 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h, render } from "preact";
+
+import { h, render, Fragment } from "preact";
 import { __ } from "../../ts/translation";
-import { ConfigPageHeader } from "../../ts/components/config_page_header";
+import { Switch } from "../../ts/components/switch";
+import { ConfigComponent } from "src/ts/components/config_component";
+import { ConfigForm } from "src/ts/components/config_form";
+import { FormRow } from "src/ts/components/form_row";
+import { InputText } from "src/ts/components/input_text";
 
-render(<ConfigPageHeader prefix="network" title={__("network.content.network")} />, $('#network_header')[0]);
+type NetworkConfig = API.getType['network/config'];
 
-export function init() {
-    API.register_config_form('network/config', {
-            error_string: __("network.script.save_failed"),
-            reboot_string: __("network.script.reboot_content_changed")
+export class Network extends ConfigComponent<{}, NetworkConfig> {
+    ignore_updates: boolean = false;
+
+    constructor() {
+        super();
+        util.eventTarget.addEventListener('network/config', () => {
+            if (!this.ignore_updates)
+                this.setState(API.get('network/config'));
         });
+    }
+
+    save() {
+        return API.save("network/config", this.state,
+            __("network.script.save_failed"),
+            __("network.script.reboot_content_changed"));
+    }
+
+    render(props: {}, state: Readonly<NetworkConfig>) {
+        if (!state)
+            return (<></>);
+
+        return (
+            <>
+                <ConfigForm id="network_config_form"
+                            title={__("network.content.network")}
+                            onSave={() => this.save()}
+                            onDirtyChange={(d) => this.ignore_updates = d}>
+                    <FormRow label={__("network.content.hostname")}>
+                        <InputText maxLength={32}
+                                   pattern="[a-zA-Z0-9\-]*"
+                                   required
+                                   value={state.hostname}
+                                   onValue={this.set("hostname")}
+                                   />
+                        <div class="invalid-feedback">{__("network.content.hostname_invalid")}</div>
+                    </FormRow>
+
+                    <FormRow label={__("network.content.enable_mdns")}>
+                        <Switch desc={__("network.content.enable_mdns_desc")}
+                                checked={state.enable_mdns}
+                                onClick={this.toggle('enable_mdns')}/>
+                    </FormRow>
+                </ConfigForm>
+            </>
+        );
+    }
 }
 
-export function add_event_listeners(source: API.APIEventTarget) {
-    source.addEventListener('network/config', () => API.default_updater('network/config'));
-}
+render(<Network/>, $('#network')[0])
+
+export function init() {}
+
+export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-network').prop('hidden', !module_init.network);
