@@ -17,6 +17,7 @@
     "react": "npm:@preact/compat",
     "react-bootstrap": "^1.6.6",
     "react-dom": "npm:@preact/compat",
+    "react-feather": "^2.0.10",
     "yamd5.js": "1.0.0"
   },
   "devDependencies": {

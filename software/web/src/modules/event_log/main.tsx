@@ -22,41 +22,56 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h, render } from "preact";
+import { h, render, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
 
-render(<PageHeader title={__("event_log.content.event_log")} />, $('#event_log_header')[0]);
 
-function load_event_log() {
-    util.download("/event_log")
-        .then(blob => blob.text())
-        .then(text => {
-            $('#event_log_content').val(text);
-            util.remove_alert("event_log_load_failed");
-        })
-        .catch(e => util.add_alert("event_log_load_failed", "alert-danger", __("event_log.script.load_event_log_error"), e.message))
+import { FormRow } from "../../ts/components/form_row";
+import { Button, Spinner } from "react-bootstrap";
+
+import { Download } from 'react-feather';
+
+interface EventLogState {
+    log: string
+    show_spinner: boolean
 }
 
-let update_event_log_interval: number = null;
+export class EventLog extends Component<{}, EventLogState> {
+    update_event_log_interval: number = null;
 
-export function init() {
-    $('#sidebar-event_log').on('shown.bs.tab', function (e) {
-        load_event_log();
-        if (update_event_log_interval == null) {
-            update_event_log_interval = window.setInterval(load_event_log, 10000);
-        }
-    });
+    constructor() {
+        super();
 
-    $('#sidebar-event_log').on('hidden.bs.tab', function (e) {
-        if (update_event_log_interval != null) {
-            clearInterval(update_event_log_interval);
-            update_event_log_interval = null;
-        }
-    });
+        // We have to use jquery here or else the events don't fire?
+        // This can be removed once the sidebar is ported to preact.
+        $('#sidebar-event_log').on('shown.bs.tab', () => {
+            this.load_event_log();
+            if (this.update_event_log_interval == null) {
+                this.update_event_log_interval = window.setInterval(() => this.load_event_log(), 10000);
+            }
+        });
 
-    $('#download_debug_report').on("click", async () => {
-        let timeout = window.setTimeout(() => $('#debug_report_spinner').prop("hidden", false), 1000);
+        $('#sidebar-event_log').on('hidden.bs.tab', () => {
+            if (this.update_event_log_interval != null) {
+                clearInterval(this.update_event_log_interval);
+                this.update_event_log_interval = null;
+            }
+        });
+    }
+
+    load_event_log() {
+        util.download("/event_log")
+            .then(blob => blob.text())
+            .then(text => {
+                this.setState({log: text});
+                util.remove_alert("event_log_load_failed");
+            })
+            .catch(e => util.add_alert("event_log_load_failed", "alert-danger", __("event_log.script.load_event_log_error"), e.message))
+    }
+
+    async download_debug_report() {
+        let timeout = window.setTimeout(() => this.setState({show_spinner: true}), 1000);
 
         try {
             let t = (new Date()).toISOString().replace(/:/gi, "-").replace(/\./gi, "-");
@@ -71,9 +86,43 @@ export function init() {
             util.add_alert("debug_report_load_failed", "alert-danger", __("event_log.script.load_debug_report_error"), e.message)
         } finally {
             window.clearTimeout(timeout);
-            $('#debug_report_spinner').prop("hidden", true);
+            this.setState({show_spinner: false})
         }
-    });
+    }
+
+    render(props: {}, state: Readonly<EventLogState>) {
+        if (!state)
+            return (<></>);
+
+        return (
+            <>
+                <PageHeader title={__("event_log.content.event_log")} />
+
+                <FormRow label={__("event_log.content.event_log_desc")} label_muted={__("event_log.content.event_log_desc_muted")}>
+                    <textarea class="text-monospace mb-1 form-control"
+                              readonly
+                              id="event_log_content"
+                              rows={20}
+                              style="resize: both; width: 100%; white-space: pre; line-height: 1.2; text-shadow: none; font-size: 0.875rem;">
+                        {state.log}
+                    </textarea>
+                </FormRow>
+
+                <FormRow label={__("event_log.content.debug_report_desc")} label_muted={__("event_log.content.debug_report_desc_muted")}>
+                    <Button variant="primary" className="form-control" onClick={() => this.download_debug_report()}>
+                        <span class="mr-2">{__("event_log.content.debug_report")}</span>
+                        <Download/>
+                        <Spinner animation="border" size="sm" as="span" className="ml-2" hidden={!state.show_spinner}/>
+                    </Button>
+                </FormRow>
+            </>
+        );
+    }
+}
+
+render(<EventLog/>, $('#event_log')[0])
+
+export function init() {
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
