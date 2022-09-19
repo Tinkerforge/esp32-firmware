@@ -29,12 +29,13 @@ import { PageHeader } from "../../ts/components/page_header";
 render(<PageHeader title={__("event_log.content.event_log")} />, $('#event_log_header')[0]);
 
 function load_event_log() {
-    $.get("/event_log")
-               .done((result) => {
-                   $('#event_log_content').val(result);
-                   util.remove_alert("event_log_load_failed");
-                })
-               .fail((xhr, status, error) => util.add_alert("event_log_load_failed", "alert-danger", __("event_log.script.load_event_log_error"), error + ": " + xhr.responseText))
+    util.download("/event_log")
+        .then(blob => blob.text())
+        .then(text => {
+            $('#event_log_content').val(text);
+            util.remove_alert("event_log_load_failed");
+        })
+        .catch(e => util.add_alert("event_log_load_failed", "alert-danger", __("event_log.script.load_event_log_error"), e.message))
 }
 
 let update_event_log_interval: number = null;
@@ -54,35 +55,24 @@ export function init() {
         }
     });
 
-    $('#download_debug_report').on("click", () => {
+    $('#download_debug_report').on("click", async () => {
         let timeout = window.setTimeout(() => $('#debug_report_spinner').prop("hidden", false), 1000);
-        let t = (new Date()).toISOString().replace(/:/gi, "-").replace(/\./gi, "-");
 
-        let debug_log = t + "\nScroll down for event log!\n\n";
-        $.get({url: "/debug_report", dataType: "text"})
-                .fail((xhr, status, error) => {
-                    util.add_alert("debug_report_load_failed", "alert-danger", __("event_log.script.load_debug_report_error"), error + ": " + xhr.responseText)
-                    window.clearTimeout(timeout);
-                    $('#debug_report_spinner').prop("hidden", true);
-                })
-                .done((result) => {
-                    util.remove_alert("debug_report_load_failed");
-                    debug_log += result + "\n\n";
+        try {
+            let t = (new Date()).toISOString().replace(/:/gi, "-").replace(/\./gi, "-");
+            let debug_log = t + "\nScroll down for event log!\n\n";
 
-                    $.get("/event_log")
-                        .fail((xhr, status, error) => {
-                            util.add_alert("debug_report_load_failed", "alert-danger", __("event_log.script.load_debug_report_error"), error + ": " + xhr.responseText)
-                            window.clearTimeout(timeout);
-                            $('#debug_report_spinner').prop("hidden", true);
-                        })
-                        .done((result) => {
-                            util.remove_alert("debug_report_load_failed");
-                            debug_log += result + "\n";
-                            util.downloadToFile(debug_log, "debug-report", "txt", "text/plain");
-                            window.clearTimeout(timeout);
-                            $('#debug_report_spinner').prop("hidden", true);
-                        });
-                });
+            debug_log += await util.download("/debug_report").then(blob => blob.text());
+            debug_log += "\n\n";
+            debug_log += await util.download("/event_log").then(blob => blob.text());
+
+            util.downloadToFile(debug_log, "debug-report", "txt", "text/plain");
+        } catch (e) {
+            util.add_alert("debug_report_load_failed", "alert-danger", __("event_log.script.load_debug_report_error"), e.message)
+        } finally {
+            window.clearTimeout(timeout);
+            $('#debug_report_spinner').prop("hidden", true);
+        }
     });
 }
 

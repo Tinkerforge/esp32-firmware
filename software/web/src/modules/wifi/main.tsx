@@ -90,26 +90,35 @@ function update_wifi_scan_results(data: Readonly<WifiInfo[]>) {
 }
 
 let scan_timeout: number = null;
-function scan_wifi() {
+async function scan_wifi() {
     $("#wifi_config_scan_spinner").prop('hidden', false);
     $("#wifi_scan_results").prop('hidden', true);
 
-    API.call('wifi/scan', {}, __("wifi.script.scan_wifi_init_failed"))
-       .catch(() => $('#scan_wifi_dropdown').dropdown('hide'))
-       .then(() => {
-            if (scan_timeout != null)
-                window.clearTimeout(scan_timeout);
+    try {
+        await API.call('wifi/scan', {}, __("wifi.script.scan_wifi_init_failed"));
+    } catch {
+       $('#scan_wifi_dropdown').dropdown('hide');
+       return;
+    }
 
-            scan_timeout = window.setTimeout(function () {
-                    scan_timeout = null;
-                    $.get("/wifi/scan_results").done(function (data: WifiInfo[]) {
-                        update_wifi_scan_results(data);
-                    }).fail((xhr, status, error) => {
-                        util.add_alert("wifi_scan_failed", "alert-danger", __("wifi.script.scan_wifi_results_failed"), error + ": " + xhr.responseText);
-                        $('#scan_wifi_dropdown').dropdown('hide');
-                    });
-                }, 12000);
-        });
+    if (scan_timeout != null)
+        window.clearTimeout(scan_timeout);
+
+    scan_timeout = window.setTimeout(async function () {
+        scan_timeout = null;
+
+        let result = ""
+        try {
+            result = await util.download("/wifi/scan_results").then(blob => blob.text())
+        } catch (e) {
+            util.add_alert("wifi_scan_failed", "alert-danger", __("wifi.script.scan_wifi_results_failed"), e.message);
+            $('#scan_wifi_dropdown').dropdown('hide');
+            return;
+        }
+
+        let data: WifiInfo[] = JSON.parse(result);
+        update_wifi_scan_results(data);
+    }, 12000);
 }
 
 

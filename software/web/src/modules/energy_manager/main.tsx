@@ -125,75 +125,75 @@ function allow_debug(b: boolean) {
     }
 }
 
-function debug_start() {
-    debug_log = "";
-    let status = $('#debug_label')[0] as HTMLInputElement;
+async function get_debug_report_and_event_log(status: HTMLInputElement) {
     status.value = __("energy_manager.script.loading_debug_report");
-    allow_debug(false);
-    $.get("/debug_report")
-        .fail(() => {
-            status.value = __("energy_manager.script.loading_debug_report_failed");
-            allow_debug(true);
-        })
-        .done((result) => {
-            debug_log += JSON.stringify(result) + "\n\n";
 
-            status.value = __("energy_manager.script.loading_event_log");
+    try {
+        debug_log += await util.download("/debug_report").then(blob => blob.text());
+        debug_log += "\n\n";
+    } catch {
+        status.value = __("energy_manager.script.loading_debug_report_failed");
+        allow_debug(true);
+        return false;
+    }
 
-            $.get("/event_log")
-                .fail(() => {
-                    status.value = __("energy_manager.script.loading_event_log_failed");
-                    allow_debug(true);
-                })
-                .done((result) => {
-                    debug_log += result + "\n";
+    status.value = __("energy_manager.script.loading_event_log");
 
-                    status.value = __("energy_manager.script.starting_debug");
+    try {
+        debug_log += await util.download("/event_log").then(blob => blob.text());
+        debug_log += "\n";
+    } catch {
+        status.value = __("energy_manager.script.loading_event_log_failed");
+        allow_debug(true);
+        return false;
+    }
 
-                    $.get("/energy_manager/start_debug")
-                        .fail(() => {
-                            status.value = __("energy_manager.script.starting_debug_failed");
-                            allow_debug(true);
-                        })
-                        .done((result) => {
-                            status.value = __("energy_manager.script.debug_running");
-                        });
-                });
-        });
+    return true;
 }
 
-function debug_stop() {
+async function debug_start() {
+    debug_log = "";
+    let status = $('#debug_label')[0] as HTMLInputElement;
+    allow_debug(false);
+
+    if (!await get_debug_report_and_event_log(status))
+        return;
+
+    status.value = __("energy_manager.script.starting_debug");
+
+    try {
+        await util.download("/energy_manager/start_debug");
+    } catch {
+        status.value = __("energy_manager.script.starting_debug_failed");
+        allow_debug(true);
+        return;
+    }
+
+    status.value = __("energy_manager.script.debug_running");
+}
+
+async function debug_stop() {
     let status = $('#debug_label')[0] as HTMLInputElement;
 
     allow_debug(true);
 
-    $.get("/energy_manager/stop_debug")
-        .fail(() => {
-            status.value = __("energy_manager.script.debug_stop_failed");
-        })
-        .done((result) => {
-            status.value = __("energy_manager.script.debug_stopped");
-            $.get("/debug_report")
-                .fail(() => {
-                    status.value = __("energy_manager.script.loading_debug_report_failed");
-                })
-                .done((result) => {
-                    debug_log += "\n" + JSON.stringify(result) + "\n\n";
+    try {
+        await util.download("/energy_manager/stop_debug");
+    } catch {
+        status.value = __("energy_manager.script.debug_stop_failed");
+        return;
+    }
 
-                    status.value = __("energy_manager.script.loading_event_log");
+    debug_log += "\n\n";
 
-                    $.get("/event_log")
-                        .fail(() => {
-                            status.value = __("energy_manager.script.loading_event_log_failed");
-                        })
-                        .done((result) => {
-                            debug_log += result + "\n";
-                            status.value = __("energy_manager.script.debug_done");
+    status.value = __("energy_manager.script.debug_stopped");
 
-                            util.downloadToFile(debug_log, "energy_manager-debug-log", "txt", "text/plain");
-                        });
-                });
-        });
+    if (!await get_debug_report_and_event_log(status))
+        return;
+
+    status.value = __("energy_manager.script.debug_done");
+
+    util.downloadToFile(debug_log, "energy_manager-debug-log", "txt", "text/plain");
 }
 
 export function init() {

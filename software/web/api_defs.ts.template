@@ -10,6 +10,7 @@ export interface ConfigMap {
     {{{config_map_entries}}}
     'info/modules': Modules
     'info/features': Features
+    'reboot': null
 };
 
 // It is save to use null here:
@@ -19,5 +20,6 @@ export interface ConfigMap {
 export let api_cache: {[key in keyof ConfigMap]: ConfigMap[key]} = {
     {{{api_cache_entries}}}
     'info/modules': null as any,
-    'info/features': null as any
+    'info/features': null as any,
+    'reboot': null as any
 };

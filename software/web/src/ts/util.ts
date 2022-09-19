@@ -23,13 +23,7 @@ import * as API from "./api";
 import { __ } from "./translation";
 
 export function reboot() {
-    $.ajax({
-        url: '/reboot',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify(null),
-        success: () => postReboot(__("util.reboot_title"), __("util.reboot_text"))
-    });
+    API.call("reboot", null, "").then(() => postReboot(__("util.reboot_title"), __("util.reboot_text")));
 }
 
 export function update_button_group(button_group_id: string, index_to_select: number, text_replacement?: string) {
@@ -264,17 +258,10 @@ export function postReboot(alert_title: string, alert_text: string) {
 let loginReconnectTimeout: number = null;
 
 export function ifLoggedInElse(if_continuation: () => void, else_continuation: () => void) {
-    $.ajax({url: "/login_state", timeout:3000}).done(function(data, statusText, xhr) {
-        if (data == "Logged in") {
-            if_continuation();
-        } else {
-            else_continuation();
-        }
-    }).fail(function(xhr, statusText, errorThrown) {
-        if (xhr.status == 404) {
-            if_continuation();
-        }
-    });
+    download("/login_state", 3000)
+        .catch(e => new Blob([e.message.startsWith("404") ? "Logged in" : ""]))
+        .then(blob => blob.text())
+        .then(text => text == "Logged in" ? if_continuation() : else_continuation());
 }
 
 export function ifLoggedInElseReload(continuation: () => void) {
@@ -443,4 +430,23 @@ export function upload(data: Blob, url: string, progress: (i: number) => void = 
             xhr.setRequestHeader("Content-Type", contentType);
         xhr.send(data);
     });
+}
+
+export async function download(url: string, timeout_ms: number = 5000) {
+    let abort = new AbortController();
+    let timeout = setTimeout(() => abort.abort(), timeout_ms);
+
+    let response = null;
+    try {
+        response = await fetch(url, {signal: abort.signal})
+    } catch (e) {
+        clearTimeout(timeout);
+        throw new Error(e.name == "AbortError" ? __("util.download_timeout") : (__("util.download_error") + ": " + e.message));
+    }
+
+    if (!response.ok) {
+        throw new Error(`${response.status}(${response.statusText}) ${await response.text()}`)
+    }
+
+    return await response.blob();
 }

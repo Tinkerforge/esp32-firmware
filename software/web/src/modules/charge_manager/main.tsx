@@ -371,21 +371,29 @@ function update_scan_results(data: Readonly<ServCharger[]>)
 }
 
 let scan_timeout: number = null;
-function scan_services()
+async function scan_services()
 {
-    API.call('charge_manager/scan', {}, __("charge_manager.script.scan_failed"))
-        .then(() => {
-            if (scan_timeout != null)
-                window.clearTimeout(scan_timeout);
+    try {
+        await API.call('charge_manager/scan', {}, __("charge_manager.script.scan_failed"))
+    } catch {
+        return;
+    }
 
-            scan_timeout = window.setTimeout(function () {
-                scan_timeout = null;
+    if (scan_timeout != null)
+        window.clearTimeout(scan_timeout);
 
-                $.get("/network/scan_result").done(function (data: ServCharger[]) {
-                    update_scan_results(data);
-                    });
-            }, 3000);
-        })
+    scan_timeout = window.setTimeout(async function () {
+        scan_timeout = null;
+
+        let result = "";
+        try {
+            result = await util.download("/network/scan_result").then(blob => blob.text());
+        } catch {
+            return;
+        }
+
+        update_scan_results(JSON.parse(result));
+    }, 3000);
 }
 
 function show_cfg_body()
