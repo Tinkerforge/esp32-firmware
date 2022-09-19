@@ -53,35 +53,41 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
     async checkFirmware(f: File) {
         try {
             await util.upload(f.slice(0xd000 - 0x1000, 0xd000), "check_firmware", () => {})
-        } catch (xhr) {
-            if (xhr.status == 423) {
-                util.add_alert("firmware_update_failed", "alert-danger", __("firmware_update.script.flash_fail"), __("firmware_update.script.vehicle_connected"));
-                return false;
-            }
+        } catch (error) {
+            if (typeof error === "string") {
+                util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.flash_fail"), error);
+            } else if (error instanceof XMLHttpRequest) {
+                let xhr = error;
 
-            try {
-                let e = JSON.parse(xhr.responseText)
-                let error_message = translate_unchecked(e["error"])
-                if (e["error"] == "firmware_update.script.downgrade") {
-                    error_message = error_message.replace("%fw%", e["fw"]).replace("%installed%", e["installed"]);
-
-                    const modal = async_modal_ref.current;
-                    if(!await modal.show({
-                            title: __("firmware_update.content.downgrade"),
-                            body: error_message,
-                            no_text: __("firmware_update.content.abort_downgrade"),
-                            yes_text: __("firmware_update.content.confirm_downgrade"),
-                            no_variant: "secondary",
-                            yes_variant: "danger"
-                        }))
-                        return false;
-                } else {
-                    util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.flash_fail"), error_message);
+                if (xhr.status == 423) {
+                    util.add_alert("firmware_update_failed", "alert-danger", __("firmware_update.script.flash_fail"), __("firmware_update.script.vehicle_connected"));
                     return false;
                 }
-            } catch {
-                util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.flash_fail"), xhr.responseText);
-                return false;
+
+                try {
+                    let e = JSON.parse(xhr.responseText)
+                    let error_message = translate_unchecked(e["error"])
+                    if (e["error"] == "firmware_update.script.downgrade") {
+                        error_message = error_message.replace("%fw%", e["fw"]).replace("%installed%", e["installed"]);
+
+                        const modal = async_modal_ref.current;
+                        if(!await modal.show({
+                                title: __("firmware_update.content.downgrade"),
+                                body: error_message,
+                                no_text: __("firmware_update.content.abort_downgrade"),
+                                yes_text: __("firmware_update.content.confirm_downgrade"),
+                                no_variant: "secondary",
+                                yes_variant: "danger"
+                            }))
+                            return false;
+                    } else {
+                        util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.flash_fail"), error_message);
+                        return false;
+                    }
+                } catch {
+                    util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.flash_fail"), xhr.responseText);
+                    return false;
+                }
             }
         }
 
@@ -111,14 +117,21 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
                         upload={__("firmware_update.content.update")}
                         url="/flash_firmware"
 
+                        timeout_ms={120 * 1000}
                         onUploadStart={async (f) => this.checkFirmware(f)}
                         onUploadSuccess={() => util.postReboot(__("firmware_update.script.flash_success"), __("util.reboot_text"))}
-                        onUploadError={xhr => {
-                            if (xhr.status == 423)
-                                util.add_alert("firmware_update_failed", "alert-danger", __("firmware_update.script.flash_fail"), __("firmware_update.script.vehicle_connected"));
-                            else {
-                                let txt = xhr.responseText.startsWith("firmware_update.") ? translate_unchecked(xhr.responseText) : ""/*error*/ + ": " + xhr.responseText;
-                                util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.flash_fail"), txt);
+                        onUploadError={error => {
+                            if (typeof error === "string") {
+                                util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.flash_fail"), error);
+                            } else if (error instanceof XMLHttpRequest) {
+                                let xhr = error;
+
+                                if (xhr.status == 423)
+                                    util.add_alert("firmware_update_failed", "alert-danger", __("firmware_update.script.flash_fail"), __("firmware_update.script.vehicle_connected"));
+                                else {
+                                    let txt = xhr.responseText.startsWith("firmware_update.") ? translate_unchecked(xhr.responseText) : (xhr.responseText ?? xhr.response);
+                                    util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.flash_fail"), txt);
+                                }
                             }
                             util.resumeWebSockets();
                         }}

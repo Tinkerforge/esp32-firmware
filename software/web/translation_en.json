@@ -52,7 +52,14 @@
         "subnet_invalid": "The subnet mask must have four groups between 0 and 255 separated with a dot. For example 255.255.255.0",
         "gateway_invalid": "The gateway IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1",
         "gateway_out_of_subnet": "Gateway address not in the configured subnet",
-        "subnet_captures_localhost": "Specified IP address and subnet mask not allowed: Would capture localhost (127.0.0.1)."
+        "subnet_captures_localhost": "Specified IP address and subnet mask not allowed: Would capture localhost (127.0.0.1).",
+
+        "upload_abort": "Upload aborted",
+        "upload_error": "Upload error",
+        "upload_timeout": "Upload timed out",
+        "download_abort": "Download aborted",
+        "download_error": "Download error",
+        "download_timeout": "Download timed out"
     },
     "days": "days",
     "day": "day"

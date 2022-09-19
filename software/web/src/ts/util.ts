@@ -404,27 +404,43 @@ export function validate_static_ip_config(ip_id: string, subnet_id: string, gate
     return result;
 }
 
-export function upload(data: Blob, url: string, progress: (i: number) => void, contentType?: string) {
+export function upload(data: Blob, url: string, progress: (i: number) => void = i => {}, contentType?: string, timeout_ms: number = 5000) {
     const xhr = new XMLHttpRequest();
     progress(0);
+
+    let error_message: string = null;
+
     return new Promise<void>((resolve, reject) => {
-      xhr.upload.addEventListener("progress", (event) => {
-        if (event.lengthComputable) {
-            progress(event.loaded / event.total);
-        }
-      });
-      xhr.addEventListener("readystatechange", () => {
-        if (xhr.readyState === XMLHttpRequest.DONE) {
-            progress(1);
-            if (xhr.status === 200)
-                resolve();
-            else
-                reject(xhr);
-        }
-      });
-      xhr.open("POST", url, true);
-      if (contentType)
-        xhr.setRequestHeader("Content-Type", contentType);
-      xhr.send(data);
+        xhr.upload.addEventListener("abort", e => error_message = error_message ?? __("util.upload_abort"));
+        // https://bugs.chromium.org/p/chromium/issues/detail?id=118096#c5
+        // "The details of errors of XHRs and Fetch API are not exposed to JavaScript for security reasons."
+        // Web development just sucks.
+        xhr.upload.addEventListener("error", e => error_message = error_message ?? __("util.upload_error"));
+        xhr.upload.addEventListener("timeout", e => error_message = error_message ?? __("util.upload_timeout"));
+
+        xhr.upload.addEventListener("progress", (event) => {
+            if (event.lengthComputable) {
+                progress(event.loaded / event.total);
+            }
+        });
+
+        xhr.addEventListener("abort", e => error_message = error_message ?? __("util.download_abort"));
+        xhr.addEventListener("error", e => error_message = error_message ?? __("util.download_error"));
+        xhr.addEventListener("timeout", e => error_message = error_message ?? __("util.download_timeout"));
+
+        xhr.addEventListener("loadend", () => {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                progress(1);
+                if (xhr.status === 200)
+                    resolve();
+            }
+            reject(error_message ?? xhr);
+        });
+
+        xhr.open("POST", url, true);
+        xhr.timeout = timeout_ms;
+        if (contentType)
+            xhr.setRequestHeader("Content-Type", contentType);
+        xhr.send(data);
     });
 }

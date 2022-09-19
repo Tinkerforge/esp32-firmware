@@ -28,12 +28,13 @@ interface InputFileProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElemen
     idContext?: Context<string>
     onUploadStart: (f: File) => Promise<boolean>,
     onUploadSuccess: () => void,
-    onUploadError: (xhr: XMLHttpRequest) => void,
+    onUploadError: (error: string | XMLHttpRequest) => void,
     browse: string
     select_file: string
     upload: string,
     url: string,
     contentType?: string
+    timeout_ms?: number
 }
 
 export function InputFile(props: InputFileProps) {
@@ -52,7 +53,7 @@ export function InputFile(props: InputFileProps) {
         setProgress(0);
         setUploading(true);
 
-        util.upload(file, props.url, setProgress, props.contentType)
+        util.upload(file, props.url, setProgress, props.contentType, props.timeout_ms)
             .then(() => {
                 setUploading(false);
                 setProgress(0);
