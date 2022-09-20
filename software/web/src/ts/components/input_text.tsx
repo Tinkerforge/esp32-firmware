@@ -27,7 +27,7 @@ interface InputTextProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElemen
 }
 
 export function InputText(props: InputTextProps) {
-    let id = useContext(props.idContext);
+    let id = props.idContext === undefined ? "" : useContext(props.idContext);
     return (
         <input class="form-control"
                id={id}
