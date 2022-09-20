@@ -34,34 +34,26 @@ import { InputSelect } from "../../ts/components/input_select";
 
 type APConfig = API.getType['wifi/ap_config'];
 
-export class WifiAP extends ConfigComponent<{}, APConfig> {
-    ignore_updates: boolean = false;
+type WifiAPState = {show_modal: boolean};
+
+export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
     ipconfig_valid: boolean = true;
-    show_modal: boolean = false;
 
     constructor() {
-        super();
-        util.eventTarget.addEventListener('wifi/ap_config', () => {
-            if (!this.ignore_updates)
-                this.setState(API.get('wifi/ap_config'));
-        });
+        super('wifi/ap_config',
+              __("wifi.script.ap_config_failed"),
+              __("wifi.script.ap_reboot_content_changed"));
     }
 
-    save() {
-        if (!this.ipconfig_valid)
-            return Promise.reject();
-
-        return API.save("wifi/ap_config", this.state,
-            __("wifi.script.ap_config_failed"),
-            __("wifi.script.ap_reboot_content_changed"));
-    }
+    override isSaveAllowed(cfg: APConfig) { return this.ipconfig_valid; }
 
     dismissModal() {
-        this.show_modal = false;
-        this.setState({"ap_fallback_only": API.get("wifi/ap_config").ap_fallback_only, "enable_ap": API.get("wifi/ap_config").enable_ap});
+        this.setState({show_modal: false,
+                       ap_fallback_only: API.get("wifi/ap_config").ap_fallback_only,
+                       enable_ap: API.get("wifi/ap_config").enable_ap});
     }
 
-    render(props: {}, state: Readonly<APConfig>) {
+    override render(props: {}, state: Readonly<APConfig & WifiAPState>) {
         if (!state)
             return (<></>);
 
@@ -69,7 +61,7 @@ export class WifiAP extends ConfigComponent<{}, APConfig> {
             <>
                 <ConfigForm id="wifi_ap_config_form"
                             title={__("wifi.content.ap_settings")}
-                            onSave={() => this.save()}
+                            onSave={this.save}
                             onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("wifi.content.ap_enable")} label_muted={__("wifi.content.ap_enable_muted")}>
                         <InputSelect
@@ -78,9 +70,9 @@ export class WifiAP extends ConfigComponent<{}, APConfig> {
                                 (state.enable_ap ? 0 : 2)
                             }
                             onValue={(v) => {
-                                if (v == "2")
-                                    this.show_modal = true;
-                                this.setState({"enable_ap": v != "2", "ap_fallback_only": v == "1"});
+                                this.setState({show_modal: v == "2",
+                                               enable_ap: v != "2",
+                                               ap_fallback_only: v == "1"});
                             }}
                             items={[
                                 ["0", __("wifi.content.ap_enabled")],
@@ -145,7 +137,7 @@ export class WifiAP extends ConfigComponent<{}, APConfig> {
 
                 </ConfigForm>
 
-                <Modal show={this.show_modal} onHide={() => {this.dismissModal()}} centered>
+                <Modal show={state.show_modal} onHide={() => {this.dismissModal()}} centered>
                     <Modal.Header closeButton>
                         <label class="modal-title form-label">{__("wifi.content.confirm_title")}</label>
                     </Modal.Header>
@@ -154,7 +146,7 @@ export class WifiAP extends ConfigComponent<{}, APConfig> {
                         <Button variant="secondary" onClick={() => {this.dismissModal()}}>
                             {__("wifi.content.confirm_abort")}
                         </Button>
-                        <Button variant="danger" onClick={() => {this.show_modal = false; this.forceUpdate();}}>
+                        <Button variant="danger" onClick={() => this.setState({show_modal: false})}>
                             {__("wifi.content.confirm_confirm")}
                         </Button>
                     </Modal.Footer>

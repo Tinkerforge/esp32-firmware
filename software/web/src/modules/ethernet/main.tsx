@@ -32,29 +32,21 @@ import { IPConfiguration } from "src/ts/components/ip_configuration";
 
 type EthernetConfig = API.getType['ethernet/config'];
 
-export class Ethernet extends ConfigComponent<{}, EthernetConfig> {
-    ignore_updates: boolean = false;
+export class Ethernet extends ConfigComponent<'ethernet/config'> {
     ipconfig_valid: boolean = true;
 
     constructor() {
-        super();
-        util.eventTarget.addEventListener('ethernet/config', () => {
-            if (!this.ignore_updates)
-                this.setState(API.get('ethernet/config'));
-        });
+        super('ethernet/config',
+              __("ethernet.script.config_failed"),
+              __("ethernet.script.reboot_content_changed"));
     }
 
-    save() {
-        if (!this.ipconfig_valid)
-            return Promise.reject();
+    override isSaveAllowed(cfg: EthernetConfig) { return this.ipconfig_valid; }
 
-        let cfg = {...this.state};
+    override transformSave(cfg: EthernetConfig) {
         cfg.dns = cfg.dns == "" ? "0.0.0.0" : cfg.dns;
         cfg.dns2 = cfg.dns2 == "" ? "0.0.0.0" : cfg.dns2;
-
-        return API.save("ethernet/config", cfg,
-            __("ethernet.script.config_failed"),
-            __("ethernet.script.reboot_content_changed"));
+        return cfg;
     }
 
     render(props: {}, state: Readonly<EthernetConfig>) {
@@ -65,7 +57,7 @@ export class Ethernet extends ConfigComponent<{}, EthernetConfig> {
             <>
                 <ConfigForm id="ethernet_config_form"
                             title={__("ethernet.content.ethernet")}
-                            onSave={() => this.save()}
+                            onSave={this.save}
                             onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("ethernet.content.enable")}>
                         <Switch desc={__("ethernet.content.enable_desc")}

@@ -32,24 +32,15 @@ import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputPassword } from "../../ts/components/input_password";
 import { Switch } from "../../ts/components/switch";
+import { Button } from "react-bootstrap";
 
 type MqttConfig = API.getType['mqtt/config'];
 
-export class Mqtt extends ConfigComponent<{}, MqttConfig> {
-    ignore_updates: boolean = false;
-
+export class Mqtt extends ConfigComponent<'mqtt/config'> {
     constructor() {
-        super();
-        util.eventTarget.addEventListener('mqtt/config', () => {
-            if (!this.ignore_updates)
-                this.setState(API.get('mqtt/config'));
-        });
-    }
-
-    save = () => {
-        return API.save("mqtt/config", this.state,
-            __("mqtt.script.save_failed"),
-            __("mqtt.script.reboot_content_changed"));
+        super('mqtt/config',
+              __("mqtt.script.save_failed"),
+              __("mqtt.script.reboot_content_changed"));
     }
 
     render(props: {}, state: Readonly<MqttConfig>) {
@@ -58,7 +49,7 @@ export class Mqtt extends ConfigComponent<{}, MqttConfig> {
 
         return (
             <>
-                <ConfigForm id="mqtt_config_form" title={__("mqtt.content.mqtt")} onSave={this.save} onDirtyChange={(d) => this.ignore_updates = d}>
+                <ConfigForm id="mqtt_config_form" title={__("mqtt.content.mqtt")} onSave={() => this.save()} onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("mqtt.content.enable_mqtt")}>
                         <Switch desc={__("mqtt.content.enable_mqtt_desc")}
                                 checked={state.enable_mqtt}

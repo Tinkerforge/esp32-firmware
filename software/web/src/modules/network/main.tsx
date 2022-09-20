@@ -33,21 +33,11 @@ import { InputText } from "src/ts/components/input_text";
 
 type NetworkConfig = API.getType['network/config'];
 
-export class Network extends ConfigComponent<{}, NetworkConfig> {
-    ignore_updates: boolean = false;
-
+export class Network extends ConfigComponent<'network/config'> {
     constructor() {
-        super();
-        util.eventTarget.addEventListener('network/config', () => {
-            if (!this.ignore_updates)
-                this.setState(API.get('network/config'));
-        });
-    }
-
-    save() {
-        return API.save("network/config", this.state,
-            __("network.script.save_failed"),
-            __("network.script.reboot_content_changed"));
+        super('network/config',
+              __("network.script.save_failed"),
+              __("network.script.reboot_content_changed"));
     }
 
     render(props: {}, state: Readonly<NetworkConfig>) {
@@ -58,7 +48,7 @@ export class Network extends ConfigComponent<{}, NetworkConfig> {
             <>
                 <ConfigForm id="network_config_form"
                             title={__("network.content.network")}
-                            onSave={() => this.save()}
+                            onSave={this.save}
                             onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("network.content.hostname")}>
                         <InputText maxLength={32}

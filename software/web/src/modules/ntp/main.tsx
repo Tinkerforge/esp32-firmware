@@ -37,21 +37,11 @@ import { InputText } from "src/ts/components/input_text";
 
 type NTPConfig = API.getType['ntp/config'];
 
-export class NTP extends ConfigComponent<{}, NTPConfig> {
-    ignore_updates: boolean = false;
-
+export class NTP extends ConfigComponent<'ntp/config'> {
     constructor() {
-        super();
-        util.eventTarget.addEventListener('ntp/config', () => {
-            if (!this.ignore_updates)
-                this.setState(API.get('ntp/config'));
-        });
-    }
-
-    save() {
-        return API.save("ntp/config", this.state,
-            __("ntp.script.save_failed"),
-            __("ntp.script.reboot_content_changed"));
+        super('ntp/config',
+              __("ntp.script.save_failed"),
+              __("ntp.script.reboot_content_changed"));
     }
 
     updateTimezone(s: string, i: number) {
@@ -79,7 +69,7 @@ export class NTP extends ConfigComponent<{}, NTPConfig> {
             <>
                 <ConfigForm id="ntp_config_form"
                             title={__("ntp.content.ntp")}
-                            onSave={() => this.save()}
+                            onSave={this.save}
                             onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("ntp.content.enable")}>
                         <Switch desc={__("ntp.content.enable_desc")}
