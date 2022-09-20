@@ -26,13 +26,12 @@ import * as API from "../../ts/api";
 
 import { h, render } from "preact";
 import { __ } from "../../ts/translation";
-import { ConfigPageHeader } from "../../ts/components/config_page_header";
 
 import { WifiAP } from "./wifi_ap";
-
-render(<ConfigPageHeader prefix="wifi_sta" title={__("wifi.content.sta_settings")} />, $('#wifi_sta_header')[0]);
+import { WifiSTA } from "./wifi_sta";
 
 render(<WifiAP/>, $('#wifi-ap')[0])
+render(<WifiSTA/>, $('#wifi-sta')[0])
 
 function wifi_symbol(rssi: number) {
     if(rssi >= -60)
@@ -45,97 +44,6 @@ function wifi_symbol(rssi: number) {
     return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-wifi"><title>RSSI: ${rssi}</title><path stroke="#cccccc" d="M1.42 9a16 16 0 0 1 21.16 0"></path><path stroke="#cccccc" d="M5 12.55a11 11 0 0 1 14.08 0"></path><path stroke="#cccccc" d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>`;
 }
 
-type WifiInfo = Exclude<API.getType['wifi/scan_results'], string>[0];
-
-function update_wifi_scan_results(data: Readonly<WifiInfo[]>) {
-    $("#wifi_config_scan_spinner").prop('hidden', true);
-    $("#wifi_scan_results").prop('hidden', false);
-    $("#wifi_scan_title").html(__("wifi.script.select_ap"));
-
-    if (data.length == 0) {
-        $("#wifi_scan_results").html(__("wifi.script.no_ap_found"));
-        return;
-    }
-    let result = ``;
-
-    // We want to show the BSSID if this is a hidden AP or we have multiple APs with the same SSID
-    let tups = $.map(data, (v: WifiInfo, i) => {
-        if (v.ssid == "")
-            return [__("wifi.script.hidden_ap") + ` (${v.bssid})`, true];
-
-        let result = [v.ssid, false];
-        $.each(data, (i2, v2: WifiInfo) => {
-            if (i != i2 && v2.ssid == v.ssid)
-                result = [v.ssid + ` (${v.bssid})`, v.rssi - v2.rssi > 15];
-        });
-        return result;
-    });
-
-    $.each(data, (i, v: WifiInfo) => {
-        let line = `<a id="wifi_scan_result_${i}" class="dropdown-item" href="#">${wifi_symbol(v.rssi)}<span class="ml-2" data-feather='${v.encryption == 0 ? 'unlock' : 'lock'}'></span><span class="pl-2">${tups[2*i]}</span></a>`;
-        result += line;
-    });
-
-    $("#wifi_scan_results").html(result);
-    $("#scan_wifi_button").dropdown('update')
-
-    $.each(data, (i, v: WifiInfo) => {
-        $(`#wifi_scan_result_${i}`).on("click", (event) => {
-            event.preventDefault();
-            connect_to_ap(v.ssid, v.bssid, v.encryption, tups[2*i+1] as boolean);
-        });
-    });
-
-    feather.replace();
-}
-
-let scan_timeout: number = null;
-async function scan_wifi() {
-    $("#wifi_config_scan_spinner").prop('hidden', false);
-    $("#wifi_scan_results").prop('hidden', true);
-
-    try {
-        await API.call('wifi/scan', {}, __("wifi.script.scan_wifi_init_failed"));
-    } catch {
-       $('#scan_wifi_dropdown').dropdown('hide');
-       return;
-    }
-
-    if (scan_timeout != null)
-        window.clearTimeout(scan_timeout);
-
-    scan_timeout = window.setTimeout(async function () {
-        scan_timeout = null;
-
-        let result = ""
-        try {
-            result = await util.download("/wifi/scan_results").then(blob => blob.text())
-        } catch (e) {
-            util.add_alert("wifi_scan_failed", "alert-danger", __("wifi.script.scan_wifi_results_failed"), e.message);
-            $('#scan_wifi_dropdown').dropdown('hide');
-            return;
-        }
-
-        let data: WifiInfo[] = JSON.parse(result);
-        update_wifi_scan_results(data);
-    }, 12000);
-}
-
-
-function update_wifi_sta_config() {
-    let config = API.default_updater('wifi/sta_config', ['bssid']);
-
-    $('#wifi_sta_config_bssid').val(config.bssid.map((x)=> (x < 16 ? '0' : '') + x.toString(16).toUpperCase()).join(":"));
-
-    if(config.ip == "0.0.0.0") {
-        $('#wifi_sta_config_show_static').val("hide");
-        wifi_cfg_toggle_static_ip_collapse("hide");
-    } else {
-        $('#wifi_sta_config_show_static').val("show");
-        wifi_cfg_toggle_static_ip_collapse("show");
-    }
-}
-
 function update_wifi_state() {
     let state = API.default_updater('wifi/state', ['sta_ip', 'sta_rssi', 'sta_bssid', 'ap_bssid'], false);
 
@@ -145,87 +53,12 @@ function update_wifi_state() {
     }
 }
 
-function wifi_cfg_toggle_static_ip_collapse(value: string) {
-    if (value == "hide") {
-        $('#wifi_sta_config_static_ip_cfg').collapse('hide');
-        $('#wifi_sta_config_ip').prop('required', false);
-        $('#wifi_sta_config_subnet').prop('required', false);
-        $('#wifi_sta_config_gateway').prop('required', false);
-    }
-    else if (value == "show") {
-        $('#wifi_sta_config_static_ip_cfg').collapse('show');
-        $('#wifi_sta_config_ip').prop('required', true);
-        $('#wifi_sta_config_subnet').prop('required', true);
-        $('#wifi_sta_config_gateway').prop('required', true);
-    }
-}
-
-function connect_to_ap(ssid: string, bssid: string, encryption: number, enable_bssid_lock: boolean) {
-    $('#wifi_sta_config_ssid').val(ssid);
-    $('#wifi_sta_config_bssid').val(bssid);
-    let passphrase_required = API.get("wifi/sta_config").ssid != ssid && encryption != 0;
-    $('#wifi_sta_config_passphrase').prop("required", passphrase_required);
-    $('#wifi_sta_config_passphrase').prop("placeholder", passphrase_required ? __("wifi.content.required") : __("wifi.content.unchanged"))
-    $('#wifi_sta_config_enable_sta').prop("checked", true);
-    $('#wifi_sta_config_bssid_lock').prop("checked", enable_bssid_lock);
-    $('#wifi_sta_config_ssid').trigger("input");
-    return;
-}
-
 export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('wifi/state', update_wifi_state);
-    source.addEventListener('wifi/sta_config', update_wifi_sta_config);
-
-    source.addEventListener('wifi/scan_results', (e) => {
-        if (e.data == "scan in progress")
-            return;
-
-        window.clearTimeout(scan_timeout);
-        scan_timeout = null;
-
-        if (e.data == "scan failed") {
-            console.log("scan failed");
-            update_wifi_scan_results(JSON.parse("[]"));
-            return;
-        }
-
-        if (typeof e.data !== "string")
-            update_wifi_scan_results(e.data);
-    }, false);
 }
 
 export function init() {
-    $("#scan_wifi_button").on("click", scan_wifi);
-    $("#wifi_sta_config_show_passphrase").on("change", util.toggle_password_fn("#wifi_sta_config_passphrase"));
-    $("#wifi_sta_config_clear_passphrase").on("change", util.clear_password_fn("#wifi_sta_config_passphrase"));
-    $("#wifi_sta_config_show_static").on("change", function(this: HTMLInputElement) {wifi_cfg_toggle_static_ip_collapse(this.value);});
 
-    API.register_config_form('wifi/sta_config', {
-            overrides: () => {
-                let dhcp = $('#wifi_sta_config_show_static').val() != "show";
-                return {
-                    bssid: $('#wifi_sta_config_bssid').val().toString().split(':').map(x => parseInt(x, 16)),
-                    passphrase: util.passwordUpdate('#wifi_sta_config_passphrase'),
-                    ip: dhcp ? "0.0.0.0": $('#wifi_sta_config_ip').val().toString(),
-                    subnet: dhcp ? "0.0.0.0": $('#wifi_sta_config_subnet').val().toString(),
-                    gateway: dhcp ? "0.0.0.0": $('#wifi_sta_config_gateway').val().toString(),
-                    dns: dhcp ? "0.0.0.0": $('#wifi_sta_config_dns').val().toString(),
-                    dns2: dhcp ? "0.0.0.0": $('#wifi_sta_config_dns2').val().toString()
-                }
-            },
-            pre_validation: () => util.reset_static_ip_config_validation('wifi_sta_config_ip', 'wifi_sta_config_subnet', 'wifi_sta_config_gateway'),
-            post_validation: () => util.validate_static_ip_config('wifi_sta_config_ip', 'wifi_sta_config_subnet', 'wifi_sta_config_gateway', $('#wifi_sta_config_show_static').val() != "show"),
-            error_string: __("wifi.script.sta_config_failed"),
-            reboot_string: __("wifi.script.sta_reboot_content_changed")
-        }
-    );
-
-    $('#scan_wifi_dropdown').on('hidden.bs.dropdown', function (e) {
-        $("#wifi_scan_title").html(__("wifi.content.sta_scanning"));
-        $("#wifi_config_scan_spinner").prop('hidden', false);
-        $("#wifi_scan_results").prop('hidden', true);
-        $("#scan_wifi_button").dropdown('update');
-    });
 }
 
 export function update_sidebar_state(module_init: any) {
