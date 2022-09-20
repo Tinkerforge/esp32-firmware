@@ -27,6 +27,7 @@ interface InputPasswordProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputEl
     value: string | null
     onValue: (value: string | null) => void
     hideClear?: boolean
+    placeholder?: string
 }
 
 interface InputPasswordState {
@@ -54,7 +55,7 @@ export class InputPassword extends Component<InputPasswordProps, InputPasswordSt
                 <input class="form-control"
                     id={id}
                     type={state.show ? "text" : "password"}
-                    placeholder={this.state.clear ? __("component.input_password.to_be_cleared") : __("component.input_password.unchanged")}
+                    placeholder={this.state.clear ? __("component.input_password.to_be_cleared") : (props.placeholder ?? __("component.input_password.unchanged"))}
                     onInput={(e) => {
                         let value: string = (e.target as HTMLInputElement).value;
                         props.onValue(value.length > 0 ? value : null)}
