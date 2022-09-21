@@ -262,8 +262,8 @@ async function downloadChargeLog(user_filter: number, start_date: Date, end_date
     if (usernames == null || display_names == null)
         return;
 
-    await fetch('/charge_tracker/charge_log')
-        .then(response => response.arrayBuffer())
+    await util.download('/charge_tracker/charge_log')
+        .then(blob => blob.arrayBuffer())
         .then(buffer => {
             let line = [
                 __("charge_tracker.script.csv_header_start"),

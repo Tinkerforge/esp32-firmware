@@ -76,25 +76,15 @@ export function save_maybe<T extends string>(topic: T, payload: (T extends keyof
     return Promise.resolve();
 }
 
-export function call<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T], error_string: string, reboot_string?: string) {
-    return fetch('/' + topic, {
-            method: 'PUT',
-            credentials: 'same-origin',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload)
-        })
-        .then(response => {
-            if (response.ok)
-                return response;
-            return response.text().catch(() => response.statusText).then(x => {throw new Error(x)});
-        })
-        .then(reboot_string ? util.getShowRebootModalFn(reboot_string) : undefined)
-        .catch(error => {
-            util.add_alert(topic.replace("/", "_") + '_failed', 'alert-danger', error_string, error);
-            throw error;
-        });
+export async function call<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T], error_string: string, reboot_string?: string) {
+    try {
+        let blob = await util.put('/' + topic, payload);
+        if (reboot_string)
+            util.getShowRebootModalFn(reboot_string)
+    } catch (e) {
+        util.add_alert(topic.replace("/", "_") + '_failed', 'alert-danger', error_string, e);
+        throw e;
+    }
 }
 
 export function hasFeature(feature: string) {

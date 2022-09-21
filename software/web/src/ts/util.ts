@@ -454,4 +454,28 @@ export async function download(url: string, timeout_ms: number = 5000) {
     return await response.blob();
 }
 
+export async function put(url: string, payload: any, timeout_ms: number = 5000) {
+    let abort = new AbortController();
+    let timeout = setTimeout(() => abort.abort(), timeout_ms);
+
+    let response = null;
+    try {
+        response = await fetch(url, {
+            signal: abort.signal,
+            method: "PUT",
+            credentials: 'same-origin',
+            headers: {"Content-Type": "application/json; charset=utf-8"},
+            body: JSON.stringify(payload)})
+    } catch (e) {
+        clearTimeout(timeout);
+        throw new Error(e.name == "AbortError" ? __("util.download_timeout") : (__("util.download_error") + ": " + e.message));
+    }
+
+    if (!response.ok) {
+        throw new Error(`${response.status}(${response.statusText}) ${await response.text()}`)
+    }
+
+    return await response.blob();
+}
+
 export const async_modal_ref: RefObject<AsyncModal> = createRef();

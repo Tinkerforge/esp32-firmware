@@ -156,12 +156,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
                                     return;
 
                                 try {
-                                    await fetch("/config_reset", {
-                                        method: "PUT",
-                                        credentials: 'same-origin',
-                                        headers: {"Content-Type": "application/json; charset=utf-8"},
-                                        body: JSON.stringify({"do_i_know_what_i_am_doing": true})
-                                    })
+                                    await util.put("/config_reset", {"do_i_know_what_i_am_doing": true});
                                     util.postReboot(__("firmware_update.script.config_reset_init"), __("util.reboot_text"));
                                 } catch (error) {
                                     util.add_alert("config_reset_failed", "alert-danger", __("firmware_update.script.config_reset_error"), error);
@@ -185,12 +180,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
                             return;
 
                         try {
-                            await fetch("/factory_reset", {
-                                method: "PUT",
-                                credentials: 'same-origin',
-                                headers: {"Content-Type": "application/json; charset=utf-8"},
-                                body: JSON.stringify({"do_i_know_what_i_am_doing": true})
-                            })
+                            await util.put("/factory_reset", {"do_i_know_what_i_am_doing": true});
                             util.postReboot(__("firmware_update.script.factory_reset_init"), __("util.reboot_text"));
                         } catch (error) {
                             util.add_alert("factory_reset_failed", "alert-danger", __("firmware_update.script.factory_reset_error"), error);

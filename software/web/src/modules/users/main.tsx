@@ -38,8 +38,8 @@ type UsersConfig = API.getType['users/config'];
 type User = UsersConfig['users'][0];
 
 export function getAllUsernames() {
-    return fetch('/users/all_usernames')
-        .then(response => response.arrayBuffer())
+    return util.download('/users/all_usernames')
+        .then(blob => blob.arrayBuffer())
         .then(buffer => {
             let usernames: string[] = [];
             let display_names: string[] = [];
