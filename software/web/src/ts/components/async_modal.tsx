@@ -17,9 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Component, Context } from "preact";
+import { h, Component, Context, render } from "preact";
 import { Button, Modal } from "react-bootstrap";
 import { __ } from "../translation";
+
+import * as util from "../../ts/util";
 
 interface AsyncModalProps {
 
@@ -82,4 +84,8 @@ export class AsyncModal extends Component<AsyncModalProps, AsyncModalState> {
             </Modal>
         );
     }
+}
+
+export function init_async_modal() {
+    render(<AsyncModal ref={util.async_modal_ref}/>, document.getElementById('async_modal'))
 }

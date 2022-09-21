@@ -97,6 +97,8 @@
         </div>
     </div>
 
+    <div id="async_modal"></div>
+
     <div class="modal fade" id="reboot" tabindex="-1" role="dialog" aria-hidden="true">
         <div id="reboot_content" class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
             <div class="modal-content">

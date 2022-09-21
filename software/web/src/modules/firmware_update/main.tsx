@@ -30,15 +30,10 @@ import { FormRow } from "../../ts/components/form_row";
 import { InputText } from "../../ts/components/input_text";
 import { InputFile } from "../../ts/components/input_file";
 import { Button } from "react-bootstrap";
-import { AsyncModal } from "../../ts/components/async_modal";
 
 type FirmwareUpdateConfig = API.getType['info/version'];
 
-const async_modal_ref: RefObject<AsyncModal> = createRef();
-
 export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
-    show_modal:boolean = false;
-
     constructor() {
         super();
         util.eventTarget.addEventListener('info/version', () => {
@@ -70,7 +65,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
                     if (e["error"] == "firmware_update.script.downgrade") {
                         error_message = error_message.replace("%fw%", e["fw"]).replace("%installed%", e["installed"]);
 
-                        const modal = async_modal_ref.current;
+                        const modal = util.async_modal_ref.current;
                         if(!await modal.show({
                                 title: __("firmware_update.content.downgrade"),
                                 body: error_message,
@@ -149,7 +144,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
                 {show_config_reset ?
                     <FormRow label={__("firmware_update.content.config_reset")} label_muted={__("firmware_update.content.config_reset_desc")}>
                         <Button variant="danger" className="form-control" onClick={async () => {
-                                const modal = async_modal_ref.current;
+                                const modal = util.async_modal_ref.current;
                                 if (!await modal.show({
                                         title: __("firmware_update.content.config_reset"),
                                         body: __("firmware_update.content.config_reset_modal_text"),
@@ -178,7 +173,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
 
                 <FormRow label={__("firmware_update.content.factory_reset")} label_muted={__("firmware_update.content.factory_reset_desc")}>
                     <Button variant="danger" className="form-control" onClick={async () => {
-                        const modal = async_modal_ref.current;
+                        const modal = util.async_modal_ref.current;
                         if (!await modal.show({
                                 title: __("firmware_update.content.factory_reset"),
                                 body: __("firmware_update.content.factory_reset_modal_text"),
@@ -202,8 +197,6 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
                         }
                     }}>{__("firmware_update.content.factory_reset")}</Button>
                 </FormRow>
-
-                <AsyncModal ref={async_modal_ref}/>
             </>
         );
     }

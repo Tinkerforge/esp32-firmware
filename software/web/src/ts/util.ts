@@ -18,9 +18,12 @@
  */
 
 import $ from "jquery";
+import { createRef, RefObject } from "preact";
 
 import * as API from "./api";
 import { __ } from "./translation";
+
+import { AsyncModal } from "./components/async_modal";
 
 export function reboot() {
     API.call("reboot", null, "").then(() => postReboot(__("util.reboot_title"), __("util.reboot_text")));
@@ -450,3 +453,5 @@ export async function download(url: string, timeout_ms: number = 5000) {
 
     return await response.blob();
 }
+
+export const async_modal_ref: RefObject<AsyncModal> = createRef();
