@@ -200,8 +200,8 @@ struct Config {
                       int32_t max = std::numeric_limits<int32_t>::max());
 
     static Config Uint(uint32_t u,
-                       int32_t min = std::numeric_limits<uint32_t>::lowest(),
-                       int32_t max = std::numeric_limits<uint32_t>::max());
+                       uint32_t min = std::numeric_limits<uint32_t>::lowest(),
+                       uint32_t max = std::numeric_limits<uint32_t>::max());
 
     static Config Bool(bool b);
 

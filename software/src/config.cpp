@@ -688,7 +688,7 @@ Config::ConfUint::~ConfUint()
     *this->getMax() = 0;
 }
 
-Config Config::Uint(uint32_t u, int32_t min, int32_t max)
+Config Config::Uint(uint32_t u, uint32_t min, uint32_t max)
 {
     ConfUint new_uint;
     *new_uint.getValue() = u;
