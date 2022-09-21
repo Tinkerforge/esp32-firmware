@@ -96,10 +96,10 @@ struct default_validator {
 
     String operator()(const Config::ConfUint &x) const
     {
-        if (*x.getValue() < *x.getMin())
-            return String(String("Unsigned integer value ") + *x.getValue() + " was less than the allowed minimum of " + *x.getMin());
-        if (*x.getValue() > *x.getMax())
-            return String(String("Unsigned integer value ") + *x.getValue() + " was more than the allowed maximum of " + *x.getMax());
+        if (*x.getVal() < *x.getMin())
+            return String(String("Unsigned integer value ") + *x.getVal() + " was less than the allowed minimum of " + *x.getMin());
+        if (*x.getVal() > *x.getMax())
+            return String(String("Unsigned integer value ") + *x.getVal() + " was more than the allowed maximum of " + *x.getMax());
         return String("");
     }
 
@@ -148,23 +148,23 @@ struct default_validator {
 struct to_json {
     void operator()(const Config::ConfString &x)
     {
-        insertHere.set(*x.getValue());
+        insertHere.set(*x.getVal());
     }
     void operator()(const Config::ConfFloat &x)
     {
-        insertHere.set(*x.getValue());
+        insertHere.set(*x.getVal());
     }
     void operator()(const Config::ConfInt &x)
     {
-        insertHere.set(*x.getValue());
+        insertHere.set(*x.getVal());
     }
     void operator()(const Config::ConfUint &x)
     {
-        insertHere.set(*x.getValue());
+        insertHere.set(*x.getVal());
     }
     void operator()(const Config::ConfBool &x)
     {
-        insertHere.set(*x.getValue());
+        insertHere.set(*x.getVal());
     }
     void operator()(const std::nullptr_t x)
     {
@@ -339,7 +339,7 @@ struct from_json {
 
         if (!json_node.is<uint32_t>())
             return "JSON node was not an unsigned integer.";
-        *x.getValue() = json_node.as<uint32_t>();
+        *x.getVal() = json_node.as<uint32_t>();
         return String("");
     }
     String operator()(Config::ConfBool &x)
@@ -471,7 +471,7 @@ struct from_update {
         } else {
             new_val = *(update->get<uint32_t>());
         }
-        *x.getValue() = new_val;
+        *x.getVal() = new_val;
         return String("");
     }
     String operator()(Config::ConfBool &x)
@@ -673,7 +673,7 @@ Config::ConfUint::ConfUint(const ConfUint &cpy)
         if (uint_buff[i * 3 + 1] == 0 && uint_buff[i * 3 + 2] == 0)
         {
             value = i;
-            *this->getValue() = *cpy.getValue();
+            *this->getVal() = *cpy.getVal();
             *this->getMin() = *cpy.getMin();
             *this->getMax() = *cpy.getMax();
             break;
@@ -683,7 +683,7 @@ Config::ConfUint::ConfUint(const ConfUint &cpy)
 
 Config::ConfUint::~ConfUint()
 {
-    *this->getValue() = 0;
+    *this->getVal() = 0;
     *this->getMin() = 0;
     *this->getMax() = 0;
 }
@@ -691,7 +691,7 @@ Config::ConfUint::~ConfUint()
 Config Config::Uint(uint32_t u, uint32_t min, uint32_t max)
 {
     ConfUint new_uint;
-    *new_uint.getValue() = u;
+    *new_uint.getVal() = u;
     *new_uint.getMin() = min;
     *new_uint.getMax() = max;
     return Config{new_uint, (uint8_t)0xFF};

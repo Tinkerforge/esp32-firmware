@@ -41,24 +41,24 @@ struct Config {
         uint16_t minChars;
         uint16_t maxChars;
 
-        String *getValue() { return &value; };
-        const String *getValue() const { return &value; };
+        String *getVal() { return &value; };
+        const String *getVal() const { return &value; };
     };
 
     struct ConfFloat {
         float value;
         float min;
         float max;
-        float *getValue() { return &value; };
-        const float *getValue() const { return &value; };
+        float *getVal() { return &value; };
+        const float *getVal() const { return &value; };
     };
 
     struct ConfInt {
         int32_t value;
         int32_t min;
         int32_t max;
-        int32_t *getValue() { return &value; };
-        const int32_t *getValue() const { return &value; };
+        int32_t *getVal() { return &value; };
+        const int32_t *getVal() const { return &value; };
     };
 
     struct ConfUint {
@@ -68,10 +68,10 @@ struct Config {
 
         public:
 
-        uint32_t *getValue() { return &uint_buff[value * 3]; };
+        uint32_t *getVal() { return &uint_buff[value * 3]; };
         uint32_t *getMin() const { return &uint_buff[value * 3 + 1]; };
         uint32_t *getMax() const { return &uint_buff[value * 3 + 2]; };
-        const uint32_t *getValue() const { return &uint_buff[value * 3]; };
+        const uint32_t *getVal() const { return &uint_buff[value * 3]; };
 
         ConfUint();
         ConfUint(const ConfUint &cpy);
@@ -82,7 +82,7 @@ struct Config {
             if (this == &cpy)
                 return *this;
             ConfUint new_uint;
-            *new_uint.getValue() = *cpy.getValue();
+            *new_uint.getVal() = *cpy.getVal();
             *new_uint.getMin() = *cpy.getMin();
             *new_uint.getMax() = *cpy.getMax();
             return new_uint;
@@ -93,7 +93,7 @@ struct Config {
             if (this == &cpy)
                 return *this;
             ConfUint new_uint;
-            *new_uint.getValue() = *cpy.getValue();
+            *new_uint.getVal() = *cpy.getVal();
             *new_uint.getMin() = *cpy.getMin();
             *new_uint.getMax() = *cpy.getMax();
             return new_uint;
@@ -102,8 +102,8 @@ struct Config {
 
     struct ConfBool {
         bool value;
-        bool *getValue() { return &value; };
-        const bool *getValue() const { return &value; };
+        bool *getVal() { return &value; };
+        const bool *getVal() const { return &value; };
     };
 
     struct ConfArray {
@@ -114,8 +114,8 @@ struct Config {
 
         Config *get(uint16_t i);
         const Config *get(uint16_t i) const;
-        std::vector<Config> *getValue() { return &value; };
-        const std::vector<Config> *getValue() const { return &value; };
+        std::vector<Config> *getVal() { return &value; };
+        const std::vector<Config> *getVal() const { return &value; };
     };
 
     struct ConfObject {
@@ -123,8 +123,8 @@ struct Config {
 
         Config *get(String s);
         const Config *get(String s) const;
-        std::vector<std::pair<String, Config>> *getValue() { return &value; };
-        const std::vector<std::pair<String, Config>> *getValue() const { return &value; };
+        std::vector<std::pair<String, Config>> *getVal() { return &value; };
+        const std::vector<std::pair<String, Config>> *getVal() const { return &value; };
     };
 
     struct ConfUpdateArray;
@@ -337,7 +337,7 @@ struct Config {
             delay(100);
             return nullptr;
         }
-        return strict_variant::get<ConfigT>(&value)->getValue();
+        return strict_variant::get<ConfigT>(&value)->getVal();
     }
 
     template<typename T, typename ConfigT>
@@ -347,7 +347,7 @@ struct Config {
             delay(100);
             return nullptr;
         }
-        return strict_variant::get<ConfigT>(&value)->getValue();
+        return strict_variant::get<ConfigT>(&value)->getVal();
     }
 
     const String &asString() const;
@@ -424,7 +424,7 @@ struct Config {
                 delay(100);
                 return 0;
             }
-            arr[i] = *strict_variant::get<ConfigT>(&entry.value)->getValue();
+            arr[i] = *strict_variant::get<ConfigT>(&entry.value)->getVal();
         }
 
         return toWrite;
