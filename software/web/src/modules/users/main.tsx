@@ -26,8 +26,6 @@ import feather from "../../ts/feather";
 
 import YaMD5 from "../../ts/yamd5";
 
-import {getAllUsernames} from "../charge_tracker/main";
-
 import { h, render } from "preact";
 import { __ } from "../../ts/translation";
 import { ConfigPageHeader } from "../../ts/components/config_page_header";
@@ -38,6 +36,33 @@ const MAX_ACTIVE_USERS = 16;
 
 type UsersConfig = API.getType['users/config'];
 type User = UsersConfig['users'][0];
+
+export function getAllUsernames() {
+    return fetch('/users/all_usernames')
+        .then(response => response.arrayBuffer())
+        .then(buffer => {
+            let usernames: string[] = [];
+            let display_names: string[] = [];
+
+            if (buffer.byteLength != 256 * 64) {
+                console.log("Unexpected length of all_usernames!");
+                return [null, null];
+            }
+
+            const decoder = new TextDecoder();
+            for(let i = 0; i < 256; ++i) {
+                let view = new DataView(buffer, i * 64, 32);
+                let username = decoder.decode(view).replace(/\0/g, "");
+
+                view = new DataView(buffer, i * 64 + 32, 32);
+                let display_name = decoder.decode(view).replace(/\0/g, "");
+
+                usernames.push(username);
+                display_names.push(display_name);
+            }
+            return [usernames, display_names];
+        });
+}
 
 function save_authentication_config() {
     return API.save('users/http_auth', {
