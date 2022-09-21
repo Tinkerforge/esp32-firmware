@@ -36,7 +36,7 @@ static uint8_t hex2num(String hex)
     return strtol(hex.substring(0, 2).c_str(), nullptr, 16);
 }
 
-TutorialPhase4::TutorialPhase4()
+void TutorialPhase4::pre_setup()
 {
 }
 

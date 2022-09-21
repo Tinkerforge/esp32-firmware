@@ -33,7 +33,7 @@ static bool verify_data(uint8_t *data, uint16_t checksum)
     return false;
 }
 
-UptimeTracker::UptimeTracker()
+void UptimeTracker::pre_setup()
 {
     uptimes = Config::Array({},
         new Config{Config::Object({

@@ -56,7 +56,7 @@ static_assert(CHARGE_RECORD_SIZE == 16, "Unexpected size of ChargeStart + Charge
 
 #define CHARGE_RECORD_LAST_CHARGES_SIZE 30
 
-ChargeTracker::ChargeTracker()
+void ChargeTracker::pre_setup()
 {
     last_charges = Config::Array({},
         new Config{Config::Object({

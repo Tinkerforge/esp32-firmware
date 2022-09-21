@@ -30,7 +30,7 @@ extern API api;
 extern TaskScheduler task_scheduler;
 extern char local_uid_str[7];
 
-Network::Network()
+void Network::pre_setup()
 {
     config = Config::Object({
         {"hostname", Config::Str("replaceme", 0, 32)},

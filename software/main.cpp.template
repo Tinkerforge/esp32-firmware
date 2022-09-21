@@ -153,6 +153,8 @@ void setup(void) {
         logger.printfln("Failed to mount SPIFFS.");
     }
 
+    {{{module_pre_setup}}}
+
     // Setup task scheduler before API: The API setup can run migrations that want to start tasks.
     task_scheduler.setup();
     api.setup();

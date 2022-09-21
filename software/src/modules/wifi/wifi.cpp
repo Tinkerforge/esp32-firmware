@@ -41,7 +41,7 @@ extern char passphrase[20];
 
 extern API api;
 
-Wifi::Wifi()
+void Wifi::pre_setup()
 {
     wifi_ap_config = ConfigRoot(Config::Object({
         {"enable_ap", Config::Bool(true)},

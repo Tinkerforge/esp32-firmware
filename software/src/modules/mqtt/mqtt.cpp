@@ -42,7 +42,7 @@ extern API api;
 
 #define MQTT_RECV_BUFFER_HEADROOM (MQTT_RECV_BUFFER_SIZE / 4)
 
-Mqtt::Mqtt()
+void Mqtt::pre_setup()
 {
     // The real UID will be patched in later
     mqtt_config = Config::Object({

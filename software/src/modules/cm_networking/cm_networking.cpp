@@ -39,7 +39,7 @@ extern API api;
 extern EventLog logger;
 extern WebServer server;
 
-CMNetworking::CMNetworking()
+void CMNetworking::pre_setup()
 {
     scan_cfg = Config::Null();
 }

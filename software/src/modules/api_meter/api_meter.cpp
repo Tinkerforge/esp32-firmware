@@ -34,7 +34,7 @@ extern Config modules;
 
 extern API api;
 
-APIMeter::APIMeter()
+void APIMeter::pre_setup()
 {
     state_update = Config::Object({
         {"state", Config::Uint8(0)}, // 0 - no energy meter, 1 - initialization error, 2 - meter available

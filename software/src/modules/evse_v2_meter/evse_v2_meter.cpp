@@ -36,7 +36,7 @@ extern Config modules;
 
 extern API api;
 
-EVSEV2Meter::EVSEV2Meter()
+void EVSEV2Meter::pre_setup()
 {
 }
 

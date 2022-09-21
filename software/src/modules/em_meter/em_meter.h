@@ -24,7 +24,8 @@
 class EMMeter
 {
 public:
-    EMMeter();
+    EMMeter(){}
+    void pre_setup();
     void setup();
     void setupEM(bool update_module_initialized);
     void register_urls();

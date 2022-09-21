@@ -95,7 +95,7 @@ void HiddenProxy::stop_proxy()
     net = nullptr;
 }
 
-HiddenProxy::HiddenProxy()
+void HiddenProxy::pre_setup()
 {
 }
 

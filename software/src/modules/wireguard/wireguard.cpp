@@ -47,7 +47,7 @@ String check_key(String key, bool enable)
     return "";
 }
 
-Wireguard::Wireguard()
+void Wireguard::pre_setup()
 {
     config = ConfigRoot{Config::Object({
         {"enabled", Config::Bool(false)},

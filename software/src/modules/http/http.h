@@ -26,7 +26,8 @@ bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len);
 class Http : public IAPIBackend
 {
 public:
-    Http();
+    Http(){}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();

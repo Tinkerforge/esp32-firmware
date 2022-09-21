@@ -73,7 +73,8 @@ struct response_packet {
 class CMNetworking
 {
 public:
-    CMNetworking();
+    CMNetworking(){}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();

@@ -31,7 +31,7 @@ extern WebServer server;
 extern API api;
 extern EventLog logger;
 
-Authentication::Authentication()
+void Authentication::pre_setup()
 {
     authentication_config = ConfigRoot{Config::Object({
         {"enable_auth", Config::Bool(false)},

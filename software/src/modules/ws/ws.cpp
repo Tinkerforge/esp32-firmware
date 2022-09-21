@@ -28,7 +28,7 @@ extern TaskScheduler task_scheduler;
 extern WebServer server;
 extern API api;
 
-WS::WS() : web_sockets()
+void WS::pre_setup()
 {
     api.registerBackend(this);
 }

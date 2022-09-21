@@ -62,7 +62,7 @@ bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
     return false;
 }
 
-Http::Http()
+void Http::pre_setup()
 {
     api.registerBackend(this);
 }

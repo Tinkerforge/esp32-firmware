@@ -40,7 +40,8 @@ static_assert(sizeof(uptime_data_s) == 12, "Unexpected size of uptime_data_s");
 class UptimeTracker
 {
     public:
-        UptimeTracker();
+        UptimeTracker() {}
+        void pre_setup();
         void setup();
         void register_urls();
         void loop();

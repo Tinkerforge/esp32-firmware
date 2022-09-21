@@ -192,7 +192,7 @@ bool read_user_slot_info(UserSlotInfo *result)
 
 volatile bool user_api_blocked = false;
 
-Users::Users()
+void Users::pre_setup()
 {
     user_config = Config::Object({
         {"users", Config::Array(

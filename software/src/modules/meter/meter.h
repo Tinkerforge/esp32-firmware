@@ -33,7 +33,8 @@
 class Meter
 {
 public:
-    Meter();
+    Meter(){}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();

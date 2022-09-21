@@ -33,7 +33,8 @@ enum class EthernetState {
 class Ethernet
 {
 public:
-    Ethernet();
+    Ethernet(){}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();

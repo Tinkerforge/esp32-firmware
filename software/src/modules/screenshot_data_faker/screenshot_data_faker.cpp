@@ -34,7 +34,7 @@ struct ChargeEnd {
 
 ConfigRoot values;
 
-ScreenshotDataFaker::ScreenshotDataFaker()
+void ScreenshotDataFaker::pre_setup()
 {
     values = Config::Object({
         {"power", Config::Float(0.0)},

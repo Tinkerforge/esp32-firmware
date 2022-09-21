@@ -73,7 +73,7 @@ static void apply_enegry_manager_config(Config &conf)
 }
 #endif
 
-ChargeManager::ChargeManager()
+void ChargeManager::pre_setup()
 {
     charge_manager_config = ConfigRoot{Config::Object({
         {"enable_charge_manager", Config::Bool(false)},

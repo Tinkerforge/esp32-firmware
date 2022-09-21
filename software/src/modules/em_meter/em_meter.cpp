@@ -36,7 +36,7 @@ extern Config modules;
 
 extern API api;
 
-EMMeter::EMMeter()
+void EMMeter::pre_setup()
 {
     errors = Config::Object({
         {"local_timeout", Config::Uint32(0)},

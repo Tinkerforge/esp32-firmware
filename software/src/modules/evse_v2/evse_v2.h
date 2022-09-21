@@ -62,7 +62,8 @@ class EVSEV2 : public DeviceModule<TF_EVSEV2,
                                    tf_evse_v2_destroy>
 {
 public:
-    EVSEV2();
+    EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE 2.0", std::bind(&EVSEV2::setup_evse, this)) {}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();

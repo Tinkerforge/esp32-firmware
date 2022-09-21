@@ -50,7 +50,7 @@ static MeterInfo *supported_meters[] = {
 
 static MeterInfo *meter_in_use = nullptr;
 
-ModbusMeter::ModbusMeter() : DeviceModule("rs485", "RS485", "Modbus Meter", std::bind(&ModbusMeter::setupRS485, this))
+void ModbusMeter::pre_setup()
 {
     error_counters = Config::Object({
         {"meter", Config::Uint32(0)},

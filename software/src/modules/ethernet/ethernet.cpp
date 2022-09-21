@@ -37,7 +37,7 @@ extern API api;
 extern TaskScheduler task_scheduler;
 extern char local_uid_str[7];
 
-Ethernet::Ethernet()
+void Ethernet::pre_setup()
 {
     ethernet_config = ConfigRoot(Config::Object({
         {"enable_ethernet", Config::Bool(true)},

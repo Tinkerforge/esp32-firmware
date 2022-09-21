@@ -74,7 +74,7 @@ static void on_ping_timeout(esp_ping_handle_t hdl, void *args)
     logger.printfln("ping: From %s icmp_seq=%d timeout\n", ipaddr_ntoa((ip_addr_t *)&target_addr), seqno);
 }
 
-Ping::Ping()
+void Ping::pre_setup()
 {
     config = Config::Object({
         {"enable", Config::Bool(false)},

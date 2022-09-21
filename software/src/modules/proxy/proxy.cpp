@@ -36,7 +36,7 @@ extern TaskScheduler task_scheduler;
 
 extern API api;
 
-Proxy::Proxy()
+void Proxy::pre_setup()
 {
     devices = Config::Array(
         {},

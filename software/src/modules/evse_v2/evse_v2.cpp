@@ -41,7 +41,7 @@ extern bool firmware_update_allowed;
 #define SLOT_ACTIVE(x) ((bool)(x & 0x01))
 #define SLOT_CLEAR_ON_DISCONNECT(x) ((bool)(x & 0x02))
 
-EVSEV2::EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE 2.0", std::bind(&EVSEV2::setup_evse, this))
+void EVSEV2::pre_setup()
 {
     // States
     evse_state = Config::Object({

@@ -27,7 +27,7 @@ extern char local_uid_str[7];
 extern TaskScheduler task_scheduler;
 extern API api;
 
-DeviceName::DeviceName()
+void DeviceName::pre_setup()
 {
     name = Config::Object({
         {"name", Config::Str("")},

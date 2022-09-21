@@ -39,7 +39,7 @@ const char* ENERGY_MANAGER_INPUT_CONFIG_STR[]      = {"input3_config",      "inp
 const char* ENERGY_MANAGER_INPUT_CONFIG_IF_STR[]   = {"input3_config_if",   "input4_config_if"};
 const char* ENERGY_MANAGER_INPUT_CONFIG_THEN_STR[] = {"input3_config_then", "input4_config_then"};
 
-EnergyManager::EnergyManager() : DeviceModule("energy_manager", "WARP Energy Manager", "Energy Manager", std::bind(&EnergyManager::setup_energy_manager, this))
+void EnergyManager::pre_setup()
 {
     // States
     energy_manager_state = Config::Object({

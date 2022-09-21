@@ -24,7 +24,8 @@
 class ChargeManager
 {
 public:
-    ChargeManager();
+    ChargeManager(){}
+    void pre_setup();
     void setup();
     void register_urls();
     void post_setup();

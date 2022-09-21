@@ -24,7 +24,8 @@
 class TutorialPhase1
 {
 public:
-    TutorialPhase1();
+    TutorialPhase1(){}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();
