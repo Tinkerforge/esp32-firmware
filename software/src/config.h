@@ -201,14 +201,14 @@ struct Config {
     };
 
     typedef strict_variant::variant<
+        std::nullptr_t,
         ConfString,
         ConfFloat,
         ConfInt,
         ConfUint,
         ConfBool,
         ConfArray,
-        ConfObject,
-        std::nullptr_t
+        ConfObject
     > ConfVariant;
 
     ConfVariant value;
