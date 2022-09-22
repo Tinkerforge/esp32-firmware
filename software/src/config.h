@@ -30,8 +30,6 @@
 #include "strict_variant/variant.hpp"
 #include "strict_variant/mpl/find_with.hpp"
 
-#define UINT_ARR_LEN 512
-
 extern EventLog logger;
 
 struct Config {
@@ -147,27 +145,60 @@ struct Config {
     };
 
     struct ConfArray {
-        std::vector<Config> value;
-        Config *prototype;
-        uint32_t minElements : 12, maxElements : 12;
-        int8_t variantType;
+        struct Slot {
+            std::vector<Config> val;
+            Config *prototype;
+            uint32_t minElements : 12, maxElements : 12;
+            int8_t variantType;
+            bool inUse = false;
+        };
+    private:
+        uint16_t idx;
+
+        Slot *getSlot();
+
+    public:
+        static bool slotEmpty(size_t i);
         static constexpr const char *variantName = "ConfArray";
 
         Config *get(uint16_t i);
         const Config *get(uint16_t i) const;
-        std::vector<Config> *getVal() { return &value; };
-        const std::vector<Config> *getVal() const { return &value; };
+        std::vector<Config> *getVal();
+        const std::vector<Config> *getVal() const;
+        const Slot *getSlot() const;
+
+        ConfArray(std::vector<Config> val, Config *prototype, uint16_t minElements, uint16_t maxElements, int8_t variantType);
+        ConfArray(const ConfArray &cpy);
+        ~ConfArray();
+
+        ConfArray& operator=(const ConfArray &cpy);
     };
 
     struct ConfObject {
-        std::vector<std::pair<String, Config>> value;
+        struct Slot {
+            std::vector<std::pair<String, Config>> val;
+            bool inUse = false;
+        };
+    private:
+        uint16_t idx;
+
+        Slot *getSlot();
+
+    public:
+        static bool slotEmpty(size_t i);
+        static constexpr const char *variantName = "ConfObject";
 
         Config *get(String s);
         const Config *get(String s) const;
-        std::vector<std::pair<String, Config>> *getVal() { return &value; };
-        const std::vector<std::pair<String, Config>> *getVal() const { return &value; };
+        std::vector<std::pair<String, Config>> *getVal();
+        const std::vector<std::pair<String, Config>> *getVal() const;
+        const Slot *getSlot() const;
 
-        static constexpr const char *variantName = "ConfObject";
+        ConfObject(std::vector<std::pair<String, Config>> val);
+        ConfObject(const ConfObject &cpy);
+        ~ConfObject();
+
+        ConfObject& operator=(const ConfObject &cpy);
     };
 
     struct ConfUpdateArray;
@@ -250,8 +281,8 @@ struct Config {
 
     static Config Array(std::initializer_list<Config> arr,
                         Config *prototype,
-                        size_t minElements,
-                        size_t maxElements,
+                        uint16_t minElements,
+                        uint16_t maxElements,
                         int variantType);
 
     static Config Object(std::initializer_list<std::pair<String, Config>> obj);
@@ -319,16 +350,19 @@ struct Config {
             return Wrap(nullptr);
         }
 
-        std::vector<Config> &children = strict_variant::get<Config::ConfArray>(&value)->value;
-        auto max_elements = strict_variant::get<Config::ConfArray>(&value)->maxElements;
-        if (children.size() >= max_elements) {
+        std::vector<Config> *children = strict_variant::get<Config::ConfArray>(&value)->getVal();
+
+        const auto *arr = strict_variant::get<Config::ConfArray>(&value);
+
+        const auto max_elements = arr->getSlot()->maxElements;
+        if (children->size() >= max_elements) {
             logger.printfln("Tried to add to an ConfArray that already has the max allowed number of elements (%u).", max_elements);
             delay(100);
             return Wrap(nullptr);
         }
 
-        children.push_back(*strict_variant::get<Config::ConfArray>(&value)->prototype);
-        return Wrap(strict_variant::get<Config::ConfArray>(&value)->prototype);
+        children->push_back(*arr->getSlot()->prototype);
+        return Wrap(arr->getSlot()->prototype);
     }
 
     bool removeLast()
@@ -338,11 +372,11 @@ struct Config {
             delay(100);
             return false;
         }
-        std::vector<Config> &children = strict_variant::get<Config::ConfArray>(&value)->value;
-        if (children.size() == 0)
+        std::vector<Config> *children = strict_variant::get<Config::ConfArray>(&value)->getVal();
+        if (children->size() == 0)
             return false;
 
-        children.pop_back();
+        children->pop_back();
         return true;
     }
 
@@ -353,12 +387,12 @@ struct Config {
             delay(100);
             return false;
         }
-        std::vector<Config> &children = strict_variant::get<Config::ConfArray>(&value)->value;
+        std::vector<Config> *children = strict_variant::get<Config::ConfArray>(&value)->getVal();
 
-        if (children.size() <= i)
+        if (children->size() <= i)
             return false;
 
-        children.erase(children.begin() + i);
+        children->erase(children->begin() + i);
         return true;
     }
 
@@ -369,8 +403,8 @@ struct Config {
             delay(100);
             return -1;
         }
-        const std::vector<Config> &children = strict_variant::get<Config::ConfArray>(&value)->value;
-        return children.size();
+        const std::vector<Config> *children = strict_variant::get<Config::ConfArray>(&value)->getVal();
+        return children->size();
     }
 
     template<typename T, typename ConfigT>
@@ -458,16 +492,16 @@ struct Config {
         }
 
         ConfArray *confArr = strict_variant::get<ConfArray>(&value);
-        size_t toWrite = std::min(confArr->value.size(), elements);
+        size_t toWrite = std::min(confArr->getVal()->size(), elements);
 
         for (size_t i = 0; i < toWrite; ++i) {
-            Config &entry = confArr->value[i];
-            if (!entry.is<ConfigT>()) {
+            Config *entry = confArr->get(i);
+            if (!entry->is<ConfigT>()) {
                 logger.printfln("Config entry has wrong type.");
                 delay(100);
                 return 0;
             }
-            arr[i] = *strict_variant::get<ConfigT>(&entry.value)->getVal();
+            arr[i] = *strict_variant::get<ConfigT>(&entry->value)->getVal();
         }
 
         return toWrite;
