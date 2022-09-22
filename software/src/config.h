@@ -142,6 +142,8 @@ struct Config {
         bool value;
         bool *getVal() { return &value; };
         const bool *getVal() const { return &value; };
+
+        static constexpr const char *variantName = "ConfBool";
     };
 
     struct ConfArray {
@@ -149,6 +151,7 @@ struct Config {
         Config *prototype;
         uint32_t minElements : 12, maxElements : 12;
         int8_t variantType;
+        static constexpr const char *variantName = "ConfArray";
 
         Config *get(uint16_t i);
         const Config *get(uint16_t i) const;
@@ -163,6 +166,8 @@ struct Config {
         const Config *get(String s) const;
         std::vector<std::pair<String, Config>> *getVal() { return &value; };
         const std::vector<std::pair<String, Config>> *getVal() const { return &value; };
+
+        static constexpr const char *variantName = "ConfObject";
     };
 
     struct ConfUpdateArray;
@@ -371,7 +376,7 @@ struct Config {
     template<typename T, typename ConfigT>
     T *as() {
         if (!this->is<ConfigT>()) {
-            logger.printfln("as: Config has wrong type. This is %s", this->to_string().c_str());
+            logger.printfln("as: Config has wrong type. This is %s, requested is %s", this->to_string().c_str(), ConfigT::variantName);
             delay(100);
             return nullptr;
         }
@@ -381,7 +386,7 @@ struct Config {
     template<typename T, typename ConfigT>
     const T *as() const {
         if (!this->is<ConfigT>()) {
-            logger.printfln("const as: Config has wrong type. This is %s", this->to_string().c_str());
+            logger.printfln("const as: Config has wrong type. This is %s, requested is %s", this->to_string().c_str(), ConfigT::variantName);
             delay(100);
             return nullptr;
         }
