@@ -20,6 +20,8 @@
 #include "config.h"
 #include "math.h"
 
+extern bool config_constructors_allowed;
+
 Config::ConfUint::Slot uint_buff[UINT_ARR_LEN];
 Config::ConfInt::Slot int_buff[UINT_ARR_LEN];
 Config::ConfFloat::Slot float_buff[UINT_ARR_LEN];
@@ -817,42 +819,66 @@ Config::ConfUint& Config::ConfUint::operator=(const ConfUint &cpy) {
 
 Config Config::Str(String s, uint16_t minChars, uint16_t maxChars)
 {
+    if (!config_constructors_allowed)
+        esp_system_abort("constructing configs before the pre_setup is not allowed!");
+
     return Config{ConfString{s, minChars, maxChars == 0 ? (uint16_t)s.length() : maxChars}, (uint8_t)0xFF};
 }
 
 Config Config::Float(float d, float min, float max)
 {
+    if (!config_constructors_allowed)
+        esp_system_abort("constructing configs before the pre_setup is not allowed!");
+
     return Config{ConfFloat{d, min, max}, (uint8_t)0xFF};
 }
 
 Config Config::Int(int32_t i, int32_t min, int32_t max)
 {
+    if (!config_constructors_allowed)
+        esp_system_abort("constructing configs before the pre_setup is not allowed!");
+
     return Config{ConfInt{i, min, max}, (uint8_t)0xFF};
 }
 
 Config Config::Uint(uint32_t u, uint32_t min, uint32_t max)
 {
+    if (!config_constructors_allowed)
+        esp_system_abort("constructing configs before the pre_setup is not allowed!");
+
     ConfUint new_uint{u, min, max};
     return Config{new_uint, (uint8_t)0xFF};
 }
 
 Config Config::Bool(bool b)
 {
+    // Allow constructing bool configs:
+    // Those are not stored in slots so no static initialization order problems can emerge here.
+
     return Config{ConfBool{b}, (uint8_t)0xFF};
 }
 
 Config Config::Array(std::initializer_list<Config> arr, Config *prototype, size_t minElements, size_t maxElements, int variantType)
 {
+    if (!config_constructors_allowed)
+        esp_system_abort("constructing configs before the pre_setup is not allowed!");
+
     return Config{ConfArray{arr, prototype, minElements, maxElements, (int8_t)variantType}, (uint8_t)0xFF};
 }
 
 Config Config::Object(std::initializer_list<std::pair<String, Config>> obj)
 {
+    if (!config_constructors_allowed)
+        esp_system_abort("constructing configs before the pre_setup is not allowed!");
+
     return Config{ConfObject{obj}, (uint8_t)0xFF};
 }
 
 Config Config::Null()
 {
+    // Allow constructing null configs:
+    // Those are not stored in slots so no static initialization order problems can emerge here.
+
     return Config{nullptr, (uint8_t)0xFF};
 }
 

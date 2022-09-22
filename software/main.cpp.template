@@ -36,6 +36,8 @@
 #define TF_ESP_PREINIT
 #endif
 
+bool config_constructors_allowed = false;
+
 const char* DISPLAY_NAME = "{{{display_name}}}";
 
 WebServer server;
@@ -152,6 +154,11 @@ void setup(void) {
     if(!mount_or_format_spiffs()) {
         logger.printfln("Failed to mount SPIFFS.");
     }
+
+    config_constructors_allowed = true;
+
+    task_scheduler.pre_setup();
+    api.pre_setup();
 
     {{{module_pre_setup}}}
 

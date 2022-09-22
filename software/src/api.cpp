@@ -33,7 +33,7 @@ extern TF_HAL hal;
 extern TaskScheduler task_scheduler;
 extern EventLog logger;
 
-API::API()
+void API::pre_setup()
 {
     features = Config::Array(
         {},
