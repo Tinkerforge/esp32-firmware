@@ -30,74 +30,112 @@
 #include "strict_variant/variant.hpp"
 #include "strict_variant/mpl/find_with.hpp"
 
-#define UINT_ARR_LEN 512 * 3
+#define UINT_ARR_LEN 512
 
 extern EventLog logger;
-extern uint32_t uint_buff[];
 
 struct Config {
     struct ConfString {
-        String value;
-        uint16_t minChars;
-        uint16_t maxChars;
+        struct Slot {
+            String val = "";
+            uint16_t minChars = 0;
+            uint16_t maxChars = 0;
+            bool inUse = false;
+        };
+    private:
+        uint16_t idx;
+        Slot *getSlot();
 
-        String *getVal() { return &value; };
-        const String *getVal() const { return &value; };
+    public:
+        static bool slotEmpty(size_t i);
+        static constexpr const char *variantName = "ConfString";
+
+        String *getVal();
+        const String *getVal() const;
+        const Slot *getSlot() const;
+
+        ConfString(String val, uint16_t min, uint16_t max);
+        ConfString(const ConfString &cpy);
+        ~ConfString();
+
+        ConfString& operator=(const ConfString &cpy);
     };
 
     struct ConfFloat {
-        float value;
-        float min;
-        float max;
-        float *getVal() { return &value; };
-        const float *getVal() const { return &value; };
+        struct Slot {
+            float val;
+            float min;
+            float max;
+        };
+    private:
+        uint16_t idx;
+        Slot *getSlot();
+
+    public:
+        static bool slotEmpty(size_t i);
+        static constexpr const char *variantName = "ConfFloat";
+
+        float *getVal();
+        const float *getVal() const;
+        const Slot *getSlot() const;
+
+        ConfFloat(float val, float min, float max);
+        ConfFloat(const ConfFloat &cpy);
+        ~ConfFloat();
+
+        ConfFloat& operator=(const ConfFloat &cpy);
     };
 
     struct ConfInt {
-        int32_t value;
-        int32_t min;
-        int32_t max;
-        int32_t *getVal() { return &value; };
-        const int32_t *getVal() const { return &value; };
+        struct Slot {
+            int32_t val;
+            int32_t min;
+            int32_t max;
+        };
+    private:
+        uint16_t idx;
+
+        Slot *getSlot();
+
+    public:
+        static bool slotEmpty(size_t i);
+        static constexpr const char *variantName = "ConfInt";
+
+        int32_t *getVal();
+        const int32_t *getVal() const;
+        const Slot *getSlot() const;
+
+        ConfInt(int32_t val, int32_t min, int32_t max);
+        ConfInt(const ConfInt &cpy);
+        ~ConfInt();
+
+        ConfInt& operator=(const ConfInt &cpy);
     };
 
     struct ConfUint {
-        private:
+        struct Slot {
+            uint32_t val;
+            uint32_t min;
+            uint32_t max;
+        };
+    private:
+        uint16_t idx;
 
-        uint16_t value;
+        Slot *getSlot();
 
-        public:
+    public:
+        static bool slotEmpty(size_t i);
+        static constexpr const char *variantName = "ConfUint";
 
-        uint32_t *getVal() { return &uint_buff[value * 3]; };
-        uint32_t *getMin() const { return &uint_buff[value * 3 + 1]; };
-        uint32_t *getMax() const { return &uint_buff[value * 3 + 2]; };
-        const uint32_t *getVal() const { return &uint_buff[value * 3]; };
+        uint32_t *getVal();
+        const uint32_t *getVal() const;
+        const Slot *getSlot() const;
 
-        ConfUint();
+        ConfUint(uint32_t val, uint32_t min, uint32_t max);
         ConfUint(const ConfUint &cpy);
         ~ConfUint();
 
-        ConfUint operator=(ConfUint &cpy)
-        {
-            if (this == &cpy)
-                return *this;
-            ConfUint new_uint;
-            *new_uint.getVal() = *cpy.getVal();
-            *new_uint.getMin() = *cpy.getMin();
-            *new_uint.getMax() = *cpy.getMax();
-            return new_uint;
-        }
-
-        ConfUint operator=(const ConfUint &cpy)
-        {
-            if (this == &cpy)
-                return *this;
-            ConfUint new_uint;
-            *new_uint.getVal() = *cpy.getVal();
-            *new_uint.getMin() = *cpy.getMin();
-            *new_uint.getMax() = *cpy.getMax();
-            return new_uint;
-        }
+        ConfUint& operator=(const ConfUint &cpy);
     };
 
     struct ConfBool {

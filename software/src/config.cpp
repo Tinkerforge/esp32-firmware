@@ -20,7 +20,10 @@
 #include "config.h"
 #include "math.h"
 
-uint32_t uint_buff[UINT_ARR_LEN];
+Config::ConfUint::Slot uint_buff[UINT_ARR_LEN];
+Config::ConfInt::Slot int_buff[UINT_ARR_LEN];
+Config::ConfFloat::Slot float_buff[UINT_ARR_LEN];
+Config::ConfString::Slot string_buff[UINT_ARR_LEN];
 
 struct printer {
     void operator()(const Config::ConfString &x) const
@@ -67,39 +70,39 @@ struct printer {
 struct default_validator {
     String operator()(const Config::ConfString &x) const
     {
-        if (x.value.length() < x.minChars)
-            return String(String("String of minimum length ") + x.minChars + " was expected, but got " + x.value.length());
+        if (x.getVal()->length() < x.getSlot()->minChars)
+            return String(String("String of minimum length ") + x.getSlot()->minChars + " was expected, but got " + x.getVal()->length());
 
-        if (x.maxChars == 0 || x.value.length() <= x.maxChars)
+        if (x.getSlot()->maxChars == 0 || x.getVal()->length() <= x.getSlot()->maxChars)
             return String("");
 
-        return String(String("String of maximum length ") + x.maxChars + " was expected, but got " + x.value.length());
+        return String(String("String of maximum length ") + x.getSlot()->maxChars + " was expected, but got " + x.getVal()->length());
     }
 
     String operator()(const Config::ConfFloat &x) const
     {
-        if (x.value < x.min)
-            return String(String("Float value ") + x.value + " was less than the allowed minimum of " + x.min);
-        if (x.value > x.max)
-            return String(String("Float value ") + x.value + " was more than the allowed maximum of " + x.max);
+        if (*x.getVal() < x.getSlot()->min)
+            return String(String("Float value ") + *x.getVal() + " was less than the allowed minimum of " + x.getSlot()->min);
+        if (*x.getVal() > x.getSlot()->max)
+            return String(String("Float value ") + *x.getVal() + " was more than the allowed maximum of " + x.getSlot()->max);
         return String("");
     }
 
     String operator()(const Config::ConfInt &x) const
     {
-        if (x.value < x.min)
-            return String(String("Integer value ") + x.value + " was less than the allowed minimum of " + x.min);
-        if (x.value > x.max)
-            return String(String("Integer value ") + x.value + " was more than the allowed maximum of " + x.max);
+        if (*x.getVal() < x.getSlot()->min)
+            return String(String("Integer value ") + *x.getVal() + " was less than the allowed minimum of " + x.getSlot()->min);
+        if (*x.getVal() > x.getSlot()->max)
+            return String(String("Integer value ") + *x.getVal() + " was more than the allowed maximum of " + x.getSlot()->max);
         return String("");
     }
 
     String operator()(const Config::ConfUint &x) const
     {
-        if (*x.getVal() < *x.getMin())
-            return String(String("Unsigned integer value ") + *x.getVal() + " was less than the allowed minimum of " + *x.getMin());
-        if (*x.getVal() > *x.getMax())
-            return String(String("Unsigned integer value ") + *x.getVal() + " was more than the allowed maximum of " + *x.getMax());
+        if (*x.getVal() < x.getSlot()->min)
+            return String(String("Unsigned integer value ") + *x.getVal() + " was less than the allowed minimum of " + x.getSlot()->min);
+        if (*x.getVal() > x.getSlot()->max)
+            return String(String("Unsigned integer value ") + *x.getVal() + " was more than the allowed maximum of " + x.getSlot()->max);
         return String("");
     }
 
@@ -217,7 +220,7 @@ struct to_json {
 struct string_length_visitor {
     size_t operator()(const Config::ConfString &x)
     {
-        return x.maxChars + 2; // ""
+        return (x.getSlot()->maxChars) + 2; // ""
     }
     size_t operator()(const Config::ConfFloat &x)
     {
@@ -259,7 +262,7 @@ struct string_length_visitor {
 struct json_length_visitor {
     size_t operator()(const Config::ConfString &x)
     {
-        return zero_copy ? 0 : (x.maxChars + 1);
+        return zero_copy ? 0 : ((x.getSlot()->maxChars) + 1);
     }
     size_t operator()(const Config::ConfFloat &x)
     {
@@ -308,7 +311,7 @@ struct from_json {
 
         if (!json_node.is<String>())
             return "JSON node was not a string.";
-        x.value = json_node.as<String>();
+        *x.getVal() = json_node.as<String>();
         return String("");
     }
     String operator()(Config::ConfFloat &x)
@@ -319,7 +322,7 @@ struct from_json {
         if (!json_node.is<float>())
             return "JSON node was not a float.";
 
-        x.value = json_node.as<float>();
+        *x.getVal() = json_node.as<float>();
         return String("");
     }
     String operator()(Config::ConfInt &x)
@@ -329,7 +332,7 @@ struct from_json {
 
         if (!json_node.is<int32_t>())
             return "JSON node was not a signed integer.";
-        x.value = json_node.as<int32_t>();
+        *x.getVal() = json_node.as<int32_t>();
         return String("");
     }
     String operator()(Config::ConfUint &x)
@@ -433,7 +436,7 @@ struct from_update {
 
         if (update->get<String>() == nullptr)
             return "ConfUpdate node was not a string.";
-        x.value = *(update->get<String>());
+        *x.getVal() = *(update->get<String>());
         return String("");
     }
     String operator()(Config::ConfFloat &x)
@@ -444,7 +447,7 @@ struct from_update {
         if (update->get<float>() == nullptr)
             return "ConfUpdate node was not a float.";
 
-        x.value = *(update->get<float>());
+        *x.getVal() = *(update->get<float>());
         return String("");
     }
     String operator()(Config::ConfInt &x)
@@ -454,7 +457,7 @@ struct from_update {
 
         if (update->get<int32_t>() == nullptr)
             return "ConfUpdate node was not a signed integer.";
-        x.value = *(update->get<int32_t>());
+        *x.getVal() = *(update->get<int32_t>());
         return String("");
     }
     String operator()(Config::ConfUint &x)
@@ -625,6 +628,195 @@ struct set_updated_false {
     uint8_t api_backend_flag;
 };
 
+template<typename T, size_t maxLen>
+static size_t nextSlot() {
+    for (size_t i = 0; i < maxLen; i++)
+    {
+        if (!T::slotEmpty(i))
+            continue;
+
+        return i;
+    }
+    esp_system_abort(T::variantName);
+    return 0;
+}
+
+bool Config::ConfString::slotEmpty(size_t i) {
+    return !string_buff[i].inUse;
+}
+
+String* Config::ConfString::getVal() { return &string_buff[idx].val; }
+const String* Config::ConfString::getVal() const { return &string_buff[idx].val; }
+
+const Config::ConfString::Slot* Config::ConfString::getSlot() const { return &string_buff[idx]; }
+Config::ConfString::Slot* Config::ConfString::getSlot() { return &string_buff[idx]; }
+
+Config::ConfString::ConfString(String val, uint16_t minChars, uint16_t maxChars)
+{
+    idx = nextSlot<Config::ConfString, UINT_ARR_LEN>();
+    this->getSlot()->inUse = true;
+
+    this->getSlot()->val = val;
+    this->getSlot()->minChars = minChars;
+    this->getSlot()->maxChars = maxChars;
+}
+
+Config::ConfString::ConfString(const ConfString &cpy)
+{
+    idx = nextSlot<Config::ConfString, UINT_ARR_LEN>();
+
+    // If cpy->inUse is false, it is okay that we don't mark this slot as inUse.
+    *this->getSlot() = *cpy.getSlot();
+}
+
+Config::ConfString::~ConfString()
+{
+    string_buff[idx].inUse = false;
+
+    this->getSlot()->val.clear();
+    this->getSlot()->minChars = 0;
+    this->getSlot()->maxChars = 0;
+}
+
+Config::ConfString& Config::ConfString::operator=(const ConfString &cpy)
+{
+    if (this == &cpy) {
+        return *this;
+    }
+
+    *this->getSlot() = *cpy.getSlot();
+
+    return *this;
+}
+
+bool Config::ConfFloat::slotEmpty(size_t i) {
+    return float_buff[i].val == 0
+        && float_buff[i].min == 0
+        && float_buff[i].max == 0;
+}
+
+float* Config::ConfFloat::getVal() { return &float_buff[idx].val; }
+const float* Config::ConfFloat::getVal() const { return &float_buff[idx].val; }
+
+const Config::ConfFloat::Slot *Config::ConfFloat::getSlot() const { return &float_buff[idx]; }
+Config::ConfFloat::Slot *Config::ConfFloat::getSlot() { return &float_buff[idx]; }
+
+Config::ConfFloat::ConfFloat(float val, float min, float max)
+{
+    idx = nextSlot<Config::ConfFloat, UINT_ARR_LEN>();
+    this->getSlot()->val = val;
+    this->getSlot()->min = min;
+    this->getSlot()->max = max;
+}
+
+Config::ConfFloat::ConfFloat(const ConfFloat &cpy)
+{
+    idx = nextSlot<Config::ConfFloat, UINT_ARR_LEN>();
+    *this->getSlot() = *cpy.getSlot();
+}
+
+Config::ConfFloat::~ConfFloat()
+{
+    this->getSlot()->val = 0;
+    this->getSlot()->min = 0;
+    this->getSlot()->max = 0;
+}
+
+Config::ConfFloat& Config::ConfFloat::operator=(const ConfFloat &cpy) {
+    if (this == &cpy)
+        return *this;
+
+    *this->getSlot() = *cpy.getSlot();
+
+    return *this;
+}
+
+bool Config::ConfInt::slotEmpty(size_t i) {
+    return int_buff[i].val == 0
+        && int_buff[i].min == 0
+        && int_buff[i].max == 0;
+}
+
+int32_t* Config::ConfInt::getVal() { return &int_buff[idx].val; }
+const int32_t* Config::ConfInt::getVal() const { return &int_buff[idx].val; }
+
+const Config::ConfInt::Slot *Config::ConfInt::getSlot() const { return &int_buff[idx]; }
+Config::ConfInt::Slot *Config::ConfInt::getSlot() { return &int_buff[idx]; }
+
+Config::ConfInt::ConfInt(int32_t val, int32_t min, int32_t max)
+{
+    idx = nextSlot<Config::ConfInt, UINT_ARR_LEN>();
+    this->getSlot()->val = val;
+    this->getSlot()->min = min;
+    this->getSlot()->max = max;
+}
+
+Config::ConfInt::ConfInt(const ConfInt &cpy)
+{
+    idx = nextSlot<Config::ConfInt, UINT_ARR_LEN>();
+    *this->getSlot() = *cpy.getSlot();
+}
+
+Config::ConfInt::~ConfInt()
+{
+    this->getSlot()->val = 0;
+    this->getSlot()->min = 0;
+    this->getSlot()->max = 0;
+}
+
+Config::ConfInt& Config::ConfInt::operator=(const ConfInt &cpy) {
+    if (this == &cpy)
+        return *this;
+
+    *this->getSlot() = *cpy.getSlot();
+
+    return *this;
+}
+
+bool Config::ConfUint::slotEmpty(size_t i) {
+    return uint_buff[i].val == 0
+        && uint_buff[i].min == 0
+        && uint_buff[i].max == 0;
+}
+
+uint32_t* Config::ConfUint::getVal() { return &uint_buff[idx].val; }
+const uint32_t* Config::ConfUint::getVal() const { return &uint_buff[idx].val; }
+
+const Config::ConfUint::Slot *Config::ConfUint::getSlot() const { return &uint_buff[idx]; }
+Config::ConfUint::Slot *Config::ConfUint::getSlot() { return &uint_buff[idx]; }
+
+Config::ConfUint::ConfUint(uint32_t val, uint32_t min, uint32_t max)
+{
+    idx = nextSlot<Config::ConfUint, UINT_ARR_LEN>();
+    this->getSlot()->val = val;
+    this->getSlot()->min = min;
+    this->getSlot()->max = max;
+}
+
+Config::ConfUint::ConfUint(const ConfUint &cpy)
+{
+    idx = nextSlot<Config::ConfUint, UINT_ARR_LEN>();
+    *this->getSlot() = *cpy.getSlot();
+}
+
+Config::ConfUint::~ConfUint()
+{
+    this->getSlot()->val = 0;
+    this->getSlot()->min = 0;
+    this->getSlot()->max = 0;
+}
+
+Config::ConfUint& Config::ConfUint::operator=(const ConfUint &cpy) {
+    if (this == &cpy)
+        return *this;
+
+    *this->getSlot() = *cpy.getSlot();
+
+    return *this;
+}
+    }
+}
+
 Config Config::Str(String s, uint16_t minChars, uint16_t maxChars)
 {
     return Config{ConfString{s, minChars, maxChars == 0 ? (uint16_t)s.length() : maxChars}, (uint8_t)0xFF};
@@ -640,60 +832,9 @@ Config Config::Int(int32_t i, int32_t min, int32_t max)
     return Config{ConfInt{i, min, max}, (uint8_t)0xFF};
 }
 
-size_t g_num_uint = 0;
-
-Config::ConfUint::ConfUint()
-{
-    for (size_t i = 0; i <= UINT_ARR_LEN / 3; i++)
-    {
-        if (i == UINT_ARR_LEN / 3)
-        {
-            esp_system_abort("Max uintConf reached!");
-        }
-
-        if (uint_buff[i * 3 + 1] == 0 && uint_buff[i * 3 + 2] == 0)
-        {
-            value = i;
-            *this->getMin() = 1;
-            *this->getMax() = 1;
-            break;
-        }
-    }
-}
-
-Config::ConfUint::ConfUint(const ConfUint &cpy)
-{
-    for (size_t i = 0; i <= UINT_ARR_LEN / 3; i++)
-    {
-        if (i == UINT_ARR_LEN / 3)
-        {
-            esp_system_abort("Max uintConf reached!");
-        }
-
-        if (uint_buff[i * 3 + 1] == 0 && uint_buff[i * 3 + 2] == 0)
-        {
-            value = i;
-            *this->getVal() = *cpy.getVal();
-            *this->getMin() = *cpy.getMin();
-            *this->getMax() = *cpy.getMax();
-            break;
-        }
-    }
-}
-
-Config::ConfUint::~ConfUint()
-{
-    *this->getVal() = 0;
-    *this->getMin() = 0;
-    *this->getMax() = 0;
-}
-
 Config Config::Uint(uint32_t u, uint32_t min, uint32_t max)
 {
-    ConfUint new_uint;
-    *new_uint.getVal() = u;
-    *new_uint.getMin() = min;
-    *new_uint.getMax() = max;
+    ConfUint new_uint{u, min, max};
     return Config{new_uint, (uint8_t)0xFF};
 }
 
