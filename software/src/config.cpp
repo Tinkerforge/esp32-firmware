@@ -814,8 +814,6 @@ Config::ConfUint& Config::ConfUint::operator=(const ConfUint &cpy) {
 
     return *this;
 }
-    }
-}
 
 Config Config::Str(String s, uint16_t minChars, uint16_t maxChars)
 {
