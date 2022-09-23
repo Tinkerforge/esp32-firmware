@@ -62,29 +62,29 @@ void ValueHistory::register_urls(String base_url)
         }*/
 
         const size_t buf_size = RING_BUF_SIZE * 6 + 100;
-        char buf[buf_size] = {0};
+        std::unique_ptr<char[]> buf{new char[buf_size]};
         size_t buf_written = 0;
 
         int16_t val;
         history.peek(&val);
         // Negative values are prefilled, because the ESP was booted less than 48 hours ago.
         if (val < 0)
-            buf_written += snprintf(buf + buf_written, buf_size - buf_written, "%s", "[null");
+            buf_written += snprintf(buf.get() + buf_written, buf_size - buf_written, "%s", "[null");
         else
-            buf_written += snprintf(buf + buf_written, buf_size - buf_written, "[%d", (int)val);
+            buf_written += snprintf(buf.get() + buf_written, buf_size - buf_written, "[%d", (int)val);
 
         for (int i = 1; i < history.used() && history.peek_offset(&val, i) && buf_written < buf_size; ++i) {
             // Negative values are prefilled, because the ESP was booted less than 48 hours ago.
             if (val < 0)
-                buf_written += snprintf(buf + buf_written, buf_size - buf_written, "%s", ",null");
+                buf_written += snprintf(buf.get() + buf_written, buf_size - buf_written, "%s", ",null");
             else
-                buf_written += snprintf(buf + buf_written, buf_size - buf_written, ",%d", (int)val);
+                buf_written += snprintf(buf.get() + buf_written, buf_size - buf_written, ",%d", (int)val);
         }
 
         if (buf_written < buf_size)
-            buf_written += snprintf(buf + buf_written, buf_size - buf_written, "%c", ']');
+            buf_written += snprintf(buf.get() + buf_written, buf_size - buf_written, "%c", ']');
 
-        return request.send(200, "application/json; charset=utf-8", buf, buf_written);
+        return request.send(200, "application/json; charset=utf-8", buf.get(), buf_written);
     });
 
     server.on(("/" + base_url + "live").c_str(), HTTP_GET, [this](WebServerRequest request) {
@@ -94,7 +94,7 @@ void ValueHistory::register_urls(String base_url)
         }*/
 
         const size_t buf_size = RING_BUF_SIZE * 6 + 100;
-        char buf[buf_size] = {0};
+        std::unique_ptr<char[]> buf{new char[buf_size]};
         size_t buf_written = 0;
 
         int16_t val;
@@ -105,14 +105,14 @@ void ValueHistory::register_urls(String base_url)
         } else {
             samples_per_second = (float)this->samples_last_interval / millis() * 1000;
         }
-        buf_written += snprintf(buf + buf_written, buf_size - buf_written, "{\"samples_per_second\":%f,\"samples\":[%d", samples_per_second, val);
+        buf_written += snprintf(buf.get() + buf_written, buf_size - buf_written, "{\"samples_per_second\":%f,\"samples\":[%d", samples_per_second, val);
 
         for (int i = 1; (i < live.used() - 1) && live.peek_offset(&val, i) && buf_written < buf_size; ++i) {
-            buf_written += snprintf(buf + buf_written, buf_size - buf_written, ",%d", val);
+            buf_written += snprintf(buf.get() + buf_written, buf_size - buf_written, ",%d", val);
         }
         if (buf_written < buf_size)
-            buf_written += snprintf(buf + buf_written, buf_size - buf_written, "%s", "]}");
-        return request.send(200, "application/json; charset=utf-8", buf, buf_written);
+            buf_written += snprintf(buf.get() + buf_written, buf_size - buf_written, "%s", "]}");
+        return request.send(200, "application/json; charset=utf-8", buf.get(), buf_written);
     });
 }
 
