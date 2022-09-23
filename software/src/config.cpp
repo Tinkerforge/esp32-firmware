@@ -40,47 +40,6 @@ Config::ConfArray::Slot array_buff[ARRAY_SLOTS];
 #define OBJECT_SLOTS 256
 Config::ConfObject::Slot object_buff[OBJECT_SLOTS];
 
-struct printer {
-    void operator()(const Config::ConfString &x) const
-    {
-        Serial.println("string");
-    }
-    void operator()(const Config::ConfFloat &x) const
-    {
-        Serial.println("float");
-    }
-    void operator()(const Config::ConfInt &x) const
-    {
-        Serial.println("int32_t");
-    }
-    void operator()(const Config::ConfUint &x) const
-    {
-        Serial.println("uint32_t");
-    }
-    void operator()(const Config::ConfBool &x) const
-    {
-        Serial.println("bool");
-    }
-    void operator()(std::nullptr_t x) const
-    {
-        Serial.println("std::nullptr_t");
-    }
-    void operator()(const Config::ConfArray &x) const
-    {
-        Serial.println("Array: ");
-        for (const Config &c : *x.getVal()) {
-            strict_variant::apply_visitor(printer{}, c.value);
-        }
-    }
-    void operator()(const Config::ConfObject &x) const
-    {
-        Serial.println("Object: ");
-        for (const std::pair<String, Config> &c : *x.getVal()) {
-            Serial.print(c.first + ": ");
-            strict_variant::apply_visitor(printer{}, c.second.value);
-        }
-    }
-};
 
 struct default_validator {
     String operator()(const Config::ConfString &x) const
@@ -125,7 +84,7 @@ struct default_validator {
     {
         return String("");
     }
-    String operator()(std::nullptr_t x)
+    String operator()(const Config::ConfVariant::Empty &x)
     {
         return String("");
     }
@@ -141,11 +100,11 @@ struct default_validator {
 
         if (slot->variantType >= 0)
             for (int i = 0; i < size; ++i)
-                if (x.get(i)->value.which() != slot->variantType)
+                if ((int)x.get(i)->value.tag != slot->variantType)
                     return String(String("[") + i + "] has wrong type");
 
         for (const Config &elem : *x.getVal()) {
-            String err = strict_variant::apply_visitor(default_validator{}, elem.value);
+            String err = Config::apply_visitor(default_validator{}, elem.value);
             if (err != "")
                 return err;
         }
@@ -156,7 +115,7 @@ struct default_validator {
     String operator()(const Config::ConfObject &x) const
     {
         for (const std::pair<String, Config> &elem : *x.getVal()) {
-            String err = strict_variant::apply_visitor(default_validator{}, elem.second.value);
+            String err = Config::apply_visitor(default_validator{}, elem.second.value);
             if (err != "")
                 return err;
         }
@@ -186,9 +145,9 @@ struct to_json {
     {
         insertHere.set(*x.getVal());
     }
-    void operator()(const std::nullptr_t x)
+    void operator()(const Config::ConfVariant::Empty &x)
     {
-        insertHere.set(x);
+        insertHere.set(nullptr);
     }
     void operator()(const Config::ConfArray &x)
     {
@@ -204,7 +163,7 @@ struct to_json {
                 arr.add(0);
             }
 
-            strict_variant::apply_visitor(to_json{arr[i], keys_to_censor}, child->value);
+            Config::apply_visitor(to_json{arr[i], keys_to_censor}, child->value);
         }
     }
     void operator()(const Config::ConfObject &x)
@@ -222,7 +181,7 @@ struct to_json {
                 obj.getOrAddMember(key);
             }
 
-            strict_variant::apply_visitor(to_json{obj[key], keys_to_censor}, child.value);
+            Config::apply_visitor(to_json{obj[key], keys_to_censor}, child.value);
         }
 
         for (const String &key : keys_to_censor)
@@ -256,13 +215,13 @@ struct string_length_visitor {
     {
         return 5;
     }
-    size_t operator()(std::nullptr_t x)
+    size_t operator()(const Config::ConfVariant::Empty &x)
     {
         return 4;
     }
     size_t operator()(const Config::ConfArray &x)
     {
-        return strict_variant::apply_visitor(string_length_visitor{}, x.getSlot()->prototype->value) * x.getSlot()->maxElements +
+        return Config::apply_visitor(string_length_visitor{}, x.getSlot()->prototype->value) * x.getSlot()->maxElements +
                (x.getSlot()->maxElements + 1); // [,] and n-1 ,
     }
     size_t operator()(const Config::ConfObject &x)
@@ -270,7 +229,7 @@ struct string_length_visitor {
         size_t sum = 2; // { and }
         for (size_t i = 0; i < x.getVal()->size(); ++i) {
             sum += x.getVal()->at(i).first.length() + 2; // ""
-            sum += strict_variant::apply_visitor(string_length_visitor{}, x.getVal()->at(i).second.value);
+            sum += Config::apply_visitor(string_length_visitor{}, x.getVal()->at(i).second.value);
         }
         return sum;
     }
@@ -297,13 +256,13 @@ struct json_length_visitor {
     {
         return 0;
     }
-    size_t operator()(std::nullptr_t x)
+    size_t operator()(const Config::ConfVariant::Empty &x)
     {
         return 10; // TODO: is this still necessary?
     }
     size_t operator()(const Config::ConfArray &x)
     {
-        return strict_variant::apply_visitor(json_length_visitor{zero_copy}, x.getSlot()->prototype->value) * x.getSlot()->maxElements + JSON_ARRAY_SIZE(x.getSlot()->maxElements);
+        return Config::apply_visitor(json_length_visitor{zero_copy}, x.getSlot()->prototype->value) * x.getSlot()->maxElements + JSON_ARRAY_SIZE(x.getSlot()->maxElements);
     }
     size_t operator()(const Config::ConfObject &x)
     {
@@ -312,7 +271,7 @@ struct json_length_visitor {
             if (!zero_copy)
                 sum += x.getVal()->at(i).first.length() + 1;
 
-            sum += strict_variant::apply_visitor(json_length_visitor{zero_copy}, x.getVal()->at(i).second.value);
+            sum += Config::apply_visitor(json_length_visitor{zero_copy}, x.getVal()->at(i).second.value);
         }
         return sum + JSON_OBJECT_SIZE(x.getVal()->size());
     }
@@ -372,7 +331,7 @@ struct from_json {
         x.value = json_node.as<bool>();
         return String("");
     }
-    String operator()(std::nullptr_t x)
+    String operator()(const Config::ConfVariant::Empty &x)
     {
         if (json_node.isNull())
             return "";
@@ -400,7 +359,7 @@ struct from_json {
         x.getVal()->clear();
         for (size_t i = 0; i < arr.size(); ++i) {
             x.getVal()->push_back(*slot->prototype);
-            String inner_error = strict_variant::apply_visitor(from_json{arr[i], force_same_keys, permit_null_updates, false}, x.get(i)->value);
+            String inner_error = Config::apply_visitor(from_json{arr[i], force_same_keys, permit_null_updates, false}, x.get(i)->value);
             if (inner_error != "")
                 return String("[") + i + "]" + inner_error;
         }
@@ -416,7 +375,7 @@ struct from_json {
         // Try to use the non-object as value for the single member.
         // This allows calling for example evse/external_current_update with the payload 8000 instead of {"current": 8000}
         if (!json_node.is<JsonObject>() && is_root && x.getVal()->size() == 1) {
-            String inner_error = strict_variant::apply_visitor(from_json{json_node, force_same_keys, permit_null_updates, false}, x.getVal()->at(0).second.value);
+            String inner_error = Config::apply_visitor(from_json{json_node, force_same_keys, permit_null_updates, false}, x.getVal()->at(0).second.value);
             if (inner_error != "")
                 return String("(inferred) [\"") + x.getVal()->at(0).first + "\"] " + inner_error;
             else
@@ -435,7 +394,7 @@ struct from_json {
             if (!force_same_keys && !obj.containsKey(x.getVal()->at(i).first))
                 continue;
 
-            String inner_error = strict_variant::apply_visitor(from_json{obj[x.getVal()->at(i).first], force_same_keys, permit_null_updates, false}, x.getVal()->at(i).second.value);
+            String inner_error = Config::apply_visitor(from_json{obj[x.getVal()->at(i).first], force_same_keys, permit_null_updates, false}, x.getVal()->at(i).second.value);
             if (inner_error != "")
                 return String("[\"") + x.getVal()->at(i).first + "\"]" + inner_error;
         }
@@ -508,7 +467,7 @@ struct from_update {
         x.value = *(update->get<bool>());
         return String("");
     }
-    String operator()(std::nullptr_t x)
+    String operator()(const Config::ConfVariant::Empty &x)
     {
         return Config::containsNull(update) ? "" : "JSON null node was not null";
     }
@@ -529,7 +488,7 @@ struct from_update {
         x.getVal()->clear();
         for (size_t i = 0; i < arr->elements.size(); ++i) {
             x.getVal()->push_back(*slot->prototype);
-            String inner_error = strict_variant::apply_visitor(from_update{&arr->elements[i]}, x.get(i)->value);
+            String inner_error = Config::apply_visitor(from_update{&arr->elements[i]}, x.get(i)->value);
             if (inner_error != "")
                 return String("[") + i + "]" + inner_error;
         }
@@ -562,7 +521,7 @@ struct from_update {
             if (obj_idx == 0xFFFFFFFF)
                 return String("Key ") + x.getVal()->at(i).first + String("not found in ConfUpdate object");
 
-            String inner_error = strict_variant::apply_visitor(from_update{&obj->elements[obj_idx].second}, x.getVal()->at(i).second.value);
+            String inner_error = Config::apply_visitor(from_update{&obj->elements[obj_idx].second}, x.getVal()->at(i).second.value);
             if (inner_error != "")
                 return String("[\"") + x.getVal()->at(i).first + "\"]" + inner_error;
         }
@@ -594,14 +553,14 @@ struct is_updated {
     {
         return false;
     }
-    bool operator()(const std::nullptr_t x)
+    bool operator()(const Config::ConfVariant::Empty &x)
     {
         return false;
     }
     bool operator()(const Config::ConfArray &x) const
     {
         for (const Config &c : *x.getVal()) {
-            if (((c.updated & api_backend_flag) != 0) || strict_variant::apply_visitor(is_updated{api_backend_flag}, c.value))
+            if (((c.value.updated & api_backend_flag) != 0) || Config::apply_visitor(is_updated{api_backend_flag}, c.value))
                 return true;
         }
         return false;
@@ -609,7 +568,7 @@ struct is_updated {
     bool operator()(const Config::ConfObject &x) const
     {
         for (const std::pair<String, Config> &c : *x.getVal()) {
-            if (((c.second.updated & api_backend_flag) != 0) || strict_variant::apply_visitor(is_updated{api_backend_flag}, c.second.value))
+            if (((c.second.value.updated & api_backend_flag) != 0) || Config::apply_visitor(is_updated{api_backend_flag}, c.second.value))
                 return true;
         }
         return false;
@@ -633,21 +592,21 @@ struct set_updated_false {
     void operator()(Config::ConfBool &x)
     {
     }
-    void operator()(std::nullptr_t x)
+    void operator()(const Config::ConfVariant::Empty &x)
     {
     }
     void operator()(Config::ConfArray &x)
     {
         for (Config &c : *x.getVal()) {
-            c.updated &= ~api_backend_flag;
-            strict_variant::apply_visitor(set_updated_false{api_backend_flag}, c.value);
+            c.value.updated &= ~api_backend_flag;
+            Config::apply_visitor(set_updated_false{api_backend_flag}, c.value);
         }
     }
     void operator()(Config::ConfObject &x)
     {
         for (std::pair<String, Config> &c : *x.getVal()) {
-            c.second.updated &= ~api_backend_flag;
-            strict_variant::apply_visitor(set_updated_false{api_backend_flag}, c.second.value);
+            c.second.value.updated &= ~api_backend_flag;
+            Config::apply_visitor(set_updated_false{api_backend_flag}, c.second.value);
         }
     }
     uint8_t api_backend_flag;
@@ -988,7 +947,7 @@ Config Config::Str(String s, uint16_t minChars, uint16_t maxChars)
     if (!config_constructors_allowed)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
 
-    return Config{ConfString{s, minChars, maxChars == 0 ? (uint16_t)s.length() : maxChars}, (uint8_t)0xFF};
+    return Config{ConfString{s, minChars, maxChars == 0 ? (uint16_t)s.length() : maxChars}};
 }
 
 Config Config::Float(float d, float min, float max)
@@ -996,7 +955,7 @@ Config Config::Float(float d, float min, float max)
     if (!config_constructors_allowed)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
 
-    return Config{ConfFloat{d, min, max}, (uint8_t)0xFF};
+    return Config{ConfFloat{d, min, max}};
 }
 
 Config Config::Int(int32_t i, int32_t min, int32_t max)
@@ -1004,7 +963,7 @@ Config Config::Int(int32_t i, int32_t min, int32_t max)
     if (!config_constructors_allowed)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
 
-    return Config{ConfInt{i, min, max}, (uint8_t)0xFF};
+    return Config{ConfInt{i, min, max}};
 }
 
 Config Config::Uint(uint32_t u, uint32_t min, uint32_t max)
@@ -1012,7 +971,7 @@ Config Config::Uint(uint32_t u, uint32_t min, uint32_t max)
     if (!config_constructors_allowed)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
 
-    return Config{ConfUint{u, min, max}, (uint8_t)0xFF};
+    return Config{ConfUint{u, min, max}};
 }
 
 Config Config::Bool(bool b)
@@ -1020,7 +979,7 @@ Config Config::Bool(bool b)
     // Allow constructing bool configs:
     // Those are not stored in slots so no static initialization order problems can emerge here.
 
-    return Config{ConfBool{b}, (uint8_t)0xFF};
+    return Config{ConfBool{b}};
 }
 
 Config Config::Array(std::initializer_list<Config> arr, Config *prototype, uint16_t minElements, uint16_t maxElements, int variantType)
@@ -1028,7 +987,7 @@ Config Config::Array(std::initializer_list<Config> arr, Config *prototype, uint1
     if (!config_constructors_allowed)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
 
-    return Config{ConfArray{arr, prototype, minElements, maxElements, (int8_t)variantType}, (uint8_t)0xFF};
+    return Config{ConfArray{arr, prototype, minElements, maxElements, (int8_t)variantType}};
 }
 
 Config Config::Object(std::initializer_list<std::pair<String, Config>> obj)
@@ -1036,7 +995,7 @@ Config Config::Object(std::initializer_list<std::pair<String, Config>> obj)
     if (!config_constructors_allowed)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
 
-    return Config{ConfObject{obj}, (uint8_t)0xFF};
+    return Config{ConfObject{obj}};
 }
 
 Config Config::Null()
@@ -1044,7 +1003,7 @@ Config Config::Null()
     // Allow constructing null configs:
     // Those are not stored in slots so no static initialization order problems can emerge here.
 
-    return Config{nullptr, (uint8_t)0xFF};
+    return Config{ConfVariant{}};
 }
 
 Config Config::Uint8(uint8_t u)
@@ -1085,7 +1044,7 @@ Config::Wrap Config::get(String s)
         delay(100);
         return Wrap(nullptr);
     }
-    Wrap wrap(strict_variant::get<Config::ConfObject>(&value)->get(s));
+    Wrap wrap(value.val.o.get(s));
 
     return wrap;
 }
@@ -1098,7 +1057,7 @@ Config::Wrap Config::get(String s)
         delay(100);
         return Wrap(nullptr);
     }
-    Wrap wrap(strict_variant::get<Config::ConfArray>(&value)->get(i));
+    Wrap wrap(value.val.a.get(i));
 
     return wrap;
 }
@@ -1110,7 +1069,7 @@ const Config::ConstWrap Config::get(String s) const
         delay(100);
         return ConstWrap(nullptr);
     }
-    ConstWrap wrap(strict_variant::get<Config::ConfObject>(&value)->get(s));
+    ConstWrap wrap(value.val.o.get(s));
 
     return wrap;
 }
@@ -1122,44 +1081,44 @@ const Config::ConstWrap Config::get(uint16_t i) const
         delay(100);
         return ConstWrap(nullptr);
     }
-    ConstWrap wrap(strict_variant::get<Config::ConfArray>(&value)->get(i));
+    ConstWrap wrap(value.val.a.get(i));
 
     return wrap;
 }
 
 const String &Config::asString() const
 {
-    return *as<String, Config::ConfString>();
+    return *this->get<ConfString>()->getVal();
 }
 
 const char *Config::asCStr() const
 {
-    return as<String, Config::ConfString>()->c_str();
+    return this->get<ConfString>()->getVal()->c_str();
 }
 
 const float &Config::asFloat() const
 {
-    return *as<float, Config::ConfFloat>();
+    return *this->get<ConfFloat>()->getVal();
 }
 
 const uint32_t &Config::asUint() const
 {
-    return *as<uint32_t, Config::ConfUint>();
+    return *this->get<ConfUint>()->getVal();
 }
 
 const int32_t &Config::asInt() const
 {
-    return *as<int32_t, Config::ConfInt>();
+    return *this->get<ConfInt>()->getVal();
 }
 
 const bool &Config::asBool() const
 {
-    return *as<bool, Config::ConfBool>();
+    return *this->get<ConfBool>()->getVal();
 }
 
 std::vector<Config> &Config::asArray()
 {
-    return *as<std::vector<Config>, Config::ConfArray>();
+    return *this->get<ConfArray>()->getVal();
 }
 
 size_t Config::fillFloatArray(float *arr, size_t elements)
@@ -1200,12 +1159,12 @@ size_t Config::fillInt32Array(int32_t *arr, size_t elements)
 
 size_t Config::json_size(bool zero_copy) const
 {
-    return strict_variant::apply_visitor(json_length_visitor{zero_copy}, value);
+    return Config::apply_visitor(json_length_visitor{zero_copy}, value);
 }
 
 size_t Config::max_string_length() const
 {
-    return strict_variant::apply_visitor(string_length_visitor{}, value);
+    return Config::apply_visitor(string_length_visitor{}, value);
 }
 
 void Config::save_to_file(File file)
@@ -1220,7 +1179,7 @@ void Config::save_to_file(File file)
     } else {
         var = doc.as<JsonVariant>();
     }
-    strict_variant::apply_visitor(to_json{var, {}}, value);
+    Config::apply_visitor(to_json{var, {}}, value);
 
     serializeJson(doc, file);
 }
@@ -1237,7 +1196,7 @@ void Config::write_to_stream(Print &output)
     } else {
         var = doc.as<JsonVariant>();
     }
-    strict_variant::apply_visitor(to_json{var, {}}, value);
+    Config::apply_visitor(to_json{var, {}}, value);
     serializeJson(doc, output);
 }
 
@@ -1258,7 +1217,7 @@ String Config::to_string_except(std::initializer_list<String> keys_to_censor) co
     } else {
         var = doc.as<JsonVariant>();
     }
-    strict_variant::apply_visitor(to_json{var, keys_to_censor}, value);
+    Config::apply_visitor(to_json{var, keys_to_censor}, value);
 
     String result;
     serializeJson(doc, result);
@@ -1277,7 +1236,7 @@ String Config::to_string_except(const std::vector<String> &keys_to_censor) const
     } else {
         var = doc.as<JsonVariant>();
     }
-    strict_variant::apply_visitor(to_json{var, keys_to_censor}, value);
+    Config::apply_visitor(to_json{var, keys_to_censor}, value);
 
     String result;
     serializeJson(doc, result);
@@ -1296,7 +1255,7 @@ void Config::write_to_stream_except(Print &output, std::initializer_list<String>
     } else {
         var = doc.as<JsonVariant>();
     }
-    strict_variant::apply_visitor(to_json{var, keys_to_censor}, value);
+    Config::apply_visitor(to_json{var, keys_to_censor}, value);
 
     serializeJson(doc, output);
 }
@@ -1313,20 +1272,20 @@ void Config::write_to_stream_except(Print &output, const std::vector<String> &ke
     } else {
         var = doc.as<JsonVariant>();
     }
-    strict_variant::apply_visitor(to_json{var, keys_to_censor}, value);
+    Config::apply_visitor(to_json{var, keys_to_censor}, value);
 
     serializeJson(doc, output);
 }
 
 bool Config::was_updated(uint8_t api_backend_flag)
 {
-    return ((updated & api_backend_flag) != 0) || strict_variant::apply_visitor(is_updated{api_backend_flag}, value);
+    return ((value.updated & api_backend_flag) != 0) || Config::apply_visitor(is_updated{api_backend_flag}, value);
 }
 
 void Config::set_update_handled(uint8_t api_backend_flag)
 {
-    updated = false;
-    strict_variant::apply_visitor(set_updated_false{api_backend_flag}, value);
+    value.updated = false;
+    Config::apply_visitor(set_updated_false{api_backend_flag}, value);
 }
 
 String ConfigRoot::update_from_file(File file)
@@ -1366,12 +1325,12 @@ String ConfigRoot::update_from_string(String s)
 String ConfigRoot::update_from_json(JsonVariant root)
 {
     Config copy = *this;
-    String err = strict_variant::apply_visitor(from_json{root, !this->permit_null_updates, this->permit_null_updates, true}, copy.value);
+    String err = Config::apply_visitor(from_json{root, !this->permit_null_updates, this->permit_null_updates, true}, copy.value);
 
     if (err != "")
         return err;
 
-    err = strict_variant::apply_visitor(default_validator{}, copy.value);
+    err = Config::apply_visitor(default_validator{}, copy.value);
 
     if (err != "")
         return err;
@@ -1383,7 +1342,7 @@ String ConfigRoot::update_from_json(JsonVariant root)
     }
 
     this->value = copy.value;
-    this->updated = true;
+    this->value.updated = true;
 
     return err;
 }
@@ -1391,11 +1350,11 @@ String ConfigRoot::update_from_json(JsonVariant root)
 String ConfigRoot::update(Config::ConfUpdate *val)
 {
     Config copy = *this;
-    String err = strict_variant::apply_visitor(from_update{val}, copy.value);
+    String err = Config::apply_visitor(from_update{val}, copy.value);
     if (err != "")
         return err;
 
-    err = strict_variant::apply_visitor(default_validator{}, copy.value);
+    err = Config::apply_visitor(default_validator{}, copy.value);
 
     if (err != "")
         return err;
@@ -1407,7 +1366,7 @@ String ConfigRoot::update(Config::ConfUpdate *val)
     }
 
     this->value = copy.value;
-    this->updated = true;
+    this->value.updated = true;
 
     return err;
 }

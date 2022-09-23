@@ -125,7 +125,7 @@ void ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, u
     current_charge.get("timestamp_minutes")->updateUint(timestamp_minutes);
     current_charge.get("authorization_type")->updateUint(auth_type);
     current_charge.get("authorization_info")->value = auth_info;
-    current_charge.get("authorization_info")->updated = 0xFF;
+    current_charge.get("authorization_info")->value.updated = 0xFF;
 }
 
 void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end)
@@ -166,7 +166,7 @@ void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end)
     current_charge.get("evse_uptime_start")->updateUint(0);
     current_charge.get("timestamp_minutes")->updateUint(0);
     current_charge.get("authorization_type")->updateUint(0);
-    current_charge.get("authorization_info")->value = nullptr;
+    current_charge.get("authorization_info")->value = Config::ConfVariant{};
 
     updateState();
 }

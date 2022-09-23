@@ -350,7 +350,7 @@ void Users::setup()
         bool success = read_user_slot_info(&info);
         if (success) {
             if (!charge_start_tracked) {
-                charge_tracker.startCharge(info.timestamp_minutes, info.meter_start, info.user_id, info.evse_uptime_on_start, CHARGE_TRACKER_AUTH_TYPE_LOST, nullptr);
+                charge_tracker.startCharge(info.timestamp_minutes, info.meter_start, info.user_id, info.evse_uptime_on_start, CHARGE_TRACKER_AUTH_TYPE_LOST, Config::ConfVariant{});
             } else {
                 // Don't track a start, but restore the current_charge API anyway.
                 charge_tracker.current_charge.get("user_id")->updateInt(info.user_id);
@@ -360,7 +360,7 @@ void Users::setup()
                 charge_tracker.current_charge.get("authorization_type")->updateUint(CHARGE_TRACKER_AUTH_TYPE_LOST);
             }
         } else if (!charge_start_tracked)
-            this->start_charging(0, 32000, CHARGE_TRACKER_AUTH_TYPE_NONE, nullptr);
+            this->start_charging(0, 32000, CHARGE_TRACKER_AUTH_TYPE_NONE, Config::ConfVariant{});
     }
 
     task_scheduler.scheduleWithFixedDelay([this](){
@@ -385,7 +385,7 @@ void Users::setup()
             case CHARGER_STATE_READY_TO_CHARGE:
             case CHARGER_STATE_CHARGING:
                 if (!get_user_slot()->get("active")->asBool())
-                    this->start_charging(0, 32000, CHARGE_TRACKER_AUTH_TYPE_NONE, nullptr);
+                    this->start_charging(0, 32000, CHARGE_TRACKER_AUTH_TYPE_NONE, Config::ConfVariant{});
                 break;
             case CHARGER_STATE_ERROR:
                 break;
