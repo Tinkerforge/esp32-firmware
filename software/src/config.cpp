@@ -23,22 +23,22 @@
 extern bool config_constructors_allowed;
 
 #define UINT_SLOTS 512
-Config::ConfUint::Slot uint_buff[UINT_SLOTS];
+Config::ConfUint::Slot uint_buf[UINT_SLOTS];
 
 #define INT_SLOTS 64
-Config::ConfInt::Slot int_buff[INT_SLOTS];
+Config::ConfInt::Slot int_buf[INT_SLOTS];
 
 #define FLOAT_SLOTS 384
-Config::ConfFloat::Slot float_buff[FLOAT_SLOTS];
+Config::ConfFloat::Slot float_buf[FLOAT_SLOTS];
 
 #define STRING_SLOTS 384
-Config::ConfString::Slot string_buff[STRING_SLOTS];
+Config::ConfString::Slot string_buf[STRING_SLOTS];
 
 #define ARRAY_SLOTS 32
-Config::ConfArray::Slot array_buff[ARRAY_SLOTS];
+Config::ConfArray::Slot array_buf[ARRAY_SLOTS];
 
 #define OBJECT_SLOTS 256
-Config::ConfObject::Slot object_buff[OBJECT_SLOTS];
+Config::ConfObject::Slot object_buf[OBJECT_SLOTS];
 
 
 struct default_validator {
@@ -626,14 +626,14 @@ static size_t nextSlot() {
 }
 
 bool Config::ConfString::slotEmpty(size_t i) {
-    return !string_buff[i].inUse;
+    return !string_buf[i].inUse;
 }
 
-String* Config::ConfString::getVal() { return &string_buff[idx].val; }
-const String* Config::ConfString::getVal() const { return &string_buff[idx].val; }
+String* Config::ConfString::getVal() { return &string_buf[idx].val; }
+const String* Config::ConfString::getVal() const { return &string_buf[idx].val; }
 
-const Config::ConfString::Slot* Config::ConfString::getSlot() const { return &string_buff[idx]; }
-Config::ConfString::Slot* Config::ConfString::getSlot() { return &string_buff[idx]; }
+const Config::ConfString::Slot* Config::ConfString::getSlot() const { return &string_buf[idx]; }
+Config::ConfString::Slot* Config::ConfString::getSlot() { return &string_buf[idx]; }
 
 Config::ConfString::ConfString(String val, uint16_t minChars, uint16_t maxChars)
 {
@@ -655,7 +655,7 @@ Config::ConfString::ConfString(const ConfString &cpy)
 
 Config::ConfString::~ConfString()
 {
-    string_buff[idx].inUse = false;
+    string_buf[idx].inUse = false;
 
     this->getSlot()->val.clear();
     this->getSlot()->minChars = 0;
@@ -673,17 +673,18 @@ Config::ConfString& Config::ConfString::operator=(const ConfString &cpy)
     return *this;
 }
 
+#pragma region ConfFloat
 bool Config::ConfFloat::slotEmpty(size_t i) {
-    return float_buff[i].val == 0
-        && float_buff[i].min == 0
-        && float_buff[i].max == 0;
+    return float_buf[i].val == 0
+        && float_buf[i].min == 0
+        && float_buf[i].max == 0;
 }
 
-float* Config::ConfFloat::getVal() { return &float_buff[idx].val; }
-const float* Config::ConfFloat::getVal() const { return &float_buff[idx].val; }
+float* Config::ConfFloat::getVal() { return &float_buf[idx].val; }
+const float* Config::ConfFloat::getVal() const { return &float_buf[idx].val; }
 
-const Config::ConfFloat::Slot *Config::ConfFloat::getSlot() const { return &float_buff[idx]; }
-Config::ConfFloat::Slot *Config::ConfFloat::getSlot() { return &float_buff[idx]; }
+const Config::ConfFloat::Slot *Config::ConfFloat::getSlot() const { return &float_buf[idx]; }
+Config::ConfFloat::Slot *Config::ConfFloat::getSlot() { return &float_buf[idx]; }
 
 Config::ConfFloat::ConfFloat(float val, float min, float max)
 {
@@ -716,16 +717,16 @@ Config::ConfFloat& Config::ConfFloat::operator=(const ConfFloat &cpy) {
 }
 
 bool Config::ConfInt::slotEmpty(size_t i) {
-    return int_buff[i].val == 0
-        && int_buff[i].min == 0
-        && int_buff[i].max == 0;
+    return int_buf[i].val == 0
+        && int_buf[i].min == 0
+        && int_buf[i].max == 0;
 }
 
-int32_t* Config::ConfInt::getVal() { return &int_buff[idx].val; }
-const int32_t* Config::ConfInt::getVal() const { return &int_buff[idx].val; }
+int32_t* Config::ConfInt::getVal() { return &int_buf[idx].val; }
+const int32_t* Config::ConfInt::getVal() const { return &int_buf[idx].val; }
 
-const Config::ConfInt::Slot *Config::ConfInt::getSlot() const { return &int_buff[idx]; }
-Config::ConfInt::Slot *Config::ConfInt::getSlot() { return &int_buff[idx]; }
+const Config::ConfInt::Slot *Config::ConfInt::getSlot() const { return &int_buf[idx]; }
+Config::ConfInt::Slot *Config::ConfInt::getSlot() { return &int_buf[idx]; }
 
 Config::ConfInt::ConfInt(int32_t val, int32_t min, int32_t max)
 {
@@ -758,16 +759,16 @@ Config::ConfInt& Config::ConfInt::operator=(const ConfInt &cpy) {
 }
 
 bool Config::ConfUint::slotEmpty(size_t i) {
-    return uint_buff[i].val == 0
-        && uint_buff[i].min == 0
-        && uint_buff[i].max == 0;
+    return uint_buf[i].val == 0
+        && uint_buf[i].min == 0
+        && uint_buf[i].max == 0;
 }
 
-uint32_t* Config::ConfUint::getVal() { return &uint_buff[idx].val; }
-const uint32_t* Config::ConfUint::getVal() const { return &uint_buff[idx].val; }
+uint32_t* Config::ConfUint::getVal() { return &uint_buf[idx].val; }
+const uint32_t* Config::ConfUint::getVal() const { return &uint_buf[idx].val; }
 
-const Config::ConfUint::Slot *Config::ConfUint::getSlot() const { return &uint_buff[idx]; }
-Config::ConfUint::Slot *Config::ConfUint::getSlot() { return &uint_buff[idx]; }
+const Config::ConfUint::Slot *Config::ConfUint::getSlot() const { return &uint_buf[idx]; }
+Config::ConfUint::Slot *Config::ConfUint::getSlot() { return &uint_buf[idx]; }
 
 Config::ConfUint::ConfUint(uint32_t val, uint32_t min, uint32_t max)
 {
@@ -800,7 +801,7 @@ Config::ConfUint& Config::ConfUint::operator=(const ConfUint &cpy) {
 }
 
 bool Config::ConfArray::slotEmpty(size_t i) {
-    return !array_buff[i].inUse;
+    return !array_buf[i].inUse;
 }
 
 Config *Config::ConfArray::get(uint16_t i)
@@ -822,11 +823,11 @@ const Config *Config::ConfArray::get(uint16_t i) const
     return &this->getVal()->at(i);
 }
 
-std::vector<Config> *Config::ConfArray::getVal() { return &array_buff[idx].val; }
-const std::vector<Config> *Config::ConfArray::getVal() const { return &array_buff[idx].val; }
+std::vector<Config> *Config::ConfArray::getVal() { return &array_buf[idx].val; }
+const std::vector<Config> *Config::ConfArray::getVal() const { return &array_buf[idx].val; }
 
-const Config::ConfArray::Slot *Config::ConfArray::getSlot() const { return &array_buff[idx]; }
-Config::ConfArray::Slot *Config::ConfArray::getSlot() { return &array_buff[idx]; }
+const Config::ConfArray::Slot *Config::ConfArray::getSlot() const { return &array_buf[idx]; }
+Config::ConfArray::Slot *Config::ConfArray::getSlot() { return &array_buf[idx]; }
 
 Config::ConfArray::ConfArray(std::vector<Config> val, Config *prototype, uint16_t minElements, uint16_t maxElements, int8_t variantType)
 {
@@ -873,7 +874,7 @@ Config::ConfArray& Config::ConfArray::operator=(const ConfArray &cpy) {
 }
 
 bool Config::ConfObject::slotEmpty(size_t i) {
-    return !object_buff[i].inUse;
+    return !object_buf[i].inUse;
 }
 
 Config *Config::ConfObject::get(String s)
@@ -900,11 +901,11 @@ const Config *Config::ConfObject::get(String s) const
     return nullptr;
 }
 
-std::vector<std::pair<String, Config>> *Config::ConfObject::getVal() { return &object_buff[idx].val; }
-const std::vector<std::pair<String, Config>> *Config::ConfObject::getVal() const { return &object_buff[idx].val; }
+std::vector<std::pair<String, Config>> *Config::ConfObject::getVal() { return &object_buf[idx].val; }
+const std::vector<std::pair<String, Config>> *Config::ConfObject::getVal() const { return &object_buf[idx].val; }
 
-const Config::ConfObject::Slot *Config::ConfObject::getSlot() const { return &object_buff[idx]; }
-Config::ConfObject::Slot *Config::ConfObject::getSlot() { return &object_buff[idx]; }
+const Config::ConfObject::Slot *Config::ConfObject::getSlot() const { return &object_buf[idx]; }
+Config::ConfObject::Slot *Config::ConfObject::getSlot() { return &object_buf[idx]; }
 
 Config::ConfObject::ConfObject(std::vector<std::pair<String, Config>> val)
 {
