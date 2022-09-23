@@ -22,7 +22,6 @@ struct response_packet {
     uint8_t iec61851_state;
     uint8_t vehicle_state;
     uint8_t error_state;
-    uint8_t charge_release;
     uint32_t uptime;
     uint32_t charging_time;
     uint16_t allowed_charging_current;
