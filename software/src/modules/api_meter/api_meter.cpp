@@ -58,7 +58,7 @@ void APIMeter::pre_setup()
 
     all_values_update = Config::Array({},
         new Config{Config::Float(0)},
-        0, METER_ALL_VALUES_COUNT, Config::type_id<Config::ConfFloat>());
+        METER_ALL_VALUES_COUNT, METER_ALL_VALUES_COUNT, Config::type_id<Config::ConfFloat>());
 }
 
 void APIMeter::setup()
