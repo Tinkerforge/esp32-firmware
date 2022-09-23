@@ -71,7 +71,7 @@ void EnergyManager::pre_setup()
     // Config
     energy_manager_config = Config::Object({
         {"excess_charging_enable", Config::Bool(false)},
-        {"phase_switching", Config::Uint8(2)},
+        {"phase_switching", Config::Uint8(PHASE_SWITCHING_AUTOMATIC)},
         {"maximum_power_from_grid", Config::Int32(0)},
         {"maximum_available_current", Config::Uint32(0)}, // Keep in sync with charge_manager.cpp
         {"minimum_current", Config::Uint(6000, 6000, 32000)}, // Keep in sync with charge_manager.cpp
