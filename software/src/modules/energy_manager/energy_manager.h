@@ -116,14 +116,9 @@ public:
     void handle_input_config_rule_based(uint8_t input);
     void handle_input_config_contactor_check(uint8_t input);
     void setup_energy_manager();
-    bool flash_firmware();
-    bool flash_plugin(int regular_plugin_upto);
-    bool wait_for_bootloader_mode(int mode);
     String get_energy_manager_debug_header();
     String get_energy_manager_debug_line();
-    void set_managed_current(uint16_t current);
 
-    void apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear);
     void apply_defaults();
 
     bool debug = false;
