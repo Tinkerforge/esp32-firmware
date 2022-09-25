@@ -1,3 +1,22 @@
+/* esp32-firmware
+ * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
 import {ConfigMap, api_cache, Modules} from './api_defs';
 
 import * as util from './util';
@@ -15,6 +34,12 @@ export function update<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T
 
 export function get<T extends keyof ConfigMap>(topic: T): Readonly<ConfigMap[T]> {
     return api_cache[topic];
+}
+
+export function get_maybe<T extends string>(topic: T): (T extends keyof ConfigMap ? Readonly<ConfigMap[T]> : any) {
+    if (topic in api_cache)
+        return api_cache[topic as keyof ConfigMap] as any;
+    return null as any;
 }
 
 // Based on https://43081j.com/2020/11/typed-events-in-typescript
@@ -45,50 +70,47 @@ export function save<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T],
     return call(<any>(topic + "_update"), payload, error_string, reboot_string);
 }
 
-export function call<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T], error_string: string, reboot_string?: string) {
-    return fetch('/' + topic, {
-            method: 'PUT',
-            credentials: 'same-origin',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload)
-        })
-        .then(response => {
-            if (response.ok)
-                return response;
-            return response.text().catch(() => response.statusText).then(x => {throw new Error(x)});
-        })
-        .then(reboot_string ? util.getShowRebootModalFn(reboot_string) : undefined)
-        .catch(error => {
-            util.add_alert(topic.replace("/", "_") + '_failed', 'alert-danger', error_string, error);
-            throw error;
-        });
+export function save_maybe<T extends string>(topic: T, payload: (T extends keyof ConfigMap ? ConfigMap[T] : any), error_string: string, reboot_string?: string) {
+    if (topic in api_cache)
+        return call(<any>(topic + "_update"), payload, error_string, reboot_string);
+    return Promise.resolve();
+}
+
+export async function call<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T], error_string: string, reboot_string?: string) {
+    try {
+        let blob = await util.put('/' + topic, payload);
+        if (reboot_string)
+            util.getShowRebootModalFn(reboot_string)();
+    } catch (e) {
+        util.add_alert(topic.replace("/", "_") + '_failed', 'alert-danger', error_string, e);
+        throw e;
+    }
 }
 
 export function hasFeature(feature: string) {
-    return get('info/features').includes(feature);
+    return get('info/features').indexOf(feature) >= 0;
 }
 
 export function default_updater<T extends keyof ConfigMap>(topic: T, exclude?: Array<keyof ConfigMap[T]>, has_save_button=true) {
     let prefix = topic.replace('/', '_');
     let config = get(topic);
-    let form = $(`#${prefix}`);
+    let form = $(`#${prefix}_form`);
     let save_btn = $(`#${prefix}_save_button`);
 
     if (has_save_button && save_btn.length == 0) {
         console.error(`save btn not found #${prefix}_save_button`);
     }
 
-    if (has_save_button && !save_btn.prop("disabled"))
-        return;
+    if (has_save_button && !save_btn.prop("disabled")) {
+        return config;
+    }
 
     if (form.length != 0) {
         form.removeClass('was-validated');
     }
 
     for (let key in config) {
-        if (exclude && exclude.includes(key))
+        if (exclude && exclude.indexOf(key) >= 0)
             continue;
 
         let value = config[key];
@@ -110,15 +132,15 @@ export function default_updater<T extends keyof ConfigMap>(topic: T, exclude?: A
         }
 
         if (typeof value == "boolean") {
-            elem.prop("checked", value);
+            elem.prop("checked", value).trigger("change");
             continue;
         }
 
         if (typeof value == "string" || typeof value == "number") {
             if (elem.is("input") || elem.is("select"))
-                elem.val(value);
+                elem.val(value).trigger("change");
             else if (elem.is("span"))
-                elem.text(value);
+                elem.text(value).trigger("change");
             else
                 console.error(`Can't update ${id} from ${topic}[${key}] = ${value} (of type ${typeof value}): ${id} is not an input, select or span`);
         }
@@ -177,14 +199,27 @@ export function default_saver<T extends keyof ConfigMap>(topic: T, overrides?: P
 // Take the overrides as a function that returns the dictionary,
 // so that we can control when the entries are evaluated.
 // This makes calling this a bit uglier, because we have to pass the overrides
-// like this: register_config_form(..., () => ({a: 1, b:2}), ...
-export function register_config_form<T extends keyof ConfigMap>(topic: T, overrides?: () => Partial<ConfigMap[T]>, validation_override?: () => void, error_string?: string, reboot_string?: string) {
+// like this: register_config_form(..., {overrides: () => ({a: 1, b:2}), ...})
+export function register_config_form<T extends keyof ConfigMap>(topic: T, p: {
+        // Replacements to be made before running the default HTML form validation
+        overrides?: () => Partial<ConfigMap[T]>,
+        // Custom validation to be checked before running the default HTML form validation.
+        // Use this to reset validation changes (i.e. is-invalid classes, changed invalid-feedback texts)
+        // done in post_validation.
+        pre_validation?: () => boolean,
+        // Custom validation to be checked after running the default HTML form validation.
+        post_validation?: () => boolean,
+        // Translated string to show in error message if calling API fails.
+        error_string?: string,
+        // Translated string to show in modal if calling API succeeds. No modal is shown if this is left undefined.
+        reboot_string?: string
+    }) {
     let prefix = topic.replace('/', '_');
-    let form = $(`#${prefix}`);
+    let form = $(`#${prefix}_form`);
     let save_btn = $(`#${prefix}_save_button`);
 
     if (form.length == 0) {
-        console.error(`Cant register config form ${topic}. Form with id ${prefix} not found.`);
+        console.error(`Cant register config form ${topic}. Form with id ${prefix}_form not found.`);
     }
 
     if (save_btn.length == 0) {
@@ -192,20 +227,23 @@ export function register_config_form<T extends keyof ConfigMap>(topic: T, overri
     }
 
     form.on('submit', function (this: HTMLFormElement, event: Event) {
-        if (validation_override)
-            validation_override();
+        this.classList.remove('was-validated');
 
         event.preventDefault();
         event.stopPropagation();
 
+        if (p.pre_validation && !p.pre_validation())
+            return;
+
         if (this.checkValidity() === false) {
             this.classList.add('was-validated');
             return;
-        } else {
-            this.classList.remove('was-validated');
         }
 
-        default_saver(topic, overrides ? overrides() : undefined, error_string, reboot_string);
+        if (p.post_validation && !p.post_validation())
+            return;
+
+        default_saver(topic, p.overrides ? p.overrides() : undefined, p.error_string, p.reboot_string);
     });
 
     form.on('input', () => save_btn.prop("disabled", false));

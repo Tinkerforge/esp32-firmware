@@ -1,7 +1,7 @@
 {
     "charge_manager": {
         "status": {
-            "charge_manager": "Lastmanager",
+            "charge_manager": null,
             "not_configured": "Deaktiviert",
             "manager": "Aktiviert",
             "error": "Fehler",
@@ -11,28 +11,45 @@
             "available_current_maximum": "..."
         },
         "navbar": {
-            "charge_manager": "Lastmanager"
+            "charge_manager": null
         },
         "content": {
-            "charge_manager": "Lastmanager",
-            "enable_charge_manager": "<span class=\"form-label pr-2\">Lastmanager aktiviert</span><span class=\"text-muted\"><a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a></span>",
-            "enable_charge_manager_desc": "Steuert mehrere WARP Charger um sicherzustellen, dass ein gesetzter Maximalstrom nie überschritten wird",
-            "enable_watchdog": "<span class=\"form-label pr-2\">Watchdog aktiviert</span><span class=\"text-muted\">Nur bei API-Benutzung aktivieren. Für den normalen Lastmanagement-Betrieb nicht notwendig!</span>",
+            "charge_manager": null,
+            "enable_charge_manager": "Last&shy;management&shy;modus",
+            "enable_charge_manager_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
+            "enable_watchdog": "Watchdog aktiviert",
+            "enable_watchdog_muted": "nur bei API-Benutzung aktivieren (für den normalen Lastmanagement-Betrieb nicht notwendig!)",
             "enable_watchdog_desc": "Setzt den verfügbaren Strom auf die Voreinstellung, wenn er nicht spätestens alle 30 Sekunden aktualisiert wurde",
             "verbose": "Strom&shy;verteilungs&shy;protokoll aktiviert",
             "verbose_desc": "Erzeugt Einträge im Ereignis-Log, wenn Strom umverteilt wird",
-            "default_available_current": "<span class=\"form-label pr-2\">Voreingestellt verfügbarer Strom</span><span class=\"text-muted\">wird nach Neustart des Lastmanagers verwendet</span>",
+            "default_available_current": "Voreingestellt verfügbarer Strom",
+            "default_available_current_muted": "wird nach Neustart des Lastmanagers verwendet",
             "default_available_current_invalid": "Der voreingestellt verfügbare Strom darf maximal so groß sein wie der maximale verfügbare Strom!",
-            "maximum_available_current": "<span class=\"form-label pr-2\">Maximal verfügbarer Strom</span><span class=\"text-muted\">verfügbarer Strom kann über Webinterface und API nur bis zu diesem Wert eingestellt werden</span>",
-            "minimum_current": "<span class=\"form-label pr-2\">Minimaler Ladestrom</span><span class=\"text-muted\">muss mindestens verfügbar sein, damit ein Ladevorgang beginnt</span>",
+            "maximum_available_current": "Maximal verfügbarer Strom",
+            "maximum_available_current_muted": "verfügbarer Strom kann über Webinterface und API nur bis zu diesem Wert eingestellt werden",
+            "minimum_current": "Minimaler Ladestrom",
+            "minimum_current_muted": "muss mindestens verfügbar sein, damit ein Ladevorgang beginnt",
+
+            "configuration_mode": "Experten&shy;einstellungen",
+            "configuration_mode_muted": "",
+            "show_hide_expert": "Anzeigen / Verstecken",
 
             "add_charger_modal_title": "Wallbox hinzufügen",
             "add_charger_modal_name": "Anzeigename",
-            "add_charger_modal_host": "IP-Adresse (Hostnamen werden noch nicht unterstützt)",
+            "add_charger_modal_name_invalid": "Kann nicht leer sein",
+            "add_charger_modal_host": "IP-Adresse oder Hostname",
+            "add_charger_modal_host_invalid": "Kann nicht leer sein",
             "add_charger_modal_abort": "Verwerfen",
             "add_charger_modal_save": "Hinzufügen",
+            "add_charger_modal_found": "Gefundene Wallboxen",
 
-            "save": "Speichern",
+            "disabled": "Lastmanagement deaktiviert",
+            "wrong_version": "Firmwareversion inkompatibel",
+            "invalid_box": "Wallbox ungültig",
+
+            "mode_disabled": "Deaktiviert",
+            "mode_manager": "Lastmanager",
+            "mode_managed": "Fremdgesteuert",
 
             "managed_boxes": "Kontrollierte Wallboxen"
         },
@@ -69,7 +86,7 @@
             "ampere_supported": "A unterstützt",
             "delete": "Löschen",
             "last_update_prefix": "Gestört seit ",
-            "last_update_suffix": "{{{empty_text}}}",
+            "last_update_suffix": "",
             "save_failed": "Speichern der Lastmanager-Konfiguration fehlgeschlagen",
             "set_available_current_failed": "Setzen des verfügbaren Stroms fehlgeschlagen",
             "add_charger": "Wallbox hinzufügen",
@@ -79,7 +96,13 @@
             "reboot_content_changed": "Lastmanagement-Einstellungen",
 
             "display_name": "Anzeigename",
-            "host": "Host"
+            "host": "Host",
+
+            "scan_failed": "Scan fehlgeschlagen",
+
+            "mode_explainer_0": "Dieser WARP Charger ist nicht Teil eines Lastmanagement-Verbunds mit anderen WARP Chargern und/oder einem WARP Energiemanager.",
+            "mode_explainer_1": "Dieser WARP Charger ist Teil eines Lastmanagement-Verbunds mit anderen WARP Chargern und/oder einem WARP Energiemanager. Ein anderes Gerät steuert diesen Lastmanagement-Verbund, um sicherzustellen, dass nie mehr als der verfügbare Strom bezogen wird.",
+            "mode_explainer_2": "Dieser WARP Charger steuert einen Lastmanagement-Verbund mit anderen WARP Chargern um sicherzustellen, dass nie mehr als der verfügbare Strom bezogen wird."
         }
     }
 }

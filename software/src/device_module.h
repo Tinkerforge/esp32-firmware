@@ -48,7 +48,8 @@ template <typename DeviceT,
           int (*get_bootloader_mode_function)(DeviceT *, uint8_t *),
           int (*reset_function)(DeviceT *),
           int (*destroy_function)(DeviceT *)>
-class DeviceModule {
+class DeviceModule
+{
 public:
     DeviceModule(const char *url_prefix,
                  const char *device_name,
@@ -87,7 +88,13 @@ public:
 
         if (result != 0) {
             logger.printfln("Flashing %s Bricklet failed (%d)", device_name, result);
-            return false;
+            logger.printfln("Retrying once.");
+            result = ensure_matching_firmware(tfp, device_name, module_name, firmware, firmware_len, &logger, false);
+            if (result != 0) {
+                logger.printfln("Flashing %s Bricklet failed twice (%d). Disabling completely.", device_name, result);
+                device_found = false;
+                return false;
+            }
         }
 
         char uid[7] = {0};

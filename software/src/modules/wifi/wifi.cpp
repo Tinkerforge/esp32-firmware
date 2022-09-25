@@ -30,6 +30,7 @@
 
 #include "modules.h"
 #include "build.h"
+#include "tools.h"
 
 extern EventLog logger;
 
@@ -40,7 +41,7 @@ extern char passphrase[20];
 
 extern API api;
 
-Wifi::Wifi()
+void Wifi::pre_setup()
 {
     wifi_ap_config = ConfigRoot(Config::Object({
         {"enable_ap", Config::Bool(true)},
@@ -57,15 +58,24 @@ Wifi::Wifi()
         const char *gateway = cfg.get("gateway")->asCStr();
         const char *subnet = cfg.get("subnet")->asCStr();
 
-        IPAddress unused;
-        if (!unused.fromString(ip))
+        IPAddress ip_addr, subnet_mask, gateway_addr;
+        if (!ip_addr.fromString(ip))
             return "Failed to parse \"ip\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!unused.fromString(gateway))
+        if (!gateway_addr.fromString(gateway))
             return "Failed to parse \"gateway\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!unused.fromString(subnet))
+        if (!subnet_mask.fromString(subnet))
             return "Failed to parse \"subnet\": Expected format is dotted decimal, i.e. 10.0.0.1";
+
+        if (!is_valid_subnet_mask(subnet_mask))
+            return "Invalid subnet mask passed: Expected format is 255.255.255.0";
+
+        if (ip_addr != IPAddress(0,0,0,0) && is_in_subnet(ip_addr, subnet_mask, IPAddress(127,0,0,1)))
+            return "Invalid IP or subnet mask passed: This configuration would route localhost (127.0.0.1) to the WiFi AP.";
+
+        if (gateway_addr != IPAddress(0,0,0,0) && !is_in_subnet(ip_addr, subnet_mask, gateway_addr))
+            return "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask.";
 
         return "";
     });
@@ -106,15 +116,25 @@ Wifi::Wifi()
         const char *dns = cfg.get("dns")->asCStr();
         const char *dns2 = cfg.get("dns2")->asCStr();
 
-        IPAddress unused;
-        if (!unused.fromString(ip))
+        IPAddress ip_addr, subnet_mask, gateway_addr, unused;
+
+        if (!ip_addr.fromString(ip))
             return "Failed to parse \"ip\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!unused.fromString(gateway))
+        if (!gateway_addr.fromString(gateway))
             return "Failed to parse \"gateway\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!unused.fromString(subnet))
-            return "Failed to parse \"subnet\": Expected format is dotted decimal, i.e. 10.0.0.1";
+        if (!subnet_mask.fromString(subnet))
+            return "Failed to parse \"subnet\": Expected format is dotted decimal, i.e. 255.255.255.0";
+
+        if (!is_valid_subnet_mask(subnet_mask))
+            return "Invalid subnet mask passed: Expected format is 255.255.255.0";
+
+        if (ip_addr != IPAddress(0,0,0,0) && is_in_subnet(ip_addr, subnet_mask, IPAddress(127,0,0,1)))
+            return "Invalid IP or subnet mask passed: This configuration would route localhost (127.0.0.1) to the WiFi STA interface.";
+
+        if (gateway_addr != IPAddress(0,0,0,0) && !is_in_subnet(ip_addr, subnet_mask, gateway_addr))
+            return "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask.";
 
         if (!unused.fromString(dns))
             return "Failed to parse \"dns\": Expected format is dotted decimal, i.e. 10.0.0.1";
@@ -137,12 +157,14 @@ Wifi::Wifi()
     wifi_scan_config = Config::Null();
 }
 
-float rssi_to_weight(int rssi) {
+float rssi_to_weight(int rssi)
+{
     return pow(2, (float)(128 + rssi) / 10);
 }
 
-void apply_weight(float *channels, int channel, float weight) {
-    for(int i = MAX(1, channel - 2); i <= MIN(13, channel + 2); ++i) {
+void apply_weight(float *channels, int channel, float weight)
+{
+    for (int i = MAX(1, channel - 2); i <= MIN(13, channel + 2); ++i) {
         if (i == channel - 2 || i == channel + 2)
             channels[i] += weight / 2;
         else
@@ -200,15 +222,15 @@ void Wifi::apply_soft_ap_config_and_start()
 
         memcpy(channels_smeared, channels, sizeof(channels_smeared) / sizeof(channels_smeared[0]));
 
-        for(int i = 1; i <= 13; ++i) {
+        for (int i = 1; i <= 13; ++i) {
             if (i > 1)
-                channels_smeared[i] += channels[i-1];
+                channels_smeared[i] += channels[i - 1];
             if (i < 13)
-                channels_smeared[i] += channels[i+1];
+                channels_smeared[i] += channels[i + 1];
         }
 
         int min = 1;
-        for(int i = 1; i <= 13; ++i) {
+        for (int i = 1; i <= 13; ++i) {
             if (channels_smeared[i] < channels_smeared[min])
                 min = i;
         }
@@ -219,7 +241,6 @@ void Wifi::apply_soft_ap_config_and_start()
         channel_to_use = (esp_random() % 4) * 4 + 1;
         logger.printfln("Channel selection scan timeout elapsed! Randomly selected channel %u", channel_to_use);
     }
-
 
     IPAddress ip, gateway, subnet;
     ip.fromString(wifi_ap_config_in_use.get("ip")->asCStr());
@@ -341,14 +362,24 @@ const char *reason2str(uint8_t reason)
 
 void Wifi::setup()
 {
-    String default_ssid = String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str);
-    String default_passphrase = String(passphrase);
+    String default_ap_ssid = String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str);
+    String default_ap_passphrase = String(passphrase);
 
-    api.restorePersistentConfig("wifi/sta_config", &wifi_sta_config);
+    if (!api.restorePersistentConfig("wifi/sta_config", &wifi_sta_config)) {
+#ifdef DEFAULT_WIFI_STA_ENABLE
+        wifi_sta_config.get("enable_sta")->updateBool(DEFAULT_WIFI_STA_ENABLE);
+#endif
+#ifdef DEFAULT_WIFI_STA_SSID
+        wifi_sta_config.get("ssid")->updateString(String(DEFAULT_WIFI_STA_SSID));
+#endif
+#ifdef DEFAULT_WIFI_STA_PASSPHRASE
+        wifi_sta_config.get("passphrase")->updateString(String(DEFAULT_WIFI_STA_PASSPHRASE));
+#endif
+    }
 
     if (!api.restorePersistentConfig("wifi/ap_config", &wifi_ap_config)) {
-        wifi_ap_config.get("ssid")->updateString(default_ssid);
-        wifi_ap_config.get("passphrase")->updateString(default_passphrase);
+        wifi_ap_config.get("ssid")->updateString(default_ap_ssid);
+        wifi_ap_config.get("passphrase")->updateString(default_ap_passphrase);
     }
 
     wifi_ap_config_in_use = wifi_ap_config;
@@ -459,6 +490,7 @@ void Wifi::setup()
     if (enable_ap && !ap_fallback_only) {
         apply_soft_ap_config_and_start();
     } else {
+        LogSilencer ls;
         WiFi.softAPdisconnect(true);
     }
 
@@ -558,7 +590,8 @@ void Wifi::check_for_scan_completion()
 #endif
 }
 
-void Wifi::start_scan() {
+void Wifi::start_scan()
+{
     // Abort if a scan is running. This is save, because
     // the state will change to SCAN_FAILED if it timed out.
     if (WiFi.scanComplete() == WIFI_SCAN_RUNNING)
@@ -568,7 +601,7 @@ void Wifi::start_scan() {
     WiFi.scanDelete();
 
     // WIFI_SCAN_FAILED also means the scan is done.
-    if(WiFi.scanComplete() != WIFI_SCAN_FAILED)
+    if (WiFi.scanComplete() != WIFI_SCAN_FAILED)
         return;
 
     if (WiFi.scanNetworks(true, true) != WIFI_SCAN_FAILED) {
@@ -604,11 +637,11 @@ void Wifi::register_urls()
         String result = this->get_scan_results();
 
         if (network_count < 0) {
-            request.send(200, "text/plain; charset=utf-8", result.c_str());
+            return request.send(200, "text/plain; charset=utf-8", result.c_str());
         }
 
         logger.printfln("scan done");
-        request.send(200, "application/json; charset=utf-8", result.c_str());
+        return request.send(200, "application/json; charset=utf-8", result.c_str());
     });
 
     api.addPersistentConfig("wifi/sta_config", &wifi_sta_config, {"passphrase"}, 1000);

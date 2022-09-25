@@ -45,30 +45,14 @@ struct ws_work_item {
     int fds[MAX_WEB_SOCKET_CLIENTS];
     char *payload;
     size_t payload_len;
-
-    ws_work_item(httpd_handle_t hd,
-                 int fds_to_send[MAX_WEB_SOCKET_CLIENTS],
-                 char *payload,
-                 size_t payload_len) :
-                    hd(hd), fds(), payload(payload), payload_len(payload_len)
-    {
-        memcpy(this->fds, fds_to_send, sizeof(fds));
-    }
-
-    ws_work_item() : hd(nullptr), fds(), payload(nullptr), payload_len(0) {}
-
-    void clear()
-    {
-        if (this->payload == nullptr)
-            return;
-
-        free(this->payload);
-    }
 };
 
-class WebSockets {
+void clear_ws_work_item(ws_work_item *wi);
+
+class WebSockets
+{
 public:
-    WebSockets()
+    WebSockets() : worker_active(false), worker_start_errors(0)
     {
     }
     void start(const char *uri);
@@ -110,6 +94,7 @@ public:
 
     // std::atomic<bool>.is_lock_free() is true!
     std::atomic<bool> worker_active;
+    std::atomic<uint32_t> worker_start_errors;
 
     std::function<void(WebSocketsClient)> on_client_connect_fn;
 };

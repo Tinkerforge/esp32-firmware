@@ -19,9 +19,11 @@
 
 #pragma once
 
-class ScreenshotDataFaker {
+class ScreenshotDataFaker
+{
 public:
-    ScreenshotDataFaker();
+    ScreenshotDataFaker(){}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();

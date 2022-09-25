@@ -19,9 +19,11 @@
 
 #pragma once
 
-class ESP32Brick {
+class ESP32Brick
+{
 public:
-    ESP32Brick();
+    ESP32Brick(){}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();

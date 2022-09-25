@@ -47,15 +47,23 @@
 #define CHARGER_STATE_CHARGING 3
 #define CHARGER_STATE_ERROR 4
 
+#define DATA_STORE_PAGE_CHARGE_TRACKER 0
+#define DATA_STORE_PAGE_RECOVERY 15
+
+void evse_v2_button_recovery_handler();
+#define TF_ESP_PREINIT evse_v2_button_recovery_handler();
+
 class EVSEV2 : public DeviceModule<TF_EVSEV2,
                                    evse_v2_bricklet_firmware_bin_data,
                                    evse_v2_bricklet_firmware_bin_length,
                                    tf_evse_v2_create,
                                    tf_evse_v2_get_bootloader_mode,
                                    tf_evse_v2_reset,
-                                   tf_evse_v2_destroy>  {
+                                   tf_evse_v2_destroy>
+{
 public:
-    EVSEV2();
+    EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE 2.0", std::bind(&EVSEV2::setup_evse, this)) {}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();
@@ -85,6 +93,7 @@ public:
     ConfigRoot evse_button_state;
     ConfigRoot evse_slots;
     ConfigRoot evse_indicator_led;
+    ConfigRoot evse_control_pilot_connected;
     ConfigRoot evse_reset_dc_fault_current_state;
     ConfigRoot evse_stop_charging;
     ConfigRoot evse_start_charging;

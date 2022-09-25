@@ -21,9 +21,11 @@
 
 #include "config.h"
 
-class EVSEV2Meter {
+class EVSEV2Meter
+{
 public:
-    EVSEV2Meter();
+    EVSEV2Meter(){}
+    void pre_setup();
     void setup();
     void setupEVSE(bool update_module_initialized);
     void register_urls();

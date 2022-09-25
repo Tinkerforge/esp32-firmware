@@ -32,9 +32,11 @@ enum class WifiState {
     CONNECTED
 };
 
-class Wifi {
+class Wifi
+{
 public:
-    Wifi();
+    Wifi(){}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();

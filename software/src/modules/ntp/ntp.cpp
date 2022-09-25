@@ -43,12 +43,16 @@ void ntp_sync_cb(struct timeval *t)
         auto secs = now / 1000;
         auto ms = now % 1000;
         logger.printfln("NTP synchronized at %lu,%03lu!", secs, ms);
+
+        task_scheduler.scheduleWithFixedDelay([](){
+            ntp_state->get("time")->updateUint(timestamp_minutes());
+        }, 0, 1000);
     }
 
     ntp_state->get("synced")->updateBool(true);
 }
 
-NTP::NTP()
+void NTP::pre_setup()
 {
     config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(true)},
@@ -63,7 +67,8 @@ NTP::NTP()
     }};
 
     state = Config::Object({
-        {"synced", Config::Bool(false)}
+        {"synced", Config::Bool(false)},
+        {"time", Config::Uint32(0)} // unix timestamp in minutes
     });
 }
 

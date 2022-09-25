@@ -28,14 +28,13 @@
 
 extern EventLog logger;
 
-extern TF_HAL hal;
 extern WebServer server;
 extern TaskScheduler task_scheduler;
 extern Config modules;
 
 extern API api;
 
-APIMeter::APIMeter()
+void APIMeter::pre_setup()
 {
     state_update = Config::Object({
         {"state", Config::Uint8(0)}, // 0 - no energy meter, 1 - initialization error, 2 - meter available
@@ -59,7 +58,7 @@ APIMeter::APIMeter()
 
     all_values_update = Config::Array({},
         new Config{Config::Float(0)},
-        0, ALL_VALUES_COUNT, Config::type_id<Config::ConfFloat>());
+        METER_ALL_VALUES_COUNT, METER_ALL_VALUES_COUNT, Config::type_id<Config::ConfFloat>());
 }
 
 void APIMeter::setup()
@@ -70,11 +69,11 @@ void APIMeter::setup()
 void APIMeter::register_urls()
 {
     api.addCommand("meter/state_update", &state_update, {}, [this](){
-        energy_meter.updateMeterState(state_update.get("state")->asUint(), state_update.get("type")->asUint());
+        meter.updateMeterState(state_update.get("state")->asUint(), state_update.get("type")->asUint());
     }, false);
 
     api.addCommand("meter/values_update", &values_update, {}, [this](){
-        energy_meter.updateMeterValues(values_update.get("power")->asFloat(), values_update.get("energy_rel")->asFloat(), values_update.get("energy_abs")->asFloat());
+        meter.updateMeterValues(values_update.get("power")->asFloat(), values_update.get("energy_rel")->asFloat(), values_update.get("energy_abs")->asFloat());
     }, false);
 
     api.addCommand("meter/phases_update", &phases_update, {}, [this](){
@@ -87,12 +86,12 @@ void APIMeter::register_urls()
         for (int i = 0; i < 3; ++i)
             phases_connected[i] = phases_update.get("phases_connected")->get(i)->asBool();
 
-        energy_meter.updateMeterPhases(phases_connected, phases_active);
+        meter.updateMeterPhases(phases_connected, phases_active);
     }, false);
 
     api.addCommand("meter/all_values_update", &all_values_update, {}, [this](){
-        for(int i = 0; i < ALL_VALUES_COUNT; ++i)
-            energy_meter.updateMeterAllValues(i, all_values_update.get(i)->asFloat());
+        for(int i = 0; i < METER_ALL_VALUES_COUNT; ++i)
+            meter.updateMeterAllValues(i, all_values_update.get(i)->asFloat());
     }, false);
 }
 

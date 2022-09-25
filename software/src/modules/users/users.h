@@ -21,9 +21,11 @@
 
 #include "config.h"
 
-class Users {
+class Users
+{
 public:
-    Users();
+    Users(){}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();
@@ -31,6 +33,7 @@ public:
     uint8_t next_user_id();
     void rename_user(uint8_t user_id, const char *username, const char *display_name);
     void remove_from_username_file(uint8_t user_id);
+    void search_next_free_user();
 
     #define TRIGGER_CHARGE_ANY 0
     #define TRIGGER_CHARGE_START 1

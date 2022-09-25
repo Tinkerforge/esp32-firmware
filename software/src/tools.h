@@ -27,6 +27,11 @@
 
 #include "bindings/hal_common.h"
 
+#include "esp_log.h"
+
+const char *tf_reset_reason();
+
+bool a_after_b(uint32_t a, uint32_t b);
 bool deadline_elapsed(uint32_t deadline_ms);
 
 void read_efuses(uint32_t *ret_uid_num, char *ret_uid_str, char *ret_passphrase);
@@ -44,6 +49,35 @@ int compare_version(uint8_t left_major, uint8_t left_minor, uint8_t left_patch,
 
 bool clock_synced(struct timeval *out_tv_now);
 
+uint32_t timestamp_minutes();
+
 bool for_file_in(const char *dir, bool (*callback)(File *open_file), bool skip_directories = true);
 
 void remove_directory(const char *path);
+
+bool is_in_subnet(IPAddress ip, IPAddress subnet, IPAddress to_check);
+bool is_valid_subnet_mask(IPAddress subnet);
+
+void led_blink(int8_t led_pin, int interval, int blinks_per_interval, int off_time_ms);
+
+uint16_t internet_checksum(const uint8_t* data, size_t length);
+
+class LogSilencer
+{
+public:
+    LogSilencer();
+    ~LogSilencer();
+
+    vprintf_like_t old_fn;
+};
+
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+
+class StringWithSettableLength : public String
+{
+public:
+    void setLength(int len)
+    {
+        setLen(len);
+    }
+};

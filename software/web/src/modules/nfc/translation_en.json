@@ -8,7 +8,6 @@
         "content": {
             "nfc": "NFC Unlock",
 
-            "save": "Save",
             "authorized_tags": "Authorized tags",
 
             "add_tag_modal_title": "Add tag",

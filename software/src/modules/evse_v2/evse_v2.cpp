@@ -31,7 +31,6 @@
 extern EventLog logger;
 
 extern TaskScheduler task_scheduler;
-extern TF_HAL hal;
 extern WebServer server;
 
 extern API api;
@@ -42,7 +41,7 @@ extern bool firmware_update_allowed;
 #define SLOT_ACTIVE(x) ((bool)(x & 0x01))
 #define SLOT_CLEAR_ON_DISCONNECT(x) ((bool)(x & 0x02))
 
-EVSEV2::EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE 2.0", std::bind(&EVSEV2::setup_evse, this))
+void EVSEV2::pre_setup()
 {
     // States
     evse_state = Config::Object({
@@ -132,7 +131,7 @@ EVSEV2::EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE 2.0", std::bind(&EVSEV
     });
 
     Config *evse_charging_slot = new Config{Config::Object({
-        {"max_current", Config::Uint8(0)},
+        {"max_current", Config::Uint32(0)},
         {"active", Config::Bool(false)},
         {"clear_on_disconnect", Config::Bool(false)}
     })};
@@ -184,6 +183,10 @@ EVSEV2::EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE 2.0", std::bind(&EVSEV
 
     evse_control_pilot_configuration_update = Config::Object({
         {"control_pilot", Config::Uint8(0)}
+    });
+
+    evse_control_pilot_connected = Config::Object({
+        {"connected", Config::Bool(true)}
     });
 
     evse_auto_start_charging = Config::Object({
@@ -341,6 +344,13 @@ void EVSEV2::setup()
     if (!device_found)
         return;
 
+    task_scheduler.scheduleOnce([this](){
+        uint32_t press_time = 0;
+        tf_evse_v2_get_button_press_boot_time(&device, true, &press_time);
+        if (press_time != 0)
+            logger.printfln("Reset boot button press time");
+    }, 40000);
+
     // Get all data once before announcing the EVSE feature.
     update_all_data();
     api.addFeature("evse");
@@ -472,24 +482,24 @@ String EVSEV2::get_evse_debug_line()
     uint32_t uptime;
 
     int rc = tf_evse_v2_get_all_data_1(&device,
-        &iec61851_state,
-        &charger_state,
-        &contactor_state,
-        &contactor_error,
-        &allowed_charging_current,
-        &error_state,
-        &lock_state,
-        &dc_fault_current_state,
-        &jumper_configuration,
-        &has_lock_switch,
-        &evse_version,
-        &energy_meter_type,
-        &power,
-        &energy_relative,
-        &energy_absolute,
-        phases_active,
-        phases_connected,
-        error_count);
+                                       &iec61851_state,
+                                       &charger_state,
+                                       &contactor_state,
+                                       &contactor_error,
+                                       &allowed_charging_current,
+                                       &error_state,
+                                       &lock_state,
+                                       &dc_fault_current_state,
+                                       &jumper_configuration,
+                                       &has_lock_switch,
+                                       &evse_version,
+                                       &energy_meter_type,
+                                       &power,
+                                       &energy_relative,
+                                       &energy_absolute,
+                                       phases_active,
+                                       phases_connected,
+                                       error_count);
 
     if (rc != TF_E_OK) {
         logger.printfln("get_all_data_1 %d", rc);
@@ -498,15 +508,15 @@ String EVSEV2::get_evse_debug_line()
     }
 
     rc = tf_evse_v2_get_low_level_state(&device,
-        &led_state,
-        &cp_pwm_duty_cycle,
-        adc_values,
-        voltages,
-        resistances,
-        gpio,
-        &charging_time,
-        &time_since_state_change,
-        &uptime);
+                                        &led_state,
+                                        &cp_pwm_duty_cycle,
+                                        adc_values,
+                                        voltages,
+                                        resistances,
+                                        gpio,
+                                        &charging_time,
+                                        &time_since_state_change,
+                                        &uptime);
 
     if (rc != TF_E_OK) {
         logger.printfln("ll_state %d", rc);
@@ -678,6 +688,7 @@ void EVSEV2::register_urls()
     api.addState("evse/button_state", &evse_button_state, {}, 250);
     api.addState("evse/slots", &evse_slots, {}, 1000);
     api.addState("evse/indicator_led", &evse_indicator_led, {}, 1000);
+    api.addState("evse/control_pilot_connected", &evse_control_pilot_connected, {}, 1000);
 
     // Actions
     api.addCommand("evse/reset_dc_fault_current_state", &evse_reset_dc_fault_current_state, {}, [this](){
@@ -698,14 +709,14 @@ void EVSEV2::register_urls()
             ws.pushRawStateUpdate(this->get_evse_debug_header(), "evse/debug_header");
             debug = true;
         }, 0);
-        request.send(200);
+        return request.send(200);
     });
 
     server.on("/evse/stop_debug", HTTP_GET, [this](WebServerRequest request){
         task_scheduler.scheduleOnce([this](){
             debug = false;
         }, 0);
-        request.send(200);
+        return request.send(200);
     });
 #endif
 
@@ -745,7 +756,7 @@ void EVSEV2::register_urls()
     api.addState("evse/control_pilot_configuration", &evse_control_pilot_configuration, {}, 1000);
     api.addCommand("evse/control_pilot_configuration_update", &evse_control_pilot_configuration_update, {}, [this](){
         auto cp = evse_control_pilot_configuration_update.get("control_pilot")->asUint();
-        int rc = tf_evse_v2_set_control_pilot_configuration(&device, cp);
+        int rc = tf_evse_v2_set_control_pilot_configuration(&device, cp, nullptr);
         logger.printfln("updating control pilot to %u. rc %d", cp, rc);
         is_in_bootloader(rc);
     }, true);
@@ -886,7 +897,7 @@ void EVSEV2::update_all_data()
     bool phases_connected[3];
     uint32_t error_count[6];
 
-    // get_all_data_2 - 18 byte
+    // get_all_data_2 - 19 byte
     uint8_t shutdown_input_configuration;
     uint8_t input_configuration;
     uint8_t output_configuration;
@@ -897,6 +908,7 @@ void EVSEV2::update_all_data()
     uint32_t button_release_time;
     bool button_pressed;
     uint8_t control_pilot;
+    bool control_pilot_connected;
 
     // get_low_level_state - 57 byte
     uint8_t led_state;
@@ -914,24 +926,24 @@ void EVSEV2::update_all_data()
     uint8_t active_and_clear_on_disconnect[20];
 
     int rc = tf_evse_v2_get_all_data_1(&device,
-        &iec61851_state,
-        &charger_state,
-        &contactor_state,
-        &contactor_error,
-        &allowed_charging_current,
-        &error_state,
-        &lock_state,
-        &dc_fault_current_state,
-        &jumper_configuration,
-        &has_lock_switch,
-        &evse_version,
-        &energy_meter_type,
-        &power,
-        &energy_relative,
-        &energy_absolute,
-        phases_active,
-        phases_connected,
-        error_count);
+                                       &iec61851_state,
+                                       &charger_state,
+                                       &contactor_state,
+                                       &contactor_error,
+                                       &allowed_charging_current,
+                                       &error_state,
+                                       &lock_state,
+                                       &dc_fault_current_state,
+                                       &jumper_configuration,
+                                       &has_lock_switch,
+                                       &evse_version,
+                                       &energy_meter_type,
+                                       &power,
+                                       &energy_relative,
+                                       &energy_absolute,
+                                       phases_active,
+                                       phases_connected,
+                                       error_count);
 
     if (rc != TF_E_OK) {
         logger.printfln("all_data_1 %d", rc);
@@ -940,16 +952,17 @@ void EVSEV2::update_all_data()
     }
 
     rc = tf_evse_v2_get_all_data_2(&device,
-        &shutdown_input_configuration,
-        &input_configuration,
-        &output_configuration,
-        &indication,
-        &duration,
-        &button_configuration,
-        &button_press_time,
-        &button_release_time,
-        &button_pressed,
-        &control_pilot);
+                                   &shutdown_input_configuration,
+                                   &input_configuration,
+                                   &output_configuration,
+                                   &indication,
+                                   &duration,
+                                   &button_configuration,
+                                   &button_press_time,
+                                   &button_release_time,
+                                   &button_pressed,
+                                   &control_pilot,
+                                   &control_pilot_connected);
 
     if (rc != TF_E_OK) {
         logger.printfln("all_data_2 %d", rc);
@@ -958,15 +971,15 @@ void EVSEV2::update_all_data()
     }
 
     rc = tf_evse_v2_get_low_level_state(&device,
-        &led_state,
-        &cp_pwm_duty_cycle,
-        adc_values,
-        voltages,
-        resistances,
-        gpio,
-        &charging_time,
-        &time_since_state_change,
-        &uptime);
+                                        &led_state,
+                                        &cp_pwm_duty_cycle,
+                                        adc_values,
+                                        voltages,
+                                        resistances,
+                                        gpio,
+                                        &charging_time,
+                                        &time_since_state_change,
+                                        &uptime);
 
     if (rc != TF_E_OK) {
         logger.printfln("ll_state %d", rc);
@@ -974,9 +987,7 @@ void EVSEV2::update_all_data()
         return;
     }
 
-    rc = tf_evse_v2_get_all_charging_slots(&device,
-        max_current,
-        active_and_clear_on_disconnect);
+    rc = tf_evse_v2_get_all_charging_slots(&device, max_current, active_and_clear_on_disconnect);
 
     if (rc != TF_E_OK) {
         logger.printfln("slots %d", rc);
@@ -988,10 +999,11 @@ void EVSEV2::update_all_data()
     bool external_default_enabled;
     bool external_default_clear_on_disconnect;
 
-    rc = tf_evse_v2_get_charging_slot_default(&device, CHARGING_SLOT_EXTERNAL,
-        &external_default_current,
-        &external_default_enabled,
-        &external_default_clear_on_disconnect);
+    rc = tf_evse_v2_get_charging_slot_default(&device,
+                                              CHARGING_SLOT_EXTERNAL,
+                                              &external_default_current,
+                                              &external_default_enabled,
+                                              &external_default_clear_on_disconnect);
 
     if (rc != TF_E_OK) {
         logger.printfln("external slot default %d", rc);
@@ -1113,6 +1125,7 @@ void EVSEV2::update_all_data()
 
     // get_control_pilot
     evse_control_pilot_configuration.get("control_pilot")->updateUint(control_pilot);
+    evse_control_pilot_connected.get("connected")->updateBool(control_pilot_connected);
 
     // get_indicator_led
     evse_indicator_led.get("indication")->updateInt(indication);

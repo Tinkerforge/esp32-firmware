@@ -1,18 +1,34 @@
+/* esp32-firmware
+ * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
 import $ from "jquery";
 
 import "bootstrap";
 
-import feather = require("feather-icons");
-
-import Translator from '@andreasremdt/simple-translator';
-
+import * as feather from 'feather-icons';
 import * as util from "./ts/util";
-
 import * as API from "./ts/api";
+import { __, translate_data_i18n } from "./ts/translation";
+
+import { init_async_modal } from "./ts/components/async_modal";
 
 {{{module_imports}}}
-
-{{{translation_imports}}}
 
 interface Module {
     init(): void;
@@ -28,6 +44,11 @@ $('.navbar-collapse a').on("click", function () {
 
 let first_module_init = true;
 
+function show_page() {
+    $('#nav-list').removeAttr("style");
+    $('#main').removeAttr("style");
+}
+
 function update_modules() {
     let module_init = API.get('info/modules');
     for (let m of modules) {
@@ -37,10 +58,16 @@ function update_modules() {
     if (first_module_init) {
         let hash = window.location.hash;
         var elem = $(`a[href="${hash}"]`);
-        if (hash == "" || elem.length == 0 || elem.prop("hidden")) {
+        if (hash == "#meter") {
+            // FIXME: brute force solution to allow hidden meter module in
+            //        energy manager firmware. should be solved in a better way
+        }
+        else if (hash == "" || hash == '#status' || elem.length == 0 || elem.prop("hidden")) {
             window.location.hash = "#status";
+            show_page();
             return;
         }
+        elem.one('shown.bs.tab', show_page);
         elem.click();
         elem.parents(".nav-nested.collapse").collapse('show');
         first_module_init = false;
@@ -93,8 +120,7 @@ function login() {
 }
 
 function setup_normal() {
-    window.setTimeout(() => $('#nav-list').removeAttr("style"), 200);
-    window.setTimeout(() => $('#main').removeAttr("style"), 200);
+    window.setTimeout(show_page, 1000);
 
     $('#sidebar-login').prop('hidden', true);
     $('#sidebar-status').addClass('active');
@@ -104,8 +130,7 @@ function setup_normal() {
 }
 
 function setup_login() {
-    window.setTimeout(() => $('#nav-list').removeAttr("style"), 200);
-    window.setTimeout(() => $('#main').removeAttr("style"), 200);
+    window.setTimeout(show_page, 1000);
 
     $('#sidebar-status').prop('hidden', true);
     $('#sidebar-login').addClass('active');
@@ -138,27 +163,11 @@ function setup_login() {
 $(window).on('pageshow', (ev) => {
     util.ifLoggedInElse(setup_normal, setup_login);
 
+    init_async_modal();
+
     feather.replace();
 
-    $.ajaxSetup({
-        timeout: 5000
-    });
-
-    var translator = new Translator();
-
-{{{translation_adds}}}
-
-    translator.config.defaultLanguage = 'en';
-    for (let l of navigator.languages) {
-        let lang = l.substr(0, 2);
-        if (translator.languages.has(lang)) {
-            translator.config.defaultLanguage = lang;
-            break;
-        }
-        console.log("Sorry, got no translation for " + l);
-    }
-
-    translator.translatePageTo();
+    translate_data_i18n();
 
     $('a[data-toggle="tab"]').on('show.bs.tab', () => {
         $('a[data-toggle="tab"]').not(<Element>event.target).removeClass("active");
@@ -169,7 +178,11 @@ $(window).on('pageshow', (ev) => {
         if (event.oldURL != event.newURL) {
             let hash = window.location.hash;
             var elem = $(`a[href="${hash}"]`);
-            if (hash == "" || elem.length == 0 || elem.prop("hidden")) {
+            if (hash == "#meter") {
+                // FIXME: brute force solution to allow hidden meter module in
+                //        energy manager firmware. should be solved in a better way
+            }
+            else if (hash == "" || elem.length == 0/* || elem.prop("hidden")*/) {
                 window.location.hash = "#status";
                 return;
             }

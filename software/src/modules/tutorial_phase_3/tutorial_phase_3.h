@@ -21,9 +21,11 @@
 
 #include "config.h"
 
-class TutorialPhase3 {
+class TutorialPhase3
+{
 public:
-    TutorialPhase3();
+    TutorialPhase3(){}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();

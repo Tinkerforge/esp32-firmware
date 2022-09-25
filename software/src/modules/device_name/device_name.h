@@ -21,9 +21,11 @@
 
 #include "config.h"
 
-class DeviceName {
+class DeviceName
+{
 public:
-    DeviceName();
+    DeviceName(){}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();

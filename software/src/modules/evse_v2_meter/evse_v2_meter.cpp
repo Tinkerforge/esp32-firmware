@@ -30,22 +30,21 @@
 
 extern EventLog logger;
 
-extern TF_HAL hal;
 extern WebServer server;
 extern TaskScheduler task_scheduler;
 extern Config modules;
 
 extern API api;
 
-EVSEV2Meter::EVSEV2Meter()
+void EVSEV2Meter::pre_setup()
 {
 }
 
 void EVSEV2Meter::updateMeterValues()
 {
-    energy_meter.updateMeterValues(evse_v2.evse_energy_meter_values.get("power")->asFloat(),
-                                   evse_v2.evse_energy_meter_values.get("energy_rel")->asFloat(),
-                                   evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat());
+    meter.updateMeterValues(evse_v2.evse_energy_meter_values.get("power")->asFloat(),
+                            evse_v2.evse_energy_meter_values.get("energy_rel")->asFloat(),
+                            evse_v2.evse_energy_meter_values.get("energy_abs")->asFloat());
 
     bool phases_active[3];
     bool phases_connected[3];
@@ -56,7 +55,7 @@ void EVSEV2Meter::updateMeterValues()
     for (int i = 0; i < 3; ++i)
         phases_connected[i] = evse_v2.evse_energy_meter_values.get("phases_connected")->get(i)->asBool();
 
-    energy_meter.updateMeterPhases(phases_connected, phases_active);
+    meter.updateMeterPhases(phases_connected, phases_active);
 }
 
 void EVSEV2Meter::setupEVSE(bool update_module_initialized)
@@ -72,7 +71,7 @@ void EVSEV2Meter::setupEVSE(bool update_module_initialized)
         return;
     }
 
-    energy_meter.updateMeterState(2, meter_type);
+    meter.updateMeterState(2, meter_type);
 
     // We _have_ to update the meter values here:
     // Other modules may in their setup check if the meter feature is available
@@ -85,11 +84,11 @@ void EVSEV2Meter::setupEVSE(bool update_module_initialized)
 
     task_scheduler.scheduleWithFixedDelay([this](){
         uint16_t len;
-        float result[ALL_VALUES_COUNT] = {0};
+        float result[METER_ALL_VALUES_COUNT] = {0};
         if (tf_evse_v2_get_all_energy_meter_values(&evse_v2.device, result, &len) != TF_E_OK)
             return;
 
-        energy_meter.updateMeterAllValues(result);
+        meter.updateMeterAllValues(result);
     }, 1000, 1000);
 
     initialized = true;
@@ -115,7 +114,7 @@ void EVSEV2Meter::register_urls()
 {
     api.addState("meter/error_counters", &evse_v2.evse_energy_meter_errors, {}, 1000);
 
-    energy_meter.registerResetCallback([this]() {
+    meter.registerResetCallback([this]() {
         if (!initialized) {
             return;
         }

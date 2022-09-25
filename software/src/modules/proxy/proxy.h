@@ -22,9 +22,11 @@
 #include "net_arduino_esp32/net_arduino_esp32.h"
 #include "config.h"
 
-class Proxy {
+class Proxy
+{
 public:
-    Proxy();
+    Proxy(){}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();

@@ -13,6 +13,15 @@ interface Charger {
     error: number
 }
 
+interface ServCharger {
+    hostname: string;
+    ip: string;
+    display_name: string;
+    error: number;
+}
+
+export type scan_result = ServCharger[] | string;
+
 export interface state {
     state: number,
     uptime: number,
@@ -36,4 +45,8 @@ export interface config {
 
 export interface available_current {
     current: number
+}
+
+export interface scan {
+
 }

@@ -30,14 +30,13 @@
 
 extern EventLog logger;
 
-extern TF_HAL hal;
 extern WebServer server;
 extern TaskScheduler task_scheduler;
 extern Config modules;
 
 extern API api;
 
-EMMeter::EMMeter()
+void EMMeter::pre_setup()
 {
     errors = Config::Object({
         {"local_timeout", Config::Uint32(0)},
@@ -51,12 +50,11 @@ EMMeter::EMMeter()
 
 void EMMeter::updateMeterValues()
 {
-    float power = energy_manager.all_data.power;
-    energy_meter.updateMeterValues(energy_manager.all_data.power,
-                                   energy_manager.all_data.energy_relative,
-                                   energy_manager.all_data.energy_absolute);
+    meter.updateMeterValues(energy_manager.all_data.power,
+                            energy_manager.all_data.energy_relative,
+                            energy_manager.all_data.energy_absolute);
 
-    energy_meter.updateMeterPhases(energy_manager.all_data.phases_connected, energy_manager.all_data.phases_active);
+    meter.updateMeterPhases(energy_manager.all_data.phases_connected, energy_manager.all_data.phases_active);
 
     errors.get("local_timeout")->updateUint(energy_manager.all_data.error_count[0]);
     errors.get("global_timeout")->updateUint(energy_manager.all_data.error_count[1]);
@@ -79,7 +77,7 @@ void EMMeter::setupEM(bool update_module_initialized)
         return;
     }
 
-    energy_meter.updateMeterState(2, meter_type);
+    meter.updateMeterState(2, meter_type);
 
     // We _have_ to update the meter values here:
     // Other modules may in their setup check if the meter feature is available
@@ -92,11 +90,11 @@ void EMMeter::setupEM(bool update_module_initialized)
 
     task_scheduler.scheduleWithFixedDelay([this](){
         uint16_t len;
-        float result[ALL_VALUES_COUNT] = {0};
+        float result[METER_ALL_VALUES_COUNT] = {0};
         if (tf_warp_energy_manager_get_energy_meter_detailed_values(&energy_manager.device, result, &len) != TF_E_OK)
             return;
 
-        energy_meter.updateMeterAllValues(result);
+        meter.updateMeterAllValues(result);
     }, 1000, 1000);
 
     initialized = true;
@@ -122,7 +120,7 @@ void EMMeter::register_urls()
 {
     api.addState("meter/error_counters", &errors, {}, 1000);
 
-    energy_meter.registerResetCallback([this]() {
+    meter.registerResetCallback([this]() {
         if (!initialized) {
             return;
         }

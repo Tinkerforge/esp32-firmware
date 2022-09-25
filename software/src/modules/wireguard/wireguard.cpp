@@ -30,7 +30,8 @@ extern TaskScheduler task_scheduler;
 
 #include "mbedtls/base64.h"
 
-String check_key(String key, bool enable) {
+String check_key(String key, bool enable)
+{
     if (key.length() > 0) {
         if (key.length() != 44)
             return " had unexpected length. Expecting a base64 encoded string of length 44.";
@@ -40,16 +41,16 @@ String check_key(String key, bool enable) {
             return " contained unexpected character. Expecting a base64 encoded string.";
         if (written != 32)
             return " decodes to a key of unexpected length. Expecting a base64 encoded string that decodes to a 32 byte long key.";
-    } else if(enable) {
+    } else if (enable) {
         return " is empty, but Wireguard shall be enabed. Set this key to be able to enable Wireguard.";
     }
     return "";
 }
 
-Wireguard::Wireguard()
+void Wireguard::pre_setup()
 {
     config = ConfigRoot{Config::Object({
-        {"enable", Config::Bool(false)},
+        {"enabled", Config::Bool(false)},
         {"make_default_interface", Config::Bool(true)},
 
         {"internal_ip",      Config::Str("0.0.0.0", 7, 15)},
@@ -90,7 +91,7 @@ Wireguard::Wireguard()
             return "Failed to parse \"allowed_subnet\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
 
-        bool enable = cfg.get("enable")->asBool();
+        bool enable = cfg.get("enabled")->asBool();
         String private_key = cfg.get("private_key")->asString();
         String result = check_key(private_key, enable);
         if (result != "")
@@ -116,7 +117,8 @@ Wireguard::Wireguard()
     });
 }
 
-void Wireguard::start_wireguard() {
+void Wireguard::start_wireguard()
+{
     static bool done = false;
     if (done)
         return;
@@ -169,7 +171,7 @@ void Wireguard::setup()
 
     initialized = true;
 
-    if (!config.get("enable")->asBool())
+    if (!config.get("enabled")->asBool())
         return;
 
     logger.printfln("WireGuard enabled. Waiting for NTP time sync.");

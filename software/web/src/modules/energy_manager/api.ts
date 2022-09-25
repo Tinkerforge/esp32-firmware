@@ -17,8 +17,9 @@ export interface state {
 export interface config {
     excess_charging_enable: boolean,
     phase_switching: number,
-    mains_power_reception: number,
-    minimum_charging: number,
+    maximum_power_from_grid: number,
+    maximum_available_current: number,
+    minimum_current: number,
     relay_config: number,
     relay_config_if: number,
     relay_config_is: number,

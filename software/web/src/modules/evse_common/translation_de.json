@@ -90,16 +90,12 @@
             "charge_management_description_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
             "charge_management_enable": "Verlangt die Freigabe eines Lastmanagers (von diesem oder einem anderen WARP Charger) zum Laden",
 
-            "user_description": "Benutzer&shy;autorisierung",
-            "user_description_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
-            "user_enable": "Verlangt eine Benutzerautorisierung (z.B. per NFC-Tag) zum Laden",
-
             "external_description": "Externe Steuerung",
             "external_description_muted": "<a href=\"https://www.warp-charger.com/evcc.html?v=2\">siehe Einrichtungs-Tutorial für Details</a>",
             "external_enable": "Erlaubt einer externen Steuerung (z.B. <a href=\"https://evcc.io/\">EVCC</a>) diese Wallbox zu steuern",
 
             "reset_description": "Aktionen",
-            "reset_description_muted": "{{{empty_text}}}",
+            "reset_description_muted": "",
             "reset_evse": "Neu starten",
             "reflash_evse": "Neu flashen",
             "charging_time": "Lädt seit",
@@ -108,7 +104,7 @@
             "slot_1": "Typ-2-Ladekabel",
             "slot_2": "Abschalteingang",
             "slot_3": "Konfigurierbarer Eingang",
-            "slot_4": "Autostart bzw. Taster",
+            "slot_4": "Autostart oder Taster",
             "slot_5": "Konfiguration",
             "slot_6": "Benutzer",
             "slot_7": "Lastmanagement",
@@ -126,10 +122,10 @@
             "loading_event_log": "Lade Event-Log",
             "loading_event_log_failed": "Laden des Event-Logs fehlgeschlagen",
             "starting_debug": "Aktiviere Aufzeichnung des Ladecontroller-Logs.",
-            "starting_debug_failed": "Aktivierung der Aufzeichung des Ladecontroller-Logs fehlgeschlagen.",
+            "starting_debug_failed": "Aktivierung der Aufzeichnung des Ladecontroller-Logs fehlgeschlagen.",
             "debug_running": "Aufzeichnung läuft. Tab nicht schließen!",
             "debug_stop_failed": "Stoppen der Aufzeichnung des Ladecontroller-Logs fehlgeschlagen.",
-            "debug_stopped": "Aufzeichung des Ladecontroller-Logs gestoppt.",
+            "debug_stopped": "Aufzeichnung des Ladecontroller-Logs gestoppt.",
             "debug_done": "Abgeschlossen.",
 
             "by": "durch",
@@ -146,16 +142,10 @@
             "slot_1": "Ladekabel",
             "slot_2": "Abschalteingang",
             "slot_3": "konfigurierbaren Eingang",
-            "slot_4": "Autostart bzw. Taster",
             "slot_5": "Konfiguration",
             "slot_6": "Benutzer",
             "slot_7": "Lastmanagement",
-            "slot_8": "externe Steuerung",
-
-            "meter_type_0": "Kein Stromzähler angeschlossen",
-            "meter_type_1": "SDM72",
-            "meter_type_2": "SDM630",
-            "meter_type_3": "SDM72V2"
+            "slot_8": "externe Steuerung"
         }
     }
 }

@@ -38,9 +38,11 @@ class NFC : public DeviceModule<TF_NFC,
                                 tf_nfc_create,
                                 tf_nfc_get_bootloader_mode,
                                 tf_nfc_reset,
-                                tf_nfc_destroy> {
+                                tf_nfc_destroy>
+{
 public:
-    NFC();
+    NFC() : DeviceModule("nfc", "NFC", "NFC", std::bind(&NFC::setup_nfc, this)) {}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();

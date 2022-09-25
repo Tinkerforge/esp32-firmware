@@ -1,5 +1,3 @@
-Import('env')
-
 import sys
 
 if sys.hexversion < 0x3060000:
@@ -7,30 +5,85 @@ if sys.hexversion < 0x3060000:
     sys.exit(1)
 
 import os
+import json
+import shutil
 from urllib.request import urlretrieve
 from zipfile import ZipFile
 
-PACKAGES = [
-    ('arduino-esp32', 'warp-2.0.2', 'https://github.com/Tinkerforge/arduino-esp32'),
-    ('arduino-esp32', 'warp2-2.0.2', 'https://github.com/Tinkerforge/arduino-esp32'),
-]
+VERSION = '1.0.0'
 
-print('Updating local packages')
+print('Updating packages')
 
-os.makedirs('packages', exist_ok=True)
+with open('packages/config.json', 'r') as f:
+    config_json = json.loads(f.read())
 
-for package in PACKAGES:
-    base, branch, url = package
-    name = '{0}-{1}'.format(base, branch)
-    marker_path = os.path.join('packages', name, 'tinkerforge.marker')
+config = {}
 
-    if os.path.exists(marker_path):
-        print('Skipping {0}'.format(name))
+for c in config_json:
+    config[c['base'] + '#' + c['branch']] = c
+    config[c['base'] + '-' + c['branch']] = c
+
+for name in sorted(os.listdir('packages')):
+    if name == 'config.json':
         continue
 
-    zip_path = os.path.join('packages', '{0}.zip'.format(name))
+    if name.endswith('-dev'):
+        print('Ignoring {0}'.format(name))
+        continue
 
-    if not os.path.exists(zip_path):
+    if name not in config:
+        print('Removing {0}'.format(name))
+
+        path = os.path.join('packages', name)
+
+        try:
+            shutil.rmtree(path)
+        except NotADirectoryError:
+            os.remove(path)
+
+        continue
+
+    active = config[name]['active']
+
+    if not active:
+        package_path = os.path.join('packages', name)
+        package_json_path = os.path.join('packages', name, 'package.json')
+
+        with open(os.path.join(package_json_path), 'r') as f:
+            package_json = f.read()
+
+        shutil.rmtree(package_path)
+        os.makedirs(package_path)
+
+        with open(package_json_path, 'w') as f:
+            f.write(package_json)
+
+        with open(os.path.join(package_path, '.gitignore'), 'w') as f:
+            if '#' in name:
+                f.write('*\n!package.json\n')
+            else:
+                f.write('*\n')
+    else:
+        tinkerforge_json_path = os.path.join('packages', name, 'tinkerforge.json')
+
+        try:
+            with open(tinkerforge_json_path, 'r') as f:
+                tinkerforge_json = json.loads(f.read())
+
+                if tinkerforge_json.get('version') == VERSION:
+                    print('Skipping {0}'.format(name))
+                    continue
+        except FileNotFoundError:
+            pass
+
+        base = config[name]['base']
+        branch = config[name]['branch']
+        url = config[name]['url']
+        zip_path = os.path.join('packages', '{0}.zip'.format(name))
+
+        if os.path.exists(zip_path):
+            os.remove(zip_path)
+
         print('Downloading {0}'.format(name))
 
         try:
@@ -42,17 +95,40 @@ for package in PACKAGES:
 
         os.rename(zip_path + '.tmp', zip_path)
 
-    print('Unpacking {0}'.format(name))
+        print('Unpacking {0}'.format(name))
 
-    with ZipFile(zip_path) as f:
-        prefix = name + '/'
+        try:
+            shutil.rmtree(os.path.join('packages', name))
+        except FileNotFoundError:
+            pass
 
-        for n in f.namelist():
-            if not n.startswith(prefix):
-                print('Error: {0} has malformed entry {1}'.format(name, n))
-                sys.exit(1)
+        with ZipFile(zip_path) as zf:
+            prefix_zip = base + '-' + branch + '/'
+            prefix_fs = base + '#' + branch + '/'
 
-        f.extractall('packages')
+            for n in zf.namelist():
+                if not n.startswith(prefix_zip):
+                    print('Error: {0} has malformed entry {1}'.format(name, n))
+                    sys.exit(1)
 
-    with open(marker_path, 'w') as f:
-        pass
+                with zf.open(n) as f:
+                    data = f.read()
+
+                path = os.path.join('packages', n.replace(prefix_zip, prefix_fs))
+                path_dir, path_file = os.path.split(path)
+
+                os.makedirs(path_dir, exist_ok=True)
+
+                if len(path_file) == 0:
+                    continue
+
+                with open(path, 'wb') as f:
+                    f.write(data)
+
+        with open(os.path.join('packages', name, '.gitignore'), 'w') as f:
+            f.write('*\n!package.json\n')
+
+        with open(tinkerforge_json_path, 'w') as f:
+            f.write(json.dumps({'version': VERSION}))
+
+        os.remove(zip_path)

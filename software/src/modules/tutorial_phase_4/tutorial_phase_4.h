@@ -23,9 +23,11 @@
 
 #include "bindings/bricklet_rgb_led_button.h"
 
-class TutorialPhase4 {
+class TutorialPhase4
+{
 public:
-    TutorialPhase4();
+    TutorialPhase4(){}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();

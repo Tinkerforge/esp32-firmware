@@ -36,15 +36,16 @@ def main():
     ts_files = []
     for root, dirs, files in os.walk("./src/ts"):
         for name in files:
-            if not name.endswith(".ts"):
+            if not name.endswith(".ts") and not name.endswith(".tsx"):
                 continue
             ts_files.append(os.path.join(root, name))
 
     for root, dirs, files in os.walk("./src/typings"):
         for name in files:
-            if not name.endswith(".ts"):
+            if not name.endswith(".ts") and not name.endswith(".tsx"):
                 continue
             ts_files.append(os.path.join(root, name))
+
     ts_files.append(os.path.join("src", "main.ts"))
 
     for frontend_module in sys.argv[1:]:
@@ -53,15 +54,13 @@ def main():
         if os.path.exists(os.path.join(folder, "main.ts")):
             ts_files.append(os.path.join(folder, "main.ts"))
 
-        if os.path.exists(os.path.join(folder, "translation_de.ts")):
-            ts_files.append(os.path.join(folder, "translation_de.ts"))
+        if os.path.exists(os.path.join(folder, "main.tsx")):
+            ts_files.append(os.path.join(folder, "main.tsx"))
 
-        if os.path.exists(os.path.join(folder, "translation_en.ts")):
-            ts_files.append(os.path.join(folder, "translation_en.ts"))
+    used_placeholders, template_literals = util.parse_ts_files(ts_files)
 
-    translation, used_placeholders, template_literals = util.parse_ts_files(ts_files)
-
-    assert len(translation) > 0
+    with open('./src/ts/translation.json', 'r') as f:
+        translation = json.loads(f.read())
 
     with open("./src/index.html") as f:
         content = f.read()

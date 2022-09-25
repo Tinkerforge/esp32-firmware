@@ -21,9 +21,11 @@
 
 #include "config.h"
 
-class NTP {
+class NTP
+{
 public:
-    NTP();
+    NTP(){}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();

@@ -28,7 +28,7 @@
 extern TaskScheduler task_scheduler;
 extern API api;
 
-Debug::Debug()
+void Debug::pre_setup()
 {
 }
 

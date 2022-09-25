@@ -417,8 +417,9 @@ static TF_TFPHeader enumerate_request_header = {
 #endif
 
 int tf_hal_tick(TF_HAL *hal, uint32_t timeout_us) {
+    tf_hal_callback_tick(hal, timeout_us);
+
 #if TF_NET_ENABLE != 0
-    uint32_t deadline_us = tf_hal_current_time_us(hal) + timeout_us;
     TF_HALCommon *hal_common = tf_hal_get_common(hal);
     TF_Net *net = hal_common->net;
     uint8_t ignored_error_code;
@@ -432,28 +433,41 @@ int tf_hal_tick(TF_HAL *hal, uint32_t timeout_us) {
             if (hal_common->tfps[i].send_enumerate_request
              && hal_common->tfps[i].spitfp->send_buf[0] == 0) {
                 tf_tfp_inject_packet(&hal_common->tfps[i], &enumerate_request_header, enumerate_request);
-                // TODO: What timeout to use here? If decided, use return value to check for the timeout, maybe increase an error count
-                result = tf_tfp_send_packet(&hal_common->tfps[i], false, deadline_us, &ignored_error_code, &ignored_length);
 
-                if (result & TF_TICK_PACKET_SENT) {
-                    hal_common->tfps[i].send_enumerate_request = false;
+                // If we have to send a packet to a bricklet, allow blocking for 5 ms.
+                // This is the SPITFP message timeout
+                // If a bricklet takes longer to respond, we have to resend this message.
+                // This means that tf_hal_tick can block
+                uint32_t inner_deadline_us = tf_hal_current_time_us(hal) + 5000;
+
+                result = tf_tfp_send_packet(&hal_common->tfps[i], false, inner_deadline_us, &ignored_error_code, &ignored_length);
+                result = tf_tfp_finish_send(&hal_common->tfps[i], result, inner_deadline_us);
+                bool timeout = (result & TF_E_TIMEOUT) == TF_E_TIMEOUT;
+                if (timeout) {
+                    ++hal_common->tfps[i].spitfp_timeout_counter;
+                    if (hal_common->tfps[i].spitfp_timeout_counter == 10)
+                        // We've tried 10 times to send a packet to this port without response.
+                        // Drop the packet to allow progress in the future.
+                        timeout = false;
                 }
 
-                (void)! tf_tfp_finish_send(&hal_common->tfps[i], result, deadline_us); // ignore result for now: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66425#c34
+                if (!timeout)
+                    hal_common->tfps[i].spitfp_timeout_counter = 0;
+
+                hal_common->tfps[i].send_enumerate_request = timeout;
             }
         }
 
         TF_TFPHeader header;
         int packet_id = -1;
 
-        while (!tf_hal_deadline_elapsed(hal, deadline_us) && tf_net_get_available_tfp_header(net, &header, &packet_id)) {
+        if (tf_net_get_available_tfp_header(net, &header, &packet_id)) {
             uint8_t pid = (uint8_t)packet_id;
 
             // We should never get callback packets from the network side of things. Drop them.
             if (header.seq_num == 0) {
                 tf_net_drop_packet(net, pid);
-
-                continue;
+                return TF_E_OK;
             }
 
             // Handle enumerate requests
@@ -470,7 +484,7 @@ int tf_hal_tick(TF_HAL *hal, uint32_t timeout_us) {
 
                 tf_net_drop_packet(net, pid);
 
-                continue;
+                return TF_E_OK;
             }
 
             bool device_found = false;
@@ -494,10 +508,28 @@ int tf_hal_tick(TF_HAL *hal, uint32_t timeout_us) {
                 tf_net_get_packet(net, pid, buf);
                 tf_tfp_inject_packet(&hal_common->tfps[i], &header, buf);
 
-                // TODO: What timeout to use here? If decided, use return value to check for the timeout, maybe increase an error count
-                result = tf_tfp_send_packet(&hal_common->tfps[i], false, deadline_us, &ignored_error_code, &ignored_length);
-                (void)! tf_tfp_finish_send(&hal_common->tfps[i], result, deadline_us); // ignore result for now: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66425#c34
-                dispatched = true;
+                // If we have to send a packet to a bricklet, allow blocking for 5 ms.
+                // This is the SPITFP message timeout
+                // If a bricklet takes longer to respond, we have to resend this message.
+                // This means that tf_hal_tick can block
+                uint32_t inner_deadline_us = tf_hal_current_time_us(hal) + 5000;
+
+                result = tf_tfp_send_packet(&hal_common->tfps[i], false, inner_deadline_us, &ignored_error_code, &ignored_length);
+                result = tf_tfp_finish_send(&hal_common->tfps[i], result, inner_deadline_us);
+
+                bool timeout = (result & TF_E_TIMEOUT) == TF_E_TIMEOUT;
+                if (timeout) {
+                    ++hal_common->tfps[i].spitfp_timeout_counter;
+                    if (hal_common->tfps[i].spitfp_timeout_counter == 10)
+                        // We've tried 10 times to send a packet to this port without response.
+                        // Drop the packet to allow progress in the future.
+                        timeout = false;
+                }
+
+                if (!timeout)
+                    hal_common->tfps[i].spitfp_timeout_counter = 0;
+
+                dispatched = !timeout;
 
                 break;
             }
@@ -525,8 +557,6 @@ int tf_hal_tick(TF_HAL *hal, uint32_t timeout_us) {
         }
     }
 #endif
-
-    tf_hal_callback_tick(hal, timeout_us);
 
     return TF_E_OK;
 }

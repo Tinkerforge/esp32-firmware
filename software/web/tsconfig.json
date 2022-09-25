@@ -2,6 +2,20 @@
     "compilerOptions": {
         "noImplicitAny": true,
         "esModuleInterop": true,
-        "target": "es5"
-    }
+        "target": "es6",
+        "jsx": "react",
+        "jsxFactory": "h",
+        "jsxFragmentFactory": "Fragment",
+        "noEmit": true,
+        "moduleResolution": "node",
+
+        "skipLibCheck": true,
+        "baseUrl": "./",
+        "paths": {
+            "react": ["./node_modules/preact/compat/"],
+            "react-dom": ["./node_modules/preact/compat/"],
+            "jquery": ["./node_modules/jquery/dist/jquery.slim.min"]
+        }
+    },
+    "include": ["src/typings/*.ts", "src/main.ts"]
 }

@@ -22,9 +22,11 @@
 #include "config.h"
 #include "device_module.h"
 
-class EMMeterConfig {
+class EMMeterConfig
+{
 public:
-    EMMeterConfig();
+    EMMeterConfig(){}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();

@@ -31,7 +31,7 @@ extern WebServer server;
 extern API api;
 extern EventLog logger;
 
-Authentication::Authentication()
+void Authentication::pre_setup()
 {
     authentication_config = ConfigRoot{Config::Object({
         {"enable_auth", Config::Bool(false)},
@@ -85,7 +85,7 @@ void Authentication::setup()
 
 void Authentication::register_urls()
 {
-    api.addPersistentConfig("authentication/config", &authentication_config, {"digest_hash"}, 10000);
+    api.addPersistentConfig("authentication/config", &authentication_config, {"digest_hash"}, 1000);
 }
 
 void Authentication::loop()

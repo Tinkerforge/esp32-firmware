@@ -31,7 +31,6 @@
 extern EventLog logger;
 
 extern TaskScheduler task_scheduler;
-extern TF_HAL hal;
 extern WebServer server;
 
 extern API api;
@@ -40,7 +39,7 @@ const char* ENERGY_MANAGER_INPUT_CONFIG_STR[]      = {"input3_config",      "inp
 const char* ENERGY_MANAGER_INPUT_CONFIG_IF_STR[]   = {"input3_config_if",   "input4_config_if"};
 const char* ENERGY_MANAGER_INPUT_CONFIG_THEN_STR[] = {"input3_config_then", "input4_config_then"};
 
-EnergyManager::EnergyManager() : DeviceModule("energy_manager", "Energy Manager", "Energy Manager", std::bind(&EnergyManager::setup_energy_manager, this))
+void EnergyManager::pre_setup()
 {
     // States
     energy_manager_state = Config::Object({
@@ -72,9 +71,10 @@ EnergyManager::EnergyManager() : DeviceModule("energy_manager", "Energy Manager"
     // Config
     energy_manager_config = Config::Object({
         {"excess_charging_enable", Config::Bool(false)},
-        {"phase_switching", Config::Uint8(2)},
-        {"mains_power_reception", Config::Float(22)},
-        {"minimum_charging", Config::Float(1.4)},
+        {"phase_switching", Config::Uint8(PHASE_SWITCHING_AUTOMATIC)},
+        {"maximum_power_from_grid", Config::Int32(0)},
+        {"maximum_available_current", Config::Uint32(0)}, // Keep in sync with charge_manager.cpp
+        {"minimum_current", Config::Uint(6000, 6000, 32000)}, // Keep in sync with charge_manager.cpp
         {"relay_config", Config::Uint8(0)},
         {"relay_config_if", Config::Uint8(0)},
         {"relay_config_is", Config::Uint8(0)},
@@ -96,7 +96,7 @@ void EnergyManager::apply_defaults()
 void EnergyManager::handle_relay_config_if_input(uint8_t input)
 {
     if (input > 1) {
-        logger.printfln("Unkown handle_relay_config_if input: %u", input);
+        logger.printfln("Unknown handle_relay_config_if input: %u", input);
         return;
     }
 
@@ -152,11 +152,11 @@ void EnergyManager::update_io()
             case RELAY_CONFIG_IF_INPUT4:          handle_relay_config_if_input(1);          break;
             case RELAY_CONFIG_IF_PHASE_SWITCHING: handle_relay_config_if_phase_switching(); break;
             case RELAY_CONFIG_IF_METER:           handle_relay_config_if_meter();           break;
-            default: logger.printfln("Unkown RELAY_CONFIG_IF: %u", relay_config_if);        break;
+            default: logger.printfln("Unknown RELAY_CONFIG_IF: %u", relay_config_if);        break;
         }
     }
 
-    // We "over-sample" the two imputs compared to the other data in the all_data struct
+    // We "over-sample" the two inputs compared to the other data in the all_data struct
     // to make sure that we can always react in a timely manner to input changes
     int rc = tf_warp_energy_manager_get_input(&device, all_data.input);
     if (rc != TF_E_OK) {
@@ -170,7 +170,7 @@ void EnergyManager::update_io()
             case INPUT_CONFIG_DEACTIVATED:                                                         break;
             case INPUT_CONFIG_RULES_BASED:     handle_input_config_rule_based(input);              break;
             case INPUT_CONFIG_CONTACTOR_CHECK: handle_input_config_contactor_check(input);         break;
-            default: logger.printfln("Unkown INPUT_CONFIG: %u for input %u", input_config, input); break;
+            default: logger.printfln("Unknown INPUT_CONFIG: %u for input %u", input_config, input); break;
         }
     }
 }
@@ -182,23 +182,22 @@ void EnergyManager::update_energy()
         return;
     }
 
-    const float power_at_house_connection = all_data.power;
-    const float power_max_from_grid       = energy_manager_config_in_use.get("mains_power_reception")->asFloat();
-    const float power_minimum_charging    = energy_manager_config_in_use.get("minimum_charging")->asFloat();
-    const bool  is_3phase                 = all_data.contactor_value;
+    const int32_t power_at_house_connection = all_data.power * 1000; // watt
+    const int32_t power_max_from_grid       = energy_manager_config_in_use.get("maximum_power_from_grid")->asInt(); // watt
+    const int32_t power_minimum_current     = energy_manager_config_in_use.get("minimum_current")->asUint(); // ampere
+    const bool    is_3phase                 = all_data.contactor_value;
+    const int32_t power_allowed             = power_max_from_grid - ((power_at_house_connection < 0) ? power_at_house_connection : 0); // watt
 
-    const float power_allowed             = power_max_from_grid - ((power_at_house_connection < 0) ? power_at_house_connection : 0);
-
-    if (power_allowed < power_minimum_charging) {
+    if (power_allowed < power_minimum_current) {
         // TODO: Turn charging off if running
         return;
     }
 
     uint32_t ma_allowed;
     if (is_3phase) { // 3phase
-        ma_allowed = (uint32_t)(1000 * power_allowed * 10000 / (3 * 230.0));
+        ma_allowed = power_allowed * 1000 / (3 * 230);
     } else { // 1phase
-        ma_allowed = (uint32_t)(1000 * power_allowed * 10000 / (1 * 230.0));
+        ma_allowed = power_allowed * 1000 / (1 * 230);
     }
 
     // We can not charge with less than 6A.
@@ -326,14 +325,14 @@ void EnergyManager::register_urls()
             ws.pushRawStateUpdate(this->get_energy_manager_debug_header(), "energy_manager/debug_header");
             debug = true;
         }, 0);
-        request.send(200);
+        return request.send(200);
     });
 
     server.on("/energy_manager/stop_debug", HTTP_GET, [this](WebServerRequest request){
         task_scheduler.scheduleOnce([this](){
             debug = false;
         }, 0);
-        request.send(200);
+        return request.send(200);
     });
 #endif
 

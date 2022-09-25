@@ -1,3 +1,3 @@
-import feather = require("feather-icons");
+import * as feather from 'feather-icons';
 
 export default feather;

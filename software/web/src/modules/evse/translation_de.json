@@ -2,8 +2,8 @@
     "evse": {
         "content": {
             "error_calibration": "Kalibrierung",
-            "adc_names": "PE-CP, PE-PP",
-            "voltage_names": "PE-CP, PE-PP, Maximalspannung PE-CP",
+            "adc_names": "CP/PE vor Widerstand (PWM High), CP/PE nach Widerstand (PWM High)<br/>CP/PE vor Widerstand (PWM Low), CP/PE nach Widerstand (PWM Low)<br/>PP/PE, +12V Rail<br/>-12V Rail",
+            "voltage_names": "CP/PE vor Widerstand (PWM High), CP/PE nach Widerstand (PWM High)<br/>CP/PE vor Widerstand (PWM Low), CP/PE nach Widerstand (PWM Low)<br/>PP/PE, +12V Rail<br/>-12V Rail",
             "gpio_names": "Eingang, Ausgang, Motoreingangsschalter, Relais, Motorfehler",
             "user_calibration": "Kalibrierungsstatus",
             "user_calibration_state_disabled": "Werkseinstellungen",
@@ -13,14 +13,15 @@
             "resistance_2700": "Widerstands&shy;kalibrierung 2700Ω",
             "resistance_880": "Widerstands&shy;kalibrierung 880Ω",
             "user_calibration_description": "Kalibrierung",
-            "user_calibration_description_muted": "{{{empty_text}}}",
+            "user_calibration_description_muted": "",
             "user_calibration_download": "Herunterladen",
             "user_calibration_browse": "Hochladen",
             "user_calibration_select_file": "Kalibrierungsdatei auswählen",
             "user_calibration_reset": "Zurücksetzen"
         },
         "script": {
-            "user_calibration_upload_failed": "Aktualisieren der Kalibrierung fehlgeschlagen"
+            "user_calibration_upload_failed": "Aktualisieren der Kalibrierung fehlgeschlagen",
+            "slot_4": "Autostart, Taster oder Schlüsselschalter"
         }
     }
 }

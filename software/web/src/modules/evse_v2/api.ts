@@ -32,6 +32,10 @@ export interface control_pilot_configuration {
     control_pilot: number
 }
 
+export interface control_pilot_connected {
+    connected: boolean
+}
+
 export interface reset_dc_fault_current_state {
     password: number
 }

@@ -182,7 +182,7 @@ body {
   @media (min-width: 576px) /*and (max-width: 767.98px)*/ {
         .sticky-under-top {
             position: sticky;
-            top: 66px;
+            top: $navbar-height;
             z-index: 1010;
             background: white;
         }

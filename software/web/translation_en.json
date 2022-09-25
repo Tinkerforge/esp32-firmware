@@ -13,13 +13,53 @@
         "abort": "Abort",
         "reboot": "Reboot"
     },
+    "component": {
+        "config_page_header": {
+            "save": "Save"
+        },
+        "input_password": {
+            "to_be_cleared": "Will be cleared on save.",
+            "unchanged": "unchanged"
+        },
+        "ip_configuration": {
+            "ip_configuration": "IP configuration",
+            "dhcp": "automatic (DHCP)",
+            "static": "static",
+
+            "static_ip": "IP address",
+            "subnet": "Subnet mask",
+            "subnet_placeholder": "Select subnet mask...",
+            "gateway": "Gateway",
+            "dns": "DNS server",
+            "dns2": "Alternative DNS server",
+            "dns2_muted": "optional",
+            "static_ip_invalid": "The IP address must have four groups between 0 and 255 separated with a dot. For example 10.0.0.2",
+            "subnet_invalid": "The subnet mask must have four groups between 0 and 255 separated with a dot. For example 255.255.255.0",
+            "gateway_invalid": "The gateway IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1",
+            "dns_invalid": "The DNS server IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1, or be empty.",
+            "dns2_invalid": "The alternative DNS server IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1, or be empty.",
+            "gateway_out_of_subnet": "Gateway address not in the configured subnet",
+            "subnet_captures_localhost": "Specified IP address and subnet mask not allowed: Would capture localhost (127.0.0.1)."
+        }
+    },
     "util": {
         "reboot_title": "Rebooting...",
         "reboot_text": "The web interface will be reloaded automatically after the restart.",
         "event_connection_lost_title": null,
         "event_connection_lost": "Connection will be reestablished...",
         "to_be_cleared": "Will be cleared on save.",
-        "unchanged": "unchanged"
+        "unchanged": "unchanged",
+        "subnet_invalid": "The subnet mask must have four groups between 0 and 255 separated with a dot. For example 255.255.255.0",
+        "gateway_invalid": "The gateway IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1",
+        "gateway_out_of_subnet": "Gateway address not in the configured subnet",
+        "subnet_captures_localhost": "Specified IP address and subnet mask not allowed: Would capture localhost (127.0.0.1).",
+
+        "upload_abort": "Upload aborted",
+        "upload_error": "Upload error",
+        "upload_timeout": "Upload timed out",
+        "download_abort": "Download aborted",
+        "download_error": "Download error",
+        "download_timeout": "Download timed out"
     },
     "days": "days",
     "day": "day"

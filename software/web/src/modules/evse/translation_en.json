@@ -2,8 +2,8 @@
     "evse": {
         "content": {
             "error_calibration": "Calibration error",
-            "adc_names": "CP/PE before resistor (PWM high), CP/PE after resistor (PWM high)</br>CP/PE before resistor (PWM low), CP/PE after resistor (PWM low)</br>PP/PE, +12V rail</br>-12V rail",
-            "voltage_names": "CP/PE before resistor (PWM high), CP/PE after resistor (PWM high)</br>CP/PE before resistor (PWM low), CP/PE after resistor (PWM low)</br>PP/PE, +12V rail</br>-12V rail",
+            "adc_names": "CP/PE before resistor (PWM high), CP/PE after resistor (PWM high)<br/>CP/PE before resistor (PWM low), CP/PE after resistor (PWM low)<br/>PP/PE, +12V rail<br/>-12V rail",
+            "voltage_names": "CP/PE before resistor (PWM high), CP/PE after resistor (PWM high)<br/>CP/PE before resistor (PWM low), CP/PE after resistor (PWM low)<br/>PP/PE, +12V rail<br/>-12V rail",
             "gpio_names": "input, output, motor input switch, relay, motor fault",
             "user_calibration": "Calibration state",
             "user_calibration_state_disabled": "Factory settings",
@@ -13,14 +13,15 @@
             "resistance_2700": "Resistance calibration 2700Ω",
             "resistance_880": "Resistance calibration 880Ω",
             "user_calibration_description": "Calibration",
-            "user_calibration_description_muted": "{{{empty_text}}}",
+            "user_calibration_description_muted": "",
             "user_calibration_download": "Download",
             "user_calibration_browse": "Upload",
             "user_calibration_select_file": "Select calibration file",
             "user_calibration_reset": "Reset"
         },
         "script": {
-            "user_calibration_upload_failed": "Updating the calibration failed"
+            "user_calibration_upload_failed": "Updating the calibration failed",
+            "slot_4": "Auto-start, button or key switch"
         }
     }
 }
