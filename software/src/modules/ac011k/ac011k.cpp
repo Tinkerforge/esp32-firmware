@@ -391,13 +391,13 @@ void AC011K::sendChargingLimit3(uint8_t currentLimit, byte sendSequenceNumber) {
 
 AC011K::AC011K()
 {
-    evse_config = ConfigRoot{Config::Object({
+    evse_config = Config::Object({
         {"auto_start_charging", Config::Bool(true)},
         {"managed", Config::Bool(true)},
         {"max_current_configured", Config::Uint16(4)}
-    })};
+    });
 
-    evse_state = ConfigRoot{Config::Object({
+    evse_state = Config::Object({
         {"iec61851_state", Config::Uint8(0)},
         {"charger_state", Config::Uint8(0)},
         {"GD_state", Config::Uint8(0)},
@@ -410,14 +410,14 @@ AC011K::AC011K()
         {"time_since_state_change", Config::Uint32(0)},
         {"last_state_change", Config::Uint32(0)},
         {"uptime", Config::Uint32(0)}
-    })};
+    });
 
-    evse_privcomm = ConfigRoot{Config::Object({
+    evse_privcomm = Config::Object({
         {"RX", Config::Str("", 0, 1000)},
         {"TX", Config::Str("", 0, 1000)}
-    })};
+    });
 
-    evse_hardware_configuration = ConfigRoot{Config::Object({
+    evse_hardware_configuration = Config::Object({
         {"Hardware", Config::Str("", 0, 20)},
         {"FirmwareVersion", Config::Str("", 0, 20)},
         {"SerialNumber", Config::Str("", 0, 20)},
@@ -426,32 +426,48 @@ AC011K::AC011K()
         {"GDFirmwareVersion", Config::Uint16(0)},
         {"jumper_configuration", Config::Uint8(3)}, // 3 = 16 Ampere = 11KW for the EN+ wallbox
         {"has_lock_switch", Config::Bool(false)}    // no key lock switch
-    })};
+    });
 
-    evse_low_level_state = ConfigRoot{Config::Object ({
-        {"low_level_mode_enabled", Config::Bool(false)},
+    evse_low_level_state = Config::Object ({
         {"led_state", Config::Uint8(0)},
         {"cp_pwm_duty_cycle", Config::Uint16(0)},
         {"adc_values", Config::Array({
                 Config::Uint16(0),
                 Config::Uint16(0),
-            }, new Config{Config::Uint16(0)}, 2, 2, Config::type_id<Config::ConfUint>())
+                Config::Uint16(0),
+                Config::Uint16(0),
+                Config::Uint16(0),
+                Config::Uint16(0),
+                Config::Uint16(0),
+            }, new Config{Config::Uint16(0)}, 7, 7, Config::type_id<Config::ConfUint>())
         },
         {"voltages", Config::Array({
                 Config::Int16(0),
                 Config::Int16(0),
                 Config::Int16(0),
-            }, new Config{Config::Int16(0)}, 3, 3, Config::type_id<Config::ConfInt>())
+                Config::Int16(0),
+                Config::Int16(0),
+                Config::Int16(0),
+                Config::Int16(0),
+            }, new Config{Config::Int16(0)}, 7, 7, Config::type_id<Config::ConfInt>())
         },
         {"resistances", Config::Array({
                 Config::Uint32(0),
                 Config::Uint32(0),
             }, new Config{Config::Uint32(0)}, 2, 2, Config::type_id<Config::ConfUint>())
         },
-        {"gpio", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false),Config::Bool(false), Config::Bool(false)}, new Config{Config::Bool(false)}, 5, 5, Config::type_id<Config::ConfBool>())},
-        {"hardware_version", Config::Uint8(0)},
+        {"gpio", Config::Array({
+            Config::Bool(false), Config::Bool(false),  Config::Bool(false),Config::Bool(false),
+            Config::Bool(false), Config::Bool(false),  Config::Bool(false),Config::Bool(false),
+            Config::Bool(false), Config::Bool(false),  Config::Bool(false),Config::Bool(false),
+            Config::Bool(false), Config::Bool(false),  Config::Bool(false),Config::Bool(false),
+            Config::Bool(false), Config::Bool(false),  Config::Bool(false),Config::Bool(false),
+            Config::Bool(false), Config::Bool(false),  Config::Bool(false),Config::Bool(false),
+            }, new Config{Config::Bool(false)}, 24, 24, Config::type_id<Config::ConfBool>())},
         {"charging_time", Config::Uint32(0)},
-    })};
+        {"time_since_state_change", Config::Uint32(0)},
+        {"uptime", Config::Uint32(0)}
+    });
 
     evse_energy_meter_values = Config::Object({
         {"power", Config::Float(0)},
@@ -474,6 +490,12 @@ AC011K::AC011K()
         {"slave_device_failure", Config::Uint32(0)},
     });
 
+    /* evse_button_state = Config::Object({ */
+    /*     {"button_press_time", Config::Uint32(0)}, */
+    /*     {"button_release_time", Config::Uint32(0)}, */
+    /*     {"button_pressed", Config::Bool(false)}, */
+    /* }); */
+
     Config *evse_charging_slot = new Config{Config::Object({
         {"max_current", Config::Uint8(0)},
         {"active", Config::Bool(false)},
@@ -488,23 +510,23 @@ AC011K::AC011K()
     for (int i = 0; i < CHARGING_SLOT_COUNT; ++i)
         evse_slots.add();
 
-    evse_max_charging_current = ConfigRoot{Config::Object ({
+    evse_max_charging_current = Config::Object ({
         {"max_current_configured", Config::Uint16(7)},
         {"max_current_incoming_cable", Config::Uint16(16000)},
         {"max_current_outgoing_cable", Config::Uint16(16000)},
         {"max_current_managed", Config::Uint16(5)},
-    })};
+    });
 
-    evse_auto_start_charging = ConfigRoot{Config::Object({
+    evse_auto_start_charging = Config::Object({
         {"auto_start_charging", Config::Bool(true)}
-    })};
+    });
 
-    evse_auto_start_charging_update = ConfigRoot{Config::Object({
+    evse_auto_start_charging_update = Config::Object({
         {"auto_start_charging", Config::Bool(true)}
-    })};
-    evse_current_limit = ConfigRoot{Config::Object({
+    });
+    evse_current_limit = Config::Object({
         {"current", Config::Uint(32000, 0000, 32000)}
-    })};
+    });
 
     evse_global_current = Config::Object({
         {"current", Config::Uint16(32000)}
@@ -512,26 +534,26 @@ AC011K::AC011K()
 
     evse_global_current_update = evse_global_current;
 
-    evse_stop_charging = ConfigRoot{Config::Null()};
-    evse_start_charging = ConfigRoot{Config::Null()};
+    evse_stop_charging = Config::Null();
+    evse_start_charging = Config::Null();
 
     evse_management_enabled = Config::Object({
         {"enabled", Config::Bool(false)}
     });
     evse_management_enabled_update = evse_management_enabled;
 
-    evse_managed_current = ConfigRoot{Config::Object ({
+    evse_managed_current = Config::Object ({
         {"current", Config::Uint16(0)}
-    })};
+    });
 
-    evse_managed = ConfigRoot{Config::Object({
+    evse_managed = Config::Object({
         {"managed", Config::Bool(false)}
-    })};
+    });
 
-    evse_managed_update = ConfigRoot{Config::Object({
+    evse_managed_update = Config::Object({
         {"managed", Config::Bool(false)},
         {"password", Config::Uint32(0)}
-    })};
+    });
 
     evse_management_current = Config::Object({
         {"current", Config::Uint16(32000)}
@@ -539,10 +561,21 @@ AC011K::AC011K()
 
     evse_management_current_update = evse_management_current;
 
+    /* evse_external_current = Config::Object({ */
+    /*     {"current", Config::Uint16(32000)} */
+    /* }); */
+
+    /* evse_external_current_update = evse_external_current; */
+
+    /* evse_external_clear_on_disconnect = Config::Object({ */
+    /*     {"clear_on_disconnect", Config::Bool(false)} */
+    /* }); */
+
+    /* evse_external_clear_on_disconnect_update = evse_external_clear_on_disconnect; */
 }
 
 int AC011K::bs_evse_start_charging() {
-    evse_state.get("allowed_charging_current")->updateUint(11000);//TODO this is just a test and does not belong here at all
+    //evse_state.get("allowed_charging_current")->updateUint(11000);//TODO this is just a test and does not belong here at all
     uint8_t allowed_charging_current = uint8_t(evse_state.get("allowed_charging_current")->asUint()/1000);
     logger.printfln("EVSE start charging with max %d Ampere", allowed_charging_current);
 
@@ -557,6 +590,7 @@ int AC011K::bs_evse_start_charging() {
         case 538:
         case 805:
         case 812:
+        case 888:
         case 1435:
             sendCommand(StartChargingA6, sizeof(StartChargingA6), sendSequenceNumber++);
             break;
@@ -612,6 +646,7 @@ int AC011K::bs_evse_set_max_charging_current(uint16_t max_current) {
         case 538:
         case 805:
         case 812:
+        case 888:
         case 1435:
             sendChargingLimit1(allowed_charging_current, sendSequenceNumber++);
     }
@@ -1103,8 +1138,8 @@ void AC011K::loop()
                 if(!evse_hardware_configuration.get("initialized")->asBool()) {
                     initialized =
                         ((evse_hardware_configuration.get("Hardware")->asString().compareTo("AC011K-AU-25") == 0 || evse_hardware_configuration.get("Hardware")->asString().compareTo("AC011K-AE-25") == 0)
-                         && (evse_hardware_configuration.get("FirmwareVersion")->asString().startsWith("1.1.", 0)  // known working: 1.1.27, 1.1.212, 1.1.258, 1.1.525, 1.1.538, 1.1.805, 1.1.812
-                             && evse_hardware_configuration.get("FirmwareVersion")->asString().substring(4).toInt() <= 812  // higest known working version (we assume earlier versions work as well)
+                         && (evse_hardware_configuration.get("FirmwareVersion")->asString().startsWith("1.1.", 0)  // known working: 1.1.27, 1.1.212, 1.1.258, 1.1.525, 1.1.538, 1.1.805, 1.1.812, 1.1.888
+                             && evse_hardware_configuration.get("FirmwareVersion")->asString().substring(4).toInt() <= 888  // higest known working version (we assume earlier versions work as well)
                             )
                             || (evse_hardware_configuration.get("FirmwareVersion")->asString().startsWith("1.0.", 0)  // known working: 1.0.1435
                                 && evse_hardware_configuration.get("FirmwareVersion")->asString().substring(4).toInt() <= 1435  // higest known working version (we assume earlier versions work as well)
@@ -1317,7 +1352,7 @@ void AC011K::loop()
             case 0x09:
                 logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Charging stop reason: %d - %s",
                     cmd, seq, len, crc,
-                    PrivCommRxBuffer[77], stop_reason_text[PrivCommRxBuffer[77]]);  // "stopreson": 1 = Remote, 3 = EVDisconnected
+                    PrivCommRxBuffer[77], PrivCommRxBuffer[77]<=3 ? stop_reason_text[PrivCommRxBuffer[77]] : stop_reason_text[0]);  // "stopreson": 1 = Remote, 3 = EVDisconnected
                 logger.printfln("start:%s stop:%s meter:%dWh value1:%d value2:%d value3:%d",
                     timeStr(PrivCommRxBuffer+80),
                     timeStr(PrivCommRxBuffer+86),
@@ -1713,7 +1748,7 @@ void AC011K::update_evse_low_level_state() {
         gpio[3] = false;
         gpio[4] = false;
 
-    evse_low_level_state.get("low_level_mode_enabled")->updateBool(low_level_mode_enabled);
+    //evse_low_level_state.get("low_level_mode_enabled")->updateBool(low_level_mode_enabled);
     evse_low_level_state.get("led_state")->updateUint(led_state);
     evse_low_level_state.get("cp_pwm_duty_cycle")->updateUint(cp_pwm_duty_cycle);
 
