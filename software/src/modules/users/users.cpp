@@ -28,6 +28,8 @@
 #include "digest_auth.h"
 #include <cmath>
 
+#include <memory>
+
 #define USERNAME_LENGTH 32
 #define DISPLAY_NAME_LENGTH 32
 #define USERNAME_ENTRY_LENGTH (USERNAME_LENGTH + DISPLAY_NAME_LENGTH)
@@ -120,8 +122,8 @@ void set_user_current(uint16_t current)
 
 float get_energy()
 {
-    bool meter_avail = energy_meter.state.get("state")->asUint() == 2;
-    return !meter_avail ? NAN : energy_meter.values.get("energy_abs")->asFloat();
+    bool meter_avail = meter.state.get("state")->asUint() == 2;
+    return !meter_avail ? NAN : meter.values.get("energy_abs")->asFloat();
 }
 
 #define USER_SLOT_INFO_VERSION 1
@@ -190,7 +192,7 @@ bool read_user_slot_info(UserSlotInfo *result)
 
 volatile bool user_api_blocked = false;
 
-Users::Users()
+void Users::pre_setup()
 {
     user_config = Config::Object({
         {"users", Config::Array(
@@ -348,7 +350,7 @@ void Users::setup()
         bool success = read_user_slot_info(&info);
         if (success) {
             if (!charge_start_tracked) {
-                charge_tracker.startCharge(info.timestamp_minutes, info.meter_start, info.user_id, info.evse_uptime_on_start, CHARGE_TRACKER_AUTH_TYPE_LOST, nullptr);
+                charge_tracker.startCharge(info.timestamp_minutes, info.meter_start, info.user_id, info.evse_uptime_on_start, CHARGE_TRACKER_AUTH_TYPE_LOST, Config::ConfVariant{});
             } else {
                 // Don't track a start, but restore the current_charge API anyway.
                 charge_tracker.current_charge.get("user_id")->updateInt(info.user_id);
@@ -358,7 +360,7 @@ void Users::setup()
                 charge_tracker.current_charge.get("authorization_type")->updateUint(CHARGE_TRACKER_AUTH_TYPE_LOST);
             }
         } else if (!charge_start_tracked)
-            this->start_charging(0, 32000, CHARGE_TRACKER_AUTH_TYPE_NONE, nullptr);
+            this->start_charging(0, 32000, CHARGE_TRACKER_AUTH_TYPE_NONE, Config::ConfVariant{});
     }
 
     task_scheduler.scheduleWithFixedDelay([this](){
@@ -383,7 +385,7 @@ void Users::setup()
             case CHARGER_STATE_READY_TO_CHARGE:
             case CHARGER_STATE_CHARGING:
                 if (!get_user_slot()->get("active")->asBool())
-                    this->start_charging(0, 32000, CHARGE_TRACKER_AUTH_TYPE_NONE, nullptr);
+                    this->start_charging(0, 32000, CHARGE_TRACKER_AUTH_TYPE_NONE, Config::ConfVariant{});
                 break;
             case CHARGER_STATE_ERROR:
                 break;
@@ -557,7 +559,7 @@ void Users::register_urls()
         return "";
     }, true);
 
-    api.addState("users/config", &user_config, {"digest_hash"}, 10000);
+    api.addState("users/config", &user_config, {"digest_hash"}, 1000);
     api.addCommand("users/add", &add, {"digest_hash"}, [this](){
         user_config.get("users")->add();
         Config *user = (Config *)user_config.get("users")->get(user_config.get("users")->count() - 1);
@@ -627,18 +629,15 @@ void Users::register_urls()
     server.on("/users/all_usernames", HTTP_GET, [this](WebServerRequest request) {
         //std::lock_guard<std::mutex> lock{records_mutex};
         size_t len = MAX_PASSIVE_USERS * USERNAME_ENTRY_LENGTH;
-        char *buf = (char *)malloc(len);
+        auto buf = std::unique_ptr<char[]>(new char[len]);
         if (buf == nullptr) {
-            request.send(507);
-            return;
+            return request.send(507);
         }
 
         File f = LittleFS.open(USERNAME_FILE, "r");
 
-        size_t read = f.read((uint8_t *)buf, len);
-        request.send(200, "application/octet-stream", buf, read);
-
-        free(buf);
+        size_t read = f.read((uint8_t *)buf.get(), len);
+        return request.send(200, "application/octet-stream", buf.get(), read);
     });
 }
 

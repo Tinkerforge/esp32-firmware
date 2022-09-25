@@ -25,7 +25,8 @@
 class WS : public IAPIBackend
 {
 public:
-    WS();
+    WS() : web_sockets() {}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();

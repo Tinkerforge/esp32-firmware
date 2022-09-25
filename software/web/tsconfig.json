@@ -7,7 +7,15 @@
         "jsxFactory": "h",
         "jsxFragmentFactory": "Fragment",
         "noEmit": true,
-        "moduleResolution": "node"
+        "moduleResolution": "node",
+
+        "skipLibCheck": true,
+        "baseUrl": "./",
+        "paths": {
+            "react": ["./node_modules/preact/compat/"],
+            "react-dom": ["./node_modules/preact/compat/"],
+            "jquery": ["./node_modules/jquery/dist/jquery.slim.min"]
+        }
     },
     "include": ["src/typings/*.ts", "src/main.ts"]
 }

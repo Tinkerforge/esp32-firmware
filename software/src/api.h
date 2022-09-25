@@ -65,8 +65,9 @@ public:
 class API
 {
 public:
-    API();
+    API() {}
 
+    void pre_setup();
     void setup();
     void loop();
 

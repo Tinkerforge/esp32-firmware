@@ -36,7 +36,8 @@ enum class POTI_POS {
 class PowerCycleTester
 {
 public:
-    PowerCycleTester();
+    PowerCycleTester(){}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();

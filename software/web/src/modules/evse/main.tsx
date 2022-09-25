@@ -26,7 +26,7 @@ import * as API from "../../ts/api";
 
 import { h, render } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
-import { PageHeader } from "../../ts/page_header";
+import { PageHeader } from "../../ts/components/page_header";
 
 render(<PageHeader title={__("evse.content.evse")} />, $('#evse_header')[0]);
 
@@ -145,17 +145,6 @@ function update_evse_user_calibration() {
     $('#resistance_880').val(c.resistance_880.join(", "));
 }
 
-function update_evse_managed() {
-    let x = API.get('evse/management_enabled');
-    $('#evse_charge_management').prop("checked", x.enabled);
-}
-
-
-function update_evse_user() {
-    let x = API.get('evse/user_enabled');
-    $('#evse_user').prop("checked", x.enabled);
-}
-
 
 function update_evse_external() {
     let x = API.get('evse/external_enabled');
@@ -243,76 +232,75 @@ function allow_debug(b: boolean) {
     }
 }
 
-function debug_start() {
-    debug_log = "";
-    let status = $('#debug_label')[0] as HTMLInputElement;
+async function get_debug_report_and_event_log(status: HTMLInputElement) {
     status.value = __("evse.script.loading_debug_report");
-    allow_debug(false);
-    $.get("/debug_report")
-        .fail(() => {
-            status.value = __("evse.script.loading_debug_report_failed");
-            allow_debug(true);
-        })
-        .done((result) => {
-            debug_log += JSON.stringify(result) + "\n\n";
 
-            status.value = __("evse.script.loading_event_log");
+    try {
+        debug_log += await util.download("/debug_report").then(blob => blob.text());
+        debug_log += "\n\n";
+    } catch {
+        status.value = __("evse.script.loading_debug_report_failed");
+        allow_debug(true);
+        return false;
+    }
 
-            $.get("/event_log")
-                .fail(() => {
-                    status.value = __("evse.script.loading_event_log_failed");
-                    allow_debug(true);
-                })
-                .done((result) => {
-                    debug_log += result + "\n";
+    status.value = __("evse.script.loading_event_log");
 
-                    status.value = __("evse.script.starting_debug");
+    try {
+        debug_log += await util.download("/event_log").then(blob => blob.text());
+        debug_log += "\n";
+    } catch {
+        status.value = __("evse.script.loading_event_log_failed");
+        allow_debug(true);
+        return false;
+    }
 
-                    $.get("/evse/start_debug")
-                        .fail(() => {
-                            status.value = __("evse.script.starting_debug_failed");
-                            allow_debug(true);
-                        })
-                        .done((result) => {
-                            status.value = __("evse.script.debug_running");
-                        });
-                });
-        });
+    return true;
 }
 
+async function debug_start() {
+    debug_log = "";
+    let status = $('#debug_label')[0] as HTMLInputElement;
+    allow_debug(false);
 
-function debug_stop() {
+    if (!await get_debug_report_and_event_log(status))
+        return;
+
+    status.value = __("evse.script.starting_debug");
+
+    try {
+        await util.download("/evse/start_debug");
+    } catch {
+        status.value = __("evse.script.starting_debug_failed");
+        allow_debug(true);
+        return;
+    }
+
+    status.value = __("evse.script.debug_running");
+}
+
+async function debug_stop() {
     let status = $('#debug_label')[0] as HTMLInputElement;
 
     allow_debug(true);
 
-    $.get("/evse/stop_debug")
-        .fail(() => {
-            status.value = __("evse.script.debug_stop_failed");
-        })
-        .done((result) => {
-            status.value = __("evse.script.debug_stopped");
-            $.get("/debug_report")
-                .fail(() => {
-                    status.value = __("evse.script.loading_debug_report_failed");
-                })
-                .done((result) => {
-                    debug_log += "\n" + JSON.stringify(result) + "\n\n";
+    try {
+        await util.download("/evse/stop_debug");
+    } catch {
+        status.value = __("evse.script.debug_stop_failed");
+        return;
+    }
 
-                    status.value = __("evse.script.loading_event_log");
+    debug_log += "\n\n";
 
-                    $.get("/event_log")
-                        .fail(() => {
-                            status.value = __("evse.script.loading_event_log_failed");
-                        })
-                        .done((result) => {
-                            debug_log += result + "\n";
-                            status.value = __("evse.script.debug_done");
+    status.value = __("evse.script.debug_stopped");
 
-                            util.downloadToFile(debug_log, "evse-debug-log", "txt", "text/plain");
-                        });
-                });
-        });
+    if (!await get_debug_report_and_event_log(status))
+        return;
+
+    status.value = __("evse.script.debug_done");
+
+    util.downloadToFile(debug_log, "evse-debug-log", "txt", "text/plain");
 }
 
 let status_plus_minus_timeout: number = null;
@@ -388,16 +376,6 @@ export function init() {
     $("#debug_stop").on("click", debug_stop);
 
     allow_debug(true);
-
-    $('#evse_charge_management').on("change", () => {
-        let enable = $('#evse_charge_management').is(":checked");
-        API.save('evse/management_enabled', {"enabled": enable}, __("evse.script.save_failed"));
-    });
-
-    $('#evse_user').on("change", () => {
-        let enable = $('#evse_user').is(":checked");
-        API.save('evse/user_enabled', {"enabled": enable}, __("evse.script.save_failed"));
-    });
 
     $('#evse_external').on("change", () => {
         let enable = $('#evse_external').is(":checked");
@@ -480,8 +458,6 @@ export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('evse/state', update_evse_low_level_state);
     source.addEventListener('evse/hardware_configuration', update_evse_hardware_configuration);
     source.addEventListener('evse/auto_start_charging', update_evse_auto_start_charging);
-    source.addEventListener("evse/management_enabled", update_evse_managed);
-    source.addEventListener("evse/user_enabled", update_evse_user);
     source.addEventListener("evse/external_enabled", update_evse_external);
     source.addEventListener("evse/slots", update_evse_slots);
     source.addEventListener("evse/user_calibration", update_evse_user_calibration);

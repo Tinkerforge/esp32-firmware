@@ -4,7 +4,7 @@
             "energy_manager": "Energy Manager"
         },
         "navbar": {
-            "energy_manager": "Energy Manager"
+            "energy_manager": "General"
         },
         "content": {
             "energy_manager": "Energy Manager",
@@ -29,8 +29,10 @@
             "relay": "FIXME",
             "inputs": "FIXME",
             "meter": "FIXME",
-            "always_one_phase": "FIXME",
-            "always_three_phase": "FIXME",
+            "always_one_phase_with_contactor": "FIXME",
+            "always_one_phase_without_contactor": "FIXME",
+            "always_three_phase_with_contactor": "FIXME",
+            "always_three_phase_without_contactor": "FIXME",
             "one_phase": "FIXME",
             "three_phase": "FIXME",
             "automatic": "FIXME",
@@ -41,8 +43,12 @@
             "extern": "FIXME",
             "input3_config": "FIXME",
             "input4_config": "FIXME",
-            "mains_power_reception": "FIXME",
-            "minimum_charging": "FIXME",
+            "maximum_power_from_grid": "FIXME",
+            "maximum_power_from_grid_muted": "FIXME",
+            "maximum_available_current": "FIXME",
+            "maximum_available_current_muted": "FIXME",
+            "minimum_current": "FIXME",
+            "minimum_current_muted": "FIXME",
             "phase_switching_config": "FIXME",
             "relay_config": "FIXME",
             "rules": "FIXME",
@@ -58,8 +64,8 @@
             "input4": "FIXME",
             "open": "FIXME",
             "phase_switching": "FIXME",
-            "greater0": "&gte; 0 kW",
-            "smaller0": "&lte; 0 kW"
+            "greater0": "≥ 0 kW",
+            "smaller0": "≤ 0 kW"
         },
         "script": {
             "loading_debug_report": "FIXME",

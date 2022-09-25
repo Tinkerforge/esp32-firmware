@@ -36,6 +36,11 @@ bool compare(const Task &a, const Task &b)
     return a.next_deadline_ms >= b.next_deadline_ms;
 }
 
+void TaskScheduler::pre_setup()
+{
+
+}
+
 void TaskScheduler::setup()
 {
     initialized = true;

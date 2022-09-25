@@ -27,7 +27,7 @@
 extern API api;
 extern EventLog logger;
 
-TutorialPhase2::TutorialPhase2()
+void TutorialPhase2::pre_setup()
 {
 }
 

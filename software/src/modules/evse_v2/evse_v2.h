@@ -62,7 +62,8 @@ class EVSEV2 : public DeviceModule<TF_EVSEV2,
                                    tf_evse_v2_destroy>
 {
 public:
-    EVSEV2();
+    EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE 2.0", std::bind(&EVSEV2::setup_evse, this)) {}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();
@@ -92,6 +93,7 @@ public:
     ConfigRoot evse_button_state;
     ConfigRoot evse_slots;
     ConfigRoot evse_indicator_led;
+    ConfigRoot evse_control_pilot_connected;
     ConfigRoot evse_reset_dc_fault_current_state;
     ConfigRoot evse_stop_charging;
     ConfigRoot evse_start_charging;

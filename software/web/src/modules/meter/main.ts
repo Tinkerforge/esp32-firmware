@@ -51,70 +51,80 @@ function update_meter_phases() {
 let graph_update_interval: number = null;
 let status_interval: number = null;
 
-function update_live_meter() {
-    $.get("/meter/live").done(function (result) {
-        let values = result["samples"];
-        let sps = result["samples_per_second"];
-        let labels = [];
+async function update_live_meter() {
+    let result = null;
+    try{
+        result = JSON.parse(await util.download("/meter/live").then(blob => blob.text()));
+    } catch {
+        return;
+    }
 
-        let now = Date.now();
-        let start = now - 1000 * values.length / sps;
-        let last_minute = -1;
-        for(let i = 0; i < values.length + 1; ++i) {
-            let d = new Date(start + i * (1000 * (1/sps)));
-            if(d.getSeconds() == 0 && d.getMinutes() != last_minute) {
-                labels[i] = d.toLocaleTimeString(navigator.language, {hour: '2-digit', minute: '2-digit', hour12: false});
-                last_minute = d.getMinutes();
-            }
-            else {
-                labels[i] = null;
-            }
+    let values = result["samples"];
+    let sps = result["samples_per_second"];
+    let labels = [];
+
+    let now = Date.now();
+    let start = now - 1000 * values.length / sps;
+    let last_minute = -1;
+    for(let i = 0; i < values.length + 1; ++i) {
+        let d = new Date(start + i * (1000 * (1/sps)));
+        if(d.getSeconds() == 0 && d.getMinutes() != last_minute) {
+            labels[i] = d.toLocaleTimeString(navigator.language, {hour: '2-digit', minute: '2-digit', hour12: false});
+            last_minute = d.getMinutes();
         }
+        else {
+            labels[i] = null;
+        }
+    }
 
-        let data = {
-            labels: labels,
-            series: [
-                values
-            ]
-        };
-        meter_chart.update(data);
-    });
+    let data = {
+        labels: labels,
+        series: [
+            values
+        ]
+    };
+    meter_chart.update(data);
 }
 
-function update_history_meter() {
-    $.get("/meter/history").done(function (values: Number[]) {
-        const HISTORY_MINUTE_INTERVAL = 4;
-        const VALUE_COUNT = 48 * (60 / HISTORY_MINUTE_INTERVAL);
-        const LABEL_COUNT = window.innerWidth < 500 ? 5 : 9;
-        const VALUES_PER_LABEL = VALUE_COUNT / (LABEL_COUNT - 1); // - 1 for the last label that has no values
+async function update_history_meter() {
+    let values = null;
+    try {
+        values = JSON.parse(await util.download("/meter/history").then(blob => blob.text()));
+    } catch {
+        return;
+    }
 
-        if (values.length != VALUE_COUNT) {
-            console.log("Unexpected number of values to plot!");
-            return;
+    const HISTORY_MINUTE_INTERVAL = 4;
+    const VALUE_COUNT = 48 * (60 / HISTORY_MINUTE_INTERVAL);
+    const LABEL_COUNT = window.innerWidth < 500 ? 5 : 9;
+    const VALUES_PER_LABEL = VALUE_COUNT / (LABEL_COUNT - 1); // - 1 for the last label that has no values
+
+    if (values.length != VALUE_COUNT) {
+        console.log("Unexpected number of values to plot!");
+        return;
+    }
+
+    let labels = [];
+
+    let now = Date.now();
+    let start = now - 1000 * 60 * 60 * 48;
+    for(let i = 0; i < values.length + 1; ++i) {
+        if (i % VALUES_PER_LABEL == 0) {
+            let d = new Date(start + i * (1000 * 60 * HISTORY_MINUTE_INTERVAL));
+            labels[i] = d.toLocaleTimeString(navigator.language, {hour: '2-digit', minute: '2-digit', hour12: false});
         }
-
-        let labels = [];
-
-        let now = Date.now();
-        let start = now - 1000 * 60 * 60 * 48;
-        for(let i = 0; i < values.length + 1; ++i) {
-            if (i % VALUES_PER_LABEL == 0) {
-                let d = new Date(start + i * (1000 * 60 * HISTORY_MINUTE_INTERVAL));
-                labels[i] = d.toLocaleTimeString(navigator.language, {hour: '2-digit', minute: '2-digit', hour12: false});
-            }
-            else {
-                labels[i] = null;
-            }
+        else {
+            labels[i] = null;
         }
+    }
 
-        let data = {
-            labels: labels,
-            series: [
-                values
-            ]
-        };
-        meter_chart.update(data);
-    });
+    let data = {
+        labels: labels,
+        series: [
+            values
+        ]
+    };
+    meter_chart.update(data);
 }
 
 function meter_chart_change_time(value: string) {
@@ -184,42 +194,47 @@ function init_chart() {
     meter_chart_change_time($("#meter_chart_time_select").val().toString());
 }
 
-function update_status_chart() {
-    $.get("/meter/history").done(function (values: number[]) {
-        const HISTORY_MINUTE_INTERVAL = 4;
-        const VALUE_COUNT = 48 * (60 / HISTORY_MINUTE_INTERVAL);
-        const LABEL_COUNT = 5;
-        const VALUES_PER_LABEL = VALUE_COUNT / (LABEL_COUNT - 1); // - 1 for the last label that has no values
+async function update_status_chart() {
+    let values = null;
+    try {
+        values = JSON.parse(await util.download("/meter/history").then(blob => blob.text()));
+    } catch {
+        return;
+    }
 
-        if (values.length != VALUE_COUNT) {
-            console.log("Unexpected number of values to plot!");
-            return;
+    const HISTORY_MINUTE_INTERVAL = 4;
+    const VALUE_COUNT = 48 * (60 / HISTORY_MINUTE_INTERVAL);
+    const LABEL_COUNT = 5;
+    const VALUES_PER_LABEL = VALUE_COUNT / (LABEL_COUNT - 1); // - 1 for the last label that has no values
+
+    if (values.length != VALUE_COUNT) {
+        console.log("Unexpected number of values to plot!");
+        return;
+    }
+
+    let labels = [];
+
+    let now = Date.now();
+    let start = now - 1000 * 60 * 60 * 48;
+    for(let i = 0; i < values.length + 1; ++i) {
+        if (i % VALUES_PER_LABEL == 0) {
+            let d = new Date(start + i * (1000 * 60 * HISTORY_MINUTE_INTERVAL));
+            labels[i] = d.toLocaleTimeString(navigator.language, {hour: '2-digit', minute: '2-digit', hour12: false});
         }
-
-        let labels = [];
-
-        let now = Date.now();
-        let start = now - 1000 * 60 * 60 * 48;
-        for(let i = 0; i < values.length + 1; ++i) {
-            if (i % VALUES_PER_LABEL == 0) {
-                let d = new Date(start + i * (1000 * 60 * HISTORY_MINUTE_INTERVAL));
-                labels[i] = d.toLocaleTimeString(navigator.language, {hour: '2-digit', minute: '2-digit', hour12: false});
-            }
-            else {
-                labels[i] = null;
-            }
+        else {
+            labels[i] = null;
         }
+    }
 
-        let data = {
-            labels: labels,
-            series: [
-                values
-            ]
-        };
+    let data = {
+        labels: labels,
+        series: [
+            values
+        ]
+    };
 
-        init_status_chart(0, Math.max(6 * 230, Math.max(...values))),
-        status_meter_chart.update(data);
-    });
+    init_status_chart(0, Math.max(6 * 230, Math.max(...values))),
+    status_meter_chart.update(data);
 }
 
 function init_status_chart(min_value=0, max_value=0) {

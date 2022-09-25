@@ -26,7 +26,7 @@ import feather from "../../ts/feather";
 
 import { h, render } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
-import { ConfigPageHeader } from "../../ts/config_page_header";
+import { ConfigPageHeader } from "../../ts/components/config_page_header";
 
 render(<ConfigPageHeader prefix="nfc" title={__("nfc.content.nfc")} />, $('#nfc_header')[0]);
 
@@ -235,6 +235,8 @@ outer_loop:
 function update_users_config() {
     let cfg = API.get('users/config');
     let nfc_config = API.get('nfc/config');
+    if (nfc_config == null)
+        return;
 
     let options = cfg.users.map((x) => `<option value=${x.id}>${x.id == 0 ? __("nfc.script.not_assigned") : x.display_name}</option>`).join("");
     $('.nfc-user-select').empty().append(options);

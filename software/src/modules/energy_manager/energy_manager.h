@@ -25,15 +25,11 @@
 #include "device_module.h"
 #include "warp_energy_manager_bricklet_firmware_bin.embedded.h"
 
-#define CHARGING_SLOT_INCOMING_CABLE    0
-#define CHARGING_SLOT_OUTGOING_CABLE    1
-#define CHARGING_SLOT_SHUTDOWN_INPUT    2
-#define CHARGING_SLOT_GP_INPUT          3
-#define CHARGING_SLOT_AUTOSTART_BUTTON  4
-#define CHARGING_SLOT_GLOBAL            5
-#define CHARGING_SLOT_USER              6
-#define CHARGING_SLOT_CHARGE_MANAGER    7
-#define CHARGING_SLOT_EXTERNAL          8
+#define PHASE_SWITCHING_AUTOMATIC                         0
+#define PHASE_SWITCHING_ALWAYS_1PHASE_WITH_CONTACTOR      1
+#define PHASE_SWITCHING_ALWAYS_1PHASE_WITHOUT_CONTACTOR   2
+#define PHASE_SWITCHING_ALWAYS_3PHASE_WITH_CONTACTOR      3
+#define PHASE_SWITCHING_ALWAYS_3PHASE_WITHOUT_CONTACTOR   4
 
 #define RELAY_CONFIG_DEACTIVATED        0
 #define RELAY_CONFIG_RULE_BASED         1
@@ -97,7 +93,8 @@ class EnergyManager : public DeviceModule<TF_WARPEnergyManager,
                                           tf_warp_energy_manager_destroy>
 {
 public:
-    EnergyManager();
+    EnergyManager() : DeviceModule("energy_manager", "WARP Energy Manager", "Energy Manager", std::bind(&EnergyManager::setup_energy_manager, this)){}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();
@@ -115,14 +112,9 @@ public:
     void handle_input_config_rule_based(uint8_t input);
     void handle_input_config_contactor_check(uint8_t input);
     void setup_energy_manager();
-    bool flash_firmware();
-    bool flash_plugin(int regular_plugin_upto);
-    bool wait_for_bootloader_mode(int mode);
     String get_energy_manager_debug_header();
     String get_energy_manager_debug_line();
-    void set_managed_current(uint16_t current);
 
-    void apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear);
     void apply_defaults();
 
     bool debug = false;

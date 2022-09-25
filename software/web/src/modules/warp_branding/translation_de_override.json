@@ -4,6 +4,17 @@
             "confirm_content": "Soll die Anmeldung wirklich aktiviert werden? Falls das Passwort vergessen wird, muss die Wallbox auf den Werkszustand zurückgesetzt werden. <a href=\"{{{manual_url}}}\">Siehe Betriebsanleitung für Details.</a>"
         }
     },
+    "charge_manager": {
+        "status": {
+            "charge_manager": "Lastmanager"
+        },
+        "navbar": {
+            "charge_manager": "Last&shy;management"
+        },
+        "content": {
+            "charge_manager": "Last&shy;management"
+        }
+    },
     "ethernet": {
         "content": {
             "enable_desc": "Die Wallbox verbindet sich automatisch beim Start oder wenn ein Kabel eingesteckt wird"

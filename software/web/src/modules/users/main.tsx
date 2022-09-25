@@ -26,11 +26,9 @@ import feather from "../../ts/feather";
 
 import YaMD5 from "../../ts/yamd5";
 
-import {getAllUsernames} from "../charge_tracker/main";
-
 import { h, render } from "preact";
 import { __ } from "../../ts/translation";
-import { ConfigPageHeader } from "../../ts/config_page_header";
+import { ConfigPageHeader } from "../../ts/components/config_page_header";
 
 render(<ConfigPageHeader prefix="users" title={__("users.content.users")} />, $('#users_header')[0]);
 
@@ -38,6 +36,33 @@ const MAX_ACTIVE_USERS = 16;
 
 type UsersConfig = API.getType['users/config'];
 type User = UsersConfig['users'][0];
+
+export function getAllUsernames() {
+    return util.download('/users/all_usernames')
+        .then(blob => blob.arrayBuffer())
+        .then(buffer => {
+            let usernames: string[] = [];
+            let display_names: string[] = [];
+
+            if (buffer.byteLength != 256 * 64) {
+                console.log("Unexpected length of all_usernames!");
+                return [null, null];
+            }
+
+            const decoder = new TextDecoder();
+            for(let i = 0; i < 256; ++i) {
+                let view = new DataView(buffer, i * 64, 32);
+                let username = decoder.decode(view).replace(/\0/g, "");
+
+                view = new DataView(buffer, i * 64 + 32, 32);
+                let display_name = decoder.decode(view).replace(/\0/g, "");
+
+                usernames.push(username);
+                display_names.push(display_name);
+            }
+            return [usernames, display_names];
+        });
+}
 
 function save_authentication_config() {
     return API.save('users/http_auth', {
@@ -111,7 +136,7 @@ async function save_users_config() {
     }
 
     let new_unknown_username = $('#users_unknown_username').val().toString();
-    if (new_unknown_username == __('charge_tracker.script.unknown_user'))
+    if (new_unknown_username == __("charge_tracker.script.unknown_user"))
         new_unknown_username = "Anonymous"
 
     if (util.passwordUpdate('#users_unknown_username') === "")
@@ -160,6 +185,9 @@ async function save_users_config() {
     }
 
     await save_authentication_config();
+
+    let nfc_auth_enable = $('#evse_user').is(":checked");
+    await API.save_maybe('evse/user_enabled', {"enabled": nfc_auth_enable}, __("evse.script.save_failed"));
 }
 
 function generate_user_ui(user: User, password: string) {
@@ -170,7 +198,7 @@ function generate_user_ui(user: User, password: string) {
                             <span data-feather="user"></span>
                             <button type="button" class="btn btn-sm btn-outline-dark"
                                 id="users_authorized_user_${i}_remove">
-                                <span data-feather="user-x" class="mr-2"></span><span style="font-size: 1rem; vertical-align: middle;" data-i18n="users.script.delete"></span>
+                                <span data-feather="user-x" class="mr-2"></span><span style="font-size: 1rem; vertical-align: middle;">${__("users.script.delete")}</span>
                             </button>
                         </div>
 
@@ -320,7 +348,7 @@ function update_users_config(force: boolean) {
                 <span data-feather="user-plus"></span>
                 <button type="button" class="btn btn-sm btn-outline-dark"
                                 id="blah" disabled style="visibility: hidden;">
-                                <span data-feather="user-x" class="mr-2"></span><span style="font-size: 1rem; vertical-align: middle;" data-i18n="users.script.delete"></span>
+                                <span data-feather="user-x" class="mr-2"></span><span style="font-size: 1rem; vertical-align: middle;">${__("users.script.delete")}</span>
                             </button>
             </div>
             <div class="card-body">
@@ -395,6 +423,13 @@ function check_http_auth_allowed() {
         $('#users_authentication_enable').prop("checked", API.get("users/config").http_auth_enabled);
     }
 }
+
+
+function update_evse_user() {
+    let x = API.get_maybe('evse/user_enabled');
+    $('#evse_user').prop("checked", x.enabled);
+}
+
 
 export function init() {
     $('#users_config_form').on('input', () => $('#users_config_save_button').prop("disabled", false));
@@ -490,6 +525,7 @@ export function init() {
 
 export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('users/config', () => update_users_config(false));
+    source.addEventListener("evse/user_enabled", update_evse_user);
 }
 
 export function update_sidebar_state(module_init: any) {

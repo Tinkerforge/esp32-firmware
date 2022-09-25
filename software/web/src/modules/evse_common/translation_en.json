@@ -90,10 +90,6 @@
             "charge_management_description_muted": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
             "charge_management_enable": "Requires the clearance of a charge manager (of this or another WARP charger) to charge",
 
-            "user_description": "User authorization",
-            "user_description_muted": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
-            "user_enable": "Requires a user authorization (via NFC card) to charge",
-
 
             "external_description": "External control",
             "external_description_muted": "<a href=\"https://www.warp-charger.com/evcc.html?v=2\">see setup tutorial for details</a>",
@@ -123,7 +119,7 @@
             "stop_charging_failed": "Failed to stop charging",
             "tab_close_warning": "Charge log capture will be aborted if this tab is closed.",
             "loading_debug_report": "Loading debug report",
-            "loading_debug_report_failed": "Loading debug reprot failed",
+            "loading_debug_report_failed": "Loading debug report failed",
             "loading_event_log": "Loading event log",
             "loading_event_log_failed": "Loading event log failed",
             "starting_debug": "Starting charge log capture",
@@ -135,7 +131,7 @@
 
             "by": "by",
 
-            "save_failed": "(De)Activating the charge mananagement failed",
+            "save_failed": "(De)Activating the charge management failed",
 
             "slot_disabled": "not active",
             "slot_blocks": "blocks",

@@ -26,22 +26,28 @@
 
 #include <Arduino.h>
 
+// This struct is used to make sure a registered handler always calls
+// one of the WebServerRequest methods that send a reponse.
+struct WebServerRequestReturnProtect {
+    char pad;
+};
+
 class WebServerRequest
 {
 public:
     WebServerRequest(httpd_req_t *req, bool keep_alive = false);
 
-    void send(uint16_t code, const char *content_type = "text/plain", const char *content = "", size_t content_len = HTTPD_RESP_USE_STRLEN);
+    WebServerRequestReturnProtect send(uint16_t code, const char *content_type = "text/plain", const char *content = "", size_t content_len = HTTPD_RESP_USE_STRLEN);
 
     void beginChunkedResponse(uint16_t code, const char *content_type);
 
     void sendChunk(const char *chunk, size_t chunk_len);
 
-    void endChunkedResponse();
+    WebServerRequestReturnProtect endChunkedResponse();
 
     void addResponseHeader(const char *field, const char *value);
 
-    void requestAuthentication();
+    WebServerRequestReturnProtect requestAuthentication();
 
     String header(const char *header_name);
 
@@ -74,11 +80,17 @@ public:
         return String(req->uri);
     }
 
+    const char *uriCStr() {
+        return req->uri;
+    }
+
+    WebServerRequestReturnProtect unsafe_ResponseAlreadySent() {return WebServerRequestReturnProtect{};}
+
 private:
     httpd_req_t *req;
 };
 
-using wshCallback = std::function<void(WebServerRequest)>;
+using wshCallback = std::function<WebServerRequestReturnProtect(WebServerRequest)>;
 using wshUploadCallback = std::function<bool(WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final)>;
 
 struct WebServerHandler {

@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "energy_meter.h"
+#include "meter.h"
 
 #include "bindings/errors.h"
 
@@ -34,7 +34,7 @@ extern Config modules;
 
 extern API api;
 
-EnergyMeter::EnergyMeter()
+void Meter::pre_setup()
 {
     state = Config::Object({
         {"state", Config::Uint8(0)}, // 0 - no energy meter, 1 - initialization error, 2 - meter available
@@ -58,7 +58,7 @@ EnergyMeter::EnergyMeter()
 
     all_values = Config::Array({},
         new Config{Config::Float(0)},
-        0, ALL_VALUES_COUNT, Config::type_id<Config::ConfFloat>());
+        0, METER_ALL_VALUES_COUNT, Config::type_id<Config::ConfFloat>());
 
     reset = Config::Null();
 
@@ -67,7 +67,7 @@ EnergyMeter::EnergyMeter()
     });
 }
 
-void EnergyMeter::updateMeterState(uint8_t new_state, uint8_t new_type)
+void Meter::updateMeterState(uint8_t new_state, uint8_t new_type)
 {
     state.get("state")->updateUint(new_state);
     state.get("type")->updateUint(new_type);
@@ -77,7 +77,7 @@ void EnergyMeter::updateMeterState(uint8_t new_state, uint8_t new_type)
     }
 }
 
-void EnergyMeter::updateMeterState(uint8_t new_state)
+void Meter::updateMeterState(uint8_t new_state)
 {
     state.get("state")->updateUint(new_state);
 
@@ -86,12 +86,12 @@ void EnergyMeter::updateMeterState(uint8_t new_state)
     }
 }
 
-void EnergyMeter::updateMeterType(uint8_t new_type)
+void Meter::updateMeterType(uint8_t new_type)
 {
     state.get("type")->updateUint(new_type);
 }
 
-void EnergyMeter::updateMeterValues(float power, float energy_rel, float energy_abs)
+void Meter::updateMeterValues(float power, float energy_rel, float energy_abs)
 {
     if (!meter_setup_done)
         return;
@@ -103,7 +103,7 @@ void EnergyMeter::updateMeterValues(float power, float energy_rel, float energy_
     power_hist.add_sample(power);
 }
 
-void EnergyMeter::updateMeterPhases(bool phases_connected[3], bool phases_active[3])
+void Meter::updateMeterPhases(bool phases_connected[3], bool phases_active[3])
 {
     if (!meter_setup_done)
         return;
@@ -115,7 +115,7 @@ void EnergyMeter::updateMeterPhases(bool phases_connected[3], bool phases_active
         phases.get("phases_connected")->get(i)->updateBool(phases_connected[i]);
 }
 
-void EnergyMeter::updateMeterAllValues(int idx, float val)
+void Meter::updateMeterAllValues(int idx, float val)
 {
     if (!meter_setup_done)
         return;
@@ -123,21 +123,21 @@ void EnergyMeter::updateMeterAllValues(int idx, float val)
     all_values.get(idx)->updateFloat(val);
 }
 
-void EnergyMeter::updateMeterAllValues(float values[ALL_VALUES_COUNT])
+void Meter::updateMeterAllValues(float values[METER_ALL_VALUES_COUNT])
 {
     if (!meter_setup_done)
         return;
 
-    for (int i = 0; i < ALL_VALUES_COUNT; ++i)
+    for (int i = 0; i < METER_ALL_VALUES_COUNT; ++i)
         all_values.get(i)->updateFloat(values[i]);
 }
 
-void EnergyMeter::registerResetCallback(std::function<void(void)> cb)
+void Meter::registerResetCallback(std::function<void(void)> cb)
 {
     this->reset_callbacks.push_back(cb);
 }
 
-void EnergyMeter::setupMeter(uint8_t meter_type)
+void Meter::setupMeter(uint8_t meter_type)
 {
     if (meter_setup_done)
         return;
@@ -150,20 +150,20 @@ void EnergyMeter::setupMeter(uint8_t meter_type)
 
     power_hist.setup();
 
-    for (int i = all_values.count(); i < ALL_VALUES_COUNT; ++i) {
+    for (int i = all_values.count(); i < METER_ALL_VALUES_COUNT; ++i) {
         all_values.add();
     }
 
     meter_setup_done = true;
 }
 
-void EnergyMeter::setup()
+void Meter::setup()
 {
     initialized = true;
     api.restorePersistentConfig("meter/last_reset", &last_reset);
 }
 
-void EnergyMeter::register_urls()
+void Meter::register_urls()
 {
     api.addState("meter/state", &state, {}, 1000);
     api.addState("meter/values", &values, {}, 1000);
@@ -188,6 +188,6 @@ void EnergyMeter::register_urls()
     power_hist.register_urls("meter/");
 }
 
-void EnergyMeter::loop()
+void Meter::loop()
 {
 }

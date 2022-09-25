@@ -58,7 +58,7 @@ static void button_state_changed_handler(TF_RGBLEDButton *rgb_led_button, uint8_
     tutorial->tutorial_state.get("button")->updateBool(state == TF_RGB_LED_BUTTON_BUTTON_STATE_PRESSED);
 }
 
-TutorialPhase5::TutorialPhase5()
+void TutorialPhase5::pre_setup()
 {
 }
 

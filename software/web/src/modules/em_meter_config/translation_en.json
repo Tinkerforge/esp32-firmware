@@ -1,38 +1,36 @@
 {
     "em_meter_config": {
         "status": {
-            "em_meter_config": "Electricity Meter"
+            "em_meter_config": "Energy Meter"
         },
         "navbar": {
-            "em_meter_config": "Electricity Meter"
+            "em_meter_config": "Energy Meter"
         },
         "content": {
-            "em_meter_config": "Electricity Meter Configuration",
+            "em_meter_config": "Energy Meter",
             "meter_type": "FIXME",
-            "meter_type_description": "FIXME",
-            "meter_type_description_muted": "FIXME",
+            "meter_type_muted": "FIXME",
             "type_none": "FIXME",
-            "type_sdm630": "FIXME",
+            "type_sdm": "FIXME",
             "type_sunspec": "FIXME",
             "type_modbus_tcp": "FIXME",
-            "conf_sdm630": "FIXME",
+            "conf_sdm": "FIXME",
             "conf_sunspec": "FIXME",
             "conf_modbus_tcp": "FIXME",
 
-            "sdm630_no": "FIXME",
-            "sdm630_yes": "FIXME",
-            "sdm630_details": "FIXME",
-            "sdm630_available": "FIXME",
-            "sdm630_statistics": "FIXME",
-            "sdm630_reset_statistics": "FIXME",
-            "sdm630_power": "FIXME",
-            "sdm630_energy": "FIXME",
-            "sdm630_energy_since_reset": "FIXME",
-            "sdm630_energy_lifetime": "FIXME"
+            "sdm_none": "No meter",
+            "sdm_630": "SDM630",
+            "sdm_72dmv2": "SDM72DMV2",
+            "sdm_details": "FIXME",
+            "sdm_available": "FIXME",
+            "sdm_power": "FIXME",
+            "sdm_energy": "FIXME",
+            "sdm_energy_since_reset": "FIXME",
+            "sdm_energy_lifetime": "FIXME"
         },
         "script": {
-            "config_failed": "Failed to save electricity meter configuration.",
-            "reboot_content_changed": "electricity meter configuration"
+            "config_failed": "Failed to save energy meter configuration.",
+            "reboot_content_changed": "energy meter configuration"
         }
     }
 }

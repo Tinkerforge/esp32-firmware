@@ -53,7 +53,7 @@ extern TaskScheduler task_scheduler;
 
 extern API api;
 
-NFC::NFC() : DeviceModule("nfc", "NFC", "NFC", std::bind(&NFC::setup_nfc, this))
+void NFC::pre_setup()
 {
     seen_tags = Config::Array(
         {},

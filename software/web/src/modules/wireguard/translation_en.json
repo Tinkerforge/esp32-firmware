@@ -34,7 +34,7 @@
             "allowed_subnet_invalid": "The subnet mask IP must have four groups between 0 and 255 separated with a dot. For example 255.255.255.0"
         },
         "script": {
-            "save_failed": "Failedto save the WireGuard settings",
+            "save_failed": "Failed to save the WireGuard settings",
             "reboot_content_changed": "WireGuard settings",
             "preshared_key_unused": "No PSK in use"
         }

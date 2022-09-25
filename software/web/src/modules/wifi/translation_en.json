@@ -32,7 +32,6 @@
             "sta_ip_configuration": "IP configuration",
             "sta_dhcp": "automatic (DHCP)",
             "sta_static": "static",
-            "save": "Save",
 
             "static_ip": "IP address",
             "subnet": "Subnet mask",

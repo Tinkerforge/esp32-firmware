@@ -37,7 +37,7 @@
         "script": {
             "flash_success": "Successfully updated; restarting...",
             "flash_fail": "Failed to update",
-            "factory_reset_init": "Formating configuration partition and restarting...",
+            "factory_reset_init": "Formatting configuration partition and restarting...",
             "factory_reset_error": "Initiating factory reset failed",
             "config_reset_init": "Resetting configuration and restarting...",
             "config_reset_error": "Failed to reset configuration",

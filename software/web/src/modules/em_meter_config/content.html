@@ -1,92 +1,86 @@
 <div class="tab-pane fade" role="tabpanel" aria-labelledby="sidebar-em-meter-config" id="em-meter-config">
-    <div id="em_meter_config_header"></div>
+    <div id="em_meter_config_header" class="sticky-under-top"></div>
 
-    <form id="em_meter_config_config_form" class="needs-validation" novalidate>
+    <form id="energy_manager_meter_config_form" class="needs-validation" novalidate>
         <!--
             Use custom validation instead of the browser default, that is broken on Chrome
             See: https://getbootstrap.com/docs/4.5/components/forms/#validation
         -->
 
-        <div class="row mb-3 pt-3">
-            <div class="col-xl-8 d-flex justify-content-between border-bottom">
-                <span class="h3" data-i18n="em_meter_config.content.meter_type"></span>
-            </div>
-        </div>
-
         <div class="form-group row">
             <div class="col-lg-3 col-xl-2">
                 <label class="col-form-label">
-                    <span class="form-label pr-2" data-i18n="em_meter_config.content.meter_type_description"></span>
-                    <span class="text-muted" data-i18n="em_meter_config.content.meter_type_description_muted"></span>
+                    <span class="form-label pr-2" data-i18n="em_meter_config.content.meter_type"></span>
+                    <span class="text-muted" data-i18n="em_meter_config.content.meter_type_muted"></span>
                 </label>
             </div>
             <div class="col-lg-9 col-xl-6">
-                <select id="em-meter-config-type" class="custom-select">
+                <select id="energy_manager_meter_config_meter_type" class="custom-select">
                     <option value="0" selected data-i18n="em_meter_config.content.type_none"></option>
-                    <option value="1" data-i18n="em_meter_config.content.type_sdm630"></option>
+                    <option value="1" data-i18n="em_meter_config.content.type_sdm"></option>
                     <option value="2" data-i18n="em_meter_config.content.type_sunspec"></option>
                     <option value="3" data-i18n="em_meter_config.content.type_modbus_tcp"></option>
                 </select>
             </div>
         </div>
 
-        <div class="collapse" id="em-meter-config-sdm630">
+        <div class="collapse" id="em-meter-config-sdm">
             <div class="row mb-3 pt-3">
                 <div class="col-xl-8 d-flex justify-content-between border-bottom">
-                    <span class="h3" data-i18n="em_meter_config.content.conf_sdm630"></span>
+                    <span class="h3" data-i18n="em_meter_config.content.conf_sdm"></span>
                 </div>
             </div>
 
             <div class="form-group row no-gutters">
                 <div class="col-lg-3 col-xl-2">
-                    <label for="btn_group_meter_available" class="col-form-label">
-                        <span class="form-label" data-i18n="em_meter_config.content.sdm630_available"></span>
+                    <label for="btn_group_em_meter_config_meter_available" class="col-form-label">
+                        <span class="form-label" data-i18n="em_meter_config.content.sdm_available"></span>
                     </label>
                 </div>
-                <div id="btn_group_meter_available" class="btn-group flex-wrap" role="group">
-                    <button type="button" class="btn btn-outline-secondary" disabled data-i18n="em_meter_config.content.sdm630_no"></button>
-                    <button type="button" class="btn btn-outline-primary" disabled data-i18n="em_meter_config.content.sdm630_yes"></button>
+                <div id="btn_group_em_meter_config_meter_available" class="btn-group flex-wrap" role="group">
+                    <button type="button" class="btn btn-outline-secondary" disabled data-i18n="em_meter_config.content.sdm_none"></button>
+                    <button type="button" class="btn btn-outline-primary" disabled data-i18n="em_meter_config.content.sdm_630"></button>
+                    <button type="button" class="btn btn-outline-success" disabled data-i18n="em_meter_config.content.sdm_72dmv2"></button>
                 </div>
-                <div id="em-meter-config-sdm630-details">
+                <div id="em-meter-config-sdm-details">
                     <a class="nav-link" data-toggle="tab" role="tab" aria-controls="meter" aria-selected="true" href="#meter">
-                        <span data-i18n="em_meter_config.content.sdm630_details"></span>
+                        <span data-i18n="em_meter_config.content.sdm_details"></span>
                     </a>
                 </div>
-            </a>
             </div>
 
             <div class="form-group row no-gutters">
                 <div class="col-lg-3 col-xl-2">
-                    <label for="meter_power_values" class="col-form-label">
-                        <span class="form-label" data-i18n="em_meter_config.content.sdm630_power"></span>
+                    <label for="em_meter_config_meter_power_values" class="col-form-label">
+                        <span class="form-label" data-i18n="em_meter_config.content.sdm_power"></span>
                     </label>
                 </div>
-                <div id="meter_power_values" class="col-lg-9 col-xl-6">
-                    <input id="energy_maanger_meter_power" class="form-control" type="text" placeholder="..." readonly>
+                <div id="em_meter_config_meter_power_values" class="col-lg-9 col-xl-6">
+                    <input id="em_meter_config_meter_power" class="form-control" type="text" placeholder="..." readonly>
                 </div>
             </div>
 
             <div class="form-group row no-gutters">
                 <div class="col-lg-3 col-xl-2">
                     <label for="meter_energy_rel_values" class="col-form-label">
-                        <span class="form-label pr-2" data-i18n="em_meter_config.content.sdm630_energy"></span>
-                        <span class="text-muted" data-i18n="em_meter_config.content.sdm630_energy_since_reset"></span>
+                        <span class="form-label pr-2" data-i18n="em_meter_config.content.sdm_energy"></span>
+                        <span class="text-muted" data-i18n="em_meter_config.content.sdm_energy_since_reset"></span>
                     </label>
                 </div>
-                <div id="meter_energy_rel_values" class="col-lg-9 col-xl-6">
-                    <input id="energy_manager_meter_energy_rel" class="form-control" type="text" placeholder="..." readonly>
+                <div id="em_meter_config_meter_energy_rel_values" class="col-lg-9 col-xl-6">
+                    <input id="em_meter_config_meter_energy_rel" class="form-control" type="text" placeholder="..." readonly>
                 </div>
             </div>
 
             <div class="form-group row no-gutters">
                 <div class="col-lg-3 col-xl-2">
-                    <label for="meter_energy_abs_values" class="col-form-label">
-                        <span class="form-label pr-2" data-i18n="em_meter_config.content.sdm630_energy"></span>
-                        <span class="text-muted" data-i18n="em_meter_config.content.sdm630_energy_lifetime"></span>
+                    <label for="em_meter_config_meter_energy_abs_values" class="col-form-label">
+                        <span class="form-label pr-2" data-i18n="em_meter_config.content.sdm_energy"></span>
+                        <span class="text-muted" data-i18n="em_meter_config.content.sdm_energy_lifetime"></span>
                     </label>
                 </div>
-                <div id="meter_energy_abs_values" class="col-lg-9 col-xl-6">
-                    <input id="energy_manager_meter_energy_abs" class="form-control" type="text" placeholder="..." readonly>
+                <div id="em_meter_config_meter_energy_abs_values" class="col-lg-9 col-xl-6">
+                    <input id="em_meter_config_meter_energy_abs" class="form-control" type="text" placeholder="..." readonly>
                 </div>
             </div>
         </div>

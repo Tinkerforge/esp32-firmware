@@ -1,5 +1,5 @@
 <div class="tab-pane fade" role="tabpanel" aria-labelledby="sidebar-users" id="users">
-    <div id="users_header"></div>
+    <div id="users_header" class="sticky-under-top"></div>
 
     <form id="users_config_form" class="needs-validation" novalidate>
         <!--
@@ -16,6 +16,21 @@
                     <input type="checkbox" class="custom-control-input" id="users_authentication_enable">
                     <label class="custom-control-label" for="users_authentication_enable" data-i18n="users.content.enable_authentication_desc"></label>
                     <div class="invalid-feedback" data-i18n="users.content.enable_authentication_invalid"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-lg-3 col-xl-2">
+                <label for="evse_user" class="col-form-label">
+                    <span class="form-label pr-2" data-i18n="users.content.evse_user_description"></span>
+                    <span class="text-muted" data-i18n="users.content.evse_user_description_muted"></span>
+                </label>
+            </div>
+            <div class="col-lg-9 col-xl-6">
+                <div class="borderless-form-control custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" id="evse_user">
+                    <label class="custom-control-label" for="evse_user" data-i18n="users.content.evse_user_enable"></label>
                 </div>
             </div>
         </div>

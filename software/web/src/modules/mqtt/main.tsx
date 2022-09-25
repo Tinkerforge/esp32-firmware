@@ -22,11 +22,99 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h, render } from "preact";
+import { h, render, Fragment } from "preact";
 import { __ } from "../../ts/translation";
-import { ConfigPageHeader } from "../../ts/config_page_header";
 
-render(<ConfigPageHeader prefix="mqtt" title={__("mqtt.content.mqtt")} />, $('#mqtt_header')[0]);
+import { ConfigComponent } from "../../ts/components/config_component";
+import { ConfigForm } from "../../ts/components/config_form";
+import { FormRow } from "../../ts/components/form_row";
+import { InputText } from "../../ts/components/input_text";
+import { InputNumber } from "../../ts/components/input_number";
+import { InputPassword } from "../../ts/components/input_password";
+import { Switch } from "../../ts/components/switch";
+import { Button } from "react-bootstrap";
+
+type MqttConfig = API.getType['mqtt/config'];
+
+export class Mqtt extends ConfigComponent<'mqtt/config'> {
+    constructor() {
+        super('mqtt/config',
+              __("mqtt.script.save_failed"),
+              __("mqtt.script.reboot_content_changed"));
+    }
+
+    render(props: {}, state: Readonly<MqttConfig>) {
+        if (!state)
+            return (<></>);
+
+        return (
+            <>
+                <ConfigForm id="mqtt_config_form" title={__("mqtt.content.mqtt")} onSave={() => this.save()} onDirtyChange={(d) => this.ignore_updates = d}>
+                    <FormRow label={__("mqtt.content.enable_mqtt")}>
+                        <Switch desc={__("mqtt.content.enable_mqtt_desc")}
+                                checked={state.enable_mqtt}
+                                onClick={this.toggle('enable_mqtt')}/>
+                    </FormRow>
+
+                    <FormRow label={__("mqtt.content.broker_host")}>
+                        <InputText required={state.enable_mqtt}
+                                   maxLength={128}
+                                   value={state.broker_host}
+                                   onValue={this.set("broker_host")}/>
+                    </FormRow>
+
+                    <FormRow label={__("mqtt.content.port")} label_muted={__("mqtt.content.port_muted")}>
+                        <InputNumber required
+                                     min={1}
+                                     max={65536}
+                                     value={state.broker_port}
+                                     onValue={this.set("broker_port")}/>
+                    </FormRow>
+
+                    <FormRow label={__("mqtt.content.username")} label_muted={__("mqtt.content.username_muted")}>
+                        <InputText maxLength={64}
+                                   value={state.broker_username}
+                                   onValue={this.set("broker_username")}/>
+                    </FormRow>
+
+                    <FormRow label={__("mqtt.content.password")} label_muted={__("mqtt.content.password_muted")}>
+                        <InputPassword maxLength={64}
+                                       value={state.broker_password}
+                                       onValue={this.set("broker_password")}
+                                       />
+                    </FormRow>
+
+                    <FormRow label={__("mqtt.content.topic_prefix")} label_muted={__("mqtt.content.topic_prefix_muted")}>
+                        <InputText maxLength={64}
+                                   pattern="^[^#+$][^#+]*"
+                                   value={state.global_topic_prefix}
+                                   onValue={this.set("global_topic_prefix")}/>
+                        <div class="invalid-feedback" data-i18n="mqtt.content.topic_prefix_invalid"></div>
+                    </FormRow>
+
+                    <FormRow label={__("mqtt.content.client_name")}>
+                        <InputText required
+                                   maxLength={64}
+                                   value={state.client_name}
+                                   onValue={this.set("client_name")}/>
+                    </FormRow>
+
+                    <FormRow label={__("mqtt.content.interval")} label_muted={__("mqtt.content.interval_muted")}>
+                        <InputNumber required
+                                     step={1}
+                                     min={1}
+                                     max={4294967296}
+                                     value={state.interval}
+                                     unit="s"
+                                     onValue={this.set("interval")}/>
+                    </FormRow>
+                </ConfigForm>
+            </>
+        );
+    }
+}
+
+render(<Mqtt/>, $('#mqtt')[0])
 
 function update_mqtt_state() {
     let state = API.default_updater('mqtt/state', ['last_error'], false);
@@ -37,26 +125,10 @@ function update_mqtt_state() {
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
-    source.addEventListener('mqtt/config', () => API.default_updater('mqtt/config', ['broker_password']));
     source.addEventListener('mqtt/state', update_mqtt_state);
 }
 
 export function init() {
-    $("#mqtt_config_show_broker_password").on("change", util.toggle_password_fn("#mqtt_config_broker_password"));
-    $("#mqtt_config_clear_broker_password").on("change", util.clear_password_fn("#mqtt_config_broker_password"));
-
-    API.register_config_form('mqtt/config', {
-            overrides: () => ({
-                broker_password: util.passwordUpdate('#mqtt_config_broker_password')
-            }),
-            pre_validation: () => {
-                $('#mqtt_config_broker_host').prop("required", $('#mqtt_config_enable_mqtt').is(':checked'));
-                return true;
-            },
-            error_string: __("mqtt.script.save_failed"),
-            reboot_string: __("mqtt.script.reboot_content_changed")
-        }
-    );
 }
 
 export function update_sidebar_state(module_init: any) {

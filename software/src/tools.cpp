@@ -80,11 +80,14 @@ const char *tf_reset_reason()
     }
 }
 
+bool a_after_b(uint32_t a, uint32_t b)
+{
+    return ((uint32_t)(a - b)) < (UINT32_MAX / 2);
+}
+
 bool deadline_elapsed(uint32_t deadline_ms)
 {
-    uint32_t now = millis();
-
-    return ((uint32_t)(now - deadline_ms)) < (UINT32_MAX / 2);
+    return a_after_b(millis(), deadline_ms);
 }
 
 void read_efuses(uint32_t *ret_uid_num, char *ret_uid_str, char *ret_passphrase)
@@ -164,26 +167,23 @@ int check(int rc, const char *msg)
     return rc;
 }
 
-class LogSilencer
-{
-public:
-    LogSilencer(const char *tag) : tag(tag), level_to_restore(ESP_LOG_NONE)
-    {
-        level_to_restore = esp_log_level_get(tag);
-        esp_log_level_set(tag, ESP_LOG_NONE);
-    }
+int vprintf_dev_null(const char *format, va_list ap) {
+    return 0;
+}
 
-    ~LogSilencer()
-    {
-        esp_log_level_set(tag, level_to_restore);
-    }
-    const char *tag;
-    esp_log_level_t level_to_restore;
-};
+LogSilencer::LogSilencer() : old_fn(nullptr)
+{
+    old_fn = esp_log_set_vprintf(vprintf_dev_null);
+}
+
+LogSilencer::~LogSilencer()
+{
+    esp_log_set_vprintf(old_fn);
+}
 
 bool is_spiffs_available(const char *part_label, const char *base_path)
 {
-    LogSilencer ls{"SPIFFS"};
+    LogSilencer ls;
 
     esp_vfs_spiffs_conf_t conf = {
         .base_path = base_path,
@@ -207,7 +207,7 @@ bool is_spiffs_available(const char *part_label, const char *base_path)
 
 bool is_littlefs_available(const char *part_label, const char *base_path)
 {
-    LogSilencer ls{"esp_littlefs"};
+    LogSilencer ls;
 
     esp_vfs_littlefs_conf_t conf = {
         .base_path = base_path,
@@ -301,8 +301,7 @@ bool mount_or_format_spiffs(void)
 
         logger.printfln("Formatting core dump partition as LittleFS.");
         {
-            LogSilencer ls{"esp_littlefs"};
-            LogSilencer ls2{"ARDUINO"};
+            LogSilencer ls;
             LittleFS.begin(false, "/conf_backup", 10, "coredump");
         }
         LittleFS.format();
@@ -326,8 +325,7 @@ bool mount_or_format_spiffs(void)
 
         logger.printfln("Formatting data partition as LittleFS.");
         {
-            LogSilencer ls{"esp_littlefs"};
-            LogSilencer ls2{"ARDUINO"};
+            LogSilencer ls;
             LittleFS.begin(false, "/spiffs", 10, "spiffs");
         }
         LittleFS.format();
@@ -351,7 +349,7 @@ bool mount_or_format_spiffs(void)
     if (!is_littlefs_available("spiffs", "/spiffs")) {
         logger.printfln("Data partition is not mountable as LittleFS. Formatting now.");
         {
-            LogSilencer ls{"esp_littlefs"};
+            LogSilencer ls;
             LittleFS.begin(false, "/spiffs", 10, "spiffs");
         }
         LittleFS.format();
@@ -571,7 +569,7 @@ int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose,
     int rc = tf_unknown_create(&bricklet, tfp);
 
     if (rc != TF_E_OK) {
-        logger->printfln("%s init failed (rc %d). Disabling %s support.", name, rc, purpose);
+        logger->printfln("%s init failed (rc %d).", name, rc);
         return -1;
     }
 
@@ -580,7 +578,7 @@ int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose,
     rc = tf_unknown_get_identity(&bricklet, nullptr, nullptr, nullptr, nullptr, firmware_version, nullptr);
 
     if (rc != TF_E_OK) {
-        logger->printfln("%s get identity failed (rc %d). Disabling %s support.", name, rc, purpose);
+        logger->printfln("%s get identity failed (rc %d).", name, rc);
         return -1;
     }
 
@@ -615,7 +613,7 @@ int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose,
         }
 
         if (!flash_firmware(&bricklet, firmware, firmware_len, logger)) {
-            logger->printfln("%s flashing failed. Disabling %s support.", name, purpose);
+            logger->printfln("%s flashing failed.", name);
             return -1;
         }
     }

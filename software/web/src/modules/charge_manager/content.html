@@ -1,5 +1,5 @@
 <div class="tab-pane fade" role="tabpanel" aria-labelledby="sidebar-charge_manager" id="charge_manager">
-    <div id="charge_manager_header"></div>
+    <div id="charge_manager_header" class="sticky-under-top"></div>
 
     <form id="charge_manager_config_form" class="needs-validation" novalidate>
         <!--
@@ -7,86 +7,117 @@
             See: https://getbootstrap.com/docs/4.5/components/forms/#validation
         -->
 
-        <div class="form-group row">
-            <label for="charge_manager_enable" class="col-lg-3 col-xl-2 col-form-label">
+        <div class="form-group row" id="charge_manager_enable_row">
+            <label for="charge_manager_mode_dropdown" class="col-lg-3 col-xl-2 col-form-label">
                 <span class="form-label pr-2" data-i18n="charge_manager.content.enable_charge_manager"></span>
                 <span class="text-muted" data-i18n="charge_manager.content.enable_charge_manager_muted"></span>
             </label>
             <div class="col-lg-9 col-xl-6">
-                <div class="borderless-form-control custom-control custom-switch">
-                    <input type="checkbox" class="custom-control-input" id="charge_manager_enable">
-                    <label class="custom-control-label" for="charge_manager_enable" data-i18n="charge_manager.content.enable_charge_manager_desc"></label>
+                <select class="custom-select" id="charge_manager_mode_dropdown">
+                    <option value="0" data-i18n="charge_manager.content.mode_disabled"></option>
+                    <option value="1" data-i18n="charge_manager.content.mode_managed"></option>
+                    <option value="2" data-i18n="charge_manager.content.mode_manager"></option>
+                </select>
+                <div id="charge_manager_mode_explainer" class="pt-3 pb-4">
+
                 </div>
             </div>
         </div>
-
-        <div class="form-group row">
-            <label for="charge_manager_enable_watchdog" class="col-lg-3 col-xl-2 col-form-label">
-                <span class="form-label pr-2" data-i18n="charge_manager.content.enable_watchdog"></span>
-                <span class="text-muted" data-i18n="charge_manager.content.enable_watchdog_muted"></span>
-            </label>
-            <div class="col-lg-9 col-xl-6">
-                <div class="borderless-form-control custom-control custom-switch">
-                    <input type="checkbox" class="custom-control-input" id="charge_manager_enable_watchdog">
-                    <label class="custom-control-label" for="charge_manager_enable_watchdog" data-i18n="charge_manager.content.enable_watchdog_desc"></label>
+        <div id="charge_manager_config_body" class="collapse">
+            <div class="form-group row" id="charge_manager_configuration_mode_row">
+                <label for="charge_manager_configuration_mode" class="col-lg-3 col-xl-2 col-form-label">
+                    <span class="form-label pr-2" data-i18n="charge_manager.content.configuration_mode"></span>
+                    <span class="text-muted" data-i18n="charge_manager.content.configuration_mode_muted"></span>
+                </label>
+                <div class="col-lg-9 col-xl-6">
+                    <button type="button" class="btn btn-primary form-control" data-toggle="collapse" data-target=".charge-manager-mode-collapse" data-i18n="charge_manager.content.show_hide_expert"></button>
                 </div>
             </div>
-        </div>
 
-        <div class="form-group row">
-            <label for="charge_manager_verbose" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="charge_manager.content.verbose"></label>
-            <div class="col-lg-9 col-xl-6">
-                <div class="borderless-form-control custom-control custom-switch">
-                    <input type="checkbox" class="custom-control-input" id="charge_manager_verbose">
-                    <label class="custom-control-label" for="charge_manager_verbose" data-i18n="charge_manager.content.verbose_desc"></label>
+            <div id="charge_manager_config_expert_collapse" class="collapse charge-manager-mode-collapse">
+                <div class="form-group row">
+                    <label for="charge_manager_verbose" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="charge_manager.content.verbose"></label>
+                    <div class="col-lg-9 col-xl-6">
+                        <div class="borderless-form-control custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="charge_manager_verbose">
+                            <label class="custom-control-label" for="charge_manager_verbose" data-i18n="charge_manager.content.verbose_desc"></label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group row" id="charge_manager_enable_watchdog_row">
+                    <label for="charge_manager_enable_watchdog" class="col-lg-3 col-xl-2 col-form-label">
+                        <span class="form-label pr-2" data-i18n="charge_manager.content.enable_watchdog"></span>
+                        <span class="text-muted" data-i18n="charge_manager.content.enable_watchdog_muted"></span>
+                    </label>
+                    <div class="col-lg-9 col-xl-6">
+                        <div class="borderless-form-control custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="charge_manager_enable_watchdog">
+                            <label class="custom-control-label" for="charge_manager_enable_watchdog" data-i18n="charge_manager.content.enable_watchdog_desc"></label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group row" id="charge_manager_default_available_current_row">
+                    <label for="charge_manager_default_available_current" class="col-lg-3 col-xl-2 col-form-label">
+                        <span class="form-label pr-2" data-i18n="charge_manager.content.default_available_current"></span>
+                        <span class="text-muted" data-i18n="charge_manager.content.default_available_current_muted"></span>
+                    </label>
+                    <div class="col-lg-9 col-xl-6 input-group has-validation">
+                        <input id="charge_manager_default_available_current" class="form-control" type="number" min="0" step="any" required>
+                        <div class="input-group-append">
+                            <div class="input-group-text form-control">A</div>
+                        </div>
+                        <div class="invalid-feedback"  data-i18n="charge_manager.content.default_available_current_invalid"></div>
+                    </div>
+                </div>
+
+                <div class="form-group row" id="charge_manager_maximum_available_current_row">
+                    <label for="charge_manager_maximum_available_current" class="col-lg-3 col-xl-2 col-form-label">
+                        <span class="form-label pr-2" data-i18n="charge_manager.content.maximum_available_current"></span>
+                        <span class="text-muted" data-i18n="charge_manager.content.maximum_available_current_muted"></span>
+                    </label>
+                    <div class="col-lg-9 col-xl-6 input-group">
+                        <input id="charge_manager_maximum_available_current" class="form-control" type="number" min="0" step="any" required>
+                        <div class="input-group-append">
+                            <div class="input-group-text form-control">A</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group row" id="charge_manager_minimum_current_row">
+                    <label for="charge_manager_minimum_current" class="col-lg-3 col-xl-2 col-form-label">
+                        <span class="form-label pr-2" data-i18n="charge_manager.content.minimum_current"></span>
+                        <span class="text-muted" data-i18n="charge_manager.content.minimum_current_muted"></span>
+                    </label>
+                    <div class="col-lg-9 col-xl-6 input-group">
+                        <input id="charge_manager_minimum_current" class="form-control" type="number" min="6" max="32" step="any" required>
+                        <div class="input-group-append">
+                            <div class="input-group-text form-control">A</div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="form-group row">
-            <label for="charge_manager_default_available_current" class="col-lg-3 col-xl-2 col-form-label">
-                <span class="form-label pr-2" data-i18n="charge_manager.content.default_available_current"></span>
-                <span class="text-muted" data-i18n="charge_manager.content.default_available_current_muted"></span>
-            </label>
-            <div class="col-lg-9 col-xl-6 input-group has-validation">
-                <input id="charge_manager_default_available_current" class="form-control" type="number" min="0" step="any" required>
-                <div class="input-group-append">
-                    <div class="input-group-text form-control">A</div>
-                </div>
-                <div class="invalid-feedback"  data-i18n="charge_manager.content.default_available_current_invalid"></div>
-            </div>
-        </div>
-
-        <div class="form-group row">
-            <label for="charge_manager_maximum_available_current" class="col-lg-3 col-xl-2 col-form-label">
-                <span class="form-label pr-2" data-i18n="charge_manager.content.maximum_available_current"></span>
-                <span class="text-muted" data-i18n="charge_manager.content.maximum_available_current_muted"></span>
-            </label>
-            <div class="col-lg-9 col-xl-6 input-group">
-                <input id="charge_manager_maximum_available_current" class="form-control" type="number" min="0" step="any" required>
-                <div class="input-group-append">
-                    <div class="input-group-text form-control">A</div>
+            <div class="collapse charge-manager-mode-collapse show">
+                <div class="form-group row" id="charge_manager_available_current_row">
+                    <label for="charge_manager_available_current" class="col-lg-3 col-xl-2 col-form-label">
+                        <span class="form-label pr-2" data-i18n="charge_manager.content.maximum_available_current"></span>
+                    </label>
+                    <div class="col-lg-9 col-xl-6 input-group">
+                        <input id="charge_manager_available_current" class="form-control" type="number" min="0" step="any" required>
+                        <div class="input-group-append">
+                            <div class="input-group-text form-control">A</div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="form-group row">
-            <label for="charge_manager_minimum_current" class="col-lg-3 col-xl-2 col-form-label">
-                <span class="form-label pr-2" data-i18n="charge_manager.content.minimum_current"></span>
-                <span class="text-muted" data-i18n="charge_manager.content.minimum_current_muted"></span>
-            </label>
-            <div class="col-lg-9 col-xl-6 input-group">
-                <input id="charge_manager_minimum_current" class="form-control" type="number" min="6" max="32" step="any" required>
-                <div class="input-group-append">
-                    <div class="input-group-text form-control">A</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="form-group row">
-            <label class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="charge_manager.content.managed_boxes"></label>
-            <div class="col-lg-9 col-xl-6">
-                <div id="charge_manager_configs" class="row row-cols-1 row-cols-md-2">
+            <div class="form-group row">
+                <label class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="charge_manager.content.managed_boxes"></label>
+                <div class="col-lg-9 col-xl-6">
+                    <div id="charge_manager_configs" class="row row-cols-1 row-cols-md-2">
+                    </div>
                 </div>
             </div>
         </div>
@@ -102,14 +133,26 @@
                   </button>
                 </div>
                 <div class="modal-body">
-                    <form id="charge_manager_add_charger_form">
+                    <form id="charge_manager_add_charger_form" class="needs-validation" novalidate>
+                        <!--
+                            Use custom validation instead of the browser default, that is broken on Chrome
+                            See: https://getbootstrap.com/docs/4.5/components/forms/#validation
+                        -->
+
                         <div class="form-group">
-                            <label for="charge_manager_config_charger_new_name" data-i18n="charge_manager.content.add_charger_modal_name"></label>
-                            <input type="text" class="form-control" id="charge_manager_config_charger_new_name" maxlength="32">
+                            <label for="charge_manager_config_charger_new_name" class="form-label" data-i18n="charge_manager.content.add_charger_modal_name"></label>
+                            <input type="text" class="form-control" id="charge_manager_config_charger_new_name" maxlength="32" required>
+                            <div id="charge_manager_config_charger_new_name_feedback" class="invalid-feedback" data-i18n="charge_manager.content.add_charger_modal_name_invalid"></div>
                         </div>
                         <div class="form-group">
-                            <label for="charge_manager_config_charger_new_host" data-i18n="charge_manager.content.add_charger_modal_host"></label>
-                            <input type="text" class="form-control" id="charge_manager_config_charger_new_host" maxlength="64">
+                            <label for="charge_manager_config_charger_new_host" class="form-label" data-i18n="charge_manager.content.add_charger_modal_host"></label>
+                            <input type="text" class="form-control" id="charge_manager_config_charger_new_host" maxlength="64" required>
+                            <div id="charge_manager_config_charger_new_host_feedback" class="invalid-feedback" data-i18n="charge_manager.content.add_charger_modal_host_invalid"></div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="charge_manager_config_charger_scan_results" data-i18n="charge_manager.content.add_charger_modal_found"></label>
+                            <div class="list-group" id="charge_manager_config_charger_scan_results">
+                            </div>
                         </div>
                     </form>
                 </div>

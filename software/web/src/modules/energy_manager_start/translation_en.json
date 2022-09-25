@@ -1,8 +1,8 @@
 {
-    "equipment_config_start": {
+    "energy_manager_start": {
         "status": {},
         "navbar": {
-            "equipment_config_start": "Anlagenkonfiguration"
+            "energy_manager_start": "Energy Manager"
         },
         "content": {},
         "script": {}

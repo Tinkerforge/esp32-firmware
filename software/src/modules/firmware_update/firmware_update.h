@@ -25,7 +25,8 @@
 class FirmwareUpdate
 {
 public:
-    FirmwareUpdate();
+    FirmwareUpdate(){}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();
@@ -52,4 +53,5 @@ private:
     uint32_t checksum = 0;
     uint32_t checksum_offset = 0;
     bool update_aborted = false;
+    bool info_found = false;
 };

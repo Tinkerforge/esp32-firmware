@@ -1,7 +1,7 @@
 {
     "charge_manager": {
         "status": {
-            "charge_manager": "Charge manager",
+            "charge_manager": null,
             "not_configured": "Deactivated",
             "manager": "Activated",
             "error": "Error",
@@ -11,13 +11,12 @@
             "available_current_maximum": "..."
         },
         "navbar": {
-            "charge_manager": "Charge Manager"
+            "charge_manager": null
         },
         "content": {
-            "charge_manager": "Charge Manager",
-            "enable_charge_manager": "Charge manager enabled",
+            "charge_manager": null,
+            "enable_charge_manager": "Charge management mode",
             "enable_charge_manager_muted": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
-            "enable_charge_manager_desc": "Controls multiple WARP Chargers to make sure a configured maximum current is never exceeded",
             "enable_watchdog": "Watchdog enabled",
             "enable_watchdog_muted": "only enable if using the API (not required for normal charge manager use!)",
             "enable_watchdog_desc": "Sets the available current to the default value if it is not updated every 30 seconds",
@@ -31,11 +30,26 @@
             "minimum_current": "Minimal charge current",
             "minimum_current_muted": "must be available to start a charge",
 
+            "configuration_mode": "Expert settings",
+            "configuration_mode_muted": "",
+            "show_hide_expert": "Show / Hide expert settings",
+
             "add_charger_modal_title": "Add charger",
             "add_charger_modal_name": "Display name",
-            "add_charger_modal_host": "IP address (Hostnames are not supported yet)",
+            "add_charger_modal_name_invalid": "Cannot be empty",
+            "add_charger_modal_host": "IP address or hostname",
+            "add_charger_modal_host_invalid": "Cannot be empty",
             "add_charger_modal_abort": "Discard",
             "add_charger_modal_save": "Save",
+            "add_charger_modal_found": "Discovered chargers",
+
+            "disabled": "Charge Management disabled",
+            "wrong_version": "firmware version incompatible",
+            "invalid_box": "Charger invalid",
+
+            "mode_disabled": "Disabled",
+            "mode_manager": "Charge manager",
+            "mode_managed": "Externally controlled",
 
             "managed_boxes": "Managed chargers"
         },
@@ -82,7 +96,13 @@
 
             "reboot_content_changed": "charge manager configuration",
             "display_name": "Display name",
-            "host": "Host"
+            "host": "Host",
+
+            "scan_failed": "Scan failed",
+
+            "mode_explainer_0": "This WARP Charger is not part of a charge management group.",
+            "mode_explainer_1": "This WARP Charger is part of a charge management group with other WARP Chargers and/or a WARP Energy Manager. Another device controls this group to make sure the configured current is never exceeded.",
+            "mode_explainer_2": "This WARP Charger controls a charge management group with othter WARP Chargers to make sure the configured current is never exceeded."
         }
     }
 }

@@ -52,7 +52,7 @@ void ntp_sync_cb(struct timeval *t)
     ntp_state->get("synced")->updateBool(true);
 }
 
-NTP::NTP()
+void NTP::pre_setup()
 {
     config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(true)},

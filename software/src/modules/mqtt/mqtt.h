@@ -47,7 +47,8 @@ struct MqttState {
 class Mqtt : public IAPIBackend
 {
 public:
-    Mqtt();
+    Mqtt(){}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();

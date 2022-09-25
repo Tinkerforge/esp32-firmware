@@ -22,7 +22,8 @@
 class ESP32EthernetBrick
 {
 public:
-    ESP32EthernetBrick();
+    ESP32EthernetBrick(){}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();

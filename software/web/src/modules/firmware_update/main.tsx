@@ -22,174 +22,184 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h, render } from "preact";
+import { h, render, Fragment, Component, createRef, RefObject } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
-import { PageHeader } from "../../ts/page_header";
+import { PageHeader } from "../../ts/components/page_header";
 
-render(<PageHeader title={__("firmware_update.content.firmware_update")} />, $('#firmware_update_header')[0]);
+import { FormRow } from "../../ts/components/form_row";
+import { InputText } from "../../ts/components/input_text";
+import { InputFile } from "../../ts/components/input_file";
+import { Button } from "react-bootstrap";
 
-import bsCustomFileInput from "../../ts/bs-custom-file-input";
+type FirmwareUpdateConfig = API.getType['info/version'];
 
-let last_version: string = null;
+export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
+    constructor() {
+        super();
+        util.eventTarget.addEventListener('info/version', () => {
+            let newState = API.get('info/version');
+            if (this.state != null && this.state.firmware != null && this.state.firmware != newState.firmware)
+                window.location.reload();
 
-function update_version() {
-    let version = API.get('info/version');
-
-    if (last_version == null) {
-        last_version = version.firmware;
-    } else if (last_version != version.firmware) {
-        window.location.reload();
+            this.setState(API.get('info/version'));
+        });
     }
 
-    $('#current_firmware').val(version.firmware);
-    $('#current_spiffs').val(version.config);
-}
+    async checkFirmware(f: File) {
+        try {
+            await util.upload(f.slice(0xd000 - 0x1000, 0xd000), "check_firmware", () => {})
+        } catch (error) {
+            if (typeof error === "string") {
+                util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.flash_fail"), error);
+            } else if (error instanceof XMLHttpRequest) {
+                let xhr = error;
 
-function check_upload(type: string) {
-    let file_select = $(`#${type}_file_select`)[0] as HTMLInputElement;
+                if (xhr.status == 423) {
+                    util.add_alert("firmware_update_failed", "alert-danger", __("firmware_update.script.flash_fail"), __("firmware_update.script.vehicle_connected"));
+                    return false;
+                }
 
-    $.ajax({
-        timeout: 0,
-        url: `/check_${type}`,
-        type: 'POST',
-        data: file_select.files[0].slice(0xd000 - 0x1000, 0xd000),
-        contentType: false,
-        processData: false,
-        success: () => {
-            upload(type);
-        },
-        error: (xhr, status, error) => {
-            if (xhr.status == 423)
-                util.add_alert("firmware_update_failed", "alert-danger", __("firmware_update.script.flash_fail"), __("firmware_update.script.vehicle_connected"));
-            else {
                 try {
                     let e = JSON.parse(xhr.responseText)
                     let error_message = translate_unchecked(e["error"])
                     if (e["error"] == "firmware_update.script.downgrade") {
                         error_message = error_message.replace("%fw%", e["fw"]).replace("%installed%", e["installed"]);
-                        $('#downgrade_text').text(error_message);
-                        $('#downgrade_modal').modal('show');
+
+                        const modal = util.async_modal_ref.current;
+                        if(!await modal.show({
+                                title: __("firmware_update.content.downgrade"),
+                                body: error_message,
+                                no_text: __("firmware_update.content.abort_downgrade"),
+                                yes_text: __("firmware_update.content.confirm_downgrade"),
+                                no_variant: "secondary",
+                                yes_variant: "danger"
+                            }))
+                            return false;
                     } else {
                         util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.flash_fail"), error_message);
+                        return false;
                     }
                 } catch {
-                    util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.flash_fail"), error + ": " + xhr.responseText);
+                    util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.flash_fail"), xhr.responseText);
+                    return false;
                 }
             }
         }
-    });
-}
 
-function upload(type: string) {
-    util.pauseWebSockets();
+        util.pauseWebSockets();
+        return true;
+    }
 
-    let file_select = $(`#${type}_file_select`)[0] as HTMLInputElement;
-    let progress = $(`#${type}-progress`);
-    let select = $(`#upload_${type}_form`);
-    let progress_bar = $(`#${type}-progress-bar`);
+    render(props: {}, state: Readonly<FirmwareUpdateConfig>) {
+        if (!state)
+            return (<></>);
 
-    progress.prop("hidden", false);
-    select.prop("hidden", true);
+        // TODO: why not use the charge tracker module here?
+        let show_config_reset = false;
+        if (API.get('info/modules')?.hasOwnProperty("users") && (API.get('info/modules') as any).users)
+            show_config_reset = true;
 
-    $.ajax({
-        timeout: 0,
-        url: `/flash_${type}`,
-        type: 'POST',
-        data: file_select.files[0],
-        contentType: false,
-        processData: false,
-        xhr: function () {
-            let xhr = new window.XMLHttpRequest();
-            xhr.upload.addEventListener('progress', function (evt) {
-                if (evt.lengthComputable) {
-                    let per = evt.loaded / evt.total;
-                    progress_bar.prop('style', "width: " + (per * 100) + "%");
-                    progress_bar.prop('aria-valuenow', (per * 100));
+        return (
+            <>
+                <PageHeader title={__("firmware_update.content.firmware_update")} />
+
+                <FormRow label={__("firmware_update.content.current_firmware")}>
+                    <InputText value={state.firmware}/>
+                </FormRow>
+
+                <FormRow label={__("firmware_update.content.firmware_update_label")} label_muted={__("firmware_update.content.firmware_update_desc")}>
+                    <InputFile
+                        browse={__("firmware_update.content.browse")}
+                        select_file={__("firmware_update.content.select_file")}
+                        upload={__("firmware_update.content.update")}
+                        url="/flash_firmware"
+
+                        timeout_ms={120 * 1000}
+                        onUploadStart={async (f) => this.checkFirmware(f)}
+                        onUploadSuccess={() => util.postReboot(__("firmware_update.script.flash_success"), __("util.reboot_text"))}
+                        onUploadError={error => {
+                            if (typeof error === "string") {
+                                util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.flash_fail"), error);
+                            } else if (error instanceof XMLHttpRequest) {
+                                let xhr = error;
+
+                                if (xhr.status == 423)
+                                    util.add_alert("firmware_update_failed", "alert-danger", __("firmware_update.script.flash_fail"), __("firmware_update.script.vehicle_connected"));
+                                else {
+                                    let txt = xhr.responseText.startsWith("firmware_update.") ? translate_unchecked(xhr.responseText) : (xhr.responseText ?? xhr.response);
+                                    util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.flash_fail"), txt);
+                                }
+                            }
+                            util.resumeWebSockets();
+                        }}
+                    />
+                </FormRow>
+
+                <FormRow label={__("firmware_update.content.reboot")} label_muted={__("firmware_update.content.reboot_desc")}>
+                    <Button variant="primary" className="form-control" onClick={util.reboot}>{__("firmware_update.content.reboot")}</Button>
+                </FormRow>
+
+                <FormRow label={__("firmware_update.content.current_spiffs")}>
+                    <InputText value={state.config}/>
+                </FormRow>
+
+                {show_config_reset ?
+                    <FormRow label={__("firmware_update.content.config_reset")} label_muted={__("firmware_update.content.config_reset_desc")}>
+                        <Button variant="danger" className="form-control" onClick={async () => {
+                                const modal = util.async_modal_ref.current;
+                                if (!await modal.show({
+                                        title: __("firmware_update.content.config_reset"),
+                                        body: __("firmware_update.content.config_reset_modal_text"),
+                                        no_text: __("firmware_update.content.abort_reset"),
+                                        yes_text: __("firmware_update.content.confirm_config_reset"),
+                                        no_variant: "secondary",
+                                        yes_variant: "danger"
+                                    }))
+                                    return;
+
+                                try {
+                                    await util.put("/config_reset", {"do_i_know_what_i_am_doing": true});
+                                    util.postReboot(__("firmware_update.script.config_reset_init"), __("util.reboot_text"));
+                                } catch (error) {
+                                    util.add_alert("config_reset_failed", "alert-danger", __("firmware_update.script.config_reset_error"), error);
+                                }
+                            }}>{__("firmware_update.content.config_reset")}</Button>
+                    </FormRow>
+                    : ""
                 }
-            }, false);
-            return xhr;
-        },
-        success: () => {
-            progress.prop("hidden", true);
-            select.prop("hidden", false);
-            util.postReboot(__("firmware_update.script.flash_success"), __("util.reboot_text"));
-        },
-        error: (xhr, status, error) => {
-            progress.prop("hidden", true);
-            select.prop("hidden", false);
-            if (xhr.status == 423)
-                util.add_alert("firmware_update_failed", "alert-danger", __("firmware_update.script.flash_fail"), __("firmware_update.script.vehicle_connected"));
-            else {
-                let txt = xhr.responseText.startsWith("firmware_update.") ? translate_unchecked(xhr.responseText) : error + ": " + xhr.responseText;
-                util.add_alert("firmware_update_failed","alert-danger", __("firmware_update.script.flash_fail"), txt);
-            }
-            util.resumeWebSockets();
-        }
-    });
+
+                <FormRow label={__("firmware_update.content.factory_reset")} label_muted={__("firmware_update.content.factory_reset_desc")}>
+                    <Button variant="danger" className="form-control" onClick={async () => {
+                        const modal = util.async_modal_ref.current;
+                        if (!await modal.show({
+                                title: __("firmware_update.content.factory_reset"),
+                                body: __("firmware_update.content.factory_reset_modal_text"),
+                                no_text: __("firmware_update.content.abort_reset"),
+                                yes_text: __("firmware_update.content.confirm_factory_reset"),
+                                no_variant: "secondary",
+                                yes_variant: "danger"
+                            }))
+                            return;
+
+                        try {
+                            await util.put("/factory_reset", {"do_i_know_what_i_am_doing": true});
+                            util.postReboot(__("firmware_update.script.factory_reset_init"), __("util.reboot_text"));
+                        } catch (error) {
+                            util.add_alert("factory_reset_failed", "alert-danger", __("firmware_update.script.factory_reset_error"), error);
+                        }
+                    }}>{__("firmware_update.content.factory_reset")}</Button>
+                </FormRow>
+            </>
+        );
+    }
 }
 
-function config_reset() {
-    $.ajax({
-        url: `/config_reset`,
-        type: 'PUT',
-        contentType: "application/json; charset=utf-8",
-        data: JSON.stringify({"do_i_know_what_i_am_doing": true}),
-        success: () => {
-            $('#config_reset_modal').modal('hide');
-            util.postReboot(__("firmware_update.script.config_reset_init"), __("util.reboot_text"));
-        },
-        error: (xhr, status, error) => {
-            $('#config_reset_modal').modal('hide');
-            util.add_alert("config_reset_failed", "alert-danger", __("firmware_update.script.config_reset_error"), error + ": " + xhr.responseText);
-        }
-    });
-}
+render(<FirmwareUpdate/>, $('#flash')[0])
 
-function factory_reset() {
-    $.ajax({
-        url: `/factory_reset`,
-        type: 'PUT',
-        contentType: "application/json; charset=utf-8",
-        data: JSON.stringify({"do_i_know_what_i_am_doing": true}),
-        success: () => {
-            $('#factory_reset_modal').modal('hide');
-            util.postReboot(__("firmware_update.script.factory_reset_init"), __("util.reboot_text"));
-        },
-        error: (xhr, status, error) => {
-            $('#factory_reset_modal').modal('hide');
-            util.add_alert("factory_reset_failed", "alert-danger", __("firmware_update.script.factory_reset_error"), error + ": " + xhr.responseText);
-        }
-    });
-}
+export function init() {}
 
-export function init() {
-    // Firmware upload
-    $('#upload_firmware_form').on("submit", function (e) {
-        e.preventDefault();
-        check_upload("firmware");
-    });
-
-    $('#downgrade_confirm').on("click", () => {
-        $('#downgrade_modal').modal('hide');
-        upload("firmware");
-    });
-
-    $('#firmware_file_select').on("change", () => $("#update_firmware_button").prop("disabled", false));
-
-    $('#spiffs_config_reset').on("click", () => $('#config_reset_modal').modal('show'));
-    $('#spiffs_factory_reset').on("click", () => $('#factory_reset_modal').modal('show'));
-    $('#config_reset_confirm').on("click", config_reset);
-    $('#factory_reset_confirm').on("click", factory_reset);
-    $('#firmware_update_reboot').on("click", util.reboot);
-
-    bsCustomFileInput.init();
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-    source.addEventListener('info/version', update_version);
-}
+export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-flash').prop('hidden', !module_init.firmware_update);
-    $('#config_reset_row').prop('hidden', !module_init.users);
 }

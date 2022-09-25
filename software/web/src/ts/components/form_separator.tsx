@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2022 Olaf Lüke <olaf@tinkerforge.com>
+ * Copyright (C) 2022 Erik Fleckstein <erik@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,19 +17,18 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import $ from "../../ts/jq";
+import { h, Component} from "preact";
 
-import * as API from "../../ts/api";
+export class FormSeparator extends Component<{}, {}> {
+    constructor() {
+        super();
+    }
 
-export function init() {
-    $('#equipment-config-group').on('hide.bs.collapse', () => $('#equipment-config-chevron').removeClass("rotated-chevron"));
-    $('#equipment-config-group').on('show.bs.collapse', () => $('#equipment-config-chevron').addClass("rotated-chevron"));
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-
-}
-
-export function update_sidebar_state(module_init: any) {
-    $('#sidebar-equipment-config-group').prop('hidden', false);
+    render() {
+        return (
+            <div class="row mb-3">
+                <div class="col-xl-8 border-bottom"></div>
+            </div>
+        );
+    }
 }

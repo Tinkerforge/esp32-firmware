@@ -18,18 +18,15 @@
  */
 
 import $ from "jquery";
+import { createRef, RefObject } from "preact";
 
 import * as API from "./api";
 import { __ } from "./translation";
 
+import { AsyncModal } from "./components/async_modal";
+
 export function reboot() {
-    $.ajax({
-        url: '/reboot',
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify(null),
-        success: () => postReboot(__("util.reboot_title"), __("util.reboot_text"))
-    });
+    API.call("reboot", null, "").then(() => postReboot(__("util.reboot_title"), __("util.reboot_text")));
 }
 
 export function update_button_group(button_group_id: string, index_to_select: number, text_replacement?: string) {
@@ -180,7 +177,7 @@ let ws: WebSocket = null;
 
 const RECONNECT_TIME = 12000;
 
-let eventTarget: API.APIEventTarget = null;
+export let eventTarget: API.APIEventTarget = new API.APIEventTarget();
 
 export function setupEventSource(first: boolean, keep_as_first: boolean, continuation: (ws: WebSocket, eventTarget: API.APIEventTarget) => void) {
     if (!first) {
@@ -191,7 +188,6 @@ export function setupEventSource(first: boolean, keep_as_first: boolean, continu
         ws.close();
     }
     ws = new WebSocket((location.protocol == 'https:' ? 'wss://' : 'ws://') + location.host + '/ws');
-    eventTarget = new API.APIEventTarget();
 
     if (wsReconnectTimeout != null) {
         clearTimeout(wsReconnectTimeout);
@@ -265,17 +261,10 @@ export function postReboot(alert_title: string, alert_text: string) {
 let loginReconnectTimeout: number = null;
 
 export function ifLoggedInElse(if_continuation: () => void, else_continuation: () => void) {
-    $.ajax({url: "/login_state", timeout:3000}).done(function(data, statusText, xhr) {
-        if (data == "Logged in") {
-            if_continuation();
-        } else {
-            else_continuation();
-        }
-    }).fail(function(xhr, statusText, errorThrown) {
-        if (xhr.status == 404) {
-            if_continuation();
-        }
-    });
+    download("/login_state", 3000)
+        .catch(e => new Blob([e.message.startsWith("404") ? "Logged in" : ""]))
+        .then(blob => blob.text())
+        .then(text => text == "Logged in" ? if_continuation() : else_continuation());
 }
 
 export function ifLoggedInElseReload(continuation: () => void) {
@@ -404,3 +393,89 @@ export function validate_static_ip_config(ip_id: string, subnet_id: string, gate
     }
     return result;
 }
+
+export function upload(data: Blob, url: string, progress: (i: number) => void = i => {}, contentType?: string, timeout_ms: number = 5000) {
+    const xhr = new XMLHttpRequest();
+    progress(0);
+
+    let error_message: string = null;
+
+    return new Promise<void>((resolve, reject) => {
+        xhr.upload.addEventListener("abort", e => error_message = error_message ?? __("util.upload_abort"));
+        // https://bugs.chromium.org/p/chromium/issues/detail?id=118096#c5
+        // "The details of errors of XHRs and Fetch API are not exposed to JavaScript for security reasons."
+        // Web development just sucks.
+        xhr.upload.addEventListener("error", e => error_message = error_message ?? __("util.upload_error"));
+        xhr.upload.addEventListener("timeout", e => error_message = error_message ?? __("util.upload_timeout"));
+
+        xhr.upload.addEventListener("progress", (event) => {
+            if (event.lengthComputable) {
+                progress(event.loaded / event.total);
+            }
+        });
+
+        xhr.addEventListener("abort", e => error_message = error_message ?? __("util.download_abort"));
+        xhr.addEventListener("error", e => error_message = error_message ?? __("util.download_error"));
+        xhr.addEventListener("timeout", e => error_message = error_message ?? __("util.download_timeout"));
+
+        xhr.addEventListener("loadend", () => {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                progress(1);
+                if (xhr.status === 200)
+                    resolve();
+            }
+            reject(error_message ?? xhr);
+        });
+
+        xhr.open("POST", url, true);
+        xhr.timeout = timeout_ms;
+        if (contentType)
+            xhr.setRequestHeader("Content-Type", contentType);
+        xhr.send(data);
+    });
+}
+
+export async function download(url: string, timeout_ms: number = 5000) {
+    let abort = new AbortController();
+    let timeout = setTimeout(() => abort.abort(), timeout_ms);
+
+    let response = null;
+    try {
+        response = await fetch(url, {signal: abort.signal})
+    } catch (e) {
+        clearTimeout(timeout);
+        throw new Error(e.name == "AbortError" ? __("util.download_timeout") : (__("util.download_error") + ": " + e.message));
+    }
+
+    if (!response.ok) {
+        throw new Error(`${response.status}(${response.statusText}) ${await response.text()}`)
+    }
+
+    return await response.blob();
+}
+
+export async function put(url: string, payload: any, timeout_ms: number = 5000) {
+    let abort = new AbortController();
+    let timeout = setTimeout(() => abort.abort(), timeout_ms);
+
+    let response = null;
+    try {
+        response = await fetch(url, {
+            signal: abort.signal,
+            method: "PUT",
+            credentials: 'same-origin',
+            headers: {"Content-Type": "application/json; charset=utf-8"},
+            body: JSON.stringify(payload)})
+    } catch (e) {
+        clearTimeout(timeout);
+        throw new Error(e.name == "AbortError" ? __("util.download_timeout") : (__("util.download_error") + ": " + e.message));
+    }
+
+    if (!response.ok) {
+        throw new Error(`${response.status}(${response.statusText}) ${await response.text()}`)
+    }
+
+    return await response.blob();
+}
+
+export const async_modal_ref: RefObject<AsyncModal> = createRef();

@@ -26,6 +26,8 @@ import * as util from "./ts/util";
 import * as API from "./ts/api";
 import { __, translate_data_i18n } from "./ts/translation";
 
+import { init_async_modal } from "./ts/components/async_modal";
+
 {{{module_imports}}}
 
 interface Module {
@@ -42,6 +44,11 @@ $('.navbar-collapse a').on("click", function () {
 
 let first_module_init = true;
 
+function show_page() {
+    $('#nav-list').removeAttr("style");
+    $('#main').removeAttr("style");
+}
+
 function update_modules() {
     let module_init = API.get('info/modules');
     for (let m of modules) {
@@ -51,10 +58,16 @@ function update_modules() {
     if (first_module_init) {
         let hash = window.location.hash;
         var elem = $(`a[href="${hash}"]`);
-        if (hash == "" || elem.length == 0 || elem.prop("hidden")) {
+        if (hash == "#meter") {
+            // FIXME: brute force solution to allow hidden meter module in
+            //        energy manager firmware. should be solved in a better way
+        }
+        else if (hash == "" || hash == '#status' || elem.length == 0 || elem.prop("hidden")) {
             window.location.hash = "#status";
+            show_page();
             return;
         }
+        elem.one('shown.bs.tab', show_page);
         elem.click();
         elem.parents(".nav-nested.collapse").collapse('show');
         first_module_init = false;
@@ -107,8 +120,7 @@ function login() {
 }
 
 function setup_normal() {
-    window.setTimeout(() => $('#nav-list').removeAttr("style"), 200);
-    window.setTimeout(() => $('#main').removeAttr("style"), 200);
+    window.setTimeout(show_page, 1000);
 
     $('#sidebar-login').prop('hidden', true);
     $('#sidebar-status').addClass('active');
@@ -118,8 +130,7 @@ function setup_normal() {
 }
 
 function setup_login() {
-    window.setTimeout(() => $('#nav-list').removeAttr("style"), 200);
-    window.setTimeout(() => $('#main').removeAttr("style"), 200);
+    window.setTimeout(show_page, 1000);
 
     $('#sidebar-status').prop('hidden', true);
     $('#sidebar-login').addClass('active');
@@ -152,11 +163,9 @@ function setup_login() {
 $(window).on('pageshow', (ev) => {
     util.ifLoggedInElse(setup_normal, setup_login);
 
-    feather.replace();
+    init_async_modal();
 
-    $.ajaxSetup({
-        timeout: 5000
-    });
+    feather.replace();
 
     translate_data_i18n();
 
@@ -169,7 +178,11 @@ $(window).on('pageshow', (ev) => {
         if (event.oldURL != event.newURL) {
             let hash = window.location.hash;
             var elem = $(`a[href="${hash}"]`);
-            if (hash == "" || elem.length == 0 || elem.prop("hidden")) {
+            if (hash == "#meter") {
+                // FIXME: brute force solution to allow hidden meter module in
+                //        energy manager firmware. should be solved in a better way
+            }
+            else if (hash == "" || elem.length == 0/* || elem.prop("hidden")*/) {
                 window.location.hash = "#status";
                 return;
             }

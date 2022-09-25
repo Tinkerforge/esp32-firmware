@@ -24,78 +24,53 @@ import * as API from "../../ts/api";
 
 import { h, render } from "preact";
 import { __ } from "../../ts/translation";
-import { ConfigPageHeader } from "../../ts/config_page_header";
+import { ConfigPageHeader } from "../../ts/components/config_page_header";
 
-render(<ConfigPageHeader prefix="em_meter_config" title={__("em_meter_config.content.em_meter_config")} />, $('#em_meter_config_header')[0]);
+render(<ConfigPageHeader prefix="energy_manager_meter" title={__("em_meter_config.content.em_meter_config")} />, $('#em_meter_config_header')[0]);
 
 function update_em_meter_config() {
-    let config = API.get('energy_manager/meter_config');
-    $('#em-meter-config-type').val(config.meter_type.toString()).trigger('change');
-
-    update_em_meter_config_html_visibility();
-    console.log("meter_type", config);
+    API.default_updater('energy_manager/meter_config');
 }
 
 function update_em_meter_config_state() {
     let state = API.get('energy_manager/state');
-    util.update_button_group("btn_group_meter_available", state.energy_meter_type == 0 ? 0 : 1);
-    $('#energy_manager_meter_power').val(util.toLocaleFixed(state.energy_meter_power, 0) + " W");
-    $('#energy_manager_meter_energy_rel').val(util.toLocaleFixed(state.energy_meter_energy_rel, 3) + " kWh");
-    $('#energy_manager_meter_energy_abs').val(util.toLocaleFixed(state.energy_meter_energy_abs, 3) + " kWh");
+    util.update_button_group("btn_group_em_meter_config_meter_available", Math.max(state.energy_meter_type - 1, 0));
+    $('#em_meter_config_meter_power').val(util.toLocaleFixed(state.energy_meter_power, 0) + " W");
+    $('#em_meter_config_meter_energy_rel').val(util.toLocaleFixed(state.energy_meter_energy_rel, 3) + " kWh");
+    $('#em_meter_config_meter_energy_abs').val(util.toLocaleFixed(state.energy_meter_energy_abs, 3) + " kWh");
+    $('#em-meter-config-sdm-details').prop('hidden', state.energy_meter_type == 0);
 }
 
 // Only show the relevant html elements, drop-down boxes and options
-function update_em_meter_config_html_visibility() {
-    let meter_type = $('#em-meter-config-type').val();
-
-    $('#em-meter-config-sdm630').collapse('hide')
-    $('#em-meter-config-sunspec').collapse('hide')
-    $('#em-meter-config-modbus-tcp').collapse('hide')
-    if (meter_type == "1") {
-        $('#em-meter-config-sdm630').collapse('show')
-    }
-    else if (meter_type == "2") {
-        $('#em-meter-config-sunspec').collapse('show')
-    }
-    else if (meter_type == "3") {
-        $('#em-meter-config-modbus-tcp').collapse('show')
+function update_em_meter_config_html_collapse(value: string) {
+    let state: { [id: string]: "show" | "hide" } = {
+        '#em-meter-config-sdm': 'hide',
+        '#em-meter-config-sunspec': 'hide',
+        '#em-meter-config-modbus-tcp': 'hide'
     }
 
-    if (meter_type == "1") {
-        $('#em-meter-config-sdm630-details').collapse('show')
-    } else {
-        $('#em-meter-config-sdm630-details').collapse('hide')    
+    if (value == "1") {
+        state['#em-meter-config-sdm'] = 'show';
     }
-}
+    else if (value == "2") {
+        state['#em-meter-config-sunspec'] = 'show';
+    }
+    else if (value == "3") {
+        state['#em-meter-config-modbus-tcp'] = 'show';
+    }
 
-function save_em_meter_config() {
-    console.log("save_energy_manager_meter_config");
-
-    let meter_type = Number($('#em-meter-config-type').val());
-    API.save('energy_manager/meter_config', {
-            meter_type: meter_type
-        },
-        __("em_meter_config.script.config_failed"),
-        __("em_meter_config.script.reboot_content_changed")
-    );
+    for (let key in state) {
+        $(key).collapse(state[key])
+    }
 }
 
 export function init() {
-    console.log("em-meter-config init");
-    $("#em-meter-config-type").on("change", update_em_meter_config_html_visibility);
+    API.register_config_form('energy_manager/meter_config', {
+            error_string: __("em_meter_config.script.config_failed"),
+            reboot_string: __("em_meter_config.script.reboot_content_changed")
+        });
 
-    // Use bootstrap form validation
-    $('#em_meter_config_config_form').on('submit', function (this: HTMLFormElement, event: Event) {
-        console.log("em_meter_config_config_form on submit");
-        this.classList.add('was-validated');
-        event.preventDefault();
-        event.stopPropagation();
-
-        if (this.checkValidity() === false) {
-            return;
-        }
-        save_em_meter_config();
-    });
+    $("#energy_manager_meter_config_meter_type").on("change", function(this: HTMLInputElement) {update_em_meter_config_html_collapse(this.value);});
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {

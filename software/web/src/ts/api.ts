@@ -36,6 +36,12 @@ export function get<T extends keyof ConfigMap>(topic: T): Readonly<ConfigMap[T]>
     return api_cache[topic];
 }
 
+export function get_maybe<T extends string>(topic: T): (T extends keyof ConfigMap ? Readonly<ConfigMap[T]> : any) {
+    if (topic in api_cache)
+        return api_cache[topic as keyof ConfigMap] as any;
+    return null as any;
+}
+
 // Based on https://43081j.com/2020/11/typed-events-in-typescript
 // and https://stackoverflow.com/questions/51343322/extending-eventtarget-in-typescript-angular-2
 export class APIEventTarget implements EventTarget {
@@ -64,25 +70,21 @@ export function save<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T],
     return call(<any>(topic + "_update"), payload, error_string, reboot_string);
 }
 
-export function call<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T], error_string: string, reboot_string?: string) {
-    return fetch('/' + topic, {
-            method: 'PUT',
-            credentials: 'same-origin',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload)
-        })
-        .then(response => {
-            if (response.ok)
-                return response;
-            return response.text().catch(() => response.statusText).then(x => {throw new Error(x)});
-        })
-        .then(reboot_string ? util.getShowRebootModalFn(reboot_string) : undefined)
-        .catch(error => {
-            util.add_alert(topic.replace("/", "_") + '_failed', 'alert-danger', error_string, error);
-            throw error;
-        });
+export function save_maybe<T extends string>(topic: T, payload: (T extends keyof ConfigMap ? ConfigMap[T] : any), error_string: string, reboot_string?: string) {
+    if (topic in api_cache)
+        return call(<any>(topic + "_update"), payload, error_string, reboot_string);
+    return Promise.resolve();
+}
+
+export async function call<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T], error_string: string, reboot_string?: string) {
+    try {
+        let blob = await util.put('/' + topic, payload);
+        if (reboot_string)
+            util.getShowRebootModalFn(reboot_string)();
+    } catch (e) {
+        util.add_alert(topic.replace("/", "_") + '_failed', 'alert-danger', error_string, e);
+        throw e;
+    }
 }
 
 export function hasFeature(feature: string) {
@@ -99,8 +101,9 @@ export function default_updater<T extends keyof ConfigMap>(topic: T, exclude?: A
         console.error(`save btn not found #${prefix}_save_button`);
     }
 
-    if (has_save_button && !save_btn.prop("disabled"))
-        return;
+    if (has_save_button && !save_btn.prop("disabled")) {
+        return config;
+    }
 
     if (form.length != 0) {
         form.removeClass('was-validated');
@@ -129,15 +132,15 @@ export function default_updater<T extends keyof ConfigMap>(topic: T, exclude?: A
         }
 
         if (typeof value == "boolean") {
-            elem.prop("checked", value);
+            elem.prop("checked", value).trigger("change");
             continue;
         }
 
         if (typeof value == "string" || typeof value == "number") {
             if (elem.is("input") || elem.is("select"))
-                elem.val(value);
+                elem.val(value).trigger("change");
             else if (elem.is("span"))
-                elem.text(value);
+                elem.text(value).trigger("change");
             else
                 console.error(`Can't update ${id} from ${topic}[${key}] = ${value} (of type ${typeof value}): ${id} is not an input, select or span`);
         }

@@ -5,6 +5,7 @@ import argparse
 import json
 import os
 import datetime
+from collections import OrderedDict
 
 ZONES_DIR = "/usr/share/zoneinfo/"
 
@@ -40,11 +41,11 @@ def get_tz_string(timezone):
     return data.decode("utf-8")
 
 def make_timezones_dict():
-    result = {}
+    result = OrderedDict()
 
     for area in AREAS:
-        for root, dirs, files in sorted(os.walk(os.path.join(ZONES_DIR, area), topdown=True)):
-            for name in files:
+        for root, dirs, files in os.walk(os.path.join(ZONES_DIR, area), topdown=True):
+            for name in sorted(files):
                 if not name[0].isupper():
                     continue
 
@@ -110,18 +111,18 @@ if generated_db_version >= installed_db_version:
     print("Skipping timezone database generation. Installed version {} is not newer than last generated version {}".format(installed_db_version, generated_db_version))
     sys.exit(0)
 
-timezones = make_timezones_dict()
+timezones = OrderedDict(sorted(make_timezones_dict().items(), key=lambda x: x[0]))
 
-nested_dict = {}
-empty_nested_dict = {}
+nested_dict = OrderedDict()
+empty_nested_dict = OrderedDict()
 
 for name, tz in timezones.items():
     splt = name.split("/")
     d = nested_dict
     d2 = empty_nested_dict
     for entry in splt[:-1]:
-        d = d.setdefault(entry, {})
-        d2 = d2.setdefault(entry, {})
+        d = d.setdefault(entry, OrderedDict())
+        d2 = d2.setdefault(entry, OrderedDict())
 
     d[splt[-1]] = tz
     d2[splt[-1]] = None

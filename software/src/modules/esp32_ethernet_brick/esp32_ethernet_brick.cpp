@@ -55,7 +55,7 @@ static TF_Local local;
 
 #endif
 
-ESP32EthernetBrick::ESP32EthernetBrick()
+void ESP32EthernetBrick::pre_setup()
 {
 }
 

@@ -88,7 +88,13 @@ public:
 
         if (result != 0) {
             logger.printfln("Flashing %s Bricklet failed (%d)", device_name, result);
-            return false;
+            logger.printfln("Retrying once.");
+            result = ensure_matching_firmware(tfp, device_name, module_name, firmware, firmware_len, &logger, false);
+            if (result != 0) {
+                logger.printfln("Flashing %s Bricklet failed twice (%d). Disabling completely.", device_name, result);
+                device_found = false;
+                return false;
+            }
         }
 
         char uid[7] = {0};

@@ -143,6 +143,6 @@ void EventLog::register_urls()
             request.sendChunk(chunk_buf, to_write);
         }
 
-        request.endChunkedResponse();
+        return request.endChunkedResponse();
     });
 }

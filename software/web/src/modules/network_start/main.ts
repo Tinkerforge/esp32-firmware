@@ -19,30 +19,17 @@
 
 import $ from "../../ts/jq";
 
-import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-
-import { h, render } from "preact";
-import { __ } from "../../ts/translation";
-import { ConfigPageHeader } from "../../ts/config_page_header";
-
-render(<ConfigPageHeader prefix="network" title={__("network.content.network")} />, $('#network_header')[0]);
 
 export function init() {
     $('#network-group').on('hide.bs.collapse', () => $('#network-chevron').removeClass("rotated-chevron"));
     $('#network-group').on('show.bs.collapse', () => $('#network-chevron').addClass("rotated-chevron"));
-
-    API.register_config_form('network/config', {
-            error_string: __("network.script.save_failed"),
-            reboot_string: __("network.script.reboot_content_changed")
-        });
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
-    source.addEventListener('network/config', () => API.default_updater('network/config'));
+
 }
 
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-network-group').prop('hidden', false);
-    $('#sidebar-network').prop('hidden', false);
 }

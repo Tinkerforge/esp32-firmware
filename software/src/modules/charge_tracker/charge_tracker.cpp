@@ -26,6 +26,8 @@
 #include "task_scheduler.h"
 #include "tools.h"
 
+#include <memory>
+
 extern TaskScheduler task_scheduler;
 
 struct ChargeStart {
@@ -54,7 +56,7 @@ static_assert(CHARGE_RECORD_SIZE == 16, "Unexpected size of ChargeStart + Charge
 
 #define CHARGE_RECORD_LAST_CHARGES_SIZE 30
 
-ChargeTracker::ChargeTracker()
+void ChargeTracker::pre_setup()
 {
     last_charges = Config::Array({},
         new Config{Config::Object({
@@ -123,7 +125,7 @@ void ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, u
     current_charge.get("timestamp_minutes")->updateUint(timestamp_minutes);
     current_charge.get("authorization_type")->updateUint(auth_type);
     current_charge.get("authorization_info")->value = auth_info;
-    current_charge.get("authorization_info")->updated = 0xFF;
+    current_charge.get("authorization_info")->value.updated = 0xFF;
 }
 
 void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end)
@@ -164,7 +166,7 @@ void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end)
     current_charge.get("evse_uptime_start")->updateUint(0);
     current_charge.get("timestamp_minutes")->updateUint(0);
     current_charge.get("authorization_type")->updateUint(0);
-    current_charge.get("authorization_info")->value = nullptr;
+    current_charge.get("authorization_info")->value = Config::ConfVariant{};
 
     updateState();
 }
@@ -406,10 +408,9 @@ void ChargeTracker::register_urls()
     server.on("/charge_tracker/charge_log", HTTP_GET, [this](WebServerRequest request) {
         std::lock_guard<std::mutex> lock{records_mutex};
 
-        char *url_buf = (char *)malloc(CHARGE_RECORD_MAX_FILE_SIZE);
+        auto url_buf = std::unique_ptr<char[]>(new char[CHARGE_RECORD_MAX_FILE_SIZE]);
         if (url_buf == nullptr) {
-            request.send(507);
-            return;
+            return request.send(507);
         }
 
         File file = LittleFS.open(chargeRecordFilename(this->last_charge_record));
@@ -418,19 +419,17 @@ void ChargeTracker::register_urls()
 
         // Don't do a chunked response without any chunk. The webserver does strange things in this case
         if (file_size == 0) {
-            request.send(200, "application/octet-stream", "", 0);
-            return;
+            return request.send(200, "application/octet-stream", "", 0);
         }
 
         request.beginChunkedResponse(200, "application/octet-stream");
         for (int i = this->first_charge_record; i <= this->last_charge_record; ++i) {
             File f = LittleFS.open(chargeRecordFilename(i));
-            int read = f.read((uint8_t *)url_buf, CHARGE_RECORD_MAX_FILE_SIZE);
+            int read = f.read((uint8_t *)url_buf.get(), CHARGE_RECORD_MAX_FILE_SIZE);
             int trunc = read - (read % CHARGE_RECORD_SIZE);
-            request.sendChunk(url_buf, trunc);
+            request.sendChunk(url_buf.get(), trunc);
         }
-        request.endChunkedResponse();
-        free(url_buf);
+        return request.endChunkedResponse();
     });
 
     api.addState("charge_tracker/last_charges", &last_charges, {}, 1000);

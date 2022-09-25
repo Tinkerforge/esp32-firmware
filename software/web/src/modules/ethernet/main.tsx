@@ -19,28 +19,67 @@
 
 import $ from "../../ts/jq";
 
-import feather from "../../ts/feather";
-
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h, render } from "preact";
+import { h, render, Fragment, RefObject } from "preact";
 import { __ } from "../../ts/translation";
-import { ConfigPageHeader } from "../../ts/config_page_header";
+import { Switch } from "../../ts/components/switch";
+import { ConfigComponent } from "src/ts/components/config_component";
+import { ConfigForm } from "src/ts/components/config_form";
+import { FormRow } from "src/ts/components/form_row";
+import { IPConfiguration } from "src/ts/components/ip_configuration";
 
-render(<ConfigPageHeader prefix="ethernet" title={__("ethernet.content.ethernet")} />, $('#ethernet_header')[0]);
+type EthernetConfig = API.getType['ethernet/config'];
 
-function update_ethernet_config() {
-    let config = API.default_updater('ethernet/config');
+export class Ethernet extends ConfigComponent<'ethernet/config'> {
+    ipconfig_valid: boolean = true;
 
-    if(config.ip == "0.0.0.0") {
-        $('#ethernet_config_show_static').val("hide");
-        ethernet_cfg_toggle_static_ip_collapse("hide");
-    } else {
-        $('#ethernet_config_show_static').val("show");
-        ethernet_cfg_toggle_static_ip_collapse("show");
+    constructor() {
+        super('ethernet/config',
+              __("ethernet.script.config_failed"),
+              __("ethernet.script.reboot_content_changed"));
+    }
+
+    override isSaveAllowed(cfg: EthernetConfig) { return this.ipconfig_valid; }
+
+    override transformSave(cfg: EthernetConfig) {
+        cfg.dns = cfg.dns == "" ? "0.0.0.0" : cfg.dns;
+        cfg.dns2 = cfg.dns2 == "" ? "0.0.0.0" : cfg.dns2;
+        return cfg;
+    }
+
+    render(props: {}, state: Readonly<EthernetConfig>) {
+        if (!state)
+            return (<></>);
+
+        return (
+            <>
+                <ConfigForm id="ethernet_config_form"
+                            title={__("ethernet.content.ethernet")}
+                            onSave={this.save}
+                            onDirtyChange={(d) => this.ignore_updates = d}>
+                    <FormRow label={__("ethernet.content.enable")}>
+                        <Switch desc={__("ethernet.content.enable_desc")}
+                                checked={state.enable_ethernet}
+                                onClick={this.toggle('enable_ethernet')}/>
+                    </FormRow>
+
+                    <IPConfiguration
+                        showDhcp
+                        showDns
+                        onValue={(v) => this.setState(v)}
+                        value={state}
+                        setValid={(v) => this.ipconfig_valid = v}
+                        />
+
+                </ConfigForm>
+            </>
+        );
     }
 }
+
+render(<Ethernet/>, $('#ethernet')[0])
 
 function update_ethernet_state() {
     let state = API.default_updater('ethernet/state', ['ip', 'full_duplex', 'link_speed'], false);
@@ -52,47 +91,12 @@ function update_ethernet_state() {
     }
 }
 
-function ethernet_cfg_toggle_static_ip_collapse(value: string) {
-    if (value == "hide") {
-        $('#ethernet_static_ip_cfg').collapse('hide');
-        $('#ethernet_config_ip').prop('required', false);
-        $('#ethernet_config_subnet').prop('required', false);
-        $('#ethernet_config_gateway').prop('required', false);
-    }
-    else if (value == "show") {
-        $('#ethernet_static_ip_cfg').collapse('show');
-        $('#ethernet_config_ip').prop('required', true);
-        $('#ethernet_config_subnet').prop('required', true);
-        $('#ethernet_config_gateway').prop('required', true);
-    }
-}
-
 export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('ethernet/state', update_ethernet_state);
-    source.addEventListener('ethernet/config', update_ethernet_config);
 }
 
 export function init() {
-    API.register_config_form('ethernet/config', {
-            overrides: () => {
-                let dhcp = $('#ethernet_config_show_static').val() != "show";
-                return {
-                    ip: dhcp ? "0.0.0.0" : $('#ethernet_config_ip').val().toString(),
-                    subnet: dhcp ? "0.0.0.0" : $('#ethernet_config_subnet').val().toString(),
-                    gateway: dhcp ? "0.0.0.0" : $('#ethernet_config_gateway').val().toString(),
-                    dns: dhcp ? "0.0.0.0" : $('#ethernet_config_dns').val().toString(),
-                    dns2: dhcp ? "0.0.0.0" : $('#ethernet_config_dns2').val().toString()
-                };
-            },
-            pre_validation: () => util.reset_static_ip_config_validation('ethernet_config_ip', 'ethernet_config_subnet', 'ethernet_config_gateway'),
-            post_validation: () => util.validate_static_ip_config('ethernet_config_ip', 'ethernet_config_subnet', 'ethernet_config_gateway', $('#ethernet_config_show_static').val() != "show"),
-            error_string: __("ethernet.script.config_failed"),
-            reboot_string: __("ethernet.script.reboot_content_changed")
-        }
-    );
 
-    // No => here: we want "this" to be the changed element
-    $("#ethernet_config_show_static").on("change", function(this: HTMLInputElement) {ethernet_cfg_toggle_static_ip_collapse(this.value);});
 }
 
 export function update_sidebar_state(module_init: any) {

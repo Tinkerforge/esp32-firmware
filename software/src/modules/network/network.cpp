@@ -30,7 +30,7 @@ extern API api;
 extern TaskScheduler task_scheduler;
 extern char local_uid_str[7];
 
-Network::Network()
+void Network::pre_setup()
 {
     config = Config::Object({
         {"hostname", Config::Str("replaceme", 0, 32)},
@@ -51,7 +51,7 @@ void Network::setup()
 
 void Network::register_urls()
 {
-    api.addPersistentConfig("network/config", &config, {}, 10000);
+    api.addPersistentConfig("network/config", &config, {}, 1000);
 
     if (!config.get("enable_mdns")->asBool())
         return;

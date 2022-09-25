@@ -24,19 +24,202 @@ import * as API from "../../ts/api";
 
 import feather from "../../ts/feather";
 
-import { h, render } from "preact";
+import { h, render, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
-import { PageHeader } from "../../ts/page_header";
 
-render(<PageHeader title={__("charge_tracker.content.charge_tracker")} />, $('#charge_tracker_header')[0]);
+import { ConfigComponent } from "../../ts/components/config_component";
+import { ConfigForm } from "../../ts/components/config_form";
+import { FormRow } from "../../ts/components/form_row";
+import { FormSeparator } from "../../ts/components/form_separator";
+import { InputText } from "../../ts/components/input_text";
+import { InputNumber } from "../../ts/components/input_number";
+import { InputPassword } from "../../ts/components/input_password";
+import { InputDate } from "../../ts/components/input_date";
+import { Switch } from "../../ts/components/switch";
+import { Button, ListGroup, ListGroupItem, Spinner } from "react-bootstrap";
+import { PageHeader } from "src/ts/components/page_header";
+import { InputSelect } from "src/ts/components/input_select";
+import { BatteryCharging, Calendar, Clock, Download, User } from "react-feather";
+import { getAllUsernames } from "../users/main";
+
+type Charge = API.getType['charge_tracker/last_charges'][0]
+
+interface S {
+    user_filter: string
+    user_filter_items: [string, string][]
+    start_date: Date
+    end_date: Date
+    show_spinner: boolean
+    last_charges: Readonly<Charge[]>
+}
+
+type ChargeTrackerState = S & API.getType['charge_tracker/state'];
+
+export class ChargeTracker extends Component<{}, ChargeTrackerState> {
+    constructor() {
+        super();
+
+        util.eventTarget.addEventListener('users/config', () => {
+            let user_filter_items: [string, string][] = API.get('users/config').users.map(x => [x.id.toString(), (x.display_name == "Anonymous" && x.id == 0) ? __("charge_tracker.script.unknown_users") : x.display_name]);
+            user_filter_items.unshift(["-1",  __("charge_tracker.script.deleted_users")]);
+            user_filter_items.unshift(["-2", __("charge_tracker.script.all_users")]);
+            this.setState({user_filter_items: user_filter_items});
+        });
+
+        util.eventTarget.addEventListener('charge_tracker/state', () => {
+            this.setState({...API.get('charge_tracker/state')});
+        });
+
+        util.eventTarget.addEventListener('charge_tracker/last_charges', () => {
+            this.setState({last_charges: API.get('charge_tracker/last_charges')});
+        });
+
+        this.setState({user_filter: "-2"});
+    }
+
+    get_last_charges(charges: typeof this.state.last_charges) {
+        let users_config = API.get('users/config');
+
+        return charges.map(c => {
+            let display_name = __("charge_tracker.script.unknown_user")
+
+            let filtered = users_config.users.filter(x => x.id == c.user_id);
+
+            if (c.user_id != 0 || filtered[0].display_name != "Anonymous") {
+                display_name = __("charge_tracker.script.deleted_user")
+                if (filtered.length == 1)
+                    display_name = filtered[0].display_name
+            }
+
+            return <ListGroupItem>
+                <div class="row">
+                    <div class="col">
+                        <div class="mb-2"><User/><span class="ml-1" style="vertical-align: middle;">{display_name}</span></div>
+                        <div><Calendar/><span class="ml-1" style="vertical-align: middle;">{util.timestamp_min_to_date(c.timestamp_minutes, __("charge_tracker.script.unknown_charge_start"))}</span></div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="mb-2"><BatteryCharging/><span class="ml-1" style="vertical-align: middle;">{c.energy_charged === null ? "N/A" : util.toLocaleFixed(c.energy_charged, 3)} kWh</span></div>
+                        <div><Clock/><span class="ml-1" style="vertical-align: middle;">{util.format_timespan(c.charge_duration)}</span></div>
+                    </div>
+                </div>
+            </ListGroupItem>}).reverse();
+    }
+
+    render(props: {}, state: Readonly<ChargeTrackerState>) {
+        if (!state)
+            return (<></>);
+
+        return (
+            <>
+                <PageHeader title={__("charge_tracker.content.charge_tracker")} />
+                    <FormRow label={__("charge_tracker.content.user_filter")} label_muted={__("charge_tracker.content.user_filter_muted")}>
+                        <InputSelect
+                            value={state.user_filter}
+                            onValue={(v) => this.setState({user_filter: v})}
+                            items={state.user_filter_items ?? []}
+                        />
+                    </FormRow>
+
+                    <FormRow label={__("charge_tracker.content.date_filter")} label_muted={__("charge_tracker.content.date_filter_muted")}>
+                        <div class="row no-gutters">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <div class="input-group-prepend"><span class="input-group-text">{__("charge_tracker.content.from")}</span></div>
+                                    <InputDate className="charge-tracker-input-group-prepend"
+                                            date={state.start_date}
+                                            onDate={(d: Date) => this.setState({start_date: d})}
+                                        />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <div class="input-group-prepend charge-tracker-input-group-append"><span class="input-group-text">{__("charge_tracker.content.to")}</span></div>
+                                    <InputDate className="charge-tracker-input-group-prepend"
+                                            date={state.end_date}
+                                            onDate={(d: Date) => this.setState({end_date: d})}
+                                        />
+                                </div>
+                            </div>
+                        </div>
+                    </FormRow>
+
+                    <FormRow label={__("charge_tracker.content.download")} label_muted={__("charge_tracker.content.download_desc")}>
+                        <Button variant="primary" className="form-control" onClick={async () => {
+                            this.setState({show_spinner: true});
+
+                            let start = state.start_date ?? new Date(0);
+                            // Start and end dates are "invalid date" if the user clicks the input's clear button.
+                            if (isNaN(start.getTime()))
+                                start = new Date(0);
+
+                            let end = state.end_date ?? new Date(Date.now());
+                            if (isNaN(end.getTime()))
+                                end = new Date(Date.now());
+
+                            try {
+                                await downloadChargeLog(parseInt(state.user_filter), start ,end);
+                            } finally {
+                                this.setState({show_spinner: false});
+                            }
+                        }}>
+                            <span class="mr-2">{__("charge_tracker.content.download_btn")}</span>
+                            <Download/>
+                            <Spinner animation="border" size="sm" as="span" className="ml-2" hidden={!state.show_spinner}/>
+                        </Button>
+                    </FormRow>
+
+                    <FormRow label={__("charge_tracker.content.remove")} label_muted={__("charge_tracker.content.remove_desc")}>
+                        <Button variant="danger" className="form-control" onClick={async () => {
+                            const modal = util.async_modal_ref.current;
+                            if (!await modal.show({
+                                    title: __("charge_tracker.content.remove"),
+                                    body: __("charge_tracker.content.charge_tracker_remove_modal_text"),
+                                    no_text: __("charge_tracker.content.abort_remove"),
+                                    yes_text: __("charge_tracker.content.confirm_remove"),
+                                    no_variant: "secondary",
+                                    yes_variant: "danger"
+                                }))
+                                return;
+
+                                await API.call('charge_tracker/remove_all_charges', {
+                                        "do_i_know_what_i_am_doing": true
+                                    }, __("charge_tracker.script.remove_failed"));
+
+                                util.postReboot(__("charge_tracker.script.remove_init"), __("util.reboot_text"));
+                        }}>
+                            {__("charge_tracker.content.remove_btn")}
+                        </Button>
+                    </FormRow>
+
+                    <FormSeparator/>
+
+                    <FormRow label={__("charge_tracker.content.tracked_charges")} label_muted={__("charge_tracker.content.tracked_charges_muted")}>
+                        <InputText value={state.tracked_charges}/>
+                    </FormRow>
+
+                    <FormRow label={__("charge_tracker.content.first_charge_timestamp")} label_muted={__("charge_tracker.content.first_charge_timestamp_muted")}>
+                        <InputText value={util.timestamp_min_to_date(state.first_charge_timestamp, __("charge_tracker.script.unknown_charge_start"))}/>
+                    </FormRow>
+
+                    <FormRow label={__("charge_tracker.content.last_charges")} label_muted={__("charge_tracker.content.last_charges_desc")}>
+                        <ListGroup>
+                            {this.get_last_charges(state.last_charges ?? [])}
+                        </ListGroup>
+                    </FormRow>
+            </>
+        );
+    }
+}
+
+render(<ChargeTracker/>, $('#charge_tracker')[0]);
 
 function update_last_charges() {
     let charges = API.get('charge_tracker/last_charges');
     let users_config = API.get('users/config');
 
-    let last_charges_html = charges.map((user) => {
+    let last_charges_html = charges.slice(-3).map((user) => {
         let display_name = __("charge_tracker.script.unknown_user")
-        
+
         let filtered = users_config.users.filter(x => x.id == user.user_id);
 
         if (user.user_id != 0 || filtered[0].display_name != "Anonymous") {
@@ -59,15 +242,8 @@ function update_last_charges() {
         </div>`
     }).reverse();
 
-    $('#charge_tracker_status_last_charges').html(last_charges_html.slice(0, 3).join(""));
-    $('#charge_tracker_last_charges').html(last_charges_html.join(""))
+    $('#charge_tracker_status_last_charges').html(last_charges_html.join(""));
     feather.replace();
-}
-
-function update_state() {
-    let state = API.get('charge_tracker/state');
-    $('#charge_tracker_tracked_charges').val(state.tracked_charges);
-    $('#charge_tracker_first_charge_timestamp').val(util.timestamp_min_to_date(state.first_charge_timestamp, __("charge_tracker.script.unknown_charge_start")));
 }
 
 function to_csv_line(vals: string[]) {
@@ -76,34 +252,7 @@ function to_csv_line(vals: string[]) {
     return line.join(",") + "\r\n";
 }
 
-export function getAllUsernames() {
-    return fetch('/users/all_usernames')
-        .then(response => response.arrayBuffer())
-        .then(buffer => {
-            let usernames: string[] = [];
-            let display_names: string[] = [];
-
-            if (buffer.byteLength != 256 * 64) {
-                console.log("Unexpected length of all_usernames!");
-                return [null, null];
-            }
-
-            const decoder = new TextDecoder();
-            for(let i = 0; i < 256; ++i) {
-                let view = new DataView(buffer, i * 64, 32);
-                let username = decoder.decode(view).replace(/\0/g, "");
-
-                view = new DataView(buffer, i * 64 + 32, 32);
-                let display_name = decoder.decode(view).replace(/\0/g, "");
-
-                usernames.push(username);
-                display_names.push(display_name);
-            }
-            return [usernames, display_names];
-        });
-}
-
-async function downloadChargeLog() {
+async function downloadChargeLog(user_filter: number, start_date: Date, end_date: Date) {
     const [usernames, display_names] = await getAllUsernames()
         .catch(err => {
             util.add_alert("download-charge-log", "danger", __("charge_tracker.script.download_charge_log_failed"), err);
@@ -113,8 +262,8 @@ async function downloadChargeLog() {
     if (usernames == null || display_names == null)
         return;
 
-    await fetch('/charge_tracker/charge_log')
-        .then(response => response.arrayBuffer())
+    await util.download('/charge_tracker/charge_log')
+        .then(blob => blob.arrayBuffer())
         .then(buffer => {
             let line = [
                 __("charge_tracker.script.csv_header_start"),
@@ -131,19 +280,13 @@ async function downloadChargeLog() {
             let result = header;
             let users_config = API.get('users/config');
 
-            let start_s = $('#charge_tracker_start_date_filter').val().toString();
-            let end_s = $('#charge_tracker_end_date_filter').val().toString();
-
-            let start_date = start_s == "" ? new Date(0) : new Date(start_s);
             let start = start_date.getTime() / 1000 / 60;
 
-            let end_date = end_s == "" ? new Date(Date.now()) : new Date(end_s);
             end_date.setHours(23, 59, 59, 999);
             let end = end_date.getTime() / 1000 / 60;
 
             let known_users = API.get('users/config').users.filter(u => u.id != 0).map(u => u.id);
 
-            let user_filter = parseInt($('#charge_tracker_user_filter').val().toString());
             let user_filtered = (x: number) => {
                 switch(user_filter) {
                     case -2:
@@ -219,7 +362,6 @@ async function downloadChargeLog() {
                 }
             }
 
-            let t = (new Date()).toISOString().replace(/:/gi, "-").replace(/\./gi, "-");
             util.downloadToFile(result, "charge-log", "csv", "text/csv; charset=utf-8; header=present");
         })
         .catch(err => util.add_alert("download-charge-log", "alert-danger", __("charge_tracker.script.download_charge_log_failed"), err));
@@ -258,35 +400,8 @@ function update_current_charge() {
     $('#users_status_charging_start').html(util.timestamp_min_to_date(cc.timestamp_minutes, __("charge_tracker.script.unknown_charge_start")));
 }
 
-function update_user_filter_dropdown() {
-    let uc = API.get('users/config');
-
-    let options = uc.users.map((x) => `<option value=${x.id}>${(x.display_name == "Anonymous" && x.id == 0) ? __("charge_tracker.script.unknown_users") : x.display_name}</option>`);
-    options.unshift(`<option value=-2>${__("charge_tracker.script.all_users")}</option>`, `<option value=-1>${__("charge_tracker.script.deleted_users")}</option>`);
-    $('#charge_tracker_user_filter').empty().append(options.join(""));
-}
-
 export function init() {
-    $('#charge_tracker_download').on("click", () => {
-        $('#charge_tracker_download_spinner').prop("hidden", false);
-        let finally_fn = () => $('#charge_tracker_download_spinner').prop("hidden", true);
 
-        downloadChargeLog().then(finally_fn, finally_fn);
-    });
-
-    $('#charge_tracker_remove').on("click", () => $('#charge_tracker_remove_modal').modal('show'));
-
-    $('#charge_tracker_remove_confirm').on("click", () => {
-        let finally_fn = () => $('#charge_tracker_remove_modal').modal('hide');
-
-        API.call('charge_tracker/remove_all_charges', {
-            "do_i_know_what_i_am_doing": true
-        }, __("charge_tracker.script.remove_failed"))
-        .then(() => {
-            util.postReboot(__("charge_tracker.script.remove_init"), __("util.reboot_text"));
-        })
-        .then(finally_fn, finally_fn);
-    });
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
@@ -295,8 +410,6 @@ export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('evse/low_level_state', update_current_charge);
     source.addEventListener('meter/values', update_current_charge);
     source.addEventListener('users/config', update_current_charge);
-    source.addEventListener('users/config', update_user_filter_dropdown);
-    source.addEventListener('charge_tracker/state', update_state);
 }
 
 export function update_sidebar_state(module_init: any) {

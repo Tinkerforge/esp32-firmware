@@ -41,7 +41,7 @@ extern bool firmware_update_allowed;
 #define SLOT_ACTIVE(x) ((bool)(x & 0x01))
 #define SLOT_CLEAR_ON_DISCONNECT(x) ((bool)(x & 0x02))
 
-EVSE::EVSE() : DeviceModule("evse", "EVSE", "EVSE", std::bind(&EVSE::setup_evse, this))
+void EVSE::pre_setup()
 {
     // States
     evse_state = Config::Object({
@@ -543,14 +543,14 @@ void EVSE::register_urls()
             ws.pushRawStateUpdate(this->get_evse_debug_header(), "evse/debug_header");
             debug = true;
         }, 0);
-        request.send(200);
+        return request.send(200);
     });
 
     server.on("/evse/stop_debug", HTTP_GET, [this](WebServerRequest request){
         task_scheduler.scheduleOnce([this](){
             debug = false;
         }, 0);
-        request.send(200);
+        return request.send(200);
     });
 #endif
 

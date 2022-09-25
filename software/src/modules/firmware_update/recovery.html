@@ -1,15 +1,14 @@
-<!DOCTYPE html>
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Recovery interface</title>
-    <style type="text/css">
-        h3 {
-            margin-top: 2rem;
-            margin-bottom: 0.5rem;
-        }
-    </style>
-    <link rel="shortcut icon" href="data:image/gif;base64,R0lGODlhAQABAAAAADs=" />
-</head>
+<!DOCTYPE html lang="en">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recovery interface</title>
+<style>
+    h3 {
+        margin-top: 2rem;
+        margin-bottom: 0.5rem;
+    }
+</style>
+<link rel="icon" href="data:," />
 
 <h3 style="margin-top: 0.5rem;">Firmware update</h3>
 <form>
@@ -26,7 +25,7 @@
 <h3>Factory reset</h3>
 <form>
     <input id="factory_reset" type="text" placeholder="Type RESET to allow a factory reset" oninput=on_input() size=26>
-    <button id="factory_reset_button" type="button" onclick='reset()' disabled>Trigger factory reset</button>
+    <button id="factory_reset_button" type="button" onclick='freset()' disabled>Trigger factory reset</button>
 </form>
 
 <h3>Debug report</h3>
@@ -83,42 +82,20 @@ function reboot() {
     xhr.send();
 }
 
-function reset() {
-    var url = "/factory_reset";
-
-    var xhr = new XMLHttpRequest();
-    xhr.open("PUT", url);
-
-    xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
-
-    xhr.onreadystatechange = function () {
-    if (xhr.readyState == XMLHttpRequest.DONE) {
-        console.log(xhr.status);
-        console.log(xhr.responseText);
-    }};
-
-    xhr.send(JSON.stringify({"do_i_know_what_i_am_doing": true}));
+function freset() {
+    fetch("/factory_reset", {
+        method: "PUT",
+        credentials: 'same-origin',
+        headers: {"Content-Type": "application/json; charset=utf-8"},
+        body: JSON.stringify({"do_i_know_what_i_am_doing": true})
+    }).then(response => console.log(response.status, response.statusText));
 }
 
 function get(url, continuation) {
-    var xmlhttp = new XMLHttpRequest();
-
-    xmlhttp.onreadystatechange = function() {
-        if (xmlhttp.readyState == XMLHttpRequest.DONE) {
-           if (xmlhttp.status == 200) {
-               continuation(xmlhttp.responseText);
-           }
-           else if (xmlhttp.status == 400) {
-                alert('There was an error 400');
-           }
-           else {
-                alert('something else other than 200 was returned');
-           }
-        }
-    };
-
-    xmlhttp.open("GET", url);
-    xmlhttp.send();
+    fetch(url, {
+        method: "GET",
+        credentials: 'same-origin'
+    }).then(response => response.status == 200 ? response.text().then(t => continuation(t)) : Promise.reject());
 }
 
 function debug_report() {
@@ -145,55 +122,28 @@ function debug_report() {
 
 function call_api() {
     let s = document.getElementById('api').value;
-
-    let payload = null;
-    while (s.length > 0) {
-        if (!s.startsWith("{")) {
-            console.log(1);
-            s = s.slice(1);
-            continue;
-        }
-        if (!s.endsWith("}")) {
-            console.log(2);
-            s = s.slice(0, -1);
-            continue;
-        }
-        console.log(3);
-
-        try {
-            payload = JSON.parse(s);
-            break;
-        } catch(e) {
-            alert("Failed to parse payload");
-            break;
-        }
-    }
-
-    if (payload == null) {
-        alert("Failed to parse payload");
-        return;
-    }
+    s = s.slice(s.indexOf("{"), s.lastIndexOf("}") + 1);
+    let payload = JSON.parse(s);
 
     var url = payload["url"];
 
-    var xhr = new XMLHttpRequest();
-    xhr.open(payload["method"], url);
+    let opts = {
+        method: payload["method"],
+        credentials: 'same-origin'
+    }
 
-    if (payload["method"] != "GET")
-        xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+    if (payload["method"] != "GET") {
+        opts["headers"] = {'Content-Type': 'application/json; charset=utf-8'};
+        opts["body"] = payload["payload"];
+    }
 
-    xhr.onreadystatechange = function () {
-    //if (xhr.readyState == XMLHttpRequest.DONE) {
-    {
-        let resp = xhr.responseText
-        try {
-            resp = JSON.stringify(JSON.parse(xhr.responseText), null, "    ");
-        } catch {
-
-        }
-        document.getElementById('api_result').value = xhr.status + "\n" + resp;
-    }};
-
-    xhr.send(payload["payload"]);
+    fetch(url, opts)
+    .then(response => {
+        return response.text()
+                       .catch(() => response.statusText)
+                       .then(x => response.status + "\n" + x);
+    }).then(txt => {
+        document.getElementById('api_result').value = txt;
+    });
 }
 </script>

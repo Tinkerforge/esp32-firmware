@@ -22,7 +22,6 @@ struct response_packet {
     uint8_t iec61851_state;
     uint8_t vehicle_state;
     uint8_t error_state;
-    uint8_t charge_release;
     uint32_t uptime;
     uint32_t charging_time;
     uint16_t allowed_charging_current;
@@ -86,7 +85,7 @@ resp_iec61851_state.addItem("1: B - Connected")
 resp_iec61851_state.addItem("2: C - Charging")
 resp_iec61851_state.addItem("3: D - Not supported")
 resp_iec61851_state.addItem("4: E/F - Error")
-layout.addRow("IEC State", resp_iec61851_state)
+layout.addRow("IEC state", resp_iec61851_state)
 
 resp_charger_state = QComboBox()
 resp_charger_state.addItem("0: Not connected")
@@ -94,12 +93,12 @@ resp_charger_state.addItem("1: Waiting for release")
 resp_charger_state.addItem("2: Ready")
 resp_charger_state.addItem("3: Charging")
 resp_charger_state.addItem("4: Error")
-layout.addRow("Vehicle State", resp_charger_state)
+layout.addRow("Vehicle state", resp_charger_state)
 
 resp_error_state = QSpinBox()
 resp_error_state.setMinimum(0)
 resp_error_state.setMaximum(4)
-layout.addRow("Error State", resp_error_state)
+layout.addRow("Error state", resp_error_state)
 
 resp_uptime = QLabel("no packet sent yet")
 layout.addRow("Uptime", resp_uptime)

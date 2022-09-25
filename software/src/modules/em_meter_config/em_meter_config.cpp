@@ -35,7 +35,7 @@ extern WebServer server;
 
 extern API api;
 
-EMMeterConfig::EMMeterConfig()
+void EMMeterConfig::pre_setup()
 {
     // States
     config = Config::Object({

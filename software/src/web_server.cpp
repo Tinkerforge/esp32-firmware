@@ -25,11 +25,16 @@
 #include "task_scheduler.h"
 #include "digest_auth.h"
 
+#include "modules.h"
+
+#include "tools.h"
+
 #include <memory>
+
+#define MAX_URI_HANDLERS 128
 
 extern TaskScheduler task_scheduler;
 
-#define MAX_URI_HANDLERS 128
 
 void WebServer::start()
 {
@@ -43,6 +48,11 @@ void WebServer::start()
     config.max_uri_handlers = MAX_URI_HANDLERS;
     config.global_user_ctx = this;
     config.max_open_sockets = 10;
+
+#if MODULE_HTTP_AVAILABLE()
+    config.uri_match_fn = custom_uri_match;
+#endif
+
     /*config.task_priority = tskIDLE_PRIORITY+7;
     config.core_id = 1;*/
 
@@ -267,18 +277,18 @@ const char *httpStatusCodeToString(int code)
     }
 }
 
-void WebServerRequest::send(uint16_t code, const char *content_type, const char *content, size_t content_len)
+WebServerRequestReturnProtect WebServerRequest::send(uint16_t code, const char *content_type, const char *content, size_t content_len)
 {
     auto result = httpd_resp_set_type(req, content_type);
     if (result != ESP_OK) {
         printf("Failed to set response type: %d\n", result);
-        return;
+        return WebServerRequestReturnProtect{};
     }
 
     result = httpd_resp_set_status(req, httpStatusCodeToString(code));
     if (result != ESP_OK) {
         printf("Failed to set response status: %d\n", result);
-        return;
+        return WebServerRequestReturnProtect{};
     }
 
     struct httpd_req_aux *ra = (struct httpd_req_aux *)req->aux;
@@ -317,8 +327,8 @@ void WebServerRequest::send(uint16_t code, const char *content_type, const char 
 
     if (result != ESP_OK) {
         printf("Failed to send response: %d\n", result);
-        return;
     }
+    return WebServerRequestReturnProtect{};
 }
 
 void WebServerRequest::beginChunkedResponse(uint16_t code, const char *content_type)
@@ -345,13 +355,13 @@ void WebServerRequest::sendChunk(const char *chunk, size_t chunk_len)
     }
 }
 
-void WebServerRequest::endChunkedResponse()
+WebServerRequestReturnProtect WebServerRequest::endChunkedResponse()
 {
     auto result = httpd_resp_send_chunk(req, nullptr, 0);
     if (result != ESP_OK) {
         printf("Failed to end chunked response: %d\n", result);
-        return;
     }
+    return WebServerRequestReturnProtect{};
 }
 
 void WebServerRequest::addResponseHeader(const char *field, const char *value)
@@ -363,22 +373,13 @@ void WebServerRequest::addResponseHeader(const char *field, const char *value)
     }
 }
 
-void WebServerRequest::requestAuthentication()
+WebServerRequestReturnProtect WebServerRequest::requestAuthentication()
 {
     String payload = "Digest ";
     payload.concat(requestDigestAuthentication(nullptr));
     addResponseHeader("WWW-Authenticate", payload.c_str());
-    send(401);
+    return send(401);
 }
-
-class CustomString : public String
-{
-public:
-    void setLength(int len)
-    {
-        setLen(len);
-    }
-};
 
 String WebServerRequest::header(const char *header_name)
 {
@@ -386,7 +387,7 @@ String WebServerRequest::header(const char *header_name)
     if (buf_len == 1)
         return String("");
 
-    CustomString result;
+    StringWithSettableLength result;
     result.reserve(buf_len);
     char *buf = result.begin();
     /* Copy null terminated value string into buffer */

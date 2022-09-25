@@ -548,7 +548,7 @@ void WebSockets::start(const char *uri)
                             work_queue[i].payload_len == 0 ? "PING" : (work_queue[i].payload_len < 10 ? work_queue[i].payload : work_queue[i].payload + 10));
         }
 
-        request.send(200);
+        return request.send(200);
     });
 }
 

@@ -31,7 +31,7 @@ extern EventLog logger;
 extern TaskScheduler task_scheduler;
 extern TF_HAL hal;
 
-Kransteuerung::Kransteuerung()
+void Kransteuerung::pre_setup()
 {
 
 }

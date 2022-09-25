@@ -12,7 +12,7 @@
         "content": {
             "ntp": "Time Synchronization",
             "enable": "Time synchronization enabled",
-            "enable_desc": "Synchronizes the interal clock over the network (NTP)",
+            "enable_desc": "Synchronizes the internal clock over the network (NTP)",
             "use_dhcp": "Use DHCP",
             "use_dhcp_desc": "Uses time servers that were set via DHCP",
             "timezone": "Time zone",
