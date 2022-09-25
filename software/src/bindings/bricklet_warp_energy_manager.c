@@ -1,7 +1,7 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-02-18.      *
+ * This file was automatically generated on 2022-07-12.      *
  *                                                           *
- * C/C++ for Microcontrollers Bindings Version 2.0.0         *
+ * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
  * If you have a bugfix for this file and want to commit it, *
  * please fix the bug in the generator. You can find a link  *
@@ -1780,7 +1780,7 @@ int tf_warp_energy_manager_get_energy_meter_detailed_values(TF_WARPEnergyManager
     if (warp_energy_manager->magic != 0x5446 || warp_energy_manager->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     uint32_t _values_length = 0;
     float _values_chunk_data[15];
 

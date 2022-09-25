@@ -21,7 +21,6 @@
 
 #include <esp_http_server.h>
 
-#include "keep_alive.h"
 #include "task_scheduler.h"
 #include "web_server.h"
 
@@ -29,14 +28,14 @@ extern TaskScheduler task_scheduler;
 extern WebServer server;
 extern API api;
 
-WS::WS() : web_sockets()
+void WS::pre_setup()
 {
     api.registerBackend(this);
 }
 
 void WS::setup()
 {
-
+    initialized = true;
 }
 
 void WS::register_urls()
@@ -59,22 +58,18 @@ void WS::register_urls()
 
 void WS::loop()
 {
-
 }
 
 void WS::addCommand(size_t commandIdx, const CommandRegistration &reg)
 {
-
 }
 
 void WS::addState(size_t stateIdx, const StateRegistration &reg)
 {
-
 }
 
 void WS::addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg)
 {
-
 }
 
 static const char *prefix = "{\"topic\":\"";
@@ -118,11 +113,11 @@ bool WS::pushStateUpdate(size_t stateIdx, String payload, String path)
     return true;
 }
 
-void WS::pushRawStateUpdate(String payload, String path) {
+void WS::pushRawStateUpdate(String payload, String path)
+{
     pushStateUpdate(0, payload, path);
 }
 
 void WS::wifiAvailable()
 {
-
 }

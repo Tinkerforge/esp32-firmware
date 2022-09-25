@@ -27,20 +27,67 @@
 #include "esp_spiffs.h"
 #include "LittleFS.h"
 #include "esp_littlefs.h"
+#include "esp_system.h"
 
 #include <soc/efuse_reg.h>
 #include "bindings/base58.h"
 #include "bindings/bricklet_unknown.h"
 #include "event_log.h"
 #include "esp_log.h"
+#include "build.h"
+
+#include <arpa/inet.h>
 
 extern EventLog logger;
 
+const char *tf_reset_reason()
+{
+    esp_reset_reason_t reason = esp_reset_reason();
+
+    switch (reason) {
+        case ESP_RST_POWERON:
+            return "Reset due to power-on.";
+
+        case ESP_RST_EXT:
+            return "Reset by external pin.";
+
+        case ESP_RST_SW:
+            return "Software reset via esp_restart.";
+
+        case ESP_RST_PANIC:
+            return "Software reset due to exception/panic.";
+
+        case ESP_RST_INT_WDT:
+            return "Reset due to interrupt watchdog.";
+
+        case ESP_RST_TASK_WDT:
+            return "Reset due to task watchdog.";
+
+        case ESP_RST_WDT:
+            return "Reset due to some watchdog.";
+
+        case ESP_RST_DEEPSLEEP:
+            return "Reset after exiting deep sleep mode.";
+
+        case ESP_RST_BROWNOUT:
+            return "Brownout reset.";
+
+        case ESP_RST_SDIO:
+            return "Reset over SDIO.";
+
+        default:
+            return "Reset reason unknown.";
+    }
+}
+
+bool a_after_b(uint32_t a, uint32_t b)
+{
+    return ((uint32_t)(a - b)) < (UINT32_MAX / 2);
+}
+
 bool deadline_elapsed(uint32_t deadline_ms)
 {
-    uint32_t now = millis();
-
-    return ((uint32_t)(now - deadline_ms)) < (UINT32_MAX / 2);
+    return a_after_b(millis(), deadline_ms);
 }
 
 void read_efuses(uint32_t *ret_uid_num, char *ret_uid_str, char *ret_passphrase)
@@ -120,23 +167,23 @@ int check(int rc, const char *msg)
     return rc;
 }
 
-class LogSilencer {
-public:
-    LogSilencer(const char *tag) : tag(tag), level_to_restore(ESP_LOG_NONE) {
-        level_to_restore = esp_log_level_get(tag);
-        esp_log_level_set(tag, ESP_LOG_NONE);
-    }
+int vprintf_dev_null(const char *format, va_list ap) {
+    return 0;
+}
 
-    ~LogSilencer() {
-        esp_log_level_set(tag, level_to_restore);
-    }
-    const char *tag;
-    esp_log_level_t level_to_restore;
-};
+LogSilencer::LogSilencer() : old_fn(nullptr)
+{
+    old_fn = esp_log_set_vprintf(vprintf_dev_null);
+}
+
+LogSilencer::~LogSilencer()
+{
+    esp_log_set_vprintf(old_fn);
+}
 
 bool is_spiffs_available(const char *part_label, const char *base_path)
 {
-    LogSilencer ls{"SPIFFS"};
+    LogSilencer ls;
 
     esp_vfs_spiffs_conf_t conf = {
         .base_path = base_path,
@@ -160,7 +207,7 @@ bool is_spiffs_available(const char *part_label, const char *base_path)
 
 bool is_littlefs_available(const char *part_label, const char *base_path)
 {
-    LogSilencer ls{"esp_littlefs"};
+    LogSilencer ls;
 
     esp_vfs_littlefs_conf_t conf = {
         .base_path = base_path,
@@ -250,18 +297,17 @@ bool mount_or_format_spiffs(void)
     // If we still have an SPIFFS, copy the configuration into the "backup" slot, i.e. the core dump partition
     // Format the core dump partition in any case, maybe we where interrupted while copying the last time.
     if (is_spiffs_available("spiffs", "/spiffs")) {
-        logger.printfln("Configuration partition is mountable as SPIFFS. Migrating to LittleFS.");
+        logger.printfln("Data partition is mountable as SPIFFS. Migrating to LittleFS.");
 
         logger.printfln("Formatting core dump partition as LittleFS.");
         {
-            LogSilencer ls{"esp_littlefs"};
-            LogSilencer ls2{"ARDUINO"};
+            LogSilencer ls;
             LittleFS.begin(false, "/conf_backup", 10, "coredump");
         }
         LittleFS.format();
         LittleFS.begin(false, "/conf_backup", 10, "coredump");
 
-        logger.printfln("Mirroring configuration to core dump partition.");
+        logger.printfln("Mirroring data to core dump partition.");
         SPIFFS.begin(false);
         uint8_t *buf = (uint8_t *)malloc(4096);
         mirror_filesystem(SPIFFS, LittleFS, "/", 4, buf, 4096);
@@ -275,18 +321,17 @@ bool mount_or_format_spiffs(void)
     // (maybe we copied only half the config last time). Then copy over the configuration backup files
     // and erase the backup completely.
     if (is_littlefs_available("coredump", "/conf_backup")) {
-        logger.printfln("Core dump partition is mountable as LittleFS, configuration backup found. Continuing migration.");
+        logger.printfln("Core dump partition is mountable as LittleFS, data backup found. Continuing migration.");
 
-        logger.printfln("Formatting configuration partition as LittleFS.");
+        logger.printfln("Formatting data partition as LittleFS.");
         {
-            LogSilencer ls{"esp_littlefs"};
-            LogSilencer ls2{"ARDUINO"};
+            LogSilencer ls;
             LittleFS.begin(false, "/spiffs", 10, "spiffs");
         }
         LittleFS.format();
         LittleFS.begin(false, "/spiffs", 10, "spiffs");
 
-        logger.printfln("Mirroring configuration backup to configuration partition.");
+        logger.printfln("Mirroring data backup to data partition.");
         fs::LittleFSFS configFS;
         configFS.begin(false, "/conf_backup", 10, "coredump");
         uint8_t *buf = (uint8_t *)malloc(4096);
@@ -302,13 +347,13 @@ bool mount_or_format_spiffs(void)
     }
 
     if (!is_littlefs_available("spiffs", "/spiffs")) {
-        logger.printfln("Configuration partition is not mountable as LittleFS. Formatting now.");
+        logger.printfln("Data partition is not mountable as LittleFS. Formatting now.");
         {
-            LogSilencer ls{"esp_littlefs"};
+            LogSilencer ls;
             LittleFS.begin(false, "/spiffs", 10, "spiffs");
         }
         LittleFS.format();
-        logger.printfln("Configuration partition is now formatted as LittleFS.");
+        logger.printfln("Data partition is now formatted as LittleFS.");
     }
 
     if (!LittleFS.begin(false, "/spiffs", 10, "spiffs")) {
@@ -317,30 +362,24 @@ bool mount_or_format_spiffs(void)
 
     size_t part_size = LittleFS.totalBytes();
     size_t part_used = LittleFS.usedBytes();
-    logger.printfln("Mounted configuration partition. %u of %u bytes (%3.1f %%) used", part_used, part_size, ((float)part_used / (float)part_size) * 100.0f);
+    logger.printfln("Mounted data partition. %u of %u bytes (%3.1f %%) used", part_used, part_size, ((float)part_used / (float)part_size) * 100.0f);
 
     return true;
 }
 
-String read_or_write_config_version(const char *firmware_version)
+String read_config_version()
 {
-    if (LittleFS.exists("/spiffs.json")) {
-        const size_t capacity = JSON_OBJECT_SIZE(1) + 60;
-        StaticJsonDocument<capacity> doc;
-        File file = LittleFS.open("/spiffs.json", "r");
+    if (LittleFS.exists("/config/version")) {
+        StaticJsonDocument<JSON_OBJECT_SIZE(1) + 60> doc;
+        File file = LittleFS.open("/config/version", "r");
 
         deserializeJson(doc, file);
         file.close();
 
         return doc["spiffs"].as<const char *>();
-    } else {
-        File file = LittleFS.open("/spiffs.json", "w");
-
-        file.printf("{\"spiffs\": \"%s\"}", firmware_version);
-        file.close();
-
-        return firmware_version;
     }
+    logger.printfln("Failed to read config version!");
+    return BUILD_VERSION_STRING;
 }
 
 static bool wait_for_bootloader_mode(TF_Unknown *bricklet, int target_mode)
@@ -498,8 +537,8 @@ static bool flash_firmware(TF_Unknown *bricklet, const uint8_t *firmware, size_t
 #define FIRMWARE_MINOR_OFFSET 11
 #define FIRMWARE_PATCH_OFFSET 12
 
-
-class TFPSwap {
+class TFPSwap
+{
 public:
     TFPSwap(TF_TFP *tfp) :
         tfp(tfp),
@@ -530,7 +569,7 @@ int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose,
     int rc = tf_unknown_create(&bricklet, tfp);
 
     if (rc != TF_E_OK) {
-        logger->printfln("%s init failed (rc %d). Disabling %s support.", name, rc, purpose);
+        logger->printfln("%s init failed (rc %d).", name, rc);
         return -1;
     }
 
@@ -539,7 +578,7 @@ int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose,
     rc = tf_unknown_get_identity(&bricklet, nullptr, nullptr, nullptr, nullptr, firmware_version, nullptr);
 
     if (rc != TF_E_OK) {
-        logger->printfln("%s get identity failed (rc %d). Disabling %s support.", name, rc, purpose);
+        logger->printfln("%s get identity failed (rc %d).", name, rc);
         return -1;
     }
 
@@ -557,6 +596,10 @@ int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose,
         flash_required |= firmware_version[i] != embedded_firmware_version[i];
     }
 
+    uint8_t mode;
+    tf_unknown_get_bootloader_mode(&bricklet, &mode);
+    flash_required |= mode != TF_UNKNOWN_BOOTLOADER_MODE_FIRMWARE;
+
     if (flash_required) {
         if (force) {
             logger->printfln("Forcing %s firmware update to %d.%d.%d. Flashing firmware...",
@@ -570,7 +613,7 @@ int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose,
         }
 
         if (!flash_firmware(&bricklet, firmware, firmware_len, logger)) {
-            logger->printfln("%s flashing failed. Disabling %s support.", name, purpose);
+            logger->printfln("%s flashing failed.", name);
             return -1;
         }
     }
@@ -579,7 +622,6 @@ int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose,
 
     return 0;
 }
-
 
 int compare_version(uint8_t left_major, uint8_t left_minor, uint8_t left_patch,
                     uint8_t right_major, uint8_t right_minor, uint8_t right_patch) {
@@ -604,7 +646,103 @@ int compare_version(uint8_t left_major, uint8_t left_minor, uint8_t left_patch,
     return 0;
 }
 
-bool clock_synced(struct timeval *out_tv_now) {
+bool clock_synced(struct timeval *out_tv_now)
+{
     gettimeofday(out_tv_now, nullptr);
-    return out_tv_now->tv_sec > ((2016 - 1970) * 365 * 24  * 60 * 60);
+    return out_tv_now->tv_sec > ((2016 - 1970) * 365 * 24 * 60 * 60);
+}
+
+uint32_t timestamp_minutes()
+{
+    struct timeval tv_now;
+
+    if (!clock_synced(&tv_now))
+        return 0;
+
+    return tv_now.tv_sec / 60;
+}
+
+bool for_file_in(const char *dir, bool (*callback)(File *open_file), bool skip_directories)
+{
+    File root = LittleFS.open(dir);
+    File file;
+    while (file = root.openNextFile()) {
+        if (skip_directories && file.isDirectory()) {
+            continue;
+        }
+        if (!callback(&file))
+            return false;
+    }
+    return true;
+}
+
+void remove_directory(const char *path)
+{
+    // This is more involved than expected:
+    // rmdir only deletes empty directories, so remove all files first
+    // Also LittleFS.rmdir will call the vfs_api.cpp implementation that
+    // helpfully checks the mountpoint's name. If it is
+    // "/spiffs", the directory will not be deleted, but instead
+    // "rmdir is unnecessary in SPIFFS" is printed. However our mountpoint
+    // is only called /spiffs for historical reasons, we use
+    // LittleFS instead. Calling ::rmdir directly bypasses
+    // this and other helpful checks.
+    for_file_in(path, [](File *f) {
+            String file_path = f->path();
+            f->close();
+            LittleFS.remove(file_path);
+            return true;
+        });
+
+    ::rmdir((String("/spiffs/") + path).c_str());
+}
+
+
+bool is_in_subnet(IPAddress ip, IPAddress subnet, IPAddress to_check) {
+    return (((uint32_t)ip) & ((uint32_t)subnet)) == (((uint32_t)to_check) & ((uint32_t)subnet));
+}
+
+bool is_valid_subnet_mask(IPAddress subnet) {
+    bool zero_seen = false;
+    // IPAddress is in network byte order!
+    uint32_t addr = ntohl((uint32_t) subnet);
+    for (int i = 31; i >= 0; --i) {
+        bool bit_is_one = (addr & (1 << i));
+        if (zero_seen && bit_is_one) {
+            return false;
+        } else if (!zero_seen && !bit_is_one) {
+            zero_seen = true;
+        }
+    }
+    return true;
+}
+
+void led_blink(int8_t led_pin, int interval, int blinks_per_interval, int off_time_ms) {
+    int t_in_second = millis() % interval;
+    if (off_time_ms != 0 && (interval - t_in_second <= off_time_ms)) {
+        digitalWrite(led_pin, 1);
+        return;
+    }
+
+    // We want blinks_per_interval blinks and blinks_per_interval pauses between them. The off_time counts as pause.
+    int state_count = ((2 * blinks_per_interval) - (off_time_ms != 0 ? 1 : 0));
+    int state_interval = (interval - off_time_ms) / state_count;
+    bool led = (t_in_second / state_interval) % 2 != 0;
+
+    digitalWrite(led_pin, led);
+}
+
+uint16_t internet_checksum(const uint8_t* data, size_t length) {
+    uint32_t checksum=0xffff;
+
+    for (size_t i = 0; i < length - 1; i += 2) {
+        uint16_t buf;
+        memcpy(&buf, data + i, 2);
+        checksum += buf;
+    }
+
+    uint32_t carry = checksum >> 16;
+    checksum = (checksum & 0xFFFF) + carry;
+    checksum = ~checksum;
+    return checksum;
 }

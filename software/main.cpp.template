@@ -32,6 +32,12 @@
 #include "web_server.h"
 #include "build_timestamp.h"
 
+#ifndef TF_ESP_PREINIT
+#define TF_ESP_PREINIT
+#endif
+
+bool config_constructors_allowed = false;
+
 const char* DISPLAY_NAME = "{{{display_name}}}";
 
 WebServer server;
@@ -55,7 +61,6 @@ int8_t button_pin = -1;
 // filled by board module
 bool factory_reset_requested = false;
 
-ConfigRoot version;
 ConfigRoot modules;
 ConfigRoot reboot;
 
@@ -68,22 +73,21 @@ static bool is_safari(const String &user_agent) {
            user_agent.indexOf("Chromium/") == -1;
 }
 
-static void send_index_html(WebServerRequest &request) {
+static WebServerRequestReturnProtect send_index_html(WebServerRequest &request) {
     request.addResponseHeader("Content-Encoding", "gzip");
     request.addResponseHeader("ETag", BUILD_TIMESTAMP_HEX_STR);
     request.addResponseHeader("X-Clacks-Overhead", "GNU Terry Pratchett");
 
     if (request.header("If-None-Match") == BUILD_TIMESTAMP_HEX_STR) {
-        request.send(304);
-        return;
+        return request.send(304);
     }
 
-    request.send(200, "text/html", index_html_data, index_html_length);
+    return request.send(200, "text/html", index_html_data, index_html_length);
 }
 
 static void register_default_urls(void) {
     server.on("/", HTTP_GET, [](WebServerRequest request) {
-        send_index_html(request);
+        return send_index_html(request);
     });
 
     reboot = ConfigRoot{Config::Null()};
@@ -94,16 +98,11 @@ static void register_default_urls(void) {
         ESP.restart();
     }, true);
 
-    api.addState("version", &version, {}, 10000);
-    api.addState("modules", &modules, {}, 10000);
+    api.addState("info/modules", &modules, {}, 10000);
 
     server.on("/force_reboot", HTTP_GET, [](WebServerRequest request) {
         ESP.restart();
-        request.send(200, "text/html", "Forced reboot.");
-    });
-
-    server.on("/uptime", HTTP_GET, [](WebServerRequest request) {
-        request.send(200, "text/html", String(millis()).c_str());
+        return request.send(200, "text/html", "Forced reboot.");
     });
 
     server.onNotAuthorized([](WebServerRequest request) {
@@ -112,31 +111,28 @@ static void register_default_urls(void) {
             // as it does not proactively send the credentials if the same url is known to have an unauthenticated
             // version.
             if (is_safari(request.header("User-Agent"))) {
-                request.requestAuthentication();
-                return;
+                return request.requestAuthentication();
             }
 
-            send_index_html(request);
+            return send_index_html(request);
         } else if (request.uri() == "/login_state") {
             // Same reasoning as above. If we don't force Safari, it does not send credentials, which breaks the login_state check.
             if (is_safari(request.header("User-Agent"))) {
-                request.requestAuthentication();
-                return;
+                return request.requestAuthentication();
             }
 
-            request.send(200, "text/plain", "Not logged in");
+            return request.send(200, "text/plain", "Not logged in");
         } else {
-            request.requestAuthentication();
-            return;
+            return request.requestAuthentication();
         }
     });
 
     server.on("/credential_check", HTTP_GET, [](WebServerRequest request) {
-        request.send(200, "text/plain", "Credentials okay");
+        return request.send(200, "text/plain", "Credentials okay");
     });
 
     server.on("/login_state", HTTP_GET, [](WebServerRequest request) {
-        request.send(200, "text/plain", "Logged in");
+        return request.send(200, "text/plain", "Logged in");
     });
 
     api.registerDebugUrl(&server);
@@ -145,25 +141,30 @@ static void register_default_urls(void) {
 void setup(void) {
     Serial.begin(115200);
 
+    logger.setup();
+
     logger.printfln("    **** TINKERFORGE {{{display_name_upper}}} V" BUILD_VERSION_FULL_STR " ****");
     logger.printfln("         %dK RAM SYSTEM   %d HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());
     logger.printfln("READY.");
+
+    logger.printfln("Last reset reason was: %s", tf_reset_reason());
+
+    TF_ESP_PREINIT
 
     if(!mount_or_format_spiffs()) {
         logger.printfln("Failed to mount SPIFFS.");
     }
 
-    String config_version = read_or_write_config_version(BUILD_VERSION_FULL_STR);
+    config_constructors_allowed = true;
 
-    logger.printfln("{{{display_name}}} configuration version %s", config_version.c_str());
+    task_scheduler.pre_setup();
+    api.pre_setup();
 
-    version = Config::Object({
-        {"firmware", Config::Str(BUILD_VERSION_FULL_STR)},
-        {"spiffs", Config::Str(config_version)},
-    });
+    {{{module_pre_setup}}}
 
-    api.setup();
+    // Setup task scheduler before API: The API setup can run migrations that want to start tasks.
     task_scheduler.setup();
+    api.setup();
 
     {{{module_setup}}}
 
@@ -184,17 +185,21 @@ void setup(void) {
 
 void loop(void) {
     // Prioritize proxy performance over web interface and WiFi responsitivity
-    tf_hal_tick(&hal, 1000);
-    tf_hal_tick(&hal, 1000);
-    tf_hal_tick(&hal, 1000);
-    tf_hal_tick(&hal, 1000);
-    tf_hal_tick(&hal, 1000);
-    tf_hal_tick(&hal, 1000);
-    tf_hal_tick(&hal, 1000);
-    tf_hal_tick(&hal, 1000);
+    tf_hal_tick(&hal, 0);
+    tf_hal_tick(&hal, 0);
+    tf_hal_tick(&hal, 0);
 
     task_scheduler.loop();
+
+    tf_hal_tick(&hal, 0);
+    tf_hal_tick(&hal, 0);
+    tf_hal_tick(&hal, 0);
+
     api.loop();
+
+    tf_hal_tick(&hal, 0);
+    tf_hal_tick(&hal, 0);
+    tf_hal_tick(&hal, 0);
 
     {{{module_loop}}}
 }

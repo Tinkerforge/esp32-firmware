@@ -26,6 +26,9 @@
 #include "lwip/sys.h"
 #include <lwip/netdb.h>
 
+#include "mdns.h"
+#include "TFJson.h"
+
 #include <functional>
 
 #define CHARGE_MANAGER_PORT 34127
@@ -67,9 +70,11 @@ struct response_packet {
     bool managed;
 } __attribute__((packed));
 
-class CMNetworking {
+class CMNetworking
+{
 public:
-    CMNetworking();
+    CMNetworking(){}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();
@@ -78,17 +83,17 @@ public:
 
     int create_socket(uint16_t port);
 
-    void register_manager(const std::vector<String> &hosts,
+    void register_manager(std::vector<String> &&hosts,
                           const std::vector<String> &names,
-                          std::function<void(uint8_t, // client_id
-                                             uint8_t, // iec61851_state
-                                             uint8_t, // charger_state
-                                             uint8_t, // error_state
-                                             uint32_t,// uptime
-                                             uint32_t,// charging_time
-                                             uint16_t,// allowed_charging_current
-                                             uint16_t// supported_current
-                                            )> manager_callback,
+                          std::function<void(uint8_t,  // client_id
+                                             uint8_t,  // iec61851_state
+                                             uint8_t,  // charger_state
+                                             uint8_t,  // error_state
+                                             uint32_t, // uptime
+                                             uint32_t, // charging_time
+                                             uint16_t, // allowed_charging_current
+                                             uint16_t  // supported_current
+                                             )> manager_callback,
                           std::function<void(uint8_t, uint8_t)> manager_error_callback);
 
     bool send_manager_update(uint8_t client_id, uint16_t allocated_current);
@@ -103,11 +108,42 @@ public:
                             uint16_t supported_current,
                             bool managed);
 
+    String get_scan_results();
+
+    void resolve_hostname(uint8_t charger_idx);
+
+    bool check_results();
+
+    bool scanning = false;
+
+    mdns_search_once_t *scan;
+
+    std::mutex scan_results_mutex;
+    std::mutex dns_resolve_mutex;
+    mdns_result_t *scan_results = nullptr;
+
 private:
     int manager_sock;
+
+    #define RESOLVE_STATE_UNKNOWN 0
+    #define RESOLVE_STATE_NOT_RESOLVED 1
+    #define RESOLVE_STATE_RESOLVED 2
+
+    uint8_t resolve_state[MAX_CLIENTS] = {};
     struct sockaddr_in dest_addrs[MAX_CLIENTS] = {};
+    std::vector<String> hostnames;
 
     int client_sock;
     bool source_addr_valid = false;
     struct sockaddr_storage source_addr;
+
+    void start_scan();
+
+    #define SCAN_RESULT_ERROR_OK 0
+    #define SCAN_RESULT_ERROR_FIRMWARE_MISMATCH 1
+    #define SCAN_RESULT_ERROR_MANAGEMENT_DISABLED 2
+    void add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer &json);
+    size_t build_scan_result_json(mdns_result_t *list, char *buf, size_t len);
+
+    ConfigRoot scan_cfg;
 };

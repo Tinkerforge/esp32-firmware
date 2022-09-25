@@ -1,7 +1,7 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-07-12.      *
  *                                                           *
- * C/C++ for Microcontrollers Bindings Version 2.0.0         *
+ * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
  * If you have a bugfix for this file and want to commit it, *
  * please fix the bug in the generator. You can find a link  *
@@ -1360,7 +1360,7 @@ int tf_outdoor_weather_get_station_identifiers(TF_OutdoorWeather *outdoor_weathe
     if (outdoor_weather->magic != 0x5446 || outdoor_weather->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     uint32_t _identifiers_length = 0;
     uint8_t _identifiers_chunk_data[60];
 
@@ -1392,7 +1392,7 @@ int tf_outdoor_weather_get_sensor_identifiers(TF_OutdoorWeather *outdoor_weather
     if (outdoor_weather->magic != 0x5446 || outdoor_weather->tfp == NULL) {
         return TF_E_NOT_INITIALIZED;
     }
-    
+
     uint32_t _identifiers_length = 0;
     uint8_t _identifiers_chunk_data[60];
 

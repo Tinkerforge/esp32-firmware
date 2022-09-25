@@ -46,9 +46,8 @@ extern API api;
 TF_RotaryPotiV2 poti;
 TF_RGBLEDV2 led;
 
-PowerCycleTester::PowerCycleTester()
+void PowerCycleTester::pre_setup()
 {
-
 }
 
 void PowerCycleTester::setup()
@@ -70,16 +69,16 @@ void PowerCycleTester::setup()
 
     tf_rotary_poti_v2_set_status_led_config(&poti, 0);
     tf_rgb_led_v2_set_status_led_config(&led, 0);
+
+    initialized = true;
 }
 
 void PowerCycleTester::register_urls()
 {
-
 }
 
 void PowerCycleTester::loop()
 {
-
 }
 
 void PowerCycleTester::led_green()

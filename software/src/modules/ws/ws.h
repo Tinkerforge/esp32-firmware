@@ -22,20 +22,22 @@
 #include "api.h"
 #include "web_sockets.h"
 
-class WS : public IAPIBackend {
+class WS : public IAPIBackend
+{
 public:
-    WS();
+    WS() : web_sockets() {}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();
 
     // IAPIBackend implementation
-    void addCommand(size_t commandIdx, const CommandRegistration &reg);
-    void addState(size_t stateIdx, const StateRegistration &reg);
-    void addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg);
-    bool pushStateUpdate(size_t stateIdx, String payload, String path);
-    void pushRawStateUpdate(String payload, String path);
-    void wifiAvailable();
+    void addCommand(size_t commandIdx, const CommandRegistration &reg) override;
+    void addState(size_t stateIdx, const StateRegistration &reg) override;
+    void addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg) override;
+    bool pushStateUpdate(size_t stateIdx, String payload, String path) override;
+    void pushRawStateUpdate(String payload, String path) override;
+    void wifiAvailable() override;
 
     bool initialized = false;
 

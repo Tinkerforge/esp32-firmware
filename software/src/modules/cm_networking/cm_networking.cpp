@@ -23,29 +23,76 @@
 
 #include "task_scheduler.h"
 
+#include "modules.h"
+
+#include <ESPmDNS.h>
+#include "NetBIOS.h"
+#include "lwip/ip_addr.h"
+#include "lwip/opt.h"
+#include "lwip/dns.h"
+#include <cstring>
+
+#include "TFJson.h"
+
 extern TaskScheduler task_scheduler;
+extern API api;
+extern EventLog logger;
+extern WebServer server;
 
-CMNetworking::CMNetworking()
+void CMNetworking::pre_setup()
 {
-
+    scan_cfg = Config::Null();
 }
 
 void CMNetworking::setup()
 {
+    mdns_init();
     initialized = true;
 }
 
 void CMNetworking::register_urls()
 {
+    api.addCommand("charge_manager/scan", &scan_cfg, {}, [this]() {
+        start_scan();
+    }, true);
 
+    server.on("/charge_manager/scan_result", HTTP_GET, [this](WebServerRequest request) {
+        String result = cm_networking.get_scan_results();
+
+        if (result == "In progress or not started")
+            return request.send(200, "text/plain; charset=utf-8", result.c_str());
+
+        return request.send(200, "application/json; charset=utf-8", result.c_str());
+    });
+
+// If we don't have the evse or evse_v2 module, but have cm_networking, this is probably an energy manager.
+// We only want to announce manageable chargers, not managers.
+#if MODULE_EVSE_AVAILABLE() || MODULE_EVSE_V2_AVAILABLE()
+    MDNS.addService("tf-warp-cm", "udp", 34127);
+    MDNS.addServiceTxt("tf-warp-cm", "udp", "version", String(PROTOCOL_VERSION));
+    task_scheduler.scheduleWithFixedDelay([](){
+        #if MODULE_DEVICE_NAME_AVAILABLE()
+            MDNS.addServiceTxt("tf-warp-cm", "udp", "display_name", device_name.display_name.get("display_name")->asString());
+        #endif
+
+            bool management_enabled = false;
+        #if MODULE_EVSE_AVAILABLE()
+            management_enabled = evse.evse_management_enabled.get("enabled")->asBool();
+        #elif MODULE_EVSE_V2_AVAILABLE()
+            management_enabled = evse_v2.evse_management_enabled.get("enabled")->asBool();
+        #endif
+
+        MDNS.addServiceTxt("tf-warp-cm", "udp", "enabled", management_enabled ? "true" : "false");
+    }, 0, 10000);
+#endif
 }
 
 void CMNetworking::loop()
 {
-
 }
 
-int CMNetworking::create_socket(uint16_t port) {
+int CMNetworking::create_socket(uint16_t port)
+{
     int sock;
     struct sockaddr_in dest_addr;
 
@@ -80,21 +127,60 @@ int CMNetworking::create_socket(uint16_t port) {
     return sock;
 }
 
-void CMNetworking::register_manager(const std::vector<String> &hosts,
+static void dns_callback(const char *host, const ip_addr_t *ip, void *args)
+{
+    std::lock_guard<std::mutex> lock{cm_networking.dns_resolve_mutex};
+    uint8_t *resolve_state = (uint8_t*)args;
+    if (ip == nullptr && *resolve_state != RESOLVE_STATE_NOT_RESOLVED) {
+        *resolve_state = RESOLVE_STATE_NOT_RESOLVED;
+        logger.printfln("Failed to resolve %s", host);
+    }
+}
+
+void CMNetworking::resolve_hostname(uint8_t charger_idx)
+{
+    ip_addr_t ip;
+    int err = dns_gethostbyname(hostnames[charger_idx].c_str(), &ip, dns_callback, &resolve_state[charger_idx]);
+
+    if (err == ERR_VAL)
+        logger.printfln("Charge manager has charger configured with hostname %s, but no DNS server is configured!", hostnames[charger_idx].c_str());
+
+    if (err != ERR_OK || ip.type != IPADDR_TYPE_V4)
+        return;
+
+    in_addr_t in;
+
+    // using memcpy to guaranty alignment https://mail.gnu.org/archive/html/lwip-users/2008-08/msg00166.html
+    std::memcpy(&in, &ip.u_addr, sizeof(ip4_addr_t));
+
+    std::lock_guard<std::mutex> lock{dns_resolve_mutex};
+    if (resolve_state[charger_idx] != RESOLVE_STATE_RESOLVED || dest_addrs[charger_idx].sin_addr.s_addr != in) {
+        logger.printfln("Resolved %s to %s", hostnames[charger_idx].c_str(), ipaddr_ntoa(&ip));
+    }
+
+    dest_addrs[charger_idx].sin_addr.s_addr = in;
+    resolve_state[charger_idx] = RESOLVE_STATE_RESOLVED;
+}
+
+void CMNetworking::register_manager(std::vector<String> &&hosts,
                                     const std::vector<String> &names,
-                                    std::function<void(uint8_t, // client_id
-                                                        uint8_t, // iec61851_state
-                                                        uint8_t, // charger_state
-                                                        uint8_t, // error_state
-                                                        uint32_t,// uptime
-                                                        uint32_t,// charging_time
-                                                        uint16_t,// allowed_charging_current
-                                                        uint16_t// supported_current
-                                                        )> manager_callback,
-                                    std::function<void(uint8_t, uint8_t)> manager_error_callback) {
+                                    std::function<void(uint8_t,  // client_id
+                                                       uint8_t,  // iec61851_state
+                                                       uint8_t,  // charger_state
+                                                       uint8_t,  // error_state
+                                                       uint32_t, // uptime
+                                                       uint32_t, // charging_time
+                                                       uint16_t, // allowed_charging_current
+                                                       uint16_t  // supported_current
+                                                       )> manager_callback,
+                                    std::function<void(uint8_t, uint8_t)> manager_error_callback)
+{
+    hostnames = hosts;
 
     for (int i = 0; i < names.size(); ++i) {
-        dest_addrs[i].sin_addr.s_addr = inet_addr(hosts[i].c_str());
+        dest_addrs[i].sin_addr.s_addr = 0;
+        resolve_state[i] = RESOLVE_STATE_UNKNOWN;
+        resolve_hostname(i);
         dest_addrs[i].sin_family = AF_INET;
         dest_addrs[i].sin_port = htons(CHARGE_MANAGEMENT_PORT);
     }
@@ -137,8 +223,10 @@ void CMNetworking::register_manager(const std::vector<String> &hosts,
                 break;
             }
 
+        // Don't log in the first 20 seconds after startup: We are probably still resolving hostnames.
         if (charger_idx == -1) {
-            logger.printfln("Received packet from unknown %s. Is the configuration complete?", inet_ntoa(source_addr.sin_addr));
+            if (deadline_elapsed(20000))
+                logger.printfln("Received packet from unknown %s. Is the config complete?", inet_ntoa(source_addr.sin_addr));
             return;
         }
 
@@ -199,7 +287,11 @@ bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_cur
 
     request.allocated_current = allocated_current;
 
-    int err = sendto(manager_sock, &request, sizeof(request), 0, (sockaddr *)&dest_addrs[client_id], sizeof(dest_addrs[client_id]));
+    int err = -1;
+
+
+    resolve_hostname(client_id);
+    err = sendto(manager_sock, &request, sizeof(request), 0, (sockaddr *)&dest_addrs[client_id], sizeof(dest_addrs[client_id]));
 
     if (err < 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -231,6 +323,8 @@ void CMNetworking::register_client(std::function<void(uint16_t)> client_callback
 
     task_scheduler.scheduleWithFixedDelay([this, client_callback](){
         static uint8_t last_seen_seq_num = 255;
+        static uint32_t last_successful_recv = millis();
+
         request_packet recv_buf[2] = {};
 
         struct sockaddr_storage temp_addr;
@@ -240,6 +334,12 @@ void CMNetworking::register_client(std::function<void(uint16_t)> client_callback
         if (len < 0) {
             if (errno != EAGAIN && errno != EWOULDBLOCK)
                 logger.printfln("recvfrom failed: errno %d", errno);
+
+            // If we have not received a valid packet for one minute, devalidate source_addr.
+            // Otherwise we would send response packets to this address forever.
+            if (deadline_elapsed(last_successful_recv + 60 * 1000))
+                source_addr_valid = false;
+
             return;
         }
 
@@ -264,8 +364,8 @@ void CMNetworking::register_client(std::function<void(uint16_t)> client_callback
         }
 
         last_seen_seq_num = request.header.seq_num;
-        source_addr_valid = false;
 
+        last_successful_recv = millis();
         source_addr = temp_addr;
 
         source_addr_valid = true;
@@ -275,20 +375,19 @@ void CMNetworking::register_client(std::function<void(uint16_t)> client_callback
 }
 
 bool CMNetworking::send_client_update(uint8_t iec61851_state,
-                            uint8_t charger_state,
-                            uint8_t error_state,
-                            uint32_t uptime,
-                            uint32_t charging_time,
-                            uint16_t allowed_charging_current,
-                            uint16_t supported_current,
-                            bool managed)
+                                      uint8_t charger_state,
+                                      uint8_t error_state,
+                                      uint32_t uptime,
+                                      uint32_t charging_time,
+                                      uint16_t allowed_charging_current,
+                                      uint16_t supported_current,
+                                      bool managed)
 {
     static uint8_t next_seq_num = 0;
 
     if (!source_addr_valid) {
         //logger.printfln("source addr not valid.");
         return false;
-
     }
     //logger.printfln("Sending response.");
 
@@ -318,4 +417,121 @@ bool CMNetworking::send_client_update(uint8_t iec61851_state,
     }
 
     return true;
+}
+
+bool CMNetworking::check_results()
+{
+    {
+        std::lock_guard<std::mutex> lock{scan_results_mutex};
+        if (!mdns_query_async_get_results(scan, 0, &scan_results))
+            return false; // This should never happen as check_results is only called if we are notified the search has finished.
+    }
+
+    mdns_query_async_delete(scan);
+
+    scanning = false;
+
+#if MODULE_WS_AVAILABLE()
+    String s = get_scan_results();
+    ws.pushRawStateUpdate(s, "charge_manager/scan_result");
+#endif
+    return true;
+}
+
+void CMNetworking::start_scan()
+{
+    if (scanning)
+        return;
+    scanning = true;
+
+    {
+        std::lock_guard<std::mutex> lock{scan_results_mutex};
+        if (scan_results != nullptr)
+        {
+            mdns_query_results_free(scan_results);
+            scan_results = nullptr;
+        }
+    }
+
+    scan = mdns_query_async_new(NULL, "_tf-warp-cm", "_udp", MDNS_TYPE_PTR, 1000, INT8_MAX, [](mdns_search_once_t *search) {
+        task_scheduler.scheduleOnce([](){ cm_networking.check_results(); }, 0);
+    });
+}
+
+void CMNetworking::add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer &json)
+{
+    const char *version = "0";
+    const char *enabled = "false";
+    const char *display_name = "[no_display_name]";
+
+    if (entry->txt_count < 3)
+        return;
+
+    int found = 0;
+    for(size_t i = 0; i < entry->txt_count; ++i) {
+        if (String(entry->txt[i].key) == "enabled" && entry->txt_value_len[i] > 0) {
+            enabled = entry->txt[i].value;
+            ++found;
+        }
+        else if (String(entry->txt[i].key) == "display_name" && entry->txt_value_len[i] > 0) {
+            display_name = entry->txt[i].value;
+            ++found;
+        }
+        else if (String(entry->txt[i].key) == "version" && entry->txt_value_len[i] > 0) {
+            version = entry->txt[i].value;
+            ++found;
+        }
+    }
+
+    if (found < 3)
+        return;
+
+    uint8_t error = SCAN_RESULT_ERROR_OK;
+
+    if (String(version) != String(PROTOCOL_VERSION))
+        error = SCAN_RESULT_ERROR_FIRMWARE_MISMATCH;
+    else if (String(enabled) != "true")
+        error = SCAN_RESULT_ERROR_MANAGEMENT_DISABLED;
+
+    json.addObject();
+        json.add("hostname", entry->hostname);
+
+        char buf[32] = "[no_address]";
+        if (entry->addr && entry->addr->addr.type == IPADDR_TYPE_V4)
+            esp_ip4addr_ntoa(&entry->addr->addr.u_addr.ip4, buf, ARRAY_SIZE(buf));
+        json.add("ip", buf);
+
+        json.add("display_name", display_name);
+        json.add("error", error);
+    json.endObject();
+}
+
+size_t CMNetworking::build_scan_result_json(mdns_result_t *list, char *buf, size_t len) {
+    TFJsonSerializer json{buf, len};
+    json.addArray();
+
+    while (list != nullptr) {
+        add_scan_result_entry(list, json);
+        list = list->next;
+    }
+
+    json.endArray();
+    return json.end();
+}
+
+String CMNetworking::get_scan_results()
+{
+    std::lock_guard<std::mutex> lock{scan_results_mutex};
+    if (scan_results == nullptr)
+        return "In progress or not started";
+
+    size_t payload_size = build_scan_result_json(scan_results, nullptr, 0);
+
+    StringWithSettableLength result;
+    result.reserve(payload_size);
+
+    build_scan_result_json(scan_results, result.begin(), payload_size);
+    result.setLength(payload_size);
+
+    return result;
 }

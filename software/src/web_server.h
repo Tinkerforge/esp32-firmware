@@ -26,21 +26,28 @@
 
 #include <Arduino.h>
 
-class WebServerRequest {
+// This struct is used to make sure a registered handler always calls
+// one of the WebServerRequest methods that send a reponse.
+struct WebServerRequestReturnProtect {
+    char pad;
+};
+
+class WebServerRequest
+{
 public:
     WebServerRequest(httpd_req_t *req, bool keep_alive = false);
 
-    void send(uint16_t code, const char *content_type = "text/plain", const char *content = "", size_t content_len = HTTPD_RESP_USE_STRLEN);
+    WebServerRequestReturnProtect send(uint16_t code, const char *content_type = "text/plain", const char *content = "", size_t content_len = HTTPD_RESP_USE_STRLEN);
 
     void beginChunkedResponse(uint16_t code, const char *content_type);
 
     void sendChunk(const char *chunk, size_t chunk_len);
 
-    void endChunkedResponse();
+    WebServerRequestReturnProtect endChunkedResponse();
 
     void addResponseHeader(const char *field, const char *value);
 
-    void requestAuthentication();
+    WebServerRequestReturnProtect requestAuthentication();
 
     String header(const char *header_name);
 
@@ -50,12 +57,14 @@ public:
 
     int receive(char *buf, size_t buf_len);
 
-    int method() {
+    int method()
+    {
         return req->method;
     }
 
-    const char *methodString() {
-        switch(method()) {
+    const char *methodString()
+    {
+        switch (method()) {
             case HTTP_GET:
                 return "GET";
             case HTTP_PUT:
@@ -66,15 +75,22 @@ public:
         return "";
     }
 
-    String uri() {
+    String uri()
+    {
         return String(req->uri);
     }
+
+    const char *uriCStr() {
+        return req->uri;
+    }
+
+    WebServerRequestReturnProtect unsafe_ResponseAlreadySent() {return WebServerRequestReturnProtect{};}
 
 private:
     httpd_req_t *req;
 };
 
-using wshCallback = std::function<void(WebServerRequest)>;
+using wshCallback = std::function<WebServerRequestReturnProtect(WebServerRequest)>;
 using wshUploadCallback = std::function<bool(WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final)>;
 
 struct WebServerHandler {
@@ -86,16 +102,20 @@ struct WebServerHandler {
     wshUploadCallback uploadCallback;
 };
 
-class WebServer {
+class WebServer
+{
 public:
-    WebServer() : httpd(nullptr), handlers() {}
+    WebServer() : httpd(nullptr), handlers()
+    {
+    }
     void start();
 
     WebServerHandler *on(const char *uri, httpd_method_t method, wshCallback callback);
     WebServerHandler *on(const char *uri, httpd_method_t method, wshCallback callback, wshUploadCallback uploadCallback);
     void onNotAuthorized(wshCallback callback);
 
-    void setAuthentication(std::function<bool(WebServerRequest)> auth_fn) {
+    void setAuthentication(std::function<bool(WebServerRequest)> auth_fn)
+    {
         this->auth_fn = auth_fn;
     }
 

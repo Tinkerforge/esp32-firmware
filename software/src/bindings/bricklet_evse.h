@@ -1,7 +1,7 @@
 /* ***********************************************************
- * This file was automatically generated on 2021-12-03.      *
+ * This file was automatically generated on 2022-07-12.      *
  *                                                           *
- * C/C++ for Microcontrollers Bindings Version 2.0.0         *
+ * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
  * If you have a bugfix for this file and want to commit it, *
  * please fix the bug in the generator. You can find a link  *
@@ -62,97 +62,92 @@ typedef struct TF_EVSE {
 /**
  * \ingroup TF_EVSE
  */
-#define TF_EVSE_FUNCTION_SET_MAX_CHARGING_CURRENT 4
+#define TF_EVSE_FUNCTION_SET_CHARGING_SLOT 4
 
 /**
  * \ingroup TF_EVSE
  */
-#define TF_EVSE_FUNCTION_GET_MAX_CHARGING_CURRENT 5
+#define TF_EVSE_FUNCTION_SET_CHARGING_SLOT_MAX_CURRENT 5
 
 /**
  * \ingroup TF_EVSE
  */
-#define TF_EVSE_FUNCTION_CALIBRATE 6
+#define TF_EVSE_FUNCTION_SET_CHARGING_SLOT_ACTIVE 6
 
 /**
  * \ingroup TF_EVSE
  */
-#define TF_EVSE_FUNCTION_START_CHARGING 7
+#define TF_EVSE_FUNCTION_SET_CHARGING_SLOT_CLEAR_ON_DISCONNECT 7
 
 /**
  * \ingroup TF_EVSE
  */
-#define TF_EVSE_FUNCTION_STOP_CHARGING 8
+#define TF_EVSE_FUNCTION_GET_CHARGING_SLOT 8
 
 /**
  * \ingroup TF_EVSE
  */
-#define TF_EVSE_FUNCTION_SET_CHARGING_AUTOSTART 9
+#define TF_EVSE_FUNCTION_GET_ALL_CHARGING_SLOTS 9
 
 /**
  * \ingroup TF_EVSE
  */
-#define TF_EVSE_FUNCTION_GET_CHARGING_AUTOSTART 10
+#define TF_EVSE_FUNCTION_SET_CHARGING_SLOT_DEFAULT 10
 
 /**
  * \ingroup TF_EVSE
  */
-#define TF_EVSE_FUNCTION_GET_MANAGED 11
+#define TF_EVSE_FUNCTION_GET_CHARGING_SLOT_DEFAULT 11
 
 /**
  * \ingroup TF_EVSE
  */
-#define TF_EVSE_FUNCTION_SET_MANAGED 12
+#define TF_EVSE_FUNCTION_CALIBRATE 12
 
 /**
  * \ingroup TF_EVSE
  */
-#define TF_EVSE_FUNCTION_SET_MANAGED_CURRENT 13
+#define TF_EVSE_FUNCTION_GET_USER_CALIBRATION 13
 
 /**
  * \ingroup TF_EVSE
  */
-#define TF_EVSE_FUNCTION_GET_USER_CALIBRATION 14
+#define TF_EVSE_FUNCTION_SET_USER_CALIBRATION 14
 
 /**
  * \ingroup TF_EVSE
  */
-#define TF_EVSE_FUNCTION_SET_USER_CALIBRATION 15
+#define TF_EVSE_FUNCTION_GET_DATA_STORAGE 15
 
 /**
  * \ingroup TF_EVSE
  */
-#define TF_EVSE_FUNCTION_GET_DATA_STORAGE 16
+#define TF_EVSE_FUNCTION_SET_DATA_STORAGE 16
 
 /**
  * \ingroup TF_EVSE
  */
-#define TF_EVSE_FUNCTION_SET_DATA_STORAGE 17
+#define TF_EVSE_FUNCTION_GET_INDICATOR_LED 17
 
 /**
  * \ingroup TF_EVSE
  */
-#define TF_EVSE_FUNCTION_GET_INDICATOR_LED 18
+#define TF_EVSE_FUNCTION_SET_INDICATOR_LED 18
 
 /**
  * \ingroup TF_EVSE
  */
-#define TF_EVSE_FUNCTION_SET_INDICATOR_LED 19
+#define TF_EVSE_FUNCTION_GET_BUTTON_STATE 19
 
 /**
  * \ingroup TF_EVSE
  */
-#define TF_EVSE_FUNCTION_GET_BUTTON_STATE 20
+#define TF_EVSE_FUNCTION_GET_ALL_DATA_1 20
 
 /**
  * \ingroup TF_EVSE
  */
-#define TF_EVSE_FUNCTION_GET_ALL_DATA_1 21
-
-/**
- * \ingroup TF_EVSE
- */
-#define TF_EVSE_FUNCTION_GET_ALL_DATA_2 22
+#define TF_EVSE_FUNCTION_FACTORY_RESET 21
 
 /**
  * \ingroup TF_EVSE
@@ -271,22 +266,27 @@ typedef struct TF_EVSE {
 /**
  * \ingroup TF_EVSE
  */
-#define TF_EVSE_VEHICLE_STATE_NOT_CONNECTED 0
+#define TF_EVSE_CHARGER_STATE_NOT_CONNECTED 0
 
 /**
  * \ingroup TF_EVSE
  */
-#define TF_EVSE_VEHICLE_STATE_CONNECTED 1
+#define TF_EVSE_CHARGER_STATE_WAITING_FOR_CHARGE_RELEASE 1
 
 /**
  * \ingroup TF_EVSE
  */
-#define TF_EVSE_VEHICLE_STATE_CHARGING 2
+#define TF_EVSE_CHARGER_STATE_READY_TO_CHARGE 2
 
 /**
  * \ingroup TF_EVSE
  */
-#define TF_EVSE_VEHICLE_STATE_ERROR 3
+#define TF_EVSE_CHARGER_STATE_CHARGING 3
+
+/**
+ * \ingroup TF_EVSE
+ */
+#define TF_EVSE_CHARGER_STATE_ERROR 4
 
 /**
  * \ingroup TF_EVSE
@@ -407,26 +407,6 @@ typedef struct TF_EVSE {
  * \ingroup TF_EVSE
  */
 #define TF_EVSE_JUMPER_CONFIGURATION_UNCONFIGURED 8
-
-/**
- * \ingroup TF_EVSE
- */
-#define TF_EVSE_CHARGE_RELEASE_AUTOMATIC 0
-
-/**
- * \ingroup TF_EVSE
- */
-#define TF_EVSE_CHARGE_RELEASE_MANUAL 1
-
-/**
- * \ingroup TF_EVSE
- */
-#define TF_EVSE_CHARGE_RELEASE_DEACTIVATED 2
-
-/**
- * \ingroup TF_EVSE
- */
-#define TF_EVSE_CHARGE_RELEASE_MANAGED 3
 
 /**
  * \ingroup TF_EVSE
@@ -598,44 +578,98 @@ int tf_evse_callback_tick(TF_EVSE *evse, uint32_t timeout_us);
  * \ingroup TF_EVSE
  *
  * TODO
- * 
+ *
  * .. versionadded:: 2.0.5$nbsp;(Plugin)
  */
-int tf_evse_get_state(TF_EVSE *evse, uint8_t *ret_iec61851_state, uint8_t *ret_vehicle_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint8_t *ret_charge_release, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state, uint32_t *ret_time_since_state_change, uint32_t *ret_uptime);
+int tf_evse_get_state(TF_EVSE *evse, uint8_t *ret_iec61851_state, uint8_t *ret_charger_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state);
 
 /**
  * \ingroup TF_EVSE
  *
  * TODO
  */
-int tf_evse_get_hardware_configuration(TF_EVSE *evse, uint8_t *ret_jumper_configuration, bool *ret_has_lock_switch);
+int tf_evse_get_hardware_configuration(TF_EVSE *evse, uint8_t *ret_jumper_configuration, bool *ret_has_lock_switch, uint8_t *ret_evse_version);
 
 /**
  * \ingroup TF_EVSE
  *
  * TODO
  */
-int tf_evse_get_low_level_state(TF_EVSE *evse, bool *ret_low_level_mode_enabled, uint8_t *ret_led_state, uint16_t *ret_cp_pwm_duty_cycle, uint16_t ret_adc_values[2], int16_t ret_voltages[3], uint32_t ret_resistances[2], bool ret_gpio[5], uint8_t *ret_hardware_version, uint32_t *ret_charging_time);
+int tf_evse_get_low_level_state(TF_EVSE *evse, uint8_t *ret_led_state, uint16_t *ret_cp_pwm_duty_cycle, uint16_t ret_adc_values[2], int16_t ret_voltages[3], uint32_t ret_resistances[2], bool ret_gpio[5], uint32_t *ret_charging_time, uint32_t *ret_time_since_state_change, uint32_t *ret_uptime);
 
 /**
  * \ingroup TF_EVSE
  *
- * TODO
+ * fixed slots:
+ * 0: incoming cable (read-only, configured through slide switch)
+ * 1: outgoing cable (read-only, configured through resistor)
+ * 2: gpio input 0 (shutdown input)
+ * 3: gpio input 1 (input)
+ * 4: button (0A <-> 32A, can be controlled from web interface with start button and physical button if configured)
+ *
+ *
+ * .. versionadded:: 2.1.0$nbsp;(Plugin)
  */
-int tf_evse_set_max_charging_current(TF_EVSE *evse, uint16_t max_current);
+int tf_evse_set_charging_slot(TF_EVSE *evse, uint8_t slot, uint16_t max_current, bool active, bool clear_on_disconnect);
 
 /**
  * \ingroup TF_EVSE
  *
- * * Max Current Configured -> set with {@link tf_evse_set_max_charging_current}
- * * Max Current Incoming Cable -> set with jumper on EVSE
- * * Max Current Outgoing Cable -> set with resistor between PP/PE (if fixed cable is used)
- * 
- * TODO
- * 
- * .. versionadded:: 2.0.6$nbsp;(Plugin)
+ * .. versionadded:: 2.1.0$nbsp;(Plugin)
  */
-int tf_evse_get_max_charging_current(TF_EVSE *evse, uint16_t *ret_max_current_configured, uint16_t *ret_max_current_incoming_cable, uint16_t *ret_max_current_outgoing_cable, uint16_t *ret_max_current_managed);
+int tf_evse_set_charging_slot_max_current(TF_EVSE *evse, uint8_t slot, uint16_t max_current);
+
+/**
+ * \ingroup TF_EVSE
+ *
+ * .. versionadded:: 2.1.0$nbsp;(Plugin)
+ */
+int tf_evse_set_charging_slot_active(TF_EVSE *evse, uint8_t slot, bool active);
+
+/**
+ * \ingroup TF_EVSE
+ *
+ * .. versionadded:: 2.1.0$nbsp;(Plugin)
+ */
+int tf_evse_set_charging_slot_clear_on_disconnect(TF_EVSE *evse, uint8_t slot, bool clear_on_disconnect);
+
+/**
+ * \ingroup TF_EVSE
+ *
+ * .. versionadded:: 2.1.0$nbsp;(Plugin)
+ */
+int tf_evse_get_charging_slot(TF_EVSE *evse, uint8_t slot, uint16_t *ret_max_current, bool *ret_active, bool *ret_clear_on_disconnect);
+
+/**
+ * \ingroup TF_EVSE
+ *
+ * packed getter
+ *
+ *
+ * .. versionadded:: 2.1.0$nbsp;(Plugin)
+ */
+int tf_evse_get_all_charging_slots(TF_EVSE *evse, uint16_t ret_max_current[20], uint8_t ret_active_and_clear_on_disconnect[20]);
+
+/**
+ * \ingroup TF_EVSE
+ *
+ * fixed slots:
+ * 0: incoming cable (read-only, configured through slide switch)
+ * 1: outgoing cable (read-only, configured through resistor)
+ * 2: gpio input 0 (shutdown input)
+ * 3: gpio input 1 (input)
+ *
+ *
+ * .. versionadded:: 2.1.0$nbsp;(Plugin)
+ */
+int tf_evse_set_charging_slot_default(TF_EVSE *evse, uint8_t slot, uint16_t max_current, bool active, bool clear_on_disconnect);
+
+/**
+ * \ingroup TF_EVSE
+ *
+ * .. versionadded:: 2.1.0$nbsp;(Plugin)
+ */
+int tf_evse_get_charging_slot_default(TF_EVSE *evse, uint8_t slot, uint16_t *ret_max_current, bool *ret_active, bool *ret_clear_on_disconnect);
 
 /**
  * \ingroup TF_EVSE
@@ -643,61 +677,6 @@ int tf_evse_get_max_charging_current(TF_EVSE *evse, uint16_t *ret_max_current_co
  * TODO
  */
 int tf_evse_calibrate(TF_EVSE *evse, uint8_t state, uint32_t password, int32_t value, bool *ret_success);
-
-/**
- * \ingroup TF_EVSE
- *
- * TODO
- */
-int tf_evse_start_charging(TF_EVSE *evse);
-
-/**
- * \ingroup TF_EVSE
- *
- * TODO
- */
-int tf_evse_stop_charging(TF_EVSE *evse);
-
-/**
- * \ingroup TF_EVSE
- *
- * TODO
- */
-int tf_evse_set_charging_autostart(TF_EVSE *evse, bool autostart);
-
-/**
- * \ingroup TF_EVSE
- *
- * TODO
- */
-int tf_evse_get_charging_autostart(TF_EVSE *evse, bool *ret_autostart);
-
-/**
- * \ingroup TF_EVSE
- *
- * TODO
- * 
- * .. versionadded:: 2.0.6$nbsp;(Plugin)
- */
-int tf_evse_get_managed(TF_EVSE *evse, bool *ret_managed);
-
-/**
- * \ingroup TF_EVSE
- *
- * TODO
- * 
- * .. versionadded:: 2.0.6$nbsp;(Plugin)
- */
-int tf_evse_set_managed(TF_EVSE *evse, bool managed, uint32_t password);
-
-/**
- * \ingroup TF_EVSE
- *
- * TODO
- * 
- * .. versionadded:: 2.0.6$nbsp;(Plugin)
- */
-int tf_evse_set_managed_current(TF_EVSE *evse, uint16_t current);
 
 /**
  * \ingroup TF_EVSE
@@ -753,27 +732,27 @@ int tf_evse_get_button_state(TF_EVSE *evse, uint32_t *ret_button_press_time, uin
  *
  * TODO
  */
-int tf_evse_get_all_data_1(TF_EVSE *evse, uint8_t *ret_iec61851_state, uint8_t *ret_vehicle_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint8_t *ret_charge_release, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state, uint32_t *ret_time_since_state_change, uint32_t *ret_uptime, uint8_t *ret_jumper_configuration, bool *ret_has_lock_switch, bool *ret_low_level_mode_enabled, uint8_t *ret_led_state, uint16_t *ret_cp_pwm_duty_cycle, uint16_t ret_adc_values[2], int16_t ret_voltages[3], uint32_t ret_resistances[2], bool ret_gpio[5], uint8_t *ret_hardware_version, uint32_t *ret_charging_time, uint16_t *ret_max_current_configured, uint16_t *ret_max_current_incoming_cable, uint16_t *ret_max_current_outgoing_cable, uint16_t *ret_max_current_managed, bool *ret_autostart, bool *ret_managed);
+int tf_evse_get_all_data_1(TF_EVSE *evse, uint8_t *ret_iec61851_state, uint8_t *ret_charger_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state, uint8_t *ret_jumper_configuration, bool *ret_has_lock_switch, uint8_t *ret_evse_version, uint8_t *ret_led_state, uint16_t *ret_cp_pwm_duty_cycle, uint16_t ret_adc_values[2], int16_t ret_voltages[3], uint32_t ret_resistances[2], bool ret_gpio[5], uint32_t *ret_charging_time, uint32_t *ret_time_since_state_change, uint32_t *ret_uptime, int16_t *ret_indication, uint16_t *ret_duration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed);
 
 /**
  * \ingroup TF_EVSE
  *
  * TODO
  */
-int tf_evse_get_all_data_2(TF_EVSE *evse, bool *ret_user_calibration_active, int16_t *ret_voltage_diff, int16_t *ret_voltage_mul, int16_t *ret_voltage_div, int16_t *ret_resistance_2700, int16_t ret_resistance_880[14], int16_t *ret_indication, uint16_t *ret_duration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed);
+int tf_evse_factory_reset(TF_EVSE *evse, uint32_t password);
 
 /**
  * \ingroup TF_EVSE
  *
  * Returns the error count for the communication between Brick and Bricklet.
- * 
+ *
  * The errors are divided into
- * 
+ *
  * * ACK checksum errors,
  * * message checksum errors,
  * * framing errors and
  * * overflow errors.
- * 
+ *
  * The errors counts are for errors that occur on the Bricklet side. All
  * Bricks have a similar function that returns the errors on the Brick side.
  */
@@ -784,11 +763,11 @@ int tf_evse_get_spitfp_error_count(TF_EVSE *evse, uint32_t *ret_error_count_ack_
  *
  * Sets the bootloader mode and returns the status after the requested
  * mode change was instigated.
- * 
+ *
  * You can change from bootloader mode to firmware mode and vice versa. A change
  * from bootloader mode to firmware mode will only take place if the entry function,
  * device identifier and CRC are present and correct.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -807,7 +786,7 @@ int tf_evse_get_bootloader_mode(TF_EVSE *evse, uint8_t *ret_mode);
  * Sets the firmware pointer for {@link tf_evse_write_firmware}. The pointer has
  * to be increased by chunks of size 64. The data is written to flash
  * every 4 chunks (which equals to one page of size 256).
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -819,9 +798,9 @@ int tf_evse_set_write_firmware_pointer(TF_EVSE *evse, uint32_t pointer);
  * Writes 64 Bytes of firmware at the position as written by
  * {@link tf_evse_set_write_firmware_pointer} before. The firmware is written
  * to flash every 4 chunks.
- * 
+ *
  * You can only write firmware in bootloader mode.
- * 
+ *
  * This function is used by Brick Viewer during flashing. It should not be
  * necessary to call it in a normal user program.
  */
@@ -833,9 +812,9 @@ int tf_evse_write_firmware(TF_EVSE *evse, const uint8_t data[64], uint8_t *ret_s
  * Sets the status LED configuration. By default the LED shows
  * communication traffic between Brick and Bricklet, it flickers once
  * for every 10 received data packets.
- * 
+ *
  * You can also turn the LED permanently on/off or show a heartbeat.
- * 
+ *
  * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
  */
 int tf_evse_set_status_led_config(TF_EVSE *evse, uint8_t config);
@@ -852,7 +831,7 @@ int tf_evse_get_status_led_config(TF_EVSE *evse, uint8_t *ret_config);
  *
  * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
- * 
+ *
  * The temperature is only proportional to the real temperature and it has bad
  * accuracy. Practically it is only useful as an indicator for
  * temperature changes.
@@ -864,7 +843,7 @@ int tf_evse_get_chip_temperature(TF_EVSE *evse, int16_t *ret_temperature);
  *
  * Calling this function will reset the Bricklet. All configurations
  * will be lost.
- * 
+ *
  * After a reset you have to create new device objects,
  * calling functions on the existing ones will result in
  * undefined behavior!
@@ -877,7 +856,7 @@ int tf_evse_reset(TF_EVSE *evse);
  * Writes a new UID into flash. If you want to set a new UID
  * you have to decode the Base58 encoded UID string into an
  * integer first.
- * 
+ *
  * We recommend that you use Brick Viewer to change the UID.
  */
 int tf_evse_write_uid(TF_EVSE *evse, uint32_t uid);
@@ -896,11 +875,11 @@ int tf_evse_read_uid(TF_EVSE *evse, uint32_t *ret_uid);
  * Returns the UID, the UID where the Bricklet is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
- * 
+ *
  * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
  * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
  * position 'z'.
- * 
+ *
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|
  */

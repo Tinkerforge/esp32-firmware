@@ -23,9 +23,11 @@
 
 #include "config.h"
 
-class Debug {
+class Debug
+{
 public:
-    Debug();
+    Debug(){}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();

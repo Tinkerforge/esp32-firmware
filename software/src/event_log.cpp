@@ -27,7 +27,13 @@
 
 extern WebServer server;
 
-void EventLog::get_timestamp(char buf[TIMESTAMP_LEN + 1]) {
+void EventLog::setup()
+{
+    event_buf.setup();
+}
+
+void EventLog::get_timestamp(char buf[TIMESTAMP_LEN + 1])
+{
     struct timeval tv_now;
     struct tm timeinfo;
 
@@ -44,7 +50,7 @@ void EventLog::get_timestamp(char buf[TIMESTAMP_LEN + 1]) {
         auto to_write = snprintf(nullptr, 0, "%lu", secs) + 6; // + 6 for the decimal sign, fractional part and two spaces
         auto start = TIMESTAMP_LEN - to_write;
 
-        for(int i = 0; i < TIMESTAMP_LEN; ++i)
+        for (int i = 0; i < TIMESTAMP_LEN; ++i)
             buf[i] = ' ';
         snprintf(buf + start, to_write + 1, "%lu,%03lu  ", secs, ms); // + 1 for the null terminator
     }
@@ -55,7 +61,7 @@ void EventLog::get_timestamp(char buf[TIMESTAMP_LEN + 1]) {
 void EventLog::write(const char *buf, size_t len)
 {
     std::lock_guard<std::mutex> lock{event_buf_mutex};
-    String t = String(millis());
+
     size_t to_write = TIMESTAMP_LEN + len + 1; // 12 for the longest timestamp (-2^31) and a space; 1 for the \n
 
     char timestamp_buf[TIMESTAMP_LEN + 1] = {0};
@@ -84,21 +90,26 @@ void EventLog::write(const char *buf, size_t len)
     }
 }
 
-void EventLog::printfln(const char *fmt, ...)
-{
-    char buf[128];
-    memset(buf, 0, sizeof(buf) / sizeof(buf[0]));
+void EventLog::printfln(const char *fmt, va_list args) {
+    char buf[256];
+    auto buf_size = sizeof(buf) / sizeof(buf[0]);
+    memset(buf, 0, buf_size);
 
-    va_list args;
-    va_start(args, fmt);
-    auto written = vsnprintf(buf, sizeof(buf) / sizeof(buf[0]), fmt, args);
-    va_end(args);
-
-    if (written >= sizeof(buf) / sizeof(buf[0])) {
+    auto written = vsnprintf(buf, buf_size, fmt, args);
+    if (written >= buf_size) {
         write("Next log message was truncated. Bump EventLog::printfln buffer size!", 69);
+        written = buf_size;
     }
 
     write(buf, written);
+}
+
+void EventLog::printfln(const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    this->printfln(fmt, args);
+    va_end(args);
 }
 
 void EventLog::drop(size_t count)
@@ -128,9 +139,10 @@ void EventLog::register_urls()
             for (int i = 0; i < to_write; ++i) {
                 event_buf.peek_offset((char *)(chunk_buf + i), index + i);
             }
+
             request.sendChunk(chunk_buf, to_write);
         }
 
-        request.endChunkedResponse();
+        return request.endChunkedResponse();
     });
 }

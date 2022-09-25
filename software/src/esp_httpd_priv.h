@@ -491,7 +491,6 @@ int httpd_default_recv(httpd_handle_t hd, int sockfd, char *buf, size_t buf_len,
  * @{
  */
 
-
 /**
  * @brief   This function is for responding a WebSocket handshake
  *

@@ -3,7 +3,7 @@ Import("env")
 import sys
 
 if sys.hexversion < 0x3060000:
-    print('Python >= 3.6 required')
+    print('Error: Python >= 3.6 required')
     sys.exit(1)
 
 from collections import namedtuple
@@ -13,14 +13,13 @@ import shutil
 import subprocess
 import time
 import re
-import hashlib
 import json
 import glob
 import io
 import gzip
 from base64 import b64encode
 from zlib import crc32
-from util import embed_data
+import util
 
 NameFlavors = namedtuple('NameFlavors', 'space lower camel headless under upper dash camel_abbrv lower_no_space camel_constant_safe')
 
@@ -96,9 +95,10 @@ class ChangedDirectory(object):
 
 
 def get_changelog_version(name):
+    path = os.path.join('changelog_{}.txt'.format(name))
     versions = []
 
-    with open(os.path.join('changelog_{}.txt'.format(name)), 'r', encoding='utf-8') as f:
+    with open(path, 'r', encoding='utf-8') as f:
         for i, line in enumerate(f.readlines()):
             line = line.rstrip()
 
@@ -111,36 +111,37 @@ def get_changelog_version(name):
             m = re.match(r'^(?:<unknown>|20[0-9]{2}-[0-9]{2}-[0-9]{2}): ([0-9]+)\.([0-9]+)\.([0-9]+) \((?:<unknown>|[a-f0-9]+)\)$', line)
 
             if m == None:
-                raise Exception('invalid line {} in changelog: {}'.format(i + 1, line))
+                raise Exception('Invalid line {} in {}: {}'.format(i + 1, path, line))
 
             version = (int(m.group(1)), int(m.group(2)), int(m.group(3)))
 
             if version[0] not in [0, 1, 2]:
-                raise Exception('invalid major version in changelog: {}'.format(version))
+                raise Exception('Invalid major version in {}: {}'.format(path, version))
 
             if version[2] < 90 and len(versions) > 0:
                 if versions[-1] >= version:
-                    raise Exception('invalid version order in changelog: {} -> {}'.format(versions[-1], version))
+                    raise Exception('Invalid version order in {}: {} -> {}'.format(path, versions[-1], version))
 
                 if versions[-1][0] == version[0] and versions[-1][1] == version[1] and versions[-1][2] + 1 != version[2]:
-                    raise Exception('invalid version jump in changelog: {} -> {}'.format(versions[-1], version))
+                    raise Exception('Invalid version jump in {}: {} -> {}'.format(path, versions[-1], version))
 
                 if versions[-1][0] == version[0] and versions[-1][1] != version[1] and versions[-1][1] + 1 != version[1]:
-                    raise Exception('invalid version jump in changelog: {} -> {}'.format(versions[-1], version))
+                    raise Exception('Invalid version jump in {}: {} -> {}'.format(path, versions[-1], version))
 
                 if versions[-1][1] != version[1] and version[2] != 0:
-                    raise Exception('invalid version jump in changelog: {} -> {}'.format(versions[-1], version))
+                    raise Exception('Invalid version jump in {}: {} -> {}'.format(path, versions[-1], version))
 
                 if versions[-1][0] != version[0] and (version[1] != 0 or version[2] != 0):
-                    raise Exception('invalid version jump in changelog: {} -> {}'.format(versions[-1], version))
+                    raise Exception('Invalid version jump in {}: {} -> {}'.format(path, versions[-1], version))
 
             versions.append(version)
 
     if len(versions) == 0:
-        raise Exception('no version found in changelog')
+        raise Exception('No version found in {}'.format(path))
 
+    oldest_version = (str(versions[0][0]), str(versions[0][1]), str(versions[0][2]))
     version = (str(versions[-1][0]), str(versions[-1][1]), str(versions[-1][2]))
-    return version
+    return oldest_version, version
 
 def write_firmware_info(display_name, major, minor, patch, build_time):
     buf = bytearray([0xFF] * 4096)
@@ -219,33 +220,63 @@ def check_translation(translation, parent_key=None):
             check_translation(value, parent_key=parent_key + [key])
 
 def main():
+    subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "update_packages.py"])
+
     # Add build flags
     timestamp = int(time.time())
-    name = env.GetProjectOption("name")
-    host_prefix = env.GetProjectOption("host_prefix")
-    display_name = env.GetProjectOption("display_name")
-    manual_url = env.GetProjectOption("manual_url")
-    apidoc_url = env.GetProjectOption("apidoc_url")
-    require_firmware_info = env.GetProjectOption("require_firmware_info")
-    src_filter = env.GetProjectOption("src_filter")
-    version = get_changelog_version(name)
+    name = env.GetProjectOption("custom_name")
+    host_prefix = env.GetProjectOption("custom_host_prefix")
+    display_name = env.GetProjectOption("custom_display_name")
+    manual_url = env.GetProjectOption("custom_manual_url")
+    apidoc_url = env.GetProjectOption("custom_apidoc_url")
+    firmware_url = env.GetProjectOption("custom_firmware_url")
+    require_firmware_info = env.GetProjectOption("custom_require_firmware_info")
+    build_flags = env.GetProjectOption("build_flags")
 
-    if src_filter[0] == '+<empty.c>':
-        src_filter = None
-    else:
-        src_filter = ['+<*>', '-<empty.c>']
+    try:
+        oldest_version, version = get_changelog_version(name)
+    except Exception as e:
+        print('Error: Could not get changelog version: {0}'.format(e))
+        sys.exit(1)
+
+    build_src_filter = ['+<*>']
 
     if not os.path.isdir("build"):
         os.makedirs("build")
+
+    try:
+        with open(os.path.join('default_wifi.json'), 'r', encoding='utf-8') as f:
+            default_wifi = json.loads(f.read())
+    except FileNotFoundError:
+        default_wifi = {}
+
+    if 'sta_enable' in default_wifi:
+        build_flags.append('-DDEFAULT_WIFI_STA_ENABLE={0}'.format(default_wifi['sta_enable']))
+
+    rename_firmware = False
+    if 'sta_ssid' in default_wifi:
+        build_flags.append('-DDEFAULT_WIFI_STA_SSID="\\"{0}\\""'.format(default_wifi['sta_ssid']))
+
+    if 'sta_passphrase' in default_wifi:
+        rename_firmware = True
+        build_flags.append('-DDEFAULT_WIFI_STA_PASSPHRASE="\\"{0}\\""'.format(default_wifi['sta_passphrase']))
+
+    env.Replace(BUILD_FLAGS=build_flags)
 
     write_firmware_info(display_name, *version, timestamp)
 
     with open(os.path.join('src', 'build.h'), 'w', encoding='utf-8') as f:
         f.write('#pragma once\n')
+        f.write('#define OLDEST_VERSION_MAJOR {}\n'.format(oldest_version[0]))
+        f.write('#define OLDEST_VERSION_MINOR {}\n'.format(oldest_version[1]))
+        f.write('#define OLDEST_VERSION_PATCH {}\n'.format(oldest_version[2]))
         f.write('#define BUILD_VERSION_MAJOR {}\n'.format(version[0]))
         f.write('#define BUILD_VERSION_MINOR {}\n'.format(version[1]))
         f.write('#define BUILD_VERSION_PATCH {}\n'.format(version[2]))
+        f.write('#define BUILD_VERSION_STRING "{}.{}.{}"\n'.format(*version))
         f.write('#define BUILD_HOST_PREFIX "{}"\n'.format(host_prefix))
+        f.write('#define BUILD_NAME_{}\n'.format(name.upper()))
+        f.write('#define BUILD_DISPLAY_NAME "{}"\n'.format(display_name))
         f.write('#define BUILD_REQUIRE_FIRMWARE_INFO {}\n'.format(require_firmware_info))
 
     with open(os.path.join('src', 'build_timestamp.h'), 'w', encoding='utf-8') as f:
@@ -255,11 +286,14 @@ def main():
         f.write('#define BUILD_VERSION_FULL_STR "{}.{}.{}-{:x}"\n'.format(*version, timestamp))
 
     with open(os.path.join(env.subst('$BUILD_DIR'), 'firmware_basename'), 'w', encoding='utf-8') as f:
-        f.write('{}_firmware_{}_{:x}'.format(name, '_'.join(version), timestamp))
+        if rename_firmware:
+            f.write('{}_firmware-WITH-WIFI-PASSPHRASE-DO-NOT-DISTRIBUTE_{}_{:x}'.format(name, '_'.join(version), timestamp))
+        else:
+            f.write('{}_firmware_{}_{:x}'.format(name, '_'.join(version), timestamp))
 
     # Handle backend modules
     excluded_backend_modules = list(os.listdir('src/modules'))
-    backend_modules = [FlavoredName(x).get() for x in env.GetProjectOption("backend_modules").splitlines()]
+    backend_modules = [FlavoredName(x).get() for x in env.GetProjectOption("custom_backend_modules").splitlines()]
     for backend_module in backend_modules:
         mod_path = os.path.join('src', 'modules', backend_module.under)
 
@@ -278,15 +312,16 @@ def main():
             with ChangedDirectory(mod_path):
                 subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py"], env=environ)
 
-    if src_filter != None:
+    if build_src_filter != None:
         for excluded_backend_module in excluded_backend_modules:
-            src_filter.append('-<modules/{0}/*>'.format(excluded_backend_module))
+            build_src_filter.append('-<modules/{0}/*>'.format(excluded_backend_module))
 
-        env.Replace(SRC_FILTER=[' '.join(src_filter)])
+        env.Replace(SRC_FILTER=[' '.join(build_src_filter)])
 
     specialize_template("main.cpp.template", os.path.join("src", "main.cpp"), {
         '{{{module_includes}}}': '\n'.join(['#include "modules/{0}/{0}.h"'.format(x.under) for x in backend_modules]),
         '{{{module_decls}}}': '\n'.join(['{} {};'.format(x.camel, x.under) for x in backend_modules]),
+        '{{{module_pre_setup}}}': '\n    '.join(['{}.pre_setup();'.format(x.under) for x in backend_modules]),
         '{{{module_setup}}}': '\n    '.join(['{}.setup();'.format(x.under) for x in backend_modules]),
         '{{{module_register_urls}}}': '\n    '.join(['{}.register_urls();'.format(x.under) for x in backend_modules]),
         '{{{module_loop}}}': '\n    '.join(['{}.loop();'.format(x.under) for x in backend_modules]),
@@ -295,9 +330,19 @@ def main():
         '{{{module_init_config}}}': ',\n        '.join('{{"{0}", Config::Bool({0}.initialized)}}'.format(x.under) for x in backend_modules if not x.under.startswith("hidden_"))
     })
 
+
+    all_mods = []
+    for existing_backend_module in os.listdir(os.path.join('src', 'modules')):
+        if not os.path.isdir(os.path.join('src', 'modules', existing_backend_module)):
+            continue
+
+        all_mods.append(existing_backend_module.upper())
+
+    backend_mods_upper = [x.upper for x in backend_modules]
+
     specialize_template("modules.h.template", os.path.join("src", "modules.h"), {
         '{{{module_includes}}}': '\n'.join(['#include "modules/{0}/{0}.h"'.format(x.under) for x in backend_modules]),
-        '{{{module_defines}}}': '\n'.join(['#define MODULE_{}_AVAILABLE'.format(x.upper) for x in backend_modules]),
+        '{{{module_defines}}}': '\n'.join(['#define MODULE_{}_AVAILABLE() {}'.format(x, "1" if x in backend_mods_upper else "0") for x in all_mods]),
         '{{{module_extern_decls}}}': '\n'.join(['extern {} {};'.format(x.camel, x.under) for x in backend_modules]),
     })
 
@@ -308,7 +353,7 @@ def main():
     main_ts_entries = []
     pre_scss_paths = []
     post_scss_paths = []
-    frontend_modules = [FlavoredName(x).get() for x in env.GetProjectOption("frontend_modules").splitlines()]
+    frontend_modules = [FlavoredName(x).get() for x in env.GetProjectOption("custom_frontend_modules").splitlines()]
     translation = collect_translation('web')
 
     # API
@@ -321,30 +366,32 @@ def main():
     api_path_pattern = re.compile("//APIPath:([^\n]*)\n")
 
     favicon_path = None
-    logo_module = None
+    logo_path = None
 
     for frontend_module in frontend_modules:
         mod_path = os.path.join('web', 'src', 'modules', frontend_module.under)
 
         if not os.path.exists(mod_path) or not os.path.isdir(mod_path):
-            print("Frontend module {} not found.".format(frontend_module.space, mod_path))
+            print("Error: Frontend module {} not found.".format(frontend_module.space, mod_path))
             sys.exit(1)
-
-        if os.path.exists(os.path.join(mod_path, 'logo.png')):
-            if logo_module != None:
-                print('Logo module collision ' + frontend_module.under + ' vs ' + logo_module)
-                sys.exit(1)
-
-            logo_module = frontend_module.under
 
         potential_favicon_path = os.path.join(mod_path, 'favicon.png')
 
         if os.path.exists(potential_favicon_path):
             if favicon_path != None:
-                print('Favicon path collision ' + potential_favicon_path + ' vs ' + favicon_path)
+                print('Error: Favicon path collision ' + potential_favicon_path + ' vs ' + favicon_path)
                 sys.exit(1)
 
             favicon_path = potential_favicon_path
+
+        potential_logo_path = os.path.join(mod_path, 'logo.png')
+
+        if os.path.exists(potential_logo_path):
+            if logo_path != None:
+                print('Error: Logo path collision ' + potential_logo_path + ' vs ' + logo_path)
+                sys.exit(1)
+
+            logo_path = potential_logo_path
 
         if os.path.exists(os.path.join(mod_path, 'navbar.html')):
             with open(os.path.join(mod_path, 'navbar.html'), encoding='utf-8') as f:
@@ -358,7 +405,7 @@ def main():
             with open(os.path.join(mod_path, 'status.html'), encoding='utf-8') as f:
                 status_entries.append(f.read())
 
-        if os.path.exists(os.path.join(mod_path, 'main.ts')):
+        if os.path.exists(os.path.join(mod_path, 'main.ts')) or os.path.exists(os.path.join(mod_path, 'main.tsx')):
             main_ts_entries.append(frontend_module.under)
 
         if os.path.exists(os.path.join(mod_path, 'api.ts')):
@@ -379,7 +426,7 @@ def main():
                 api_imports.append("import * as {} from '../modules/{}/api';".format(api_module, frontend_module.under))
 
                 api_config_map_entries += ["'{}{}': {}.{},".format(api_path, x, api_module, x) for x in api_exports]
-                api_cache_entries += ["'{}{}': null,".format(api_path, x) for x in api_exports]
+                api_cache_entries += ["'{}{}': null as any,".format(api_path, x) for x in api_exports]
 
         for phase, scss_paths in [('pre', pre_scss_paths), ('post', post_scss_paths)]:
             scss_path = os.path.join(mod_path, phase + '.scss')
@@ -396,34 +443,35 @@ def main():
         os.remove(path)
 
     if len(translation) == 0:
-        print('Translation missing')
+        print('Error: Translation missing')
         sys.exit(1)
 
-    for language in sorted(translation):
-        with open(os.path.join('web', 'src', 'ts', 'translation_{0}.ts'.format(language)), 'w', encoding='utf-8') as f:
-            data = json.dumps(translation[language], indent=4, ensure_ascii=False)
-            data = data.replace('{{{empty_text}}}', '\u200b') # Zero Width Space to work around a bug in the translation library: empty strings are replaced with "null"
-            data = data.replace('{{{display_name}}}', display_name)
-            data = data.replace('{{{manual_url}}}', manual_url)
-            data = data.replace('{{{apidoc_url}}}', apidoc_url)
+    with open(os.path.join('web', 'src', 'ts', 'translation.json'), 'w', encoding='utf-8') as f:
+        data = json.dumps(translation, indent=4, ensure_ascii=False)
+        data = data.replace('{{{display_name}}}', display_name)
+        data = data.replace('{{{manual_url}}}', manual_url)
+        data = data.replace('{{{apidoc_url}}}', apidoc_url)
+        data = data.replace('{{{firmware_url}}}', firmware_url)
 
-            f.write('export const translation_{0}: {{[index: string]:any}} = '.format(language))
-            f.write(data + ';\n')
+        f.write(data)
 
     if favicon_path == None:
-        print('Favison missing')
-        sys.exit(1)
-
-    if logo_module == None:
-        print('Logo missing')
+        print('Error: Favison missing')
         sys.exit(1)
 
     with open(favicon_path, 'rb') as f:
         favicon = b64encode(f.read()).decode('ascii')
 
+    if logo_path == None:
+        print('Error: Logo missing')
+        sys.exit(1)
+
+    with open(logo_path, 'rb') as f:
+        logo = b64encode(f.read()).decode('ascii')
+
     specialize_template(os.path.join("web", "index.html.template"), os.path.join("web", "src", "index.html"), {
         '{{{favicon}}}': favicon,
-        '{{{logo_module}}}': logo_module,
+        '{{{logo}}}': logo,
         '{{{navbar}}}': '\n                        '.join(navbar_entries),
         '{{{content}}}': '\n                    '.join(content_entries),
         '{{{status}}}': '\n                            '.join(status_entries)
@@ -432,8 +480,6 @@ def main():
     specialize_template(os.path.join("web", "main.ts.template"), os.path.join("web", "src", "main.ts"), {
         '{{{module_imports}}}': '\n'.join(['import * as {0} from "./modules/{0}/main";'.format(x) for x in main_ts_entries]),
         '{{{modules}}}': ', '.join([x for x in main_ts_entries]),
-        '{{{translation_imports}}}': '\n'.join(['import {{translation_{0}}} from "./ts/translation_{0}";'.format(x) for x in sorted(translation)]),
-        '{{{translation_adds}}}': '\n'.join(["    translator.add('{0}', translation_{0});".format(x) for x in sorted(translation)])
     })
 
     specialize_template(os.path.join("web", "main.scss.template"), os.path.join("web", "src", "main.scss"), {
@@ -448,120 +494,160 @@ def main():
         '{{{api_cache_entries}}}': '\n    '.join(api_cache_entries),
     })
 
+    translation_str = ''
+
+    def format_translation(translation, type_only, indent):
+        output = ['{\n']
+
+        assert isinstance(translation, (dict, str)), type(translation)
+
+        for key, value in sorted(translation.items()):
+            output += [indent + '    ', key, ': ']
+
+            if isinstance(value, dict):
+                output += format_translation(value, type_only, indent + '    ')
+            elif type_only:
+                output += ['string,\n']
+            else:
+                string = '"{0}"'.format(value.replace('"', '\\"'))
+
+                if '{{{' in string:
+                    string = string.replace('{{{display_name}}}', display_name)
+                    string = string.replace('{{{manual_url}}}', manual_url)
+                    string = string.replace('{{{apidoc_url}}}', apidoc_url)
+                    string = string.replace('{{{firmware_url}}}', firmware_url)
+
+                output += [string, ',\n']
+
+        output += [indent, '}']
+
+        if len(indent) > 0:
+            output += [',\n']
+
+        return output
+
+    translation_str += 'type Translation = ' + ''.join(format_translation(translation['en'], True, '')) + '\n\n'
+
+    for language in sorted(translation):
+        translation_str += 'const translation_{0}: Translation = {1} as const\n\n'.format(language, ''.join(format_translation(translation[language], False, '')))
+
+    translation_str += 'const translation: {[index: string]: Translation} = {\n'
+
+    for language in sorted(translation):
+        translation_str += '    "{0}": translation_{0},\n'.format(language)
+
+    translation_str += '} as const\n'
+
+    specialize_template(os.path.join("web", "translation.tsx.template"), os.path.join("web", "src", "ts", "translation.tsx"), {
+        '{{{translation}}}': translation_str,
+    })
+
     # Check translation completeness
     print('Checking translation completeness')
 
     with ChangedDirectory('web'):
         subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "check_translation_completeness.py"] + [x.under for x in frontend_modules])
 
+    # Check translation override completeness
+    print('Checking translation override completeness')
+
+    with ChangedDirectory('web'):
+        subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "check_override_completeness.py"])
+
     # Generate web interface
     print('Checking web interface dependencies')
 
-    h = hashlib.sha256()
-
-    with open('web/package-lock.json', 'rb') as f:
-        h.update(f.read())
+    node_modules_src_paths = ['web/package-lock.json']
 
     # FIXME: Scons runs this script using exec(), resulting in __file__ being not available
-    #with open(__file__, 'rb') as f:
-    #    h.update(f.read())
+    #node_modules_src_paths.append(__file__)
 
-    new_node_digest = h.hexdigest()
-    node_digest_path = os.path.join(env.subst('$BUILD_DIR'), 'web,package-lock.json.digest')
+    node_modules_needs_update, node_modules_reason, node_modules_digest = util.check_digest(node_modules_src_paths, [], 'web', 'node_modules', env=env)
+    node_modules_digest_paths = util.get_digest_paths('web', 'node_modules', env=env)
 
-    try:
-        with open(node_digest_path, 'r', encoding='utf-8') as f:
-            old_node_digest = f.read().strip()
-    except FileNotFoundError:
-        old_node_digest = None
-
-    if old_node_digest == new_node_digest and os.path.exists('web/node_modules/tinkerforge.marker'):
+    if not node_modules_needs_update and os.path.exists('web/node_modules/tinkerforge.marker'):
         print('Web interface dependencies are up-to-date')
     else:
-        if old_node_digest == None:
-            reason = 'digest file missing'
-        elif old_node_digest != new_node_digest:
-            reason = 'digest mismatch'
-        elif not os.path.exists('web/node_modules/tinkerforge.marker'):
-            reason = 'node_modules marker missing'
-        else:
-            reason = 'unknown'
+        if not os.path.exists('web/node_modules/tinkerforge.marker'):
+            node_modules_reason = 'marker file missing'
 
-        print('Web interface dependencies are not up-to-date ({0}), updating now'.format(reason))
+        print('Web interface dependencies are not up-to-date ({0}), updating now'.format(node_modules_reason))
 
-        try:
-            os.remove(node_digest_path)
-        except FileNotFoundError:
-            pass
+        util.remove_digest('web', 'node_modules', env=env)
 
-        try:
-            shutil.rmtree('web/node_modules')
-        except FileNotFoundError:
-            pass
+        rmtree_tries = 10
+
+        while rmtree_tries > 0:
+            try:
+                shutil.rmtree('web/node_modules')
+                break
+            except FileNotFoundError:
+                break
+            except:
+                # on windows for some unknown reason sometimes a directory stays
+                # or becomes non-empty during the shutil.rmtree call and and
+                # cannot be removed anymore. if that happens jus try again
+                time.sleep(0.5)
+
+                rmtree_tries -= 1
+
+                if rmtree_tries == 0:
+                    raise
 
         with ChangedDirectory('web'):
-            subprocess.check_call(["npm", "ci"], shell=sys.platform == 'win32')
+            npm_version = subprocess.check_output(['npm', '--version'], shell=sys.platform == 'win32', encoding='utf-8').strip()
+
+            m = re.fullmatch(r'(\d+)\.\d+\.\d+', npm_version)
+
+            if m == None:
+                print('Error: npm version has unexpected format: {0}'.format(npm_version))
+                sys.exit(1)
+
+            if int(m.group(1)) < 8:
+                print('Error: npm >= 8 required, found npm {0}'.format(npm_version))
+                sys.exit(1)
+
+            subprocess.check_call(['npm', 'ci'], shell=sys.platform == 'win32')
 
         with open('web/node_modules/tinkerforge.marker', 'wb') as f:
             pass
 
-        with open(node_digest_path + '.tmp', 'w', encoding='utf-8') as f:
-            f.write(new_node_digest)
-
-        os.replace(node_digest_path + '.tmp', node_digest_path)
+        util.store_digest(node_modules_digest, 'web', 'node_modules', env=env)
 
     print('Checking web interface')
 
-    h = hashlib.sha256()
+    index_html_src_paths = []
+    index_html_src_datas = []
 
     for name in sorted(os.listdir('web')):
         path = os.path.join('web', name)
 
-        if not os.path.isfile(path):
-            continue
-
-        with open(path, 'rb') as f:
-            h.update(f.read())
+        if os.path.isfile(path):
+            index_html_src_paths.append(path)
 
     for root, dirs, files in sorted(os.walk('web/src')):
-        for name in files:
-            path = os.path.join(root, name)
+        for name in sorted(files):
+            index_html_src_paths.append(os.path.join(root, name))
 
-            with open(path, 'rb') as f:
-                h.update(f.read())
+    index_html_src_paths += node_modules_digest_paths
 
-    with open(node_digest_path, 'rb') as f:
-        h.update(f.read())
-
-    with open('util.py', 'rb') as f:
-        h.update(f.read())
+    for frontend_module in frontend_modules: # ensure changes to the frontend modules change the digest
+        index_html_src_datas.append(frontend_module.under.encode('utf-8'))
 
     # FIXME: Scons runs this script using exec(), resulting in __file__ being not available
-    #with open(__file__, 'rb') as f:
-    #    h.update(f.read())
+    #index_html_src_paths.append(__file__)
 
-    new_html_digest = h.hexdigest()
-    html_digest_path = os.path.join(env.subst('$BUILD_DIR'), 'src,index.html.digest')
+    index_html_needs_update, index_html_reason, index_html_digest = util.check_digest(index_html_src_paths, index_html_src_datas, 'src', 'index_html', env=env)
 
-    try:
-        with open(html_digest_path, 'r', encoding='utf-8') as f:
-            old_html_digest = f.read().strip()
-    except FileNotFoundError:
-        old_html_digest = None
-
-    if old_html_digest == new_html_digest and os.path.exists('src/index_html.embedded.h') and os.path.exists('src/index_html.embedded.cpp'):
+    if not index_html_needs_update and os.path.exists('src/index_html.embedded.h') and os.path.exists('src/index_html.embedded.cpp'):
         print('Web interface is up-to-date')
     else:
-        if old_html_digest == None:
-            reason = 'digest file missing'
-        elif old_html_digest != new_html_digest:
-            reason = 'digest mismatch'
-        elif not os.path.exists('src/index_html.embedded.h') or not os.path.exists('src/index_html.embedded.cpp'):
-            reason = 'embedded file missing'
-        else:
-            reason = 'unknown'
+        if not os.path.exists('src/index_html.embedded.h') or not os.path.exists('src/index_html.embedded.cpp'):
+            index_html_reason = 'embedded file missing'
 
-        print('Web interface is not up-to-date ({0}), building now'.format(reason))
+        print('Web interface is not up-to-date ({0}), building now'.format(index_html_reason))
+
+        util.remove_digest('src', 'index_html', env=env)
 
         try:
             shutil.rmtree('web/build')
@@ -569,25 +655,25 @@ def main():
             pass
 
         with ChangedDirectory('web'):
-            subprocess.check_call(['npx', 'gulp'], shell=sys.platform == 'win32')
+            subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "build.py"])
 
-        with open('web/build/main.css', 'r', encoding='utf-8') as f:
+        with open('web/build/main.min.css', 'r', encoding='utf-8') as f:
             css = f.read()
 
-        with open('web/build/bundle.js', 'r', encoding='utf-8') as f:
+        with open('web/build/bundle.min.js', 'r', encoding='utf-8') as f:
             js = f.read()
 
-        with open('web/build/index.html', 'r', encoding='utf-8') as f:
+        with open('web/build/index.min.html', 'r', encoding='utf-8') as f:
             html = f.read()
 
         html = html.replace('<link href=css/main.css rel=stylesheet>', '<style rel=stylesheet>{0}</style>'.format(css))
         html = html.replace('<script src=js/bundle.js></script>', '<script>{0}</script>'.format(js))
 
-        embed_data(gzip.compress(html.encode('utf-8')), 'src', 'index_html', 'char')
+        util.embed_data(gzip.compress(html.encode('utf-8')), 'src', 'index_html', 'char')
+        util.store_digest(index_html_digest, 'src', 'index_html', env=env)
 
-        with open(html_digest_path + '.tmp', 'w', encoding='utf-8') as f:
-            f.write(new_html_digest)
-
-        os.replace(html_digest_path + '.tmp', html_digest_path)
+    print("Checking HTML ID usage")
+    with ChangedDirectory('web'):
+        subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "check_id_usage.py"] + [x.under for x in frontend_modules])
 
 main()

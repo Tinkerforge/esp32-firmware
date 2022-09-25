@@ -19,69 +19,109 @@
 
 #include "web_sockets.h"
 
-#include <esp_http_server.h>
-
 #include "task_scheduler.h"
 #include "web_server.h"
 
 #include "esp_httpd_priv.h"
 
-#include <mutex>
-#include <deque>
-
 extern TaskScheduler task_scheduler;
 extern WebServer server;
 extern EventLog logger;
 
-static const size_t max_clients = 7;
+#define KEEP_ALIVE_TIMEOUT_MS 10000
+#define WORKER_START_ERROR_THRES 60 * 10
+#define WORKER_START_ERROR_MIN_UPTIME_FOR_REBOOT 60 * 60 * 1000
 
-struct ws_work_item {
-    httpd_handle_t hd;
-    int fd;
-    char *payload;
-    size_t payload_len;
-    int *payload_ref_counter;
+void clear_ws_work_item(ws_work_item *wi)
+{
+    free(wi->payload);
+    wi->payload = nullptr;
+}
 
-    ws_work_item(httpd_handle_t hd,
-                 int fd,
-                 char *payload,
-                 size_t payload_len,
-                 int *payload_ref_counter) :
-                    hd(hd), fd(fd), payload(payload), payload_len(payload_len), payload_ref_counter(payload_ref_counter)
-    {}
+bool WebSockets::haveWork(ws_work_item *item)
+{
+    std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
 
-    void clear()
-    {
-        if (this->payload_ref_counter == nullptr)
-            return;
+    if (work_queue.empty())
+        return false;
 
-        if (*this->payload_ref_counter > 0) {
-            --(*this->payload_ref_counter);
+    *item = work_queue.front();
+    work_queue.pop_front();
+    return true;
+}
+
+void WebSockets::cleanUpQueue()
+{
+    std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
+    while (!work_queue.empty()) {
+        ws_work_item *wi = &work_queue.front();
+        for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+            if (wi->fds[i] != -1) {
+                return;
+            }
         }
-        if (*this->payload_ref_counter == 0) {
-            free(this->payload);
-            free(this->payload_ref_counter);
-        }
+        clear_ws_work_item(wi);
+        // Every fd was -1.
+        work_queue.pop_front();
     }
-};
-
-std::mutex work_queue_mutex;
-std::deque<ws_work_item> work_queue;
-
-static void removeFd(wss_keep_alive_t h, int fd){
-    wss_keep_alive_remove_client(h, fd);
 }
 
-esp_err_t wss_open_fd(wss_keep_alive_t hd, int sockfd)
+bool WebSockets::queueFull()
 {
-    //logger.printfln("New client connected %d", sockfd);
-    return wss_keep_alive_add_client(hd, sockfd);
+    std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
+    if (work_queue.size() < MAX_WEB_SOCKET_WORK_ITEMS_IN_QUEUE) {
+        return false;
+    }
+
+    cleanUpQueue();
+
+    if (work_queue.size() >= MAX_WEB_SOCKET_WORK_ITEMS_IN_QUEUE) {
+        return true;
+    }
+    logger.printfln("WebSocket work queue was full but %d items were cleaned.", MAX_WEB_SOCKET_WORK_ITEMS_IN_QUEUE - work_queue.size());
+
+    return false;
 }
 
-void wss_close_fd(wss_keep_alive_t hd, int sockfd)
+const char *work_state = "";
+static void work(void *arg)
 {
-    //logger.printfln("Client disconnected %d", sockfd);
-    removeFd(hd, sockfd);
+    work_state = "start";
+    WebSockets *ws = (WebSockets *)arg;
+
+    ws_work_item wi;
+    while (ws->haveWork(&wi)) {
+        work_state = "have_work";
+        httpd_ws_frame_t ws_pkt;
+        memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
+
+        ws_pkt.payload = (uint8_t *)wi.payload;
+        ws_pkt.len = wi.payload_len;
+        ws_pkt.type = wi.payload_len == 0 ? HTTPD_WS_TYPE_PING : HTTPD_WS_TYPE_TEXT;
+
+        work_state = "loop";
+        for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+            if (wi.fds[i] == -1) {
+                continue;
+            }
+            work_state = "get_info";
+            if (httpd_ws_get_fd_info(wi.hd, wi.fds[i]) != HTTPD_WS_CLIENT_WEBSOCKET) {
+                continue;
+            }
+            work_state = "send";
+            if (httpd_ws_send_frame_async(wi.hd, wi.fds[i], &ws_pkt) != ESP_OK) {
+                work_state = "close_dead";
+                ws->keepAliveCloseDead(wi.fds[i]);
+            }
+            work_state = "send_done";
+        }
+        work_state = "clear";
+        clear_ws_work_item(&wi);
+        work_state = "loop_end";
+    }
+    work_state = "done";
+    ws->worker_start_errors = 0;
+    ws->worker_active = false;
 }
 
 static esp_err_t ws_handler(httpd_req_t *req)
@@ -99,7 +139,12 @@ static esp_err_t ws_handler(httpd_req_t *req)
 
         struct httpd_req_aux *aux = (struct httpd_req_aux *)req->aux;
         if (aux->ws_handshake_detect) {
-            //logger.printfln("Responding WS handshake to sock %d", aux->sd->fd);
+            WebSockets *ws = (WebSockets *)req->user_ctx;
+            if (!ws->haveFreeSlot()) {
+                request.send(503);
+                return ESP_FAIL;
+            }
+
             struct httpd_data *hd = (struct httpd_data *)server.httpd;
             esp_err_t ret = httpd_ws_respond_server_handshake(&hd->hd_req, nullptr);
             if (ret != ESP_OK) {
@@ -111,11 +156,9 @@ static esp_err_t ws_handler(httpd_req_t *req)
             aux->sd->ws_control_frames = true;
             aux->sd->ws_user_ctx = req->user_ctx;
 
-            //logger.printfln("Handshake done, the new connection was opened");
-
             int sock = httpd_req_to_sockfd(req);
-            WebSockets *ws = (WebSockets *)req->user_ctx;
-            wss_open_fd(ws->keep_alive, sock);
+
+            ws->keepAliveAdd(sock);
 
             if (ws->on_client_connect_fn) {
                 ws->on_client_connect_fn(WebSocketsClient{sock, ws});
@@ -134,7 +177,7 @@ static esp_err_t ws_handler(httpd_req_t *req)
         logger.printfln("httpd_ws_recv_frame failed to get frame len with %d", ret);
         return ret;
     }
-    //logger.printfln("frame len is %d", ws_pkt.len);
+
     if (ws_pkt.len) {
         /* ws_pkt.len + 1 is for NULL termination as we are expecting a string */
         buf = (uint8_t *)calloc(1, ws_pkt.len + 1);
@@ -157,33 +200,75 @@ static esp_err_t ws_handler(httpd_req_t *req)
         // We have to send the pong ourselves.
         ws_pkt.type = HTTPD_WS_TYPE_PONG;
         httpd_ws_send_frame(req, &ws_pkt);
-        free(buf);
-        WebSockets *ws = (WebSockets *)req->user_ctx;
-        return wss_keep_alive_client_is_active(ws->keep_alive, httpd_req_to_sockfd(req));
     } else if (ws_pkt.type == HTTPD_WS_TYPE_PONG) {
         // If it was a PONG, update the keep-alive
-        //logger.printfln("Received PONG message");
-        free(buf);
         WebSockets *ws = (WebSockets *)req->user_ctx;
-        return wss_keep_alive_client_is_active(ws->keep_alive, httpd_req_to_sockfd(req));
+        ws->receivedPong(httpd_req_to_sockfd(req));
     } else if (ws_pkt.type == HTTPD_WS_TYPE_TEXT) {
         // If it was a TEXT message, print it
-        logger.printfln("Received packet with message: %s", ws_pkt.payload);
+        logger.printfln("Ignoring received packet with message: \"%s\" (web sockets are unidirectional for now)", ws_pkt.payload);
     } else if (ws_pkt.type == HTTPD_WS_TYPE_CLOSE) {
         // If it was a CLOSE, remove it from the keep-alive list
-        free(buf);
         WebSockets *ws = (WebSockets *)req->user_ctx;
-        wss_close_fd(ws->keep_alive, httpd_req_to_sockfd(req));
-        return ESP_OK;
+        ws->keepAliveRemove(httpd_req_to_sockfd(req));
     }
     free(buf);
     return ESP_OK;
 }
 
-bool client_not_alive_cb(wss_keep_alive_t h, int fd)
+void WebSockets::keepAliveAdd(int fd)
 {
-    //logger.printfln("Client not alive, closing fd %d", fd);
-    httpd_sess_trigger_close(wss_keep_alive_get_user_ctx(h), fd);
+    std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
+    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+        if (keep_alive_fds[i] == fd) {
+            // fd is alreaedy in the keep alive array. Only update last_pong to prevent instantly closing the new connection.
+            // This can happen if web sockets are opened and closed rapidly (so that LWIP "reuses" the fd) and we miss a close frame.
+            keep_alive_last_pong[i] = millis();
+            return;
+        }
+    }
+
+    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+        if (keep_alive_fds[i] != -1)
+            continue;
+        keep_alive_fds[i] = fd;
+        keep_alive_last_pong[i] = millis();
+        return;
+    }
+}
+
+void WebSockets::keepAliveRemove(int fd)
+{
+    {
+        std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
+        for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+            if (keep_alive_fds[i] != fd)
+                continue;
+            keep_alive_fds[i] = -1;
+            keep_alive_last_pong[i] = 0;
+            break;
+        }
+    }
+
+    {
+        std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
+        for (int i = 0; i < work_queue.size(); ++i)
+            for (int j = 0; j < MAX_WEB_SOCKET_CLIENTS; ++j)
+                if (work_queue[i].fds[j] == fd)
+                    work_queue[i].fds[j] = -1;
+    }
+}
+
+void WebSockets::keepAliveCloseDead(int fd)
+{
+    this->keepAliveRemove(fd);
+    // Don't kill this socket if it is a HTTP socket:
+    // Sometimes a fd is reused so fast that the keep alive does not notice
+    // the closed fd before it is reopened as normal HTTP connection.
+    if (httpd_ws_get_fd_info(server.httpd, fd) == HTTPD_WS_CLIENT_HTTP)
+        return;
+
+    httpd_sess_trigger_close(server.httpd, fd);
 
     // Seems like we have to do everything by ourselves...
     // In the case that the client is really dead (for example: someone pulled the ethernet cable)
@@ -210,254 +295,198 @@ bool client_not_alive_cb(wss_keep_alive_t h, int fd)
 
     // Sometimes the deletion is not complete, but leaves an invalid socket. Also remove those.
     httpd_sess_delete_invalid(hd);
-    wss_close_fd(h, fd);
-    return true;
 }
 
-static void work(void *arg)
+void WebSockets::pingActiveClients()
 {
-    while (!work_queue.empty()) {
-        ws_work_item wi = work_queue.front();
-        {
-            std::lock_guard<std::mutex> lock{work_queue_mutex};
-            work_queue.pop_front();
-        }
-        if (httpd_ws_get_fd_info(wi.hd, wi.fd) != HTTPD_WS_CLIENT_WEBSOCKET) {
-            wi.clear();
-            continue;
-        }
+    if (!this->haveActiveClient())
+        return;
 
-        httpd_ws_frame_t ws_pkt;
-        memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
-
-        ws_pkt.payload = (uint8_t *)wi.payload;
-        ws_pkt.len = wi.payload_len;
-        ws_pkt.type = wi.payload_len == 0 ? HTTPD_WS_TYPE_PING : HTTPD_WS_TYPE_TEXT;
-
-        auto result = httpd_ws_send_frame_async(wi.hd, wi.fd, &ws_pkt);
-        if (result != ESP_OK) {
-            printf("failed to send %s frame to fd %d: %d\n", wi.payload_len == 0 ? "HTTPD_WS_TYPE_PING" : "HTTPD_WS_TYPE_TEXT", wi.fd, result);
-        }
-
-        wi.clear();
-    }
-}
-
-bool check_client_alive_cb(wss_keep_alive_t h, int fd)
-{
-    httpd_handle_t hd = (httpd_handle_t)wss_keep_alive_get_user_ctx(h);
-
+    // Copy over to not hold both mutexes at the same time.
+    int fds[MAX_WEB_SOCKET_CLIENTS];
     {
-        std::lock_guard<std::mutex> lock{work_queue_mutex};
-        work_queue.emplace_back(hd, fd, nullptr, 0, nullptr);
+        std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
+        memcpy(fds, keep_alive_fds, sizeof(fds));
     }
-    return httpd_queue_work(hd, work, nullptr) == ESP_OK;
+
+    std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
+    if (queueFull()) {
+        return;
+    }
+
+    work_queue.push_back({server.httpd, {}, nullptr, 0});
+    memcpy(work_queue.back().fds, fds, sizeof(fds));
 }
 
-void WebSocketsClient::send(const char* payload, size_t payload_len)
+void WebSockets::checkActiveClients()
+{
+    std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
+    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+        if (keep_alive_fds[i] == -1)
+            continue;
+
+        if (httpd_ws_get_fd_info(server.httpd, keep_alive_fds[i]) != HTTPD_WS_CLIENT_WEBSOCKET || deadline_elapsed(keep_alive_last_pong[i] + KEEP_ALIVE_TIMEOUT_MS)) {
+            this->keepAliveCloseDead(keep_alive_fds[i]);
+        }
+    }
+}
+
+void WebSockets::receivedPong(int fd)
+{
+    std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
+    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+        if (keep_alive_fds[i] != fd)
+            continue;
+
+        keep_alive_last_pong[i] = millis();
+    }
+}
+
+void WebSocketsClient::send(const char *payload, size_t payload_len)
 {
     ws->sendToClient(payload, payload_len, fd);
 }
 
-void WebSockets::sendToClient(const char *payload, size_t payload_len, int sock)
+void WebSockets::sendToClient(const char *payload, size_t payload_len, int fd)
 {
-    httpd_handle_t httpd = server.httpd;
-    int *payload_ref_counter = (int *)malloc(sizeof(int));
-    if (payload_ref_counter == nullptr)
+    if (httpd_ws_get_fd_info(server.httpd, fd) != HTTPD_WS_CLIENT_WEBSOCKET)
         return;
+
     char *payload_copy = (char *)malloc(payload_len * sizeof(char));
     if (payload_copy == nullptr) {
-        free(payload_ref_counter);
         return;
     }
 
     memcpy(payload_copy, payload, payload_len);
 
-    *payload_ref_counter = 1;
-
-    {
-        // TODO: locking here means, that we assume, the sock fd is valid up to now.
-        // This holds true if sendToClient is only called from the onClientConnect callback,
-        // i.e. from the same thread.
-        std::lock_guard<std::mutex> lock{work_queue_mutex};
-        work_queue.emplace_back(httpd, sock, payload_copy, payload_len, payload_ref_counter);
+    std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
+    if (queueFull()) {
+        free(payload_copy);
+        return;
     }
 
-    if (httpd_queue_work(httpd, work, nullptr) != ESP_OK) {
-        logger.printfln("httpd_queue_work failed!");
-    }
+    work_queue.push_back({server.httpd, {fd, -1, -1, -1, -1}, payload_copy, payload_len});
 }
 
 bool WebSockets::haveActiveClient()
 {
-    httpd_handle_t httpd = server.httpd;
-    size_t clients = 7;
-    int client_fds[7];
-
-    auto result = httpd_get_client_list(httpd, &clients, client_fds);
-    if (result != ESP_OK) {
-        logger.printfln("httpd_get_client_list failed! %d", result);
-        return false;
+    std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
+    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+        if (keep_alive_fds[i] != -1)
+            return true;
     }
+    return false;
+}
 
-    int active_clients = 0;
-    int http_clients = 0;
-    int invalid_clients = 0;
-    int unknown_clients = 0;
-    //printf("payload (len: %d) after copy: %s\n", payload_len, payload_copy);
-
-    for (size_t i = 0; i < clients; ++i)
-        if (httpd_ws_get_fd_info(httpd, client_fds[i]) == HTTPD_WS_CLIENT_WEBSOCKET)
-            ++active_clients;
-        else if (httpd_ws_get_fd_info(httpd, client_fds[i]) == HTTPD_WS_CLIENT_HTTP)
-            ++http_clients;
-        else if (httpd_ws_get_fd_info(httpd, client_fds[i]) == HTTPD_WS_CLIENT_INVALID)
-            ++invalid_clients;
-        else
-            ++unknown_clients;
-
-    return active_clients != 0;
+bool WebSockets::haveFreeSlot()
+{
+    std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
+    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+        if (keep_alive_fds[i] == -1)
+            return true;
+    }
+    return false;
 }
 
 void WebSockets::sendToAllOwned(char *payload, size_t payload_len)
 {
-    httpd_handle_t httpd = server.httpd;
-    size_t clients = 7;
-    int client_fds[7];
-
-    auto result = httpd_get_client_list(httpd, &clients, client_fds);
-    if (result != ESP_OK) {
-        logger.printfln("httpd_get_client_list failed! %d", result);
+    if (!this->haveActiveClient()) {
+        free(payload);
         return;
     }
 
-    int active_clients = 0;
-    int http_clients = 0;
-    int invalid_clients = 0;
-    int unknown_clients = 0;
-    //printf("payload (len: %d) after copy: %s\n", payload_len, payload_copy);
-
-    for (size_t i = 0; i < clients; ++i)
-        if (httpd_ws_get_fd_info(httpd, client_fds[i]) == HTTPD_WS_CLIENT_WEBSOCKET)
-            ++active_clients;
-        else if (httpd_ws_get_fd_info(httpd, client_fds[i]) == HTTPD_WS_CLIENT_HTTP)
-            ++http_clients;
-        else if (httpd_ws_get_fd_info(httpd, client_fds[i]) == HTTPD_WS_CLIENT_INVALID)
-            ++invalid_clients;
-        else
-            ++unknown_clients;
-
-    /*printf("active_clients %d, http_clients %d, invalid_clients %d, unknown_clients %d\n",
-            active_clients,
-            http_clients,
-            invalid_clients,
-            unknown_clients);*/
-
-    if (active_clients == 0)
-        return;
-
-    int *payload_ref_counter = (int *)malloc(sizeof(int));
-    if (payload_ref_counter == nullptr)
-        return;
-
-    *payload_ref_counter = active_clients;
-
-    std::lock_guard<std::mutex> lock{work_queue_mutex};
-    for (size_t i = 0; i < clients; ++i) {
-        int sock = client_fds[i];
-        if (httpd_ws_get_fd_info(httpd, sock) != HTTPD_WS_CLIENT_WEBSOCKET) {
-            continue;
-        }
-
-        work_queue.emplace_back(httpd, sock, payload, payload_len, payload_ref_counter);
-
-        if (httpd_queue_work(httpd, work, nullptr) != ESP_OK) {
-            logger.printfln("httpd_queue_work failed!");
-        }
+    // Copy over to not hold both mutexes at the same time.
+    int fds[MAX_WEB_SOCKET_CLIENTS];
+    {
+        std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
+        memcpy(fds, keep_alive_fds, sizeof(fds));
     }
+
+    std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
+    if (queueFull()) {
+        free(payload);
+        return;
+    }
+    work_queue.push_back({server.httpd, {}, payload, payload_len});
+    memcpy(work_queue.back().fds, fds, sizeof(fds));
 }
 
 void WebSockets::sendToAll(const char *payload, size_t payload_len)
 {
-    httpd_handle_t httpd = server.httpd;
-    size_t clients = 7;
-    int client_fds[7];
-
-    auto result = httpd_get_client_list(httpd, &clients, client_fds);
-    if (result != ESP_OK) {
-        logger.printfln("httpd_get_client_list failed! %d", result);
+    if (!this->haveActiveClient())
         return;
-    }
-
-    int active_clients = 0;
-    int http_clients = 0;
-    int invalid_clients = 0;
-    int unknown_clients = 0;
-    //printf("payload (len: %d) after copy: %s\n", payload_len, payload_copy);
-
-    for (size_t i = 0; i < clients; ++i)
-        if (httpd_ws_get_fd_info(httpd, client_fds[i]) == HTTPD_WS_CLIENT_WEBSOCKET)
-            ++active_clients;
-        else if (httpd_ws_get_fd_info(httpd, client_fds[i]) == HTTPD_WS_CLIENT_HTTP)
-            ++http_clients;
-        else if (httpd_ws_get_fd_info(httpd, client_fds[i]) == HTTPD_WS_CLIENT_INVALID)
-            ++invalid_clients;
-        else
-            ++unknown_clients;
-
-    /*printf("active_clients %d, http_clients %d, invalid_clients %d, unknown_clients %d\n",
-            active_clients,
-            http_clients,
-            invalid_clients,
-            unknown_clients);*/
-
-    if (active_clients == 0)
-        return;
-
-    int *payload_ref_counter = (int *)malloc(sizeof(int));
-    if (payload_ref_counter == nullptr)
-        return;
-
-    *payload_ref_counter = active_clients;
 
     char *payload_copy = (char *)malloc(payload_len * sizeof(char));
     if (payload_copy == nullptr) {
-        free(payload_ref_counter);
+        return;
+    }
+    memcpy(payload_copy, payload, payload_len);
+
+    // Copy over to not hold both mutexes at the same time.
+    int fds[MAX_WEB_SOCKET_CLIENTS];
+    {
+        std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
+        memcpy(fds, keep_alive_fds, sizeof(fds));
+    }
+
+    std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
+    if (queueFull()) {
+        free(payload_copy);
         return;
     }
 
-    memcpy(payload_copy, payload, payload_len);
+    work_queue.push_back({server.httpd, {}, payload_copy, payload_len});
+    memcpy(work_queue.back().fds, fds, sizeof(fds));
+}
 
-    std::lock_guard<std::mutex> lock{work_queue_mutex};
-    for (size_t i = 0; i < clients; ++i) {
-        int sock = client_fds[i];
-        if (httpd_ws_get_fd_info(httpd, sock) != HTTPD_WS_CLIENT_WEBSOCKET) {
-            continue;
+static uint32_t last_worker_run = 0;
+
+void WebSockets::triggerHttpThread()
+{
+    if (worker_active) {
+        // Protect against lost UDP packet in httpd_queue_work control socket.
+        // If the packet that enqueues the worker is lost
+        // worker_active must be reset or web sockets will never send data again.
+        if (last_worker_run != 0 && deadline_elapsed(last_worker_run + KEEP_ALIVE_TIMEOUT_MS * 2)) {
+            logger.printfln("WebSocket worker ran %u seconds. Control socket drop? Restarting worker.", (KEEP_ALIVE_TIMEOUT_MS * 2) / 1000);
+            last_worker_run = millis();
+            worker_active = false;
+
+            worker_start_errors += (KEEP_ALIVE_TIMEOUT_MS * 2) / 100; // count a hanging worker as if we've attempted to start the worker the whole time.
+
+            std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
+            while (!work_queue.empty()) {
+                ws_work_item *wi = &work_queue.front();
+                clear_ws_work_item(wi);
+                work_queue.pop_front();
+            }
         }
+        return;
+    }
 
-        work_queue.emplace_back(httpd, sock, payload_copy, payload_len, payload_ref_counter);
-
-        if (httpd_queue_work(httpd, work, nullptr) != ESP_OK) {
-            logger.printfln("httpd_queue_work failed!");
+    last_worker_run = millis();
+/*
+    {
+        std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
+        if (work_queue.empty()) {
+            return;
         }
+    }
+*/
+    // If we don't set worker_active to true BEFORE enqueueing the worker,
+    // we can be preempted after enqueueing, but before we set worker_active to true
+    // the worker can then run to completion, we then set worker_active to true and are
+    // NEVER able to start the worker again.
+    worker_active = true;
+    if (httpd_queue_work(server.httpd, work, this) != ESP_OK) {
+        logger.printfln("Failed to start WebSocket worker!");
+        worker_active = false;
+        ++worker_start_errors;
     }
 }
 
 void WebSockets::start(const char *uri)
 {
-    wss_keep_alive_config_t keep_alive_config = {};
-    // As defined in KEEP_ALIVE_CONFIG_DEFAULT()
-    keep_alive_config.task_stack_size = 2048;
-    keep_alive_config.task_prio = tskIDLE_PRIORITY + 1;
-    keep_alive_config.keep_alive_period_ms = 5000;
-    keep_alive_config.not_alive_after_ms = 10000;
-
-    keep_alive_config.max_clients = max_clients;
-    keep_alive_config.client_not_alive_cb = client_not_alive_cb;
-    keep_alive_config.check_client_alive_cb = check_client_alive_cb;
-
-    this->keep_alive = wss_keep_alive_start(&keep_alive_config);
-
     httpd_handle_t httpd = server.httpd;
 
     httpd_uri_t ws = {};
@@ -469,10 +498,58 @@ void WebSockets::start(const char *uri)
     ws.handle_ws_control_frames = true;
 
     httpd_register_uri_handler(httpd, &ws);
-    wss_keep_alive_set_user_ctx(keep_alive, httpd);
 
-    //server.onConnect([this](int fd) {removeFd(this->keep_alive, fd);});
-    //server.onDisconnect([this](int fd) {removeFd(this->keep_alive, fd);});
+    task_scheduler.scheduleWithFixedDelay([this](){
+        this->triggerHttpThread();
+    }, 100, 100);
+
+    task_scheduler.scheduleWithFixedDelay([this]() {
+        if (millis() < WORKER_START_ERROR_MIN_UPTIME_FOR_REBOOT)
+            return;
+
+        if (this->worker_start_errors > WORKER_START_ERROR_THRES) {
+            logger.printfln("Websocket worker was not able to start for five minutes. The control socket is probably dead. Restarting ESP in one minute.");
+            task_scheduler.scheduleOnce([](){
+                ESP.restart();
+            }, 60 * 1000);
+            // reset error counter to not hit this condition in the next run.
+            this->worker_start_errors = 0;
+        }
+
+    }, 1000, 1000);
+
+    task_scheduler.scheduleWithFixedDelay([this](){
+        this->pingActiveClients();
+    }, 1000, 1000);
+
+    task_scheduler.scheduleWithFixedDelay([this](){
+        checkActiveClients();
+    }, 100, 100);
+
+    server.on("/info/ws", HTTP_GET, [this](WebServerRequest request) {
+        std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
+        std::lock_guard<std::recursive_mutex> lock2{keep_alive_mutex};
+        logger.printfln("\n");
+        logger.printfln("keep_alive_fds   %d %d %d %d %d", keep_alive_fds[0], keep_alive_fds[1], keep_alive_fds[2], keep_alive_fds[3], keep_alive_fds[4]);
+        logger.printfln("keep_alive_pongs %u %u %u %u %u", keep_alive_last_pong[0], keep_alive_last_pong[1], keep_alive_last_pong[2], keep_alive_last_pong[3], keep_alive_last_pong[4]);
+        logger.printfln("worker_active %s state %s", worker_active ? "yes" : "no", work_state);
+        logger.printfln("last_worker_run %u", last_worker_run);
+        logger.printfln("queue_len %u", work_queue.size());
+
+        for (int i = 0; i < work_queue.size(); ++i) {
+            logger.printfln("    q[%d] to {%d %d %d %d %d} len %u %.30s",
+                            i,
+                            work_queue[i].fds[0],
+                            work_queue[i].fds[1],
+                            work_queue[i].fds[2],
+                            work_queue[i].fds[3],
+                            work_queue[i].fds[4],
+                            work_queue[i].payload_len,
+                            work_queue[i].payload_len == 0 ? "PING" : (work_queue[i].payload_len < 10 ? work_queue[i].payload : work_queue[i].payload + 10));
+        }
+
+        return request.send(200);
+    });
 }
 
 void WebSockets::onConnect(std::function<void(WebSocketsClient)> fn)

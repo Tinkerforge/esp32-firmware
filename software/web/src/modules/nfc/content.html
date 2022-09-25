@@ -1,8 +1,5 @@
 <div class="tab-pane fade" role="tabpanel" aria-labelledby="sidebar-nfc" id="nfc">
-    <div
-        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2" data-i18n="nfc.content.nfc"></h1>
-    </div>
+    <div id="nfc_header" class="sticky-under-top"></div>
 
     <form id="nfc_config_form" class="needs-validation" novalidate>
         <!--
@@ -18,12 +15,6 @@
                 </div>
             </div>
         </div>
-
-        <div class="form-group row">
-            <div class="col-lg-12 col-xl-8 text-right">
-                <button id="nfc_save_button" type="submit" form="nfc_config_form" class="btn btn-primary" data-i18n="nfc.content.save" disabled></button>
-            </div>
-        </div>
     </form>
 
     <div class="modal fade" id="nfc_add_tag_modal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -37,13 +28,18 @@
                 </div>
                 <div class="modal-body">
                     <form id="nfc_add_tag_form" class="needs-validation" novalidate>
+                        <!--
+                            Use custom validation instead of the browser default, that is broken on Chrome
+                            See: https://getbootstrap.com/docs/4.5/components/forms/#validation
+                        -->
+
                         <div class="form-group">
                             <label class="form-label" for="nfc_config_tag_new_user_id" data-i18n="nfc.content.add_tag_modal_user_id"></label>
                             <select id="nfc_config_tag_new_user_id" class="form-control custom-select nfc-user-select" required>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="nfc_config_tag_new_name" data-i18n="nfc.content.add_tag_modal_seen_tags"></label>
+                            <label class="form-label" for="nfc_seen_tags" data-i18n="nfc.content.add_tag_modal_seen_tags"></label>
                             <p id="nfc_config_tag_no_seen" data-i18n="nfc.content.add_tag_description"></p>
                             <div class="list-group" id="nfc_seen_tags">
                             </div>

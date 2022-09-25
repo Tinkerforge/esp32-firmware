@@ -41,3 +41,7 @@ export interface state {
     sta_rssi: number,
     sta_bssid: string
 }
+
+export interface scan {
+
+}

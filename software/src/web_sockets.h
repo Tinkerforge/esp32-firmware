@@ -21,9 +21,15 @@
 
 #include <Arduino.h>
 
-#include <functional>
+#include <esp_http_server.h>
 
-#include "keep_alive.h"
+#include <functional>
+#include <atomic>
+#include <mutex>
+#include <deque>
+
+#define MAX_WEB_SOCKET_CLIENTS 5
+#define MAX_WEB_SOCKET_WORK_ITEMS_IN_QUEUE 20
 
 class WebSockets;
 
@@ -34,20 +40,61 @@ struct WebSocketsClient {
     void send(const char *payload, size_t payload_len);
 };
 
-class WebSockets {
+struct ws_work_item {
+    httpd_handle_t hd;
+    int fds[MAX_WEB_SOCKET_CLIENTS];
+    char *payload;
+    size_t payload_len;
+};
+
+void clear_ws_work_item(ws_work_item *wi);
+
+class WebSockets
+{
 public:
-    WebSockets() {}
+    WebSockets() : worker_active(false), worker_start_errors(0)
+    {
+    }
     void start(const char *uri);
-    void stop() {}
+    void stop()
+    {
+    }
 
     void sendToClient(const char *payload, size_t payload_len, int sock);
     void sendToAll(const char *payload, size_t payload_len);
     void sendToAllOwned(char *payload, size_t payload_len);
 
+    bool haveFreeSlot();
     bool haveActiveClient();
+    void pingActiveClients();
+    void checkActiveClients();
+    void receivedPong(int fd);
+
+    void cleanUpQueue();
+    bool queueFull();
 
     void onConnect(std::function<void(WebSocketsClient)> fn);
 
+    void triggerHttpThread();
+    bool haveWork(ws_work_item *item);
+
+    void keepAliveAdd(int fd);
+    void keepAliveRemove(int fd);
+    void keepAliveCloseDead(int fd);
+
+    // Using a recursive mutex simplifies the method implementations,
+    // as every method can lock the mutex without considering that
+    // it could be called by another method that locked the mutex.
+    std::recursive_mutex keep_alive_mutex;
+    int keep_alive_fds[MAX_WEB_SOCKET_CLIENTS] = {-1, -1, -1, -1, -1};
+    uint32_t keep_alive_last_pong[MAX_WEB_SOCKET_CLIENTS];
+
+    std::recursive_mutex work_queue_mutex;
+    std::deque<ws_work_item> work_queue;
+
+    // std::atomic<bool>.is_lock_free() is true!
+    std::atomic<bool> worker_active;
+    std::atomic<uint32_t> worker_start_errors;
+
     std::function<void(WebSocketsClient)> on_client_connect_fn;
-    wss_keep_alive_t keep_alive;
 };

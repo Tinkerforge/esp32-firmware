@@ -34,6 +34,9 @@ class TF_Ringbuffer {
 public:
     TF_Ringbuffer() : start(0), end(0)
     {
+    }
+
+    void setup() {
         auto buf_size = sizeof(T) * SIZE;
         if (buf_size % sizeof(AlignedT) != 0) {
             // Allocate up to one AlignedT more, as we need to store at least one T in it.
@@ -48,7 +51,8 @@ public:
         end = 0;
     }
 
-    size_t size() {
+    size_t size()
+    {
         return SIZE - 1;
     }
 
@@ -61,7 +65,8 @@ public:
         return end - start;
     }
 
-    size_t free() {
+    size_t free()
+    {
         return size() - used();
     }
 

@@ -25,7 +25,6 @@
 #include "device_module.h"
 #include "nfc_bricklet_firmware_bin.embedded.h"
 
-
 // in bytes
 #define NFC_TAG_ID_LENGTH 10
 // For hex strings: two chars per byte plus a separator between each byte
@@ -39,9 +38,11 @@ class NFC : public DeviceModule<TF_NFC,
                                 tf_nfc_create,
                                 tf_nfc_get_bootloader_mode,
                                 tf_nfc_reset,
-                                tf_nfc_destroy> {
+                                tf_nfc_destroy>
+{
 public:
-    NFC();
+    NFC() : DeviceModule("nfc", "NFC", "NFC", std::bind(&NFC::setup_nfc, this)) {}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();
@@ -53,7 +54,7 @@ public:
     };
 
     void update_seen_tags();
-    void handle_event(tag_info_t *tag, bool lost_or_found);
+    void handle_event(tag_info_t *tag, bool lost_or_found, bool injected);
     void handle_evse();
     void setup_nfc();
     void check_nfc_state();
@@ -63,9 +64,9 @@ public:
     ConfigRoot config_in_use;
     ConfigRoot seen_tags;
     ConfigRoot state;
-    ConfigRoot last_tag;
     ConfigRoot inject_tag;
     uint32_t last_tag_injection = 0;
+    int tag_injection_action = 0;
 
     uint32_t last_action_ms = 0;
 

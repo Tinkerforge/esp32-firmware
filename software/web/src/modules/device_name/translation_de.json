@@ -1,0 +1,10 @@
+{
+    "device_name": {
+        "status": {
+            "status": "Status"
+        },
+        "script": {
+            "config_failed": "Speichern des Anzeigenamens fehlgeschlagen"
+        }
+    }
+}

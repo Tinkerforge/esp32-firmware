@@ -4,10 +4,10 @@
 
         },
         "navbar": {
-            "bricklets": "Bricklets"
+            "proxy": "Bricklets"
         },
         "content": {
-            "bricklets": "Bricklets",
+            "proxy": "Bricklets",
             "bricklet_table": "Connected Bricklets",
             "port": "Port",
             "UID": "UID",

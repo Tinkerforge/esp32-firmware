@@ -2,7 +2,7 @@
     "charge_tracker": {
         "status": {
             "last_charges": "Letzte Ladevorgänge",
-            "current_charge": "Laufende Ladung"
+            "current_charge": "Laufender Ladevorgang"
         },
         "navbar": {
             "charge_tracker": "Ladetracker"
@@ -10,36 +10,48 @@
         "content": {
             "charge_tracker": "Ladetracker",
             "download": "Ladelog herunterladen",
-            "download_desc": "eine CSV-Datei aller aufgezeichneten Ladevorgänge",
+            "download_desc": "CSV-Datei aller aufgezeichneten Ladevorgänge",
             "download_btn": "Ladelog herunterladen",
 
-            "tracked_charges": "Aufgezeichnete Ladungen",
+            "tracked_charges": "Aufgezeichnete Ladevorgänge",
             "tracked_charges_muted": "",
-            "first_charge_timestamp": "Zeitstempel der ältesten aufgezeichneten Ladung",
+            "first_charge_timestamp": "Ältester aufgezeichneter Ladevorgang",
             "first_charge_timestamp_muted": "",
             "user_filter": "Benutzerfilter",
-            "user_filter_muted": "CSV-Datei wird nur Ladungen des ausgewählten Benutzers beinhalten",
+            "user_filter_muted": "CSV-Datei wird nur Ladevorgänge des ausgewählten Benutzers beinhalten",
 
             "date_filter": "Zeitfilter",
-            "date_filter_muted": "CSV-Datei wird nur Ladungen in der ausgewählten Zeitspanne beinhalten",
+            "date_filter_muted": "CSV-Datei wird nur Ladevorgänge in der ausgewählten Zeitspanne beinhalten",
             "from": "von",
             "to": "bis",
             "last_charges": "Letzte Ladevorgänge",
-            "last_charges_desc": "Die letzten 30 Ladevorgänge werden angezeigt."
+            "last_charges_desc": "bis zu 30 Ladevorgänge werden angezeigt",
+            "remove": "Aufgezeichnete Ladevorgänge löschen",
+            "remove_desc": "",
+            "remove_btn": "Ladevorgänge löschen",
+
+            "charge_tracker_remove_modal_text": null,
+            "abort_remove": "Abbrechen",
+            "confirm_remove": "Löschen"
         },
         "script": {
             "csv_header_start": "Startzeit",
-            "csv_header_user": "Benutzer",
+            "csv_header_display_name": "Anzeigename",
+            "csv_header_username": "Benutzername",
             "csv_header_energy": "geladene Energie in kWh",
             "csv_header_duration": "Ladedauer in s",
             "csv_header_meter_start": "Zählerstand Start",
             "csv_header_meter_end": "Zählerstand Ende",
-            "unknown_user": "Unbekannter Nutzer",
-            "unknown_users": "unbekannte Nutzer",
-            "deleted_user": "Gelöschter Nutzer",
-            "deleted_users": "gelöschte Nutzer",
-            "all_users": "alle Nutzer",
-            "unknown_charge_start": "Unbekannter Startzeitpunkt"
+            "unknown_user": "Unbekannter Benutzer",
+            "unknown_users": "unbekannte Benutzer",
+            "deleted_user": "Gelöschter Benutzer",
+            "deleted_users": "gelöschte Benutzer",
+            "all_users": "alle Benutzer",
+            "unknown_charge_start": "Unbekannter Startzeitpunkt",
+
+            "remove_failed": "Löschen der aufgezeichneten Ladevorgänge fehlgeschlagen",
+            "remove_init": "Lösche aufgezeichnete Ladevorgänge und starte neu...",
+            "download_charge_log_failed": "Herunterladen der aufgezeichneten Ladevorgänge fehlgeschlagen"
         }
     }
 }

@@ -31,7 +31,6 @@
 extern EventLog logger;
 
 extern TaskScheduler task_scheduler;
-extern TF_HAL hal;
 extern WebServer server;
 
 extern API api;
@@ -40,7 +39,7 @@ const char* ENERGY_MANAGER_INPUT_CONFIG_STR[]      = {"input3_config",      "inp
 const char* ENERGY_MANAGER_INPUT_CONFIG_IF_STR[]   = {"input3_config_if",   "input4_config_if"};
 const char* ENERGY_MANAGER_INPUT_CONFIG_THEN_STR[] = {"input3_config_then", "input4_config_then"};
 
-EnergyManager::EnergyManager() : DeviceModule("energy_manager", "Energy Manager", "Energy Manager", std::bind(&EnergyManager::setup_energy_manager, this))
+void EnergyManager::pre_setup()
 {
     // States
     energy_manager_state = Config::Object({
@@ -72,9 +71,10 @@ EnergyManager::EnergyManager() : DeviceModule("energy_manager", "Energy Manager"
     // Config
     energy_manager_config = Config::Object({
         {"excess_charging_enable", Config::Bool(false)},
-        {"phase_switching", Config::Uint8(2)},
-        {"mains_power_reception", Config::Float(22)},
-        {"minimum_charging", Config::Float(1.4)},
+        {"phase_switching", Config::Uint8(PHASE_SWITCHING_AUTOMATIC)},
+        {"maximum_power_from_grid", Config::Int32(0)},
+        {"maximum_available_current", Config::Uint32(0)}, // Keep in sync with charge_manager.cpp
+        {"minimum_current", Config::Uint(6000, 6000, 32000)}, // Keep in sync with charge_manager.cpp
         {"relay_config", Config::Uint8(0)},
         {"relay_config_if", Config::Uint8(0)},
         {"relay_config_is", Config::Uint8(0)},
@@ -93,37 +93,41 @@ void EnergyManager::apply_defaults()
     // TODO: Configure Energy Manager
 }
 
-void EnergyManager::handle_relay_config_if_input(uint8_t input) {
-    if(input > 1) {
-        logger.printfln("Unkown handle_relay_config_if input: %u", input);
+void EnergyManager::handle_relay_config_if_input(uint8_t input)
+{
+    if (input > 1) {
+        logger.printfln("Unknown handle_relay_config_if input: %u", input);
         return;
     }
 
     // Check if condition is satisfied and set relay according to configuration
-    uint8_t relay_config_is   = energy_manager_config_in_use.get("relay_config_is")->asUint();
+    uint8_t relay_config_is = energy_manager_config_in_use.get("relay_config_is")->asUint();
     uint8_t relay_config_then = energy_manager_config_in_use.get("relay_config_then")->asUint();
-    if(((relay_config_is == RELAY_CONFIG_IS_HIGH) && (all_data.input[input])) ||
-       ((relay_config_is == RELAY_CONFIG_IS_LOW)  && (!all_data.input[input]))) {
+    if (((relay_config_is == RELAY_CONFIG_IS_HIGH) && (all_data.input[input])) ||
+        ((relay_config_is == RELAY_CONFIG_IS_LOW) && (!all_data.input[input]))) {
         tf_warp_energy_manager_set_output(&device, relay_config_then == RELAY_CONFIG_THEN_CLOSED);
     } else {
         tf_warp_energy_manager_set_output(&device, relay_config_then != RELAY_CONFIG_THEN_CLOSED);
     }
 }
 
-void EnergyManager::handle_relay_config_if_phase_switching() {
+void EnergyManager::handle_relay_config_if_phase_switching()
+{
     // TODO
 }
 
-void EnergyManager::handle_relay_config_if_meter() {
+void EnergyManager::handle_relay_config_if_meter()
+{
     // TODO
 }
 
-void EnergyManager::handle_input_config_rule_based(uint8_t input) {
+void EnergyManager::handle_input_config_rule_based(uint8_t input)
+{
     bool allowed = true;
     uint8_t input_config_if = energy_manager_config_in_use.get(ENERGY_MANAGER_INPUT_CONFIG_IF_STR[input])->asUint();
     uint8_t input_config_then = energy_manager_config_in_use.get(ENERGY_MANAGER_INPUT_CONFIG_THEN_STR[input])->asUint();
-    if(((input_config_if == INPUT_CONFIG_IF_HIGH) && (all_data.input[input])) ||
-       ((input_config_if == INPUT_CONFIG_IF_LOW)  && (!all_data.input[input]))) {
+    if (((input_config_if == INPUT_CONFIG_IF_HIGH) && (all_data.input[input])) ||
+        ((input_config_if == INPUT_CONFIG_IF_LOW) && (!all_data.input[input]))) {
         allowed = (input_config_then == INPUT_CONFIG_THEN_ALLOW);
     } else {
         allowed = (input_config_then != INPUT_CONFIG_THEN_ALLOW);
@@ -132,25 +136,27 @@ void EnergyManager::handle_input_config_rule_based(uint8_t input) {
     input_charging_allowed[input] = allowed;
 }
 
-void EnergyManager::handle_input_config_contactor_check(uint8_t input) {
+void EnergyManager::handle_input_config_contactor_check(uint8_t input)
+{
     // TODO
 }
 
-void EnergyManager::update_io() {
+void EnergyManager::update_io()
+{
     // Handle relay
     uint8_t relay_config = energy_manager_config_in_use.get("relay_config")->asUint();
-    if(relay_config == RELAY_CONFIG_RULE_BASED) {
+    if (relay_config == RELAY_CONFIG_RULE_BASED) {
         uint8_t relay_config_if = energy_manager_config_in_use.get("relay_config_if")->asUint();
         switch(relay_config_if) {
             case RELAY_CONFIG_IF_INPUT3:          handle_relay_config_if_input(0);          break;
             case RELAY_CONFIG_IF_INPUT4:          handle_relay_config_if_input(1);          break;
             case RELAY_CONFIG_IF_PHASE_SWITCHING: handle_relay_config_if_phase_switching(); break;
             case RELAY_CONFIG_IF_METER:           handle_relay_config_if_meter();           break;
-            default: logger.printfln("Unkown RELAY_CONFIG_IF: %u", relay_config_if);        break;
+            default: logger.printfln("Unknown RELAY_CONFIG_IF: %u", relay_config_if);        break;
         }
     }
 
-    // We "over-sample" the two imputs compared to the other data in the all_data struct
+    // We "over-sample" the two inputs compared to the other data in the all_data struct
     // to make sure that we can always react in a timely manner to input changes
     int rc = tf_warp_energy_manager_get_input(&device, all_data.input);
     if (rc != TF_E_OK) {
@@ -158,44 +164,44 @@ void EnergyManager::update_io() {
     }
 
     // Handle input3 and input4
-    for(uint8_t input = 0; input < 2; input++) {
+    for (uint8_t input = 0; input < 2; input++) {
         uint8_t input_config = energy_manager_config_in_use.get(ENERGY_MANAGER_INPUT_CONFIG_STR[input])->asUint();
         switch(input_config) {
             case INPUT_CONFIG_DEACTIVATED:                                                         break;
             case INPUT_CONFIG_RULES_BASED:     handle_input_config_rule_based(input);              break;
             case INPUT_CONFIG_CONTACTOR_CHECK: handle_input_config_contactor_check(input);         break;
-            default: logger.printfln("Unkown INPUT_CONFIG: %u for input %u", input_config, input); break;
+            default: logger.printfln("Unknown INPUT_CONFIG: %u for input %u", input_config, input); break;
         }
     }
 }
 
-void EnergyManager::update_energy() {
-    if(!input_charging_allowed[0] || !input_charging_allowed[1]) {
+void EnergyManager::update_energy()
+{
+    if (!input_charging_allowed[0] || !input_charging_allowed[1]) {
         // TODO: Turn charging off if running
         return;
     }
 
-    const float power_at_house_connection = all_data.power;
-    const float power_max_from_grid       = energy_manager_config_in_use.get("mains_power_reception")->asFloat();
-    const float power_minimum_charging    = energy_manager_config_in_use.get("minimum_charging")->asFloat();
-    const bool  is_3phase                 = all_data.contactor_value;
+    const int32_t power_at_house_connection = all_data.power * 1000; // watt
+    const int32_t power_max_from_grid       = energy_manager_config_in_use.get("maximum_power_from_grid")->asInt(); // watt
+    const int32_t power_minimum_current     = energy_manager_config_in_use.get("minimum_current")->asUint(); // ampere
+    const bool    is_3phase                 = all_data.contactor_value;
+    const int32_t power_allowed             = power_max_from_grid - ((power_at_house_connection < 0) ? power_at_house_connection : 0); // watt
 
-    const float power_allowed             = power_max_from_grid - ((power_at_house_connection < 0) ? power_at_house_connection : 0);
-
-    if(power_allowed < power_minimum_charging) {
+    if (power_allowed < power_minimum_current) {
         // TODO: Turn charging off if running
         return;
     }
 
     uint32_t ma_allowed;
-    if(is_3phase) { // 3phase
-        ma_allowed = (uint32_t)(1000*power_allowed*10000/(3*230.0));
+    if (is_3phase) { // 3phase
+        ma_allowed = power_allowed * 1000 / (3 * 230);
     } else { // 1phase
-        ma_allowed = (uint32_t)(1000*power_allowed*10000/(1*230.0));
+        ma_allowed = power_allowed * 1000 / (1 * 230);
     }
 
     // We can not charge with less than 6A.
-    if(ma_allowed < 6000) {
+    if (ma_allowed < 6000) {
         // TODO: Turn charging off if running
         return;
     }
@@ -258,31 +264,35 @@ String EnergyManager::get_energy_manager_debug_line()
     update_all_data_struct();
 
     char line[512] = {0};
-    snprintf(line, sizeof(line)/sizeof(line[0]),
+    snprintf(line,
+             sizeof(line) / sizeof(line[0]),
              "\"%lu,,"
              "%u,,"
              "%u,%u,%u,,"
              "%.3f,%.3f,%.3f,%c,%c,%c,%c,%c,%c,,"
              "%u,%u,%u,%u,%u,%u,%u,,"
-             "%u,%u,,"
+             "%c,%c,,"
              "%u,%u,,"
              "%u,,"
              "%u,,"
              "%u\"",
              millis(),
              all_data.contactor_value,
+
              all_data.rgb_value_r,
              all_data.rgb_value_g,
              all_data.rgb_value_b,
+
              all_data.power,
              all_data.energy_relative,
              all_data.energy_absolute,
-             all_data.phases_active[0] ? '0' : '1',
-             all_data.phases_active[1] ? '0' : '1',
-             all_data.phases_active[2] ? '0' : '1',
-             all_data.phases_connected[0] ? '0' : '1',
-             all_data.phases_connected[1] ? '0' : '1',
-             all_data.phases_connected[2] ? '0' : '1',
+             all_data.phases_active[0] ? '1' : '0',
+             all_data.phases_active[1] ? '1' : '0',
+             all_data.phases_active[2] ? '1' : '0',
+             all_data.phases_connected[0] ? '1' : '0',
+             all_data.phases_connected[1] ? '1' : '0',
+             all_data.phases_connected[2] ? '1' : '0',
+
              all_data.energy_meter_type,
              all_data.error_count[0],
              all_data.error_count[1],
@@ -290,10 +300,13 @@ String EnergyManager::get_energy_manager_debug_line()
              all_data.error_count[3],
              all_data.error_count[4],
              all_data.error_count[5],
-             all_data.input[0] ? '0' : '1',
-             all_data.input[1] ? '0' : '1',
+
+             all_data.input[0] ? '1' : '0',
+             all_data.input[1] ? '1' : '0',
+
              all_data.input_configuration[0],
              all_data.input_configuration[1],
+
              all_data.output,
              all_data.voltage,
              all_data.contactor_check_state);
@@ -306,21 +319,20 @@ void EnergyManager::register_urls()
     if (!device_found)
         return;
 
-
-#ifdef MODULE_WS_AVAILABLE
+#if MODULE_WS_AVAILABLE()
     server.on("/energy_manager/start_debug", HTTP_GET, [this](WebServerRequest request) {
         task_scheduler.scheduleOnce([this](){
-            ws.pushStateUpdate(this->get_energy_manager_debug_header(), "energy_manager/debug_header");
+            ws.pushRawStateUpdate(this->get_energy_manager_debug_header(), "energy_manager/debug_header");
             debug = true;
         }, 0);
-        request.send(200);
+        return request.send(200);
     });
 
     server.on("/energy_manager/stop_debug", HTTP_GET, [this](WebServerRequest request){
         task_scheduler.scheduleOnce([this](){
             debug = false;
         }, 0);
-        request.send(200);
+        return request.send(200);
     });
 #endif
 
@@ -334,11 +346,11 @@ void EnergyManager::loop()
 {
     this->DeviceModule::loop();
 
-#ifdef MODULE_WS_AVAILABLE
+#if MODULE_WS_AVAILABLE()
     static uint32_t last_debug = 0;
     if (debug && deadline_elapsed(last_debug + 50)) {
         last_debug = millis();
-        ws.pushStateUpdate(this->get_energy_manager_debug_line(), "energy_manager/debug");
+        ws.pushRawStateUpdate(this->get_energy_manager_debug_line(), "energy_manager/debug");
     }
 #endif
 }
@@ -382,7 +394,8 @@ void EnergyManager::update_all_data()
     }
 }
 
-void EnergyManager::update_all_data_struct() {
+void EnergyManager::update_all_data_struct()
+{
     int rc = tf_warp_energy_manager_get_all_data_1(
         &device,
         &all_data.contactor_value,

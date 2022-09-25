@@ -23,6 +23,7 @@
 
 #include "tools.h"
 #include "hal_arduino_esp32_ethernet_brick/hal_arduino_esp32_ethernet_brick.h"
+#include "task_scheduler.h"
 
 #if TF_LOCAL_ENABLE != 0
 
@@ -39,6 +40,7 @@
 #define BUTTON 0
 
 TF_HAL hal;
+extern TaskScheduler task_scheduler;
 extern EventLog logger;
 extern uint32_t local_uid_num;
 extern char local_uid_str[7];
@@ -53,9 +55,8 @@ static TF_Local local;
 
 #endif
 
-ESP32EthernetBrick::ESP32EthernetBrick()
+void ESP32EthernetBrick::pre_setup()
 {
-
 }
 
 void ESP32EthernetBrick::setup()
@@ -67,8 +68,8 @@ void ESP32EthernetBrick::setup()
     tf_hal_set_timeout(&hal, 100000);
 
 #if TF_LOCAL_ENABLE != 0
-    uint8_t hw_version[3] = { 1, 0, 0 };
-    uint8_t fw_version[3] = { BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH };
+    uint8_t hw_version[3] = {1, 0, 0};
+    uint8_t fw_version[3] = {BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH};
 
     check(tf_local_create(&local, local_uid_str, '0', hw_version, fw_version, TF_ESP32_ETHERNET_DEVICE_IDENTIFIER, &hal), "local create");
 
@@ -82,27 +83,16 @@ void ESP32EthernetBrick::setup()
     green_led_pin = GREEN_LED;
     blue_led_pin = BLUE_LED;
     button_pin = BUTTON;
+
+    task_scheduler.scheduleWithFixedDelay([](){
+        led_blink(BLUE_LED, 2000, 1, 0);
+    }, 0, 100);
+
+    initialized = true;
 }
 
 void ESP32EthernetBrick::register_urls()
 {
-
-}
-
-void ledBlink(int8_t led_pin, int interval, int blinks_per_interval, int off_time_ms)
-{
-    int t_in_second = millis() % interval;
-    if (off_time_ms != 0 && (interval - t_in_second <= off_time_ms)) {
-        digitalWrite(led_pin, 1);
-        return;
-    }
-
-    // We want blinks_per_interval blinks and blinks_per_interval pauses between them. The off_time counts as pause.
-    int state_count = ((2 * blinks_per_interval) - (off_time_ms != 0 ? 1 : 0));
-    int state_interval = (interval - off_time_ms) / state_count;
-    bool led = (t_in_second / state_interval) % 2 != 0;
-
-    digitalWrite(led_pin, led);
 }
 
 /*
@@ -111,5 +101,5 @@ as the ethernet phy clock disturbs any IO0 button reading.
 */
 void ESP32EthernetBrick::loop()
 {
-    ledBlink(BLUE_LED, 2000, 1, 0);
+
 }

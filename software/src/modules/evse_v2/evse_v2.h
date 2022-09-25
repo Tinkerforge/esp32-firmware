@@ -41,27 +41,37 @@
 #define IEC_STATE_D 3
 #define IEC_STATE_EF 4
 
+#define CHARGER_STATE_NOT_PLUGGED_IN 0
+#define CHARGER_STATE_WAITING_FOR_RELEASE 1
+#define CHARGER_STATE_READY_TO_CHARGE 2
+#define CHARGER_STATE_CHARGING 3
+#define CHARGER_STATE_ERROR 4
+
+#define DATA_STORE_PAGE_CHARGE_TRACKER 0
+#define DATA_STORE_PAGE_RECOVERY 15
+
+void evse_v2_button_recovery_handler();
+#define TF_ESP_PREINIT evse_v2_button_recovery_handler();
+
 class EVSEV2 : public DeviceModule<TF_EVSEV2,
                                    evse_v2_bricklet_firmware_bin_data,
                                    evse_v2_bricklet_firmware_bin_length,
                                    tf_evse_v2_create,
                                    tf_evse_v2_get_bootloader_mode,
                                    tf_evse_v2_reset,
-                                   tf_evse_v2_destroy>  {
+                                   tf_evse_v2_destroy>
+{
 public:
-    EVSEV2();
+    EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE 2.0", std::bind(&EVSEV2::setup_evse, this)) {}
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();
-
 
     // Called in evse_v2_meter setup
     void update_all_data();
 
     void setup_evse();
-    bool flash_firmware();
-    bool flash_plugin(int regular_plugin_upto);
-    bool wait_for_bootloader_mode(int mode);
     String get_evse_debug_header();
     String get_evse_debug_line();
     void set_managed_current(uint16_t current);
@@ -70,6 +80,8 @@ public:
 
     bool apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear);
     void apply_defaults();
+
+    void factory_reset();
 
     bool debug = false;
 
@@ -81,6 +93,7 @@ public:
     ConfigRoot evse_button_state;
     ConfigRoot evse_slots;
     ConfigRoot evse_indicator_led;
+    ConfigRoot evse_control_pilot_connected;
     ConfigRoot evse_reset_dc_fault_current_state;
     ConfigRoot evse_stop_charging;
     ConfigRoot evse_start_charging;
@@ -96,8 +109,9 @@ public:
     ConfigRoot evse_global_current_update;
     ConfigRoot evse_management_enabled;
     ConfigRoot evse_management_enabled_update;
-    ConfigRoot evse_user_slot_enabled;
-    ConfigRoot evse_user_slot_enabled_update;
+    ConfigRoot evse_user_current;
+    ConfigRoot evse_user_enabled;
+    ConfigRoot evse_user_enabled_update;
     ConfigRoot evse_external_enabled;
     ConfigRoot evse_external_enabled_update;
     ConfigRoot evse_external_defaults;

@@ -1,23 +1,39 @@
+/* esp32-firmware
+ * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
 import $ from "jquery";
 
 import "bootstrap";
 
-import feather = require("feather-icons");
-
-import Translator from '@andreasremdt/simple-translator';
-
+import * as feather from 'feather-icons';
 import * as util from "./ts/util";
-
 import * as API from "./ts/api";
+import { __, translate_data_i18n } from "./ts/translation";
+
+import { init_async_modal } from "./ts/components/async_modal";
 
 {{{module_imports}}}
 
-{{{translation_imports}}}
-
 interface Module {
     init(): void;
-    addEventListeners(source: API.ApiEventTarget): void;
-    updateLockState(m: API.Modules): void;
+    add_event_listeners(source: API.APIEventTarget): void;
+    update_sidebar_state(m: API.Modules): void;
 }
 
 let modules: Module[] = [{{{modules}}}];
@@ -26,18 +42,43 @@ $('.navbar-collapse a').on("click", function () {
     $(".navbar-collapse").collapse('hide');
 });
 
+let first_module_init = true;
+
+function show_page() {
+    $('#nav-list').removeAttr("style");
+    $('#main').removeAttr("style");
+}
+
 function update_modules() {
-    let module_init = API.get('modules');
+    let module_init = API.get('info/modules');
     for (let m of modules) {
-        m.updateLockState(module_init);
+        m.update_sidebar_state(module_init);
+    }
+
+    if (first_module_init) {
+        let hash = window.location.hash;
+        var elem = $(`a[href="${hash}"]`);
+        if (hash == "#meter") {
+            // FIXME: brute force solution to allow hidden meter module in
+            //        energy manager firmware. should be solved in a better way
+        }
+        else if (hash == "" || hash == '#status' || elem.length == 0 || elem.prop("hidden")) {
+            window.location.hash = "#status";
+            show_page();
+            return;
+        }
+        elem.one('shown.bs.tab', show_page);
+        elem.click();
+        elem.parents(".nav-nested.collapse").collapse('show');
+        first_module_init = false;
     }
 }
 
-export function registerEvents(eventSource: API.ApiEventTarget) {
-    eventSource.addEventListener('modules', update_modules);
+export function registerEvents(eventSource: API.APIEventTarget) {
+    eventSource.addEventListener('info/modules', update_modules);
 
     for (let m of modules) {
-        m.addEventListeners(eventSource);
+        m.add_event_listeners(eventSource);
     }
 }
 
@@ -50,7 +91,7 @@ function init() {
         m.init();
     }
 
-    util.setupEventSource(true, false,  (ws: WebSocket, eventTarget: API.ApiEventTarget) => registerEvents(eventTarget));
+    util.setupEventSource(true, false, (ws: WebSocket, eventTarget: API.APIEventTarget) => registerEvents(eventTarget));
 }
 
 function login() {
@@ -79,8 +120,7 @@ function login() {
 }
 
 function setup_normal() {
-    window.setTimeout(() => $('#nav-list').removeAttr("style"), 200);
-    window.setTimeout(() => $('#main').removeAttr("style"), 200);
+    window.setTimeout(show_page, 1000);
 
     $('#sidebar-login').prop('hidden', true);
     $('#sidebar-status').addClass('active');
@@ -90,8 +130,7 @@ function setup_normal() {
 }
 
 function setup_login() {
-    window.setTimeout(() => $('#nav-list').removeAttr("style"), 200);
-    window.setTimeout(() => $('#main').removeAttr("style"), 200);
+    window.setTimeout(show_page, 1000);
 
     $('#sidebar-status').prop('hidden', true);
     $('#sidebar-login').addClass('active');
@@ -124,31 +163,43 @@ function setup_login() {
 $(window).on('pageshow', (ev) => {
     util.ifLoggedInElse(setup_normal, setup_login);
 
+    init_async_modal();
+
     feather.replace();
 
-    $.ajaxSetup({
-        timeout: 5000
-    });
-
-    var translator = new Translator();
-
-{{{translation_adds}}}
-
-    translator.config.defaultLanguage = 'en';
-    for (let l of navigator.languages) {
-        let lang = l.substr(0, 2);
-        if (translator.languages.has(lang)) {
-            translator.config.defaultLanguage = lang;
-            break;
-        }
-        console.log("Sorry, got no translation for " + l);
-    }
-
-    translator.translatePageTo();
+    translate_data_i18n();
 
     $('a[data-toggle="tab"]').on('show.bs.tab', () => {
         $('a[data-toggle="tab"]').not(<Element>event.target).removeClass("active");
         $('a[data-toggle="tab"]').not(<Element>event.target).trigger("hidden.bs.tab");
+    });
+
+    window.addEventListener("hashchange", (event) => {
+        if (event.oldURL != event.newURL) {
+            let hash = window.location.hash;
+            var elem = $(`a[href="${hash}"]`);
+            if (hash == "#meter") {
+                // FIXME: brute force solution to allow hidden meter module in
+                //        energy manager firmware. should be solved in a better way
+            }
+            else if (hash == "" || elem.length == 0/* || elem.prop("hidden")*/) {
+                window.location.hash = "#status";
+                return;
+            }
+            elem.click();
+            elem.parents(".nav-nested.collapse").collapse('show');
+        }
+    });
+
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function() {
+        let hash = $(this).attr("href");
+        if (window.location.hash == "" && hash == "#status")
+            return;
+        window.location.hash = hash;
+    });
+
+    $('a[data-toggle="tab"]').on('shown.bs.tab', () => {
+        setTimeout(() => window.scrollTo(0,0), 1);
     });
 
     $("#reboot_button").on("click", () => {

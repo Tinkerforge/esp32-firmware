@@ -22,7 +22,6 @@ struct response_packet {
     uint8_t iec61851_state;
     uint8_t vehicle_state;
     uint8_t error_state;
-    uint8_t charge_release;
     uint32_t uptime;
     uint32_t charging_time;
     uint16_t allowed_charging_current;
@@ -31,12 +30,13 @@ struct response_packet {
 } __attribute__ ((packed));
 """
 
-header_format = "BBH"
+header_format = "<BBH"
 request_format = header_format + "H"
-response_format = header_format + "BBBBIIHH?"
+response_format = header_format + "BBBIIHH?"
 
 request_len = struct.calcsize(request_format)
 response_len = struct.calcsize(response_format)
+print(response_len)
 
 
 listen_addr = sys.argv[1]
@@ -85,26 +85,20 @@ resp_iec61851_state.addItem("1: B - Connected")
 resp_iec61851_state.addItem("2: C - Charging")
 resp_iec61851_state.addItem("3: D - Not supported")
 resp_iec61851_state.addItem("4: E/F - Error")
-layout.addRow("IEC State", resp_iec61851_state)
+layout.addRow("IEC state", resp_iec61851_state)
 
-resp_vehicle_state = QComboBox()
-resp_vehicle_state.addItem("0: Not connected")
-resp_vehicle_state.addItem("1: Connected")
-resp_vehicle_state.addItem("2: Charging")
-resp_vehicle_state.addItem("3: Error")
-layout.addRow("Vehicle State", resp_vehicle_state)
+resp_charger_state = QComboBox()
+resp_charger_state.addItem("0: Not connected")
+resp_charger_state.addItem("1: Waiting for release")
+resp_charger_state.addItem("2: Ready")
+resp_charger_state.addItem("3: Charging")
+resp_charger_state.addItem("4: Error")
+layout.addRow("Vehicle state", resp_charger_state)
 
 resp_error_state = QSpinBox()
 resp_error_state.setMinimum(0)
 resp_error_state.setMaximum(4)
-layout.addRow("Error State", resp_error_state)
-
-resp_charge_release = QComboBox()
-resp_charge_release.addItem("0: Automatic")
-resp_charge_release.addItem("1: Manual")
-resp_charge_release.addItem("2: Deactivated")
-resp_charge_release.addItem("3: Charge management")
-layout.addRow("Charge release", resp_charge_release)
+layout.addRow("Error state", resp_error_state)
 
 resp_uptime = QLabel("no packet sent yet")
 layout.addRow("Uptime", resp_uptime)
@@ -133,7 +127,7 @@ layout.addRow("Managed", resp_managed)
 
 
 next_seq_num = 0
-protocol_version = 2
+protocol_version = 3
 start = time.time()
 charging_time_start = 0
 
@@ -155,7 +149,7 @@ def recieve():
     if allocated_current == 0 and resp_iec61851_state.currentIndex() == 2:
         charging_time_start = 0
         resp_iec61851_state.setCurrentIndex(1)
-        resp_vehicle_state.setCurrentIndex(1)
+        resp_charger_state.setCurrentIndex(1)
 
 def send():
     global next_seq_num
@@ -186,12 +180,11 @@ def send():
 
     b = struct.pack(response_format,
                     next_seq_num,
-                    protocol_version,
+                    protocol_version if not resp_wrong_proto_version.isChecked() else 234,
                     0,
                     resp_iec61851_state.currentIndex(),
-                    resp_vehicle_state.currentIndex(),
+                    resp_charger_state.currentIndex(),
                     resp_error_state.value(),
-                    resp_charge_release.currentIndex(),
                     uptime,
                     charging_time,
                     resp_allowed_charging_current.value() * 1000,
