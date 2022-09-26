@@ -849,7 +849,7 @@ class Stage3:
         time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
 
         if not self.check_iec_state('C'):
-            fatal_error('Wallbox not in IEC state C')
+            fatal_error('Wallbox not in IEC state C. Check contactor!')
 
         print('Changing meter state to Type2-L1')
 
