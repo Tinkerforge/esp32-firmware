@@ -204,6 +204,9 @@ function update_evse_slots() {
             real_maximum = Math.min(real_maximum, s.max_current);
     }
 
+    $('#reset_external_slot').prop("disabled", !slots[8].active || slots[8].max_current == 32000);
+    $('#reset_current_configured').prop("disabled", !slots[5].active || slots[5].max_current == 32000);
+
     let theoretical_maximum = Math.min(slots[0].max_current, slots[1].max_current);
     let theoretical_maximum_str = util.toLocaleFixed(theoretical_maximum / 1000.0, 0) + " A";
     $('#status_charging_current').prop("max", theoretical_maximum / 1000);
