@@ -19,15 +19,19 @@
 
 import { h, Component} from "preact";
 
-export class FormSeparator extends Component<{}, {}> {
+interface FormSeparatorProps {
+    heading?: string
+}
+
+export class FormSeparator extends Component<FormSeparatorProps, {}> {
     constructor() {
         super();
     }
 
-    render() {
+    render(props: FormSeparatorProps) {
         return (
             <div class="row mb-3">
-                <div class="col-xl-8 border-bottom"></div>
+                <div class="col-xl-8 border-bottom">{props.heading ? <span class="h3">{props.heading}</span>: undefined}</div>
             </div>
         );
     }
