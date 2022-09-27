@@ -36,7 +36,7 @@ import { Switch } from "../../ts/components/switch";
 import { Button} from "react-bootstrap";
 import { InputSelect } from "src/ts/components/input_select";
 import { CollapsedSection } from "src/ts/components/collapsed_section";
-import { EVSE_SLOT_EXTERNAL } from "../evse_common/api";
+import { EVSE_SLOT_EXTERNAL, EVSE_SLOT_GLOBAL } from "../evse_common/api";
 
 interface EVSEState {
     state: API.getType['evse/state'];
@@ -53,7 +53,6 @@ let toDisplayCurrent = (x: number) => util.toLocaleFixed(x / 1000.0, 3) + " A"
 
 export class EVSEV2 extends Component<{}, EVSEState> {
     debug_log = "";
-    meter_chunk = "";
 
     constructor() {
         super();
@@ -399,7 +398,7 @@ export class EVSEV2 extends Component<{}, EVSEState> {
                             variant = slot.max_current == min ? "warning" : "primary";
                         }
 
-                        if (i != 5 && i != 8)
+                        if (i != EVSE_SLOT_GLOBAL && i != EVSE_SLOT_EXTERNAL)
                             return <FormRow key={i} label={translate_unchecked(`evse.content.slot_${i}`)}>
                                 <InputIndicator value={value} variant={variant as any} />
                             </FormRow>
@@ -407,7 +406,7 @@ export class EVSEV2 extends Component<{}, EVSEState> {
                         return <FormRow key={i} label={translate_unchecked(`evse.content.slot_${i}`)}>
                             <InputIndicator value={value} variant={variant as any}
                                 onReset={
-                                    i == 5 ?
+                                    i == EVSE_SLOT_GLOBAL ?
                                     () => API.save('evse/global_current', {"current": 32000}, __("evse.script.set_charging_current_failed")) :
                                     () => {
                                         API.save('evse/external_defaults', {
@@ -628,7 +627,7 @@ function update_evse_slots() {
     $('#status_charging_current_maximum').html(theoretical_maximum_str);
 
     if(!status_charging_current_dirty) {
-        let shown_current = Math.min(slots[5].max_current, theoretical_maximum);
+        let shown_current = Math.min(slots[EVSE_SLOT_GLOBAL].max_current, theoretical_maximum);
         util.setNumericInput("status_charging_current", shown_current / 1000.0, 3);
     }
 
