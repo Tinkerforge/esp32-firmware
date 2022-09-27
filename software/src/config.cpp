@@ -25,7 +25,7 @@ extern bool config_constructors_allowed;
 #define UINT_SLOTS 512
 Config::ConfUint::Slot uint_buf[UINT_SLOTS];
 
-#define INT_SLOTS 64
+#define INT_SLOTS 128
 Config::ConfInt::Slot int_buf[INT_SLOTS];
 
 #define FLOAT_SLOTS 384
