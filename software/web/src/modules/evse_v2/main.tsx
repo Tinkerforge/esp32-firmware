@@ -441,7 +441,7 @@ export class EVSEV2 extends Component<{}, EVSEState> {
                             ]}/>
                     </FormRow>
 
-                    <FormRow label={__("evse.content.has_lock_switch")}>
+                    <FormRow label={__("evse.content.jumper_config_max_current")} label_muted={__("evse.content.jumper_config")}>
                         <IndicatorGroup
                             value={hardware_cfg.jumper_configuration}
                             items={[
