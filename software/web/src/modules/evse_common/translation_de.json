@@ -108,7 +108,10 @@
             "slot_5": "Konfiguration",
             "slot_6": "Benutzer",
             "slot_7": "Lastmanagement",
-            "slot_8": "Externe Steuerung"
+            "slot_8": "Externe Steuerung",
+            "slot_9": "Modbus TCP",
+            "slot_10": "Modbus TCP-Freigabe",
+            "slot_11": "OCPP"
         },
         "script": {
             "error_code": "Fehlercode",
