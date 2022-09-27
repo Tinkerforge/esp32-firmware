@@ -1,5 +1,5 @@
 /*
-2022c;2022-09-15T13:56:07.724897
+2022d;2022-09-26T07:59:40.424143
 */
 /* esp32-firmware
  * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
@@ -695,9 +695,9 @@ static const TableValue Asia_vals[] = {
     {true, {"<+04>-4"}},
     {true, {"<+05>-5"}},
     {true, {"EET-2EEST,M3.5.0/3,M10.5.0/4"}},
-    {true, {"EET-2EEST,M3.4.4/72,M10.4.4/25"}},
+    {true, {"EET-2EEST,M3.4.4/50,M10.4.4/50"}},
     {true, {"CST-8"}},
-    {true, {"EET-2EEST,M3.4.4/72,M10.4.4/25"}},
+    {true, {"EET-2EEST,M3.4.4/50,M10.4.4/50"}},
     {true, {"<+07>-7"}},
     {true, {"HKT-8"}},
     {true, {"<+07>-7"}},

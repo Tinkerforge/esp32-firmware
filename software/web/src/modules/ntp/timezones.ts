@@ -1,5 +1,5 @@
 /*
-2022c;2022-09-15T13:56:07.725315
+2022d;2022-09-26T07:59:40.424482
 */
 /* esp32-firmware
  * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
