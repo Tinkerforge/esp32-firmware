@@ -480,12 +480,12 @@ void EVSE::set_user_current(uint16_t current)
 
 void EVSE::set_modbus_current(uint16_t current)
 {
-    is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_MODBUS_TCP, current));
+    is_in_bootloader(tf_evse_set_charging_slot_max_current(&device, CHARGING_SLOT_MODBUS_TCP, current));
 }
 
 void EVSE::set_modbus_enabled(bool enabled)
 {
-    is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_MODBUS_TCP_ENABLE, enabled ? 32000 : 0));
+    is_in_bootloader(tf_evse_set_charging_slot_max_current(&device, CHARGING_SLOT_MODBUS_TCP_ENABLE, enabled ? 32000 : 0));
 }
 
 void EVSE::register_urls()
@@ -683,17 +683,17 @@ void EVSE::register_urls()
         bool enabled = evse_modbus_enabled_update.get("enabled")->asBool();
 
         if (enabled) {
-            tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_MODBUS_TCP, 32000, true, false);
+            tf_evse_set_charging_slot(&device, CHARGING_SLOT_MODBUS_TCP, 32000, true, false);
             this->apply_slot_default(CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, true, false);
 
-            tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, true, false);
+            tf_evse_set_charging_slot(&device, CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, true, false);
             this->apply_slot_default(CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, true, false);
         }
         else {
-            tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_MODBUS_TCP, 32000, false, false);
+            tf_evse_set_charging_slot(&device, CHARGING_SLOT_MODBUS_TCP, 32000, false, false);
             this->apply_slot_default(CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, false, false);
 
-            tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, false, false);
+            tf_evse_set_charging_slot(&device, CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, false, false);
             this->apply_slot_default(CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, false, false);
         }
     }, false);
