@@ -175,7 +175,7 @@ def get_iec_state():
 
 def reset_dc_fault():
     global evse
-    return retry_wrapper(lambda: evse.reset(), "reset EVSE", allow_reconnect=True)
+    return retry_wrapper(lambda: evse.reset(), "reset EVSE")
 
 def has_evse_error():
     global evse
