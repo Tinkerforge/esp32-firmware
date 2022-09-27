@@ -19,7 +19,6 @@
 
 import $ from "../../ts/jq";
 
-import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
 import { h, render, Fragment } from "preact";
@@ -32,7 +31,6 @@ import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputPassword } from "../../ts/components/input_password";
 import { Switch } from "../../ts/components/switch";
-import { Button } from "react-bootstrap";
 
 type MqttConfig = API.getType['mqtt/config'];
 

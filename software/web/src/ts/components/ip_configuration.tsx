@@ -17,8 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Component, Context, Fragment, createRef, RefObject } from "preact";
-import {useContext} from "preact/hooks";
+import { h, Component, Fragment } from "preact";
 import { JSXInternal } from "preact/src/jsx";
 import { __ } from "../translation";
 import { FormRow } from "./form_row";

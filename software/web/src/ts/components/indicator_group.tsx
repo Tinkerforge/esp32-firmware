@@ -17,9 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, render, Fragment, Component } from "preact";
-import {useContext} from "preact/hooks";
-import { JSXInternal } from "preact/src/jsx";
+import { h } from "preact";
 import { Button, ButtonGroup } from "react-bootstrap";
 
 type variant = "primary" | "secondary" | "success" | "warning" | "danger" | "light" | "link"

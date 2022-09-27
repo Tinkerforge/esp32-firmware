@@ -22,9 +22,6 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import feather from "../../ts/feather";
-import YaMD5 from "../../ts/yamd5";
-
 import { h, render } from "preact";
 import { __ } from "../../ts/translation";
 import { ConfigPageHeader } from "../../ts/components/config_page_header";

@@ -19,7 +19,6 @@
 
 import $ from "../../ts/jq";
 
-import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
 import { h, render } from "preact";

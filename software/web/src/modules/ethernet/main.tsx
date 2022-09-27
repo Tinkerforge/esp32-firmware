@@ -19,10 +19,9 @@
 
 import $ from "../../ts/jq";
 
-import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h, render, Fragment, RefObject } from "preact";
+import { h, render, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { Switch } from "../../ts/components/switch";
 import { ConfigComponent } from "src/ts/components/config_component";

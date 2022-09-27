@@ -27,7 +27,6 @@ import * as API from "../../ts/api";
 import { h, render } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { ConfigPageHeader } from "../../ts/components/config_page_header";
-import { FixedScaleAxis } from "chartist";
 
 render(<ConfigPageHeader prefix="charge_manager" title={__("charge_manager.content.charge_manager")} />, $('#charge_manager_header')[0]);
 

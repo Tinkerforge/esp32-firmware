@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
 import { h, Fragment } from "preact";
