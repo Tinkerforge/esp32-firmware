@@ -253,7 +253,7 @@ export class EVSEV2 extends Component<{}, EVSEState> {
                                     ["danger", __("evse.content.dc_fault_current_calibration")]
                                 ]}/>
                             <Button
-                                disabled
+                                disabled={state.dc_fault_current_state == 0}
                                 variant="danger"
                                 className="col-auto mx-1 mb-1"
                                 onClick={async () => {
