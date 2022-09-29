@@ -1,0 +1,134 @@
+/* esp32-firmware
+ * Copyright (C) 2022 Erik Fleckstein <erik@tinkerforge.com>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
+import * as util from "../util";
+
+import { h, Context } from "preact";
+import {useContext, useRef} from "preact/hooks";
+import { JSXInternal } from "preact/src/jsx";
+import { Button, ButtonGroup } from "react-bootstrap";
+import { Minus, Plus } from "react-feather";
+
+interface InputFloatProps {
+    idContext?: Context<string>
+    value: number
+    onValue: (value: number) => void
+    digits: number
+    unit: string
+    min: number
+    max: number
+    showMinMax?: boolean
+}
+
+let timeout: number = null;
+
+export function InputFloat(props: InputFloatProps) {
+    let id = useContext(props.idContext);
+
+    let pow10 = Math.pow(10, props.digits);
+
+    const input = useRef<HTMLInputElement>();
+
+    const setTarget = (target: number) => {
+        if (target < props.min)
+            return;
+        if (target > props.max)
+            return;
+
+        if (timeout != null)
+            window.clearTimeout(timeout);
+        timeout = null;
+
+        input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
+
+        props.onValue(target)
+    };
+
+    return (
+        <div class="input-group">
+            <input class="form-control"
+                       id={id}
+                       type="number"
+                       ref={input}
+                       onInput={(e) => {
+                        let target = parseFloat((e.target as HTMLInputElement).value) * pow10;
+                        target = Math.min(target, props.max);
+                        target = Math.max(target, props.min);
+                        if (timeout != null)
+                            window.clearTimeout(timeout);
+                        timeout = window.setTimeout(() => props.onValue(target), 2000);
+                       }}
+                       value={
+                        // Firefox does not localize numbers with a fractional part correctly.
+                        // OTOH Webkit based browsers (correctly) expect setting the value to a non-localized number.
+                        // Unfortunately, setting the value to a localized number (i.e. with , instead of . for German)
+                        // does not raise an exception, instead only a warning on the console is shown.
+                        // So to make everyone happy, we use user agent detection.
+                        navigator.userAgent.indexOf("Gecko/") >= 0
+                        ? util.toLocaleFixed(props.value / pow10, props.digits)
+                        : (props.value / pow10).toFixed(props.digits)
+                       }/>
+            <div class="input-group-append">
+                <div class="form-control input-group-text">
+                    {this.props.unit}
+                </div>
+                <Button variant="primary"
+                        className="form-control px-1"
+                        style="margin-right: .125rem !important;"
+                        onClick={() => {
+                            let v = props.value;
+                            let target = (v % pow10 === 0) ? (v - pow10) : (v - (v % pow10));
+
+                            setTarget(target);
+                        }}>
+                    <Minus/>
+                </Button>
+                <Button variant="primary"
+                        className="form-control px-1 rounded-right"
+                        onClick={() => {
+                            let v = props.value;
+                            let target = (v - (v % pow10)) + pow10;
+
+                            setTarget(target);
+                        }}>
+                    <Plus/>
+                </Button>
+            </div>
+            {!props.showMinMax ? null :
+                <ButtonGroup className="flex-wrap">
+                    <Button variant="primary"
+                            className="ml-2"
+                            style="margin-right: .125rem !important;"
+                            onClick={() => {
+                                setTarget(props.min);
+                            }}
+                            >
+                        {(props.min / pow10).toString() + " " + props.unit}
+                    </Button>
+                    <Button variant="primary" onClick={() => {
+                                setTarget(props.max);
+                            }}
+                            >
+                        {(props.max / pow10).toString() + " " + props.unit}
+                    </Button>
+                </ButtonGroup>
+            }
+        </div>
+    );
+}
