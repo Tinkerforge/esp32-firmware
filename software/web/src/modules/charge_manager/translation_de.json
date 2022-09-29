@@ -43,9 +43,8 @@
             "add_charger_modal_save": "Hinzufügen",
             "add_charger_modal_found": "Gefundene Wallboxen",
 
-            "disabled": "Lastmanagement deaktiviert",
-            "wrong_version": "Firmwareversion inkompatibel",
-            "invalid_box": "Wallbox ungültig",
+            "scan_error_1": "Firmwareversion inkompatibel",
+            "scan_error_2": "Lastmanagement deaktiviert",
 
             "mode_disabled": "Deaktiviert",
             "mode_manager": "Lastmanager",

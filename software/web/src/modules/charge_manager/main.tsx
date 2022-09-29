@@ -24,21 +24,396 @@ import feather from "../../ts/feather";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h, render } from "preact";
-import { __, translate_unchecked } from "../../ts/translation";
-import { ConfigPageHeader } from "../../ts/components/config_page_header";
+import { h, render, Fragment } from "preact";
+import { translate_unchecked, __ } from "../../ts/translation";
 
-render(<ConfigPageHeader prefix="charge_manager" title={__("charge_manager.content.charge_manager")} />, $('#charge_manager_header')[0]);
+import { ConfigComponent } from "../../ts/components/config_component";
+import { ConfigForm } from "../../ts/components/config_form";
+import { FormRow } from "../../ts/components/form_row";
+import { FormGroup } from "../../ts/components/form_group";
+import { InputText } from "../../ts/components/input_text";
+import { Button, Card, Collapse, ListGroup, Modal } from "react-bootstrap";
+import { InputSelect } from "src/ts/components/input_select";
+import { InputFloat } from "src/ts/components/input_float";
+import { Switch } from "src/ts/components/switch";
+import { config } from "./api";
 
-type ServCharger = Exclude<API.getType['charge_manager/scan_result'], string>[0];
-
-let charger_state_count = -1;
+type ChargeManagerConfig = API.getType['charge_manager/config'];
+type ChargerConfig = ChargeManagerConfig["chargers"][0];
+type ScanCharger = Exclude<API.getType['charge_manager/scan_result'], string>[0];
 
 const MAX_CONTROLLED_CHARGERS = 10;
 
-let charger_add_symbol = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-server" style=""><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line y1="18" y2="18" x1="18" x2="18.01"></line><line x1="19" x2="19" y1="3" y2="9"></line><line x1="22" x2="16" y1="6" y2="6"></line></svg>'
-let charger_delete_symbol = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-server mr-2" style=""><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line y1="18" y2="18" x1="18" x2="18.01"></line><line x1="17" x2="22" y1="4" y2="9"></line><line x1="22" x2="17" y1="4" y2="9"></line></svg>'
-let charger_symbol = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-server" style=""><rect x="2" y="8" width="20" height="8" rx="2" ry="2"></rect><line y1="12" y2="12" x1="18" x2="18.01"></line></svg>'
+let charger_add_symbol = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-server" style=""><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line y1="18" y2="18" x1="18" x2="18.01"></line><line x1="19" x2="19" y1="3" y2="9"></line><line x1="22" x2="16" y1="6" y2="6"></line></svg>
+let charger_delete_symbol = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-server mr-2" style=""><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line y1="18" y2="18" x1="18" x2="18.01"></line><line x1="17" x2="22" y1="4" y2="9"></line><line x1="22" x2="17" y1="4" y2="9"></line></svg>
+let charger_symbol = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-server" style=""><rect x="2" y="8" width="20" height="8" rx="2" ry="2"></rect><line y1="12" y2="12" x1="18" x2="18.01"></line></svg>
+
+
+interface ChargeManagerState {
+    showModal: boolean
+    newCharger: ChargerConfig
+    managementEnabled: boolean
+    showExpert: boolean
+    scanResult: Readonly<ScanCharger[]>
+    energyManagerMode: boolean
+}
+
+
+
+export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, ChargeManagerState> {
+    intervalID: number = null;
+
+    constructor() {
+        super('charge_manager/config',
+              __("charge_manager.script.save_failed"),
+              __("charge_manager.script.reboot_content_changed"));
+
+        this.state = {
+            showModal: false,
+            newCharger: {host: "", name: ""},
+            managementEnabled: false,
+            showExpert: false,
+            scanResult: []
+        } as any;
+
+        util.eventTarget.addEventListener('evse/management_enabled', () => {
+            this.setState({managementEnabled: API.get('evse/management_enabled').enabled});
+        });
+
+        util.eventTarget.addEventListener('charge_manager/scan_result', () => {
+            this.addScanResults( API.get('charge_manager/scan_result') as ScanCharger[]);
+        });
+
+        util.eventTarget.addEventListener('info/modules', () => {
+            this.setState({energyManagerMode: !!((API.get('info/modules') as any).energy_manager)})
+        });
+    }
+
+    addScanResults(result: ScanCharger[]) {
+        let copy = [...this.state.scanResult];
+        outer_loop:
+        for (let newC of result) {
+            for (let oldIdx in copy) {
+                let oldC = copy[oldIdx];
+                if (newC.hostname != oldC.hostname)
+                    continue;
+
+                if (oldC.ip == "[no_address]")
+                    copy[oldIdx].ip = newC.ip;
+
+                continue outer_loop;
+            }
+            copy.push(newC);
+        }
+        this.setState({scanResult: copy});
+    }
+
+    setCharger (i: number, val: Partial<ChargerConfig>){
+        let chargers = this.state.chargers;
+        chargers[i] = {...chargers[i], ...val};
+        this.setState({chargers: chargers});
+    }
+
+    hackToAllowSave() {
+        document.getElementById("charge_manager_config_form").dispatchEvent(new Event('input'));
+    }
+
+    override async sendSave(t: "charge_manager/config", cfg: config) {
+        await API.save_maybe('evse/management_enabled', {"enabled": this.state.managementEnabled}, translate_unchecked("evse.script.save_failed"));
+        await super.sendSave(t, cfg);
+    }
+
+    insertLocalHost() {
+        if (this.state.chargers.some(v => v.host == "127.0.0.1"))
+            return;
+
+        let name = API.get("info/display_name");
+        let c = this.state.chargers;
+        c.unshift({
+            host: "127.0.0.1",
+            name: name.display_name,
+        });
+        this.setState({chargers: c})
+    }
+
+
+    scan_timeout: number = null;
+    async scan_services()
+    {
+        try {
+            await API.call('charge_manager/scan', {}, __("charge_manager.script.scan_failed"))
+        } catch {
+            return;
+        }
+
+        if (this.scan_timeout != null)
+            window.clearTimeout(this.scan_timeout);
+
+        this.scan_timeout = window.setTimeout(async function () {
+            this.scan_timeout = null;
+
+            let result = "";
+            try {
+                result = await util.download("/charge_manager/scan_result").then(blob => blob.text());
+                let parsed = JSON.parse(result);
+                this.addScanResults(parsed);
+            } catch {
+            }
+        }, 3000);
+    }
+
+    render(props: {}, state: ChargeManagerConfig & ChargeManagerState) {
+        if (!state || !state.chargers)
+            return (<></>);
+
+        let addChargerCard = <div class="col mb-4">
+                <Card className="h-100" key={999}>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    {charger_add_symbol}
+                    <Button variant="outline-dark" size="sm" style="visibility: hidden;">
+                        {charger_delete_symbol}<span style="font-size: 1rem; vertical-align: middle;">{__("charge_manager.script.delete")}</span>
+                    </Button>
+                </div>
+                <Card.Body>
+                    {state.chargers.length >= MAX_CONTROLLED_CHARGERS
+                        ? <span>{__("charge_manager.script.add_charger_disabled_prefix") + MAX_CONTROLLED_CHARGERS + __("charge_manager.script.add_charger_disabled_suffix")}</span>
+                        : <Button variant="light" size="lg" block style="height: 100%;" onClick={() => this.setState({showModal: true})}>{__("charge_manager.script.add_charger")}</Button>}
+                </Card.Body>
+            </Card>
+        </div>
+
+        let charge_manager_mode = <FormRow label={__("charge_manager.content.enable_charge_manager")} label_muted={__("charge_manager.content.enable_charge_manager_muted")}>
+             <InputSelect
+                    items={[
+                        ["0",__("charge_manager.content.mode_disabled")],
+                        ["1",__("charge_manager.content.mode_managed")],
+                        ["2",__("charge_manager.content.mode_manager")],
+                    ]}
+                    value={state.enable_charge_manager ? "2" : state.managementEnabled ? "1" : "0"}
+                    onValue={(v) => {
+                        if (v == "2")
+                            this.insertLocalHost();
+                        this.setState({enable_charge_manager: v == "2", managementEnabled: v != "0"})
+                    }}
+                />
+                <div class="pt-3 pb-4">
+                    {translate_unchecked(`charge_manager.script.mode_explainer_${state.enable_charge_manager ? "2" : state.managementEnabled ? "1" : "0"}`)}
+                </div>
+            </FormRow>;
+
+
+        let verbose = <FormRow label={__("charge_manager.content.verbose")}>
+                <Switch desc={__("charge_manager.content.verbose_desc")}
+                        checked={state.verbose}
+                        onClick={this.toggle("verbose")}/>
+            </FormRow>;
+
+        let watchdog = <FormRow label={__("charge_manager.content.enable_watchdog")}>
+                <Switch desc={__("charge_manager.content.enable_watchdog_desc")}
+                        checked={state.enable_watchdog}
+                        onClick={this.toggle("enable_watchdog")}/>
+            </FormRow>;
+
+        let default_available_current = <FormRow label={__("charge_manager.content.default_available_current")} label_muted={__("charge_manager.content.default_available_current_muted")}>
+                <InputFloat
+                    unit="A"
+                    value={state.default_available_current}
+                    onValue={this.set("default_available_current")}
+                    digits={3}
+                    min={0}
+                    max={state.maximum_available_current}
+                    />
+                <div class="invalid-feedback">{__("charge_manager.content.default_available_current_invalid")}</div>
+            </FormRow>;
+
+        let maximum_available_current = <FormRow label={__("charge_manager.content.maximum_available_current")} label_muted={__("charge_manager.content.maximum_available_current_muted")}>
+                <InputFloat
+                    unit="A"
+                    value={state.maximum_available_current}
+                    onValue={(v) => this.setState({
+                        maximum_available_current: v,
+                        default_available_current: Math.min(v, state.default_available_current)
+                    })}
+                    digits={3}
+                    min={state.minimum_current}
+                    max={1000000}
+                    />
+            </FormRow>;
+
+        let minimum_current = <FormRow label={__("charge_manager.content.minimum_current")} label_muted={__("charge_manager.content.minimum_current_muted")}>
+                <InputFloat
+                    unit="A"
+                    value={state.minimum_current}
+                    onValue={(v) => this.setState({
+                        minimum_current: v,
+                        maximum_available_current: Math.max(v, state.maximum_available_current)
+                    })}
+                    digits={3}
+                    min={6000}
+                    max={32000}
+                    />
+            </FormRow>;
+
+        let available_current = <FormRow label={__("charge_manager.content.maximum_available_current")}>
+                <InputFloat
+                    unit="A"
+                    value={state.maximum_available_current}
+                    onValue={(v) => this.setState({maximum_available_current: v, default_available_current: v})}
+                    digits={3}
+                    min={0}
+                    max={1000000}
+                    />
+            </FormRow>
+
+        let chargers = <FormRow label={__("charge_manager.content.managed_boxes")}>
+                <div class="row row-cols-1 row-cols-md-2">
+                {state.chargers.map((c, i) => (
+                    <div class="col mb-4">
+                    <Card className="h-100" key={i}>
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            {charger_symbol}
+                            <Button variant="outline-dark" size="sm"
+                                    style={c.host == "127.0.0.1" ? "visibility: hidden;" : ""}
+                                    onClick={() => {
+                                        this.setState({chargers: state.chargers.filter((v, idx) => idx != i)});
+                                        this.hackToAllowSave();} }>
+                                {charger_delete_symbol}<span style="font-size: 1rem; vertical-align: middle;">{__("charge_manager.script.delete")}</span>
+                            </Button>
+                        </div>
+                        <Card.Body>
+                            <FormGroup label={__("charge_manager.script.display_name")}>
+                                <InputText value={c.name}
+                                        onValue={(v) => this.setCharger(i, {name: v})}
+                                        maxLength={32}
+                                        required/>
+                            </FormGroup>
+                            <FormGroup label={__("charge_manager.script.host")}>
+                                <InputText value={c.name}
+                                        onValue={(v) => this.setCharger(i, {host: v})}
+                                        maxLength={64}
+                                        required/>
+                            </FormGroup>
+                        </Card.Body>
+                    </Card>
+                    </div>
+                )).concat(addChargerCard)}
+                </div>
+            </FormRow>
+
+        let modal = <Modal show={state.showModal}
+                        onHide={() => this.setState({showModal: false})}
+                        centered
+                        onEnter={() => {this.scan_services(); this.intervalID = setInterval(this.scan_services, 3000)}}
+                        onExited={() => {this.setState({scanResult: []}); window.clearInterval(this.intervalID)}}
+                        >
+                    <Modal.Header closeButton>
+                        <label class="modal-title form-label">{__("charge_manager.content.add_charger_modal_title")}</label>
+                    </Modal.Header>
+                    <form onSubmit={() => {this.setState({showModal: false,
+                                                            chargers: state.chargers.concat(state.newCharger),
+                                                            newCharger: {name: "", host: ""}});
+                                                this.hackToAllowSave();}}>
+                    <Modal.Body>
+                            <FormGroup label={__("charge_manager.content.add_charger_modal_name")}>
+                                <InputText value={state.newCharger.name}
+                                        onValue={(v) => this.setState({newCharger: {...state.newCharger, name: v}})}
+                                        maxLength={32}
+                                        required/>
+                            </FormGroup>
+                            <FormGroup label={__("charge_manager.content.add_charger_modal_host")}>
+                                <InputText value={state.newCharger.host}
+                                        onValue={(v) => this.setState({newCharger: {...state.newCharger, host: v}})}
+                                        maxLength={64}
+                                        required/>
+                            </FormGroup>
+                            <FormGroup label={__("charge_manager.content.add_charger_modal_found")}>
+                                <ListGroup>
+                                {
+                                    state.scanResult.filter(c => !state.chargers.some(c1 => c1.host == c.hostname + ".local"))
+                                        .map(c => (
+                                            <ListGroup.Item action
+                                                        onClick={c.error != 0 ? () => {} : () => {
+                                                            this.setState({newCharger: {host: c.hostname + ".local", name: c.display_name}})
+                                                        }}
+                                                        style={c.error == 0 ? "" : "background-color: #eeeeee !important;"}>
+                                                <div class="d-flex w-100 justify-content-between">
+                                                    <span class="h5 text-left">{c.display_name}</span>
+                                                    {c.error == 0 ? null :
+                                                        <span class="text-right" style="color:red">{translate_unchecked(`charge_manager.content.scan_error_${c.error}`)}</span>
+                                                    }
+                                                </div>
+                                                <div class="d-flex w-100 justify-content-between">
+                                                    <a target="_blank" rel="noopener noreferrer" href={"http://" + c.hostname + ".local"}>{c.hostname + ".local"}</a>
+                                                    <a target="_blank" rel="noopener noreferrer" href={"http://" + c.ip}>{c.ip}</a>
+                                                </div>
+                                            </ListGroup.Item>))
+                                }
+                                </ListGroup>
+                            </FormGroup>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={() => this.setState({showModal: false})}>
+                            {__("charge_manager.content.add_charger_modal_abort")}
+                        </Button>
+                        <Button variant="primary"
+                                type="submit">
+                            {__("charge_manager.content.add_charger_modal_save")}
+                        </Button>
+                    </Modal.Footer>
+                    </form>
+                </Modal>;
+
+        return (
+            <>
+                <ConfigForm id="charge_manager_config_form" title={__("charge_manager.content.charge_manager")} onSave={() => this.save()} onDirtyChange={(d) => this.ignore_updates = d}>
+                    {state.energyManagerMode ? null:
+                        charge_manager_mode
+                    }
+
+                    {state.energyManagerMode ?
+                        <>
+                            {verbose}
+                            {chargers}
+                        </>
+                    :
+                    <Collapse in={state.enable_charge_manager}>
+                        <div>
+                            <FormRow label={__("charge_manager.content.configuration_mode")} label_muted={__("charge_manager.content.configuration_mode_muted")}>
+                                <Button className="form-control" onClick={() => this.setState({showExpert: !state.showExpert})}>
+                                    {state.showExpert ? __("component.collapsed_section.hide") : __("component.collapsed_section.show")}
+                                </Button>
+                            </FormRow>
+
+                            <Collapse in={state.showExpert}>
+                                <div>
+                                    {verbose}
+                                    {watchdog}
+                                    {default_available_current}
+                                    {maximum_available_current}
+                                    {minimum_current}
+                                </div>
+                            </Collapse>
+
+                            <Collapse in={!state.showExpert}>
+                                <div>
+                                    {available_current}
+                                </div>
+                            </Collapse>
+
+                            {chargers}
+                        </div>
+                    </Collapse>
+                    }
+                </ConfigForm>
+                {modal}
+            </>
+        )
+    }
+}
+
+render(<ChargeManager/>, $('#charge_manager')[0]);
+
+let charger_state_count = -1;
 
 function update_charge_manager_state() {
     let state = API.get('charge_manager/state');
@@ -108,7 +483,6 @@ function update_charge_manager_state() {
     util.update_button_group("btn_group_charge_manager_state", state.state);
 }
 
-let charger_config_count = -1;
 
 function set_available_current(current: number) {
     $('#charge_manager_status_available_current_save').prop("disabled", true);
@@ -123,354 +497,17 @@ function update_available_current(current: number = API.get('charge_manager/avai
     }
 }
 
-function insert_local_host(config: ChargeManagerConfig = API.get('charge_manager/config'))
-{
-    let name = API.get("info/display_name");
-
-    let local_is_there = false;
-
-    config.chargers.forEach((v, i) => {
-        if (v.host == "127.0.0.1")
-        {
-            local_is_there = true;
-            return
-        }
-    })
-
-    if (!local_is_there)
-    {
-        let c: ChargerConfig = {
-            host: "127.0.0.1",
-            name: name.display_name,
-        }
-        config.chargers.unshift(c);
-    }
-    update_charge_manager_config(config, true);
-}
-
-function update_charge_manager_config(config: ChargeManagerConfig = API.get('charge_manager/config'), force: boolean) {
+function update_charge_manager_config() {
+    let config = API.get('charge_manager/config');
     $('#charge_manager_status_available_current').prop("max", config.maximum_available_current / 1000.0);
     $("#charge_manager_status_available_current_maximum").on("click", () => set_available_current(config.default_available_current));
     $('#charge_manager_status_available_current_maximum').html(util.toLocaleFixed(config.default_available_current / 1000.0, 0) + " A");
 
     update_available_current(config.default_available_current);
-
-    if (!force && !$('#charge_manager_config_save_button').prop("disabled"))
-        return;
-
-    $('#charge_manager_enable').prop("checked", config.enable_charge_manager);
-    $('#charge_manager_enable_watchdog').prop("checked", config.enable_watchdog);
-    $('#charge_manager_verbose').prop("checked", config.verbose);
-    util.setNumericInput("charge_manager_default_available_current", config.default_available_current / 1000, 3);
-    util.setNumericInput("charge_manager_maximum_available_current", config.maximum_available_current / 1000, 3);
-    util.setNumericInput("charge_manager_available_current", config.maximum_available_current / 1000, 3);
-    util.setNumericInput("charge_manager_minimum_current", config.minimum_current / 1000, 3);
-
-    if (config.chargers.length != charger_config_count) {
-        let charger_configs = "";
-        for (let i = 0; i < config.chargers.length; i++) {
-            charger_configs += `<div class="col mb-4">
-                    <div class="card h-100">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            ${charger_symbol}
-                            <button type="button" class="btn btn-sm btn-outline-dark"
-                                id="charge_manager_content_${i}_remove">
-                                ${charger_delete_symbol}<span style="font-size: 1rem; vertical-align: middle;">${__("charge_manager.script.delete")}</span>
-                            </button>
-                        </div>
-
-                        <div class="card-body">
-                        <div class="form-group">
-                                <label class="form-label" for="charge_manager_config_charger_${i}_name">${__("charge_manager.script.display_name")}</label>
-                                <input type="text" class="form-control" id="charge_manager_config_charger_${i}_name">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" for="charge_manager_config_charger_${i}_host">${__("charge_manager.script.host")}</label>
-                                <input type="text" class="form-control" id="charge_manager_config_charger_${i}_host">
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-        }
-        charger_configs += `<div class="col mb-4">
-        <div class="card h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                ${charger_add_symbol}
-                <button type="button" class="btn btn-sm btn-outline-dark" style="visibility: hidden;">
-                    ${charger_delete_symbol}
-                </button>
-            </div>
-            <div class="card-body">
-                <button id="charge_manager_add_charger" type="button" class="btn btn-light btn-lg btn-block" style="height: 100%;" data-toggle="modal" data-target="#charge_manager_add_charger_modal">${__("charge_manager.script.add_charger")}</button>
-                <span id="charge_manager_add_charger_disabled" hidden>${__("charge_manager.script.add_charger_disabled_prefix") + MAX_CONTROLLED_CHARGERS + __("charge_manager.script.add_charger_disabled_suffix")}</span>
-            </div>
-        </div>
-    </div>`;
-        $('#charge_manager_configs').html(charger_configs);
-        charger_config_count = config.chargers.length;
-        feather.replace();
-        for (let i = 0; i < config.chargers.length; i++) {
-            $(`#charge_manager_content_${i}_remove`).on("click", () => {
-                $('#charge_manager_config_save_button').prop("disabled", false);
-                update_charge_manager_config(collect_charge_manager_config(null, i), true);
-            });
-        }
-    }
-
-    $('#charge_manager_add_charger').prop("hidden", config.chargers.length >= MAX_CONTROLLED_CHARGERS);
-    $('#charge_manager_add_charger_disabled').prop("hidden", config.chargers.length < MAX_CONTROLLED_CHARGERS);
-
-    for (let i = 0; i < config.chargers.length; i++) {
-        const s = config.chargers[i];
-        $(`#charge_manager_config_charger_${i}_name`).val(s.name);
-        $(`#charge_manager_config_charger_${i}_host`).val(s.host);
-        if (s.host == "127.0.0.1")
-        {
-            $(`#charge_manager_content_${i}_remove`).css("visibility","hidden");
-            $(`#charge_manager_config_charger_${i}_host`).prop("disabled", true);
-        }
-    }
 }
 
-type ChargeManagerConfig = API.getType['charge_manager/config'];
-type ChargerConfig = ChargeManagerConfig["chargers"][0];
-
-function collect_charge_manager_config(new_charger: ChargerConfig = null, remove_charger: number = null) : ChargeManagerConfig {
-    let chargers: ChargerConfig[] = [];
-    for(let i = 0; i < charger_config_count; ++i) {
-        if (remove_charger !== null && i == remove_charger)
-            continue;
-        let c: ChargerConfig = {
-            host: $(`#charge_manager_config_charger_${i}_host`).val().toString(),
-            name: $(`#charge_manager_config_charger_${i}_name`).val().toString(),
-        }
-        chargers.push(c);
-    }
-    if (new_charger != null)
-        chargers.push(new_charger);
-
-    let enabled = $('#charge_manager_mode_dropdown').val() == "2";
-
-    let expert = $('#charge_manager_config_expert_collapse').hasClass("show");
-
-    let max_current = Math.round(($('#charge_manager_default_available_current').val() as number) * 1000);
-    let def_current = Math.round(($('#charge_manager_minimum_current').val() as number) * 1000);
-
-    let current = Math.round(($('#charge_manager_available_current').val() as number) * 1000);
-
-    if (!expert) {
-        max_current = current;
-        def_current = current;
-    }
-
-    return {
-       enable_charge_manager: enabled,
-       enable_watchdog: $('#charge_manager_enable_watchdog').is(':checked'),
-       verbose: $('#charge_manager_verbose').is(':checked'),
-       default_available_current: def_current,
-       maximum_available_current: max_current,
-       minimum_current: Math.round(($('#charge_manager_minimum_current').val() as number) * 1000),
-       chargers: chargers
-    };
-}
-
-async function save_charge_manager_config() {
-    let payload = collect_charge_manager_config();
-    let evse_enabled = false;
-    if ($('#charge_manager_mode_dropdown').val() == "1" || $('#charge_manager_mode_dropdown').val() == "2")
-        evse_enabled = true;
-    await API.save_maybe('evse/management_enabled', {"enabled": evse_enabled}, translate_unchecked("evse.script.save_failed"));
-    await API.save('charge_manager/config', payload, __("charge_manager.script.save_failed"), __("charge_manager.script.reboot_content_changed"))
-       .then(() => $('#charge_manager_config_save_button').prop("disabled", true));
-}
-
-function is_in_use(v: ServCharger): Boolean
-{
-    for (let i = 0; $(`#charge_manager_config_charger_${i}_host`).length > 0; i++)
-    {
-        if ($(`#charge_manager_config_charger_${i}_host`).val().toString() == v.ip || $(`#charge_manager_config_charger_${i}_host`).val().toString() == v.hostname + ".local")
-            return true;
-    }
-    return false
-}
-
-function is_in_list(a: ServCharger)
-{
-    let i = 0;
-    while ($(`#hostname_id_${i}`).length > 0)
-    {
-        if ($(`#hostname_id_${i}`).text() == a.hostname + ".local")
-        {
-            return i;
-        }
-        i++;
-    }
-    return -1;
-}
-
-function update_scan_results(data: Readonly<ServCharger[]>)
-{
-    $.each(data, (i, v: ServCharger) => {
-        let prev_element = i;
-        if (is_in_use(v) == false)
-        {
-            let num_elements = is_in_list(v);
-            if (num_elements == -1)
-            {
-                i = $('#charge_manager_config_charger_scan_results').children().length;
-                $('#charge_manager_config_charger_scan_results').append(`<button type="button" id="charge_manager_config_charger_scan_result_${i}" class="list-group-item list-group-item-action">
-                <div class="d-flex w-100 justify-content-between">
-                    <span class="h5 text-left" id="charger_scan_id_${i}"></span>
-                    <span class="text-right" id="disabled_${i}" style="color:red" hidden></span>
-                </div>
-                <div class="d-flex w-100 justify-content-between">
-                    <a id="hostname_id_${i}" target="_blank" rel="noopener noreferrer"></a>
-                    <a id="ip_${i}" target="_blank" rel="noopener noreferrer"></a>
-                </div>
-                </button>`);
-            }
-            else
-                i = num_elements;
-
-            $(`#charger_scan_id_${i}`).text(v.display_name);
-            $(`#hostname_id_${i}`).text(v.hostname + ".local");
-            $(`#hostname_id_${i}`).prop("href", `http://${v.hostname}.local`);
-
-            if (v.ip != "[no_address]" || $(`#ip_${i}`).text().length == 0) {
-                $(`#ip_${i}`).text(v.ip);
-                $(`#ip_${i}`).prop("href", `http://${v.ip}`);
-            }
-
-            let has_error = v.error != 0;
-
-            $(`#charge_manager_config_charger_scan_result_${i}`).toggleClass("list-group-item-light", has_error);
-            $(`#disabled_${i}`).prop("hidden", !has_error);
-
-            if (has_error) {
-                $(`#charge_manager_config_charger_scan_result_${i}`).off("click");
-                $(`#charge_manager_config_charger_scan_result_${i}`).attr("style", "background-color: #eeeeee !important;");
-            } else{
-                $(`#charge_manager_config_charger_scan_result_${i}`).on("click", () => {
-                    $("#charge_manager_config_charger_new_name").val(v.display_name);
-                    $("#charge_manager_config_charger_new_host").val(v.hostname + ".local");
-                })
-                $(`#charge_manager_config_charger_scan_result_${i}`).removeAttr("style");
-            }
-
-            if (v.error == 1)
-                $(`#disabled_${i}`).text(__("charge_manager.content.wrong_version"));
-            else if (v.error == 2)
-                $(`#disabled_${i}`).text(__("charge_manager.content.disabled"));
-            else if (v.error == 3)
-                $(`#disabled_${i}`).text(__("charge_manager.content.invalid_box"));
-
-        }
-        i = prev_element;
-    })
-}
-
-let scan_timeout: number = null;
-async function scan_services()
-{
-    try {
-        await API.call('charge_manager/scan', {}, __("charge_manager.script.scan_failed"))
-    } catch {
-        return;
-    }
-
-    if (scan_timeout != null)
-        window.clearTimeout(scan_timeout);
-
-    scan_timeout = window.setTimeout(async function () {
-        scan_timeout = null;
-
-        let result = "";
-        try {
-            result = await util.download("/network/scan_result").then(blob => blob.text());
-        } catch {
-            return;
-        }
-
-        update_scan_results(JSON.parse(result));
-    }, 3000);
-}
-
-function show_cfg_body()
-{
-    $('#charge_manager_config_body').collapse($('#charge_manager_mode_dropdown').val() == "2" ? "show" : "hide");
-}
-
-function set_dropdown_explainer() {
-    $('#charge_manager_mode_explainer').html(translate_unchecked(`charge_manager.script.mode_explainer_${$('#charge_manager_mode_dropdown').val()}`));
-}
-
-function set_dropdown()
-{
-    if(!$('#charge_manager_config_save_button').prop("disabled"))
-        return;
-
-    let x = API.get_maybe('evse/management_enabled');
-    let y = API.get('charge_manager/config');
-    let new_val = "0";
-    if (y.enable_charge_manager == true)
-        new_val = "2";
-    else if (x && x.enabled == true)
-        new_val = "1";
-
-    $('#charge_manager_mode_dropdown').val(new_val);
-    set_dropdown_explainer();
-}
 
 export function init() {
-    var intervalID: number;
-    $('#charge_manager_add_charger_modal').on('shown.bs.modal', scan_services);
-    $('#charge_manager_add_charger_modal').on('shown.bs.modal', () => intervalID = setInterval(scan_services, 3000));
-    $('#charge_manager_add_charger_modal').on('hidden.bs.modal', () => {
-        $('#charge_manager_config_charger_scan_results').children().remove();
-        clearInterval(intervalID);
-    });
-    $('#charge_manager_config_form').on('input', () => $('#charge_manager_config_save_button').prop("disabled", false));
-
-    $('#charge_manager_config_form').on('submit', function (this: HTMLFormElement, event: Event) {
-        $('#charge_manager_default_available_current').prop("max", $('#charge_manager_maximum_available_current').val());
-
-        event.preventDefault();
-        event.stopPropagation();
-
-        if (this.checkValidity() === false) {
-            this.classList.add('was-validated');
-            return;
-        } else {
-            this.classList.remove('was-validated');
-        }
-
-        save_charge_manager_config();
-    });
-
-    $('#charge_manager_add_charger_form').on("submit", (event: Event) => {
-        let form = $('#charge_manager_add_charger_form')[0] as HTMLFormElement;
-
-        event.preventDefault();
-        event.stopPropagation();
-
-        if (form.checkValidity() === false) {
-            form.classList.add('was-validated');
-            return;
-        } else {
-            form.classList.remove('was-validated');
-        }
-
-        $('#charge_manager_add_charger_modal').modal('hide');
-        $('#charge_manager_config_save_button').prop("disabled", false);
-
-        let new_config = collect_charge_manager_config({
-            host: $(`#charge_manager_config_charger_new_host`).val().toString(),
-            name: $(`#charge_manager_config_charger_new_name`).val().toString(),
-        }, null);
-
-        update_charge_manager_config(new_config, true);
-    });
-
     $("#charge_manager_status_available_current_minimum").on("click", () => set_available_current(0));
 
     $('#charge_manager_status_available_current').on("input", () => {
@@ -488,44 +525,14 @@ export function init() {
 
         set_available_current(Math.round(($('#charge_manager_status_available_current').val() as number) * 1000));
     });
-
-    $('#charge_manager_add_charger_modal').on("hidden.bs.modal", () => {
-        let form = $('#charge_manager_add_charger_form')[0] as HTMLFormElement;
-        form.reset();
-    })
-    $('#charge_manager_mode_dropdown').on("input", () => {
-        if ($('#charge_manager_mode_dropdown').val() == 2)
-            insert_local_host();
-        show_cfg_body();
-        set_dropdown_explainer();
-    });
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('charge_manager/state', update_charge_manager_state);
-    source.addEventListener('charge_manager/config', () => {
-        set_dropdown();
-        show_cfg_body();
-        update_charge_manager_config(undefined, false);
-    });
+    source.addEventListener('charge_manager/config', update_charge_manager_config);
     source.addEventListener('charge_manager/available_current', () => update_available_current());
-    source.addEventListener('evse/management_enabled' as any,() => {
-        set_dropdown();
-    });
-    source.addEventListener('charge_manager/scan_result', (e) => {
-        window.clearTimeout(scan_timeout);
-        scan_timeout = null;
-
-        if (typeof e.data !== "string")
-            update_scan_results(e.data);
-    }, false);
 }
 
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-charge_manager').prop('hidden', !module_init.charge_manager);
-    $('#charge_manager_enable_row').prop('hidden', module_init.energy_manager);
-    $('#charge_manager_enable_watchdog_row').prop('hidden', module_init.energy_manager);
-    $('#charge_manager_default_available_current_row').prop('hidden', module_init.energy_manager);
-    $('#charge_manager_maximum_available_current_row').prop('hidden', module_init.energy_manager);
-    $('#charge_manager_minimum_current_row').prop('hidden', module_init.energy_manager);
 }
