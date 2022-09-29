@@ -22,7 +22,7 @@ import {ConfigMap, api_cache, Modules} from './api_defs';
 import * as util from './util';
 import $ from "./jq";
 
-export {ConfigMap as getType, Modules};
+export {type ConfigMap as getType, type Modules};
 
 type EventMap = {
     [key in keyof ConfigMap]: MessageEvent<Readonly<ConfigMap[key]>>;
