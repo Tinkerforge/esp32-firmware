@@ -109,7 +109,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
             }
 
         let addTagCard = <div class="col mb-4">
-                <Card key={999}>
+                <Card className="h-100" key={999}>
                 <div class="card-header d-flex justify-content-between align-items-center">
                     {nfc_card_add_symbol}
                     <Button variant="outline-dark" size="sm" style="visibility: hidden;">
@@ -131,7 +131,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                         <div class="row row-cols-1 row-cols-md-2">
                         {state.authorized_tags.map((tag, i) => (
                             <div class="col mb-4">
-                            <Card key={tag.tag_id}>
+                            <Card className="h-100" key={tag.tag_id}>
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     {nfc_card_symbol}
                                     <Button variant="outline-dark" size="sm"
