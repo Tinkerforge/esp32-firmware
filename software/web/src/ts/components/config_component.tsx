@@ -56,7 +56,7 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
         });
     }
 
-    toggle(x: keyof PickByValue<API.getType[Config], boolean>) {
+    toggle(x: keyof PickByValue<API.getType[Config] & S, boolean>) {
         return () => this.setState({ [x]: !this.state[x] } as unknown as Partial<API.getType[Config] & S>);
     }
 
@@ -70,8 +70,8 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
         await this.sendSave(this.t, cfg);
     }
 
-    set<T extends keyof API.getType[Config]>(x: T) {
-        return (s: API.getType[Config][T]) => this.setState({ [x]: s } as unknown as Partial<API.getType[Config] & S>);
+    set<T extends keyof (API.getType[Config] & S)>(x: T) {
+        return (s: (API.getType[Config] & S)[T]) => this.setState({ [x]: s } as unknown as Partial<API.getType[Config] & S>);
     }
 
     // Override this to block saving on a condition
