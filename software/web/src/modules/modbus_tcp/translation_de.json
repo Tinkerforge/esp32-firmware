@@ -1,0 +1,18 @@
+{
+    "modbus_tcp": {
+        "navbar": {
+            "modbus_tcp": "Modbus/TCP"
+        },
+        "content": {
+            "disabled": "Deaktiviert",
+            "read_only": "Nur Lesezugriff",
+            "full_access": "Lese-/Schreibzugriff",
+            "modbus_tcp": "Modbus/TCP",
+            "enable": "Modbus/TCP Modus"
+        },
+        "script": {
+            "save_failed": "Speichern der Modbus/TCP-Einstellungen fehlgeschlagen.",
+            "reboot_content_changed": "Modbus/TCP-Einstellungen"
+        }
+    }
+}
