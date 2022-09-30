@@ -20,6 +20,7 @@
 import { h, Component, Context } from "preact";
 import {useContext} from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
+import { Eye, Trash2 } from "react-feather";
 import { __ } from "../translation";
 
 interface InputPasswordProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "value" | "disabled"> {
@@ -28,51 +29,65 @@ interface InputPasswordProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputEl
     onValue: (value: string | null) => void
     hideClear?: boolean
     placeholder?: string
+    showAlways?: boolean
+    clearPlaceholder?: string
+    clearSymbol?: h.JSX.Element
+    allowAPIClear?: boolean
 }
 
 interface InputPasswordState {
-    clear: boolean
     show: boolean
+    clearSelected: boolean
 }
 
 export class InputPassword extends Component<InputPasswordProps, InputPasswordState> {
     constructor() {
         super();
-        this.state = {clear: false, show: false}
+        this.state = {show: false, clearSelected: false}
     }
 
     toggleClear() {
-        let clear = !this.state.clear
-        this.setState({clear: clear})
-        if (clear)
+        if (this.props.value === "") {
+            this.props.onValue(null)
+            this.setState({clearSelected: false});
+        }
+        else {
             this.props.onValue("")
+            this.setState({clearSelected: true});
+        }
     }
 
     render(props: InputPasswordProps, state: Readonly<InputPasswordState>) {
         let id = useContext(props.idContext);
+
+        const toBeCleared = props.value === "" && (props.allowAPIClear || state.clearSelected);
+
         return (
             <div class="input-group">
                 <input class="form-control"
                     id={id}
-                    type={state.show ? "text" : "password"}
-                    placeholder={this.state.clear ? __("component.input_password.to_be_cleared") : (props.placeholder ?? __("component.input_password.unchanged"))}
+                    type={state.show || props.showAlways ? "text" : "password"}
+                    value={props.value ?? ""}
+                    placeholder={toBeCleared ? (props.clearPlaceholder ?? __("component.input_password.to_be_cleared"))
+                                                    : (props.placeholder ?? __("component.input_password.unchanged"))}
                     onInput={(e) => {
                         let value: string = (e.target as HTMLInputElement).value;
                         props.onValue(value.length > 0 ? value : null)}
                     }
-                    disabled={this.state.clear}
+                    disabled={toBeCleared}
                     {...props} />
                 <div class="input-group-append">
-                    <div class="input-group-text custom-control custom-switch" style="padding-left: 2.5rem;">
-                        <input id={id+"-show"} type="checkbox" class="custom-control-input" aria-label="Show password" onClick={() => this.setState({show: !this.state.show})} />
-                        <label class="custom-control-label" for={id+"-show"} style="line-height: 20px;"><span data-feather="eye"></span></label>
-                    </div>
-                    { props.hideClear !== true ?
+                    { props.showAlways ? null :
                         <div class="input-group-text custom-control custom-switch" style="padding-left: 2.5rem;">
-                            <input id={id+"-clear"} type="checkbox" class="custom-control-input" aria-label="Clear password"  onClick={() => this.toggleClear()} />
-                            <label class="custom-control-label" for={id+"-clear"} style="line-height: 20px;"><span data-feather="trash-2"></span></label>
+                            <input id={id+"-show"} type="checkbox" class="custom-control-input" aria-label="Show password" onClick={() => this.setState({show: !state.show})} />
+                            <label class="custom-control-label" for={id+"-show"} style="line-height: 20px;"><Eye/></label>
                         </div>
-                        : ""
+                    }
+                    { props.hideClear ? null :
+                        <div class="input-group-text custom-control custom-switch" style="padding-left: 2.5rem;">
+                            <input id={id+"-clear"} type="checkbox" class="custom-control-input" aria-label="Clear password" onClick={() => this.toggleClear()} checked={toBeCleared}/>
+                            <label class="custom-control-label" for={id+"-clear"} style="line-height: 20px;">{props.clearSymbol ?? <Trash2/>}</label>
+                        </div>
                     }
                 </div>
             </div>
