@@ -81,6 +81,11 @@ void ModbusTcp::setup()
         comm_info.mode = MB_MODE_TCP;
         comm_info.ip_addr_type = MB_IPV4;
         comm_info.ip_port = 502;
+        // For some reason, mbc_slave_setup asserts that comm_info.ip_netif_ptr is not null,
+        // but the ip_netif_ptr is never used.
+        // Fortunately this means that we can just pass anything to circumvent the assertion
+        // and the modbus_tcp server will listen on any network interface.
+        comm_info.ip_netif_ptr = (void *) 0x12345678;
         ESP_ERROR_CHECK(mbc_slave_setup((void *)&comm_info));
 
         mb_register_area_descriptor_t reg_area;
