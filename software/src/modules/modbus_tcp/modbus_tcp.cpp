@@ -45,14 +45,14 @@ extern EVSE evse;
 
 static portMUX_TYPE mtx;
 
-void ModbusTCP::pre_setup()
+void ModbusTcp::pre_setup()
 {
     config = Config::Object({
         {"enabled", Config::Bool(false)},
     });
 }
 
-void ModbusTCP::setup()
+void ModbusTcp::setup()
 {
     api.restorePersistentConfig("modbus_tcp/config", &config);
 
@@ -149,9 +149,9 @@ void ModbusTCP::setup()
     initialized = true;
 }
 
-void ModbusTCP::loop() {}
+void ModbusTcp::loop() {}
 
-void ModbusTCP::register_urls()
+void ModbusTcp::register_urls()
 {
     api.addPersistentConfig("modbus_tcp/config", &config, {}, 1000);
 

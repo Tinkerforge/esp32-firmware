@@ -97,11 +97,11 @@ struct meter_holding_s
 };
 
 
-class ModbusTCP
+class ModbusTcp
 {
     public:
 
-        ModbusTCP() {};
+        ModbusTcp() {};
         void pre_setup();
         void setup();
         void register_urls();
