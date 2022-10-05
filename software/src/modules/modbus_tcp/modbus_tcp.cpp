@@ -67,7 +67,7 @@ struct evse_input_regs_t {
     uint32_t start_time_min;
     uint32_t charging_time_sec;
     uint32_t max_current;
-    uint32_t slots[11];
+    uint32_t slots[CHARGING_SLOT_COUNT_SUPPORTED_BY_EVSE];
 };
 
 struct meter_input_regs_t {
@@ -167,6 +167,12 @@ ModbusTcp::ModbusTcp()
     memset(&meter_holding_regs_copy, 0, sizeof(meter_holding_regs));
     memset(&discrete_inputs_copy, 0, sizeof(discrete_inputs));
     memset(&meter_discrete_inputs_copy, 0, sizeof(meter_discrete_inputs));
+
+    // Initialize all slots to 0xFFFFFFFF (i.e. "this slot is not active")
+    // This means that we can add more slots (up to the currently supported maximum of 20)
+    // and Modbus TCP users can already support those.
+    memset(&evse_input_regs.slots, 0xFF, sizeof(evse_input_regs.slots));
+    memset(&evse_input_regs_copy.slots, 0xFF, sizeof(evse_input_regs.slots));
 }
 
 void ModbusTcp::pre_setup()
