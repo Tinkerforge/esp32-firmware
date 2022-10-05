@@ -352,7 +352,7 @@ void ChargeTracker::readNRecords(File *f, size_t records_to_read)
         last_charges.get(last_charges.count() - 1)->get("timestamp_minutes")->updateUint(cs.timestamp_minutes);
         last_charges.get(last_charges.count() - 1)->get("charge_duration")->updateUint(ce.charge_duration);
         last_charges.get(last_charges.count() - 1)->get("user_id")->updateUint(cs.user_id);
-        last_charges.get(last_charges.count() - 1)->get("energy_charged")->updateFloat((cs.meter_start == NAN || ce.meter_end == NAN) ? NAN : ce.meter_end - cs.meter_start);
+        last_charges.get(last_charges.count() - 1)->get("energy_charged")->updateFloat((isnan(cs.meter_start) || isnan(ce.meter_end)) ? NAN : ce.meter_end - cs.meter_start);
     }
 }
 
