@@ -115,21 +115,21 @@ struct meter_holding_regs_t {
 struct discrete_inputs_t {
     static const mb_param_type_t TYPE = MB_PARAM_DISCRETE;
     static const uint16_t OFFSET = 0;
-    uint8_t evse:1;
-    uint8_t meter:1;
-    uint8_t meter_phases:1;
-    uint8_t meter_all_values:1;
+    bool evse:1;
+    bool meter:1;
+    bool meter_phases:1;
+    bool meter_all_values:1;
 };
 
 struct meter_discrete_inputs_t {
     static const mb_param_type_t TYPE = MB_PARAM_DISCRETE;
     static const uint16_t OFFSET = 2100;
-    uint8_t phase_one_active:1;
-    uint8_t phase_two_active:1;
-    uint8_t phase_three_active:1;
-    uint8_t phase_one_connected:1;
-    uint8_t phase_two_connected:1;
-    uint8_t phase_three_connected:1;
+    bool phase_one_connected:1;
+    bool phase_two_connected:1;
+    bool phase_three_connected:1;
+    bool phase_one_active:1;
+    bool phase_two_active:1;
+    bool phase_three_active:1;
 };
 
 static input_regs_t input_regs, input_regs_copy;
@@ -256,7 +256,7 @@ void ModbusTcp::update_regs() {
 #if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
     if (api.hasFeature("evse"))
     {
-        discrete_inputs_copy.evse = 1;
+        discrete_inputs_copy.evse = true;
 
         evse_input_regs_copy.iec_state = api.getState("evse/state")->get("iec61851_state")->asUint();
         evse_input_regs_copy.charger_state = api.getState("evse/state")->get("charger_state")->asUint();
@@ -305,7 +305,7 @@ void ModbusTcp::update_regs() {
 #if MODULE_METER_AVAILABLE()
     if (api.hasFeature("meter"))
     {
-        discrete_inputs_copy.meter = 1;
+        discrete_inputs_copy.meter = true;
 
         meter_input_regs_copy.meter_type = api.getState("meter/state")->get("type")->asUint();
 
@@ -318,22 +318,22 @@ void ModbusTcp::update_regs() {
             api.callCommand("meter/reset", {});
     }
 
-    if (api.hasFeature("meter_discrete_inputs"))
+    if (api.hasFeature("meter_phases"))
     {
-        discrete_inputs_copy.meter_phases = 1;
+        discrete_inputs_copy.meter_phases = true;
 
         auto meter_phase_values = api.getState("meter/phases");
-        meter_discrete_inputs_copy.phase_one_active = meter_phase_values->get("phases_active")->get(0)->asBool() ? 1 : 0;
-        meter_discrete_inputs_copy.phase_two_active = meter_phase_values->get("phases_active")->get(1)->asBool() ? 1 : 0;
-        meter_discrete_inputs_copy.phase_three_active = meter_phase_values->get("phases_active")->get(2)->asBool() ? 1 : 0;
-        meter_discrete_inputs_copy.phase_one_connected = meter_phase_values->get("phases_connected")->get(0)->asBool() ? 1 : 0;
-        meter_discrete_inputs_copy.phase_two_connected = meter_phase_values->get("phases_connected")->get(1)->asBool() ? 1 : 0;
-        meter_discrete_inputs_copy.phase_three_connected = meter_phase_values->get("phases_connected")->get(2)->asBool() ? 1 : 0;
+        meter_discrete_inputs_copy.phase_one_active = meter_phase_values->get("phases_active")->get(0)->asBool();
+        meter_discrete_inputs_copy.phase_two_active = meter_phase_values->get("phases_active")->get(1)->asBool();
+        meter_discrete_inputs_copy.phase_three_active = meter_phase_values->get("phases_active")->get(2)->asBool();
+        meter_discrete_inputs_copy.phase_one_connected = meter_phase_values->get("phases_connected")->get(0)->asBool();
+        meter_discrete_inputs_copy.phase_two_connected = meter_phase_values->get("phases_connected")->get(1)->asBool();
+        meter_discrete_inputs_copy.phase_three_connected = meter_phase_values->get("phases_connected")->get(2)->asBool();
     }
 
     if (api.hasFeature("meter_all_values"))
     {
-        discrete_inputs_copy.meter_all_values = 1;
+        discrete_inputs_copy.meter_all_values = true;
 
         auto meter_all_values = api.getState("meter/all_values");
         meter_all_values->fillFloatArray(meter_all_values_input_regs_copy.meter_values, sizeof(meter_all_values_input_regs_copy.meter_values) / sizeof(meter_all_values_input_regs_copy.meter_values[0]));
