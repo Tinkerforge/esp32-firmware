@@ -36,8 +36,6 @@ extern WebServer server;
 extern API api;
 extern bool firmware_update_allowed;
 
-#define CHARGING_SLOT_COUNT 12
-
 #define SLOT_ACTIVE(x) ((bool)(x & 0x01))
 #define SLOT_CLEAR_ON_DISCONNECT(x) ((bool)(x & 0x02))
 

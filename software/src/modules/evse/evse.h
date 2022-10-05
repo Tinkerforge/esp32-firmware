@@ -25,6 +25,9 @@
 #include "device_module.h"
 #include "evse_bricklet_firmware_bin.embedded.h"
 
+#define CHARGING_SLOT_COUNT 12
+#define CHARGING_SLOT_COUNT_SUPPORTED_BY_EVSE 20
+
 #define CHARGING_SLOT_INCOMING_CABLE 0
 #define CHARGING_SLOT_OUTGOING_CABLE 1
 #define CHARGING_SLOT_SHUTDOWN_INPUT 2
