@@ -35,8 +35,11 @@
 #include "event_log.h"
 #include "esp_log.h"
 #include "build.h"
+#include "task_scheduler.h"
 
 #include <arpa/inet.h>
+
+extern TaskScheduler task_scheduler;
 
 extern EventLog logger;
 
@@ -745,4 +748,13 @@ uint16_t internet_checksum(const uint8_t* data, size_t length) {
     checksum = (checksum & 0xFFFF) + carry;
     checksum = ~checksum;
     return checksum;
+}
+
+void trigger_reboot(const char *initiator)
+{
+    task_scheduler.scheduleOnce([initiator]() {
+        logger.printfln("Reboot requested by %s.", initiator);
+        delay(1500);
+        ESP.restart();
+    }, 0);
 }

@@ -62,6 +62,8 @@ void led_blink(int8_t led_pin, int interval, int blinks_per_interval, int off_ti
 
 uint16_t internet_checksum(const uint8_t* data, size_t length);
 
+void trigger_reboot(const char *initiator);
+
 class LogSilencer
 {
 public:
