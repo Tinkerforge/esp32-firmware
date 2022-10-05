@@ -42,8 +42,132 @@ extern EVSEV2 evse_v2;
 extern EVSE evse;
 #endif
 
+#define MODBUS_TABLE_VERSION 1
+//-------------------
+// Input Registers
+//-------------------
+struct input_regs_t {
+    static const mb_param_type_t TYPE = MB_PARAM_INPUT;
+    static const uint16_t OFFSET = 0;
+    uint32_t table_version;
+    uint32_t firmware_major;
+    uint32_t firmware_minor;
+    uint32_t firmware_patch;
+    uint32_t firmware_build_ts;
+    uint32_t box_id;
+    uint32_t uptime;
+};
+
+struct evse_input_regs_t {
+    static const mb_param_type_t TYPE = MB_PARAM_INPUT;
+    static const uint16_t OFFSET = 1000;
+    uint32_t iec_state;
+    uint32_t charger_state;
+    uint32_t current_user;
+    uint32_t start_time_min;
+    uint32_t charging_time_sec;
+    uint32_t max_current;
+    uint32_t slots[11];
+};
+
+struct meter_input_regs_t {
+    static const mb_param_type_t TYPE = MB_PARAM_INPUT;
+    static const uint16_t OFFSET = 2000;
+    uint32_t meter_type;
+    float power;
+    float energy_absolute;
+    float energy_relative;
+};
+
+struct meter_all_values_input_regs_t {
+    static const mb_param_type_t TYPE = MB_PARAM_INPUT;
+    static const uint16_t OFFSET = 2100;
+    float meter_values[85];
+};
+
+//-------------------
+// Holding Registers
+//-------------------
+struct holding_regs_t {
+    static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
+    static const uint16_t OFFSET = 0;
+    static const uint32_t REBOOT_PASSWORD = 0x012EB007;
+    uint32_t reboot;
+};
+
+struct evse_holding_regs_t {
+    static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
+    static const uint16_t OFFSET = 1000;
+    uint32_t enable_charging;
+    uint32_t allowed_current;
+};
+
+struct meter_holding_regs_t {
+    static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
+    static const uint16_t OFFSET = 2000;
+    static const uint32_t TRIGGER_RESET_PASSWORD = 0x3E12E5E7;
+    uint32_t trigger_reset;
+};
+
+//-------------------
+// Discrete Inputs
+//-------------------
+struct discrete_inputs_t {
+    static const mb_param_type_t TYPE = MB_PARAM_DISCRETE;
+    static const uint16_t OFFSET = 0;
+    uint8_t evse:1;
+    uint8_t meter:1;
+    uint8_t meter_phases:1;
+    uint8_t meter_all_values:1;
+};
+
+struct meter_discrete_inputs_t {
+    static const mb_param_type_t TYPE = MB_PARAM_DISCRETE;
+    static const uint16_t OFFSET = 2100;
+    uint8_t phase_one_active:1;
+    uint8_t phase_two_active:1;
+    uint8_t phase_three_active:1;
+    uint8_t phase_one_connected:1;
+    uint8_t phase_two_connected:1;
+    uint8_t phase_three_connected:1;
+};
+
+static input_regs_t input_regs, input_regs_copy;
+static evse_input_regs_t evse_input_regs, evse_input_regs_copy;
+static meter_input_regs_t meter_input_regs, meter_input_regs_copy;
+static meter_all_values_input_regs_t meter_all_values_input_regs, meter_all_values_input_regs_copy;
+
+static holding_regs_t holding_regs, holding_regs_copy;
+static evse_holding_regs_t evse_holding_regs, evse_holding_regs_copy;
+static meter_holding_regs_t meter_holding_regs, meter_holding_regs_copy;
+
+static discrete_inputs_t discrete_inputs, discrete_inputs_copy;
+static meter_discrete_inputs_t meter_discrete_inputs, meter_discrete_inputs_copy;
 
 static portMUX_TYPE mtx;
+
+ModbusTcp::ModbusTcp()
+{
+    memset(&input_regs, 0, sizeof(input_regs));
+    memset(&evse_input_regs, 0, sizeof(evse_input_regs));
+    memset(&meter_input_regs, 0, sizeof(meter_input_regs));
+    memset(&meter_all_values_input_regs, 0, sizeof(meter_all_values_input_regs));
+    memset(&holding_regs, 0, sizeof(holding_regs));
+    memset(&evse_holding_regs, 0, sizeof(evse_holding_regs));
+    memset(&meter_holding_regs, 0, sizeof(meter_holding_regs));
+    memset(&discrete_inputs, 0, sizeof(discrete_inputs));
+    memset(&meter_discrete_inputs, 0, sizeof(meter_discrete_inputs));
+
+    memset(&input_regs_copy, 0, sizeof(input_regs));
+    memset(&evse_input_regs_copy, 0, sizeof(evse_input_regs));
+    memset(&meter_input_regs_copy, 0, sizeof(meter_input_regs));
+    memset(&meter_all_values_input_regs_copy, 0, sizeof(meter_all_values_input_regs));
+    memset(&holding_regs_copy, 0, sizeof(holding_regs));
+    memset(&evse_holding_regs_copy, 0, sizeof(evse_holding_regs));
+    memset(&meter_holding_regs_copy, 0, sizeof(meter_holding_regs));
+    memset(&discrete_inputs_copy, 0, sizeof(discrete_inputs));
+    memset(&meter_discrete_inputs_copy, 0, sizeof(meter_discrete_inputs));
+}
 
 void ModbusTcp::pre_setup()
 {
@@ -58,19 +182,6 @@ void ModbusTcp::setup()
 
     if (config.get("enabled")->asBool() == true)
     {
-        holding_base = (holding_s *)calloc(1, sizeof(holding_s));
-        evse_holding_base = (evse_holding_s *)calloc(1, sizeof(evse_holding_s));
-        meter_holding_base = (meter_holding_s *)calloc(1, sizeof(meter_holding_s));
-
-        input_base = (input_s *)calloc(1, sizeof(input_s));
-        evse_base = (evse_s *)calloc(1, sizeof(evse_s));
-        meter_base = (meter_s *)calloc(1, sizeof(meter_s));
-        meter_all_values_base = (meter_all_values_s *)calloc(1, sizeof(meter_all_values_s));
-
-        features = (feature_bitmap_s *)calloc(1, sizeof(feature_bitmap_s));
-        meter_phases = (meter_bitmap_s *)calloc(1, sizeof(meter_bitmap_s));
-
-
         void *modbus_handle = NULL;
         esp_err_t err = mbc_slave_init_tcp(&modbus_handle);
         if (err != ESP_OK || modbus_handle == NULL)
@@ -90,71 +201,148 @@ void ModbusTcp::setup()
 
         mb_register_area_descriptor_t reg_area;
 
-        reg_area.type = MB_PARAM_HOLDING;
-        reg_area.start_offset = 0;
-        reg_area.address = (void *)holding_base;
-        reg_area.size = sizeof(holding_s);
-        ESP_ERROR_CHECK(mbc_slave_set_descriptor(reg_area));
+#define REGISTER_DESCRIPTOR(x) do { \
+    reg_area.type = x.TYPE; \
+    reg_area.start_offset = x.OFFSET; \
+    reg_area.address = &x; \
+    reg_area.size = sizeof(x); \
+    ESP_ERROR_CHECK(mbc_slave_set_descriptor(reg_area)); \
+} while (0)
 
-        reg_area.type = MB_PARAM_HOLDING;
-        reg_area.start_offset = 1000;
-        reg_area.address = (void *)evse_holding_base;
-        reg_area.size = sizeof(evse_holding_s);
-        ESP_ERROR_CHECK(mbc_slave_set_descriptor(reg_area));
-
-        reg_area.type = MB_PARAM_HOLDING;
-        reg_area.start_offset = 2000;
-        reg_area.address = (void *)meter_holding_base;
-        reg_area.size = sizeof(meter_holding_s);
-        ESP_ERROR_CHECK(mbc_slave_set_descriptor(reg_area));
-
-
-        reg_area.type = MB_PARAM_INPUT;
-        reg_area.start_offset = 0;
-        reg_area.address = (void *)input_base;
-        reg_area.size = sizeof(input_s);
-        ESP_ERROR_CHECK(mbc_slave_set_descriptor(reg_area));
-
-        reg_area.type = MB_PARAM_INPUT;
-        reg_area.start_offset = 1000;
-        reg_area.address = (void *)evse_base;
-        reg_area.size = sizeof(evse_s);
-        ESP_ERROR_CHECK(mbc_slave_set_descriptor(reg_area));
-
-        reg_area.type = MB_PARAM_INPUT;
-        reg_area.start_offset = 2000;
-        reg_area.address = (void *)meter_base;
-        reg_area.size = sizeof(meter_s);
-        ESP_ERROR_CHECK(mbc_slave_set_descriptor(reg_area));
-
-        reg_area.type = MB_PARAM_INPUT;
-        reg_area.start_offset = 2100;
-        reg_area.address = (void *)meter_all_values_base;
-        reg_area.size = sizeof(meter_all_values_s);
-        ESP_ERROR_CHECK(mbc_slave_set_descriptor(reg_area));
-
-
-        reg_area.type = MB_PARAM_DISCRETE;
-        reg_area.start_offset = 0;
-        reg_area.address = (void *)features;
-        reg_area.size = sizeof(feature_bitmap_s);
-        printf("%u\n", sizeof(feature_bitmap_s));
-        ESP_ERROR_CHECK(mbc_slave_set_descriptor(reg_area));
-
-        reg_area.type = MB_PARAM_DISCRETE;
-        reg_area.start_offset = 2000;
-        reg_area.address = (void *)meter_phases;
-        reg_area.size = sizeof(meter_bitmap_s);
-        ESP_ERROR_CHECK(mbc_slave_set_descriptor(reg_area));
+        REGISTER_DESCRIPTOR(evse_input_regs);
+        REGISTER_DESCRIPTOR(meter_input_regs);
+        REGISTER_DESCRIPTOR(meter_all_values_input_regs);
+        REGISTER_DESCRIPTOR(input_regs);
+        REGISTER_DESCRIPTOR(holding_regs);
+        REGISTER_DESCRIPTOR(evse_holding_regs);
+        REGISTER_DESCRIPTOR(meter_holding_regs);
+        REGISTER_DESCRIPTOR(discrete_inputs);
+        REGISTER_DESCRIPTOR(meter_discrete_inputs);
 
         ESP_ERROR_CHECK(mbc_slave_start());
-
     }
 
     initialized = true;
 }
 
-void ModbusTcp::loop() {}
+void ModbusTcp::update_regs() {
+    // We want to keep the critical sections as small as possible
+    // -> Do all work in a copy of the registers.
+    portENTER_CRITICAL(&mtx);
+        holding_regs_copy = holding_regs;
+        evse_holding_regs_copy = evse_holding_regs;
+        meter_holding_regs_copy = meter_holding_regs;
+    portEXIT_CRITICAL(&mtx);
+
+    bool write_allowed = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool();
+
+    if (holding_regs_copy.reboot == holding_regs_copy.REBOOT_PASSWORD && write_allowed)
+        esp_restart();
+
+    input_regs_copy.table_version = MODBUS_TABLE_VERSION;
+    input_regs_copy.box_id = local_uid_num;
+    input_regs_copy.firmware_major = BUILD_VERSION_MAJOR;
+    input_regs_copy.firmware_minor = BUILD_VERSION_MINOR;
+    input_regs_copy.firmware_patch = BUILD_VERSION_PATCH;
+    input_regs_copy.firmware_build_ts = BUILD_TIMESTAMP;
+    input_regs_copy.uptime = (uint32_t)(esp_timer_get_time() / 1000000);
+
+#if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
+    if (api.hasFeature("evse"))
+    {
+        discrete_inputs_copy.evse = 1;
+
+        evse_input_regs_copy.iec_state = api.getState("evse/state")->get("iec61851_state")->asUint();
+        evse_input_regs_copy.charger_state = api.getState("evse/state")->get("charger_state")->asUint();
+
+#if MODULE_EVSE_V2_AVAILABLE()
+        evse_v2.set_modbus_current(evse_holding_regs_copy.allowed_current);
+        evse_v2.set_modbus_enabled(evse_holding_regs_copy.enable_charging);
+#elif
+        evse.set_modbus_current(evse_holding_regs_copy.allowed_current);
+        evse.set_modbus_enabled(evse_holding_regs_copy.enable_charging);
+#endif
+
+        auto slots = api.getState("evse/slots");
+
+        for (int i = 0; i < slots->count(); i++)
+        {
+            uint32_t current = slots->get(i)->get("max_current")->asUint();
+            uint32_t val = 0xFFFFFFFF;
+
+            if (slots->get(i)->get("active")->asBool() == true)
+            {
+                val = current;
+            }
+            evse_input_regs_copy.slots[i] = val;
+        }
+
+        evse_input_regs_copy.max_current = api.getState("evse/state")->get("allowed_charging_current")->asUint();
+        evse_input_regs_copy.start_time_min = 0;
+        evse_input_regs_copy.charging_time_sec = 0;
+
+#if MODULE_CHARGE_TRACKER_AVAILABLE()
+        int32_t user_id = api.getState("charge_tracker/current_charge")->get("user_id")->asInt();
+        bool charging = user_id == -1;
+        evse_input_regs_copy.current_user = charging ? UINT32_MAX : (uint32_t)user_id;
+        if (charging) {
+            evse_input_regs_copy.start_time_min = api.getState("charge_tracker/current_charge")->get("timestamp_minutes")->asUint();
+            evse_input_regs_copy.charging_time_sec = api.getState("evse/low_level_state")->get("uptime")->asUint() - api.getState("charge_tracker/current_charge")->get("evse_uptime_start")->asUint();
+        } else {
+            evse_input_regs_copy.start_time_min = 0;
+            evse_input_regs_copy.charging_time_sec = 0;
+        }
+#endif
+    }
+#endif
+
+#if MODULE_METER_AVAILABLE()
+    if (api.hasFeature("meter"))
+    {
+        discrete_inputs_copy.meter = 1;
+
+        meter_input_regs_copy.meter_type = api.getState("meter/state")->get("type")->asUint();
+
+        auto meter_values = api.getState("meter/values");
+        meter_input_regs_copy.power = meter_values->get("power")->asFloat();
+        meter_input_regs_copy.energy_relative = meter_values->get("energy_rel")->asFloat();
+        meter_input_regs_copy.energy_absolute = meter_values->get("energy_abs")->asFloat();
+
+        if (meter_holding_regs_copy.trigger_reset == meter_holding_regs_copy.TRIGGER_RESET_PASSWORD && write_allowed)
+            api.callCommand("meter/reset", {});
+    }
+
+    if (api.hasFeature("meter_discrete_inputs"))
+    {
+        discrete_inputs_copy.meter_phases = 1;
+
+        auto meter_phase_values = api.getState("meter/phases");
+        meter_discrete_inputs_copy.phase_one_active = meter_phase_values->get("phases_active")->get(0)->asBool() ? 1 : 0;
+        meter_discrete_inputs_copy.phase_two_active = meter_phase_values->get("phases_active")->get(1)->asBool() ? 1 : 0;
+        meter_discrete_inputs_copy.phase_three_active = meter_phase_values->get("phases_active")->get(2)->asBool() ? 1 : 0;
+        meter_discrete_inputs_copy.phase_one_connected = meter_phase_values->get("phases_connected")->get(0)->asBool() ? 1 : 0;
+        meter_discrete_inputs_copy.phase_two_connected = meter_phase_values->get("phases_connected")->get(1)->asBool() ? 1 : 0;
+        meter_discrete_inputs_copy.phase_three_connected = meter_phase_values->get("phases_connected")->get(2)->asBool() ? 1 : 0;
+    }
+
+    if (api.hasFeature("meter_all_values"))
+    {
+        discrete_inputs_copy.meter_all_values = 1;
+
+        auto meter_all_values = api.getState("meter/all_values");
+        meter_all_values->fillFloatArray(meter_all_values_input_regs_copy.meter_values, sizeof(meter_all_values_input_regs_copy.meter_values) / sizeof(meter_all_values_input_regs_copy.meter_values[0]));
+    }
+#endif
+
+    portENTER_CRITICAL(&mtx);
+        input_regs = input_regs_copy;
+        evse_input_regs = evse_input_regs_copy;
+        meter_input_regs = meter_input_regs_copy;
+        meter_all_values_input_regs = meter_all_values_input_regs_copy;
+        discrete_inputs = discrete_inputs_copy;
+        meter_discrete_inputs = meter_discrete_inputs_copy;
+    portEXIT_CRITICAL(&mtx);
+}
 
 void ModbusTcp::register_urls()
 {
@@ -165,111 +353,22 @@ void ModbusTcp::register_urls()
         spinlock_initialize(&mtx);
 
         portENTER_CRITICAL(&mtx);
-        input_base->table_version = MODBUS_TABLE_VERSION;
-        input_base->box_id = local_uid_num;
-        input_base->firmware_major = BUILD_VERSION_MAJOR;
-        input_base->firmware_minor = BUILD_VERSION_MINOR;
-        input_base->firmware_patch = BUILD_VERSION_PATCH;
-        input_base->firmware_build_ts = BUILD_TIMESTAMP;
+            input_regs.table_version = MODBUS_TABLE_VERSION;
+            input_regs.box_id = local_uid_num;
+            input_regs.firmware_major = BUILD_VERSION_MAJOR;
+            input_regs.firmware_minor = BUILD_VERSION_MINOR;
+            input_regs.firmware_patch = BUILD_VERSION_PATCH;
+            input_regs.firmware_build_ts = BUILD_TIMESTAMP;
 
-        evse_holding_base->allowed_current = 32000;
-        evse_holding_base->enable_charging = 1;
+            //TODO read back from evse here
+            evse_holding_regs.allowed_current = 32000;
+            evse_holding_regs.enable_charging = 1;
         portEXIT_CRITICAL(&mtx);
 
         task_scheduler.scheduleWithFixedDelay([this]() {
-            bool reboot_flag = false;
-
-            portENTER_CRITICAL(&mtx);
-
-            if (this->holding_base->reboot == 0x012EB007 && api.getState("evse/slots")->get(9)->get("active")->asBool())
-                reboot_flag = true;
-
-#if MODULE_METER_AVAILABLE()
-            if (api.hasFeature("meter"))
-            {
-                features->meter = 1;
-
-                meter_base->meter_type = api.getState("meter/state")->get("type")->asUint();
-
-                auto meter_values = api.getState("meter/values");
-                meter_base->power = meter_values->get("power")->asFloat();
-                meter_base->energy_raltive = meter_values->get("energy_rel")->asFloat();
-                meter_base->energy_absolute = meter_values->get("energy_abs")->asFloat();
-
-                if (meter_holding_base->trigger_reset == 1)
-                    api.callCommand("meter/reset", {});
-            }
-
-            if (api.hasFeature("meter_phases"))
-            {
-                features->meter_phases = 1;
-
-                auto meter_phase_values = api.getState("meter/phases");
-                meter_phases->phase_one_active = meter_phase_values->get("phases_active")->get(0)->asBool() ? 1 : 0;
-                meter_phases->phase_two_active = meter_phase_values->get("phases_active")->get(1)->asBool() ? 1 : 0;
-                meter_phases->phase_three_active = meter_phase_values->get("phases_active")->get(2)->asBool() ? 1 : 0;
-                meter_phases->phase_one_connected = meter_phase_values->get("phases_connected")->get(0)->asBool() ? 1 : 0;
-                meter_phases->phase_two_connected = meter_phase_values->get("phases_connected")->get(1)->asBool() ? 1 : 0;
-                meter_phases->phase_three_connected = meter_phase_values->get("phases_connected")->get(2)->asBool() ? 1 : 0;
-            }
-
-            if (api.hasFeature("meter_all_values"))
-            {
-                features->meter_all_values = 1;
-
-                auto meter_all_values = api.getState("meter/all_values");
-                for (int i = 0; i < 85; i++)
-                    meter_all_values_base->meter_values[i] = meter_all_values->get(i)->asFloat();
-            }
-#endif
-
-#if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
-            if (api.hasFeature("evse"))
-            {
-                features->evse = 1;
-
-                evse_base->iec_state = api.getState("evse/state")->get("iec61851_state")->asUint();
-                evse_base->charger_state = api.getState("evse/state")->get("charger_state")->asUint();
-
-                auto slots = api.getState("evse/slots");
-
-#if MODULE_EVSE_V2_AVAILABLE()
-                evse_v2.set_modbus_current(evse_holding_base->allowed_current);
-                evse_v2.set_modbus_enabled(evse_holding_base->enable_charging);
-#else
-                evse.set_modbus_current(evse_holding_base->allowed_current);
-                evse.set_modbus_enabled(evse_holding_base->enable_charging);
-#endif
-
-                uint32_t min = 32000;
-                for (int i = 0; i < slots->count(); i++)
-                {
-                    uint32_t slot = slots->get(i)->get("max_current")->asUint();
-                    uint32_t val = 0xFFFFFFFF;
-
-                    if (slots->get(i)->get("active")->asBool() == true)
-                    {
-                        val = slot;
-                        if (val < min)
-                            min = val;
-                    }
-                    evse_base->slots[i] = val;
-                }
-                evse_base->max_current = min;
-            }
-#endif
-
-#if MODULE_CHARGE_TRACKER_AVAILABLE()
-            timeval time;
-            evse_base->start_time_min = api.getState("charge_tracker/current_charge")->get("timestamp_minutes")->asUint();
-            if (evse_base->start_time_min != 0 && clock_synced(&time))
-                evse_base->charging_time_sec = time.tv_sec - evse_base->start_time_min * 60;
-            evse_base->current_user = api.getState("charge_tracker/current_charge")->get("user_id")->asInt();
-#endif
-
-            portEXIT_CRITICAL(&mtx);
-            if (reboot_flag)
-                esp_restart();
+            this->update_regs();
         }, 0, 500);
     }
 }
+
+void ModbusTcp::loop() {}
