@@ -8,7 +8,9 @@
             "read_only": "Read access only",
             "full_access": "Read/Write access",
             "modbus_tcp": "Modbus/TCP",
-            "enable": "Modbus/TCP Mode"
+            "enable": "Modbus/TCP Mode",
+            "port": "Port",
+            "port_muted": "typically 502"
         },
         "script": {
             "save_failed": "Failed to save the Modbus/TCP configuration.",

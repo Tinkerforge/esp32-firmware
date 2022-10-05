@@ -181,6 +181,8 @@ void ModbusTcp::pre_setup()
 {
     config = Config::Object({
         {"enabled", Config::Bool(false)},
+        {"port", Config::Uint16(502)},
+
     });
 }
 
@@ -199,7 +201,7 @@ void ModbusTcp::setup()
         comm_info.ip_addr = NULL;
         comm_info.mode = MB_MODE_TCP;
         comm_info.ip_addr_type = MB_IPV4;
-        comm_info.ip_port = 502;
+        comm_info.ip_port = config.get("port")->asUint();
         // For some reason, mbc_slave_setup asserts that comm_info.ip_netif_ptr is not null,
         // but the ip_netif_ptr is never used.
         // Fortunately this means that we can just pass anything to circumvent the assertion

@@ -77,6 +77,12 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
                                 this.setState({enabled: v != "0", evse_enable: v == "2"});
                             }}></InputSelect>
                         </FormRow>
+                        <FormRow label={__("modbus_tcp.content.port")} label_muted={__("modbus_tcp.content.port_muted")}>
+                            <InputNumber value={state.port}
+                                         onValue={this.set("port")}
+                                         min={1}
+                                         max={65536}/>
+                        </FormRow>
                 </ConfigForm>
             </>
         );
