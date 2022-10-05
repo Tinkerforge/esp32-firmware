@@ -29,6 +29,7 @@
 #include "modbus_tcp.h"
 #include "build.h"
 #include "build_timestamp.h"
+#include "math.h"
 
 extern TaskScheduler task_scheduler;
 extern API api;
@@ -77,6 +78,7 @@ struct meter_input_regs_t {
     float power;
     float energy_absolute;
     float energy_relative;
+    float energy_this_charge;
 };
 
 struct meter_all_values_input_regs_t {
@@ -241,6 +243,7 @@ void ModbusTcp::update_regs() {
     portEXIT_CRITICAL(&mtx);
 
     bool write_allowed = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool();
+    bool charging = false;
 
     if (holding_regs_copy.reboot == holding_regs_copy.REBOOT_PASSWORD && write_allowed)
         esp_restart();
@@ -289,7 +292,7 @@ void ModbusTcp::update_regs() {
 
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
         int32_t user_id = api.getState("charge_tracker/current_charge")->get("user_id")->asInt();
-        bool charging = user_id == -1;
+        charging = user_id != -1;
         evse_input_regs_copy.current_user = charging ? UINT32_MAX : (uint32_t)user_id;
         if (charging) {
             evse_input_regs_copy.start_time_min = api.getState("charge_tracker/current_charge")->get("timestamp_minutes")->asUint();
@@ -313,6 +316,15 @@ void ModbusTcp::update_regs() {
         meter_input_regs_copy.power = meter_values->get("power")->asFloat();
         meter_input_regs_copy.energy_relative = meter_values->get("energy_rel")->asFloat();
         meter_input_regs_copy.energy_absolute = meter_values->get("energy_abs")->asFloat();
+#if MODULE_CHARGE_TRACKER_AVAILABLE()
+        auto meter_start = api.getState("charge_tracker/current_charge")->get("meter_start")->asFloat();
+        if (!charging)
+            meter_input_regs_copy.energy_this_charge = 0;
+        else if (isnan(meter_start))
+            meter_input_regs_copy.energy_this_charge = NAN;
+        else
+            meter_input_regs_copy.energy_this_charge = meter_input_regs_copy.energy_absolute - meter_start;
+#endif
 
         if (meter_holding_regs_copy.trigger_reset == meter_holding_regs_copy.TRIGGER_RESET_PASSWORD && write_allowed)
             api.callCommand("meter/reset", {});
