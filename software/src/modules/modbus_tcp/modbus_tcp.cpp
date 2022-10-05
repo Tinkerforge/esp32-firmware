@@ -246,7 +246,7 @@ void ModbusTcp::update_regs() {
     bool charging = false;
 
     if (holding_regs_copy.reboot == holding_regs_copy.REBOOT_PASSWORD && write_allowed)
-        esp_restart();
+        trigger_reboot("Modbus TCP");
 
     input_regs_copy.table_version = MODBUS_TABLE_VERSION;
     input_regs_copy.box_id = local_uid_num;
@@ -296,7 +296,7 @@ void ModbusTcp::update_regs() {
         evse_input_regs_copy.current_user = charging ? UINT32_MAX : (uint32_t)user_id;
         if (charging) {
             evse_input_regs_copy.start_time_min = api.getState("charge_tracker/current_charge")->get("timestamp_minutes")->asUint();
-            evse_input_regs_copy.charging_time_sec = api.getState("evse/low_level_state")->get("uptime")->asUint() - api.getState("charge_tracker/current_charge")->get("evse_uptime_start")->asUint();
+            evse_input_regs_copy.charging_time_sec = (api.getState("evse/low_level_state")->get("uptime")->asUint() - api.getState("charge_tracker/current_charge")->get("evse_uptime_start")->asUint()) / 1000;
         } else {
             evse_input_regs_copy.start_time_min = 0;
             evse_input_regs_copy.charging_time_sec = 0;
@@ -370,6 +370,15 @@ void ModbusTcp::register_urls()
     {
         spinlock_initialize(&mtx);
 
+        uint16_t allowed_current = 32000;
+        uint8_t enable_charging = 1;
+
+#if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
+        auto slots = api.getState("evse/slots");
+        allowed_current = slots->get(CHARGING_SLOT_MODBUS_TCP)->get("max_current")->asUint();
+        enable_charging = slots->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000;
+#endif
+
         portENTER_CRITICAL(&mtx);
             input_regs.table_version = MODBUS_TABLE_VERSION;
             input_regs.box_id = local_uid_num;
@@ -378,9 +387,8 @@ void ModbusTcp::register_urls()
             input_regs.firmware_patch = BUILD_VERSION_PATCH;
             input_regs.firmware_build_ts = BUILD_TIMESTAMP;
 
-            //TODO read back from evse here
-            evse_holding_regs.allowed_current = 32000;
-            evse_holding_regs.enable_charging = 1;
+            evse_holding_regs.allowed_current = allowed_current;
+            evse_holding_regs.enable_charging = enable_charging;
         portEXIT_CRITICAL(&mtx);
 
         task_scheduler.scheduleWithFixedDelay([this]() {
