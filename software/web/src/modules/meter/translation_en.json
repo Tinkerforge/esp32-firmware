@@ -18,6 +18,12 @@
             "energy_since_reset": "since last reset",
             "energy_lifetime": "since manufacturing of the energy meter",
 
+            "reset_modal": "Reset energy comsumption?",
+            "reset_modal_body": "Really reset the energy comsumption measurement?",
+            "reset_modal_abort": "Abort",
+            "reset_modal_confirm": "Reset",
+            "reset_failed": "Failed to reset energy consumption measurement",
+
             "phases_active": "Active phases",
             "phases_active_desc": "L1, L2, L3",
             "phases_connected": "Connected phases",
