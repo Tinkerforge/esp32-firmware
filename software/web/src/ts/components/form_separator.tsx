@@ -21,6 +21,7 @@ import { h, Component} from "preact";
 
 interface FormSeparatorProps {
     heading?: string
+    colClasses?: string
 }
 
 export class FormSeparator extends Component<FormSeparatorProps, {}> {
@@ -31,7 +32,7 @@ export class FormSeparator extends Component<FormSeparatorProps, {}> {
     render(props: FormSeparatorProps) {
         return (
             <div class="row mb-3 pt-3">
-                <div class="col-xl-8 d-flex border-bottom">{props.heading ? <span class="h3">{props.heading}</span>: undefined}</div>
+                <div class={"d-flex border-bottom " + (props.colClasses === undefined ? "col-xl-8" : props.colClasses)}>{props.heading ? <span class="h3">{props.heading}</span>: undefined}</div>
             </div>
         );
     }
