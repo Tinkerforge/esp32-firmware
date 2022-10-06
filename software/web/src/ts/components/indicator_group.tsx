@@ -17,14 +17,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h } from "preact";
+import { h, VNode } from "preact";
 import { Button, ButtonGroup } from "react-bootstrap";
 
 type variant = "primary" | "secondary" | "success" | "warning" | "danger" | "light" | "link"
 
 interface IndicatorProps {
     value: number,
-    items: [variant, string][];
+    items: [variant, string | VNode][];
     class?: string
     vertical?: boolean
 }
@@ -32,11 +32,16 @@ interface IndicatorProps {
 export function IndicatorGroup(props: IndicatorProps) {
     return (
         <ButtonGroup vertical={props.vertical} className={props.class ?? "flex-wrap w-100"}>
-            {props.items.map((v, i) => <Button disabled
+            {props.items.map((v, i) => typeof(v[1]) == "string" ? <Button disabled
                                                key={i}
                                                variant={(i == props.value ? "" : "outline-") + v[0]}
                                                dangerouslySetInnerHTML={{__html: v[1]}}>
-                                        </Button>)}
+                                        </Button> :
+                                        <Button disabled
+                                        key={i}
+                                        variant={(i == props.value ? "" : "outline-") + v[0]}>
+                                        {v[1]}
+                                 </Button>)}
         </ButtonGroup>
     );
 }
