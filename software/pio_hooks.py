@@ -244,22 +244,46 @@ def main():
     if not os.path.isdir("build"):
         os.makedirs("build")
 
+    # Open <project_name>_wifi.json (example: esp32_ethernet_wifi.json) for custom default WIFI configuration.
+    # If default_wifi.json is available it is used for all projects instead of <project_name>_wifi.json.
+    # If no *_wifi.json is available the default as defined in Wifi::setup in the wifi.c is used.
+    not_for_distribution = False
+    is_from_default_wifi_json = False
     try:
         with open(os.path.join('default_wifi.json'), 'r', encoding='utf-8') as f:
-            default_wifi = json.loads(f.read())
+            custom_wifi = json.loads(f.read())
+            is_from_default_wifi_json = True
     except FileNotFoundError:
-        default_wifi = {}
+        try:
+            with open(os.path.join(name + '_wifi.json'), 'r', encoding='utf-8') as f:
+                custom_wifi = json.loads(f.read())
+        except FileNotFoundError:
+            custom_wifi = {}
 
-    if 'sta_enable' in default_wifi:
-        build_flags.append('-DDEFAULT_WIFI_STA_ENABLE={0}'.format(default_wifi['sta_enable']))
+    if 'ap_enable' in custom_wifi:
+        build_flags.append('-DDEFAULT_WIFI_AP_ENABLE={0}'.format(custom_wifi['ap_enable']))
 
-    rename_firmware = False
-    if 'sta_ssid' in default_wifi:
-        build_flags.append('-DDEFAULT_WIFI_STA_SSID="\\"{0}\\""'.format(default_wifi['sta_ssid']))
+    if 'ap_fallback_only' in custom_wifi:
+        build_flags.append('-DDEFAULT_WIFI_AP_FALLBACK_ONLY={0}'.format(custom_wifi['ap_fallback_only']))
 
-    if 'sta_passphrase' in default_wifi:
-        rename_firmware = True
-        build_flags.append('-DDEFAULT_WIFI_STA_PASSPHRASE="\\"{0}\\""'.format(default_wifi['sta_passphrase']))
+    if 'ap_ssid' in custom_wifi:
+        build_flags.append('-DDEFAULT_WIFI_AP_SSID="\\"{0}\\""'.format(custom_wifi['ap_ssid']))
+
+    if 'ap_passphrase' in custom_wifi:
+        # If password comes from the default_wifi.json it is not for distribution and the file is renamed accordingly
+        not_for_distribution = is_from_default_wifi_json
+        build_flags.append('-DDEFAULT_WIFI_AP_PASSPHRASE="\\"{0}\\""'.format(custom_wifi['ap_passphrase']))
+
+    if 'sta_enable' in custom_wifi:
+        build_flags.append('-DDEFAULT_WIFI_STA_ENABLE={0}'.format(custom_wifi['sta_enable']))
+
+    if 'sta_ssid' in custom_wifi:
+        build_flags.append('-DDEFAULT_WIFI_STA_SSID="\\"{0}\\""'.format(custom_wifi['sta_ssid']))
+
+    if 'sta_passphrase' in custom_wifi:
+        # If password comes from the default_wifi.json it is not for distribution and the file is renamed accordingly
+        not_for_distribution = is_from_default_wifi_json
+        build_flags.append('-DDEFAULT_WIFI_STA_PASSPHRASE="\\"{0}\\""'.format(custom_wifi['sta_passphrase']))
 
     env.Replace(BUILD_FLAGS=build_flags)
 
@@ -286,7 +310,7 @@ def main():
         f.write('#define BUILD_VERSION_FULL_STR "{}.{}.{}-{:x}"\n'.format(*version, timestamp))
 
     with open(os.path.join(env.subst('$BUILD_DIR'), 'firmware_basename'), 'w', encoding='utf-8') as f:
-        if rename_firmware:
+        if not_for_distribution:
             f.write('{}_firmware-WITH-WIFI-PASSPHRASE-DO-NOT-DISTRIBUTE_{}_{:x}'.format(name, '_'.join(version), timestamp))
         else:
             f.write('{}_firmware_{}_{:x}'.format(name, '_'.join(version), timestamp))

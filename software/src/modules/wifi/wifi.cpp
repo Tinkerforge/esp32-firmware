@@ -378,8 +378,22 @@ void Wifi::setup()
     }
 
     if (!api.restorePersistentConfig("wifi/ap_config", &wifi_ap_config)) {
+#ifdef DEFAULT_WIFI_AP_ENABLE
+        wifi_ap_config.get("enable_ap")->updateBool(DEFAULT_WIFI_AP_ENABLE);
+#endif
+#ifdef DEFAULT_WIFI_AP_FALLBACK_ONLY
+        wifi_ap_config.get("ap_fallback_only")->updateBool(DEFAULT_WIFI_AP_FALLBACK_ONLY);
+#endif
+#ifdef DEFAULT_WIFI_AP_SSID
+        wifi_ap_config.get("ssid")->updateString(String(DEFAULT_WIFI_AP_SSID));
+#else
         wifi_ap_config.get("ssid")->updateString(default_ap_ssid);
+#endif
+#ifdef DEFAULT_WIFI_STA_PASSPHRASE
+        wifi_ap_config.get("passphrase")->updateString(String(DEFAULT_WIFI_AP_PASSPHRASE));
+#else
         wifi_ap_config.get("passphrase")->updateString(default_ap_passphrase);
+#endif
     }
 
     wifi_ap_config_in_use = wifi_ap_config;
