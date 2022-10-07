@@ -32,6 +32,9 @@
 
 extern EventLog logger;
 
+void config_preinit();
+void config_postsetup();
+
 struct Config {
     struct ConfString {
         struct Slot {
@@ -61,9 +64,9 @@ struct Config {
 
     struct ConfFloat {
         struct Slot {
-            float val;
-            float min;
-            float max;
+            float val = 0;
+            float min = 0;
+            float max = 0;
         };
     private:
         uint16_t idx;
@@ -86,9 +89,9 @@ struct Config {
 
     struct ConfInt {
         struct Slot {
-            int32_t val;
-            int32_t min;
-            int32_t max;
+            int32_t val = 0;
+            int32_t min = 0;
+            int32_t max = 0;
         };
     private:
         uint16_t idx;
@@ -112,9 +115,9 @@ struct Config {
 
     struct ConfUint {
         struct Slot {
-            uint32_t val;
-            uint32_t min;
-            uint32_t max;
+            uint32_t val = 0;
+            uint32_t min = 0;
+            uint32_t max = 0;
         };
     private:
         uint16_t idx;
