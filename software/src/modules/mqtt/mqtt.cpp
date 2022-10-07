@@ -31,7 +31,7 @@
 extern EventLog logger;
 
 extern TaskScheduler task_scheduler;
-extern char local_uid_str[7];
+extern char local_uid_str[32];
 extern API api;
 
 #if MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()

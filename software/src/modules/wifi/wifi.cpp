@@ -36,7 +36,7 @@ extern EventLog logger;
 
 extern TaskScheduler task_scheduler;
 extern WebServer server;
-extern char local_uid_str[7];
+extern char local_uid_str[32];
 extern char passphrase[20];
 
 extern API api;
