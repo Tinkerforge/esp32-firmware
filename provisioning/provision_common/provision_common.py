@@ -146,7 +146,7 @@ def check_if_esp_is_sane_and_get_mac(ignore_flash_errors=False):
     crystal = None
     mac = None
 
-    chip_type_re = re.compile(r'Chip is (ESP32-[^\s]*) \(revision (\d*)\)')
+    chip_type_re = re.compile(r'Chip is (ESP32-[^\s]*) \(revision v?([^\)]*)\)')
     flash_size_re = re.compile(r'Detected flash size: (\d*[KM]B)')
     crystal_re = re.compile(r'Crystal is (\d*MHz)')
     mac_re = re.compile(r'MAC: ((?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2})')
@@ -155,6 +155,7 @@ def check_if_esp_is_sane_and_get_mac(ignore_flash_errors=False):
         chip_type_match = chip_type_re.match(line)
         if chip_type_match:
             chip_type, chip_revision = chip_type_match.group(1, 2)
+            chip_revision = float(chip_revision)
 
         flash_size_match = flash_size_re.match(line)
         if flash_size_match:
@@ -169,7 +170,7 @@ def check_if_esp_is_sane_and_get_mac(ignore_flash_errors=False):
             mac = mac_match.group(1)
 
     for name, val, expected in [("chip type", chip_type, "ESP32-D0WD-V3"),
-                                ("chip revision", chip_revision, "3"),
+                                ("chip revision", chip_revision, 3),
                                 ("crystal", crystal, "40MHz"),
                                 ("flash_size", flash_size, "16MB" if not ignore_flash_errors else None)]:
         if expected is not None and val != expected:
