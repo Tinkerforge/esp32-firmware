@@ -22,7 +22,6 @@ import urllib.request
 import csv
 
 from tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
-
 from tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
 
 rnd = secrets.SystemRandom()
@@ -181,6 +180,66 @@ def check_if_esp_is_sane_and_get_mac(ignore_flash_errors=False):
 def get_esp_mac():
     esptool(['--port', PORT, 'read_mac'])
 
+def get_espefuse_tasks_with_two_int_format():
+    have_to_set_voltage_fuses = False
+    have_to_set_block_3 = False
+
+    output = espefuse(['--port', PORT, 'dump'])
+
+    def parse_regs(line, regs):
+        match = re.search(r'([0-9a-f]{8}\s?)' * regs, line)
+        if not match:
+            return False, []
+
+        return True, [int(match.group(x + 1), base=16) for x in range(regs)]
+
+    blocks = [None] * 4
+    for line in output:
+        if line.startswith('BLOCK0'):
+            success, blocks[0] = parse_regs(line, 7)
+        elif line.startswith('BLOCK1'):
+            success, blocks[1] = parse_regs(line, 8)
+        elif line.startswith('BLOCK2'):
+            success, blocks[2] = parse_regs(line, 8)
+        elif line.startswith('BLOCK3'):
+            success, blocks[3] = parse_regs(line, 8)
+        else:
+            continue
+        if not success:
+            fatal_error("Failed to read eFuses", "could not parse line '{}'".format(line), "espefuse output was", '\n'.join(output))
+
+    if any(b is None for b in blocks):
+        fatal_error("Failed to read eFuses", "Not all blocks where found", "espefuse output was", '\n'.join(output))
+
+    if any(i != 0 for i in blocks[1]):
+        fatal_error("eFuse block 1 is not empty.", "espefuse output was", '\n'.join(output))
+
+    if any(i != 0 for i in blocks[2]):
+        fatal_error("eFuse block 2 is not empty.", "espefuse output was", '\n'.join(output))
+
+    voltage_fuses = blocks[0][4] & 0x0001c000
+    if voltage_fuses == 0x0001c000:
+        have_to_set_voltage_fuses = False
+    elif voltage_fuses == 0x00000000:
+        have_to_set_voltage_fuses = True
+    else:
+        fatal_error("Flash voltage efuses have unexpected value {}".format(voltage_fuses), "espefuse output was", '\n'.join(output))
+
+    block3_bytes = b''.join([r.to_bytes(4, "little") for r in blocks[3]])
+    passphrase, uid = block3_to_payload(block3_bytes, True)
+
+    if passphrase == '1-1-1-1' and uid == '1':
+        have_to_set_block_3 = True
+    else:
+        if uid == 0:
+            fatal_error("Block 3 efuses have unexpected value {}".format(block3_bytes.hex()),
+                        "parsed passphrase and uid are {}; {}".format(passphrase, uid),
+                        "espefuse output was",
+                        '\n'.join(output))
+
+    return have_to_set_voltage_fuses, have_to_set_block_3, passphrase, uid
+
+
 def get_espefuse_tasks():
     have_to_set_voltage_fuses = False
     have_to_set_block_3 = False
@@ -257,7 +316,7 @@ def payload_to_block3(passphrase, uid):
     binary[28:32] = uid_bytes
     return binary
 
-def block3_to_payload(block3):
+def block3_to_payload(block3, use_two_int_format=False):
     passphrase_bytes_list = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]
     passphrase_bytes_list[0] = block3[7:10]
     passphrase_bytes_list[1][0:2] = block3[10:12]
@@ -268,7 +327,13 @@ def block3_to_payload(block3):
     uid_bytes = bytes(block3[28:32])
     passphrase_bytes_list = [bytes(chunk) for chunk in passphrase_bytes_list]
     passphrase = [base58encode(int.from_bytes(chunk, "little")) for chunk in passphrase_bytes_list]
-    uid = base58encode(int.from_bytes(uid_bytes, "little"))
+    if use_two_int_format:
+        uid_num = int.from_bytes(uid_bytes, "little")
+        uid1 = str(uid_num & 0xFF).zfill(3)
+        uid2 = str((uid_num >> 8) & 0xFFFFFF).zfill(4)
+        uid = uid1 + '-' + uid2
+    else:
+        uid = base58encode(int.from_bytes(uid_bytes, "little"))
     passphrase = '-'.join(passphrase)
     return passphrase, uid
 
@@ -351,6 +416,42 @@ def handle_block3_fuses(set_block_3, uid, passphrase):
         espefuse(["--port", PORT, "burn_block_data", "BLOCK3", name, "--do-not-confirm"])
 
     return uid, '-'.join(wifi_passphrase)
+
+def handle_block3_fuses_with_two_int_format(set_block_3, uid):
+    if not set_block_3:
+        print("Block 3 eFuses already set. UID: {}".format(uid))
+        return uid 
+
+    print("UID: " + uid)
+
+    uid_parts = uid.split('-')
+    uid1 = int(uid_parts[1]) # max 8 bit
+    uid2 = int(uid_parts[2]) # max 24 bit
+    if (uid1 > 0xFF) or (uid2 > 0xFFFFFF):
+        print('UID malformed')
+        return None
+
+    print("Generating efuse binary")
+    uid_bytes = (uid1 | (uid2 << 8)).to_bytes(4, byteorder='little')
+
+    #56-95: 5 byte
+    #160-183: 3 byte
+    #192-255: 8 byte
+    # = 16 byte
+
+    # wifi_passphrase unused
+    # 4 byte (uid) + 3 byte * 4 (wifi_passphrase) = 16 byte
+    binary = bytearray(32)
+    binary[28:32] = uid_bytes
+
+    with temp_file() as (fd, name):
+        with os.fdopen(fd, 'wb') as f:
+            f.write(binary)
+
+        print("Burning UID eFuses")
+        espefuse(["--port", PORT, "burn_block_data", "BLOCK3", name, "--do-not-confirm"])
+
+    return uid
 
 def erase_flash():
     output = '\n'.join(esptool(["--port", PORT, "erase_flash"]))
