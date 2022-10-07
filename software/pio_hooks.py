@@ -260,6 +260,17 @@ def main():
         except FileNotFoundError:
             custom_wifi = {}
 
+    if 'mqtt_enable' in custom_wifi:
+        build_flags.append('-DDEFAULT_MQTT_ENABLE={0}'.format(custom_wifi['mqtt_enable']))
+    if 'mqtt_broker_host' in custom_wifi:
+        build_flags.append('-DDEFAULT_MQTT_BROKER_HOST=\\"{0}\\"'.format(custom_wifi['mqtt_broker_host']))
+    if 'mqtt_broker_port' in custom_wifi:
+        build_flags.append('-DDEFAULT_MQTT_BROKER_PORT={0}'.format(custom_wifi['mqtt_broker_port']))
+    if 'mqtt_broker_username' in custom_wifi:
+        build_flags.append('-DDEFAULT_MQTT_BROKER_USERNAME=\\"{0}\\"'.format(custom_wifi['mqtt_broker_username']))
+    if 'mqtt_broker_password' in custom_wifi:
+        build_flags.append('-DDEFAULT_MQTT_BROKER_PASSWORD=\\"{0}\\"'.format(custom_wifi['mqtt_broker_password']))
+
     if 'ap_enable' in custom_wifi:
         build_flags.append('-DDEFAULT_WIFI_AP_ENABLE={0}'.format(custom_wifi['ap_enable']))
 

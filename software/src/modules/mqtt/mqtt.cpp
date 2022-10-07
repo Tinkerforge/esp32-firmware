@@ -285,6 +285,22 @@ void Mqtt::setup()
     if (!api.restorePersistentConfig("mqtt/config", &mqtt_config)) {
         mqtt_config.get("global_topic_prefix")->updateString(String(BUILD_HOST_PREFIX) + String("/") + String(local_uid_str));
         mqtt_config.get("client_name")->updateString(String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str));
+
+#ifdef DEFAULT_MQTT_ENABLE
+        mqtt_config.get("enable_mqtt")->updateBool(DEFAULT_MQTT_ENABLE);
+#endif
+#ifdef DEFAULT_MQTT_BROKER_HOST
+        mqtt_config.get("broker_host")->updateString(DEFAULT_MQTT_BROKER_HOST);
+#endif
+#ifdef DEFAULT_MQTT_BROKER_PORT
+        mqtt_config.get("broker_port")->updateUint(DEFAULT_MQTT_BROKER_PORT);
+#endif
+#ifdef DEFAULT_MQTT_BROKER_USERNAME
+        mqtt_config.get("broker_username")->updateString(DEFAULT_MQTT_BROKER_USERNAME);
+#endif
+#ifdef DEFAULT_MQTT_BROKER_PASSWORD
+        mqtt_config.get("broker_password")->updateString(DEFAULT_MQTT_BROKER_PASSWORD);
+#endif
     }
 
     if (!mqtt_config.get("enable_mqtt")->asBool()) {
