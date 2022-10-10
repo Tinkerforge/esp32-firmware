@@ -71,7 +71,7 @@ void Mqtt::subscribe_with_prefix(String path, std::function<void(char *, size_t)
 
 void Mqtt::subscribe(String topic, std::function<void(char *, size_t)> callback, bool forbid_retained)
 {
-    this->commands.push_back({topic, topic.c_str(), callback, forbid_retained});
+    this->commands.push_back({topic, callback, forbid_retained});
 
     esp_mqtt_client_unsubscribe(client, topic.c_str());
     esp_mqtt_client_subscribe(client, topic.c_str(), 0);
