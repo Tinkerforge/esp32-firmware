@@ -55,7 +55,7 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
     }
 
     override async sendSave(t: "modbus_tcp/config", cfg: config & ModbusTCPConfig) {
-        await API.save_maybe('evse/modbus_tcp_enabled', {"enabled": this.state.evse_enable}, __("evse.script.save_failed"));
+        await API.save_maybe('evse/modbus_tcp_enabled', {enabled: this.state.evse_enable}, __("evse.script.save_failed"));
         await super.sendSave(t, cfg);
     }
 
@@ -72,9 +72,9 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
                                 ["1", __("modbus_tcp.content.read_only")],
                                 ["2", __("modbus_tcp.content.full_access")],
                             ]}
-                            value={this.state.enabled && this.state.evse_enable ? "2" : this.state.enabled ? "1" : "0"}
+                            value={this.state.enable && this.state.evse_enable ? "2" : this.state.enable ? "1" : "0"}
                             onValue={(v) => {
-                                this.setState({enabled: v != "0", evse_enable: v == "2"});
+                                this.setState({enable: v != "0", evse_enable: v == "2"});
                             }}></InputSelect>
                         </FormRow>
                         <FormRow label={__("modbus_tcp.content.port")} label_muted={__("modbus_tcp.content.port_muted")}>

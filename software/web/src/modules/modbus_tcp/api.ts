@@ -1,4 +1,4 @@
 export interface config {
-    enabled: boolean
+    enable: boolean
     port: number
 }

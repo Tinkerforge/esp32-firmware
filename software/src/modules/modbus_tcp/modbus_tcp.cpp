@@ -180,9 +180,8 @@ ModbusTcp::ModbusTcp()
 void ModbusTcp::pre_setup()
 {
     config = Config::Object({
-        {"enabled", Config::Bool(false)},
+        {"enable", Config::Bool(false)},
         {"port", Config::Uint16(502)},
-
     });
 }
 
@@ -190,7 +189,7 @@ void ModbusTcp::setup()
 {
     api.restorePersistentConfig("modbus_tcp/config", &config);
 
-    if (config.get("enabled")->asBool() == true)
+    if (config.get("enable")->asBool() == true)
     {
         void *modbus_handle = NULL;
         esp_err_t err = mbc_slave_init_tcp(&modbus_handle);
@@ -368,7 +367,7 @@ void ModbusTcp::register_urls()
 {
     api.addPersistentConfig("modbus_tcp/config", &config, {}, 1000);
 
-    if (config.get("enabled")->asBool() == true)
+    if (config.get("enable")->asBool() == true)
     {
         spinlock_initialize(&mtx);
 
