@@ -36,8 +36,6 @@ interface ProxyState {
 
 
 export class Proxy extends Component<{}, ProxyState> {
-    debug_log = "";
-
     constructor() {
         super();
 

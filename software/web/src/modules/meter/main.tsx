@@ -132,8 +132,6 @@ interface MeterState {
 }
 
 export class Meter extends Component<{}, MeterState> {
-    debug_log = "";
-
     constructor() {
         super();
 
