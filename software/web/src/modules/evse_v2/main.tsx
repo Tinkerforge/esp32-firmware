@@ -465,7 +465,7 @@ export class EVSEV2 extends Component<{}, EVSEState> {
                         <InputText value={translate_unchecked(`evse.script.meter_type_${hardware_cfg.energy_meter_type}`)}/>
                     </FormRow>
 
-                    <FormSeparator heading={__("evse.content.configuration")}/>
+                    <FormSeparator heading={__("evse.content.debug")}/>
 
                     <FormRow label={__("evse.content.debug_description")} label_muted={__("evse.content.debug_description_muted")}>
                         <div class="input-group pb-2">
@@ -478,7 +478,7 @@ export class EVSEV2 extends Component<{}, EVSEState> {
                     <CollapsedSection label={__("evse.content.low_level_state")}>
                         <FormRow label={__("evse.content.led_state")}>
                             <IndicatorGroup
-                                value={hardware_cfg.jumper_configuration}
+                                value={ll_state.led_state}
                                 items={[
                                     ["secondary", __("evse.content.led_state_off")],
                                     ["primary",   __("evse.content.led_state_on")],
