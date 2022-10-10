@@ -147,6 +147,8 @@ void setup(void) {
 
     logger.printfln("Last reset reason was: %s", tf_reset_reason());
 
+    config_preinit();
+
     TF_ESP_PREINIT
 
     if(!mount_or_format_spiffs()) {
@@ -171,6 +173,8 @@ void setup(void) {
         {"event_log", Config::Bool(true)},
         {{{module_init_config}}}
     });
+
+    config_postsetup();
 
     server.start();
 
