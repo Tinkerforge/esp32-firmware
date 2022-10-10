@@ -24,16 +24,16 @@ import { JSXInternal } from "preact/src/jsx";
 interface InputNumberProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput"> {
     idContext?: Context<string>
     value: number
-    onValue: (value: number) => void
+    onValue?: (value: number) => void
     unit?: string
 }
 
 export function InputNumber(props: InputNumberProps) {
-    let id = useContext(props.idContext);
     let inner = <input class="form-control"
-                       id={id}
+                       id={props.idContext ? useContext(props.idContext) : undefined}
                        type="number"
-                       onInput={(e) => props.onValue(parseInt((e.target as HTMLInputElement).value, 10))}
+                       disabled={props.onValue === undefined}
+                       onInput={props.onValue === undefined ? undefined : (e) => props.onValue(parseInt((e.target as HTMLInputElement).value, 10))}
                        {...props}/>;
     if (!this.props.unit)
         return inner;

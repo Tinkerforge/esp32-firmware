@@ -35,8 +35,8 @@ export interface IPConfig {
 }
 
 interface IPConfigurationProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "value" | "disabled"> {
-    showDhcp: boolean,
-    showDns: boolean,
+    showDhcp?: boolean,
+    showDns?: boolean,
     value: IPConfig
     onValue: (value: IPConfig) => void
     setValid: (valid: boolean) => void
