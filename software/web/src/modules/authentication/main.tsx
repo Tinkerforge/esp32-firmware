@@ -24,91 +24,82 @@ import YaMD5 from '../../ts/yamd5';
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h, render } from "preact";
+import { h, render, Fragment } from "preact";
 import { __ } from "../../ts/translation";
-import { ConfigPageHeader } from "../../ts/components/config_page_header";
 
-render(<ConfigPageHeader prefix="authentication" title={__("authentication.content.authentication")} />, $('#authentication_header')[0]);
+import { ConfigComponent } from "../../ts/components/config_component";
+import { ConfigForm } from "../../ts/components/config_form";
+import { FormRow } from "../../ts/components/form_row";
+import { InputText } from "../../ts/components/input_text";
+import { Switch } from "src/ts/components/switch";
+import { InputPassword } from "src/ts/components/input_password";
+import { Slash } from "react-feather";
+import { config } from "./api";
 
-function update_authentication_config() {
-    let config = API.get('authentication/config');
-    $('#authentication_enable').prop("checked", config.enable_auth);
+type AuthenticationState = API.getType['authentication/config'] & {password: string};
 
-    $('#authentication_username').val(config.username);
-    $('#authentication_username').prop("disabled", !config.enable_auth);
-    $('#authentication_username').prop("required", !config.enable_auth);
+export class Authentication extends ConfigComponent<'authentication/config', {}, AuthenticationState> {
+    constructor() {
+        super('authentication/config',
+              __("authentication.script.save_failed"),
+              __("authentication.script.reboot_content_changed"));
+    }
 
-    $('#authentication_password').prop("disabled", !config.enable_auth);
-    $('#authentication_password').prop("required", !config.enable_auth);
-    $('#authentication_password').prop("placeholder", config.enable_auth ? __("util.unchanged") : "");
+    http_auth_allowed() {
+        return (this.state.digest_hash == null && (this.state.password !== "")) ||
+               (this.state.digest_hash == "" && this.state.password !== undefined && this.state.password !== null && this.state.password !== "");
+    };
 
-    $('#authentication_show_password').prop("disabled", !config.enable_auth);
-    $('#authentication_show_password').prop("checked", false);
+    override transformSave(cfg: config & {password: string}): config {
+        cfg.digest_hash = (this.state.password != null && this.state.password != "") ? YaMD5.YaMD5.hashStr(cfg.username + ":esp32-lib:" + this.state.password) : this.state.password;
+        return cfg;
+    }
+
+    override render(props: {}, state: AuthenticationState) {
+        if (!state)
+            return (<></>);
+
+        let auth_allowed = this.http_auth_allowed();
+
+        return (
+            <>
+                <ConfigForm id="auth_config_form" title={__("authentication.content.authentication")} onSave={() => this.save()} onDirtyChange={(d) => this.ignore_updates = d}>
+                    <FormRow label={__("authentication.content.enable_authentication")}>
+                        <Switch desc={__("authentication.content.enable_authentication_desc")}
+                                checked={auth_allowed && state.enable_auth}
+                                onClick={this.toggle("enable_auth")}
+                                disabled={!auth_allowed}
+                                className={!auth_allowed && state.enable_auth ? "is-invalid" : ""}
+                        />
+                        <div class="invalid-feedback">{__("authentication.content.enable_authentication_invalid")}</div>
+                    </FormRow>
+
+                    <FormRow label={__("authentication.content.username")}>
+                        <InputText value={state.username}
+                                    onValue={this.set("username")}
+                                    minLength={1} maxLength={32}
+                                    required/>
+                    </FormRow>
+                    <FormRow label={__("authentication.content.password")}>
+                        <InputPassword
+                            maxLength={64}
+                            value={state.password === undefined ? state.digest_hash : state.password}
+                            onValue={this.set("password")}
+                            clearPlaceholder={__("authentication.script.login_disabled")}
+                            clearSymbol={<Slash/>}
+                            allowAPIClear/>
+                    </FormRow>
+                </ConfigForm>
+            </>
+        )
+    }
 }
 
-function save_authentication_config() {
-    let username = $('#authentication_username').val().toString();
-    let password = util.passwordUpdate('#authentication_password');
+render(<Authentication/>, $('#authentication')[0])
 
-    API.save('authentication/config', {
-            enable_auth: $('#authentication_enable').is(':checked'),
-            username: username,
-            digest_hash: password == null ? null : YaMD5.YaMD5.hashStr(username + ":esp32-lib:" + password)
-        },
-        __("authentication.script.save_failed"),
-        __("authentication.script.reboot_content_changed"));
-}
+export function init() {}
 
-export function init() {
-    // FIXME: save button enable/disable logic currently missing, just enable the save button
-    $("#authentication_config_save_button").prop("disabled", false);
-
-    $("#authentication_show_password").on("change", util.toggle_password_fn("#authentication_password"));
-
-    $("#authentication_enable").on("change", function(this: HTMLInputElement, ev: Event) {
-        $('#authentication_username').prop("disabled", !this.checked);
-        $('#authentication_password').prop("disabled", !this.checked);
-        $('#authentication_show_password').prop("disabled", !this.checked);
-        if (!this.checked) {
-            $('#authentication_show_password').prop("checked", false);
-        }
-
-        $('#authentication_password').val('');
-        let auth_placeholder = "";
-
-        if (!$('#authentication_password').prop("required"))
-            // If the field is not required, a password is currently stored.
-            // if auth is to be enabled, the stored password can be used (-> unchanged if empty)
-            // if auth is to be disabled, the stored password will be cleared
-            auth_placeholder = this.checked ?  __("util.unchanged") : __("util.to_be_cleared");
-
-        $('#authentication_password').attr("placeholder", auth_placeholder);
-    });
-
-    $('#authentication_config_form').on('submit', function (this: HTMLFormElement, event: Event) {
-        this.classList.add('was-validated');
-        event.preventDefault();
-        event.stopPropagation();
-
-        if (this.checkValidity() === false) {
-            return;
-        }
-
-        if ($('#authentication_enable').is(':checked'))
-            $('#authentication_confirm').modal('show');
-        else
-            save_authentication_config();
-    });
-
-    $('#authentication_confirm_button').on("click", () => {
-        $('#authentication_confirm').modal('hide');
-        save_authentication_config();
-    });
-}
-
-export function add_event_listeners(source: API.APIEventTarget) {
-    source.addEventListener('authentication/config', update_authentication_config);
-}
+export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-authentication').prop('hidden', !module_init.authentication);
