@@ -75,7 +75,7 @@
             "adc_values": "ADC values",
             "voltages": "Voltages",
             "resistances": "Resistances",
-            "resistance_names": "PE-CP, PE-PP",
+            "resistance_names": "CP/PE, PP/PE",
             "gpios": "GPIOs",
             "gpio_low": "Low",
             "gpio_high": "High",
