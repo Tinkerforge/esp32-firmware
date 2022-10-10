@@ -463,6 +463,10 @@ struct Config {
         return (int)value.tag == Config::type_id<T>();
     }
 
+    bool is_null() const {
+        return value.tag == ConfVariant::Tag::EMPTY;
+    }
+
     static Config Str(String s,
                       uint16_t minChars = 0,
                       uint16_t maxChars = 0);

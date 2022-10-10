@@ -88,7 +88,7 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
     } else if (bytes_written < 0) {
         logger.printfln("Failed to receive command payload: error code %d", bytes_written);
         return req.send(400);
-    } else if (bytes_written == 0 && reg.config->is<std::nullptr_t>()) {
+    } else if (bytes_written == 0 && reg.config->is_null()) {
         task_scheduler.scheduleOnce([reg](){reg.callback();}, 0);
         return req.send(200, "text/html", "");
     }
@@ -125,7 +125,7 @@ WebServerRequestReturnProtect api_handler_get(WebServerRequest req)
     }
 
     for (size_t i = 0; i < api.commands.size(); i++)
-        if (strcmp(api.commands[i].path.c_str(), req.uriCStr() + 1) == 0 && api.commands[i].config->is<std::nullptr_t>())
+        if (strcmp(api.commands[i].path.c_str(), req.uriCStr() + 1) == 0 && api.commands[i].config->is_null())
             return run_command(req, i);
 
     // If we reach this point, the url matcher found an API with the req.uri() as path, but we did not.
