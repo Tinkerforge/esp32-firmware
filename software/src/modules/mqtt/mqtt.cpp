@@ -62,11 +62,16 @@ void Mqtt::pre_setup()
     });
 }
 
-void Mqtt::subscribe(String path, std::function<void(char *, size_t)> callback, bool forbid_retained)
+void Mqtt::subscribe_with_prefix(String path, std::function<void(char *, size_t)> callback, bool forbid_retained)
 {
     String prefix = mqtt_config_in_use.get("global_topic_prefix")->asString();
     String topic = prefix + "/" + path;
-    this->commands.push_back({topic, callback, forbid_retained});
+    subscribe(topic, callback, forbid_retained);
+}
+
+void Mqtt::subscribe(String topic, std::function<void(char *, size_t)> callback, bool forbid_retained)
+{
+    this->commands.push_back({topic, topic.c_str(), callback, forbid_retained});
 
     esp_mqtt_client_unsubscribe(client, topic.c_str());
     esp_mqtt_client_subscribe(client, topic.c_str(), 0);
@@ -85,7 +90,7 @@ void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)
     if (mqtt_state.get("connection_state")->asInt() != (int)MqttConnectionState::CONNECTED)
         return;
 
-    subscribe(reg.path, [reg, commandIdx](char *payload, size_t payload_len){
+    subscribe_with_prefix(reg.path, [reg, commandIdx](char *payload, size_t payload_len){
         String reason = api.getCommandBlockedReason(commandIdx);
         if (reason != "") {
             logger.printfln("MQTT: Command %s is blocked: %s", reg.path.c_str(), reason.c_str());
@@ -112,7 +117,7 @@ void Mqtt::addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg
     if (mqtt_state.get("connection_state")->asInt() != (int)MqttConnectionState::CONNECTED)
         return;
 
-    subscribe(reg.path, [reg](char *payload, size_t payload_len){
+    subscribe_with_prefix(reg.path, [reg](char *payload, size_t payload_len){
         String error = reg.callback(payload, payload_len);
         if(error == "") {
             return;
@@ -122,11 +127,16 @@ void Mqtt::addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg
     }, reg.is_action);
 }
 
-void Mqtt::publish(String path, String payload)
+void Mqtt::publish_with_prefix(String path, String payload)
 {
     String prefix = mqtt_config_in_use.get("global_topic_prefix")->asString();
     String topic = prefix + "/" + path;
-    esp_mqtt_client_publish(this->client, topic.c_str(), payload.c_str(), payload.length(), 0, true/*, false*/);
+    publish(topic, payload, true);
+}
+
+void Mqtt::publish(String topic, String payload, bool retain)
+{
+    esp_mqtt_client_publish(this->client, topic.c_str(), payload.c_str(), payload.length(), 0, retain);
 }
 
 bool Mqtt::pushStateUpdate(size_t stateIdx, String payload, String path)
@@ -136,14 +146,14 @@ bool Mqtt::pushStateUpdate(size_t stateIdx, String payload, String path)
     if (!deadline_elapsed(state.last_send_ms + mqtt_config_in_use.get("interval")->asUint() * 1000))
         return false;
 
-    this->publish(path, payload);
+    this->publish_with_prefix(path, payload);
     state.last_send_ms = millis();
     return true;
 }
 
 void Mqtt::pushRawStateUpdate(String payload, String path)
 {
-    this->publish(path, payload);
+    this->publish_with_prefix(path, payload);
 }
 
 void Mqtt::wifiAvailable()
@@ -169,7 +179,7 @@ void Mqtt::onMqttConnect()
         this->addRawCommand(i, reg);
     }
     for (auto &reg : api.states) {
-        publish(reg.path, reg.config->to_string_except(reg.keys_to_censor));
+        publish_with_prefix(reg.path, reg.config->to_string_except(reg.keys_to_censor));
     }
 }
 
