@@ -163,7 +163,8 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
     }
 
     setUser (i: number, val: Partial<User>){
-        let users = this.state.users;
+        // We have to copy the users array here to make sure the change detection in sendSave works.
+        let users = this.state.users.slice(0);
         users[i] = {...users[i], ...val};
         this.setState({users: users});
     }
