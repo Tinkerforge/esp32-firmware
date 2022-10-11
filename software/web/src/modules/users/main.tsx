@@ -216,7 +216,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
 
                     <FormRow label={__("users.content.unknown_username")}>
                         <InputPassword maxLength={32}
-                                       value={state.users[0].display_name}
+                                       value={state.users[0].display_name == "Anonymous" ? __("charge_tracker.script.unknown_user") : state.users[0].display_name}
                                        onValue={(v) => this.setUser(0, {display_name: v})}
                                        showAlways
                                        />
