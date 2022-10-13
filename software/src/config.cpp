@@ -631,7 +631,7 @@ static size_t nextSlot(typename T::Slot *&buf, size_t &buf_size) {
     auto new_buf = new typename T::Slot[buf_size + SLOT_HEADROOM];
 
     for(size_t i = 0; i < buf_size; ++i)
-        new_buf[i] = buf[i];
+        new_buf[i] = std::move(buf[i]);
 
     delete[] buf;
     buf = new_buf;
@@ -1438,7 +1438,7 @@ static void shrinkToFit(typename T::Slot * &buf, size_t &buf_size) {
     auto new_buf = new typename T::Slot[highest + SLOT_HEADROOM];
 
     for(size_t i = 0; i <= highest; ++i)
-        new_buf[i] = buf[i];
+        new_buf[i] = std::move(buf[i]);
     delete[] buf;
     buf = new_buf;
     buf_size = highest + SLOT_HEADROOM;
