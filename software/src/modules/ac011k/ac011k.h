@@ -49,7 +49,8 @@
 
 class AC011K {
 public:
-    AC011K();
+    AC011K(){};
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();

@@ -46,6 +46,11 @@ AC011KHardware::AC011KHardware()
 
 }
 
+void AC011KHardware::pre_setup()
+{
+
+}
+
 void AC011KHardware::setup()
 {
     pinMode(GREEN_LED, OUTPUT);

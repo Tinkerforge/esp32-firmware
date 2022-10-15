@@ -23,6 +23,7 @@
 class AC011KHardware {
 public:
     AC011KHardware();
+    void pre_setup();
     void setup();
     void register_urls();
     void loop();
