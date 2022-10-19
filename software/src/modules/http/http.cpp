@@ -48,6 +48,10 @@ static int strncmp_with_same_len(const char *left, const char *right, size_t rig
 
 bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
 {
+    // Don't match the API handler.
+    if (strncmp_with_same_len("/*", in_uri, len) == 0)
+        return false;
+
     // Match directly registered URLs.
     if (!strncmp_with_same_len(ref_uri, in_uri, len))
         return true;
