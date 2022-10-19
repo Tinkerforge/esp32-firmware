@@ -389,7 +389,7 @@ void Wifi::setup()
 #else
         wifi_ap_config.get("ssid")->updateString(default_ap_ssid);
 #endif
-#ifdef DEFAULT_WIFI_STA_PASSPHRASE
+#ifdef DEFAULT_WIFI_AP_PASSPHRASE
         wifi_ap_config.get("passphrase")->updateString(String(DEFAULT_WIFI_AP_PASSPHRASE));
 #else
         wifi_ap_config.get("passphrase")->updateString(default_ap_passphrase);
