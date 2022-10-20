@@ -243,7 +243,9 @@ void ModbusTcp::update_regs() {
         meter_holding_regs_copy = meter_holding_regs;
     portEXIT_CRITICAL(&mtx);
 
-    bool write_allowed = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool();
+    bool write_allowed = false;
+    if (api.hasFeature("evse"))
+        api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool();
     bool charging = false;
 
     if (holding_regs_copy.reboot == holding_regs_copy.REBOOT_PASSWORD && write_allowed)
@@ -379,6 +381,15 @@ void ModbusTcp::register_urls()
         allowed_current = slots->get(CHARGING_SLOT_MODBUS_TCP)->get("max_current")->asUint();
         enable_charging = slots->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000;
 #endif
+
+    #if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
+            if (api.hasFeature("evse"))
+            {
+                auto slots = api.getState("evse/slots");
+                allowed_current = slots->get(CHARGING_SLOT_MODBUS_TCP)->get("max_current")->asUint();
+                enable_charging = slots->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000;
+            }
+    #endif
 
         portENTER_CRITICAL(&mtx);
             input_regs.table_version = MODBUS_TABLE_VERSION;
