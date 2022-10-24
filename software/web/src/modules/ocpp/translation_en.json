@@ -1,0 +1,19 @@
+{
+    "ocpp": {
+        "status": {
+        },
+        "navbar": {
+            "ocpp": "OCPP"
+        },
+        "content": {
+            "ocpp": "OCPP",
+            "enable_ocpp": "OCPP enabled",
+            "enable_ocpp_desc": "This allows controlling the charger over the configured OCPP server.",
+            "endpoint_url": "Endpoint URL"
+        },
+        "script": {
+            "save_failed": "Failed to save the OCPP configuration.",
+            "reboot_content_changed": "OCPP settings"
+        }
+    }
+}

@@ -1,0 +1,19 @@
+{
+    "ocpp": {
+        "status": {
+        },
+        "navbar": {
+            "ocpp": "OCPP"
+        },
+        "content": {
+            "ocpp": "OCPP",
+            "enable_ocpp": "OCPP aktiviert",
+            "enable_ocpp_desc": "Hierdurch kann die Wallbox über den konfigurierten OCPP-Server kontrolliert werden.",
+            "endpoint_url": "Endpoint-URL"
+        },
+        "script": {
+            "save_failed": "Speichern der OCPP-Einstellungen fehlgeschlagen.",
+            "reboot_content_changed": "OCPP-Einstellungen"
+        }
+    }
+}
