@@ -19,6 +19,12 @@
 
 #pragma once
 
+template<typename T>
+    void calloc_struct(T **out)
+    {
+        *out = (T *)calloc(1, sizeof(T));
+    }
+
 class ModbusTcp
 {
 public:
@@ -28,6 +34,7 @@ public:
     void register_urls();
     void loop();
     void update_regs();
+    void update_bender_regs();
 
     bool initialized = false;
 

@@ -111,6 +111,92 @@ struct meter_holding_regs_t {
     uint32_t trigger_reset;
 };
 
+struct bender_general_s {
+    static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
+    static const uint16_t OFFSET = 100;
+    char firmware_version[4];
+    uint16_t padding[2];
+    uint16_t ocpp_cp_state;
+    uint32_t errorcodes[4];
+    uint16_t padding2[7];
+    char protocol_version[4];
+    uint16_t vehicle_state;
+    uint16_t vehicle_state_hex;
+    uint16_t chargepoint_available;
+    uint16_t padding3[6];
+    uint16_t safe_current;
+    uint16_t comm_timeout;
+    uint16_t hardware_curr_limit;
+    uint16_t operator_curr_limit;
+    uint16_t rcmb_mode;
+    uint16_t rcmb_rms_int;
+    uint16_t rcmb_rms_frac;
+    uint16_t rcmb_dc_int;
+    uint16_t rcmb_dc_frac;
+    uint16_t relays_state;
+    uint16_t device_id;
+    uint32_t charger_model[5];
+    uint16_t pluglock_detected;
+} __attribute__((packed));
+
+struct bender_phases_s {
+    static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
+    static const uint16_t OFFSET = 200;
+    uint32_t energy[3];
+    uint32_t power[3];
+    uint32_t current[3];
+    uint32_t total_energy;
+    uint32_t total_power;
+    uint32_t voltage[3];
+} __attribute__((packed));
+
+struct bender_dlm_s {
+    static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
+    static const uint32_t OFFSET = 600;
+    uint16_t dlm_mode;
+    uint16_t padding[9];
+    uint16_t evse_limit[3];
+    uint16_t operator_evse_limit[3];
+    uint16_t padding2[4];
+    uint16_t external_meter_support;
+    uint16_t number_of_slaves;
+    uint16_t padding3[8];
+    uint16_t overall_current_applied[3];
+    uint16_t overall_current_available[3];
+} __attribute__((packed));
+
+struct bender_charge_s {
+    static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
+    static const uint32_t OFFSET = 700;
+    uint16_t padding[5];
+    uint16_t wh_charged;
+    uint16_t current_signaled;
+    uint32_t start_time;
+    uint16_t charge_duration;
+    uint32_t end_time;
+    uint16_t minimum_current_limit;
+    uint32_t ev_required_energy;
+    uint16_t ev_max_curr;
+    uint32_t charged_energy;
+    uint32_t charge_duration_new;
+    uint32_t user_id[5];
+    uint16_t padding3[10];
+    uint32_t evccid[3];
+} __attribute__((packed));
+
+struct bender_hems_s {
+    static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
+    static const uint32_t OFFSET = 1000;
+    uint16_t hems_limit;
+} __attribute__((packed));
+
+struct bender_write_uid_s {
+    static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
+    static const uint32_t OFFSET = 1110;
+    uint32_t user_id[5];
+} __attribute__((packed));
+
+
 //-------------------
 // Discrete Inputs
 //-------------------
@@ -134,55 +220,76 @@ struct meter_discrete_inputs_t {
     bool phase_three_active:1;
 };
 
-static input_regs_t input_regs, input_regs_copy;
-static evse_input_regs_t evse_input_regs, evse_input_regs_copy;
-static meter_input_regs_t meter_input_regs, meter_input_regs_copy;
-static meter_all_values_input_regs_t meter_all_values_input_regs, meter_all_values_input_regs_copy;
+static input_regs_t *input_regs, *input_regs_copy;
+static evse_input_regs_t *evse_input_regs, *evse_input_regs_copy;
+static meter_input_regs_t *meter_input_regs, *meter_input_regs_copy;
+static meter_all_values_input_regs_t *meter_all_values_input_regs, *meter_all_values_input_regs_copy;
 
-static holding_regs_t holding_regs, holding_regs_copy;
-static evse_holding_regs_t evse_holding_regs, evse_holding_regs_copy;
-static meter_holding_regs_t meter_holding_regs, meter_holding_regs_copy;
+static holding_regs_t *holding_regs, *holding_regs_copy;
+static evse_holding_regs_t *evse_holding_regs, *evse_holding_regs_copy;
+static meter_holding_regs_t *meter_holding_regs, *meter_holding_regs_copy;
 
-static discrete_inputs_t discrete_inputs, discrete_inputs_copy;
-static meter_discrete_inputs_t meter_discrete_inputs, meter_discrete_inputs_copy;
+static discrete_inputs_t *discrete_inputs, *discrete_inputs_copy;
+static meter_discrete_inputs_t *meter_discrete_inputs, *meter_discrete_inputs_copy;
+
+
+static bender_general_s *bender_general, *bender_general_cpy;
+static bender_phases_s *bender_phases, *bender_phases_cpy;
+static bender_dlm_s *bender_dlm, *bender_dlm_cpy;
+static bender_charge_s *bender_charge, *bender_charge_cpy;
+static bender_hems_s *bender_hems, *bender_hems_cpy;
+static bender_write_uid_s *bender_write_uid, *bender_write_uid_cpy;
+
 
 static portMUX_TYPE mtx;
 
-ModbusTcp::ModbusTcp()
-{
-    memset(&input_regs, 0, sizeof(input_regs));
-    memset(&evse_input_regs, 0, sizeof(evse_input_regs));
-    memset(&meter_input_regs, 0, sizeof(meter_input_regs));
-    memset(&meter_all_values_input_regs, 0, sizeof(meter_all_values_input_regs));
-    memset(&holding_regs, 0, sizeof(holding_regs));
-    memset(&evse_holding_regs, 0, sizeof(evse_holding_regs));
-    memset(&meter_holding_regs, 0, sizeof(meter_holding_regs));
-    memset(&discrete_inputs, 0, sizeof(discrete_inputs));
-    memset(&meter_discrete_inputs, 0, sizeof(meter_discrete_inputs));
-
-    memset(&input_regs_copy, 0, sizeof(input_regs));
-    memset(&evse_input_regs_copy, 0, sizeof(evse_input_regs));
-    memset(&meter_input_regs_copy, 0, sizeof(meter_input_regs));
-    memset(&meter_all_values_input_regs_copy, 0, sizeof(meter_all_values_input_regs));
-    memset(&holding_regs_copy, 0, sizeof(holding_regs));
-    memset(&evse_holding_regs_copy, 0, sizeof(evse_holding_regs));
-    memset(&meter_holding_regs_copy, 0, sizeof(meter_holding_regs));
-    memset(&discrete_inputs_copy, 0, sizeof(discrete_inputs));
-    memset(&meter_discrete_inputs_copy, 0, sizeof(meter_discrete_inputs));
-
-    // Initialize all slots to 0xFFFFFFFF (i.e. "this slot is not active")
-    // This means that we can add more slots (up to the currently supported maximum of 20)
-    // and Modbus TCP users can already support those.
-    memset(&evse_input_regs.slots, 0xFF, sizeof(evse_input_regs.slots));
-    memset(&evse_input_regs_copy.slots, 0xFF, sizeof(evse_input_regs.slots));
-}
+ModbusTcp::ModbusTcp() {}
 
 void ModbusTcp::pre_setup()
 {
     config = Config::Object({
         {"enable", Config::Bool(false)},
         {"port", Config::Uint16(502)},
+        {"table", Config::Uint16(0)},
     });
+}
+
+static void allocate_table()
+{
+    calloc_struct(&input_regs);
+    calloc_struct(&input_regs_copy);
+    calloc_struct(&evse_input_regs);
+    calloc_struct(&evse_input_regs_copy);
+    calloc_struct(&meter_input_regs);
+    calloc_struct(&meter_input_regs_copy);
+    calloc_struct(&meter_all_values_input_regs);
+    calloc_struct(&meter_all_values_input_regs_copy);
+    calloc_struct(&holding_regs);
+    calloc_struct(&holding_regs_copy);
+    calloc_struct(&evse_holding_regs);
+    calloc_struct(&evse_holding_regs_copy);
+    calloc_struct(&meter_holding_regs);
+    calloc_struct(&meter_holding_regs_copy);
+    calloc_struct(&discrete_inputs);
+    calloc_struct(&discrete_inputs_copy);
+    calloc_struct(&meter_discrete_inputs);
+    calloc_struct(&meter_discrete_inputs_copy);
+}
+
+static void allocate_bender_table()
+{
+    calloc_struct(&bender_general);
+    calloc_struct(&bender_general_cpy);
+    calloc_struct(&bender_phases);
+    calloc_struct(&bender_phases_cpy);
+    calloc_struct(&bender_dlm);
+    calloc_struct(&bender_dlm_cpy);
+    calloc_struct(&bender_charge);
+    calloc_struct(&bender_charge_cpy);
+    calloc_struct(&bender_hems);
+    calloc_struct(&bender_hems_cpy);
+    calloc_struct(&bender_write_uid);
+    calloc_struct(&bender_write_uid_cpy);
 }
 
 void ModbusTcp::setup()
@@ -211,22 +318,38 @@ void ModbusTcp::setup()
         mb_register_area_descriptor_t reg_area;
 
 #define REGISTER_DESCRIPTOR(x) do { \
-    reg_area.type = x.TYPE; \
-    reg_area.start_offset = x.OFFSET; \
-    reg_area.address = &x; \
-    reg_area.size = sizeof(x); \
+    reg_area.type = x->TYPE; \
+    reg_area.start_offset = x->OFFSET; \
+    reg_area.address = x; \
+    reg_area.size = sizeof(*x); \
     ESP_ERROR_CHECK(mbc_slave_set_descriptor(reg_area)); \
 } while (0)
 
-        REGISTER_DESCRIPTOR(evse_input_regs);
-        REGISTER_DESCRIPTOR(meter_input_regs);
-        REGISTER_DESCRIPTOR(meter_all_values_input_regs);
-        REGISTER_DESCRIPTOR(input_regs);
-        REGISTER_DESCRIPTOR(holding_regs);
-        REGISTER_DESCRIPTOR(evse_holding_regs);
-        REGISTER_DESCRIPTOR(meter_holding_regs);
-        REGISTER_DESCRIPTOR(discrete_inputs);
-        REGISTER_DESCRIPTOR(meter_discrete_inputs);
+        if (config.get("table")->asUint() == 0)
+        {
+            allocate_table();
+
+            REGISTER_DESCRIPTOR(evse_input_regs);
+            REGISTER_DESCRIPTOR(meter_input_regs);
+            REGISTER_DESCRIPTOR(meter_all_values_input_regs);
+            REGISTER_DESCRIPTOR(input_regs);
+            REGISTER_DESCRIPTOR(holding_regs);
+            REGISTER_DESCRIPTOR(evse_holding_regs);
+            REGISTER_DESCRIPTOR(meter_holding_regs);
+            REGISTER_DESCRIPTOR(discrete_inputs);
+            REGISTER_DESCRIPTOR(meter_discrete_inputs);
+        }
+        else if (config.get("table")->asUint() == 1)
+        {
+            allocate_bender_table();
+
+            REGISTER_DESCRIPTOR(bender_general);
+            REGISTER_DESCRIPTOR(bender_phases);
+            REGISTER_DESCRIPTOR(bender_dlm);
+            REGISTER_DESCRIPTOR(bender_charge);
+            REGISTER_DESCRIPTOR(bender_hems);
+            REGISTER_DESCRIPTOR(bender_write_uid);
+        }
 
         ESP_ERROR_CHECK(mbc_slave_start());
     }
@@ -234,45 +357,206 @@ void ModbusTcp::setup()
     initialized = true;
 }
 
-void ModbusTcp::update_regs() {
-    // We want to keep the critical sections as small as possible
-    // -> Do all work in a copy of the registers.
+
+static uint32_t swap_regs(uint32_t src)
+{
+    uint32_t first = src << 16;
+    uint32_t second = src >> 16;
+    return first | second;
+}
+
+static float swap_float(float src)
+{
+    uint32_t *c = reinterpret_cast<uint32_t *>(&src);
+    *c = swap_regs(*c);
+    return *reinterpret_cast<float *>(c);
+}
+
+void ModbusTcp::update_bender_regs()
+{
     portENTER_CRITICAL(&mtx);
-        holding_regs_copy = holding_regs;
-        evse_holding_regs_copy = evse_holding_regs;
-        meter_holding_regs_copy = meter_holding_regs;
+        *bender_general_cpy = *bender_general;
+        *bender_dlm_cpy = *bender_dlm;
+        *bender_hems_cpy = *bender_hems;
+        *bender_write_uid_cpy = *bender_write_uid;
     portEXIT_CRITICAL(&mtx);
 
-    bool write_allowed = false;
-    if (api.hasFeature("evse"))
-        api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool();
     bool charging = false;
 
-    if (holding_regs_copy.reboot == holding_regs_copy.REBOOT_PASSWORD && write_allowed)
-        trigger_reboot("Modbus TCP");
+    bender_general_cpy->device_id = 0xEBEE;
 
-    input_regs_copy.table_version = MODBUS_TABLE_VERSION;
-    input_regs_copy.box_id = local_uid_num;
-    input_regs_copy.firmware_major = BUILD_VERSION_MAJOR;
-    input_regs_copy.firmware_minor = BUILD_VERSION_MINOR;
-    input_regs_copy.firmware_patch = BUILD_VERSION_PATCH;
-    input_regs_copy.firmware_build_ts = BUILD_TIMESTAMP;
-    input_regs_copy.uptime = (uint32_t)(esp_timer_get_time() / 1000000);
+#define SPACER 0
+
+    for (int i = 0; i < 4; i++)
+        bender_general_cpy->errorcodes[i] = SPACER;
+    for (int i = 0; i < 5; i++)
+    {
+        if (bender_write_uid_cpy->user_id[i])
+        {
+            logger.printfln("Writing userid is not supported");
+            bender_write_uid_cpy->user_id[i] = SPACER;
+        }
+    }
+
+    if (bender_general_cpy->comm_timeout)
+    {
+        logger.printfln("Writing communication timeout is not supported");
+        bender_general_cpy->comm_timeout = SPACER;
+    }
+
+    if (bender_general_cpy->safe_current)
+    {
+        logger.printfln("Writing safe current is not supported");
+        bender_general_cpy->safe_current = SPACER;
+    }
+
+    for (int i = 0; i < 3; i++)
+    {
+        if (bender_dlm_cpy->operator_evse_limit[i])
+        {
+            logger.printfln("Writing dlm operator current l%i is not supported", i);
+            bender_dlm_cpy->operator_evse_limit[i] = SPACER;
+        }
+    }
+
+    memcpy(bender_general_cpy->firmware_version, ".404", 4);
+    memcpy(bender_general_cpy->protocol_version, "0\0006.", 4);
 
 #if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
     if (api.hasFeature("evse"))
     {
-        discrete_inputs_copy.evse = true;
+        switch (api.getState("evse/state")->get("charger_state")->asUint())
+        {
+        case 0:
+            bender_general_cpy->ocpp_cp_state = 0;
+            break;
 
-        evse_input_regs_copy.iec_state = api.getState("evse/state")->get("iec61851_state")->asUint();
-        evse_input_regs_copy.charger_state = api.getState("evse/state")->get("charger_state")->asUint();
+        case 4:
+            bender_general_cpy->ocpp_cp_state = 4;
+            break;
+
+        default:
+            bender_general_cpy->ocpp_cp_state = 1;
+            break;
+        }
+        bender_general_cpy->vehicle_state = api.getState("evse/state")->get("iec61851_state")->asUint() + 1;
+        bender_general_cpy->vehicle_state_hex = api.getState("evse/state")->get("iec61851_state")->asUint() + 10;
+
+        bender_general_cpy->hardware_curr_limit = api.getState("evse/slots")->get(1)->get("max_current")->asUint() / 1000;
+        bender_charge_cpy->current_signaled = api.getState("evse/state")->get("allowed_charging_current")->asUint() / 1000;
 
 #if MODULE_EVSE_V2_AVAILABLE()
-        evse_v2.set_modbus_current(evse_holding_regs_copy.allowed_current);
-        evse_v2.set_modbus_enabled(evse_holding_regs_copy.enable_charging);
-#elif
-        evse.set_modbus_current(evse_holding_regs_copy.allowed_current);
-        evse.set_modbus_enabled(evse_holding_regs_copy.enable_charging);
+        evse_v2.set_modbus_current(bender_hems_cpy->hems_limit * 1000);
+        evse_v2.set_modbus_enabled(true);
+#elif MODULE_EVSE_AVAILABLE()
+        evse.set_modbus_current(bender_hems_cpy->hems_limit * 1000);
+        evse.set_modbus_enabled(true);
+#endif
+
+#if MODULE_CHARGE_TRACKER_AVAILABLE()
+        int32_t user_id = api.getState("charge_tracker/current_charge")->get("user_id")->asInt();
+        charging = user_id != -1;
+        if (charging) {
+            bender_charge_cpy->charge_duration = (api.getState("evse/low_level_state")->get("uptime")->asUint() - api.getState("charge_tracker/current_charge")->get("evse_uptime_start")->asUint()) / 1000;
+            bender_charge_cpy->charge_duration_new = swap_regs((api.getState("evse/low_level_state")->get("uptime")->asUint() - api.getState("charge_tracker/current_charge")->get("evse_uptime_start")->asUint()) / 1000);
+        } else {
+            bender_charge_cpy->charge_duration = 0;
+            bender_charge_cpy->charge_duration_new = 0;
+        }
+#endif
+    }
+#endif
+
+#if MODULE_METER_AVAILABLE()
+    if (api.hasFeature("meter"))
+    {
+        if (api.hasFeature("meter_all_values"))
+        {
+            auto meter_values = api.getState("meter/all_values");
+
+            for (int i = 0; i < 3; i++)
+            {
+                bender_phases_cpy->current[i] = swap_regs((uint32_t)(meter_values->get(i + 3)->asFloat() * 1000));
+                bender_phases_cpy->energy[i] =  swap_regs((uint32_t)(meter_values->get(i + 67)->asFloat() * 1000));
+                bender_phases_cpy->power[i] =  swap_regs((uint32_t)(meter_values->get(i + 6)->asFloat() * 1000));
+                bender_phases_cpy->voltage[i] = swap_regs((uint32_t)(meter_values->get(i)->asFloat() * 1000));
+            }
+            bender_phases_cpy->total_energy = swap_regs((uint32_t)(meter_values->get(30)->asFloat() * 1000));
+            bender_phases_cpy->total_power = swap_regs((uint32_t)(meter_values->get(24)->asFloat()));
+        }
+
+#if MODULE_CHARGE_TRACKER_AVAILABLE()
+        auto meter_start = api.getState("charge_tracker/current_charge")->get("meter_start")->asFloat();
+        auto meter_absolute = api.getState("meter/values")->get("energy_abs")->asFloat();
+        if (!charging)
+        {
+            bender_charge_cpy->wh_charged = 0;
+            bender_charge_cpy->charged_energy = 0;
+        }
+        else if (isnan(meter_start))
+        {
+            bender_charge_cpy->wh_charged = uint16_t(NAN);
+            bender_charge_cpy->charged_energy = swap_regs((uint32_t)(NAN));
+        }
+        else
+        {
+            bender_charge_cpy->wh_charged = uint16_t(meter_absolute - meter_start);
+            bender_charge_cpy->charged_energy = swap_regs((uint32_t)(meter_absolute - meter_start));
+        }
+#endif
+
+    }
+#endif
+
+    portENTER_CRITICAL(&mtx);
+        *bender_charge = *bender_charge_cpy;
+        *bender_dlm = *bender_dlm_cpy;
+        *bender_general = *bender_general_cpy;
+        *bender_hems = *bender_hems_cpy;
+        *bender_phases = *bender_phases_cpy;
+        *bender_write_uid = *bender_write_uid_cpy;
+    portEXIT_CRITICAL(&mtx);
+}
+
+void ModbusTcp::update_regs()
+{
+    // We want to keep the critical sections as small as possible
+    // -> Do all work in a copy of the registers.
+    portENTER_CRITICAL(&mtx);
+        *holding_regs_copy = *holding_regs;
+        *evse_holding_regs_copy = *evse_holding_regs;
+        *meter_holding_regs_copy = *meter_holding_regs;
+    portEXIT_CRITICAL(&mtx);
+
+    bool write_allowed = false;
+    if (api.hasFeature("evse"))
+        write_allowed = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool();
+    bool charging = false;
+
+    if (holding_regs_copy->reboot == holding_regs_copy->REBOOT_PASSWORD && write_allowed)
+        trigger_reboot("Modbus TCP");
+
+    input_regs_copy->table_version = swap_regs(MODBUS_TABLE_VERSION);
+    input_regs_copy->box_id = local_uid_num;
+    input_regs_copy->firmware_major = swap_regs(BUILD_VERSION_MAJOR);
+    input_regs_copy->firmware_minor = swap_regs(BUILD_VERSION_MINOR);
+    input_regs_copy->firmware_patch = swap_regs(BUILD_VERSION_PATCH);
+    input_regs_copy->firmware_build_ts = swap_regs(BUILD_TIMESTAMP);
+    input_regs_copy->uptime = swap_regs((uint32_t)(esp_timer_get_time() / 1000000));
+
+#if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
+    if (api.hasFeature("evse"))
+    {
+        discrete_inputs_copy->evse = true;
+        evse_input_regs_copy->iec_state = swap_regs(api.getState("evse/state")->get("iec61851_state")->asUint());
+        evse_input_regs_copy->charger_state = swap_regs(api.getState("evse/state")->get("charger_state")->asUint());
+
+#if MODULE_EVSE_V2_AVAILABLE()
+        evse_v2.set_modbus_current(evse_holding_regs_copy->allowed_current);
+        evse_v2.set_modbus_enabled(evse_holding_regs_copy->enable_charging);
+#elif MODULE_EVSE_AVAILABLE()
+        evse.set_modbus_current(evse_holding_regs_copy->allowed_current);
+        evse.set_modbus_enabled(evse_holding_regs_copy->enable_charging);
 #endif
 
         auto slots = api.getState("evse/slots");
@@ -286,23 +570,23 @@ void ModbusTcp::update_regs() {
             {
                 val = current;
             }
-            evse_input_regs_copy.slots[i] = val;
+            evse_input_regs_copy->slots[i] = swap_regs(val);
         }
 
-        evse_input_regs_copy.max_current = api.getState("evse/state")->get("allowed_charging_current")->asUint();
-        evse_input_regs_copy.start_time_min = 0;
-        evse_input_regs_copy.charging_time_sec = 0;
+        evse_input_regs_copy->max_current = swap_regs(api.getState("evse/state")->get("allowed_charging_current")->asUint());
+        evse_input_regs_copy->start_time_min = 0;
+        evse_input_regs_copy->charging_time_sec = 0;
 
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
         int32_t user_id = api.getState("charge_tracker/current_charge")->get("user_id")->asInt();
         charging = user_id != -1;
-        evse_input_regs_copy.current_user = charging ? UINT32_MAX : (uint32_t)user_id;
+        evse_input_regs_copy->current_user = charging ? swap_regs(UINT32_MAX) : swap_regs((uint32_t)user_id);
         if (charging) {
-            evse_input_regs_copy.start_time_min = api.getState("charge_tracker/current_charge")->get("timestamp_minutes")->asUint();
-            evse_input_regs_copy.charging_time_sec = (api.getState("evse/low_level_state")->get("uptime")->asUint() - api.getState("charge_tracker/current_charge")->get("evse_uptime_start")->asUint()) / 1000;
+            evse_input_regs_copy->start_time_min = swap_regs(api.getState("charge_tracker/current_charge")->get("timestamp_minutes")->asUint());
+            evse_input_regs_copy->charging_time_sec = swap_regs((api.getState("evse/low_level_state")->get("uptime")->asUint() - api.getState("charge_tracker/current_charge")->get("evse_uptime_start")->asUint()) / 1000);
         } else {
-            evse_input_regs_copy.start_time_min = 0;
-            evse_input_regs_copy.charging_time_sec = 0;
+            evse_input_regs_copy->start_time_min = 0;
+            evse_input_regs_copy->charging_time_sec = 0;
         }
 #endif
     }
@@ -311,57 +595,59 @@ void ModbusTcp::update_regs() {
 #if MODULE_METER_AVAILABLE()
     if (api.hasFeature("meter"))
     {
-        discrete_inputs_copy.meter = true;
+        discrete_inputs_copy->meter = true;
 
-        meter_input_regs_copy.meter_type = api.getState("meter/state")->get("type")->asUint();
+        meter_input_regs_copy->meter_type = swap_regs(api.getState("meter/state")->get("type")->asUint());
 
         auto meter_values = api.getState("meter/values");
-        meter_input_regs_copy.power = meter_values->get("power")->asFloat();
-        meter_input_regs_copy.energy_relative = meter_values->get("energy_rel")->asFloat();
-        meter_input_regs_copy.energy_absolute = meter_values->get("energy_abs")->asFloat();
+        meter_input_regs_copy->power = swap_float(meter_values->get("power")->asFloat());
+        meter_input_regs_copy->energy_relative = swap_float(meter_values->get("energy_rel")->asFloat());
+        meter_input_regs_copy->energy_absolute = swap_float(meter_values->get("energy_abs")->asFloat());
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
         auto meter_start = api.getState("charge_tracker/current_charge")->get("meter_start")->asFloat();
         if (!charging)
-            meter_input_regs_copy.energy_this_charge = 0;
+            meter_input_regs_copy->energy_this_charge = 0;
         else if (isnan(meter_start))
-            meter_input_regs_copy.energy_this_charge = NAN;
+            meter_input_regs_copy->energy_this_charge = NAN;
         else
-            meter_input_regs_copy.energy_this_charge = meter_input_regs_copy.energy_absolute - meter_start;
+            meter_input_regs_copy->energy_this_charge = swap_float(meter_input_regs_copy->energy_absolute - meter_start);
 #endif
 
-        if (meter_holding_regs_copy.trigger_reset == meter_holding_regs_copy.TRIGGER_RESET_PASSWORD && write_allowed)
+        if (meter_holding_regs_copy->trigger_reset == meter_holding_regs_copy->TRIGGER_RESET_PASSWORD && write_allowed)
             api.callCommand("meter/reset", {});
     }
 
     if (api.hasFeature("meter_phases"))
     {
-        discrete_inputs_copy.meter_phases = true;
+        discrete_inputs_copy->meter_phases = true;
 
         auto meter_phase_values = api.getState("meter/phases");
-        meter_discrete_inputs_copy.phase_one_active = meter_phase_values->get("phases_active")->get(0)->asBool();
-        meter_discrete_inputs_copy.phase_two_active = meter_phase_values->get("phases_active")->get(1)->asBool();
-        meter_discrete_inputs_copy.phase_three_active = meter_phase_values->get("phases_active")->get(2)->asBool();
-        meter_discrete_inputs_copy.phase_one_connected = meter_phase_values->get("phases_connected")->get(0)->asBool();
-        meter_discrete_inputs_copy.phase_two_connected = meter_phase_values->get("phases_connected")->get(1)->asBool();
-        meter_discrete_inputs_copy.phase_three_connected = meter_phase_values->get("phases_connected")->get(2)->asBool();
+        meter_discrete_inputs_copy->phase_one_active = meter_phase_values->get("phases_active")->get(0)->asBool();
+        meter_discrete_inputs_copy->phase_two_active = meter_phase_values->get("phases_active")->get(1)->asBool();
+        meter_discrete_inputs_copy->phase_three_active = meter_phase_values->get("phases_active")->get(2)->asBool();
+        meter_discrete_inputs_copy->phase_one_connected = meter_phase_values->get("phases_connected")->get(0)->asBool();
+        meter_discrete_inputs_copy->phase_two_connected = meter_phase_values->get("phases_connected")->get(1)->asBool();
+        meter_discrete_inputs_copy->phase_three_connected = meter_phase_values->get("phases_connected")->get(2)->asBool();
     }
 
     if (api.hasFeature("meter_all_values"))
     {
-        discrete_inputs_copy.meter_all_values = true;
+        discrete_inputs_copy->meter_all_values = true;
 
         auto meter_all_values = api.getState("meter/all_values");
-        meter_all_values->fillFloatArray(meter_all_values_input_regs_copy.meter_values, sizeof(meter_all_values_input_regs_copy.meter_values) / sizeof(meter_all_values_input_regs_copy.meter_values[0]));
+        meter_all_values->fillFloatArray(meter_all_values_input_regs_copy->meter_values, sizeof(meter_all_values_input_regs_copy->meter_values) / sizeof(meter_all_values_input_regs_copy->meter_values[0]));
+        for (int i = 0; i < 85; i++)
+            meter_all_values_input_regs_copy->meter_values[i] = swap_float(meter_all_values_input_regs_copy->meter_values[i]);
     }
 #endif
 
     portENTER_CRITICAL(&mtx);
-        input_regs = input_regs_copy;
-        evse_input_regs = evse_input_regs_copy;
-        meter_input_regs = meter_input_regs_copy;
-        meter_all_values_input_regs = meter_all_values_input_regs_copy;
-        discrete_inputs = discrete_inputs_copy;
-        meter_discrete_inputs = meter_discrete_inputs_copy;
+        *input_regs = *input_regs_copy;
+        *evse_input_regs = *evse_input_regs_copy;
+        *meter_input_regs = *meter_input_regs_copy;
+        *meter_all_values_input_regs = *meter_all_values_input_regs_copy;
+        *discrete_inputs = *discrete_inputs_copy;
+        *meter_discrete_inputs = *meter_discrete_inputs_copy;
     portEXIT_CRITICAL(&mtx);
 }
 
@@ -373,14 +659,11 @@ void ModbusTcp::register_urls()
     {
         spinlock_initialize(&mtx);
 
-        uint16_t allowed_current = 32000;
-        uint8_t enable_charging = 1;
+        if (config.get("table")->asUint() == 0)
+        {
 
-#if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
-        auto slots = api.getState("evse/slots");
-        allowed_current = slots->get(CHARGING_SLOT_MODBUS_TCP)->get("max_current")->asUint();
-        enable_charging = slots->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000;
-#endif
+            uint16_t allowed_current = 32000;
+            uint8_t enable_charging = 1;
 
     #if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
             if (api.hasFeature("evse"))
@@ -391,21 +674,38 @@ void ModbusTcp::register_urls()
             }
     #endif
 
-        portENTER_CRITICAL(&mtx);
-            input_regs.table_version = MODBUS_TABLE_VERSION;
-            input_regs.box_id = local_uid_num;
-            input_regs.firmware_major = BUILD_VERSION_MAJOR;
-            input_regs.firmware_minor = BUILD_VERSION_MINOR;
-            input_regs.firmware_patch = BUILD_VERSION_PATCH;
-            input_regs.firmware_build_ts = BUILD_TIMESTAMP;
+            portENTER_CRITICAL(&mtx);
+                input_regs->table_version = MODBUS_TABLE_VERSION;
+                input_regs->box_id = local_uid_num;
+                input_regs->firmware_major = BUILD_VERSION_MAJOR;
+                input_regs->firmware_minor = BUILD_VERSION_MINOR;
+                input_regs->firmware_patch = BUILD_VERSION_PATCH;
+                input_regs->firmware_build_ts = BUILD_TIMESTAMP;
 
-            evse_holding_regs.allowed_current = allowed_current;
-            evse_holding_regs.enable_charging = enable_charging;
-        portEXIT_CRITICAL(&mtx);
+                evse_holding_regs->allowed_current = allowed_current;
+                evse_holding_regs->enable_charging = enable_charging;
+            portEXIT_CRITICAL(&mtx);
 
-        task_scheduler.scheduleWithFixedDelay([this]() {
-            this->update_regs();
-        }, 0, 500);
+            task_scheduler.scheduleWithFixedDelay([this]() {
+                this->update_regs();
+            }, 0, 500);
+        }
+        else if (config.get("table")->asUint() == 1)
+        {
+            if (api.hasFeature("evse"))
+            {
+#if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
+                portENTER_CRITICAL(&mtx);
+                    bender_hems->hems_limit = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP)->get("max_current")->asUint() / 1000;
+                    bender_general->chargepoint_available = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000 ? 1 : 0;
+                portEXIT_CRITICAL(&mtx);
+#endif
+            }
+
+            task_scheduler.scheduleWithFixedDelay([this]() {
+                this->update_bender_regs();
+            }, 0, 500);
+        }
     }
 }
 

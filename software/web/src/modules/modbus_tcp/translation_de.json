@@ -7,6 +7,7 @@
             "disabled": "Deaktiviert",
             "read_only": "Nur Lesezugriff",
             "full_access": "Lese-/Schreibzugriff",
+            "bender_emulate": "Emulate bender",
             "modbus_tcp": "Modbus/TCP",
             "enable": "Modbus/TCP Modus",
             "port": "Port",
