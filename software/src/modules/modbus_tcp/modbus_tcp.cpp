@@ -476,13 +476,13 @@ void ModbusTcp::update_bender_regs()
 
             for (int i = 0; i < 3; i++)
             {
-                bender_phases_cpy->current[i] = swap_regs((uint32_t)(meter_values->get(i + 3)->asFloat() * 1000));
-                bender_phases_cpy->energy[i] =  swap_regs((uint32_t)(meter_values->get(i + 67)->asFloat() * 1000));
-                bender_phases_cpy->power[i] =  swap_regs((uint32_t)(meter_values->get(i + 6)->asFloat() * 1000));
+                bender_phases_cpy->current[i] = swap_regs((uint32_t)(meter_values->get(i + METER_ALL_VALUES_CURRENT_L1_A)->asFloat() * 1000));
+                bender_phases_cpy->energy[i] =  swap_regs((uint32_t)(meter_values->get(i + METER_ALL_VALUES_IMPORT_KWH_L1)->asFloat() * 1000));
+                bender_phases_cpy->power[i] =  swap_regs((uint32_t)(meter_values->get(i + METER_ALL_VALUES_POWER_L1_W)->asFloat() * 1000));
                 bender_phases_cpy->voltage[i] = swap_regs((uint32_t)(meter_values->get(i)->asFloat() * 1000));
             }
-            bender_phases_cpy->total_energy = swap_regs((uint32_t)(meter_values->get(30)->asFloat() * 1000));
-            bender_phases_cpy->total_power = swap_regs((uint32_t)(meter_values->get(24)->asFloat()));
+            bender_phases_cpy->total_energy = swap_regs((uint32_t)(meter_values->get(METER_ALL_VALUES_TOTAL_IMPORT_KWH)->asFloat() * 1000));
+            bender_phases_cpy->total_power = swap_regs((uint32_t)(meter_values->get(METER_ALL_VALUES_TOTAL_SYSTEM_POWER_W)->asFloat()));
         }
 
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
