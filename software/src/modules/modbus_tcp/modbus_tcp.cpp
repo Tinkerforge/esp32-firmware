@@ -240,7 +240,6 @@ static bender_charge_s *bender_charge, *bender_charge_cpy;
 static bender_hems_s *bender_hems, *bender_hems_cpy;
 static bender_write_uid_s *bender_write_uid, *bender_write_uid_cpy;
 
-
 static portMUX_TYPE mtx;
 
 ModbusTcp::ModbusTcp() {}
@@ -500,8 +499,8 @@ void ModbusTcp::update_bender_regs()
         }
         else
         {
-            bender_charge_cpy->wh_charged = uint16_t(meter_absolute - meter_start);
-            bender_charge_cpy->charged_energy = swap_regs((uint32_t)(meter_absolute - meter_start));
+            bender_charge_cpy->wh_charged = uint16_t((meter_absolute - meter_start) * 1000);
+            bender_charge_cpy->charged_energy = swap_regs((uint32_t)((meter_absolute - meter_start) * 1000));
         }
 #endif
 
