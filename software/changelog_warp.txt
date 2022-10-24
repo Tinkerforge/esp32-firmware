@@ -252,7 +252,7 @@
 - Make sure to ignore button press if car is not charging (through EVSE Bricklet firmware 2.1.4)
 - Improve CP/PE resistance calculation (through EVSE Bricklet firmware 2.1.4)
 - Add minimum delay of 30s between error and charging states (through EVSE Bricklet firmware 2.1.4)
-- Improve recovery page UI
+- Improve recovery page
 - Allow forcing a firmware update via the recovery page
 - Allow HTTP POST for commands
 - Allow HTTP GET/POST for payload-less commands
