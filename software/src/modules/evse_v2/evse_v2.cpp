@@ -248,6 +248,11 @@ void EVSEV2::pre_setup()
         {"enabled", Config::Bool(false)}
     });
     evse_modbus_enabled_update = evse_modbus_enabled;
+
+    evse_ocpp_enabled = Config::Object({
+        {"enabled", Config::Bool(false)}
+    });
+    evse_ocpp_enabled_update = evse_ocpp_enabled;
 }
 
 bool EVSEV2::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear)
@@ -646,6 +651,16 @@ void EVSEV2::set_modbus_enabled(bool enabled)
     is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_MODBUS_TCP_ENABLE, enabled ? 32000 : 0));
 }
 
+void EVSEV2::set_ocpp_current(uint16_t current)
+{
+     is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_OCPP, current));
+}
+
+uint16_t EVSEV2::get_ocpp_current()
+{
+    return evse_slots.get(CHARGING_SLOT_OCPP)->get("max_current")->asUint();
+}
+
 void EVSEV2::register_urls()
 {
     if (!device_found)
@@ -865,17 +880,31 @@ void EVSEV2::register_urls()
 
         if (enabled) {
             tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_MODBUS_TCP, 32000, true, false);
-            this->apply_slot_default(CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, true, false);
+            this->apply_slot_default(CHARGING_SLOT_MODBUS_TCP, 32000, true, false);
 
             tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, true, false);
             this->apply_slot_default(CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, true, false);
         }
         else {
             tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_MODBUS_TCP, 32000, false, false);
-            this->apply_slot_default(CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, false, false);
+            this->apply_slot_default(CHARGING_SLOT_MODBUS_TCP, 32000, false, false);
 
             tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, false, false);
             this->apply_slot_default(CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, false, false);
+        }
+    }, false);
+
+    api.addState("evse/ocpp_enabled", &evse_ocpp_enabled, {}, 1000);
+    api.addCommand("evse/ocpp_enabled_update", &evse_ocpp_enabled_update, {}, [this](){
+        bool enabled = evse_ocpp_enabled_update.get("enabled")->asBool();
+
+        if (enabled) {
+            tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_OCPP, 32000, true, false);
+            this->apply_slot_default(CHARGING_SLOT_OCPP, 32000, true, false);
+        }
+        else {
+            tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_OCPP, 32000, false, false);
+            this->apply_slot_default(CHARGING_SLOT_OCPP, 32000, false, false);
         }
     }, false);
 
@@ -1171,6 +1200,7 @@ void EVSEV2::update_all_data()
     evse_user_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_USER]));
 
     evse_modbus_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_MODBUS_TCP]));
+    evse_ocpp_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_OCPP]));
 
     evse_external_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_EXTERNAL]));
     evse_external_clear_on_disconnect.get("clear_on_disconnect")->updateBool(SLOT_CLEAR_ON_DISCONNECT(active_and_clear_on_disconnect[CHARGING_SLOT_EXTERNAL]));

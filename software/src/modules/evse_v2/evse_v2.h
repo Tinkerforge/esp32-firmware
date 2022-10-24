@@ -87,6 +87,9 @@ public:
     void set_modbus_current(uint16_t current);
     void set_modbus_enabled(bool enabled);
 
+    void set_ocpp_current(uint16_t current);
+    uint16_t get_ocpp_current();
+
     bool apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear);
     void apply_defaults();
 
@@ -133,6 +136,8 @@ public:
     ConfigRoot evse_external_clear_on_disconnect_update;
     ConfigRoot evse_modbus_enabled;
     ConfigRoot evse_modbus_enabled_update;
+    ConfigRoot evse_ocpp_enabled;
+    ConfigRoot evse_ocpp_enabled_update;
 
     uint32_t last_current_update = 0;
     bool shutdown_logged = false;

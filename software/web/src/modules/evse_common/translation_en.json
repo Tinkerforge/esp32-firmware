@@ -149,7 +149,10 @@
             "slot_5": "Configuration",
             "slot_6": "User",
             "slot_7": "Charge management",
-            "slot_8": "External control"
+            "slot_8": "External control",
+            "slot_9": "Modbus TCP",
+            "slot_10": "Modbus TCP clearance",
+            "slot_11": "OCPP"
         }
     }
 }
