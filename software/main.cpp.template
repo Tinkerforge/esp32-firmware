@@ -36,6 +36,9 @@
 #define TF_ESP_PREINIT
 #endif
 
+#define TFJSON_IMPLEMENTATION
+#include "TFJson.h"
+
 bool config_constructors_allowed = false;
 
 const char* DISPLAY_NAME = "{{{display_name}}}";
