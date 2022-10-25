@@ -641,9 +641,11 @@ void EVSE::register_urls()
 
     api.addState("evse/management_enabled", &evse_management_enabled, {}, 1000);
     api.addCommand("evse/management_enabled_update", &evse_management_enabled_update, {}, [this](){
-        //TODO: enabling the management if it is already enabled should not throw away the set current.
         bool enabled = evse_management_enabled_update.get("enabled")->asBool();
-        logger.printfln("management update %s", enabled ? "enable": "disable");
+
+        if (enabled == evse_management_enabled.get("enabled")->asBool())
+            return;
+
         if (enabled)
             tf_evse_set_charging_slot(&device, CHARGING_SLOT_CHARGE_MANAGER, 0, true, true);
         else
@@ -658,8 +660,10 @@ void EVSE::register_urls()
     api.addState("evse/user_current", &evse_user_current, {}, 1000);
     api.addState("evse/user_enabled", &evse_user_enabled, {}, 1000);
     api.addCommand("evse/user_enabled_update", &evse_user_enabled_update, {}, [this](){
-        //TODO: enabling the user slot if it is already enabled should not throw away the set current.
         bool enabled = evse_user_enabled_update.get("enabled")->asBool();
+
+        if (enabled == evse_user_enabled.get("enabled")->asBool())
+            return;
 
         if (enabled) {
             users.stop_charging(0, true);
@@ -679,6 +683,10 @@ void EVSE::register_urls()
     api.addState("evse/external_enabled", &evse_external_enabled, {}, 1000);
     api.addCommand("evse/external_enabled_update", &evse_external_enabled_update, {}, [this](){
         bool enabled = evse_external_enabled_update.get("enabled")->asBool();
+
+        if (enabled == evse_external_enabled.get("enabled")->asBool())
+            return;
+
         tf_evse_set_charging_slot_active(&device, CHARGING_SLOT_EXTERNAL, enabled);
         this->apply_slot_default(CHARGING_SLOT_EXTERNAL, 32000, enabled, false);
     }, false);
@@ -694,6 +702,9 @@ void EVSE::register_urls()
     api.addState("evse/modbus_tcp_enabled", &evse_modbus_enabled, {}, 1000);
     api.addCommand("evse/modbus_tcp_enabled_update", &evse_modbus_enabled_update, {}, [this](){
         bool enabled = evse_modbus_enabled_update.get("enabled")->asBool();
+
+        if (enabled == evse_modbus_enabled.get("enabled")->asBool())
+            return;
 
         if (enabled) {
             tf_evse_set_charging_slot(&device, CHARGING_SLOT_MODBUS_TCP, 32000, true, false);
@@ -714,6 +725,9 @@ void EVSE::register_urls()
     api.addState("evse/ocpp_enabled", &evse_ocpp_enabled, {}, 1000);
     api.addCommand("evse/ocpp_enabled_update", &evse_ocpp_enabled_update, {}, [this](){
         bool enabled = evse_ocpp_enabled_update.get("enabled")->asBool();
+
+        if (enabled == evse_ocpp_enabled.get("enabled")->asBool())
+            return;
 
         if (enabled) {
             tf_evse_set_charging_slot(&device, CHARGING_SLOT_OCPP, 32000, true, false);
