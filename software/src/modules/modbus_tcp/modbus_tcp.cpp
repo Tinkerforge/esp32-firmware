@@ -44,6 +44,7 @@ extern EVSE evse;
 #endif
 
 #define MODBUS_TABLE_VERSION 1
+
 //-------------------
 // Input Registers
 //-------------------
@@ -197,6 +198,58 @@ struct bender_write_uid_s {
 } __attribute__((packed));
 
 
+struct keba_read_general_s {
+    static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
+    static const uint32_t OFFSET = 1000;
+    uint32_t charging_state;
+    uint32_t padding;
+    uint32_t cable_state;
+    uint32_t error_code;
+    uint32_t currents[3];
+    uint32_t serial_number;
+    uint32_t features;
+    uint32_t firmware_version;
+    uint32_t power;
+    uint16_t padding2[14];
+    uint32_t total_energy;
+    uint32_t padding3;
+    uint32_t volatages[3];
+    uint32_t power_factor;
+} __attribute__((packed));
+
+struct keba_read_max_s {
+    static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
+    static const uint32_t OFFSET = 1100;
+    uint32_t max_current;
+    uint16_t padding[8];
+    uint32_t max_hardware_current;
+} __attribute__((packed));
+
+struct keba_read_charge_s {
+    static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
+    static const uint32_t OFFSET = 1500;
+    uint32_t rfid_tag;
+    uint32_t charged_energy;
+} __attribute__((packed));
+
+struct keba_write_s {
+    static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
+    static const uint32_t OFFSET = 5004;
+    uint16_t set_charging_current;
+    uint16_t padding[5];
+    uint16_t set_energy;
+    uint16_t padding2;
+    uint16_t unlock_plug;
+    uint16_t padding3;
+    uint16_t enable_station;
+    uint16_t padding4;
+    uint16_t failsafe_current;
+    uint16_t padding5;
+    uint16_t failsafe_timeout;
+    uint16_t padding6;
+    uint16_t failsafe_persist;
+} __attribute__((packed));
+
 //-------------------
 // Discrete Inputs
 //-------------------
@@ -239,6 +292,13 @@ static bender_dlm_s *bender_dlm, *bender_dlm_cpy;
 static bender_charge_s *bender_charge, *bender_charge_cpy;
 static bender_hems_s *bender_hems, *bender_hems_cpy;
 static bender_write_uid_s *bender_write_uid, *bender_write_uid_cpy;
+
+
+static keba_read_general_s *keba_read_general, *keba_read_general_cpy;
+static keba_read_charge_s *keba_read_charge, *keba_read_charge_cpy;
+static keba_read_max_s *keba_read_max, *keba_read_max_cpy;
+static keba_write_s *keba_write, *keba_write_cpy;
+
 
 static portMUX_TYPE mtx;
 
@@ -289,6 +349,18 @@ static void allocate_bender_table()
     calloc_struct(&bender_hems_cpy);
     calloc_struct(&bender_write_uid);
     calloc_struct(&bender_write_uid_cpy);
+}
+
+static void allocate_keba_table()
+{
+    calloc_struct(&keba_read_charge);
+    calloc_struct(&keba_read_charge_cpy);
+    calloc_struct(&keba_read_general);
+    calloc_struct(&keba_read_general_cpy);
+    calloc_struct(&keba_read_max);
+    calloc_struct(&keba_read_max_cpy);
+    calloc_struct(&keba_write);
+    calloc_struct(&keba_write_cpy);
 }
 
 void ModbusTcp::setup()
@@ -349,6 +421,15 @@ void ModbusTcp::setup()
             REGISTER_DESCRIPTOR(bender_hems);
             REGISTER_DESCRIPTOR(bender_write_uid);
         }
+        else if (config.get("table")->asUint() == 2)
+        {
+            allocate_keba_table();
+
+            REGISTER_DESCRIPTOR(keba_read_charge);
+            REGISTER_DESCRIPTOR(keba_read_general);
+            REGISTER_DESCRIPTOR(keba_read_max);
+            REGISTER_DESCRIPTOR(keba_write);
+        }
 
         ESP_ERROR_CHECK(mbc_slave_start());
     }
@@ -356,13 +437,6 @@ void ModbusTcp::setup()
     initialized = true;
 }
 
-
-static uint32_t swap_regs(uint32_t src)
-{
-    uint32_t first = src << 16;
-    uint32_t second = src >> 16;
-    return first | second;
-}
 
 static float swap_float(float src)
 {
@@ -650,6 +724,172 @@ void ModbusTcp::update_regs()
     portEXIT_CRITICAL(&mtx);
 }
 
+uint32_t keba_get_features()
+{
+    static bool warned;
+    uint32_t features = 31;
+    features *= 10;
+    if (api.hasFeature("evse"))
+    {
+        switch (api.getState("evse/hardware_configuration")->get("jumper_configuration")->asUint())
+        {
+        case 2:
+            features += 1;
+            break;
+
+        case 3:
+            features += 2;
+            break;
+
+        case 4:
+            features += 3;
+            break;
+
+        case 6:
+            features += 4;
+            break;
+
+        default:
+            logger.printfln("No matching keba cable configuration! It will be set to 0!");
+            break;
+        }
+    }
+    features *= 10;
+    features += 1;
+    features *= 10;
+    if (api.hasFeature("meter"))
+    {
+        features += 2;
+    }
+    else
+    {
+        if (!warned)
+        {
+            logger.printfln("Wallbox has no meter. Erros are expected!");
+            warned = true;
+        }
+    }
+    features *= 10;
+    if (api.hasFeature("nfc"))
+        features += 1;
+    return features;
+}
+
+static uint32_t swap_regs(uint32_t src)
+{
+    uint32_t first = src << 16;
+    uint32_t second = src >> 16;
+    return first | second;
+}
+
+static uint8_t hextouint(const char c)
+{
+    uint8_t i = 0;
+    if (c > 96)
+        i = c - 'a' + 10;
+    else if (c > 64)
+        i = c - 'A' + 10;
+    else
+        i = c - '0';
+    return i;
+}
+
+static uint32_t export_tag_id_as_uint32(String str)
+{
+    int str_idx = 0;
+    char c[4];
+
+    for (int i = 3; i >= 0; i--)
+    {
+        c[i] = hextouint(str[str_idx++]) << 4;
+        c[i] |= hextouint(str[str_idx++]);
+        str_idx++;
+    }
+    uint32_t *ret = reinterpret_cast<uint32_t *>(c);
+    return *ret;
+}
+
+void ModbusTcp::update_keba_regs()
+{
+    portENTER_CRITICAL(&mtx);
+        *keba_write_cpy = *keba_write;
+    portEXIT_CRITICAL(&mtx);
+
+    keba_read_general_cpy->features = swap_regs(keba_get_features());
+    keba_read_general_cpy->firmware_version = swap_regs(0x30A1B00);
+
+#if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
+    if (api.hasFeature("evse"))
+    {
+#if MODULE_EVSE_V2_AVAILABLE()
+        evse_v2.set_modbus_current(keba_write_cpy->set_charging_current);
+        evse_v2.set_modbus_enabled(keba_write_cpy->enable_station == 1 ? true : false);
+#elif MODULE_EVSE_AVAILABLE()
+        evse.set_modbus_current(keba_write_cpy->set_charging_current);
+        evse.set_modbus_enabled(keba_write_cpy->enable_station == 1 ? true : false);
+#endif
+        if (api.getState("evse/state")->get("iec61851_state")->asUint() == 4)
+            keba_read_general_cpy->charging_state = swap_regs(4);
+        else
+            keba_read_general_cpy->charging_state = swap_regs(api.getState("evse/state")->get("iec61851_state")->asUint() + 1);
+        if (api.getState("evse/state")->get("charger_state")->asUint() == 0)
+            keba_read_general_cpy->cable_state = 0;
+        else if (api.getState("evse/state")->get("charger_state")->asUint() == 1 || api.getState("evse/state")->get("charger_state")->asUint() == 2)
+            keba_read_general_cpy->cable_state = swap_regs(3);
+        else
+            keba_read_general_cpy->cable_state = swap_regs(7);
+
+        keba_read_max_cpy->max_current = swap_regs(api.getState("evse/state")->get("allowed_charging_current")->asUint());
+
+        keba_read_max_cpy->max_hardware_current = swap_regs(api.getState("evse/slots")->get(CHARGING_SLOT_INCOMING_CABLE)->get("max_current")->asUint());
+    }
+#endif
+
+#if MODULE_METER_AVAILABLE()
+    if (api.hasFeature("meter"))
+    {
+        bool charging = false;
+
+#if MODULE_CHARGE_TRACKER_AVAILABLE()
+        auto meter_absolute = api.getState("meter/values")->get("energy_abs")->asFloat();
+        auto meter_start = api.getState("charge_tracker/current_charge")->get("meter_start")->asFloat();
+
+        if (!charging)
+            keba_read_charge->charged_energy = 0;
+        else if (isnan(meter_start))
+            keba_read_charge->charged_energy = swap_regs((uint32_t)NAN);
+        else
+            keba_read_charge->charged_energy = swap_float((uint32_t)((meter_absolute - meter_start) * 1000));
+
+        if (api.getState("charge_tracker/current_charge")->get("authorization_type")->asUint() == 2)
+        {
+            auto tag_id = api.getState("charge_tracker/current_charge")->get("authorization_info")->get("tag_id")->asString();
+            keba_read_charge_cpy->rfid_tag = swap_regs(export_tag_id_as_uint32(tag_id));
+        }
+#endif
+
+        if (api.hasFeature("meter_all_values"))
+        {
+            auto meter_all_values = api.getState("meter/all_values");
+            for (int i = 0; i < 3; i++)
+            {
+                keba_read_general_cpy->currents[i] = swap_regs((uint32_t)(meter_all_values->get(i + METER_ALL_VALUES_CURRENT_L1_A)->asFloat() * 1000));
+                keba_read_general_cpy->volatages[i] = swap_regs((uint32_t)meter_all_values->get(i)->asFloat());
+            }
+            keba_read_general_cpy->power_factor = swap_regs((uint32_t)meter_all_values->get(METER_ALL_VALUES_TOTAL_SYSTEM_POWER_FACTOR)->asFloat() * 1000);
+        }
+        keba_read_general_cpy->power = swap_regs((uint32_t)(api.getState("meter/values")->get("power")->asFloat() * 1000));
+        keba_read_general_cpy->total_energy = swap_regs((uint32_t)(api.getState("meter/values")->get("energy_abs")->asFloat() * 1000));
+    }
+#endif
+
+    portENTER_CRITICAL(&mtx);
+        *keba_read_charge = *keba_read_charge_cpy;
+        *keba_read_general = *keba_read_general_cpy;
+        *keba_read_max = *keba_read_max_cpy;
+    portEXIT_CRITICAL(&mtx);
+}
+
 void ModbusTcp::register_urls()
 {
     api.addPersistentConfig("modbus_tcp/config", &config, {}, 1000);
@@ -703,6 +943,18 @@ void ModbusTcp::register_urls()
 
             task_scheduler.scheduleWithFixedDelay([this]() {
                 this->update_bender_regs();
+            }, 0, 500);
+        }
+        else if (config.get("table")->asUint() == 2)
+        {
+#if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
+                portENTER_CRITICAL(&mtx);
+                    keba_write->set_charging_current = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP)->get("max_current")->asUint() / 1000;
+                    keba_write->enable_station = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000 ? 1 : 0;
+                portEXIT_CRITICAL(&mtx);
+#endif
+            task_scheduler.scheduleWithFixedDelay([this]() {
+                this->update_keba_regs();
             }, 0, 500);
         }
     }

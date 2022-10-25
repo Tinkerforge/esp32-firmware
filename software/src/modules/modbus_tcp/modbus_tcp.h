@@ -35,6 +35,7 @@ public:
     void loop();
     void update_regs();
     void update_bender_regs();
+    void update_keba_regs();
 
     bool initialized = false;
 
