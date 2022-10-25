@@ -331,7 +331,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                                 {
                                     state.scanResult.filter(c => !state.chargers.some(c1 => c1.host == c.hostname + ".local"))
                                         .map(c => (
-                                            <ListGroup.Item action
+                                            <ListGroup.Item action type="button"
                                                         onClick={c.error != 0 ? () => {} : () => {
                                                             this.setState({newCharger: {host: c.hostname + ".local", name: c.display_name}})
                                                         }}
