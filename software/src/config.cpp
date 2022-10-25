@@ -41,10 +41,12 @@ Config::ConfString::Slot *string_buf = nullptr;
 size_t string_buf_size = 0;
 
 #define ARRAY_SLOTS 32
-Config::ConfArray::Slot array_buf[ARRAY_SLOTS];
+Config::ConfArray::Slot *array_buf = nullptr;
+size_t array_buf_size = 0;
 
 #define OBJECT_SLOTS 256
-Config::ConfObject::Slot object_buf[OBJECT_SLOTS];
+Config::ConfObject::Slot *object_buf = nullptr;
+size_t object_buf_size = 0;
 
 
 struct default_validator {
@@ -360,11 +362,11 @@ struct from_json {
 
         // C++17 adds https://en.cppreference.com/w/cpp/utility/as_const
         // until then we have to use this to make sure the const version of getSlot() is called.
-        const auto *slot = ((const Config::ConfArray&)x).getSlot();
+        const auto *prototype = ((const Config::ConfArray&)x).getSlot()->prototype;
 
         x.getVal()->clear();
         for (size_t i = 0; i < arr.size(); ++i) {
-            x.getVal()->push_back(*slot->prototype);
+            x.getVal()->push_back(*prototype);
             String inner_error = Config::apply_visitor(from_json{arr[i], force_same_keys, permit_null_updates, false}, x.get(i)->value);
             if (inner_error != "")
                 return String("[") + i + "]" + inner_error;
@@ -489,11 +491,11 @@ struct from_update {
 
         // C++17 adds https://en.cppreference.com/w/cpp/utility/as_const
         // until then we have to use this to make sure the const version of getSlot() is called.
-        const auto *slot = ((const Config::ConfArray&)x).getSlot();
+        const auto *prototype = ((const Config::ConfArray&)x).getSlot()->prototype;
 
         x.getVal()->clear();
         for (size_t i = 0; i < arr->elements.size(); ++i) {
-            x.getVal()->push_back(*slot->prototype);
+            x.getVal()->push_back(*prototype);
             String inner_error = Config::apply_visitor(from_update{&arr->elements[i]}, x.get(i)->value);
             if (inner_error != "")
                 return String("[") + i + "]" + inner_error;
@@ -638,21 +640,6 @@ static size_t nextSlot(typename T::Slot *&buf, size_t &buf_size) {
     size_t result = buf_size;
     buf_size = buf_size + SLOT_HEADROOM;
     return result;
-}
-
-template<typename T>
-static size_t nextSlotArrObj(size_t buf_size, const char *which) {
-    for (size_t i = 0; i < buf_size; i++)
-    {
-        if (!T::slotEmpty(i))
-            continue;
-
-        return i;
-    }
-    logger.printfln("No space left for %s!", which),
-    delay(100);
-    esp_system_abort(T::variantName);
-    return 0;
 }
 
 bool Config::ConfString::slotEmpty(size_t i) {
@@ -861,7 +848,7 @@ Config::ConfArray::Slot *Config::ConfArray::getSlot() { return &array_buf[idx]; 
 
 Config::ConfArray::ConfArray(std::vector<Config> val, Config *prototype, uint16_t minElements, uint16_t maxElements, int8_t variantType)
 {
-    idx = nextSlotArrObj<Config::ConfArray>(ARRAY_SLOTS, "Config::ConfArray");
+    idx = nextSlot<Config::ConfArray>(array_buf, array_buf_size);
     this->getSlot()->inUse = true;
 
     this->getSlot()->val = val;
@@ -873,7 +860,7 @@ Config::ConfArray::ConfArray(std::vector<Config> val, Config *prototype, uint16_
 
 Config::ConfArray::ConfArray(const ConfArray &cpy)
 {
-    idx = nextSlotArrObj<Config::ConfArray>(ARRAY_SLOTS, "Config::ConfArray");
+    idx = nextSlot<Config::ConfArray>(array_buf, array_buf_size);
     // We have to mark this slot as in use here:
     // This array could contain a nested array that will be copied over
     // The inner array's copy constructor then takes the first free slot, i.e.
@@ -939,7 +926,7 @@ Config::ConfObject::Slot *Config::ConfObject::getSlot() { return &object_buf[idx
 
 Config::ConfObject::ConfObject(std::vector<std::pair<String, Config>> val)
 {
-    idx = nextSlotArrObj<Config::ConfObject>(OBJECT_SLOTS, "Config::ConfObject");
+    idx = nextSlot<Config::ConfObject>(object_buf, object_buf_size);
     this->getSlot()->inUse = true;
 
     this->getSlot()->val = val;
@@ -947,7 +934,7 @@ Config::ConfObject::ConfObject(std::vector<std::pair<String, Config>> val)
 
 Config::ConfObject::ConfObject(const ConfObject &cpy)
 {
-    idx = nextSlotArrObj<Config::ConfObject>(OBJECT_SLOTS, "Config::ConfObject");
+    idx = nextSlot<Config::ConfObject>(object_buf, object_buf_size);
     // We have to mark this slot as in use here:
     // This object could contain a nested object that will be copied over
     // The inner object's copy constructor then takes the first free slot, i.e.
@@ -1421,11 +1408,15 @@ void config_preinit()
     int_buf = new Config::ConfInt::Slot[INT_SLOTS];
     float_buf = new Config::ConfFloat::Slot[FLOAT_SLOTS];
     string_buf = new Config::ConfString::Slot[STRING_SLOTS];
+    array_buf = new Config::ConfArray::Slot[ARRAY_SLOTS];
+    object_buf = new Config::ConfObject::Slot[OBJECT_SLOTS];
 
     uint_buf_size = UINT_SLOTS;
     int_buf_size = INT_SLOTS;
     float_buf_size = FLOAT_SLOTS;
     string_buf_size = STRING_SLOTS;
+    array_buf_size = ARRAY_SLOTS;
+    object_buf_size = OBJECT_SLOTS;
 }
 
 template<typename T>
@@ -1449,6 +1440,8 @@ void config_postsetup() {
     shrinkToFit<Config::ConfInt>(int_buf, int_buf_size);
     shrinkToFit<Config::ConfFloat>(float_buf, float_buf_size);
     shrinkToFit<Config::ConfString>(string_buf, string_buf_size);
+    shrinkToFit<Config::ConfArray>(array_buf, array_buf_size);
+    shrinkToFit<Config::ConfObject>(object_buf, object_buf_size);
 }
 
 Config::ConstWrap::ConstWrap(const Config *_conf)
