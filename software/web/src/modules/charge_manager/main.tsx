@@ -288,7 +288,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                                         required/>
                             </FormGroup>
                             <FormGroup label={__("charge_manager.script.host")}>
-                                <InputText value={c.name}
+                                <InputText value={c.host}
                                         onValue={(v) => this.setCharger(i, {host: v})}
                                         maxLength={64}
                                         required/>
