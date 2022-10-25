@@ -437,6 +437,12 @@ void ModbusTcp::setup()
     initialized = true;
 }
 
+static uint32_t swap_regs(uint32_t src)
+{
+    uint32_t first = src << 16;
+    uint32_t second = src >> 16;
+    return first | second;
+}
 
 static float swap_float(float src)
 {
@@ -773,13 +779,6 @@ uint32_t keba_get_features()
     if (api.hasFeature("nfc"))
         features += 1;
     return features;
-}
-
-static uint32_t swap_regs(uint32_t src)
-{
-    uint32_t first = src << 16;
-    uint32_t second = src >> 16;
-    return first | second;
 }
 
 static uint8_t hextouint(const char c)
