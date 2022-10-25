@@ -170,19 +170,19 @@ void platform_cable_timed_out(int32_t connectorId)
 EVSEState platform_get_evse_state(int32_t connectorId) {
     auto state = api.getState("evse/state")->get("charger_state")->asUint();
     switch(state) {
-        case TF_EVSE_V2_CHARGER_STATE_NOT_CONNECTED:
+        case CHARGER_STATE_NOT_PLUGGED_IN:
             return EVSEState::NotConnected;
 
-        case TF_EVSE_V2_CHARGER_STATE_WAITING_FOR_CHARGE_RELEASE:
+        case CHARGER_STATE_WAITING_FOR_RELEASE:
             return EVSEState::Connected;
 
-        case TF_EVSE_V2_CHARGER_STATE_READY_TO_CHARGE:
+        case CHARGER_STATE_READY_TO_CHARGE:
             return EVSEState::ReadyToCharge;
 
-        case TF_EVSE_V2_CHARGER_STATE_CHARGING:
+        case CHARGER_STATE_CHARGING:
             return EVSEState::Charging;
 
-        case TF_EVSE_V2_CHARGER_STATE_ERROR:
+        case CHARGER_STATE_ERROR:
         default:
             return EVSEState::Faulted;
 
@@ -415,9 +415,13 @@ void platform_unlock_cable(int32_t connectorId)
 void platform_set_charging_current(int32_t connectorId, uint32_t milliAmps)
 {
     //pm.charge_current[connectorId - 1] = milliAmps;
-
+#if MODULE_EVSE_AVAILABLE()
+    if (evse.get_ocpp_current() != milliAmps)
+        evse.set_ocpp_current(milliAmps);
+#elif MODULE_EVSE_V2_AVAILABLE()
     if (evse_v2.get_ocpp_current() != milliAmps)
         evse_v2.set_ocpp_current(milliAmps);
+#endif
 }
 
 #define PATH_PREFIX String("/ocpp/")
