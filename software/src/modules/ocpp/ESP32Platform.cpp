@@ -13,6 +13,7 @@
 
 #include "modules.h"
 #include "api.h"
+#include "build_timestamp.h"
 extern API api;
 
 void(*recv_cb)(char *, size_t, void *) = nullptr;
@@ -480,9 +481,6 @@ const char *platform_get_charge_point_model() {
     strncpy(model, device_name.name.get("display_type")->asCStr(), ARRAY_SIZE(model));
     return model;
 }
-
-#include "modules.h"
-#include "build_timestamp.h"
 
 const char *platform_get_charge_point_serial_number() {
     return device_name.name.get("name")->asCStr();
