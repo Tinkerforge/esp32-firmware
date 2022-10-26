@@ -3,7 +3,7 @@
         "active": true,
         "base": "arduino-esp32",
         "branch": "warp2-2.0.90",
-        "commit": null,
+        "commit": "ae7cdb0f7fa90f8b2500063f6a2d7081b5f5e2c3",
         "url": "https://github.com/Tinkerforge/arduino-esp32"
     },
     {
