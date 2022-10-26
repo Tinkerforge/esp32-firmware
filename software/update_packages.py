@@ -117,7 +117,6 @@ for name in sorted(os.listdir('packages')):
             else:
                 prefix_zip = base + '-' + commit + '/'
                 prefix_fs = base + '#' + branch + '_' + commit + '/'
-                prefix_fs = base + '#' + branch + '$' + commit + '/'
 
             for n in zf.namelist():
                 if not n.startswith(prefix_zip):
