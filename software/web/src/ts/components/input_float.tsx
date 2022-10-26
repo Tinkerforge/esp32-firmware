@@ -62,7 +62,7 @@ export function InputFloat(props: InputFloatProps) {
 
     return (
         <div class="input-group">
-            <input class="form-control"
+            <input class="form-control no-spin"
                        id={id}
                        type="number"
                        ref={input}

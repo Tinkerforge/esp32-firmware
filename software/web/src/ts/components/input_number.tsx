@@ -33,7 +33,7 @@ interface InputNumberProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElem
 export function InputNumber(props: InputNumberProps) {
     return (
         <div class="input-group">
-            <input class="form-control"
+            <input class="form-control no-spin"
                        id={props.idContext ? useContext(props.idContext) : undefined}
                        type="number"
                        disabled={props.onValue === undefined}
