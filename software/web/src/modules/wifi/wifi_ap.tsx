@@ -96,7 +96,8 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
                     </FormRow>
 
                     <FormRow label={__("wifi.content.ap_passphrase")}>
-                        <InputPassword maxLength={64}
+                        <InputPassword minLength={8}
+                                       maxLength={64}
                                        value={state.passphrase}
                                        onValue={this.set("passphrase")}
                                        hideClear

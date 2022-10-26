@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Component, Context } from "preact";
+import { h, Component, Context, Fragment } from "preact";
 import {useContext} from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { Button } from "react-bootstrap";
@@ -34,6 +34,7 @@ interface InputPasswordProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputEl
     clearPlaceholder?: string
     clearSymbol?: h.JSX.Element
     allowAPIClear?: boolean
+    invalidFeedback?: string
 }
 
 interface InputPasswordState {
@@ -61,34 +62,48 @@ export class InputPassword extends Component<InputPasswordProps, InputPasswordSt
     render(props: InputPasswordProps, state: Readonly<InputPasswordState>) {
         let id = useContext(props.idContext);
 
+        let invalidFeedback = undefined;
+        if ("invalidFeedback" in props)
+            invalidFeedback = <div class="invalid-feedback">{props.invalidFeedback}</div>;
+        else if ("minLength" in props && !("maxLength" in props))
+            invalidFeedback = <div class="invalid-feedback">{__("component.input_text.min_only_prefix") + props.minLength.toString() + __("component.input_text.min_only_suffix")}</div>;
+        else if (!("minLength" in props) && "maxLength" in props)
+            invalidFeedback = <div class="invalid-feedback">{__("component.input_text.max_only_prefix") + props.maxLength.toString() + __("component.input_text.max_only_suffix")}</div>;
+        else if ("minLength" in props && "maxLength" in props)
+            invalidFeedback = <div class="invalid-feedback">{__("component.input_text.min_max_prefix") + props.minLength.toString() + __("component.input_text.min_max_infix") + props.maxLength.toString() + __("component.input_text.min_max_suffix")}</div>;
+
         const toBeCleared = props.value === "" && (props.allowAPIClear || state.clearSelected);
 
         return (
-            <div class="input-group">
-                <input class="form-control"
-                    id={id}
-                    type={state.show || props.showAlways ? "text" : "password"}
-                    value={props.value ?? ""}
-                    placeholder={toBeCleared ? (props.clearPlaceholder ?? __("component.input_password.to_be_cleared"))
-                                                    : (props.placeholder ?? __("component.input_password.unchanged"))}
-                    onInput={(e) => {
-                        let value: string = (e.target as HTMLInputElement).value;
-                        props.onValue(value.length > 0 ? value : null)}
-                    }
-                    disabled={toBeCleared}
-                    {...props} />
-                <div class="input-group-append">
-                    { props.showAlways ? null :
-                        <Button variant="primary" className="px-1" style="line-height: 20px;" onClick={() => this.setState({show: !state.show})} disabled={toBeCleared}>{state.show ? <EyeOff/> : <Eye/>}</Button>
-                    }
-                    { props.hideClear ? null :
-                        <div class="input-group-text custom-control custom-switch" style="padding-left: 2.5rem;">
-                            <input id={id+"-clear"} type="checkbox" class="custom-control-input" aria-label="Clear password" onClick={() => this.toggleClear()} checked={toBeCleared}/>
-                            <label class="custom-control-label" for={id+"-clear"} style="line-height: 20px;">{props.clearSymbol ?? <Trash2/>}</label>
-                        </div>
-                    }
+            <>
+                <div class="input-group">
+                    <input class={"form-control" + (props.showAlways && props.hideClear ? " rounded-right" : "")}
+                        id={id}
+                        type={state.show || props.showAlways ? "text" : "password"}
+                        value={props.value ?? ""}
+                        placeholder={toBeCleared ? (props.clearPlaceholder ?? __("component.input_password.to_be_cleared"))
+                                                        : (props.placeholder ?? __("component.input_password.unchanged"))}
+                        onInput={(e) => {
+                            let value: string = (e.target as HTMLInputElement).value;
+                            props.onValue(value.length > 0 ? value : null)}
+                        }
+                        disabled={toBeCleared}
+                        {...props} />
+                    <div class="input-group-append">
+                        { props.showAlways ? null :
+                            <Button variant="primary" className={"px-1" + (props.hideClear ? " rounded-right" : "")} style="line-height: 20px;" onClick={() => this.setState({show: !state.show})} disabled={toBeCleared}>{state.show ? <EyeOff/> : <Eye/>}</Button>
+                        }
+                        { props.hideClear ? null :
+                            <div class="input-group-text custom-control custom-switch rounded-right" style="padding-left: 2.5rem;">
+                                <input id={id+"-clear"} type="checkbox" class="custom-control-input" aria-label="Clear password" onClick={() => this.toggleClear()} checked={toBeCleared}/>
+                                <label class="custom-control-label" for={id+"-clear"} style="line-height: 20px;">{props.clearSymbol ?? <Trash2/>}</label>
+                            </div>
+                        }
+                    </div>
+                    {invalidFeedback}
                 </div>
-            </div>
+
+            </>
         );
     }
 }
