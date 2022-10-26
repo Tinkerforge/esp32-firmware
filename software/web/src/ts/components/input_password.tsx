@@ -20,7 +20,8 @@
 import { h, Component, Context } from "preact";
 import {useContext} from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
-import { Eye, Trash2 } from "react-feather";
+import { Button } from "react-bootstrap";
+import { Eye, EyeOff, Trash2 } from "react-feather";
 import { __ } from "../translation";
 
 interface InputPasswordProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "value" | "disabled"> {
@@ -78,10 +79,7 @@ export class InputPassword extends Component<InputPasswordProps, InputPasswordSt
                     {...props} />
                 <div class="input-group-append">
                     { props.showAlways ? null :
-                        <div class="input-group-text custom-control custom-switch" style="padding-left: 2.5rem;">
-                            <input id={id+"-show"} type="checkbox" class="custom-control-input" aria-label="Show password" onClick={() => this.setState({show: !state.show})} />
-                            <label class="custom-control-label" for={id+"-show"} style="line-height: 20px;"><Eye/></label>
-                        </div>
+                        <Button variant="primary" className="px-1" style="line-height: 20px;" onClick={() => this.setState({show: !state.show})} disabled={toBeCleared}>{state.show ? <EyeOff/> : <Eye/>}</Button>
                     }
                     { props.hideClear ? null :
                         <div class="input-group-text custom-control custom-switch" style="padding-left: 2.5rem;">
