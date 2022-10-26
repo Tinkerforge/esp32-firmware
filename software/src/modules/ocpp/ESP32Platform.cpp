@@ -414,13 +414,13 @@ void platform_unlock_cable(int32_t connectorId)
 
 void platform_set_charging_current(int32_t connectorId, uint32_t milliAmps)
 {
-    //pm.charge_current[connectorId - 1] = milliAmps;
+    uint16_t current = (uint16_t)std::min(32000u, (uint32_t)milliAmps);
 #if MODULE_EVSE_AVAILABLE()
-    if (evse.get_ocpp_current() != milliAmps)
-        evse.set_ocpp_current(milliAmps);
+    if (evse.get_ocpp_current() != current)
+        evse.set_ocpp_current(current);
 #elif MODULE_EVSE_V2_AVAILABLE()
-    if (evse_v2.get_ocpp_current() != milliAmps)
-        evse_v2.set_ocpp_current(milliAmps);
+    if (evse_v2.get_ocpp_current() != current)
+        evse_v2.set_ocpp_current(current);
 #endif
 }
 
