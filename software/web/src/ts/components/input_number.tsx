@@ -23,6 +23,8 @@ import { JSXInternal } from "preact/src/jsx";
 import { Button } from "react-bootstrap";
 import { Minus, Plus } from "react-feather";
 
+import * as util from "../util";
+
 interface InputNumberProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput"> {
     idContext?: Context<string>
     value: number
@@ -45,14 +47,14 @@ export function InputNumber(props: InputNumberProps) {
                         className="form-control px-1"
                         style="margin-right: .125rem !important;"
                         onClick={() => {
-                            props.onValue(props.min ? Math.max(props.min as number, props.value - 1) : (props.value - 1))
+                            props.onValue(util.clamp(props.min as number, props.value - 1, props.max as number))
                         }}>
                     <Minus/>
                 </Button>
                 <Button variant="primary"
                         className="form-control px-1 rounded-right"
                         onClick={() => {
-                            props.onValue(props.max ? Math.min(props.max as number, props.value + 1) : (props.value + 1))
+                            props.onValue(util.clamp(props.min as number, props.value + 1, props.max as number))
                         }}>
                     <Plus/>
                 </Button>

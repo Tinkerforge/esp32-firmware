@@ -499,3 +499,12 @@ type Impossible<K extends keyof any> = {
 // and then a type that extends that type, based on what the caller provided
 // using generics.
 export type NoExtraProperties<T, U extends T = T> = U & Impossible<Exclude<keyof U, keyof T>>;
+
+export function clamp(min: number | undefined, x: number, max: number | undefined) {
+    let result = x;
+    if (max !== undefined)
+        result = Math.min(max, x);
+    if (min !== undefined)
+        result = Math.max(min, x);
+    return result;
+}

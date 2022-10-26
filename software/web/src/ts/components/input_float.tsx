@@ -46,10 +46,7 @@ export function InputFloat(props: InputFloatProps) {
     const input = useRef<HTMLInputElement>();
 
     const setTarget = (target: number) => {
-        if (target < props.min)
-            return;
-        if (target > props.max)
-            return;
+        target = util.clamp(props.min, target, props.max);
 
         if (timeout != null)
             window.clearTimeout(timeout);
@@ -68,8 +65,8 @@ export function InputFloat(props: InputFloatProps) {
                        ref={input}
                        onInput={(e) => {
                         let target = parseFloat((e.target as HTMLInputElement).value) * pow10;
-                        target = Math.min(target, props.max);
-                        target = Math.max(target, props.min);
+                        target = util.clamp(props.min, target, props.max);
+
                         if (timeout != null)
                             window.clearTimeout(timeout);
                         timeout = window.setTimeout(() => props.onValue(target), 2000);
