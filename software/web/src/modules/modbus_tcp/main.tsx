@@ -66,25 +66,33 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
         return (
             <>
                 <ConfigForm id="modbus_tcp_config_form" title={__("modbus_tcp.content.modbus_tcp")} onSave={() => this.save()} onDirtyChange={(d) => this.ignore_updates = d}>
-                        <FormRow label={__("modbus_tcp.content.enable")}>
-                            <InputSelect items={[
-                                ["0", __("modbus_tcp.content.disabled")],
-                                ["1", __("modbus_tcp.content.read_only")],
-                                ["2", __("modbus_tcp.content.full_access")],
-                                ["3", __("modbus_tcp.content.bender_emulate")],
-                                ["4", __("modbus_tcp.content.keba_emulate")],
-                            ]}
-                            value={this.state.table == 0 && this.state.enable && this.state.evse_enable ? "2" : this.state.enable && this.state.table == 0 ? "1" : this.state.table == 1 ? "3" : this.state.table == 2 ? "4" : "0"}
-                            onValue={(v) => {
-                                this.setState({enable: v != "0", evse_enable: v >= "2", table: v == "3" ? 1 : v == "4" ? 2 : 0});
-                            }}></InputSelect>
-                        </FormRow>
-                        <FormRow label={__("modbus_tcp.content.port")} label_muted={__("modbus_tcp.content.port_muted")}>
-                            <InputNumber value={state.port}
-                                         onValue={this.set("port")}
-                                         min={1}
-                                         max={65536}/>
-                        </FormRow>
+                    <FormRow label={__("modbus_tcp.content.enable")}>
+                        <Switch desc={__("modbus_tcp.content.enable_description")}
+                                checked={this.state.enable}
+                                onClick={this.toggle("enable")}/>
+                    </FormRow>
+                    <FormRow label={__("modbus_tcp.content.enable_write")}>
+                        <Switch desc={__("modbus_tcp.content.enable_write_description")}
+                                checked={this.state.evse_enable}
+                                onClick={this.toggle("evse_enable")}/>
+                    </FormRow>
+                    <FormRow label={__("modbus_tcp.content.port")} label_muted={__("modbus_tcp.content.port_muted")}>
+                        <InputNumber value={state.port}
+                                onValue={this.set("port")}
+                                min={1}
+                                max={65536}/>
+                    </FormRow>
+                    <FormRow label={__("modbus_tcp.content.table")}>
+                        <InputSelect items={[
+                            ["0", __("modbus_tcp.content.tf")],
+                            ["1", __("modbus_tcp.content.bender_emulate")],
+                            ["2", __("modbus_tcp.content.keba_emulate")],
+                        ]}
+                        value={this.state.table}
+                        onValue={(v) => {
+                            this.setState({table: Number(v)});
+                        }}></InputSelect>
+                    </FormRow>
                 </ConfigForm>
             </>
         );
