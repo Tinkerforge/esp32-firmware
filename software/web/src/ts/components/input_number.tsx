@@ -20,6 +20,8 @@
 import { h, Context } from "preact";
 import {useContext} from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
+import { Button } from "react-bootstrap";
+import { Minus, Plus } from "react-feather";
 
 interface InputNumberProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput"> {
     idContext?: Context<string>
@@ -29,22 +31,31 @@ interface InputNumberProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElem
 }
 
 export function InputNumber(props: InputNumberProps) {
-    let inner = <input class="form-control"
+    return (
+        <div class="input-group">
+            <input class="form-control"
                        id={props.idContext ? useContext(props.idContext) : undefined}
                        type="number"
                        disabled={props.onValue === undefined}
                        onInput={props.onValue === undefined ? undefined : (e) => props.onValue(parseInt((e.target as HTMLInputElement).value, 10))}
-                       {...props}/>;
-    if (!this.props.unit)
-        return inner;
-
-    return (
-        <div class="input-group">
-            {inner}
+                       {...props}/>
             <div class="input-group-append">
-                <div class="form-control input-group-text">
-                    {this.props.unit}
-                </div>
+                {props.unit ? <div class="form-control input-group-text">{this.props.unit}</div> : undefined}
+                <Button variant="primary"
+                        className="form-control px-1"
+                        style="margin-right: .125rem !important;"
+                        onClick={() => {
+                            props.onValue(props.min ? Math.max(props.min as number, props.value - 1) : (props.value - 1))
+                        }}>
+                    <Minus/>
+                </Button>
+                <Button variant="primary"
+                        className="form-control px-1 rounded-right"
+                        onClick={() => {
+                            props.onValue(props.max ? Math.min(props.max as number, props.value + 1) : (props.value + 1))
+                        }}>
+                    <Plus/>
+                </Button>
             </div>
         </div>
     );
