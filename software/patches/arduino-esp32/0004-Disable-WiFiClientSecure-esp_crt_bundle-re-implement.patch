@@ -1,0 +1,19 @@
+From ae7cdb0f7fa90f8b2500063f6a2d7081b5f5e2c3 Mon Sep 17 00:00:00 2001
+From: Erik Fleckstein <erik@tinkerforge.com>
+Date: Wed, 26 Oct 2022 14:36:11 +0200
+Subject: [PATCH] Disable WiFiClientSecure esp_crt_bundle re-implementation.
+
+Registering the default cert bundle does not work with this, however
+with the original ESP-IDF implementation it does.
+---
+ .../src/{esp_crt_bundle.c => esp_crt_bundle.c.disabled}           | 0
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ rename libraries/WiFiClientSecure/src/{esp_crt_bundle.c => esp_crt_bundle.c.disabled} (100%)
+
+diff --git a/libraries/WiFiClientSecure/src/esp_crt_bundle.c b/libraries/WiFiClientSecure/src/esp_crt_bundle.c.disabled
+similarity index 100%
+rename from libraries/WiFiClientSecure/src/esp_crt_bundle.c
+rename to libraries/WiFiClientSecure/src/esp_crt_bundle.c.disabled
+-- 
+2.38.0
+
