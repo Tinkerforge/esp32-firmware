@@ -3,10 +3,10 @@
         "status": {
         },
         "navbar": {
-            "nfc": "NFC"
+            "nfc": "NFC tags"
         },
         "content": {
-            "nfc": "NFC Unlock",
+            "nfc": "NFC tags",
 
             "authorized_tags": "Authorized tags",
 
