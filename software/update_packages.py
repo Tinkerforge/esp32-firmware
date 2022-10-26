@@ -24,8 +24,8 @@ for c in config_json:
     config[c['base'] + '-' + c['branch']] = c
 
     if c['commit'] != None:
-        config[c['base'] + '#' + c['branch'] + '$' + c['commit']] = c
-        config[c['base'] + '-' + c['branch'] + '$' + c['commit']] = c
+        config[c['base'] + '#' + c['branch'] + '_' + c['commit']] = c
+        config[c['base'] + '-' + c['branch'] + '_' + c['commit']] = c
 
 for name in sorted(os.listdir('packages')):
     if name == 'config.json':
@@ -116,6 +116,7 @@ for name in sorted(os.listdir('packages')):
                 prefix_fs = base + '#' + branch + '/'
             else:
                 prefix_zip = base + '-' + commit + '/'
+                prefix_fs = base + '#' + branch + '_' + commit + '/'
                 prefix_fs = base + '#' + branch + '$' + commit + '/'
 
             for n in zf.namelist():
