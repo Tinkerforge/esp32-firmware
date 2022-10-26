@@ -11,7 +11,7 @@
             "enable_write": "Enable control",
             "enable_write_description": "Enable limiting the current via Modbus/TCP.",
             "table": "Modbus table",
-            "tf": "Tinkeforge",
+            "tf": "Tinkerforge",
             "bender_emulate": "Bender CC613",
             "keba_emulate": "Keba c-series",
             "modbus_tcp": "Modbus/TCP",
