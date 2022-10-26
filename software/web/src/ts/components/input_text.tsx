@@ -17,23 +17,45 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Context } from "preact";
+import { h, Context, Fragment } from "preact";
 import {useContext} from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
+import { __ } from "../translation";
 
-interface InputTextProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput"> {
+import * as util from "../util";
+
+interface InputTextProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "pattern"> {
     idContext?: Context<string>
     onValue?: (value: string) => void
 }
 
-export function InputText(props: InputTextProps) {
+interface InputTextWithValidationProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput"> {
+    idContext?: Context<string>
+    onValue?: (value: string) => void
+    invalidFeedback: string
+}
+
+export function InputText<T extends (InputTextProps | InputTextWithValidationProps)>(props: util.NoExtraProperties<InputTextProps, T> | InputTextWithValidationProps) {
     let id = props.idContext === undefined ? "" : useContext(props.idContext);
+    let invalidFeedback = undefined;
+    if ("invalidFeedback" in props)
+        invalidFeedback = <div class="invalid-feedback">{props.invalidFeedback}</div>;
+    else if ("minLength" in props && !("maxLength" in props))
+        invalidFeedback = <div class="invalid-feedback">{__("component.input_text.min_only_prefix") + props.minLength.toString() + __("component.input_text.min_only_suffix")}</div>;
+    else if (!("minLength" in props) && "maxLength" in props)
+        invalidFeedback = <div class="invalid-feedback">{__("component.input_text.max_only_prefix") + props.maxLength.toString() + __("component.input_text.max_only_suffix")}</div>;
+    else if ("minLength" in props && "maxLength" in props)
+        invalidFeedback = <div class="invalid-feedback">{__("component.input_text.min_max_prefix") + props.minLength.toString() + __("component.input_text.min_max_infix") + props.maxLength.toString() + __("component.input_text.min_max_suffix")}</div>;
+
     return (
-        <input class="form-control"
-               id={id}
-               type="text"
-               onInput={props.onValue ? (e) => props.onValue((e.target as HTMLInputElement).value) : undefined}
-               readonly={!props.onValue}
-               {...props}/>
+        <>
+            <input class="form-control"
+                id={id}
+                type="text"
+                onInput={props.onValue ? (e) => props.onValue((e.target as HTMLInputElement).value) : undefined}
+                readonly={!props.onValue}
+                {...props}/>
+            {invalidFeedback}
+        </>
     );
 }

@@ -56,8 +56,8 @@ export class Network extends ConfigComponent<'network/config'> {
                                    required
                                    value={state.hostname}
                                    onValue={this.set("hostname")}
+                                   invalidFeedback={__("network.content.hostname_invalid")}
                                    />
-                        <div class="invalid-feedback">{__("network.content.hostname_invalid")}</div>
                     </FormRow>
 
                     <FormRow label={__("network.content.enable_mdns")}>

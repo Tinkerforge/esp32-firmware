@@ -86,8 +86,9 @@ export class Mqtt extends ConfigComponent<'mqtt/config'> {
                         <InputText maxLength={64}
                                    pattern="^[^#+$][^#+]*"
                                    value={state.global_topic_prefix}
-                                   onValue={this.set("global_topic_prefix")}/>
-                        <div class="invalid-feedback" data-i18n="mqtt.content.topic_prefix_invalid"></div>
+                                   onValue={this.set("global_topic_prefix")}
+                                   invalidFeedback={__("mqtt.content.topic_prefix_invalid")}
+                                   />
                     </FormRow>
 
                     <FormRow label={__("mqtt.content.client_name")}>

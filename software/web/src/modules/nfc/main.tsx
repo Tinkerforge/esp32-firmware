@@ -147,6 +147,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                                                    onValue={(v) => this.setTag(i, {tag_id: v})}
                                                    minLength={8} maxLength={29}
                                                    pattern="^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$"
+                                                   invalidFeedback={__("nfc.content.tag_id_invalid_feedback")}
                                                    required/>
                                     </FormGroup>
                                     <FormGroup label={__("nfc.script.user_id")}>
@@ -211,6 +212,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                                        onValue={(v) => this.setState({newTag: {...state.newTag, tag_id: v}})}
                                        minLength={8} maxLength={29}
                                        pattern="^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$"
+                                       invalidFeedback={__("nfc.content.tag_id_invalid_feedback")}
                                        required/>
                         </FormGroup>
                         <FormGroup label={__("nfc.content.add_tag_modal_tag_type")}>

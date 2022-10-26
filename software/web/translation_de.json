@@ -44,6 +44,15 @@
         "collapsed_section": {
             "show": "Anzeigen",
             "hide": "Verstecken"
+        },
+        "input_text": {
+            "min_only_prefix": "Mindestens ",
+            "min_only_suffix": " Zeichen erforderlich",
+            "max_only_prefix": "Maximal ",
+            "max_only_suffix": " Zeichen erlaubt",
+            "min_max_prefix": "Mindestens ",
+            "min_max_infix": ", aber maximal ",
+            "min_max_suffix": " Zeichen erforderlich"
         }
     },
     "util": {
