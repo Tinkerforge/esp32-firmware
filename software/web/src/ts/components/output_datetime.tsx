@@ -49,6 +49,7 @@ export function OutputDatetime(props: OutputDatetimeProps) {
                step={1}
                disabled={true}
                value={toIsoString(props.date)}
+               required
                />
     );
 }
