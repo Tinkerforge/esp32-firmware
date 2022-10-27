@@ -12,8 +12,8 @@
             "enable_mdns_desc": null
         },
         "script": {
-            "save_failed": "Speichern der Netzwerk&shy;einstellungen fehlgeschlagen",
-            "reboot_content_changed": "Netzwerk&shy;einstellungen"
+            "save_failed": "Speichern der Netzwerkeinstellungen fehlgeschlagen",
+            "reboot_content_changed": "Netzwerkeinstellungen"
         }
     }
 }

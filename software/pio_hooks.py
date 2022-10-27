@@ -21,6 +21,8 @@ from base64 import b64encode
 from zlib import crc32
 import util
 
+from hyphenations import hyphenations, allowed_missing
+
 NameFlavors = namedtuple('NameFlavors', 'space lower camel headless under upper dash camel_abbrv lower_no_space camel_constant_safe')
 
 class FlavoredName(object):
@@ -218,6 +220,29 @@ def check_translation(translation, parent_key=None):
 
         if isinstance(value, dict):
             check_translation(value, parent_key=parent_key + [key])
+
+HYPHENATE_THRESHOLD = 9
+
+missing_hyphenations = []
+
+def hyphenate(s):
+    # Replace longest words first. This prevents replacing parts of longer words.
+    for word in sorted(re.split('\W+', s.replace("&shy;", "")), key=lambda x: len(x), reverse=True):
+        if len(word) > HYPHENATE_THRESHOLD:
+            for l, r in hyphenations:
+                if word == l:
+                    s = s.replace(l, r)
+                    break
+            else:
+                missing_hyphenations.append(word)
+
+    return s
+
+def hyphenate_translation(translation, parent_key=None):
+    if parent_key == None:
+        parent_key = []
+
+    return {key: (hyphenate(value) if isinstance(value, str) else hyphenate_translation(value, parent_key=parent_key + [key])) for key, value in translation.items()}
 
 def main():
     subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "update_packages.py"])
@@ -473,6 +498,14 @@ def main():
         update_translation(translation, collect_translation(mod_path, override=True), override=True)
 
     check_translation(translation)
+    translation = hyphenate_translation(translation)
+
+    global missing_hyphenations
+    missing_hyphenations = sorted(set(missing_hyphenations) - allowed_missing)
+    if len(missing_hyphenations) > 0:
+        print("Missing hyphenations detected. Add thise to hyphenations.py!")
+        for x in missing_hyphenations:
+            print("    {}".format(x))
 
     for path in glob.glob(os.path.join('web', 'src', 'ts', 'translation_*.ts')):
         os.remove(path)
@@ -491,7 +524,7 @@ def main():
         f.write(data)
 
     if favicon_path == None:
-        print('Error: Favison missing')
+        print('Error: Favicon missing')
         sys.exit(1)
 
     with open(favicon_path, 'rb') as f:

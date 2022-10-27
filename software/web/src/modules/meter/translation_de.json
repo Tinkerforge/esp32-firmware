@@ -2,7 +2,7 @@
     "meter": {
         "status": {
             "charge_history": "Ladeverlauf",
-            "current_power": "Leistungs&shy;aufnahme"
+            "current_power": "Leistungsaufnahme"
         },
         "navbar": {
             "energy_meter": "Stromzähler"
@@ -13,8 +13,8 @@
             "live": "Live",
             "statistics": "Statistiken",
             "reset_statistics": "Zurücksetzen",
-            "power": "Leistungs&shy;aufnahme",
-            "energy": "Strom&shy;verbrauch",
+            "power": "Leistungsaufnahme",
+            "energy": "Stromverbrauch",
             "energy_since_reset": "seit dem letzten Zurücksetzen",
             "energy_lifetime": "seit Herstellung des Stromzählers",
 
@@ -37,82 +37,82 @@
             "detailed_current": "Strom",
             "detailed_current_desc": "L1, L2, L3",
 
-            "detailed_power": "Wirk&shy;leistung",
+            "detailed_power": "Wirkleistung",
             "detailed_power_desc": "L1, L2, L3",
 
-            "detailed_volt_amps": "Schein&shy;leistung",
+            "detailed_volt_amps": "Scheinleistung",
             "detailed_volt_amps_desc": "L1, L2, L3",
 
-            "detailed_volt_amps_reactive": "Blind&shy;leistung",
+            "detailed_volt_amps_reactive": "Blindleistung",
             "detailed_volt_amps_reactive_desc": "L1, L2, L3",
 
-            "detailed_power_factor": "Leistungs&shy;faktor",
-            "detailed_power_factor_desc": "L1, L2, L3; Das Vorzeichen des Leistungs&shy;faktors gibt die Richtung des Stromflusses an.",
+            "detailed_power_factor": "Leistungsfaktor",
+            "detailed_power_factor_desc": "L1, L2, L3; Das Vorzeichen des Leistungsfaktors gibt die Richtung des Stromflusses an.",
 
-            "detailed_phase_angle": "Phasen&shy;verschiebung",
+            "detailed_phase_angle": "Phasenverschiebung",
             "detailed_phase_angle_desc": "L1, L2, L3",
 
-            "detailed_average_line_to_neutral_volts": "Durch&shy;schnitt&shy;liche Spannung",
+            "detailed_average_line_to_neutral_volts": "Durchschnittliche Spannung",
             "detailed_average_line_to_neutral_volts_desc": "gegen Neutral",
 
-            "detailed_average_line_current": "Durch&shy;schnitt&shy;licher Strom",
+            "detailed_average_line_current": "Durchschnittlicher Strom",
             "detailed_average_line_current_desc": "",
 
             "detailed_sum_of_line_currents": "Summe der Phasenströme",
             "detailed_sum_of_line_currents_desc": "",
 
-            "detailed_total_system_power": "Gesamt&shy;wirk&shy;leistung",
+            "detailed_total_system_power": "Gesamtwirkleistung",
             "detailed_total_system_power_desc": "",
 
-            "detailed_total_system_volt_amps": "Gesamt&shy;schein&shy;leistung",
+            "detailed_total_system_volt_amps": "Gesamtscheinleistung",
             "detailed_total_system_volt_amps_desc": "",
 
-            "detailed_total_system_var": "Gesamt&shy;blind&shy;leistung",
+            "detailed_total_system_var": "Gesamtblindleistung",
             "detailed_total_system_var_desc": "",
 
-            "detailed_total_system_power_factor": "Gesamt&shy;leistungs&shy;faktor",
+            "detailed_total_system_power_factor": "Gesamtleistungsfaktor",
             "detailed_total_system_power_factor_desc": "",
 
-            "detailed_total_system_phase_angle": "Gesamt&shy;phasen&shy;verschiebung",
+            "detailed_total_system_phase_angle": "Gesamtphasenverschiebung",
             "detailed_total_system_phase_angle_desc": "",
 
-            "detailed_frequency_of_supply_voltages": "Frequenz der Versorgungs&shy;spannung",
+            "detailed_frequency_of_supply_voltages": "Frequenz der Versorgungsspannung",
             "detailed_frequency_of_supply_voltages_desc": "",
 
-            "detailed_total_import_kwh": "Wirk&shy;energie (Import)",
+            "detailed_total_import_kwh": "Wirkenergie (Import)",
             "detailed_total_import_kwh_desc": "vom Fahrzeug aufgenommen",
 
-            "detailed_total_export_kwh": "Wirk&shy;energie (Export)",
+            "detailed_total_export_kwh": "Wirkenergie (Export)",
             "detailed_total_export_kwh_desc": "vom Fahrzeug abgegeben",
 
-            "detailed_total_import_kvarh": "Blind&shy;energie (Import)",
+            "detailed_total_import_kvarh": "Blindenergie (Import)",
             "detailed_total_import_kvarh_desc": "vom Fahrzeug aufgenommen",
 
-            "detailed_total_export_kvarh": "Blind&shy;energie (Export)",
+            "detailed_total_export_kvarh": "Blindenergie (Export)",
             "detailed_total_export_kvarh_desc": "vom Fahrzeug abgegeben",
 
-            "detailed_total_vah": "Gesamt&shy;schein&shy;energie",
+            "detailed_total_vah": "Gesamtscheinenergie",
             "detailed_total_vah_desc": "",
 
-            "detailed_ah": "Trans&shy;portierte elektrische Ladung",
+            "detailed_ah": "Transportierte elektrische Ladung",
             "detailed_ah_desc": "",
 
-            "detailed_total_system_power_demand": "Bezogene Wirk&shy;leistung",
+            "detailed_total_system_power_demand": "Bezogene Wirkleistung",
             "detailed_total_system_power_demand_desc": "entspricht Import - Export",
 
-            "detailed_maximum_total_system_power_demand": "Max. bezogene Wirk&shy;leistung",
+            "detailed_maximum_total_system_power_demand": "Max. bezogene Wirkleistung",
             "detailed_maximum_total_system_power_demand_desc": "höchster gemessener Wert",
 
-            "detailed_total_system_va_demand": "Bezogene Schein&shy;leistung",
+            "detailed_total_system_va_demand": "Bezogene Scheinleistung",
             "detailed_total_system_va_demand_desc": "entspricht Import - Export",
 
-            "detailed_maximum_total_system_va_demand": "Max. bezogene Schein&shy;leistung",
+            "detailed_maximum_total_system_va_demand": "Max. bezogene Scheinleistung",
             "detailed_maximum_total_system_va_demand_desc": "höchster gemessener Wert",
 
-            "detailed_neutral_current_demand": "Bezogener Neutral&shy;leiter&shy;strom",
+            "detailed_neutral_current_demand": "Bezogener Neutralleiterstrom",
             "detailed_neutral_current_demand_desc": "",
 
-            "detailed_maximum_neutral_current_demand": "Max. bezogener Neutral&shy;leiter&shy;strom",
+            "detailed_maximum_neutral_current_demand": "Max. bezogener Neutralleiterstrom",
             "detailed_maximum_neutral_current_demand_desc": "höchster gemessener Wert",
 
             "detailed_line1_to_line2_volts": "Spannung L1 zu L2",
@@ -124,10 +124,10 @@
             "detailed_line3_to_line1_volts": "Spannung L3 zu L1",
             "detailed_line3_to_line1_volts_desc": "",
 
-            "detailed_average_line_to_line_volts": "Durch&shy;schnitt&shy;liche Spannung zwischen Phasen",
+            "detailed_average_line_to_line_volts": "Durchschnittliche Spannung zwischen Phasen",
             "detailed_average_line_to_line_volts_desc": "",
 
-            "detailed_neutral_current": "Neutral&shy;leiter&shy;strom",
+            "detailed_neutral_current": "Neutralleiterstrom",
             "detailed_neutral_current_desc": "",
 
             "detailed_ln_volts_thd": "Total Harmonic Distortion (THD) der Spannung",
@@ -136,10 +136,10 @@
             "detailed_current_thd": "Total Harmonic Distortion (THD) des Stroms",
             "detailed_current_thd_desc": "L1, L2, L3",
 
-            "detailed_average_line_to_neutral_volts_thd": "Durch&shy;schnitt&shy;liche Spannungs-THD",
+            "detailed_average_line_to_neutral_volts_thd": "Durchschnittliche Spannungs-THD",
             "detailed_average_line_to_neutral_volts_thd_desc": "",
 
-            "detailed_average_line_current_thd": "Durch&shy;schnitt&shy;liche Strom-THD",
+            "detailed_average_line_current_thd": "Durchschnittliche Strom-THD",
             "detailed_average_line_current_thd_desc": "",
 
             "detailed_current_demand": "Bezogener Strom",
@@ -157,13 +157,13 @@
             "detailed_line3_to_line1_volts_thd": "Spannungs-THD L3 zu L1",
             "detailed_line3_to_line1_volts_thd_desc": "",
 
-            "detailed_average_line_to_line_volts_thd": "Durch&shy;schnitt&shy;liche Spannungs-THD zwischen Phasen",
+            "detailed_average_line_to_line_volts_thd": "Durchschnittliche Spannungs-THD zwischen Phasen",
             "detailed_average_line_to_line_volts_thd_desc": "",
 
-            "detailed_total_kwh_sum": "Summe der Gesamt&shy;wirk&shy;energien",
+            "detailed_total_kwh_sum": "Summe der Gesamtwirkenergien",
             "detailed_total_kwh_sum_desc": "Import + Export aller Phasen",
 
-            "detailed_total_kvarh_sum": "Summe der Gesamt&shy;blind&shy;energien",
+            "detailed_total_kvarh_sum": "Summe der Gesamtblindenergien",
             "detailed_total_kvarh_sum_desc": "Import + Export aller Phasen",
 
             "detailed_import_kwh": "Wirkenergie (Import)",
@@ -172,16 +172,16 @@
             "detailed_export_kwh": "Wirkenergie (Export)",
             "detailed_export_kwh_desc": "L1, L2, L3; vom Fahrzeug abgegeben",
 
-            "detailed_total_kwh": "Gesamt&shy;wirkenergie",
+            "detailed_total_kwh": "Gesamtwirkenergie",
             "detailed_total_kwh_desc": "L1, L2, L3; Import + Export",
 
-            "detailed_import_kvarh": "Blind&shy;energie (Import)",
+            "detailed_import_kvarh": "Blindenergie (Import)",
             "detailed_import_kvarh_desc": "L1, L2, L3; vom Fahrzeug aufgenommen",
 
-            "detailed_export_kvarh": "Blind&shy;energie (Export)",
+            "detailed_export_kvarh": "Blindenergie (Export)",
             "detailed_export_kvarh_desc": "L1, L2, L3; vom Fahrzeug abgegeben",
 
-            "detailed_total_kvarh": "Gesamt&shy;blind&shy;energie",
+            "detailed_total_kvarh": "Gesamtblindenergie",
             "detailed_total_kvarh_desc": "L1, L2, L3; Import + Export"
         },
         "script": {

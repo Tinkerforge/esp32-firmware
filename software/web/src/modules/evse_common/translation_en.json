@@ -81,7 +81,7 @@
             "gpio_high": "High",
             "debug": "Charge log",
             "debug_start": "Start",
-            "debug_stop": "Stop + download",
+            "debug_stop": "Stop+Download",
             "debug_description": "Create charge log",
             "debug_description_muted": "to diagnose charging problems",
 

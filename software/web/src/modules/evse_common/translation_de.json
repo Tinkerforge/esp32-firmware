@@ -81,7 +81,7 @@
             "gpio_high": "High",
             "debug": "Ladeprotokoll",
             "debug_start": "Start",
-            "debug_stop": "Stop + Download",
+            "debug_stop": "Stop+Download",
             "debug_description": "Ladeprotokoll erstellen",
             "debug_description_muted": "zur Diagnose bei Ladeproblemen",
 

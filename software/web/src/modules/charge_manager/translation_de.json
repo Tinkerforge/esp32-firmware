@@ -15,12 +15,12 @@
         },
         "content": {
             "charge_manager": null,
-            "enable_charge_manager": "Last&shy;management&shy;modus",
+            "enable_charge_manager": "Lastmanagementmodus",
             "enable_charge_manager_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
             "enable_watchdog": "Watchdog aktiviert",
             "enable_watchdog_muted": "nur bei API-Benutzung aktivieren (für den normalen Lastmanagement-Betrieb nicht notwendig!)",
             "enable_watchdog_desc": "Setzt den verfügbaren Strom auf die Voreinstellung, wenn er nicht spätestens alle 30 Sekunden aktualisiert wurde",
-            "verbose": "Strom&shy;verteilungs&shy;protokoll aktiviert",
+            "verbose": "Stromverteilungsprotokoll aktiviert",
             "verbose_desc": "Erzeugt Einträge im Ereignis-Log, wenn Strom umverteilt wird",
             "default_available_current": "Voreingestellt verfügbarer Strom",
             "default_available_current_muted": "wird nach Neustart des Lastmanagers verwendet",
@@ -30,7 +30,7 @@
             "minimum_current": "Minimaler Ladestrom",
             "minimum_current_muted": "muss mindestens verfügbar sein, damit ein Ladevorgang beginnt",
 
-            "configuration_mode": "Experten&shy;einstellungen",
+            "configuration_mode": "Experteneinstellungen",
             "configuration_mode_muted": "",
             "show_hide_expert": "Anzeigen / Verstecken",
 
