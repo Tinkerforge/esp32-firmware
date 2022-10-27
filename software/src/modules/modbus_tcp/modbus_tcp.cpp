@@ -17,8 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-// #include "modules.h"
-
 #include <Arduino.h>
 
 #include "esp_modbus_common.h"
