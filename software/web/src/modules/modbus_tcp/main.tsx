@@ -28,15 +28,10 @@ import { translate_unchecked, __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
-import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
-import { InputPassword } from "../../ts/components/input_password";
-import { Switch } from "../../ts/components/switch";
 import { InputSelect } from "src/ts/components/input_select";
-import { Form } from "react-bootstrap";
 import { EVSE_SLOT_MODBUS_TCP } from "../evse_common/api";
 import { CollapsedSection } from "src/ts/components/collapsed_section";
-import { Table} from "react-bootstrap";
 
 type ModbusTCPConfig = API.getType['modbus_tcp/config'];
 
