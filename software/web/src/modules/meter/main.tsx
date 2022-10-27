@@ -168,7 +168,7 @@ export class Meter extends Component<{}, MeterState> {
                     <div class="row">
                         <div class="col-lg-6">
                         <div
-                            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 mb-3 border-bottom">
+                            class="d-flex justify-content-between align-items-center pt-3 mb-3 border-bottom">
                             <span class="h3">{__("meter.status.charge_history")}</span>
                             <div>
                                 <InputSelect value={this.state.graph_selected} onValue={(v) => {

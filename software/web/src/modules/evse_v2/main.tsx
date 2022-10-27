@@ -242,7 +242,7 @@ export class EVSEV2 extends Component<{}, EVSEState> {
                     <FormRow label={__("evse.content.dc_fault_current_state")} label_muted={__("evse.content.dc_fault_current_state_desc")}>
                         <div class="row form-group mx-n1">
                             <IndicatorGroup
-                                class="mb-1 col px-1"
+                                class="mb-1 col px-1 flex-wrap"
                                 value={state.dc_fault_current_state}
                                 items={[
                                     ["success", __("evse.content.dc_fault_current_ok")],

@@ -25,6 +25,7 @@ interface CollapsedSectionProps {
     label: string
     children: VNode | VNode[]
     colClasses?: string
+    collapseClasses?: string
 }
 
 interface CollapsedSectionState {
@@ -49,7 +50,7 @@ export class CollapsedSection extends Component<CollapsedSectionProps, Collapsed
                     </Button>
                 </div>
             </div>
-            <Collapse in={state.show}>
+            <Collapse in={state.show} className={props.collapseClasses}>
                 <div>
                     {toChildArray(props.children)}
                 </div>
