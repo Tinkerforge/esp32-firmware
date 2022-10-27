@@ -101,7 +101,7 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
                     {util.range(input_count).map(i => this.trow(translate_unchecked(`modbus_tcp.docu.register${i}`),
                                                                 translate_unchecked(`modbus_tcp.docu.name${i}`),
                                                                 translate_unchecked(`modbus_tcp.docu.type${i}`),
-                                                                translate_unchecked(`modbus_tcp.docu.type${i}`),
+                                                                translate_unchecked(`modbus_tcp.docu.num${i}`),
                                                                 translate_unchecked(`modbus_tcp.docu.expl${i}`)))}
                 </tbody>
                 <thead>
@@ -113,7 +113,7 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
                     {util.range(input_count, holding_count).map(i => this.trow(translate_unchecked(`modbus_tcp.docu.register${i}`),
                                                                                 translate_unchecked(`modbus_tcp.docu.name${i}`),
                                                                                 translate_unchecked(`modbus_tcp.docu.type${i}`),
-                                                                                translate_unchecked(`modbus_tcp.docu.type${i}`),
+                                                                                translate_unchecked(`modbus_tcp.docu.num${i}`),
                                                                                 translate_unchecked(`modbus_tcp.docu.expl${i}`)))}
                 </tbody>
                 <thead>
@@ -124,7 +124,7 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
                     {util.range(holding_count, discrete_count).map(i => this.trow(translate_unchecked(`modbus_tcp.docu.register${i}`),
                                                                                     translate_unchecked(`modbus_tcp.docu.name${i}`),
                                                                                     translate_unchecked(`modbus_tcp.docu.type${i}`),
-                                                                                    translate_unchecked(`modbus_tcp.docu.type${i}`),
+                                                                                    translate_unchecked(`modbus_tcp.docu.num${i}`),
                                                                                     translate_unchecked(`modbus_tcp.docu.expl${i}`)))}
                 <tbody>
                 </tbody>
