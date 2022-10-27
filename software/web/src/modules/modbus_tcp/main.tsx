@@ -23,7 +23,7 @@ import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 
 import { h, render, Fragment } from "preact";
-import { __ } from "../../ts/translation";
+import { translate_unchecked, __ } from "../../ts/translation";
 
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
@@ -35,12 +35,19 @@ import { Switch } from "../../ts/components/switch";
 import { InputSelect } from "src/ts/components/input_select";
 import { Form } from "react-bootstrap";
 import { EVSE_SLOT_MODBUS_TCP } from "../evse_common/api";
+import { CollapsedSection } from "src/ts/components/collapsed_section";
+import { Table} from "react-bootstrap";
 
 type ModbusTCPConfig = API.getType['modbus_tcp/config'];
 
 interface config {
     evse_enable: boolean
 }
+
+const input_count = 21;
+const holding_count = 5 + input_count;
+const discrete_count = 11 + holding_count;
+
 
 export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> {
     constructor() {
@@ -59,22 +66,84 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
         await super.sendSave(t, cfg);
     }
 
+    trow(register: string, name: string, type: string, num: string, explanation: string)
+    {
+        return  <tr>
+                    <td>{register}</td>
+                    <td>{name}</td>
+                    <td>{type}</td>
+                    <td>{num}</td>
+                    <td>{explanation}</td>
+                </tr>;
+    }
+
     render(props: {}, state: ModbusTCPConfig & config) {
         if (!state)
             return (<></>);
 
+        let docu = <CollapsedSection label={__("modbus_tcp.content.table_docu")}>
+            <table class="table table-bordered table-sm">
+                <thead class="thead-light">
+                    <tr>
+                        <th scope="col">{__("modbus_tcp.docu.register")}</th>
+                        <th scope="col">{__("modbus_tcp.docu.name")}</th>
+                        <th scope="col">{__("modbus_tcp.docu.type")}</th>
+                        <th scope="col">{__("modbus_tcp.docu.num_regs")}</th>
+                        <th scope="col">{__("modbus_tcp.docu.explanation")}</th>
+                    </tr>
+                </thead>
+                <thead>
+                    <tr>
+                        <th colSpan={5} >{__("modbus_tcp.docu.input_register")}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {util.range(input_count).map(i => this.trow(translate_unchecked(`modbus_tcp.docu.register${i}`),
+                                                                translate_unchecked(`modbus_tcp.docu.name${i}`),
+                                                                translate_unchecked(`modbus_tcp.docu.type${i}`),
+                                                                translate_unchecked(`modbus_tcp.docu.type${i}`),
+                                                                translate_unchecked(`modbus_tcp.docu.expl${i}`)))}
+                </tbody>
+                <thead>
+                    <tr>
+                        <th colSpan={5}>{__("modbus_tcp.docu.holding_register")}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {util.range(input_count, holding_count).map(i => this.trow(translate_unchecked(`modbus_tcp.docu.register${i}`),
+                                                                                translate_unchecked(`modbus_tcp.docu.name${i}`),
+                                                                                translate_unchecked(`modbus_tcp.docu.type${i}`),
+                                                                                translate_unchecked(`modbus_tcp.docu.type${i}`),
+                                                                                translate_unchecked(`modbus_tcp.docu.expl${i}`)))}
+                </tbody>
+                <thead>
+                    <tr>
+                        <th colSpan={5}>{__("modbus_tcp.docu.discrete_input")}</th>
+                    </tr>
+                </thead>
+                    {util.range(holding_count, discrete_count).map(i => this.trow(translate_unchecked(`modbus_tcp.docu.register${i}`),
+                                                                                    translate_unchecked(`modbus_tcp.docu.name${i}`),
+                                                                                    translate_unchecked(`modbus_tcp.docu.type${i}`),
+                                                                                    translate_unchecked(`modbus_tcp.docu.type${i}`),
+                                                                                    translate_unchecked(`modbus_tcp.docu.expl${i}`)))}
+                <tbody>
+                </tbody>
+            </table>
+        </CollapsedSection>
+
         return (
             <>
                 <ConfigForm id="modbus_tcp_config_form" title={__("modbus_tcp.content.modbus_tcp")} onSave={() => this.save()} onDirtyChange={(d) => this.ignore_updates = d}>
-                    <FormRow label={__("modbus_tcp.content.enable")}>
-                        <Switch desc={__("modbus_tcp.content.enable_description")}
-                                checked={this.state.enable}
-                                onClick={this.toggle("enable")}/>
-                    </FormRow>
-                    <FormRow label={__("modbus_tcp.content.enable_write")}>
-                        <Switch desc={__("modbus_tcp.content.enable_write_description")}
-                                checked={this.state.evse_enable}
-                                onClick={this.toggle("evse_enable")}/>
+                <FormRow label={__("modbus_tcp.content.enable")}>
+                        <InputSelect items={[
+                            ["0", __("modbus_tcp.content.disabled")],
+                            ["1", __("modbus_tcp.content.read_only")],
+                            ["2", __("modbus_tcp.content.full_access")],
+                        ]}
+                        value={this.state.enable && this.state.evse_enable ? "2" : this.state.enable ? "1" : "0"}
+                        onValue={(v) => {
+                            this.setState({enable: Number(v) != 0, evse_enable: v == "2"});
+                        }}></InputSelect>
                     </FormRow>
                     <FormRow label={__("modbus_tcp.content.port")} label_muted={__("modbus_tcp.content.port_muted")}>
                         <InputNumber value={state.port}
@@ -94,6 +163,9 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
                         }}></InputSelect>
                     </FormRow>
                 </ConfigForm>
+                {
+                    this.state.table == 0 ? docu : <></>
+                }
             </>
         );
     }

@@ -480,8 +480,17 @@ export async function put(url: string, payload: any, timeout_ms: number = 5000) 
 
 export const async_modal_ref: RefObject<AsyncModal> = createRef();
 
-export function range(i: number) {
-    return [...Array(i).keys()];
+export function range(stopOrStart: number, stop?: number) {
+    if (stop === undefined) {
+        stop = stopOrStart
+        stopOrStart = 0
+    }
+
+    const len = (stop - stopOrStart)
+    if (len <= 0)
+        return [];
+
+    return [...Array(len).keys()].map(i => i + stopOrStart);
 }
 
 export async function wait(t: number): Promise<void> {
