@@ -61,14 +61,14 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
         await super.sendSave(t, cfg);
     }
 
-    trow(register: string, name: string, type: string, num: string, explanation: string)
+    trow(register: string, name: string, type: string, feature :string, explanation: string)
     {
         return  <tr>
-                    <td>{register}</td>
-                    <td>{name}</td>
-                    <td>{type}</td>
-                    <td>{num}</td>
-                    <td>{explanation}</td>
+                    <td dangerouslySetInnerHTML={{__html: register}}></td>
+                    <td dangerouslySetInnerHTML={{__html: name}}></td>
+                    <td dangerouslySetInnerHTML={{__html: type}}></td>
+                    <td dangerouslySetInnerHTML={{__html: feature}}></td>
+                    <td dangerouslySetInnerHTML={{__html: explanation}}></td>
                 </tr>;
     }
 
@@ -76,14 +76,15 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
         if (!state)
             return (<></>);
 
-        let docu = <CollapsedSection label={__("modbus_tcp.content.table_docu")}>
+        let docu = <CollapsedSection label={__("modbus_tcp.content.table_docu")} collapseClasses="row">
+            <div class="col-xl-8">
             <table class="table table-bordered table-sm">
                 <thead class="thead-light">
                     <tr>
                         <th scope="col">{__("modbus_tcp.docu.register")}</th>
                         <th scope="col">{__("modbus_tcp.docu.name")}</th>
                         <th scope="col">{__("modbus_tcp.docu.type")}</th>
-                        <th scope="col">{__("modbus_tcp.docu.num_regs")}</th>
+                        <th scope="col">{__("modbus_tcp.docu.feature")}</th>
                         <th scope="col">{__("modbus_tcp.docu.explanation")}</th>
                     </tr>
                 </thead>
@@ -96,7 +97,7 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
                     {util.range(input_count).map(i => this.trow(translate_unchecked(`modbus_tcp.docu.register${i}`),
                                                                 translate_unchecked(`modbus_tcp.docu.name${i}`),
                                                                 translate_unchecked(`modbus_tcp.docu.type${i}`),
-                                                                translate_unchecked(`modbus_tcp.docu.num${i}`),
+                                                                translate_unchecked(`modbus_tcp.docu.feat${i}`),
                                                                 translate_unchecked(`modbus_tcp.docu.expl${i}`)))}
                 </tbody>
                 <thead>
@@ -108,7 +109,7 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
                     {util.range(input_count, holding_count).map(i => this.trow(translate_unchecked(`modbus_tcp.docu.register${i}`),
                                                                                 translate_unchecked(`modbus_tcp.docu.name${i}`),
                                                                                 translate_unchecked(`modbus_tcp.docu.type${i}`),
-                                                                                translate_unchecked(`modbus_tcp.docu.num${i}`),
+                                                                                translate_unchecked(`modbus_tcp.docu.feat${i}`),
                                                                                 translate_unchecked(`modbus_tcp.docu.expl${i}`)))}
                 </tbody>
                 <thead>
@@ -119,11 +120,12 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
                     {util.range(holding_count, discrete_count).map(i => this.trow(translate_unchecked(`modbus_tcp.docu.register${i}`),
                                                                                     translate_unchecked(`modbus_tcp.docu.name${i}`),
                                                                                     translate_unchecked(`modbus_tcp.docu.type${i}`),
-                                                                                    translate_unchecked(`modbus_tcp.docu.num${i}`),
+                                                                                    translate_unchecked(`modbus_tcp.docu.feat${i}`),
                                                                                     translate_unchecked(`modbus_tcp.docu.expl${i}`)))}
                 <tbody>
                 </tbody>
             </table>
+            </div>
         </CollapsedSection>
 
         return (
