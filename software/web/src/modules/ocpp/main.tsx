@@ -20,6 +20,7 @@
 import $ from "../../ts/jq";
 
 import * as API from "../../ts/api";
+import * as util from "../../ts/util";
 
 import { h, render, Component, Fragment, VNode} from "preact";
 import { __ } from "../../ts/translation";
@@ -29,6 +30,7 @@ import { FormRow } from "../../ts/components/form_row";
 import { InputText } from "../../ts/components/input_text";
 import { ConfigForm } from "../../ts/components/config_form";
 import { ConfigComponent } from "../../ts/components/config_component";
+import { Button } from "react-bootstrap";
 
 type OcppConfig = API.getType['ocpp/config']
 
@@ -61,6 +63,24 @@ export class Ocpp extends ConfigComponent<'ocpp/config'> {
                                    maxLength={128}
                                    value={state.url}
                                    onValue={this.set("url")}/>
+                    </FormRow>
+                    <FormRow label={__("ocpp.content.reset")} label_muted={__("ocpp.content.reset_muted")}>
+                        <Button variant="danger" className="form-control" onClick={async () =>{
+                            const modal = util.async_modal_ref.current;
+                            if (!await modal.show({
+                                    title: __("ocpp.content.reset_title"),
+                                    body: __("ocpp.content.reset_title_text"),
+                                    no_text: __("ocpp.content.abort_reset"),
+                                    yes_text: __("ocpp.content.confirm_reset"),
+                                    no_variant: "secondary",
+                                    yes_variant: "danger"
+                                }))
+                                return;
+
+                            API.call("ocpp/reset", null, __("ocpp.content.reset_failed"), __("ocpp.script.reboot_content_changed"));
+                            }}>
+                            {__("ocpp.content.reset")}
+                        </Button>
                     </FormRow>
                 </ConfigForm>
             </>

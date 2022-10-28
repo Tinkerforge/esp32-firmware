@@ -35,6 +35,8 @@ void Ocpp::pre_setup()
         {"enable", Config::Bool(false)},
         {"url", Config::Str("", 0, 128)}
     });
+
+    reset = Config::Null();
 }
 
 void Ocpp::setup()
@@ -57,6 +59,9 @@ void Ocpp::setup()
 void Ocpp::register_urls()
 {
     api.addPersistentConfig("ocpp/config", &config, {}, 1000);
+    api.addCommand("ocpp/reset", &reset, {}, [](){
+        remove_directory("/ocpp");
+    }, true);
 }
 
 void Ocpp::loop()

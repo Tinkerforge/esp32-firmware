@@ -9,7 +9,15 @@
             "ocpp": "OCPP",
             "enable_ocpp": "OCPP enabled",
             "enable_ocpp_desc": "This allows controlling the charger over the configured OCPP server.",
-            "endpoint_url": "Endpoint URL"
+            "endpoint_url": "Endpoint URL",
+
+            "reset": "Reset OCPP state",
+            "reset_muted": "",
+            "reset_title": "Reset OCPP state?",
+            "reset_title_text": "This resets the OCPP state completely. <strong>Transaction information not transmitted up to now will be lost!</strong>.",
+            "abort_reset": "Abort",
+            "confirm_reset": "Reset",
+            "reset_failed": "Failed to reset OCPP state"
         },
         "script": {
             "save_failed": "Failed to save the OCPP configuration.",

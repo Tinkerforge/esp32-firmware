@@ -3,3 +3,4 @@ export interface config {
     url: string
 }
 
+export interface reset {}

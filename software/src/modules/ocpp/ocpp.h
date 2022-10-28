@@ -46,4 +46,5 @@ private:
     ConfigRoot config;
     ConfigRoot config_in_use;
     ConfigRoot state;
+    ConfigRoot reset;
 };

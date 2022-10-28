@@ -9,7 +9,15 @@
             "ocpp": "OCPP",
             "enable_ocpp": "OCPP aktiviert",
             "enable_ocpp_desc": "Hierdurch kann die Wallbox über den konfigurierten OCPP-Server kontrolliert werden.",
-            "endpoint_url": "Endpoint-URL"
+            "endpoint_url": "Endpoint-URL",
+
+            "reset": "Zurücksetzen",
+            "reset_muted": "Setzt den gesamten OCPP-Zustand zurück",
+            "reset_title": "OCPP-Zustand zurücksetzen?",
+            "reset_title_text": "Hiermit wird der gesamte OCPP-Zustand zurückgesetzt. <strong>Bisher nicht erfolgreiche Transaktionsdaten gehen verloren</strong>.",
+            "abort_reset": "Abbrechen",
+            "confirm_reset": "Zurücksetzen",
+            "reset_failed": "Zurücksetzen des OCPP-Zustands fehlgeschlagen"
         },
         "script": {
             "save_failed": "Speichern der OCPP-Einstellungen fehlgeschlagen.",
