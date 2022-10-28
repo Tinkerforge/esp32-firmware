@@ -342,6 +342,8 @@ en_hyph = [
     "pass-phrase",
     "re-distri-buted",
     "re-estab-lished",
+    "Re-gis-ter",
+    "ad-dress",
     "Re-sis-tances",
     "re-start-ing",
     "se-para-tion",
@@ -364,6 +366,8 @@ en_hyph = [
     "measure-ments",
     "success-fully",
     "tinker-forge",
+    "Docu-men-tation",
+    "milli-ampere"
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
