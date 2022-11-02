@@ -691,11 +691,15 @@ void remove_directory(const char *path)
     // LittleFS instead. Calling ::rmdir directly bypasses
     // this and other helpful checks.
     for_file_in(path, [](File *f) {
+            bool dir = f->isDirectory();
             String file_path = f->path();
             f->close();
-            LittleFS.remove(file_path);
+            if (dir)
+                remove_directory(file_path.c_str());
+            else
+                LittleFS.remove(file_path);
             return true;
-        });
+        }, false);
 
     ::rmdir((String("/spiffs/") + path).c_str());
 }
