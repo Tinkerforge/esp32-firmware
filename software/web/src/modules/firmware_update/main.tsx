@@ -113,6 +113,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
                         select_file={__("firmware_update.content.select_file")}
                         upload={__("firmware_update.content.update")}
                         url="/flash_firmware"
+                        accept=".bin"
 
                         timeout_ms={120 * 1000}
                         onUploadStart={async (f) => this.checkFirmware(f)}
