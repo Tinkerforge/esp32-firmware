@@ -228,7 +228,7 @@ def get_espefuse_tasks_with_two_int_format():
     block3_bytes = b''.join([r.to_bytes(4, "little") for r in blocks[3]])
     passphrase, uid = block3_to_payload(block3_bytes, True)
 
-    if passphrase == '1-1-1-1' and uid == '1':
+    if passphrase == '1-1-1-1' and uid == '000-0000':
         have_to_set_block_3 = True
     else:
         if uid == 0:
