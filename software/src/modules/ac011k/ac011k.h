@@ -156,7 +156,7 @@ public:
     /* GD Firmware updater */
     bool handle_update_chunk(int command, WebServerRequest request, size_t chunk_index, uint8_t *data, size_t chunk_length, bool final, size_t complete_length);
     bool handle_update_chunk1(int command, WebServerRequest request, size_t chunk_index, uint8_t *data, size_t chunk_length, bool final, size_t complete_length);
-    bool handle_update_chunk2(int command, WebServerRequest request, size_t chunk_index, uint8_t *data, size_t chunk_length, bool final, size_t complete_length);
+    bool handle_update_chunk2(int command, WebServerRequest request, size_t chunk_index, uint8_t *data, size_t chunk_length);
     uint32_t calculated_checksum = 0;
     uint32_t checksum = 0;
     uint32_t checksum_offset = 0;

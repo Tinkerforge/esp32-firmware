@@ -222,6 +222,9 @@ uint16_t crc16_modbus(uint8_t *buffer, uint32_t length) {
 String AC011K::get_hex_privcomm_line(byte *data) {
     #define LOG_LEN 4048 //TODO work without such a big buffer by writing line by line
     char log[LOG_LEN] = {0};
+
+    if (!(data[4] == 0xAB and data[14] == 3)) { // suppress logging of the whole GD firmware during flashing
+
     char *local_log = log;
     uint16_t len = (uint16_t)(data[7] << 8 | data[6]) + 10; // payload length + 10 bytes header and crc
     if (len > 1000) { // mqtt buffer is the limiting factor
@@ -242,6 +245,9 @@ String AC011K::get_hex_privcomm_line(byte *data) {
     }
     local_log += snprintf(local_log, LOG_LEN - (local_log - log), "\r\n");
     logger.write(log, local_log - log);
+    
+    }
+    
     return String(log);
 }
 
@@ -292,9 +298,7 @@ void AC011K::sendCommand(byte *data, int datasize, byte sendSequenceNumber) {
     String cmdText = "";
     switch (PrivCommTxBuffer[4]) {
         case 0xA3: cmdText = "- Status data ack"; break;
-        case 0xA4:
-            cmdText = "- Heartbeat ack " + String(timeStr(PrivCommTxBuffer+9));
-            break;
+        case 0xA4: cmdText = "- Heartbeat ack " + String(timeStr(PrivCommTxBuffer+9)); break;
         case 0xA6: if (PrivCommTxBuffer[72] == 0x40) cmdText = "- Stop charging request"; else cmdText = "- Start charging request"; break;
         case 0xA7: if (PrivCommTxBuffer[40] == 0x10) cmdText = "- Stop charging command"; else cmdText = "- Start charging command"; break;
         case 0xA8: cmdText = "- Power data ack"; break;
@@ -935,6 +939,27 @@ void AC011K::register_urls()
         return handle_update_chunk1(3, request, index, data, len, final, request.contentLength());
     });
 
+    server.on("/evse/reflash", HTTP_PUT, [this](WebServerRequest request){
+        if (update_aborted)
+            return request.unsafe_ResponseAlreadySent(); // Already sent in upload callback.
+        this->firmware_update_running = false;
+        if (!firmware_update_allowed) {
+            request.send(423, "text/plain", "vehicle connected");
+            return request.unsafe_ResponseAlreadySent(); // Already sent in upload callback.
+        }
+        /* request.send(Update.hasError() ? 400: 200, "text/plain", Update.hasError() ? Update.errorString() : "Update OK"); */
+        return request.send(200, "text/plain", "Update OK");
+    },[this](WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final){
+        if (!firmware_update_allowed) {
+            request.send(423, "text/plain", "vehicle connected");
+            this->firmware_update_running = false;
+            return false;
+        }
+        this->firmware_update_running = true;
+        logger.printfln("/evse/reflash %d (%d)", index, len);
+        return handle_update_chunk2(3, request, index, data, len);
+    });
+
     server.on("/flash_verify", HTTP_POST, [this](WebServerRequest request){
         if (update_aborted)
             return request.unsafe_ResponseAlreadySent(); // Already sent in upload callback.
@@ -952,7 +977,7 @@ void AC011K::register_urls()
             return false;
         }
         this->firmware_update_running = true;
-        return handle_update_chunk2(3, request, index, data, len, final, request.contentLength());
+        return handle_update_chunk1(4, request, index, data, len, final, request.contentLength());
     });
 
     /* server.on("/flash_verify", HTTP_POST, [this](WebServerRequest request){ */
@@ -1422,6 +1447,7 @@ void AC011K::loop()
                 break;
 
             case 0x0B:
+                logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - update reply: %.2X%.2X%.2X%.2X  %d (%s) - %s, fw update running: %s", cmd, seq, len, crc, FlashVerify[3], FlashVerify[4], FlashVerify[5], FlashVerify[6], PrivCommRxBuffer[10], cmd_0B_text[PrivCommRxBuffer[10]], PrivCommRxBuffer[12]==0 ?"success":"failure", this->firmware_update_running==true ?"true":"false");
                 if( PrivCommRxBuffer[12]==0 ) { // success
                     switch( PrivCommRxBuffer[10] ) {
                         case 5: // reset into boot mode
@@ -1449,11 +1475,12 @@ void AC011K::loop()
                             ready_for_next_chunk = true;
                             break;
                         case 3: // flash write
-                            logger.printfln("   flash write fine");
-                            ready_for_next_chunk = true;
-                            break;
                         case 4: // verify
-                            logger.printfln("   verify fine");
+                            //if (*((unsigned int) FlashVerify[3]) == 0x030800FE) {
+                            if (FlashVerify[3] == 0x03 && FlashVerify[4] == 0x08 && FlashVerify[5] == 0x00 && FlashVerify[6] == 0xFE) {
+                                logger.printfln("   finished flashing, getting the GD chip back into app mode");
+                                sendCommand(EnterAppMode, sizeof(EnterAppMode), sendSequenceNumber++);
+                            }
                             ready_for_next_chunk = true;
                             break;
                         default:
@@ -2041,7 +2068,7 @@ bool AC011K::handle_update_chunk1(int command, WebServerRequest request, size_t 
     return true;
 }
 
-bool AC011K::handle_update_chunk2(int command, WebServerRequest request, size_t chunk_index, uint8_t *data, size_t chunk_length, bool final, size_t complete_length) {
+bool AC011K::handle_update_chunk2(int command, WebServerRequest request, size_t chunk_index, uint8_t *data, size_t chunk_length) {
 
     if(chunk_index == 0) {
  /* [PRIV_COMM, 1875]: Tx(cmd_AB len:820) :  FA 03 00 00 AB 18 2A 03 00 00 00 08 00 00 03 00 90 01 68 16 00 20 1D 25 00 08 3B 0E 00 08 3D 0E 00 08 41 0E 00 08 45 0E 00 08 49 0E 00 08 00 00 00 00 00 00 */
@@ -2079,8 +2106,7 @@ bool AC011K::handle_update_chunk2(int command, WebServerRequest request, size_t 
             FlashVerify[3] = (gd_address & 0x00FF0000) >> 16;
             FlashVerify[4] = (gd_address & 0xFF000000) >> 24;
 
-            //logger.printfln("Processing update chunk with: chunk_index %.6X (%d), gd(%.2x %.2x %.2x %.2x) chunk_l %d, chunk_offset %d, complete_l %d, final: %s", chunk_index, chunk_index, FlashVerify[3],FlashVerify[4],FlashVerify[5],FlashVerify[6], chunk_length, chunk_offset, complete_length, final?"true":"false");
-            logger.printfln("gd(%.2x %.2x %.2x %.2x) binhex(%.2x%.2x) chunk_offset %d, l %d, ml %d, ll %d, final: %s", FlashVerify[3],FlashVerify[4],FlashVerify[5],FlashVerify[6], FlashVerify[6],FlashVerify[5], chunk_offset, length, maxlength, complete_length, final?"true":"false");
+            logger.printfln("gd(%.2x%.2x%.2x%.2x) chunk_offset %d, l %d, ml %d", FlashVerify[3],FlashVerify[4],FlashVerify[5],FlashVerify[6], chunk_offset, length, maxlength);
 
             if (update_aborted)
                 return true;
@@ -2099,15 +2125,13 @@ bool AC011K::handle_update_chunk2(int command, WebServerRequest request, size_t 
         } // iterate through big chunks
     } // first chunk
 
-    if(final) {
-        this->firmware_update_running = false;
-        logger.printfln("   scheduling GD chip app mode in 3s");
-        // after last chunk, get out of flash mode
-        task_scheduler.scheduleOnce([this](){
-            logger.printfln("   getting the GD chip back into app mode");
-            sendCommand(EnterAppMode, sizeof(EnterAppMode), sendSequenceNumber++);
-        }, 3000);
-    }
+    /* this->firmware_update_running = false; */
+    /* logger.printfln("   scheduling GD chip app mode in 3s"); */
+    /* // after last chunk, get out of flash mode */
+    /* task_scheduler.scheduleOnce([this](){ */
+    /*     logger.printfln("   getting the GD chip back into app mode (scheduled 3s before)"); */
+    /*     sendCommand(EnterAppMode, sizeof(EnterAppMode), sendSequenceNumber++); */
+    /* }, 3000); */
 
     return true;
 }
@@ -2129,7 +2153,7 @@ void AC011K::filltime(byte *year, byte *month, byte *day, byte *hour, byte *minu
         *minute = (byte)(timeinfo.tm_min);
         *second = (byte)(timeinfo.tm_sec);
 
-        logger.printfln("time fill success %d/%d/%d %d:%d:%d", *year, *month, *day, *hour, *minute, *second);
+        //logger.printfln("time fill success %d/%d/%d %d:%d:%d", *year, *month, *day, *hour, *minute, *second);
     } else {
 
         *year   = 22;
