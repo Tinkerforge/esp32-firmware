@@ -504,3 +504,7 @@ const char *platform_get_meter_type() {
 const char *platform_get_meter_serial_number() {
     return nullptr;
 }
+
+uint32_t platform_get_maximum_charging_current(int32_t connectorId) {
+    return 32000;
+}
