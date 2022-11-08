@@ -692,10 +692,10 @@ void remove_directory(const char *path)
     // this and other helpful checks.
     for_file_in(path, [](File *f) {
             bool dir = f->isDirectory();
-            String file_path = f->path();
+            const char *file_path = f->path();
             f->close();
             if (dir)
-                remove_directory(file_path.c_str());
+                remove_directory(file_path);
             else
                 LittleFS.remove(file_path);
             return true;
