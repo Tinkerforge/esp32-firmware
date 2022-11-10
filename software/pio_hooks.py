@@ -228,12 +228,12 @@ missing_hyphenations = []
 def hyphenate(s):
     # Replace longest words first. This prevents replacing parts of longer words.
     for word in sorted(re.split('\W+', s.replace("&shy;", "")), key=lambda x: len(x), reverse=True):
-        if len(word) > HYPHENATE_THRESHOLD:
-            for l, r in hyphenations:
-                if word == l:
-                    s = s.replace(l, r)
-                    break
-            else:
+        for l, r in hyphenations:
+            if word == l:
+                s = s.replace(l, r)
+                break
+        else:
+            if len(word) > HYPHENATE_THRESHOLD:
                 missing_hyphenations.append(word)
 
     return s
@@ -503,7 +503,7 @@ def main():
     global missing_hyphenations
     missing_hyphenations = sorted(set(missing_hyphenations) - allowed_missing)
     if len(missing_hyphenations) > 0:
-        print("Missing hyphenations detected. Add thise to hyphenations.py!")
+        print("Missing hyphenations detected. Add those to hyphenations.py!")
         for x in missing_hyphenations:
             print("    {}".format(x))
 
