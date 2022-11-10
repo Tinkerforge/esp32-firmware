@@ -286,7 +286,9 @@ de_hyph = [
     'zwei-stelligen',
     'Zähler-stand',
     'über-nehmen',
-    'über-tragen'
+    "Trans-aktions-daten",
+    "erfolg-reiche",
+    "über-tragen",
 ]
 
 en_hyph = [
@@ -367,7 +369,10 @@ en_hyph = [
     "success-fully",
     "tinker-forge",
     "Docu-men-tation",
-    "milli-ampere"
+    "milli-ampere",
+    "Trans-action",
+    "com-plete-ly",
+    "trans-mitted"
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
