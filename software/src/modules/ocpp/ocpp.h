@@ -42,9 +42,10 @@ public:
 
     void(*tag_seen_cb)(int32_t, const char *, void *) = nullptr;
     void *tag_seen_cb_user_data = nullptr;
-private:
+
     ConfigRoot config;
     ConfigRoot config_in_use;
     ConfigRoot state;
+    ConfigRoot configuration;
     ConfigRoot reset;
 };

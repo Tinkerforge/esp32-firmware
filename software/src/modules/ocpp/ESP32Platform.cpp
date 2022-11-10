@@ -508,3 +508,67 @@ const char *platform_get_meter_serial_number() {
 uint32_t platform_get_maximum_charging_current(int32_t connectorId) {
     return 32000;
 }
+
+#ifdef OCPP_STATE_CALLBACKS
+void platform_update_chargepoint_state(OcppState state,
+                                       StatusNotificationStatus last_sent_status,
+                                       time_t next_profile_eval) {
+
+   ocpp.state.get("charge_point_state")->updateUint((uint8_t)state);
+   ocpp.state.get("charge_point_status")->updateUint((uint8_t)last_sent_status);
+   ocpp.state.get("next_profile_eval")->updateInt((int32_t)next_profile_eval);
+}
+
+void platform_update_connector_state(int32_t connector_id,
+                                     ConnectorState state,
+                                     StatusNotificationStatus last_sent_status,
+                                     IdTagInfo auth_for,
+                                     uint32_t tag_deadline,
+                                     uint32_t cable_deadline,
+                                     int32_t txn_id,
+                                     time_t transaction_confirmed_timestamp,
+                                     time_t transaction_start_time,
+                                     uint32_t current_allowed,
+                                     bool txn_with_invalid_id,
+                                     bool unavailable_requested) {
+    if (connector_id != 1)
+        return;
+
+    ocpp.state.get("connector_state")->updateUint((uint8_t)state);
+    ocpp.state.get("connector_status")->updateUint((uint8_t)last_sent_status);
+    ocpp.state.get("tag_id")->updateString(auth_for.tagId);
+    ocpp.state.get("parent_tag_id")->updateString(auth_for.parentTagId);
+    ocpp.state.get("tag_expiry_date")->updateInt((int32_t)auth_for.expiryDate);
+    ocpp.state.get("tag_timeout")->updateUint(tag_deadline - millis());
+    ocpp.state.get("cable_timeout")->updateUint(cable_deadline - millis());
+    ocpp.state.get("txn_id")->updateInt(txn_id);
+    ocpp.state.get("txn_confirmed_time")->updateInt((int32_t)transaction_confirmed_timestamp);
+    ocpp.state.get("txn_start_time")->updateInt((int32_t)transaction_start_time);
+    ocpp.state.get("current")->updateUint(current_allowed);
+    ocpp.state.get("txn_with_invalid_id")->updateBool(txn_with_invalid_id);
+    ocpp.state.get("unavailable_requested")->updateBool(unavailable_requested);
+}
+
+void platform_update_connection_state(CallAction message_in_flight_type,
+                                      int32_t message_in_flight_id,
+                                      size_t message_in_flight_len,
+                                      uint32_t message_timeout_deadline,
+                                      uint32_t txn_msg_retry_deadline,
+                                      uint8_t message_queue_depth,
+                                      uint8_t status_notification_queue_depth,
+                                      uint8_t transaction_message_queue_depth) {
+    ocpp.state.get("message_in_flight_type")->updateUint((uint8_t)message_in_flight_type);
+    ocpp.state.get("message_in_flight_id")->updateInt(message_in_flight_id);
+    ocpp.state.get("message_in_flight_len")->updateUint(message_in_flight_len);
+    ocpp.state.get("message_timeout")->updateUint(message_timeout_deadline - millis());
+    ocpp.state.get("txn_msg_retry_timeout")->updateUint(txn_msg_retry_deadline - millis());
+    ocpp.state.get("message_queue_depth")->updateUint(message_queue_depth);
+    ocpp.state.get("status_queue_depth")->updateUint(status_notification_queue_depth);
+    ocpp.state.get("txn_msg_queue_depth")->updateUint(transaction_message_queue_depth);
+}
+
+void platform_update_config_state(ConfigKey key,
+                                  const char *value) {
+    ocpp.configuration.get(config_keys[(size_t) key])->updateString(value);
+}
+#endif
