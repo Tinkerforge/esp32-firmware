@@ -1,0 +1,26 @@
+{
+    "co2": {
+        "status": {
+            "led_state": "CO2",
+            "co2": "CO2",
+            "temperature": "Temperature",
+            "humidity": "Humidity",
+            "led_off": "LED off",
+            "led_green": "< 1000 ppm",
+            "led_yellow": "< 1500 ppm",
+            "led_red": ">= 1500 ppm"
+        },
+        "navbar": {
+            "co2": "CO2"
+        },
+        "content": {
+            "co2": "CO2",
+            "temperature_offset": "Temperature offset",
+            "temperature_offset_muted": "decreases the measured temperature"
+        },
+        "script": {
+            "save_failed": "Failed to save the CO2 configuration.",
+            "reboot_content_changed": "CO2 settings"
+        }
+    }
+}
