@@ -515,10 +515,10 @@ void AC011K::pre_setup()
         evse_slots.add();
 
     evse_max_charging_current = Config::Object ({
-        {"max_current_configured", Config::Uint16(7)},
+        {"max_current_configured", Config::Uint16(7000)},
         {"max_current_incoming_cable", Config::Uint16(16000)},
         {"max_current_outgoing_cable", Config::Uint16(16000)},
-        {"max_current_managed", Config::Uint16(5)},
+        {"max_current_managed", Config::Uint16(5000)},
     });
 
     evse_auto_start_charging = Config::Object({
