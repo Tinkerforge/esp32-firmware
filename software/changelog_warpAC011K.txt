@@ -8,3 +8,28 @@
 2022-02-27: 1.2.99 (c4accc11)
 - Lots of ENplus fixes
   first beta release
+
+2022-11-12: 2.0.0 (<unknown>)
+- Transition to v2 firmware
+
+2022-11-12: 2.0.1 (<unknown>)
+- Step up
+
+2022-11-12: 2.0.2 (<unknown>)
+- Step up
+
+2022-11-12: 2.0.3 (<unknown>)
+- Step up
+
+2022-11-12: 2.0.4 (<unknown>)
+- Step up
+
+2022-11-12: 2.0.5 (<unknown>)
+- Step up
+
+2022-11-12: 2.0.6 (<unknown>)
+- Step up
+
+2022-11-12: 2.0.7 (<unknown>)
+- Step up
+  alpha version, not ready for production
