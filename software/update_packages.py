@@ -23,6 +23,10 @@ for c in config_json:
     config[c['base'] + '#' + c['branch']] = c
     config[c['base'] + '-' + c['branch']] = c
 
+    if c['commit'] != None:
+        config[c['base'] + '#' + c['branch'] + '_' + c['commit']] = c
+        config[c['base'] + '-' + c['branch'] + '_' + c['commit']] = c
+
 for name in sorted(os.listdir('packages')):
     if name == 'config.json':
         continue
@@ -78,6 +82,7 @@ for name in sorted(os.listdir('packages')):
 
         base = config[name]['base']
         branch = config[name]['branch']
+        commit = config[name]['commit']
         url = config[name]['url']
         zip_path = os.path.join('packages', '{0}.zip'.format(name))
 
@@ -91,7 +96,10 @@ for name in sorted(os.listdir('packages')):
         except FileNotFoundError:
             pass
 
-        urlretrieve('{0}/archive/refs/heads/{1}.zip'.format(url, branch), zip_path + '.tmp')
+        if commit == None:
+            urlretrieve('{0}/archive/refs/heads/{1}.zip'.format(url, branch), zip_path + '.tmp')
+        else:
+            urlretrieve('{0}/archive/{1}.zip'.format(url, commit), zip_path + '.tmp')
 
         os.rename(zip_path + '.tmp', zip_path)
 
@@ -103,8 +111,12 @@ for name in sorted(os.listdir('packages')):
             pass
 
         with ZipFile(zip_path) as zf:
-            prefix_zip = base + '-' + branch + '/'
-            prefix_fs = base + '#' + branch + '/'
+            if commit == None:
+                prefix_zip = base + '-' + branch + '/'
+                prefix_fs = base + '#' + branch + '/'
+            else:
+                prefix_zip = base + '-' + commit + '/'
+                prefix_fs = base + '#' + branch + '_' + commit + '/'
 
             for n in zf.namelist():
                 if not n.startswith(prefix_zip):

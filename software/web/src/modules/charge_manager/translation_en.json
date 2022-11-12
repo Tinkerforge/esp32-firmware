@@ -43,9 +43,8 @@
             "add_charger_modal_save": "Save",
             "add_charger_modal_found": "Discovered chargers",
 
-            "disabled": "Charge Management disabled",
-            "wrong_version": "firmware version incompatible",
-            "invalid_box": "Charger invalid",
+            "scan_error_1": "Firmware version incompatible",
+            "scan_error_2": "Charge management disabled",
 
             "mode_disabled": "Disabled",
             "mode_manager": "Charge manager",

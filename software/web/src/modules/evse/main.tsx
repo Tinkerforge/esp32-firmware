@@ -19,16 +19,492 @@
 
 import $ from "../../ts/jq";
 
-import feather from "../../ts/feather";
-
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h, render } from "preact";
+import { h, render, Fragment, Component} from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
 
-render(<PageHeader title={__("evse.content.evse")} />, $('#evse_header')[0]);
+
+import { IndicatorGroup } from "../../ts/components/indicator_group";
+import { FormRow } from "../../ts/components/form_row";
+import { FormSeparator } from "../../ts/components/form_separator";
+import { InputText } from "../../ts/components/input_text";
+import { InputIndicator } from "../../ts/components/input_indicator";
+import { Switch } from "../../ts/components/switch";
+import { Button} from "react-bootstrap";
+import { CollapsedSection } from "src/ts/components/collapsed_section";
+import { EVSE_SLOT_EXTERNAL, EVSE_SLOT_GLOBAL } from "../evse_common/api";
+import { InputFile } from "src/ts/components/input_file";
+
+interface EVSEState {
+    state: API.getType['evse/state'];
+    ll_state: API.getType['evse/low_level_state'];
+    hardware_cfg: API.getType['evse/hardware_configuration'];
+    slots: Readonly<API.getType['evse/slots']>;
+    user_calibration: API.getType['evse/user_calibration'];
+    debug_running: boolean;
+    debug_status: string;
+}
+
+let toDisplayCurrent = (x: number) => util.toLocaleFixed(x / 1000.0, 3) + " A"
+
+export class EVSE extends Component<{}, EVSEState> {
+    debug_log = "";
+
+    constructor() {
+        super();
+
+        util.eventTarget.addEventListener('evse/state', () => {
+            this.setState({state: API.get('evse/state')});
+        });
+
+        util.eventTarget.addEventListener('evse/low_level_state', () => {
+            console.log("hier");
+            this.setState({ll_state: API.get('evse/low_level_state')});
+        });
+
+        util.eventTarget.addEventListener('evse/hardware_configuration', () => {
+            this.setState({hardware_cfg: API.get('evse/hardware_configuration')});
+        });
+
+        util.eventTarget.addEventListener('evse/slots', () => {
+            this.setState({slots: API.get('evse/slots')});
+        });
+
+        util.eventTarget.addEventListener('evse/user_calibration', () => {
+            this.setState({user_calibration: API.get('evse/user_calibration')});
+        });
+
+        util.eventTarget.addEventListener("evse/debug_header", (e) => {
+            this.debug_log += e.data + "\n";
+        }, false);
+
+        util.eventTarget.addEventListener("evse/debug", (e) => {
+            this.debug_log += e.data + "\n";
+        }, false);
+    }
+
+    async get_debug_report_and_event_log() {
+        this.setState({debug_status: __("evse.script.loading_debug_report")});
+
+        try {
+            this.debug_log += await util.download("/debug_report").then(blob => blob.text());
+            this.debug_log += "\n\n";
+        } catch {
+            this.setState({debug_running: false, debug_status: __("evse.script.loading_debug_report_failed")});
+            return false;
+        }
+
+        this.setState({debug_status: __("evse.script.loading_event_log")});
+
+        try {
+            this.debug_log += await util.download("/event_log").then(blob => blob.text());
+            this.debug_log += "\n";
+        } catch {
+            this.setState({debug_running: false, debug_status: __("evse.script.loading_event_log_failed")});
+            return false;
+        }
+
+        return true;
+    }
+
+    async debug_start() {
+        this.debug_log = "";
+        this.setState({debug_running: true});
+
+        if (!await this.get_debug_report_and_event_log())
+            return;
+
+        this.setState({debug_status: __("evse.script.starting_debug")});
+
+        try {
+            await util.download("/evse/start_debug");
+        } catch {
+            this.setState({debug_running: false, debug_status: __("evse.script.starting_debug_failed")});
+            return;
+        }
+
+        this.setState({debug_status: __("evse.script.debug_running")});
+    }
+
+    async debug_stop() {
+        this.setState({debug_running: false});
+
+        try {
+            await util.download("/evse/stop_debug");
+        } catch {
+            this.setState({debug_status: __("evse.script.debug_stop_failed")});
+            return;
+        }
+
+        this.debug_log += "\n\n";
+
+        this.setState({debug_status: __("evse.script.debug_stopped")});
+
+        if (!await this.get_debug_report_and_event_log())
+            return;
+
+        this.setState({debug_status: __("evse.script.debug_done")});
+
+        util.downloadToFile(this.debug_log, "evse-debug-log", "txt", "text/plain");
+    }
+
+    render(props: {}, s: Readonly<EVSEState>) {
+        if (!s || !s.slots)
+            return (<></>);
+        console.log("da");
+        let {state,
+            ll_state,
+            hardware_cfg,
+            slots,
+            user_calibration,
+            debug_running,
+            debug_status} = s;
+
+        let min = Math.min(...slots.filter(s => s.active).map(s => s.max_current));
+
+        if (debug_running) {
+            window.onbeforeunload = (e: Event) => {
+                e.preventDefault();
+                // returnValue is not a boolean, but the string to be shown
+                // in the "are you sure you want to close this tab" message
+                // box. However this string is only shown in some browsers.
+                e.returnValue = __("evse.script.tab_close_warning") as any;
+            }
+        } else {
+            window.onbeforeunload = null;
+        }
+
+        return (
+            <>
+                <PageHeader title={__("evse.content.evse")} />
+                    <FormRow label={__("evse.content.iec_state")}>
+                        <IndicatorGroup
+                            value={state.iec61851_state}
+                            items={[
+                                ["primary", __("evse.content.iec_state_a")],
+                                ["warning", __("evse.content.iec_state_b")],
+                                ["success", __("evse.content.iec_state_c")],
+                                ["danger", __("evse.content.iec_state_d")],
+                                ["danger", __("evse.content.iec_state_ef")]
+                            ]}/>
+                    </FormRow>
+
+                    <FormRow label={__("evse.content.allowed_charging_current")} label_muted={__("evse.content.charging_current_muted")}>
+                        <InputText value={toDisplayCurrent(state.allowed_charging_current)}/>
+                    </FormRow>
+
+                    <FormRow label={__("evse.content.error_state")} label_muted={__("evse.content.error_state_desc")}>
+                        <IndicatorGroup
+                            value={state.error_state == 0 ? 0 : state.error_state - 1}
+                            items={[
+                                ["success", __("evse.content.error_ok")],
+                                ["danger", __("evse.content.error_switch")],
+                                ["danger", __("evse.content.error_calibration")],
+                                ["danger", __("evse.content.error_contactor")],
+                                ["danger", __("evse.content.error_communication")]
+                            ]}/>
+                    </FormRow>
+
+                    <FormRow label={__("evse.content.contactor_state")} label_muted={__("evse.content.contactor_names")}>
+                        <div class="row form-group mx-n1">
+                            <IndicatorGroup
+                                class="mb-1 col px-1"
+                                value={(state.contactor_state & 1) == 1 ? 1 : 0}
+                                items={[
+                                    ["secondary", __("evse.content.contactor_not_live")],
+                                    ["primary", __("evse.content.contactor_live")]
+                                ]}/>
+                            <IndicatorGroup
+                                class="mb-1 col px-1"
+                                value={state.contactor_state > 1 ? 1 : 0}
+                                items={[
+                                    ["secondary", __("evse.content.contactor_not_live")],
+                                    ["primary", __("evse.content.contactor_live")]
+                                ]}/>
+                            <IndicatorGroup
+                                class="mb-1 col-auto px-1"
+                                value={state.contactor_error != 0 ? 1 : 0}
+                                items={[
+                                    ["success", __("evse.content.contactor_ok")],
+                                    ["danger", state.contactor_error != 0 ? __("evse.script.error_code") + " " + state.contactor_error : __("evse.content.contactor_error")]
+                                ]}/>
+                        </div>
+                    </FormRow>
+
+                    <div hidden={!hardware_cfg.has_lock_switch}>
+                        <FormRow label={__("evse.content.lock_state")}>
+                            <IndicatorGroup
+                                value={state.lock_state}
+                                items={[
+                                    ["secondary", __("evse.content.lock_init")],
+                                    ["primary", __("evse.content.lock_open")],
+                                    ["primary", __("evse.content.lock_closing")],
+                                    ["primary", __("evse.content.lock_close")],
+                                    ["primary", __("evse.content.lock_opening")],
+                                    ["danger", __("evse.content.lock_error")]
+                                ]}/>
+                        </FormRow>
+                    </div>
+
+                    <FormRow label={__("evse.content.time_since_state_change")}>
+                        <InputText value={util.format_timespan(Math.floor(ll_state.time_since_state_change / 1000.0))}/>
+                    </FormRow>
+
+                    <FormRow label={__("evse.content.uptime")}>
+                        <InputText value={util.format_timespan(Math.floor(ll_state.uptime / 1000.0))}/>
+                    </FormRow>
+
+                    <FormSeparator heading={__("evse.content.settings")}/>
+
+                    <FormRow label={__("evse.content.external_description")} label_muted={__("evse.content.external_description_muted")}>
+                        <Switch desc={__("evse.content.external_enable")}
+                                checked={slots[EVSE_SLOT_EXTERNAL].active}
+                                onClick={async () => {
+                                    let inverted = !slots[EVSE_SLOT_EXTERNAL].active;
+                                    await API.save('evse/external_enabled', {"enabled": inverted}, __("evse.script.save_failed"));
+                                }}/>
+                    </FormRow>
+
+                    <FormSeparator heading={__("evse.content.charging_current")}/>
+
+                    {slots.map((slot, i) => {
+                        let variant = "";
+                        let value = "";
+
+                        if (!slot.active) {
+                            value = __("evse.script.slot_disabled");
+                            variant = "secondary";
+                        }
+                        else if (slot.max_current == 0) {
+                            value = __("evse.script.slot_blocks");
+                            variant = "danger";
+                        }
+                        else if (slot.max_current == 32000 && i > 1) {
+                            value = __("evse.script.slot_no_limit");
+                            variant = "success";
+                        }
+                        else {
+                            value = toDisplayCurrent(slot.max_current);
+                            variant = slot.max_current == min ? "warning" : "primary";
+                        }
+
+                        if (i != EVSE_SLOT_GLOBAL && i != EVSE_SLOT_EXTERNAL)
+                            return <FormRow key={i} label={translate_unchecked(`evse.content.slot_${i}`)}>
+                                <InputIndicator value={value} variant={variant as any} />
+                            </FormRow>
+
+                        return <FormRow key={i} label={translate_unchecked(`evse.content.slot_${i}`)}>
+                            <InputIndicator value={value} variant={variant as any}
+                                onReset={
+                                    i == EVSE_SLOT_GLOBAL ?
+                                    () => API.save('evse/global_current', {"current": 32000}, __("evse.script.set_charging_current_failed")) :
+                                    () => {
+                                        API.save('evse/external_defaults', {
+                                                "current": 32000,
+                                                "clear_on_disconnect": false
+                                            },
+                                            __("evse.script.reset_external_slot_failed"));
+
+
+                                        API.save('evse/external_current',
+                                            {"current": 32000},
+                                            __("evse.script.reset_external_slot_failed"));
+
+                                        API.save('evse/external_clear_on_disconnect',
+                                            {"clear_on_disconnect": false},
+                                            __("evse.script.reset_external_slot_failed"));
+                                    }
+                                }
+                                resetText={__("evse.content.reset_configured_current")}
+                                resetDisabled={!slot.active || slot.max_current == 32000}/>
+                        </FormRow>
+                    })}
+
+                    <FormSeparator heading={__("evse.content.configuration")}/>
+
+                    <FormRow label={__("evse.content.has_lock_switch")}>
+                        <IndicatorGroup
+                            value={hardware_cfg.has_lock_switch ? 1 : 0}
+                            items={[
+                                ["secondary", __("evse.content.lock_no")],
+                                ["primary", __("evse.content.lock_yes")]
+                            ]}/>
+                    </FormRow>
+
+                    <FormRow label={__("evse.content.jumper_config_max_current")} label_muted={__("evse.content.jumper_config")}>
+                        <IndicatorGroup
+                            value={hardware_cfg.jumper_configuration}
+                            items={[
+                                ["primary",  "6 A"],
+                                ["primary", "10 A"],
+                                ["primary", "13 A"],
+                                ["primary", "16 A"],
+                                ["primary", "20 A"],
+                                ["primary", "25 A"],
+                                ["primary", "32 A"],
+                                ["danger", __("evse.content.jumper_config_software")],
+                                ["danger", __("evse.content.jumper_config_unconfigured")]
+                            ]}/>
+                    </FormRow>
+
+                    <FormRow label={__("evse.content.evse_version")}>
+                        <InputText value={(hardware_cfg.evse_version / 10).toFixed(1)}/>
+                    </FormRow>
+
+                    <FormSeparator heading={__("evse.content.debug")}/>
+
+                    <FormRow label={__("evse.content.debug_description")} label_muted={__("evse.content.debug_description_muted")}>
+                        <div class="input-group pb-2">
+                            <Button variant="primary" className="form-control rounded-right mr-2" onClick={() => {this.debug_start()}} disabled={debug_running}>{__("evse.content.debug_start")}</Button>
+                            <Button variant="primary" className="form-control rounded-left" onClick={() => {this.debug_stop()}} disabled={!debug_running}>{__("evse.content.debug_stop")}</Button>
+                        </div>
+                        <InputText value={debug_status}/>
+                    </FormRow>
+
+                    <CollapsedSection label={__("evse.content.low_level_state")}>
+                        <FormRow label={__("evse.content.led_state")}>
+                            <IndicatorGroup
+                                value={ll_state.led_state}
+                                items={[
+                                    ["secondary", __("evse.content.led_state_off")],
+                                    ["primary",   __("evse.content.led_state_on")],
+                                    ["primary",   __("evse.content.led_state_blinking")],
+                                    ["danger",    __("evse.content.led_state_flickering")],
+                                    ["primary",   __("evse.content.led_state_breathing")],
+                                    ["primary",   __("evse.content.led_state_api")]
+                                ]}/>
+                        </FormRow>
+
+                        <FormRow label={__("evse.content.cp_pwm_dc")}>
+                            <InputText value={util.toLocaleFixed(ll_state.cp_pwm_duty_cycle / 10, 1) + " %"}/>
+                        </FormRow>
+
+                        <FormRow label={__("evse.content.adc_values")} label_muted={__("evse.content.adc_names")}>
+                            <div class="row mx-n1">
+                                {ll_state.adc_values.map((x, i) => (
+                                    <div key={i} class="mb-1 col-6 px-1">
+                                        <InputText value={x}/>
+                                    </div>
+                                ))}
+                            </div>
+                        </FormRow>
+
+                        <FormRow label={__("evse.content.voltages")} label_muted={__("evse.content.voltage_names")}>
+                            <div class="row mx-n1">
+                                {ll_state.voltages.map((x, i) => (
+                                    <div key={i} class="mb-1 col-6 px-1">
+                                        <InputText value={util.toLocaleFixed(x / 1000.0, 3) + " V"}/>
+                                    </div>
+                                ))}
+                            </div>
+                        </FormRow>
+
+                        <FormRow label={__("evse.content.resistances")} label_muted={__("evse.content.resistance_names")}>
+                            <div class="row mx-n1">
+                                {ll_state.resistances.map((x, i) => (
+                                    <div key={i} class="mb-1 col-6 px-1">
+                                        <InputText value={x + " Ω"}/>
+                                    </div>
+                                ))}
+                            </div>
+                        </FormRow>
+
+                        <div>
+                        <FormRow label={__("evse.content.gpios")} label_muted={__('evse.content.gpio_names')}>
+                            <div class="row mx-n1">
+                                {ll_state.gpio.map((x, j) => (
+                                    <IndicatorGroup vertical key={j} class="mb-1 col px-1"
+                                        value={x ? 0 : 1} //intentionally inverted: the high button is the first
+                                        items={[
+                                            ["primary", __("evse.content.gpio_high")],
+                                            ["secondary",   __("evse.content.gpio_low")]
+                                        ]}/>
+                                ))}
+                            </div>
+                        </FormRow>
+                        </div>
+
+                        <FormRow label={__("evse.content.charging_time")}>
+                            <InputText value={util.format_timespan(Math.floor(ll_state.charging_time / 1000))}/>
+                        </FormRow>
+
+                        <FormRow label={__("evse.content.reset_description")} label_muted={__("evse.content.reset_description_muted")}>
+                        <div class="input-group pb-2">
+                            <Button variant="primary" className="form-control rounded-right mr-2" onClick={() => API.call('evse/reset', {}, "")}>{__("evse.content.reset_evse")}</Button>
+                            <Button variant="primary" className="form-control rounded-left" onClick={() => API.call('evse/reflash', {}, "")}>{__("evse.content.reflash_evse")}</Button>
+                        </div>
+                        </FormRow>
+
+                        <FormSeparator heading={__("evse.content.user_calibration_description")}/>
+                        <FormRow label={__("evse.content.user_calibration")}>
+                            <IndicatorGroup
+                                    value={user_calibration.user_calibration_active ? 1 : 0}
+                                    items={[
+                                        ["primary", __("evse.content.user_calibration_state_disabled")],
+                                        ["warning",   __("evse.content.user_calibration_state_enabled")]
+                                    ]}/>
+                        </FormRow>
+
+                        <FormRow label={__("evse.content.user_calibration_description")} label_muted={__("evse.content.user_calibration_description_muted")}>
+                            <div class="input-group pb-2">
+                                <Button variant="primary" className="form-control rounded-right mr-2" href="evse/user_calibration" download="calibration.json">{__("evse.content.user_calibration_download")}</Button>
+                                <Button variant="primary" className="form-control rounded-left"
+                                    onClick={async () =>  API.save("evse/user_calibration",  {
+                                            "user_calibration_active": false,
+                                            "voltage_diff": 0,
+                                            "voltage_mul": 0,
+                                            "voltage_div": 0,
+                                            "resistance_2700": 0,
+                                            "resistance_880": [0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+                                        }, __("evse.script.user_calibration_upload_failed"))
+                                    }>
+                                    {__("evse.content.user_calibration_reset")}
+                                </Button>
+                            </div>
+                            <InputFile
+                                    browse={__("evse.content.user_calibration_browse")}
+                                    select_file={__("evse.content.user_calibration_select_file")}
+                                    upload={__("evse.content.user_calibration_upload")}
+                                    url="/evse/user_calibration_update"
+
+                                    timeout_ms={10 * 1000}
+                                    onUploadSuccess={() => {}}
+                                    onUploadError={error => {
+                                        util.add_alert("firmware_update_failed","alert-danger", __("evse.script.user_calibration_upload_failed"), error.toString());
+                                    }}/>
+                        </FormRow>
+
+                        <FormRow label={__("evse.content.voltage_calibration")} label_muted={__("evse.content.voltage_calibration_names")}>
+                            <div class="row mx-n1">
+                                <div class="mb-1 col-4 px-1">
+                                    <InputText value={user_calibration.voltage_diff}/>
+                                </div>
+                                <div class="mb-1 col-4 px-1">
+                                    <InputText value={user_calibration.voltage_div}/>
+                                </div>
+                                <div class="mb-1 col-4 px-1">
+                                    <InputText value={user_calibration.voltage_mul}/>
+                                </div>
+                            </div>
+                        </FormRow>
+
+                        <FormRow label={__("evse.content.resistance_2700")}>
+                            <InputText value={user_calibration.resistance_2700}/>
+                        </FormRow>
+
+                        <FormRow label={__("evse.content.resistance_880")}>
+                            <InputText value={user_calibration.resistance_880.join(", ")}/>
+                        </FormRow>
+                    </CollapsedSection>
+            </>
+        )
+    }
+}
+
+render(<EVSE />, $('#evse')[0]);
 
 function update_evse_status_start_charging_button() {
     let state = API.get('evse/state');
@@ -42,63 +518,9 @@ function update_evse_status_start_charging_button() {
 function update_evse_state() {
     let state = API.get('evse/state');
 
-    util.update_button_group("btn_group_iec_state", state.iec61851_state);
-
     util.update_button_group("btn_group_evse_state", state.charger_state);
 
     $('#status_stop_charging').prop("disabled", state.charger_state != 2 && state.charger_state != 3);
-
-    let allowed_charging_current = util.toLocaleFixed(state.allowed_charging_current / 1000.0, 3) + " A";
-    $('#allowed_charging_current').val(allowed_charging_current);
-
-    util.update_button_group("btn_group_ac1", (state.contactor_state & 1) == 1 ? 1 : 0);
-    util.update_button_group("btn_group_ac2", state.contactor_state > 1 ? 1 : 0);
-    util.update_button_group("btn_group_contactor_error", state.contactor_error != 0 ? 1 : 0, state.contactor_error != 0 ? __("evse.script.error_code") + " " + state.contactor_error : null);
-    util.update_button_group("btn_group_error_state", state.error_state == 0 ? 0 : state.error_state - 1); // 1 is not a valid error state
-    util.update_button_group("btn_group_lock_state", state.lock_state);
-}
-
-
-function update_evse_hardware_configuration() {
-    let cfg = API.get('evse/hardware_configuration');
-
-    util.update_button_group("btn_group_has_lock_switch", cfg.has_lock_switch ? 1 : 0);
-    util.update_button_group("btn_group_jumper_config", cfg.jumper_configuration);
-    $('#evse_version').val((cfg.evse_version / 10).toFixed(1));
-
-    $('#evse_row_lock_switch').prop('hidden', !cfg.has_lock_switch);
-}
-
-
-function update_evse_low_level_state() {
-    let state = API.get('evse/low_level_state');
-    let last_iec_state = API.get('evse/state').iec61851_state;
-
-    util.update_button_group("btn_group_led_state", state.led_state);
-
-
-    for(let i = 0; i < state.gpio.length; ++i) {
-        //intentionally inverted: the high button is the first
-        util.update_button_group(`btn_group_gpio${i}`, state.gpio[i] ? 0 : 1);
-    }
-
-    $('#pwm_duty_cycle').val(util.toLocaleFixed(state.cp_pwm_duty_cycle / 10, 1) + " %");
-
-    for(let i = 0; i < state.adc_values.length; ++i) {
-        $(`#adc_value_${i}`).val(state.adc_values[i]);
-    }
-
-    for(let i = 0; i < state.voltages.length; ++i) {
-        $(`#voltage_${i}`).val(util.toLocaleFixed(state.voltages[i] / 1000.0, 3) + " V");
-    }
-
-    for(let i = 0; i < state.resistances.length; ++i) {
-        $(`#resistance_${i}`).val(state.resistances[i] + " Ω");
-    }
-
-    $('#charging_time').val(util.format_timespan(Math.floor(state.charging_time / 1000)));
-    $('#uptime').val(util.format_timespan(Math.floor(state.uptime / 1000)));
-    $('#time_since_state_change').val(util.format_timespan(Math.floor(state.time_since_state_change / 1000)));
 }
 
 let status_charging_current_dirty = false;
@@ -135,46 +557,12 @@ function stop_charging() {
     API.call('evse/stop_charging', {}, __("evse.script.stop_charging_failed"));
 }
 
-function update_evse_user_calibration() {
-    let c = API.get('evse/user_calibration');
-    util.update_button_group("btn_group_user_calibration_enabled", c.user_calibration_active ? 1 : 0);
-    $('#voltage_diff').val(c.voltage_diff);
-    $('#voltage_mul').val(c.voltage_mul);
-    $('#voltage_div').val(c.voltage_div);
-    $('#resistance_2700').val(c.resistance_2700);
-    $('#resistance_880').val(c.resistance_880.join(", "));
-}
-
-
-function update_evse_external() {
-    let x = API.get('evse/external_enabled');
-    $('#evse_external').prop("checked", x.enabled);
-}
-
 function update_evse_slots() {
     let slots = API.get('evse/slots');
 
     let real_maximum = 32000;
     for(let i = 0; i < slots.length; ++i) {
         let s = slots[i];
-
-        if (!s.active) {
-            $(`#slot_${i}`).val(__("evse.script.slot_disabled"));
-            $(`#slot_${i}`).css("border-left-color", "#6c757d");
-        }
-        else if (s.max_current == 0) {
-            $(`#slot_${i}`).val(__("evse.script.slot_blocks"));
-            $(`#slot_${i}`).css("border-left-color", "#dc3545");
-        }
-        else if (s.max_current == 32000 && i > 1) {
-            $(`#slot_${i}`).val(__("evse.script.slot_no_limit"));
-            $(`#slot_${i}`).css("border-left-color", "#28a745");
-        }
-        else {
-            $(`#slot_${i}`).val(util.toLocaleFixed(s.max_current / 1000, 3) + " A");
-            $(`#slot_${i}`).css("border-left-color", "#007bff");
-        }
-
         if (s.active)
             real_maximum = Math.min(real_maximum, s.max_current);
     }
@@ -186,7 +574,7 @@ function update_evse_slots() {
     $('#status_charging_current_maximum').html(theoretical_maximum_str);
 
     if(!status_charging_current_dirty) {
-        let shown_current = Math.min(slots[5].max_current, theoretical_maximum);
+        let shown_current = Math.min(slots[EVSE_SLOT_GLOBAL].max_current, theoretical_maximum);
         util.setNumericInput("status_charging_current", shown_current / 1000.0, 3);
     }
 
@@ -213,119 +601,11 @@ function update_evse_slots() {
     $('#evse_status_allowed_charging_current').val(status_string);
 }
 
-let debug_log = "";
-let meter_chunk = "";
-
-function allow_debug(b: boolean) {
-    $('#debug_start').prop("disabled", !b);
-    $('#debug_stop').prop("disabled", b);
-    if (!b) {
-        window.onbeforeunload = (e: Event) => {
-            e.preventDefault();
-            // returnValue is not a boolean, but the string to be shown
-            // in the "are you sure you want to close this tab" message
-            // box. However this string is only shown in some browsers.
-            e.returnValue = __("evse.script.tab_close_warning") as any;
-        }
-    } else {
-        window.onbeforeunload = null;
-    }
-}
-
-async function get_debug_report_and_event_log(status: HTMLInputElement) {
-    status.value = __("evse.script.loading_debug_report");
-
-    try {
-        debug_log += await util.download("/debug_report").then(blob => blob.text());
-        debug_log += "\n\n";
-    } catch {
-        status.value = __("evse.script.loading_debug_report_failed");
-        allow_debug(true);
-        return false;
-    }
-
-    status.value = __("evse.script.loading_event_log");
-
-    try {
-        debug_log += await util.download("/event_log").then(blob => blob.text());
-        debug_log += "\n";
-    } catch {
-        status.value = __("evse.script.loading_event_log_failed");
-        allow_debug(true);
-        return false;
-    }
-
-    return true;
-}
-
-async function debug_start() {
-    debug_log = "";
-    let status = $('#debug_label')[0] as HTMLInputElement;
-    allow_debug(false);
-
-    if (!await get_debug_report_and_event_log(status))
-        return;
-
-    status.value = __("evse.script.starting_debug");
-
-    try {
-        await util.download("/evse/start_debug");
-    } catch {
-        status.value = __("evse.script.starting_debug_failed");
-        allow_debug(true);
-        return;
-    }
-
-    status.value = __("evse.script.debug_running");
-}
-
-async function debug_stop() {
-    let status = $('#debug_label')[0] as HTMLInputElement;
-
-    allow_debug(true);
-
-    try {
-        await util.download("/evse/stop_debug");
-    } catch {
-        status.value = __("evse.script.debug_stop_failed");
-        return;
-    }
-
-    debug_log += "\n\n";
-
-    status.value = __("evse.script.debug_stopped");
-
-    if (!await get_debug_report_and_event_log(status))
-        return;
-
-    status.value = __("evse.script.debug_done");
-
-    util.downloadToFile(debug_log, "evse-debug-log", "txt", "text/plain");
-}
-
 let status_plus_minus_timeout: number = null;
 
 export function init() {
     $("#status_charging_current_minimum").on("click", () => set_charging_current(6000));
     $("#status_charging_current_maximum").on("click", () => set_charging_current(32000));
-    $("#reset_current_configured").on("click", () => set_charging_current(32000));
-
-    $('#reset_external_slot').on("click", () => {
-        API.save('evse/external_defaults', {
-                "current": 32000,
-                "clear_on_disconnect": false
-            },
-            __("evse.script.reset_external_slot_failed"));
-
-
-        API.save('evse/external_current',
-            {"current": 32000},
-            __("evse.script.reset_external_slot_failed"));
-
-        API.save('evse/external_clear_on_disconnect',
-            {"clear_on_disconnect": false},
-            __("evse.script.reset_external_slot_failed"));
-    });
 
     $("#status_stop_charging").on("click", stop_charging);
     $("#status_start_charging").on("click", start_charging);
@@ -344,46 +624,6 @@ export function init() {
 
         set_charging_current(Math.round((input.val() as number) * 1000));
     });
-
-    $('#user_calibration_upload').on("change",(evt: Event) => {
-        let files = (evt.target as HTMLInputElement).files;
-        if (files.length < 1) {
-            return;
-        }
-        let reader = new FileReader();
-        reader.onload = (event) => {
-            API.save("evse/user_calibration",
-                JSON.parse(event.target.result as string),
-                __("evse.script.user_calibration_upload_failed")
-            );
-        };
-        reader.readAsText(files[0]);
-    });
-
-    $("#user_calibration_reset").on("click", () => {
-        API.save("evse/user_calibration",  {
-            "user_calibration_active": false,
-            "voltage_diff": 0,
-            "voltage_mul": 0,
-            "voltage_div": 0,
-            "resistance_2700": 0,
-            "resistance_880": [0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-        }, __("evse.script.user_calibration_upload_failed"));
-    });
-
-
-    $("#debug_start").on("click", debug_start);
-    $("#debug_stop").on("click", debug_stop);
-
-    allow_debug(true);
-
-    $('#evse_external').on("change", () => {
-        let enable = $('#evse_external').is(":checked");
-        API.save('evse/external_enabled', {"enabled": enable}, __("evse.script.save_failed"));
-    });
-
-    $("#evse_reset").on("click", () => API.call('evse/reset', {}, ""));
-    $("#evse_reflash").on("click", () => API.call('evse/reflash', {}, ""));
 
     $('#status_charging_current_minus').on("click", () => {
         let val: number = parseInt(input.val().toString());
@@ -454,24 +694,11 @@ export function init() {
 
 export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('evse/state', update_evse_state);
-    source.addEventListener('evse/low_level_state', update_evse_low_level_state);
-    source.addEventListener('evse/state', update_evse_low_level_state);
-    source.addEventListener('evse/hardware_configuration', update_evse_hardware_configuration);
     source.addEventListener('evse/auto_start_charging', update_evse_auto_start_charging);
-    source.addEventListener("evse/external_enabled", update_evse_external);
     source.addEventListener("evse/slots", update_evse_slots);
-    source.addEventListener("evse/user_calibration", update_evse_user_calibration);
     source.addEventListener("evse/state", update_evse_status_start_charging_button);
     source.addEventListener("evse/slots", update_evse_status_start_charging_button);
     source.addEventListener("evse/low_level_state", update_evse_status_start_charging_button);
-
-    source.addEventListener("evse/debug_header", function (e) {
-        debug_log += e.data + "\n";
-    }, false);
-
-    source.addEventListener("evse/debug", function (e) {
-        debug_log += e.data + "\n";
-    }, false);
 }
 
 export function update_sidebar_state(module_init: any) {

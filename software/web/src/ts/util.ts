@@ -479,3 +479,41 @@ export async function put(url: string, payload: any, timeout_ms: number = 5000) 
 }
 
 export const async_modal_ref: RefObject<AsyncModal> = createRef();
+
+export function range(stopOrStart: number, stop?: number) {
+    if (stop === undefined) {
+        stop = stopOrStart
+        stopOrStart = 0
+    }
+
+    const len = (stop - stopOrStart)
+    if (len <= 0)
+        return [];
+
+    return [...Array(len).keys()].map(i => i + stopOrStart);
+}
+
+export async function wait(t: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, t));
+}
+
+// From https://stackoverflow.com/questions/49580725/is-it-possible-to-restrict-typescript-object-to-contain-only-properties-defined
+// First, define a type that, when passed a union of keys, creates an object which
+// cannot have those properties. I couldn't find a way to use this type directly,
+// but it can be used with the below type.
+type Impossible<K extends keyof any> = {
+    [P in K]: never;
+};
+// The secret sauce! Provide it the type that contains only the properties you want,
+// and then a type that extends that type, based on what the caller provided
+// using generics.
+export type NoExtraProperties<T, U extends T = T> = U & Impossible<Exclude<keyof U, keyof T>>;
+
+export function clamp(min: number | undefined, x: number, max: number | undefined) {
+    let result = x;
+    if (max !== undefined)
+        result = Math.min(max, x);
+    if (min !== undefined)
+        result = Math.max(min, x);
+    return result;
+}

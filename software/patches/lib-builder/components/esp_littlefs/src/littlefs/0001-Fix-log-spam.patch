@@ -13,12 +13,13 @@ index d976389..97161fe 100644
 --- a/lfs.c
 +++ b/lfs.c
 @@ -10,6 +10,8 @@
- #define LFS_BLOCK_NULL ((lfs_block_t)-1)
- #define LFS_BLOCK_INLINE ((lfs_block_t)-2)
+ };
+ 
  
 +static const char *TAG = "esp_littlefs";
 +
  /// Caching block device operations ///
+ 
  static inline void lfs_cache_drop(lfs_t *lfs, lfs_cache_t *rcache) {
      // do not zero, cheaper if cache is readonly or only going to be
 diff --git a/lfs_util.h b/lfs_util.h

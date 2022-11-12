@@ -123,6 +123,7 @@ void set_user_current(uint16_t current)
 float get_energy()
 {
     bool meter_avail = meter.state.get("state")->asUint() == 2;
+    // If for some reason we decide to use energy_rel here, also update the energy_this_charge calculation in modbus_tcp.cpp
     return !meter_avail ? NAN : meter.values.get("energy_abs")->asFloat();
 }
 

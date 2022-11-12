@@ -8,6 +8,7 @@
         "jsxFragmentFactory": "Fragment",
         "noEmit": true,
         "moduleResolution": "node",
+        "isolatedModules": true,
 
         "skipLibCheck": true,
         "baseUrl": "./",

@@ -27,7 +27,7 @@ import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { IPConfiguration } from "../../ts/components/ip_configuration";
-import { Button, Dropdown, Spinner } from "react-bootstrap";
+import { Dropdown, Spinner } from "react-bootstrap";
 import { InputText } from "../../ts/components/input_text";
 import { InputPassword } from "../../ts/components/input_password";
 import { Lock, Unlock } from "react-feather";
@@ -214,8 +214,9 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                     <FormRow label={__("wifi.content.sta_bssid")}>
                         <InputText pattern="([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}"
                                    value={this.bssid_to_string(state.bssid)}
-                                   onValue={(v) => this.setState({bssid: this.string_to_bssid(v)})}/>
-                        <div class="invalid-feedback"  data-i18n="wifi.content.sta_bssid_invalid"></div>
+                                   onValue={(v) => this.setState({bssid: this.string_to_bssid(v)})}
+                                   invalidFeedback={__("wifi.content.sta_bssid_invalid")}
+                                   />
                     </FormRow>
 
                     <FormRow label={__("wifi.content.sta_bssid_lock")}>

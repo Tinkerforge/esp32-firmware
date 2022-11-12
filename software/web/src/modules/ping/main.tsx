@@ -19,9 +19,6 @@
 
 import $ from "../../ts/jq";
 
-import feather from "../../ts/feather";
-
-import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
 import { h, render } from "preact";

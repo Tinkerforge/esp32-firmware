@@ -231,11 +231,17 @@ void NFC::handle_event(tag_info_t *tag, bool found, bool injected)
                     {"tag_type", Config::Uint8(tag->tag_type)},
                     {"tag_id", Config::Str(tag->tag_id)}}).value,
                     injected ? tag_injection_action : TRIGGER_CHARGE_ANY);
+#if MODULE_OCPP_AVAILABLE()
+            ocpp.on_tag_seen(tag->tag_id);
+#endif
         } else if (auth_token == idx) {
             // Lost an authorized tag. If we still have it's auth token, extend the token's validity.
             //auth_token_seen = millis();
         }
     } else if (found) {
+#if MODULE_OCPP_AVAILABLE()
+        ocpp.on_tag_seen(tag->tag_id);
+#endif
         // Found a not authorized tag. Blink NACK but only if we did not see an authorized token
         if (blink_state == -1) {
             blink_state = IND_NACK;

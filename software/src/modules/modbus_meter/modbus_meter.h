@@ -56,6 +56,8 @@ public:
 
     ConfigRoot error_counters;
 
+    ConfigRoot meter_type_override;
+
 private:
     void modbus_read();
     void setupRS485();

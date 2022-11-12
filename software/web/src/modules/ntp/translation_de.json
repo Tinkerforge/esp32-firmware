@@ -1,17 +1,17 @@
 {
     "ntp": {
         "navbar": {
-            "ntp": "Zeit&shy;synchro&shy;nisierung"
+            "ntp": "Zeitsynchronisierung"
         },
         "status": {
-            "ntp": "Zeit&shy;synchro&shy;nisierung",
+            "ntp": "Zeitsynchronisierung",
             "deactivated": "Deaktiviert",
             "not_synced": "Nicht synchronisiert",
             "synced": "Synchronisiert"
         },
         "content": {
-            "ntp": "Zeit&shy;synchro&shy;nisierung",
-            "enable": "Zeit&shy;synchro&shy;nisierung aktiviert",
+            "ntp": "Zeitsynchronisierung",
+            "enable": "Zeitsynchronisierung aktiviert",
             "enable_desc": "Synchronisiert die interne Zeit über das Netzwerk (NTP)",
             "use_dhcp": "DHCP verwendet",
             "use_dhcp_desc": "Verwendet Zeitserver, die per DHCP gesetzt werden",
@@ -21,8 +21,8 @@
             "server2": "Alternativer Zeitserver"
         },
         "script": {
-            "save_failed": "Speichern der Zeit&shy;synchronisierungs-Einstellungen fehlgeschlagen.",
-            "reboot_content_changed": "Zeit&shy;synchronisierungs-Einstellungen"
+            "save_failed": "Speichern der Zeitsynchronisierungs-Einstellungen fehlgeschlagen.",
+            "reboot_content_changed": "Zeitsynchronisierungs-Einstellungen"
         }
     }
 }

@@ -24,9 +24,9 @@ import {useContext, useState} from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { Button } from "react-bootstrap";
 
-interface InputFileProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput"> {
+interface InputFileProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "accept"> {
     idContext?: Context<string>
-    onUploadStart: (f: File) => Promise<boolean>,
+    onUploadStart?: (f: File) => Promise<boolean>,
     onUploadSuccess: () => void,
     onUploadError: (error: string | XMLHttpRequest) => void,
     browse: string
@@ -35,6 +35,7 @@ interface InputFileProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElemen
     url: string,
     contentType?: string
     timeout_ms?: number
+    accept?: string
 }
 
 export function InputFile(props: InputFileProps) {
@@ -44,10 +45,10 @@ export function InputFile(props: InputFileProps) {
 
     const percent = (progress * 100).toFixed(0);
 
-    const id = useContext(props.idContext);
+    const id = props.idContext ? useContext(props.idContext) : undefined;
 
     const upload = async () => {
-        if(!await props.onUploadStart(file))
+        if(props.onUploadStart && !await props.onUploadStart(file))
             return;
 
         setProgress(0);
@@ -71,7 +72,7 @@ export function InputFile(props: InputFileProps) {
     return (<>
         <div class="input-group" hidden={uploading}>
             <div class="custom-file">
-                <input type="file" class="custom-file-input form-control"
+                <input type="file" class="custom-file-input form-control" accept={props.accept}
                     onChange={(ev) => setFile((ev.target as HTMLInputElement).files[0])}
                     id={id}/>
                 <label class="custom-file-label form-control rounded-left"

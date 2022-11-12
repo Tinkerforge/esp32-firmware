@@ -3,7 +3,7 @@
 #include "api.h"
 extern API api;
 
-static ConfigRoot sdm630_reset = Config::Float(0);
+static ConfigRoot sdm630_reset;
 
 static const RegRead sdm630_slow[] {
     {1, 88},
@@ -42,6 +42,7 @@ static void sdm630_fast_read_done(const uint16_t *all_regs)
     static bool first_run = true;
     if (first_run) {
         first_run = false;
+        sdm630_reset = Config::Float(0);
         api.restorePersistentConfig("meter/sdm630_reset", &sdm630_reset);
     }
 

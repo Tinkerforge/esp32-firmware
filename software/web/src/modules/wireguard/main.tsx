@@ -22,86 +22,125 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import feather from "../../ts/feather";
-import YaMD5 from "../../ts/yamd5";
 
-import { h, render } from "preact";
+import { h, render, Fragment } from "preact";
 import { __ } from "../../ts/translation";
-import { ConfigPageHeader } from "../../ts/components/config_page_header";
 
-render(<ConfigPageHeader prefix="wireguard" title={__("wireguard.content.wireguard")} />, $('#wireguard_header')[0]);
+import { ConfigComponent } from "../../ts/components/config_component";
+import { ConfigForm } from "../../ts/components/config_form";
+import { FormRow } from "../../ts/components/form_row";
+import { InputText } from "../../ts/components/input_text";
+import { InputNumber } from "../../ts/components/input_number";
+import { InputPassword } from "../../ts/components/input_password";
+import { Switch } from "../../ts/components/switch";
+import { IPConfiguration } from "src/ts/components/ip_configuration";
+import { Slash } from "react-feather";
+import { InputIP } from "src/ts/components/input_ip";
+
+type WireguardConfig = API.getType['wireguard/config'];
+
+export class Wireguard extends ConfigComponent<'wireguard/config'> {
+    ipconfig_valid: boolean = true;
+    constructor() {
+        super('wireguard/config',
+              __("wireguard.script.save_failed"),
+              __("wireguard.script.reboot_content_changed"));
+    }
+
+    render(props: {}, state: Readonly<WireguardConfig>) {
+        if (!state)
+            return (<></>);
+
+        return (
+            <>
+                <ConfigForm id="wireguard_config_form" title={__("wireguard.content.wireguard")} onSave={() => this.save()} onDirtyChange={(d) => this.ignore_updates = d}>
+                    <FormRow label={__("wireguard.content.enable_wireguard")}>
+                        <Switch desc={__("wireguard.content.enable_wireguard_desc")}
+                                checked={state.enable}
+                                onClick={this.toggle('enable')}/>
+                    </FormRow>
+
+                    <FormRow label={__("wireguard.content.default_if")}>
+                        <Switch desc={__("wireguard.content.default_if_desc")}
+                                checked={state.make_default_interface}
+                                onClick={this.toggle('make_default_interface')}/>
+                    </FormRow>
+
+                    <IPConfiguration
+                        onValue={(v) => this.setState({internal_ip: v.ip, internal_subnet: v.subnet, internal_gateway: v.gateway})}
+                        value={{ip: state.internal_ip, subnet: state.internal_subnet, gateway: state.internal_gateway}}
+                        setValid={(v) => this.ipconfig_valid = v}
+                        />
+
+                    <FormRow label={__("wireguard.content.remote_host")}>
+                        <InputText required
+                                   maxLength={64}
+                                   value={state.remote_host}
+                                   onValue={this.set("remote_host")}/>
+                    </FormRow>
+
+                    <FormRow label={__("wireguard.content.port")}>
+                        <InputNumber required
+                                     min={1}
+                                     max={65536}
+                                     value={state.remote_port}
+                                     onValue={this.set("remote_port")}/>
+                    </FormRow>
+
+                    <FormRow label={__("wireguard.content.private_key")}>
+                        <InputPassword maxLength={44}
+                                       value={state.private_key}
+                                       onValue={this.set("private_key")}
+                                       />
+                    </FormRow>
+
+                    <FormRow label={__("wireguard.content.remote_public_key")}>
+                        <InputPassword maxLength={44}
+                                       value={state.remote_public_key}
+                                       onValue={this.set("remote_public_key")}
+                                       />
+                    </FormRow>
+
+                    <FormRow label={__("wireguard.content.preshared_key")}>
+                        <InputPassword maxLength={44}
+                                       value={state.preshared_key}
+                                       onValue={this.set("preshared_key")}
+                                       clearSymbol={<Slash/>}
+                                       clearPlaceholder={__("wireguard.script.preshared_key_unused")}
+                                       allowAPIClear
+                                       />
+                    </FormRow>
+
+                    <FormRow label={__("wireguard.content.allowed_ip")}>
+                        <InputIP invalidFeedback={__("wireguard.content.allowed_ip_invalid")}
+                            required
+                            value={state.allowed_ip}
+                            onValue={this.set("allowed_ip")}/>
+                    </FormRow>
+
+                    <FormRow label={__("wireguard.content.allowed_subnet")}>
+                        <InputIP invalidFeedback={__("wireguard.content.allowed_subnet_invalid")}
+                            required
+                            value={state.allowed_subnet}
+                            onValue={this.set("allowed_subnet")}/>
+                    </FormRow>
+                </ConfigForm>
+            </>
+        )
+    }
+}
+
+render(<Wireguard/>, $('#wireguard')[0])
 
 function update_wireguard_state() {
     let state = API.get("wireguard/state").state;
     util.update_button_group("btn_group_wireguard_state", state);
 }
-
-function update_wireguard_config(force: boolean) {
-    if (!force && !$('#wireguard_config_save_button').prop('disabled'))
-        return;
-
-    let cfg = API.get("wireguard/config");
-    $('#wireguard_enable').prop("checked", cfg.enable);
-    $('#wireguard_default_if').prop("checked", cfg.make_default_interface);
-    $('#wireguard_internal_ip').val(cfg.internal_ip);
-    $('#wireguard_internal_subnet').val(cfg.internal_subnet);
-    $('#wireguard_internal_gateway').val(cfg.internal_gateway);
-    $('#wireguard_remote_host').val(cfg.remote_host);
-    $('#wireguard_remote_port').val(cfg.remote_port);
-
-    $('#wireguard_clear_preshared_key').prop("checked", (cfg.preshared_key === ""));
-    $('#wireguard_clear_preshared_key').trigger("change");
-
-    $('#wireguard_allowed_ip').val(cfg.allowed_ip);
-    $('#wireguard_allowed_subnet').val(cfg.allowed_subnet);
-}
-
-function save_wireguard_config() {
-    API.save("wireguard/config", {
-            enable: $('#wireguard_enable').prop("checked"),
-            make_default_interface: $('#wireguard_default_if').prop("checked"),
-            internal_ip: $('#wireguard_internal_ip').val().toString(),
-            internal_subnet: $('#wireguard_internal_subnet').val().toString(),
-            internal_gateway: $('#wireguard_internal_gateway').val().toString(),
-            remote_host: $('#wireguard_remote_host').val().toString(),
-            remote_port: parseInt($('#wireguard_remote_port').val().toString()),
-            private_key: util.passwordUpdate('#wireguard_private_key'),
-            remote_public_key: util.passwordUpdate('#wireguard_remote_public_key'),
-            preshared_key:  util.passwordUpdate('#wireguard_preshared_key'),
-            allowed_ip: $('#wireguard_allowed_ip').val().toString(),
-            allowed_subnet: $('#wireguard_allowed_subnet').val().toString()
-        },
-        __("wireguard.script.save_failed"),
-        __("wireguard.script.reboot_content_changed"));
-}
-
 export function init() {
-    $('#wireguard_config_form').on('input', () => $('#wireguard_config_save_button').prop("disabled", false));
-    $('#wireguard_config_form').on('submit', function (this: HTMLFormElement, event: Event) {
-        this.classList.add('was-validated');
-        event.preventDefault();
-        event.stopPropagation();
-
-        if (this.checkValidity() === false) {
-            return;
-        }
-
-        save_wireguard_config();
-    });
-
-    $("#wireguard_show_private_key").on("change", util.toggle_password_fn("#wireguard_private_key"));
-    $("#wireguard_clear_private_key").on("change", util.clear_password_fn("#wireguard_private_key"));
-
-    $("#wireguard_show_remote_public_key").on("change", util.toggle_password_fn("#wireguard_remote_public_key"));
-    $("#wireguard_clear_remote_public_key").on("change", util.clear_password_fn("#wireguard_remote_public_key"));
-
-    $("#wireguard_show_preshared_key").on("change", util.toggle_password_fn("#wireguard_preshared_key"));
-    $("#wireguard_clear_preshared_key").on("change", util.clear_password_fn("#wireguard_preshared_key", __("wireguard.script.preshared_key_unused")));
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
     source.addEventListener('wireguard/state', () => update_wireguard_state());
-    source.addEventListener('wireguard/config', () => update_wireguard_config(false));
 }
 
 export function update_sidebar_state(module_init: any) {

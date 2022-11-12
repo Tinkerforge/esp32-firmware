@@ -4,10 +4,10 @@
 
         },
         "navbar": {
-            "users": "Benutzer&shy;verwaltung"
+            "users": "Benutzerverwaltung"
         },
         "content": {
-            "users": "Benutzer&shy;verwaltung",
+            "users": "Benutzerverwaltung",
 
             "enable_authentication": "Anmeldung aktiviert",
             "enable_authentication_desc": "Beim Aufrufen des Webinterfaces oder bei Verwendung der HTTP-API muss eine Anmeldung als einer der konfigurieren Benutzer durchgeführt werden",

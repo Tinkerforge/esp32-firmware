@@ -57,7 +57,7 @@
             "jumper_config": "durch Schalter konfiguriert",
             "jumper_config_software": "Software",
             "jumper_config_unconfigured": "Unkonfiguriert",
-            "evse_version": "Version des Ladecontrollers",
+            "evse_version": "Hardware-Version des Ladecontrollers",
             "charging_current": "Ladestromgrenzen",
             "charging_current_muted": "Minimum der Ladestromgrenzen",
             "reset_configured_current": "Freigeben",
@@ -75,13 +75,13 @@
             "adc_values": "ADC-Werte",
             "voltages": "Spannungen",
             "resistances": "Widerstände",
-            "resistance_names": "PE-CP, PE-PP",
+            "resistance_names": "CP/PE, PP/PE",
             "gpios": "GPIOs",
             "gpio_low": "Low",
             "gpio_high": "High",
             "debug": "Ladeprotokoll",
             "debug_start": "Start",
-            "debug_stop": "Stop + Download",
+            "debug_stop": "Stop+Download",
             "debug_description": "Ladeprotokoll erstellen",
             "debug_description_muted": "zur Diagnose bei Ladeproblemen",
 
@@ -108,7 +108,10 @@
             "slot_5": "Konfiguration",
             "slot_6": "Benutzer",
             "slot_7": "Lastmanagement",
-            "slot_8": "Externe Steuerung"
+            "slot_8": "Externe Steuerung",
+            "slot_9": "Modbus TCP",
+            "slot_10": "Modbus TCP-Freigabe",
+            "slot_11": "OCPP"
         },
         "script": {
             "error_code": "Fehlercode",
@@ -145,7 +148,10 @@
             "slot_5": "Konfiguration",
             "slot_6": "Benutzer",
             "slot_7": "Lastmanagement",
-            "slot_8": "externe Steuerung"
+            "slot_8": "externe Steuerung",
+            "slot_9": "Modbus TCP",
+            "slot_10": "Modbus TCP-Freigabe",
+            "slot_11": "OCPP"
         }
     }
 }

@@ -24,7 +24,7 @@ import { JSXInternal } from "preact/src/jsx";
 interface InputDateProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>, "value" | "class" | "id" | "type" | "onInput"> {
     idContext?: Context<string>
     date: Date
-    onDate: (value: Date) => void
+    onDate?: (value: Date) => void
 }
 
 export function InputDate(props: InputDateProps) {
@@ -33,7 +33,8 @@ export function InputDate(props: InputDateProps) {
         <input class={"form-control " + props.className}
                id={id}
                type="date"
-               onInput={(e) => props.onDate(new Date((e.target as HTMLInputElement).value))}
+               onInput={props.onDate ? (e) => props.onDate(new Date((e.target as HTMLInputElement).value)) : undefined}
+               disabled={!props.onDate}
                {...{valueAsDate: props.date}}/> //valueAsDate is not recognized for some reason? https://github.com/facebook/react/issues/11369 (no issue found for preact)
     );
 }

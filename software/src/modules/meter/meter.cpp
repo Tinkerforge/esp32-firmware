@@ -19,8 +19,6 @@
 
 #include "meter.h"
 
-#include "bindings/errors.h"
-
 #include "api.h"
 #include "event_log.h"
 #include "tools.h"

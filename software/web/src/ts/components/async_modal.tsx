@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Component, Context, render } from "preact";
+import { h, Component, render } from "preact";
 import { Button, Modal } from "react-bootstrap";
 import { __ } from "../translation";
 

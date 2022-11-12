@@ -39,24 +39,38 @@ static char recv_buf[RECV_BUF_SIZE] = {0};
 static StaticJsonDocument<RECV_BUF_SIZE> json_buf;
 
 
+static int strncmp_with_same_len(const char *left, const char *right, size_t right_len) {
+    size_t left_len = strlen(left);
+    if (left_len != right_len)
+        return -1;
+    return strncmp(left, right, right_len);
+}
+
 bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
 {
-    if (!strncmp(ref_uri, in_uri, len))
-        return true;
-
-    if (strncmp(ref_uri, "/*", 2) != 0 || len < 2)
+    // Don't match the API handler.
+    if (strncmp_with_same_len("/*", in_uri, len) == 0)
         return false;
 
+    // Match directly registered URLs.
+    if (!strncmp_with_same_len(ref_uri, in_uri, len))
+        return true;
+
+    // Only match in_uri with APIs if ref_uri is the registered API handler.
+    if (strncmp_with_same_len(ref_uri, "/*", 2) != 0 || len < 2)
+        return false;
+
+    // Use + 1 to compare: in_uri starts with /; the api paths don't.
     for (size_t i = 0; i < api.commands.size(); i++)
-        if (strncmp(api.commands[i].path.c_str(), in_uri + 1, len) == 0)
+        if (strncmp_with_same_len(api.commands[i].path.c_str(), in_uri + 1, len - 1) == 0)
             return true;
 
     for (size_t i = 0; i < api.states.size(); i++)
-        if (strncmp(api.states[i].path.c_str(), in_uri + 1, len) == 0)
+        if (strncmp_with_same_len(api.states[i].path.c_str(), in_uri + 1, len - 1) == 0)
             return true;
 
     for (size_t i = 0; i < api.raw_commands.size(); i++)
-        if (strncmp(api.raw_commands[i].path.c_str(), in_uri + 1, len) == 0)
+        if (strncmp_with_same_len(api.raw_commands[i].path.c_str(), in_uri + 1, len - 1) == 0)
             return true;
 
     return false;
@@ -88,7 +102,7 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
     } else if (bytes_written < 0) {
         logger.printfln("Failed to receive command payload: error code %d", bytes_written);
         return req.send(400);
-    } else if (bytes_written == 0 && reg.config->is<std::nullptr_t>()) {
+    } else if (bytes_written == 0 && reg.config->is_null()) {
         task_scheduler.scheduleOnce([reg](){reg.callback();}, 0);
         return req.send(200, "text/html", "");
     }
@@ -125,7 +139,7 @@ WebServerRequestReturnProtect api_handler_get(WebServerRequest req)
     }
 
     for (size_t i = 0; i < api.commands.size(); i++)
-        if (strcmp(api.commands[i].path.c_str(), req.uriCStr() + 1) == 0 && api.commands[i].config->is<std::nullptr_t>())
+        if (strcmp(api.commands[i].path.c_str(), req.uriCStr() + 1) == 0 && api.commands[i].config->is_null())
             return run_command(req, i);
 
     // If we reach this point, the url matcher found an API with the req.uri() as path, but we did not.

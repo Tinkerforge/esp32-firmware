@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Component, JSX } from "preact";
+import { h, Component } from "preact";
 import { __ } from "../translation";
 
 export interface ConfigPageHeaderProps {

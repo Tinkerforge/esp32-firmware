@@ -18,11 +18,12 @@
  */
 
 import { h, Component, VNode, Fragment } from "preact";
-import { PreactConfigPageHeader } from "./preact_config_page_header";
+import { __ } from "../translation";
 
 interface ConfigFormState {
     saveDisabled: boolean
     wasValidated: boolean
+    showSpinner: boolean
 }
 
 interface ConfigFormProps {
@@ -36,7 +37,7 @@ interface ConfigFormProps {
 export class ConfigForm extends Component<ConfigFormProps,ConfigFormState> {
     constructor() {
         super();
-        this.state = {saveDisabled: true, wasValidated: false}
+        this.state = {saveDisabled: true, wasValidated: false, showSpinner: false}
     }
     submit = (e: Event) => {
         e.preventDefault();
@@ -49,18 +50,30 @@ export class ConfigForm extends Component<ConfigFormProps,ConfigFormState> {
             return;
         }
 
+        let spinnerTimeout = window.setTimeout(() => this.setState({showSpinner: true}), 1000);
+
         this.props.onSave().then(() => {
-            this.setState({saveDisabled: true, wasValidated: false});
+            window.clearTimeout(spinnerTimeout);
+            this.setState({saveDisabled: true, wasValidated: false, showSpinner: false});
             this.props.onDirtyChange(false);
         }).catch(() => {
-            this.setState({saveDisabled: false, wasValidated: false});
+            window.clearTimeout(spinnerTimeout);
+            this.setState({saveDisabled: false, wasValidated: false, showSpinner: false});
         });
     }
 
     override render (props: ConfigFormProps, state: Readonly<ConfigFormState>) {
         return (
             <>
-                <PreactConfigPageHeader title={props.title} config_form_id={props.id} save_disabled={state.saveDisabled}/>
+                <div class="row sticky-under-top mb-3 pt-3">
+                    <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-header-shadow">
+                        <h1 class="h2" dangerouslySetInnerHTML={{__html: props.title}}></h1>
+                        <button type="submit" form={props.id} class="btn btn-primary mb-2" disabled={state.saveDisabled}>
+                            {__("component.config_page_header.save")}
+                            <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!state.showSpinner}></span>
+                        </button>
+                    </div>
+                </div>
                 <form id={props.id}
                       class={"needs-validation" + (state.wasValidated ? " was-validated" : "")}
                       noValidate

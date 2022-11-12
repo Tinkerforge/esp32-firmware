@@ -185,7 +185,7 @@
 - Improve resolution of communicated current (through EVSE 2.0 Bricklet firmware 2.1.7)
 - Add minimum delay of 30s between error and charging states (through EVSE 2.0 Bricklet firmware 2.1.7)
 - Fix PP/PE voltage reported in EVSE low level state (through EVSE 2.0 Bricklet firmware 2.1.7)
-- Improve recovery page UI
+- Improve recovery page
 - Allow forcing a firmware update via the recovery page
 - Allow HTTP POST for commands
 - Allow HTTP GET/POST for payload-less commands
@@ -207,3 +207,6 @@
 - Fix manual and firmware URLs
 - Move "require user authorization to charge" to users sub-page
 - Improve translations
+
+2022-09-14: 2.0.90 (<unknown>)
+- OCPP Beta 1

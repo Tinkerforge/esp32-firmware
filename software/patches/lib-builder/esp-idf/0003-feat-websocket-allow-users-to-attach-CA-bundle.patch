@@ -1,0 +1,50 @@
+From 0dbef699045b89313c0efc1737842a12405313b6 Mon Sep 17 00:00:00 2001
+From: Tomoyuki Sakurai <y@trombik.org>
+Date: Thu, 2 Jun 2022 12:16:46 +0700
+Subject: [PATCH] feat(websocket): allow users to attach CA bundle
+
+with esp_transport_ssl_crt_bundle_attach(), it is not necessary to
+include a specific certificate. other protocol clients, such as
+esp_http_client, do the same.
+
+fixes #48
+---
+ components/esp_websocket_client/esp_websocket_client.c   | 9 +++++++++
+ .../esp_websocket_client/include/esp_websocket_client.h  | 1 +
+ 2 files changed, 10 insertions(+)
+
+diff --git a/components/esp_websocket_client/esp_websocket_client.c b/components/esp_websocket_client/esp_websocket_client.c
+index 2f6405d47d..87d6707a28 100644
+--- a/components/esp_websocket_client/esp_websocket_client.c
++++ b/components/esp_websocket_client/esp_websocket_client.c
+@@ -378,6 +378,15 @@ esp_websocket_client_handle_t esp_websocket_client_init(const esp_websocket_clie
+             esp_transport_ssl_set_client_key_data_der(ssl, config->client_key, config->client_key_len);
+         }
+     }
++
++    if (config->crt_bundle_attach) {
++#ifdef CONFIG_MBEDTLS_CERTIFICATE_BUNDLE
++        esp_transport_ssl_crt_bundle_attach(ssl, config->crt_bundle_attach);
++#else //CONFIG_MBEDTLS_CERTIFICATE_BUNDLE
++        ESP_LOGE(TAG, "crt_bundle_attach configured but not enabled in menuconfig: Please enable MBEDTLS_CERTIFICATE_BUNDLE option");
++#endif
++    }
++
+     if (config->skip_cert_common_name_check) {
+         esp_transport_ssl_skip_common_name_check(ssl);
+     }
+diff --git a/components/esp_websocket_client/include/esp_websocket_client.h b/components/esp_websocket_client/include/esp_websocket_client.h
+index 0ed6353467..a13bec117b 100644
+--- a/components/esp_websocket_client/include/esp_websocket_client.h
++++ b/components/esp_websocket_client/include/esp_websocket_client.h
+@@ -95,6 +95,7 @@ typedef struct {
+     int                         pingpong_timeout_sec;       /*!< Period before connection is aborted due to no PONGs received */
+     bool                        disable_pingpong_discon;    /*!< Disable auto-disconnect due to no PONG received within pingpong_timeout_sec */
+     bool                        use_global_ca_store;        /*!< Use a global ca_store for all the connections in which this bool is set. */
++    esp_err_t (*crt_bundle_attach)(void *conf);             /*!< Function pointer to esp_crt_bundle_attach. Enables the use of certification bundle for server verification, MBEDTLS_CERTIFICATE_BUNDLE must be enabled in menuconfig. Include esp_crt_bundle.h, and use `esp_crt_bundle_attach` here to include bundled CA certificates. */
+     bool                        skip_cert_common_name_check;/*!< Skip any validation of server certificate CN field */
+     bool                        keep_alive_enable;          /*!< Enable keep-alive timeout */
+     int                         keep_alive_idle;            /*!< Keep-alive idle time. Default is 5 (second) */
+-- 
+2.34.1
+

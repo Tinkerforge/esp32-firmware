@@ -22,7 +22,7 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h, render, Fragment, Component, createRef, RefObject } from "preact";
+import { h, render, Fragment, Component} from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
 
@@ -113,6 +113,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
                         select_file={__("firmware_update.content.select_file")}
                         upload={__("firmware_update.content.update")}
                         url="/flash_firmware"
+                        accept=".bin"
 
                         timeout_ms={120 * 1000}
                         onUploadStart={async (f) => this.checkFirmware(f)}

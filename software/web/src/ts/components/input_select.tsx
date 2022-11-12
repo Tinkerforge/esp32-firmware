@@ -39,7 +39,10 @@ export function InputSelect(props: InputSelectProps) {
                onChange={(e) => onValue((e.target as HTMLSelectElement).value)}
                >
             {
-                 (placeholder ? [<option value="" disabled selected>{placeholder}</option>] : []).concat(items.map((k) => <option value={k[0]} key={k[0]}>{k[1]}</option>))
+                 (placeholder ? [<option value="" disabled selected>{placeholder}</option>] : [])
+                    .concat(
+                        items.map((k) =>
+                            <option value={k[0]} key={k[0]} disabled={k[0] == "disabled"}>{k[1]}</option>))
             }
         </select>
     );

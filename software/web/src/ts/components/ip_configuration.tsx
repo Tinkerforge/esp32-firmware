@@ -17,8 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Component, Context, Fragment, createRef, RefObject } from "preact";
-import {useContext} from "preact/hooks";
+import { h, Component, Fragment } from "preact";
 import { JSXInternal } from "preact/src/jsx";
 import { __ } from "../translation";
 import { FormRow } from "./form_row";
@@ -36,8 +35,8 @@ export interface IPConfig {
 }
 
 interface IPConfigurationProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "value" | "disabled"> {
-    showDhcp: boolean,
-    showDns: boolean,
+    showDhcp?: boolean,
+    showDns?: boolean,
     value: IPConfig
     onValue: (value: IPConfig) => void
     setValid: (valid: boolean) => void

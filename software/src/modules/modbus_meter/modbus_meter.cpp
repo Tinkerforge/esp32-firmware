@@ -50,12 +50,18 @@ static MeterInfo *supported_meters[] = {
 
 static MeterInfo *meter_in_use = nullptr;
 
+#define METER_TYPE_AUTO_DETECT 255
+
 void ModbusMeter::pre_setup()
 {
     error_counters = Config::Object({
         {"meter", Config::Uint32(0)},
         {"bricklet", Config::Uint32(0)},
         {"bricklet_reset", Config::Uint32(0)},
+    });
+
+    meter_type_override = Config::Object({
+        {"type", Config::Uint8(METER_TYPE_AUTO_DETECT)}
     });
 
     user_data.expected_request_id = 0;
@@ -195,9 +201,20 @@ void ModbusMeter::setupRS485()
         return;
     }
 
-    user_data.value_to_write = &this->meter_type;
-    tf_rs485_register_modbus_master_read_holding_registers_response_callback(&device, read_meter_type_handler, &meter_type, &user_data);
-    tf_rs485_modbus_master_read_holding_registers(&device, 1, 64515, 1, &user_data.expected_request_id);
+    uint8_t type_ = meter_type_override.get("type")->asUint();
+
+    if ((type_ - 1) < ARRAY_SIZE(supported_meters)) {
+        meter_in_use = supported_meters[type_ - 1];
+        meter.updateMeterState(2, meter_in_use->meter_type);
+        logger.printfln("Meter type override set to %s.", meter_in_use->meter_name);
+    } else {
+        if (type_ != METER_TYPE_AUTO_DETECT)
+            logger.printfln("Meter type override set to unknown value %u. Ignoring", type_);
+
+        user_data.value_to_write = &this->meter_type;
+        tf_rs485_register_modbus_master_read_holding_registers_response_callback(&device, read_meter_type_handler, &meter_type, &user_data);
+        tf_rs485_modbus_master_read_holding_registers(&device, 1, 64515, 1, &user_data.expected_request_id);
+    }
 
     tf_rs485_register_modbus_master_read_input_registers_response_callback(&device, read_input_registers_handler, write_buf, &user_data);
     tf_rs485_register_modbus_master_write_multiple_registers_response_callback(&device, write_multiple_registers_handler, &user_data);
@@ -225,6 +242,13 @@ void ModbusMeter::checkRS485State()
 
 void ModbusMeter::setup()
 {
+    api.restorePersistentConfig("meter/type_override", &meter_type_override);
+
+    if (meter_type_override.get("type")->asUint() == METER_TYPE_NONE) {
+        logger.printfln("Meter type override set to NONE (0). Disabling energy meter support.");
+        return;
+    }
+
     setupRS485();
     if (!device_found)
         return;
@@ -237,6 +261,8 @@ void ModbusMeter::setup()
 void ModbusMeter::register_urls()
 {
     api.addState("meter/error_counters", &error_counters, {}, 1000);
+
+    api.addPersistentConfig("meter/type_override", &meter_type_override, {}, 1000);
 
     meter.registerResetCallback([this]() {
         this->reset_requested = true;

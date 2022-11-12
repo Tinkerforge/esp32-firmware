@@ -23,7 +23,7 @@
 #include "modules.h"
 #include "task_scheduler.h"
 
-extern char local_uid_str[7];
+extern char local_uid_str[32];
 extern TaskScheduler task_scheduler;
 extern API api;
 
