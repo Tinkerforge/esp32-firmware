@@ -3,8 +3,8 @@
         "content": {
             "error_dc_fault_current": "DC fault protector error",
             "energy_meter_type": "Energy meter type",
-            "adc_names": "CP/PE before resistor (PWM high), CP/PE after resistor (PWM high)</br>CP/PE before resistor (PWM low), CP/PE after resistor (PWM low)</br>PP/PE, +12V rail</br>-12V rail",
-            "voltage_names": "CP/PE before resistor (PWM high), CP/PE after resistor (PWM high)</br>CP/PE before resistor (PWM low), CP/PE after resistor (PWM low)</br>PP/PE, +12V rail</br>-12V rail",
+            "adc_names": "CP/PE before resistor (PWM high), CP/PE after resistor (PWM high)<br/>CP/PE before resistor (PWM low), CP/PE after resistor (PWM low)<br/>PP/PE, +12V rail<br/>-12V rail",
+            "voltage_names": "CP/PE before resistor (PWM high), CP/PE after resistor (PWM high)<br/>CP/PE before resistor (PWM low), CP/PE after resistor (PWM low)<br/>PP/PE, +12V rail<br/>-12V rail",
             "gpio_names_0": "current configuration 0, motor fault, DC fault, current configuration 1",
             "gpio_names_1": "DC fault protector test, shutdown, button, CP-PWM",
             "gpio_names_2": "motor input switch, contactor, GP output, CP separation",
@@ -37,7 +37,7 @@
             "control_pilot_automatic": "Automatic",
 
             "dc_fault_current_state": "DC fault protector state",
-            "dc_fault_current_state_desc": "{{{empty_text}}}",
+            "dc_fault_current_state_desc": "",
             "dc_fault_current_ok": "OK",
             "dc_fault_current_6_ma": "DC fault",
             "dc_fault_current_system": "System error",
@@ -53,7 +53,14 @@
         "script": {
             "control_pilot_configuration_failed": "Updating the control pilot configuration failed",
             "reset_dc_fault_current_failed": "Reset of the DC fault protector failed",
-            "gpio_configuration_failed": "Updating the GPIO configuration failed"
+            "gpio_configuration_failed": "Updating the GPIO configuration failed",
+
+            "meter_type_0": "No energy meter found",
+            "meter_type_1": "SDM72",
+            "meter_type_2": "SDM630",
+            "meter_type_3": "SDM72V2",
+
+            "slot_4": "Auto-start or button"
         }
     }
 }
