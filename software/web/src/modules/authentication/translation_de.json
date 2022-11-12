@@ -10,6 +10,8 @@
             "authentication": "Zugangsdaten",
             "enable_authentication": "Anmeldung aktiviert",
             "enable_authentication_desc": "Beim Aufrufen des Webinterfaces oder bei Verwendung der HTTP-API muss eine Anmeldung mit den konfigurierten Zugangsdaten durchgeführt werden",
+            "enable_authentication_invalid": "Damit die Anmeldung aktiviert sein kann, muss zunächst ein Passwort konfiguriert werden.",
+
             "username": "Benutzername",
             "password": "Passwort",
             "username_invalid": "Der Benutzername darf nicht leer sein.",
@@ -21,7 +23,8 @@
         },
         "script": {
             "save_failed": "Speichern der Zugangsdaten fehlgeschlagen.",
-            "reboot_content_changed": "Zugangsdaten"
+            "reboot_content_changed": "Zugangsdaten",
+            "login_disabled": "Anmeldung deaktiviert"
         }
     }
 }

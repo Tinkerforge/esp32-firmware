@@ -6,6 +6,19 @@ interface Slot {
     clear_on_disconnect: boolean
 }
 
+export const EVSE_SLOT_INCOMING_CABLE = 0;
+export const EVSE_SLOT_OUTGOING_CABLE = 1;
+export const EVSE_SLOT_SHUTDOWN_INPUT = 2;
+export const EVSE_SLOT_GP_INPUT = 3;
+export const EVSE_SLOT_AUTOSTART_BUTTON = 4;
+export const EVSE_SLOT_GLOBAL = 5;
+export const EVSE_SLOT_USER = 6;
+export const EVSE_SLOT_CHARGE_MANAGER = 7;
+export const EVSE_SLOT_EXTERNAL = 8;
+export const EVSE_SLOT_MODBUS_TCP = 9;
+export const EVSE_SLOT_MODBUS_TCP_ENABLE = 10;
+export const EVSE_SLOT_OCPP = 11;
+
 export type slots = Slot[];
 
 export interface button_state {
@@ -22,9 +35,9 @@ export interface indicator_led {
 export interface low_level_state {
     led_state: number,
     cp_pwm_duty_cycle: number,
-    adc_values: Uint16Array,
-    voltages: Int16Array,
-    resistances: Uint32Array,
+    adc_values: number[],
+    voltages: number[],
+    resistances: number[],
     gpio: boolean[],
     charging_time: number,
     time_since_state_change: number,

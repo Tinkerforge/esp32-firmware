@@ -23,8 +23,8 @@
             "sdm_72dmv2": "SDM72DMV2",
             "sdm_details": "Zeige Stromzähler-Detailansicht",
             "sdm_available": "Angeschlossener Zähler",
-            "sdm_power": "Leistungs&shy;aufnahme",
-            "sdm_energy": "Strom&shy;verbrauch",
+            "sdm_power": "Leistungsaufnahme",
+            "sdm_energy": "Stromverbrauch",
             "sdm_energy_since_reset": "seit dem letzten Zurücksetzen",
             "sdm_energy_lifetime": "seit Herstellung des Stromzählers"
         },

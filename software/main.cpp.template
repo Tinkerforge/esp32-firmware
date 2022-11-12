@@ -36,6 +36,9 @@
 #define TF_ESP_PREINIT
 #endif
 
+#define TFJSON_IMPLEMENTATION
+#include "TFJson.h"
+
 bool config_constructors_allowed = false;
 
 const char* DISPLAY_NAME = "{{{display_name}}}";
@@ -53,7 +56,7 @@ API api;
 extern TF_HAL hal;
 // initialized by board module
 uint32_t local_uid_num = 0;
-char local_uid_str[7] = {0};
+char local_uid_str[32] = {0};
 char passphrase[20] = {0};
 int8_t blue_led_pin = -1;
 int8_t green_led_pin = -1;
@@ -93,9 +96,7 @@ static void register_default_urls(void) {
     reboot = ConfigRoot{Config::Null()};
 
     api.addCommand("reboot", &reboot, {}, []() {
-        logger.printfln("Reboot requested by API.");
-        delay(1500);
-        ESP.restart();
+        trigger_reboot("API");
     }, true);
 
     api.addState("info/modules", &modules, {}, 10000);
@@ -149,6 +150,8 @@ void setup(void) {
 
     logger.printfln("Last reset reason was: %s", tf_reset_reason());
 
+    config_preinit();
+
     TF_ESP_PREINIT
 
     if(!mount_or_format_spiffs()) {
@@ -173,6 +176,8 @@ void setup(void) {
         {"event_log", Config::Bool(true)},
         {{{module_init_config}}}
     });
+
+    config_postsetup();
 
     server.start();
 

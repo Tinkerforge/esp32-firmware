@@ -27,15 +27,10 @@ import feather from "../../ts/feather";
 import { h, render, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
 
-import { ConfigComponent } from "../../ts/components/config_component";
-import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { InputText } from "../../ts/components/input_text";
-import { InputNumber } from "../../ts/components/input_number";
-import { InputPassword } from "../../ts/components/input_password";
 import { InputDate } from "../../ts/components/input_date";
-import { Switch } from "../../ts/components/switch";
 import { Button, ListGroup, ListGroupItem, Spinner } from "react-bootstrap";
 import { PageHeader } from "src/ts/components/page_header";
 import { InputSelect } from "src/ts/components/input_select";

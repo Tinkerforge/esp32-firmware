@@ -19,74 +19,95 @@
 
 import $ from "../../ts/jq";
 
-import * as util from "../../ts/util";
 import * as API from "../../ts/api";
+import * as util from "../../ts/util";
 
-import { h, render } from "preact";
+import { h, render, Fragment, Component} from "preact";
 import { __ } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
 
-render(<PageHeader title={__("proxy.content.proxy")} />, $('#proxy_header')[0]);
+import { FormRow } from "../../ts/components/form_row";
+import { Table} from "react-bootstrap";
 
-function update_devices() {
-    let devices = API.get('proxy/devices');
-
-    if (devices.length == 0) {
-        $("#bricklets_content").html("<tr><td colspan=\"3\">" + __("proxy.script.no_bricklets") + "</td></tr>");
-        return;
-    }
-
-    let result = "";
-
-    for (let device of devices) {
-        let line = "<tr>";
-        line += "<td>" + device.port + "</td>";
-        line += "<td>" + device.uid + "</td>";
-        line += "<td>" + (device.name == "unknown device" ? __("proxy.script.unknown_device") : device.name) + "</td>";
-        line += "</tr>"
-
-        result += line;
-    }
-
-    $("#bricklets_content").html(result);
+interface ProxyState {
+    devices: Readonly<API.getType['proxy/devices']>;
+    error_counters: Readonly<API.getType['proxy/error_counters']>;
 }
 
 
-function update_error_counters() {
-    let error_counters = API.get('proxy/error_counters');
+export class Proxy extends Component<{}, ProxyState> {
+    constructor() {
+        super();
 
-    if (Object.keys(error_counters).length == 0) {
-        $("#bricklets_error_counters").html("");
-        return;
+        util.eventTarget.addEventListener('proxy/devices', () => {
+            this.setState({devices: API.get('proxy/devices')});
+        });
+
+        util.eventTarget.addEventListener('proxy/error_counters', () => {
+            this.setState({error_counters: API.get('proxy/error_counters')});
+        });
+
     }
 
-    let result = "";
+    render(props: {}, state: Readonly<ProxyState>) {
+        if (!state || !state.devices)
+            return (<></>);
 
-    for (let port in error_counters) {
-        let counters = error_counters[port];
+        return (
+            <>
+                <PageHeader title={__("proxy.content.proxy")} />
+                <FormRow label={__("proxy.content.bricklet_table")}>
+                    <Table hover borderless>
+                        <thead class="thead-light">
+                            <tr>
+                                <th scope="col">{__("proxy.content.port")}</th>
+                                <th scope="col">{__("proxy.content.UID")}</th>
+                                <th scope="col">{__("proxy.content.device_type")}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {state.devices.length == 0 ? <tr><td colSpan={3}>{__("proxy.script.no_bricklets")}</td></tr>
+                                : state.devices.map(d => <tr>
+                                <td>{d.port}</td>
+                                <td>{d.uid}</td>
+                                <td>{d.name == "unknown device" ? __("proxy.script.unknown_device") : d.name}</td>
+                            </tr>)}
+                        </tbody>
+                    </Table>
+                </FormRow>
 
-        let line = "<tr>";
-        line += "<td>" + port + "</td>";
-        line += "<td>" + counters.SpiTfpChecksum + "</td>";
-        line += "<td>" + counters.SpiTfpFrame + "</td>";
-        line += "<td>" + counters.TfpFrame + "</td>";
-        line += "<td>" + counters.TfpUnexpected + "</td>";
-        line += "</tr>"
-
-        result += line;
+                <FormRow label={__("proxy.content.error_counters")}>
+                    <Table hover borderless>
+                        <thead class="thead-light">
+                            <tr>
+                                <th scope="col">{__("proxy.content.port")}</th>
+                                <th scope="col">{__("proxy.content.spitfp_checksum")}</th>
+                                <th scope="col">{__("proxy.content.spitfp_frame")}</th>
+                                <th scope="col">{__("proxy.content.tfp_frame")}</th>
+                                <th scope="col">{__("proxy.content.tfp_unexpected")}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {Object.keys(state.error_counters).map(port => <tr>
+                                <td>{port}</td>
+                                <td>{state.error_counters[port].SpiTfpChecksum}</td>
+                                <td>{state.error_counters[port].SpiTfpFrame}</td>
+                                <td>{state.error_counters[port].TfpFrame}</td>
+                                <td>{state.error_counters[port].TfpUnexpected}</td>
+                            </tr>)}
+                        </tbody>
+                    </Table>
+                </FormRow>
+            </>
+        )
     }
-
-    $("#bricklets_error_counters").html(result);
 }
 
-export function init() {
+render(<Proxy />, $('#proxy')[0]);
 
-}
+export function init() {}
 
-export function add_event_listeners(source: API.APIEventTarget) {
-    source.addEventListener('proxy/devices', update_devices);
-    source.addEventListener('proxy/error_counters', update_error_counters);
-}
+export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-proxy').prop('hidden', !module_init.proxy);

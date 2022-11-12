@@ -10,7 +10,7 @@
             "energy_manager": "Energiemanager",
             "debug": "Energiemanager Protokoll",
             "debug_start": "Start",
-            "debug_stop": "Stop + Download",
+            "debug_stop": "Stop+Download",
             "debug_description": "Protokoll erstellen",
             "debug_description_muted": "zur Diagnose bei Problemen",
             "low_level_state": "Low-Level-Zustand",

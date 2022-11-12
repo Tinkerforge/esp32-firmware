@@ -17,17 +17,18 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Component, JSX } from "preact";
+import { h, Component } from "preact";
 
 export interface PageHeaderProps {
     title: string
+    colClasses?: string
 }
 
 export class PageHeader extends Component<PageHeaderProps, any> {
     render() {
         return (
             <div class="row sticky-under-top mb-3 pt-3">
-                <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-header-shadow">
+                <div class={"d-flex justify-content-between pb-2 border-bottom tab-header-shadow " + (this.props.colClasses === undefined ? "col-xl-8" : this.props.colClasses)}>
                     <h1 class="h2" dangerouslySetInnerHTML={{__html: this.props.title}}></h1>
                 </div>
             </div>

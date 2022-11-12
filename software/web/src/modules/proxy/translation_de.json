@@ -13,10 +13,10 @@
             "UID": "UID",
             "device_type": "Gerätetyp",
             "error_counters": "Fehlerzähler",
-            "spitfp_checksum": "SPI-TFP-Prüf&shy;summe",
+            "spitfp_checksum": "SPI-TFP-Prüfsumme",
             "spitfp_frame": "SPI-TFP-Frame",
             "tfp_frame": "TFP-Frame",
-            "tfp_unexpected": "TFP un&shy;erwartet"
+            "tfp_unexpected": "TFP unerwartet"
         },
         "script": {
             "no_bricklets": "Keine Bricklets angeschlossen.",

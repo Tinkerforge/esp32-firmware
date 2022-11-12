@@ -1,0 +1,44 @@
+From 463b02eeec52e3b06bbea19469539eaae63eacaa Mon Sep 17 00:00:00 2001
+From: Laukik Hase <laukik.hase@espressif.com>
+Date: Tue, 6 Sep 2022 17:20:35 +0530
+Subject: [PATCH] http_server: Increment active socket count for SSL session -
+ The callback `open_fn` is used for creating a new SSL session   with
+ httpd_sess_new. - If the call fails, the active socket count
+ (httpd_data->hd_sd_active_count)   is not incremented. But, httpd_sess_delete
+ is called, which decrements the   count, resulting in a negative value for
+ several failed session creations   in a row.
+
+Closes https://github.com/espressif/esp-idf/issues/9683
+---
+ components/esp_http_server/src/httpd_sess.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/components/esp_http_server/src/httpd_sess.c b/components/esp_http_server/src/httpd_sess.c
+index dea8e67d1a..04aa8d937c 100644
+--- a/components/esp_http_server/src/httpd_sess.c
++++ b/components/esp_http_server/src/httpd_sess.c
+@@ -204,6 +204,9 @@ esp_err_t httpd_sess_new(struct httpd_data *hd, int newfd)
+     session->send_fn = httpd_default_send;
+     session->recv_fn = httpd_default_recv;
+ 
++    // increment number of sessions
++    hd->hd_sd_active_count++;
++
+     // Call user-defined session opening function
+     if (hd->config.open_fn) {
+         esp_err_t ret = hd->config.open_fn(hd, session->fd);
+@@ -214,10 +217,8 @@ esp_err_t httpd_sess_new(struct httpd_data *hd, int newfd)
+         }
+     }
+ 
+-    // increment number of sessions
+-    hd->hd_sd_active_count++;
+-    ESP_LOGD(TAG, LOG_FMT("active sockets: %d"), hd->hd_sd_active_count);
+ 
++    ESP_LOGD(TAG, LOG_FMT("active sockets: %d"), hd->hd_sd_active_count);
+     return ESP_OK;
+ }
+ 
+-- 
+2.37.3
+

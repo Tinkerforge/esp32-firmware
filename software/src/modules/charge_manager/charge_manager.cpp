@@ -39,7 +39,7 @@
 
 extern API api;
 extern TaskScheduler task_scheduler;
-extern char local_uid_str[7];
+extern char local_uid_str[32];
 
 // Keep in sync with cm_networing.h
 #define MAX_CLIENTS 10

@@ -4,8 +4,8 @@ Date: Fri, 18 Feb 2022 14:03:49 +0100
 Subject: [PATCH] Fix log spam.
 
 ---
- src/lfs_config.h | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
+ src/lfs_config.h | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
 diff --git a/src/lfs_config.h b/src/lfs_config.h
 index 809d2cc..6dc05d3 100644
@@ -21,14 +21,6 @@ index 809d2cc..6dc05d3 100644
  
  #ifndef LFS_NO_MALLOC
  #include <stdlib.h>
-@@ -32,7 +35,6 @@ extern "C"
- {
- #endif
- 
--
- // Macros, may be replaced by system specific wrappers. Arguments to these
- // macros must not have side-effects as the macros can be removed for a smaller
- // code footprint
 @@ -41,7 +43,7 @@ extern "C"
  #ifndef LFS_TRACE
  #ifdef LFS_YES_TRACE

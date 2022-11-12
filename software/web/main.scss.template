@@ -444,6 +444,29 @@ body {
     border-left: 5px solid;
 }
 
+.input-indicator-primary {
+    border-left-color: var(--primary);
+}
+.input-indicator-secondary {
+    border-left-color: var(--secondary);
+}
+.input-indicator-success {
+    border-left-color: var(--success);
+}
+.input-indicator-warning {
+    border-left-color: var(--warning);
+}
+.input-indicator-danger {
+    border-left-color: var(--danger);
+}
+.input-indicator-light {
+    border-left-color: var(--light);
+}
+.input-indicator-link {
+    border-left-color: var(--link);
+}
+
+
 #status_wifi_sta_rssi .feather {
     vertical-align: bottom;
 }

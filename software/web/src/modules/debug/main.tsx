@@ -22,28 +22,60 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h, render } from "preact";
+import { h, render, Fragment, Component} from "preact";
 import { __ } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
 
-render(<PageHeader title={__("debug.content.debug")} />, $('#debug_header')[0]);
+import { FormRow } from "../../ts/components/form_row";
+import { InputText } from "src/ts/components/input_text";
 
-function update_debug_state() {
-    let state = API.get('debug/state');
-    $('#debug_uptime').val(util.format_timespan(Math.round(state.uptime / 1000)));
-    $('#debug_heap_free').val(state.free_heap);
-    $('#debug_heap_block').val(state.largest_free_heap_block);
-    $('#debug_psram_free').val(state.free_psram);
-    $('#debug_psram_block').val(state.largest_free_psram_block);
+export class Debug extends Component<{}, API.getType['debug/state']> {
+    constructor() {
+        super();
+
+        util.eventTarget.addEventListener('debug/state', () => {
+            this.setState(API.get('debug/state'));
+        });
+
+    }
+
+    render(props: {}, state: Readonly<API.getType['debug/state']>) {
+        if (!state)
+            return (<></>);
+
+        return (
+            <>
+                <PageHeader title={__("debug.content.debug")} />
+
+                <FormRow label={__("debug.content.uptime")}>
+                    <InputText value={util.format_timespan(Math.round(state.uptime / 1000))}/>
+                </FormRow>
+
+                <FormRow label={__("debug.content.heap_free")}>
+                    <InputText value={state.free_heap}/>
+                </FormRow>
+
+                <FormRow label={__("debug.content.heap_block")}>
+                    <InputText value={state.largest_free_heap_block}/>
+                </FormRow>
+
+                <FormRow label={__("debug.content.psram_free")}>
+                    <InputText value={state.free_psram}/>
+                </FormRow>
+
+                <FormRow label={__("debug.content.psram_block")}>
+                    <InputText value={state.largest_free_psram_block}/>
+                </FormRow>
+            </>
+        )
+    }
 }
 
-export function init() {
+render(<Debug />, $('#debug')[0]);
 
-}
+export function init() {}
 
-export function add_event_listeners(source: API.APIEventTarget) {
-    source.addEventListener('debug/state', update_debug_state);
-}
+export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-debug').prop('hidden', !module_init.debug);

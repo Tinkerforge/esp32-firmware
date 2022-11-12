@@ -25,6 +25,9 @@
 #include "device_module.h"
 #include "evse_v2_bricklet_firmware_bin.embedded.h"
 
+#define CHARGING_SLOT_COUNT 12
+#define CHARGING_SLOT_COUNT_SUPPORTED_BY_EVSE 20
+
 #define CHARGING_SLOT_INCOMING_CABLE 0
 #define CHARGING_SLOT_OUTGOING_CABLE 1
 #define CHARGING_SLOT_SHUTDOWN_INPUT 2
@@ -34,6 +37,9 @@
 #define CHARGING_SLOT_USER 6
 #define CHARGING_SLOT_CHARGE_MANAGER 7
 #define CHARGING_SLOT_EXTERNAL 8
+#define CHARGING_SLOT_MODBUS_TCP 9
+#define CHARGING_SLOT_MODBUS_TCP_ENABLE 10
+#define CHARGING_SLOT_OCPP 11
 
 #define IEC_STATE_A 0
 #define IEC_STATE_B 1
@@ -77,6 +83,12 @@ public:
     void set_managed_current(uint16_t current);
 
     void set_user_current(uint16_t current);
+
+    void set_modbus_current(uint16_t current);
+    void set_modbus_enabled(bool enabled);
+
+    void set_ocpp_current(uint16_t current);
+    uint16_t get_ocpp_current();
 
     bool apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear);
     void apply_defaults();
@@ -122,6 +134,10 @@ public:
     ConfigRoot evse_external_current_update;
     ConfigRoot evse_external_clear_on_disconnect;
     ConfigRoot evse_external_clear_on_disconnect_update;
+    ConfigRoot evse_modbus_enabled;
+    ConfigRoot evse_modbus_enabled_update;
+    ConfigRoot evse_ocpp_enabled;
+    ConfigRoot evse_ocpp_enabled_update;
 
     uint32_t last_current_update = 0;
     bool shutdown_logged = false;
