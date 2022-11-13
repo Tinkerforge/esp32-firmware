@@ -36,13 +36,13 @@
             "control_pilot_connected": "Verbunden",
             "control_pilot_automatic": "Automatisch",
 
-            "dc_fault_current_state": "DC-Fehlerstrom&shy;zustand",
+            "dc_fault_current_state": "DC-Fehlerstromzustand",
             "dc_fault_current_state_desc": "",
             "dc_fault_current_ok": "OK",
             "dc_fault_current_6_ma": "Gleichstromfehler",
             "dc_fault_current_system": "Systemfehler",
             "dc_fault_current_unknown": "Unbekannter Fehler",
-            "dc_fault_current_calibration": "Kalibrierungs&shy;fehler",
+            "dc_fault_current_calibration": "Kalibrierungsfehler",
             "dc_fault_current_reset": "Zurücksetzen",
 
             "reset_dc_fault_title": "Zurücksetzen des DC-Fehlerstromschutzmoduls",

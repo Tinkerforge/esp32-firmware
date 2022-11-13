@@ -398,7 +398,7 @@ void AC011K::pre_setup()
     evse_config = Config::Object({
         {"auto_start_charging", Config::Bool(true)},
         {"managed", Config::Bool(true)},
-        {"max_current_configured", Config::Uint16(4)}
+        {"max_current_configured", Config::Uint16(0)}
     });
 
     evse_state = Config::Object({
@@ -408,7 +408,7 @@ void AC011K::pre_setup()
         {"contactor_state", Config::Uint8(0)},
         {"contactor_error", Config::Uint8(0)},
         {"charge_release", Config::Uint8(0)},
-        {"allowed_charging_current", Config::Uint16(8)},
+        {"allowed_charging_current", Config::Uint16(0)},
         {"error_state", Config::Uint8(0)},
         {"lock_state", Config::Uint8(0)},
         {"time_since_state_change", Config::Uint32(0)},
@@ -518,7 +518,7 @@ void AC011K::pre_setup()
         {"max_current_configured", Config::Uint16(7000)},
         {"max_current_incoming_cable", Config::Uint16(16000)},
         {"max_current_outgoing_cable", Config::Uint16(16000)},
-        {"max_current_managed", Config::Uint16(5000)},
+        {"max_current_managed", Config::Uint16(16000)},
     });
 
     evse_auto_start_charging = Config::Object({
@@ -747,7 +747,8 @@ void AC011K::setup()
             evse_state.get("uptime")->asUint(),
             evse_low_level_state.get("charging_time")->asUint(),
             evse_slots.get(CHARGING_SLOT_CHARGE_MANAGER)->get("max_current")->asUint(),
-            supported_current,
+            //supported_current,
+            6666,
             //evse_managed.get("managed")->asBool()
             evse_management_enabled.get("enabled")->asBool()
         );
@@ -861,6 +862,7 @@ void AC011K::register_urls()
     api.addState("evse/hardware_configuration", &evse_hardware_configuration, {}, 1000);
     api.addState("evse/low_level_state", &evse_low_level_state, {}, 1000);
     api.addState("evse/slots", &evse_slots, {}, 1000);
+    //api.addPersistentConfig("evse/slots", &evse_slots, {}, 1000);
     api.addState("evse/auto_start_charging", &evse_auto_start_charging, {}, 1000);
     api.addState("evse/privcomm", &evse_privcomm, {}, 1000);
 
