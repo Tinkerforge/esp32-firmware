@@ -762,3 +762,44 @@ void trigger_reboot(const char *initiator)
         ESP.restart();
     }, 0);
 }
+
+void list_dir(fs::FS &fs, const char * dirname, uint8_t max_depth, uint8_t current_depth) {
+    File root = fs.open(dirname);
+    if(!root) {
+        logger.printfln("%*c%s/ - failed to open directory", current_depth * 4, ' ', root.name());
+        return;
+    }
+    if(!root.isDirectory()) {
+        logger.printfln("%*c%s/ - not a directory", current_depth * 4, ' ', root.name());
+        return;
+    }
+    logger.printfln("%*c%s/", current_depth * 4, ' ', root.name());
+
+    File file = root.openNextFile();
+    while(file) {
+        if(file.isDirectory()) {
+            if(max_depth) {
+                list_dir(fs, file.path(), max_depth - 1, current_depth + 1);
+            }
+        } else {
+            size_t prefix_len = (current_depth + 1) * 4 + strlen(file.name());
+            time_t t = file.getLastWrite();
+            struct tm * tmstruct = localtime(&t);
+
+            logger.printfln("%*c%s%*c%d-%02d-%02d %02d:%02d:%02d    %u",
+                            (current_depth + 1) * 4,
+                            ' ',
+                            file.name(),
+                            prefix_len < 40 ? 40 - prefix_len : 4,
+                            ' ',
+                            tmstruct->tm_year+1900,
+                            tmstruct->tm_mon+1,
+                            tmstruct->tm_mday,
+                            tmstruct->tm_hour,
+                            tmstruct->tm_min,
+                            tmstruct->tm_sec,
+                            file.size());
+        }
+        file = root.openNextFile();
+    }
+}
