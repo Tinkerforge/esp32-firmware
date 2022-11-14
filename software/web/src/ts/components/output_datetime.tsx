@@ -26,6 +26,7 @@ interface OutputDatetimeProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputE
     date: Date
     onClick?: () => void
     buttonText?: string
+    disabled?: boolean
 }
 
 function toIsoString(date: Date) {
@@ -61,7 +62,7 @@ export function OutputDatetime(props: OutputDatetimeProps) {
         <div class="input-group">
             {inner}
             <div class="input-group-append">
-                <button class="btn btn-primary form-control rounded-right" type="button" onClick={props.onClick}>{props.buttonText}</button>
+                <button class="btn btn-primary form-control rounded-right" type="button" onClick={props.onClick} disabled={props.disabled}>{props.buttonText}</button>
             </div>
         </div>
 
