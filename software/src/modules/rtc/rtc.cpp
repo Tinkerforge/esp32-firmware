@@ -79,69 +79,30 @@ void Rtc::update_system_time()
 
         settimeofday(&t, nullptr);
     }
-    logger.printfln("Updated system time");
 }
 
 void Rtc::setup()
 {
     setup_rtc();
-    if (device_found)
-    {
-        struct timeval time = get_time();
-        if (time.tv_sec)
-        {
-            settimeofday(&time, nullptr);
-            logger.printfln("Got time via RTC-Bricklet");
-        }
-        api.restorePersistentConfig("rtc/config", &config);
+
+    if (!device_found)
+        return;
+
+    logger.printfln("RTC Bricklet found");
+
+    struct timeval time = get_time();
+    if (time.tv_sec != 0) {
+        settimeofday(&time, nullptr);
+
+        auto now = millis();
+        auto secs = now / 1000;
+        auto ms = now % 1000;
+        logger.printfln("Set system time from RTC at %lu,%03lu", secs, ms);
+    } else {
+        logger.printfln("RTC Bricklet not set!");
     }
-}
 
-void Rtc::update_time()
-{
-    uint16_t year;
-    uint8_t month;
-    uint8_t day;
-    uint8_t hour;
-    uint8_t minute;
-    uint8_t second;
-    uint8_t centisecond;
-    uint8_t weekday;
-    if (tf_real_time_clock_v2_get_date_time(&device,
-                                        &year,
-                                        &month,
-                                        &day,
-                                        &hour,
-                                        &minute,
-                                        &second,
-                                        &centisecond,
-                                        &weekday,
-                                        NULL))
-        logger.printfln("Update time failed");
-    time.get("year")->updateUint(year);
-    time.get("month")->updateUint(month);
-    time.get("day")->updateUint(day);
-    time.get("hour")->updateUint(hour);
-    time.get("minute")->updateUint(minute);
-    time.get("second")->updateUint(second);
-    time.get("centisecond")->updateUint(centisecond);
-    time.get("weekday")->updateUint(weekday);
-}
-
-void Rtc::set_time()
-{
-    logger.printfln("Updating Time via Web/API");
-    tf_real_time_clock_v2_set_date_time(&device,
-                                    (uint16_t)time_update.get("year")->asUint(),
-                                    (uint8_t)time_update.get("month")->asUint(),
-                                    (uint8_t)time_update.get("day")->asUint(),
-                                    (uint8_t)time_update.get("hour")->asUint(),
-                                    (uint8_t)time_update.get("minute")->asUint(),
-                                    (uint8_t)time_update.get("second")->asUint(),
-                                    (uint8_t)time_update.get("centisecond")->asUint(),
-                                    (uint8_t)time_update.get("weekday")->asUint());
-    ntp.set_synced();
-    update_system_time();
+    api.restorePersistentConfig("rtc/config", &config);
 }
 
 void Rtc::set_time(timeval time)
@@ -171,7 +132,7 @@ struct timeval Rtc::get_time()
     int ret = tf_real_time_clock_v2_get_timestamp(&device, &ts);
     if (ret)
     {
-        logger.printfln("Reading rtc failed with code %i", ret);
+        logger.printfln("Reading RTC failed with code %i", ret);
         struct timeval tmp;
         tmp.tv_sec = 0;
         tmp.tv_usec = 0;
@@ -205,7 +166,22 @@ void Rtc::register_urls()
 
     api.addState("rtc/state", &time, {}, 1000);
     api.addCommand("rtc/state_update", &time_update, {}, [this]() {
-        set_time();
+        auto ret = tf_real_time_clock_v2_set_date_time(&device,
+                                                       time_update.get("year")->asUint(),
+                                                       time_update.get("month")->asUint(),
+                                                       time_update.get("day")->asUint(),
+                                                       time_update.get("hour")->asUint(),
+                                                       time_update.get("minute")->asUint(),
+                                                       time_update.get("second")->asUint(),
+                                                       time_update.get("centisecond")->asUint(),
+                                                       time_update.get("weekday")->asUint());
+        if (ret != TF_E_OK) {
+            logger.printfln("Failed to update RTC via API. (rc %d)", ret);
+            return;
+        }
+
+        ntp.set_synced();
+        update_system_time();
     }, true);
 
     api.addFeature("rtc");
