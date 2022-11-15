@@ -112,6 +112,11 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
                                 title={__("rtc.content.rtc")}
                                 onSave={this.save}
                                 onDirtyChange={(d) => this.ignore_updates = d}>
+                        <FormRow label={__("rtc.content.enable_auto_sync")}>
+                            <Switch desc={__("rtc.content.auto_sync_desc")} checked={state.sync_enabled} onClick={() => {
+                                    this.setState({"sync_enabled": !state.sync_enabled})
+                            }}/>
+                        </FormRow>
                         <FormRow label={__("rtc.content.live_date")}>
                             <OutputDatetime date={new Date(state.state.year.toString()+ "-" +
                                                         this.add_leading_zero(state.state.month) + "-" +
@@ -123,11 +128,6 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
                                             onClick={() => this.set_current_time()}
                                             buttonText={__("rtc.content.set_time")}
                                             disabled={this.state.sync_enabled}/>
-                        </FormRow>
-                        <FormRow label={__("rtc.content.enable_auto_sync")}>
-                            <Switch desc={__("rtc.content.auto_sync_desc")} checked={state.sync_enabled} onClick={() => {
-                                    this.setState({"sync_enabled": !state.sync_enabled})
-                            }}/>
                         </FormRow>
                     </ConfigForm>
                 </>
