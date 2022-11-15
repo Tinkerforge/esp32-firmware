@@ -37,7 +37,6 @@ extern API api;
 extern Rtc rtc;
 #endif
 
-static Config *ntp_state;
 static bool first = true;
 
 #define NTP_DESYNC_THRESHOLD_S 25 * 60 * 60
@@ -52,12 +51,12 @@ static void ntp_sync_cb(struct timeval *t)
         logger.printfln("NTP synchronized at %lu,%03lu!", secs, ms);
 
         task_scheduler.scheduleWithFixedDelay([](){
-            ntp_state->get("time")->updateUint(timestamp_minutes());
+            ntp.state.get("time")->updateUint(timestamp_minutes());
         }, 0, 1000);
     }
 
     task_scheduler.scheduleOnce([]() {
-        ntp_state->get("synced")->updateBool(true);
+        ntp.state.get("synced")->updateBool(true);
     }, 0);
 
 #if MODULE_RTC_AVAILABLE()
@@ -144,8 +143,6 @@ void NTP::setup()
     tzset();
     logger.printfln("Set timezone to %s", config.get("timezone")->asCStr());
 
-    ntp_state = &state;
-
     if (config.get("enable")->asBool())
          sntp_init();
 }
@@ -153,7 +150,7 @@ void NTP::setup()
 void NTP::set_last_sync()
 {
     gettimeofday(&last_sync, NULL);
-    ntp_state->get("synced")->updateBool(true);
+    ntp.state.get("synced")->updateBool(true);
 }
 
 void NTP::register_urls()
@@ -165,7 +162,7 @@ void NTP::register_urls()
         struct timeval time;
         gettimeofday(&time, NULL);
         if (time.tv_sec - this->last_sync.tv_sec >= NTP_DESYNC_THRESHOLD_S || time.tv_sec < BUILD_TIMESTAMP)
-            ntp_state->get("synced")->updateBool(false);
+            ntp.state.get("synced")->updateBool(false);
     }, 0, 30 * 1000);
 }
 
