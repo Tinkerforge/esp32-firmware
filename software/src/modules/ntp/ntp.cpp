@@ -40,6 +40,8 @@ extern Rtc rtc;
 static Config *ntp_state;
 static bool first = true;
 
+#define NTP_DESYNC_THRESHOLD_S 25 * 60 * 60
+
 static void ntp_sync_cb(struct timeval *t)
 {
     if (first) {
@@ -162,9 +164,9 @@ void NTP::register_urls()
     task_scheduler.scheduleWithFixedDelay([this]() {
         struct timeval time;
         gettimeofday(&time, NULL);
-        if (time.tv_sec - this->last_sync.tv_sec >= 30 || time.tv_sec < BUILD_TIMESTAMP)
+        if (time.tv_sec - this->last_sync.tv_sec >= NTP_DESYNC_THRESHOLD_S || time.tv_sec < BUILD_TIMESTAMP)
             ntp_state->get("synced")->updateBool(false);
-    }, 0, 1000 * 60 * 60 * 25);
+    }, 0, 30 * 1000);
 }
 
 void NTP::loop()
