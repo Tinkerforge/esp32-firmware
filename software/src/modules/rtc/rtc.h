@@ -49,7 +49,7 @@ class Rtc : public DeviceModule<TF_RealTimeClockV2,
         void setup_rtc();
         void update_time();
         void set_time();
-        void set_time(time_t time);
+        void set_time(timeval time);
         void update_system_time();
         struct timeval get_time();
 

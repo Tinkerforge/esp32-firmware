@@ -144,23 +144,24 @@ void Rtc::set_time()
     update_system_time();
 }
 
-void Rtc::set_time(time_t time)
+void Rtc::set_time(timeval time)
 {
-    tm *date_time = gmtime(&time);
+    struct tm date_time;
+    gmtime_r(&time.tv_sec, &date_time);
 
     date_time->tm_year += 1900;
-    int ret = tf_real_time_clock_v2_set_date_time(&device,
-                                        (uint16_t)date_time->tm_year,
-                                        (uint8_t)date_time->tm_mon + 1,
-                                        (uint8_t)date_time->tm_mday,
-                                        (uint8_t)date_time->tm_hour,
-                                        (uint8_t)date_time->tm_min,
-                                        (uint8_t)date_time->tm_sec,
-                                        (uint8_t)0,
-                                        (uint8_t)date_time->tm_wday);
+    auto ret = tf_real_time_clock_v2_set_date_time(&device,
+                                                   date_time->tm_year,
+                                                   date_time->tm_mon + 1,
+                                                   date_time->tm_mday,
+                                                   date_time->tm_hour,
+                                                   date_time->tm_min,
+                                                   date_time->tm_sec,
+                                                   time.tv_usec / (1000 * 10),
+                                                   date_time->tm_wday);
     if (ret)
         logger.printfln("Setting rtc failed with code %i", ret);
-    free(date_time);
+
     ntp.set_synced();
 }
 

@@ -65,7 +65,7 @@ static void ntp_sync_cb(struct timeval *t)
         task_scheduler.scheduleOnce([]() {
             timeval time;
             gettimeofday(&time, nullptr);
-            rtc.set_time(time.tv_sec + time.tv_usec / 1000000);
+            rtc.set_time(time);
         }, 0);
     }
 #endif
