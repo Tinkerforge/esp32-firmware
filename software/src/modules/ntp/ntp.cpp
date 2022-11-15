@@ -82,7 +82,7 @@ extern "C" void sntp_sync_time(struct timeval *tv)
         {
             std::lock_guard<std::mutex> lock{ntp.mtx};
             settimeofday(tv, NULL);
-            ntp.mtx_count++;
+            ntp.sync_counter++;
         }
         sntp_set_sync_status(SNTP_SYNC_STATUS_COMPLETED);
     }

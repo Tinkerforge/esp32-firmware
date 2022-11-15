@@ -58,18 +58,25 @@ void Rtc::pre_setup()
 
 void Rtc::update_system_time()
 {
+    // We have to make sure, we don't try to update the system clock
+    // while NTP also sets the clock.
+    // To prevent this, we skip updating the system clock if NTP
+    // did update it while we were fetching the current time from the RTC.
+
     uint32_t count;
     {
         std::lock_guard<std::mutex> lock{ntp.mtx};
-        count = ntp.mtx_count;
+        count = ntp.sync_counter;
     }
 
     struct timeval t = this->get_time();
 
     {
         std::lock_guard<std::mutex> lock{ntp.mtx};
-        if (count != ntp.mtx_count)
+        if (count != ntp.sync_counter)
+            // NTP has just updated the system time. We assume that this time is more accurate the the RTC's.
             return;
+
         settimeofday(&t, nullptr);
     }
     logger.printfln("Updated system time");

@@ -38,7 +38,7 @@ public:
     bool initialized = false;
 
     std::mutex mtx;
-    uint32_t mtx_count = 0;
+    uint32_t sync_counter = 0;
 
     ConfigRoot config;
     ConfigRoot state;
