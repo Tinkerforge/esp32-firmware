@@ -193,6 +193,8 @@ void Rtc::register_urls()
     if (!device_found)
         return;
 
+    DeviceModule::register_urls();
+
     api.addPersistentConfig("rtc/config", &config, {}, 1000);
 
     api.addState("rtc/state", &time, {}, 1000);
