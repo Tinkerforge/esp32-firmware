@@ -69,9 +69,12 @@ static void ntp_sync_cb(struct timeval *t)
         }, 0);
     }
 #endif
+
+    ntp.set_synced();
 }
 
-//Because there is the risk of a race condition with the rtc module we have to replace the sntp_sync_time function with a threadsave implementation.
+// Because there is the risk of a race condition with the rtc module,
+// we have to replace the sntp_sync_time function with a thread-safe implementation.
 extern "C" void sntp_sync_time(struct timeval *tv)
 {
     if (sntp_get_sync_mode() == SNTP_SYNC_MODE_IMMED)
@@ -82,7 +85,6 @@ extern "C" void sntp_sync_time(struct timeval *tv)
             ntp.mtx_count++;
         }
         sntp_set_sync_status(SNTP_SYNC_STATUS_COMPLETED);
-        ntp.set_last_sync();
     }
     else
         logger.printfln("This sync mode is not supported.");
@@ -115,7 +117,8 @@ void NTP::setup()
 
     api.restorePersistentConfig("ntp/config", &config);
 
-    // sntp_set_time_sync_notification_cb(ntp_sync_cb);             since we use our own sntp_sync_time function we do not need to register the cb function.
+    // As we use our own sntp_sync_time function, we do not need to register the cb function.
+    // sntp_set_time_sync_notification_cb(ntp_sync_cb);
 
     bool dhcp = config.get("use_dhcp")->asBool();
     sntp_servermode_dhcp(dhcp ? 1 : 0);
@@ -147,7 +150,7 @@ void NTP::setup()
          sntp_init();
 }
 
-void NTP::set_last_sync()
+void NTP::set_synced()
 {
     gettimeofday(&last_sync, NULL);
     ntp.state.get("synced")->updateBool(true);

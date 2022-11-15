@@ -33,7 +33,7 @@ public:
     void setup();
     void register_urls();
     void loop();
-    void set_last_sync();
+    void set_synced();
 
     bool initialized = false;
 

@@ -133,7 +133,7 @@ void Rtc::set_time()
                                     (uint8_t)time_update.get("second")->asUint(),
                                     (uint8_t)time_update.get("centisecond")->asUint(),
                                     (uint8_t)time_update.get("weekday")->asUint());
-    ntp.set_last_sync();
+    ntp.set_synced();
     update_system_time();
 }
 
@@ -154,7 +154,7 @@ void Rtc::set_time(time_t time)
     if (ret)
         logger.printfln("Setting rtc failed with code %i", ret);
     free(date_time);
-    ntp.set_last_sync();
+    ntp.set_synced();
 }
 
 struct timeval Rtc::get_time()
