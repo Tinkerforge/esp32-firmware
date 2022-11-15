@@ -6,7 +6,6 @@
         "content": {
             "rtc": "Real Time Clock",
             "live_date": "Current datetime on rtc",
-            "live_time": "Current time",
             "set_time": "Sync time",
             "enable_auto_sync": "Enable automatic sync",
             "auto_sync_desc": "Enables the automatic synchronization from client device."
