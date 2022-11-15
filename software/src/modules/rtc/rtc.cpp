@@ -187,12 +187,42 @@ void Rtc::register_urls()
     api.addFeature("rtc");
 
     task_scheduler.scheduleWithFixedDelay([this]() {
-        update_time();
+        uint16_t year;
+        uint8_t month;
+        uint8_t day;
+        uint8_t hour;
+        uint8_t minute;
+        uint8_t second;
+        uint8_t centisecond;
+        uint8_t weekday;
+
+        auto ret = tf_real_time_clock_v2_get_date_time(&device,
+                                                       &year,
+                                                       &month,
+                                                       &day,
+                                                       &hour,
+                                                       &minute,
+                                                       &second,
+                                                       &centisecond,
+                                                       &weekday,
+                                                       NULL);
+        if (ret != TF_E_OK) {
+            logger.printfln("Update time failed (rc %d)", ret);
+            return;
+        }
+        time.get("year")->updateUint(year);
+        time.get("month")->updateUint(month);
+        time.get("day")->updateUint(day);
+        time.get("hour")->updateUint(hour);
+        time.get("minute")->updateUint(minute);
+        time.get("second")->updateUint(second);
+        time.get("centisecond")->updateUint(centisecond);
+        time.get("weekday")->updateUint(weekday);
     }, 0, 1000);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         update_system_time();
-    }, 1000 * 60 * 10, 1000 * 60 * 60 * 25);
+    }, 1000 * 60 * 10, 1000 * 60 * 10);
 }
 
 void Rtc::loop()
