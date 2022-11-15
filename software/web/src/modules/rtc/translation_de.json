@@ -1,18 +1,18 @@
 {
     "rtc": {
         "navbar": {
-            "rtc": "RTC"
+            "rtc": "Real-Time Clock"
         },
         "content": {
-            "rtc": "Real Time Clock",
-            "live_date": "Current datetime on rtc",
-            "set_time": "Sync time",
-            "enable_auto_sync": "Enable automatic sync",
-            "auto_sync_desc": "Enables the automatic synchronization from client device."
+            "rtc": "Real-Time Clock Bricklet",
+            "live_date": "Zeit auf dem RTC Bricklet",
+            "set_time": "Zeit setzen",
+            "enable_auto_sync": "Automatische Synchronisierung",
+            "auto_sync_desc": "Setzt die Zeit auf dem RTC Bricklet automatisch, wenn das Webinterface geöffnet wird und keine NTP-Synchronisierung besteht."
         },
         "script": {
-            "save_failed": "Failed to save the RTC configuration.",
-            "reboot_content_changed": "RTC settings"
+            "save_failed": "Speichern der RTC-Einstellungen fehlgeschlagen.",
+            "reboot_content_changed": "RTC-Einstellungen"
         }
     }
 }
