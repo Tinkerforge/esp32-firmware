@@ -20,17 +20,25 @@
 #pragma once
 
 #include "config.h"
+#include <mutex>
 
 class NTP
 {
+private:
+    struct timeval last_sync;
+
 public:
     NTP(){}
     void pre_setup();
     void setup();
     void register_urls();
     void loop();
+    void set_last_sync();
 
     bool initialized = false;
+
+    std::mutex mtx;
+    uint32_t mtx_count = 0;
 
     ConfigRoot config;
     ConfigRoot state;

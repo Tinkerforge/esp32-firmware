@@ -131,6 +131,8 @@ export class NTP extends ConfigComponent<'ntp/config'> {
                                    onValue={this.set("server2")}/>
                     </FormRow>
                 </ConfigForm>
+
+
             </>
         );
     }

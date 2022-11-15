@@ -1,0 +1,19 @@
+{
+    "rtc": {
+        "navbar": {
+            "rtc": "RTC"
+        },
+        "content": {
+            "rtc": "Real Time Clock",
+            "live_date": "Current datetime on rtc",
+            "live_time": "Current time",
+            "set_time": "Sync time",
+            "enable_auto_sync": "Enable automatic sync",
+            "auto_sync_desc": "Enables the automatic synchronization from client device."
+        },
+        "script": {
+            "save_failed": "Failed to save the RTC configuration.",
+            "reboot_content_changed": "RTC settings"
+        }
+    }
+}
