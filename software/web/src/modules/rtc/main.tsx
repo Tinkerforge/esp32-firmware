@@ -52,7 +52,9 @@ interface RtcPageState {
 
 export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
     constructor() {
-        super('rtc/config');
+        super('rtc/config',
+              __("rtc.script.save_failed"),
+              __("rtc.script.reboot_content_changed"));
 
         util.eventTarget.addEventListener("rtc/state", () =>{
             let time = API.get("rtc/state");
