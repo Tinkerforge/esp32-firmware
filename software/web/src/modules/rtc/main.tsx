@@ -46,24 +46,34 @@ interface time {
     weekday: number
 }
 
-export class Rtc extends ConfigComponent<'rtc/state', {}, RTCConfig> {
+interface RtcPageState {
+    state: RTCState
+}
+
+export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
     constructor() {
-        super('rtc/state');
+        super('rtc/config');
 
         util.eventTarget.addEventListener("rtc/state", () =>{
             let time = API.get("rtc/state");
-            this.setState({ year: time.year,
-                            month: time.month,
-                            day: time.day,
-                            hour: time.hour,
-                            minute: time.minute,
-                            second: time.second,
-                            centisecond: time.centisecond,
-                            weekday: time.weekday});
+
+            if (!this.state.state)
+            {
+                window.setTimeout(() => {
+                    if (API.get("rtc/config").sync_enabled && !API.get("ntp/state").synced)
+                        this.set_current_time();
+                }, 1000);
+            }
+
+            this.setState({state:{ year: time.year,
+                                    month: time.month,
+                                    day: time.day,
+                                    hour: time.hour,
+                                    minute: time.minute,
+                                    second: time.second,
+                                    centisecond: time.centisecond,
+                                    weekday: time.weekday}});
         });
-        util.eventTarget.addEventListener("rtc/config", () => {
-            this.setState({sync_enabled: API.get("rtc/config").sync_enabled})
-        })
     }
 
     add_leading_zero(i: number)
@@ -91,12 +101,9 @@ export class Rtc extends ConfigComponent<'rtc/state', {}, RTCConfig> {
     }
 
 
-    render(props: {}, state: RTCState & RTCConfig) {
-        if (!state || !state.year)
+    render(props: {}, state: RTCConfig & RtcPageState) {
+        if (!state || !state.state)
             return <></>;
-
-        if (API.get("rtc/config").sync_enabled && !API.get("ntp/state").synced)
-            this.set_current_time();
 
         return <>
                     <ConfigForm id="rtc_config_form"
@@ -104,21 +111,20 @@ export class Rtc extends ConfigComponent<'rtc/state', {}, RTCConfig> {
                                 onSave={this.save}
                                 onDirtyChange={(d) => this.ignore_updates = d}>
                         <FormRow label={__("rtc.content.live_date")}>
-                            <OutputDatetime date={new Date(state.year.toString()+ "-" +
-                                                        this.add_leading_zero(state.month) + "-" +
-                                                        this.add_leading_zero(state.day) + "T" +
-                                                        this.add_leading_zero(state.hour) + ":" +
-                                                        this.add_leading_zero(state.minute) + ":" +
-                                                        this.add_leading_zero(state.second) + "." +
-                                                        this.add_leading_zero(state.centisecond * 10) + "Z")}
+                            <OutputDatetime date={new Date(state.state.year.toString()+ "-" +
+                                                        this.add_leading_zero(state.state.month) + "-" +
+                                                        this.add_leading_zero(state.state.day) + "T" +
+                                                        this.add_leading_zero(state.state.hour) + ":" +
+                                                        this.add_leading_zero(state.state.minute) + ":" +
+                                                        this.add_leading_zero(state.state.second) + "." +
+                                                        this.add_leading_zero(state.state.centisecond * 10) + "Z")}
                                             onClick={() => this.set_current_time()}
                                             buttonText={__("rtc.content.set_time")}
                                             disabled={this.state.sync_enabled}/>
                         </FormRow>
                         <FormRow label={__("rtc.content.enable_auto_sync")}>
                             <Switch desc={__("rtc.content.auto_sync_desc")} checked={state.sync_enabled} onClick={() => {
-                                    API.save("rtc/config", {sync_enabled: !this.state.sync_enabled}, __("rtc.script.save_failed"));
-                                    console.log(this.state.sync_enabled);
+                                    this.setState({"sync_enabled": !state.sync_enabled})
                             }}/>
                         </FormRow>
                     </ConfigForm>
