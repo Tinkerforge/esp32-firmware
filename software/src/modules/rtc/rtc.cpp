@@ -134,9 +134,7 @@ void Rtc::set_time()
                                     (uint8_t)time_update.get("centisecond")->asUint(),
                                     (uint8_t)time_update.get("weekday")->asUint());
     ntp.set_last_sync();
-    task_scheduler.scheduleOnce([this]() {
-        update_system_time();
-    }, 500);
+    update_system_time();
 }
 
 void Rtc::set_time(time_t time)
