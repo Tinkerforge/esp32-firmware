@@ -32,7 +32,10 @@
 
 extern TaskScheduler task_scheduler;
 extern API api;
+
+#if MODULE_RTC_AVAILABLE()
 extern Rtc rtc;
+#endif
 
 static Config *ntp_state;
 static bool first = true;
