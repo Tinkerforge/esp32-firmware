@@ -110,16 +110,16 @@ void Rtc::set_time(timeval time)
     struct tm date_time;
     gmtime_r(&time.tv_sec, &date_time);
 
-    date_time->tm_year += 1900;
+    date_time.tm_year += 1900;
     auto ret = tf_real_time_clock_v2_set_date_time(&device,
-                                                   date_time->tm_year,
-                                                   date_time->tm_mon + 1,
-                                                   date_time->tm_mday,
-                                                   date_time->tm_hour,
-                                                   date_time->tm_min,
-                                                   date_time->tm_sec,
+                                                   date_time.tm_year,
+                                                   date_time.tm_mon + 1,
+                                                   date_time.tm_mday,
+                                                   date_time.tm_hour,
+                                                   date_time.tm_min,
+                                                   date_time.tm_sec,
                                                    time.tv_usec / (1000 * 10),
-                                                   date_time->tm_wday);
+                                                   date_time.tm_wday);
     if (ret)
         logger.printfln("Setting rtc failed with code %i", ret);
 
