@@ -1,4 +1,4 @@
-export interface state {
+export interface time {
     year: number
     month: number
     day: number

@@ -166,8 +166,8 @@ void Rtc::register_urls()
 
     api.addPersistentConfig("rtc/config", &config, {}, 1000);
 
-    api.addState("rtc/state", &time, {}, 1000);
-    api.addCommand("rtc/state_update", &time_update, {}, [this]() {
+    api.addState("rtc/time", &time, {}, 100);
+    api.addCommand("rtc/time_update", &time_update, {}, [this]() {
         auto ret = tf_real_time_clock_v2_set_date_time(&device,
                                                        time_update.get("year")->asUint(),
                                                        time_update.get("month")->asUint(),
@@ -219,7 +219,7 @@ void Rtc::register_urls()
         time.get("minute")->updateUint(minute);
         time.get("second")->updateUint(second);
         time.get("weekday")->updateUint(weekday);
-    }, 0, 1000);
+    }, 0, 200);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         update_system_time();

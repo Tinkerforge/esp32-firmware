@@ -32,22 +32,13 @@ import { __ } from "src/ts/translation";
 import { ConfigForm } from "src/ts/components/config_form";
 
 
-type RTCState = API.getType['rtc/state'];
+type RTCTime = API.getType['rtc/time'];
 type RTCConfig = API.getType['rtc/config'];
 
-interface time {
-    year: number
-    month: number
-    day: number
-    hour: number
-    minute: number
-    second: number
-    centisecond: number
-    weekday: number
-}
+type TimeUpdate = RTCTime & {centisecond: number};
 
 interface RtcPageState {
-    state: RTCState
+    state: RTCTime
 }
 
 export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
@@ -56,8 +47,8 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
               __("rtc.script.save_failed"),
               __("rtc.script.reboot_content_changed"));
 
-        util.eventTarget.addEventListener("rtc/state", () =>{
-            let time = API.get("rtc/state");
+        util.eventTarget.addEventListener("rtc/time", () =>{
+            let time = API.get("rtc/time");
 
             if (!this.state.state)
             {
@@ -87,7 +78,7 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
     set_current_time()
     {
         let date = new Date();
-        let time: time = {
+        let time: TimeUpdate = {
             year: date.getUTCFullYear(),
             month: date.getUTCMonth() + 1,
             day: date.getUTCDate(),
@@ -98,7 +89,7 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
             weekday: date.getUTCDay()
         };
 
-        API.save("rtc/state", time, __("rtc.script.save_failed"));
+        API.save("rtc/time", time, __("rtc.script.save_failed"));
     }
 
 
