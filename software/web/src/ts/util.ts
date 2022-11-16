@@ -512,8 +512,8 @@ export type NoExtraProperties<T, U extends T = T> = U & Impossible<Exclude<keyof
 export function clamp(min: number | undefined, x: number, max: number | undefined) {
     let result = x;
     if (max !== undefined)
-        result = Math.min(max, x);
+        result = Math.min(max, result);
     if (min !== undefined)
-        result = Math.max(min, x);
+        result = Math.max(min, result);
     return result;
 }
