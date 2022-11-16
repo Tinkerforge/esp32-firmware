@@ -48,7 +48,6 @@ public:
 private:
     ConfigRoot ethernet_config;
     ConfigRoot ethernet_state;
-    ConfigRoot ethernet_force_reset;
 
     ConfigRoot ethernet_config_in_use;
 

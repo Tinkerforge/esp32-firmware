@@ -61,8 +61,6 @@ private:
     ConfigRoot wifi_sta_config;
     ConfigRoot wifi_state;
 
-    ConfigRoot wifi_scan_config;
-
     ConfigRoot wifi_ap_config_in_use;
     ConfigRoot wifi_sta_config_in_use;
 

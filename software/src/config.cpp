@@ -48,6 +48,8 @@ size_t array_buf_size = 0;
 Config::ConfObject::Slot *object_buf = nullptr;
 size_t object_buf_size = 0;
 
+static ConfigRoot nullconf = Config{Config::ConfVariant{}};
+
 
 struct default_validator {
     String operator()(const Config::ConfString &x) const
@@ -1016,12 +1018,12 @@ Config Config::Object(std::initializer_list<std::pair<String, Config>> obj)
     return Config{ConfObject{obj}};
 }
 
-Config Config::Null()
+ConfigRoot *Config::Null()
 {
     // Allow constructing null configs:
     // Those are not stored in slots so no static initialization order problems can emerge here.
 
-    return Config{ConfVariant{}};
+    return &nullconf;
 }
 
 Config Config::Uint8(uint8_t u)

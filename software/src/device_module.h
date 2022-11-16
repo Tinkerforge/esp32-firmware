@@ -55,8 +55,6 @@ public:
                  const char *device_name,
                  const char *module_name,
                  std::function<void(void)> setup_function) :
-        device_reflash(Config::Null()),
-        device_reset(Config::Null()),
         url_prefix(url_prefix),
         device_name(device_name),
         module_name(module_name),
@@ -113,7 +111,7 @@ public:
 
     void register_urls()
     {
-        api.addCommand(url_prefix + "/reflash", &device_reflash, {}, [this]() {
+        api.addCommand(url_prefix + "/reflash", Config::Null(), {}, [this]() {
             uint16_t device_id = get_device_id();
             TF_TFP *tfp = tf_hal_get_tfp(&hal, nullptr, nullptr, &device_id, false);
 
@@ -122,7 +120,7 @@ public:
             }
         }, true);
 
-        api.addCommand(url_prefix + "/reset", &device_reset, {}, [this]() {
+        api.addCommand(url_prefix + "/reset", Config::Null(), {}, [this]() {
             reset_function(&device);
 
             initialized = false;
@@ -163,8 +161,6 @@ public:
     bool device_found = false;
     bool initialized = false;
 
-    ConfigRoot device_reflash;
-    ConfigRoot device_reset;
 
     DeviceT device;
 

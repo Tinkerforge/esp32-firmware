@@ -35,6 +35,8 @@ extern EventLog logger;
 void config_preinit();
 void config_postsetup();
 
+struct ConfigRoot;
+
 struct Config {
     struct ConfString {
         struct Slot {
@@ -493,7 +495,7 @@ struct Config {
 
     static Config Object(std::initializer_list<std::pair<String, Config>> obj);
 
-    static Config Null();
+    static ConfigRoot *Null();
 
     static Config Uint8(uint8_t u);
 

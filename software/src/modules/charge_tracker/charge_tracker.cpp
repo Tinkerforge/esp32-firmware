@@ -72,7 +72,7 @@ void ChargeTracker::pre_setup()
         {"evse_uptime_start", Config::Uint32(0)},
         {"timestamp_minutes", Config::Uint32(0)},
         {"authorization_type", Config::Uint8(0)},
-        {"authorization_info", Config::Null()}
+        {"authorization_info", Config{Config::ConfVariant()}}
     });
 
     state = Config::Object({

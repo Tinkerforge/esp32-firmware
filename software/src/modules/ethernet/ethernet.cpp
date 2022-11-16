@@ -88,8 +88,6 @@ void Ethernet::pre_setup()
         {"full_duplex", Config::Bool(false)},
         {"link_speed", Config::Uint8(0)}
     });
-
-    ethernet_force_reset = Config::Null();
 }
 
 void Ethernet::setup()
@@ -183,7 +181,7 @@ void Ethernet::register_urls()
 {
     api.addPersistentConfig("ethernet/config", &ethernet_config, {}, 1000);
     api.addState("ethernet/state", &ethernet_state, {}, 1000);
-    api.addCommand("ethernet/force_reset", &ethernet_force_reset, {}, [this](){
+    api.addCommand("ethernet/force_reset", Config::Null(), {}, [this](){
         esp_eth_stop(ETH.eth_handle);
         pinMode(5, OUTPUT);
         digitalWrite(5, LOW);

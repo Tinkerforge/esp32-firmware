@@ -102,7 +102,6 @@ void Ocpp::pre_setup()
         {"MaxChargingProfilesInstalled", Config::Str("", 0, 500)}
     });
 #endif
-    reset = Config::Null();
 }
 
 void Ocpp::setup()
@@ -129,7 +128,7 @@ void Ocpp::register_urls()
     api.addState("ocpp/state", &state, {}, 1000);
     api.addState("ocpp/configuration", &configuration, {}, 1000);
 #endif
-    api.addCommand("ocpp/reset", &reset, {}, [](){
+    api.addCommand("ocpp/reset", Config::Null(), {}, [](){
         remove_directory("/ocpp");
     }, true);
 }

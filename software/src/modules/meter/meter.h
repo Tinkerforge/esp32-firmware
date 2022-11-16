@@ -144,7 +144,6 @@ public:
     ConfigRoot values;
     ConfigRoot phases;
     ConfigRoot all_values;
-    ConfigRoot reset;
     ConfigRoot last_reset;
 
     ValueHistory power_hist;

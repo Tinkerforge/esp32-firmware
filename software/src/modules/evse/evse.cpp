@@ -118,9 +118,6 @@ void EVSE::pre_setup()
 
     // TODO indicator LED
 
-    evse_stop_charging = Config::Null();
-    evse_start_charging = Config::Null();
-
     evse_auto_start_charging = Config::Object({
         {"auto_start_charging", Config::Bool(true)}
     });
@@ -557,11 +554,11 @@ void EVSE::register_urls()
     api.addState("evse/slots", &evse_slots, {}, 1000);
     api.addState("evse/indicator_led", &evse_indicator_led, {}, 1000);
 
-    api.addCommand("evse/stop_charging", &evse_stop_charging, {}, [this](){
+    api.addCommand("evse/stop_charging", Config::Null(), {}, [this](){
         is_in_bootloader(tf_evse_set_charging_slot_max_current(&device, CHARGING_SLOT_AUTOSTART_BUTTON, 0));
     }, true);
 
-    api.addCommand("evse/start_charging", &evse_start_charging, {}, [this](){
+    api.addCommand("evse/start_charging", Config::Null(), {}, [this](){
         is_in_bootloader(tf_evse_set_charging_slot_max_current(&device, CHARGING_SLOT_AUTOSTART_BUTTON, 32000));
     }, true);
 

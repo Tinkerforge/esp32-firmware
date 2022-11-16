@@ -144,6 +144,4 @@ private:
     #define SCAN_RESULT_ERROR_MANAGEMENT_DISABLED 2
     void add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer &json);
     size_t build_scan_result_json(mdns_result_t *list, char *buf, size_t len);
-
-    ConfigRoot scan_cfg;
 };

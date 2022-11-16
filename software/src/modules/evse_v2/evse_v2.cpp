@@ -155,8 +155,6 @@ void EVSEV2::pre_setup()
 
     // TODO indicator LED
 
-    evse_stop_charging = Config::Null();
-    evse_start_charging = Config::Null();
 
     // EVSE configs
     evse_gpio_configuration = Config::Object({
@@ -723,11 +721,11 @@ void EVSEV2::register_urls()
         is_in_bootloader(tf_evse_v2_reset_dc_fault_current_state(&device, evse_reset_dc_fault_current_state.get("password")->asUint()));
     }, true);
 
-    api.addCommand("evse/stop_charging", &evse_stop_charging, {}, [this](){
+    api.addCommand("evse/stop_charging", Config::Null(), {}, [this](){
         is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_AUTOSTART_BUTTON, 0));
     }, true);
 
-    api.addCommand("evse/start_charging", &evse_start_charging, {}, [this](){
+    api.addCommand("evse/start_charging", Config::Null(), {}, [this](){
         is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_AUTOSTART_BUTTON, 32000));
     }, true);
 
