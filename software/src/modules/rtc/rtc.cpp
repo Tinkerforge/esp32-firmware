@@ -36,7 +36,9 @@ void Rtc::pre_setup()
         {"hour", Config::Uint8(0)},
         {"minute", Config::Uint8(0)},
         {"second", Config::Uint8(0)},
-        {"centisecond", Config::Uint8(0)},
+        // Don't add the centiseconds here, this would send this API via Websockets/MQTT
+        // 4 times per second (as the RTC bricklet polls the real time clock every 250 ms)
+        //{"centisecond", Config::Uint8(0)},
         {"weekday", Config::Uint8(0)},
     });
 
@@ -216,7 +218,6 @@ void Rtc::register_urls()
         time.get("hour")->updateUint(hour);
         time.get("minute")->updateUint(minute);
         time.get("second")->updateUint(second);
-        time.get("centisecond")->updateUint(centisecond);
         time.get("weekday")->updateUint(weekday);
     }, 0, 1000);
 

@@ -5,7 +5,6 @@ export interface state {
     hour: number
     minute: number
     second: number
-    centisecond: number
     weekday: number
 }
 

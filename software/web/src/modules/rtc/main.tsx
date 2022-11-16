@@ -73,7 +73,6 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
                                     hour: time.hour,
                                     minute: time.minute,
                                     second: time.second,
-                                    centisecond: time.centisecond,
                                     weekday: time.weekday}});
         });
     }
@@ -123,8 +122,7 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
                                                         this.add_leading_zero(state.state.day) + "T" +
                                                         this.add_leading_zero(state.state.hour) + ":" +
                                                         this.add_leading_zero(state.state.minute) + ":" +
-                                                        this.add_leading_zero(state.state.second) + "." +
-                                                        this.add_leading_zero(state.state.centisecond * 10) + "Z")}
+                                                        this.add_leading_zero(state.state.second) + ".000Z")}
                                             onClick={() => this.set_current_time()}
                                             buttonText={__("rtc.content.set_time")}
                                             disabled={this.state.sync_enabled}/>
