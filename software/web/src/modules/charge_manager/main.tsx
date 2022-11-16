@@ -388,8 +388,8 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                                 <div>
                                     {verbose}
                                     {watchdog}
-                                    {default_available_current}
                                     {maximum_available_current}
+                                    {default_available_current}
                                     {minimum_current}
                                 </div>
                             </Collapse>
