@@ -38,6 +38,7 @@ import { InputFloat } from "src/ts/components/input_float";
 import { Switch } from "src/ts/components/switch";
 import { InputPassword } from "src/ts/components/input_password";
 import { Slash, User, UserPlus, UserX } from "react-feather";
+import { EVSE_SLOT_USER } from "../evse_common/api";
 
 const MAX_ACTIVE_USERS = 16;
 
@@ -92,6 +93,10 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
               __("users.script.reboot_content_changed"));
 
         this.state = {userSlotEnabled: false, showModal: false, newUser: {id: 0, roles: 0xFFFF, username: "", display_name: "", current: 32000, digest_hash: "", password: ""}} as any;
+
+        util.eventTarget.addEventListener('evse/slots', () => {
+            this.setState({userSlotEnabled: API.get('evse/slots')[EVSE_SLOT_USER].active});
+        });
     }
 
 
@@ -195,6 +200,9 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
 
         let auth_allowed = this.http_auth_allowed();
 
+        // Only allow enabling the user slot if there are at least two users (anonymous counts as one)
+        let user_slot_allowed = state.users.length > 1;
+
         return (
             <>
                 <ConfigForm id="users_config_form" title={__("users.content.users")} onSave={() => this.save()} onDirtyChange={(d) => this.ignore_updates = d}>
@@ -210,8 +218,11 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
 
                     <FormRow label={__("users.content.evse_user_description")} label_muted={__("users.content.evse_user_description_muted")}>
                         <Switch desc={__("users.content.evse_user_enable")}
-                                checked={state.userSlotEnabled}
+                                checked={user_slot_allowed && state.userSlotEnabled}
+                                disabled={!user_slot_allowed}
+                                className={!user_slot_allowed && state.userSlotEnabled ? "is-invalid" : ""}
                                 onClick={this.toggle("userSlotEnabled")}/>
+                        <div class="invalid-feedback">{__("users.content.evse_user_enable_invalid")}</div>
                     </FormRow>
 
                     <FormRow label={__("users.content.unknown_username")}>
