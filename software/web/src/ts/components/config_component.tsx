@@ -71,7 +71,7 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
     }
 
     reset = async () => {
-        await API.reset(this.t, this.error_string, this.reboot_string);
+        this.sendReset(this.t);
     }
 
     set<T extends keyof (API.getType[Config] & S)>(x: T) {
@@ -91,5 +91,10 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
     // Override this to implement custom saving logic
     async sendSave(t: Config, cfg: API.getType[Config]) {
         await API.save(t, cfg, this.error_string, this.reboot_string);
+    }
+
+    // Override this to implement custom reset logic
+    async sendReset(t: Config) {
+        await API.reset(t, this.error_string, this.reboot_string);
     }
 }
