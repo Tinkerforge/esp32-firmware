@@ -37,11 +37,6 @@ interface ConfigFormProps {
     onDirtyChange: (dirty: boolean) => void
 }
 
-async function confirmReset() {
-     false;
-    return true;
-}
-
 export class ConfigForm extends Component<ConfigFormProps,ConfigFormState> {
     constructor() {
         super();
