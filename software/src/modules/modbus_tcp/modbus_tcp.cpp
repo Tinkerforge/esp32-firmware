@@ -473,29 +473,29 @@ void ModbusTcp::update_bender_regs()
 
     bender_general_cpy->device_id = 0xEBEE;
 
-#define SPACER 0
+#define NOT_SUPPORTED 0
 
     for (int i = 0; i < 4; i++)
-        bender_general_cpy->errorcodes[i] = fromUint(SPACER);
+        bender_general_cpy->errorcodes[i] = fromUint(NOT_SUPPORTED);
     for (int i = 0; i < 5; i++)
     {
         if (bender_write_uid_cpy->user_id[i])
         {
             logger.printfln("Writing userid is not supported");
-            bender_write_uid_cpy->user_id[i] = fromUint(SPACER);
+            bender_write_uid_cpy->user_id[i] = fromUint(NOT_SUPPORTED);
         }
     }
 
     if (bender_general_cpy->comm_timeout)
     {
         logger.printfln("Writing communication timeout is not supported");
-        bender_general_cpy->comm_timeout = fromUint(SPACER);
+        bender_general_cpy->comm_timeout = fromUint(NOT_SUPPORTED);
     }
 
     if (bender_general_cpy->safe_current)
     {
         logger.printfln("Writing safe current is not supported");
-        bender_general_cpy->safe_current = fromUint(SPACER);
+        bender_general_cpy->safe_current = fromUint(NOT_SUPPORTED);
     }
 
     for (int i = 0; i < 3; i++)
@@ -503,7 +503,7 @@ void ModbusTcp::update_bender_regs()
         if (bender_dlm_cpy->operator_evse_limit[i])
         {
             logger.printfln("Writing dlm operator current l%i is not supported", i);
-            bender_dlm_cpy->operator_evse_limit[i] = fromUint(SPACER);
+            bender_dlm_cpy->operator_evse_limit[i] = fromUint(NOT_SUPPORTED);
         }
     }
 
