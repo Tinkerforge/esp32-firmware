@@ -75,7 +75,7 @@
     },
     "reset": {
         "reset_modal": "Reset Config",
-        "reset_modal_body": "You serious?",
+        "reset_modal_body": "Really reset the configuration?",
         "reset_modal_abort": "Abort",
         "reset_modal_confirm": "Reset"
     },
