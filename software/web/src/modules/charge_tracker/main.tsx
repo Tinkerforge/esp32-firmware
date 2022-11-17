@@ -250,7 +250,7 @@ function to_csv_line(vals: string[]) {
 async function downloadChargeLog(user_filter: number, start_date: Date, end_date: Date) {
     const [usernames, display_names] = await getAllUsernames()
         .catch(err => {
-            util.add_alert("download-charge-log", "danger", __("charge_tracker.script.download_charge_log_failed"), err);
+            util.add_alert("download-usernames", "danger", __("charge_tracker.script.download_usernames_failed"), err);
             return [null, null];
         });
 

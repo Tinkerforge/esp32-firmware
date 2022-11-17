@@ -51,7 +51,8 @@
 
             "remove_failed": "Löschen der aufgezeichneten Ladevorgänge fehlgeschlagen",
             "remove_init": "Lösche aufgezeichnete Ladevorgänge und starte neu...",
-            "download_charge_log_failed": "Herunterladen der aufgezeichneten Ladevorgänge fehlgeschlagen"
+            "download_charge_log_failed": "Herunterladen der aufgezeichneten Ladevorgänge fehlgeschlagen",
+            "download_usernames_failed": "Herunterladen der verwendeten Benutzernamen in aufgezeichneten Ladevorgängen fehlgeschlagen"
         }
     }
 }

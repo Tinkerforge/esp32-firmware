@@ -208,7 +208,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                         onClick={this.toggle("verbose")}/>
             </FormRow>;
 
-        let watchdog = <FormRow label={__("charge_manager.content.enable_watchdog")}>
+        let watchdog = <FormRow label={__("charge_manager.content.enable_watchdog")} label_muted={__("charge_manager.content.enable_watchdog_muted")}>
                 <Switch desc={__("charge_manager.content.enable_watchdog_desc")}
                         checked={state.enable_watchdog}
                         onClick={this.toggle("enable_watchdog")}/>

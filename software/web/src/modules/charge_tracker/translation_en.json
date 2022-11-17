@@ -51,7 +51,8 @@
 
             "remove_failed": "Failed to remove tracked charges",
             "remove_init": "Removing tracked charges and rebooting...",
-            "download_charge_log_failed": "Failed to download tracked charges"
+            "download_charge_log_failed": "Failed to download tracked charges",
+            "download_usernames_failed": "Failed to download the usernames used in tracked charges"
         }
     }
 }

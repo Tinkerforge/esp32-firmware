@@ -60,6 +60,7 @@
             "evse_version": "Charge controller version",
             "charging_current": "Charging current limits",
             "charging_current_muted": "minimum of the charging current limits",
+            "reset_slot": "Release",
             "reset_configured_current": "Release",
             "reset_external_slot": "Release",
             "low_level_state": "Low Level State",
@@ -140,6 +141,7 @@
             "slot_blocks": "blocks",
             "slot_no_limit": "no limit",
 
+            "reset_slot_failed": "Releasing the current limit failed",
             "reset_external_slot_failed": "Releasing the external current limit failed",
 
             "slot_0": "Supply cable",

@@ -324,6 +324,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                                 value={state.newUser.password}
                                 onValue={(v) => this.setState({newUser: {...state.newUser, password: v}})}
                                 hideClear
+                                placeholder={__("users.content.add_user_modal_password_desc")}
                                 />
                         </FormGroup>
                     </Modal.Body>

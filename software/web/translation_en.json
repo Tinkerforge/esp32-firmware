@@ -53,6 +53,9 @@
             "min_max_prefix": "At least ",
             "min_max_infix": " but at most ",
             "min_max_suffix": " characters allowed"
+        },
+        "input_file": {
+            "uploading": "uploading..."
         }
     },
     "util": {

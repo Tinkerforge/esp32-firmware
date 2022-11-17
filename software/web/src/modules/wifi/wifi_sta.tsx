@@ -172,7 +172,10 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                     <span class="pl-2">{display_name}</span>
                 </Dropdown.Item>
         });
-        return result;
+        return <>
+            <Dropdown.Header>{__("wifi.script.select_ap")}</Dropdown.Header>
+            {result}
+        </>;
     }
 
     bssid_to_string = (bssid?: number[]) => bssid?.map((x)=> (x < 16 ? '0' : '') + x.toString(16).toUpperCase()).join(":");

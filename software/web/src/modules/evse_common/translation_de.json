@@ -60,6 +60,7 @@
             "evse_version": "Hardware-Version des Ladecontrollers",
             "charging_current": "Ladestromgrenzen",
             "charging_current_muted": "Minimum der Ladestromgrenzen",
+            "reset_slot": "Freigeben",
             "reset_configured_current": "Freigeben",
             "reset_external_slot": "Freigeben",
             "low_level_state": "Low-Level-Zustand",
@@ -135,6 +136,7 @@
 
             "save_failed": "(De-)Aktivieren des Lastmanagements fehlgeschlagen",
 
+            "reset_slot_failed": "Freigeben der Stromgrenze fehlgeschlagen",
             "reset_external_slot_failed": "Freigeben der externen Stromgrenze fehlgeschlagen",
 
             "slot_disabled": "nicht aktiv",
