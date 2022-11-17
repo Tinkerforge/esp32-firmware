@@ -208,10 +208,10 @@
 - Move "require user authorization to charge" to users sub-page
 - Improve translations
 
-2022-09-14: 2.0.90 (<unknown>)
+2022-09-14: 2.0.90 (54cb4e17)
 - OCPP Beta 1
 
-2022-11-17: 2.0.91 (<unknown>)
+2022-11-17: 2.0.91 (c8d2c30f)
 - OCPP Beta 2
 - Add OCPP debug infos
 - Add OCPP smart charging profile
