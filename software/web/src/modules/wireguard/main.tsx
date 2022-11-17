@@ -70,6 +70,10 @@ export class Wireguard extends ConfigComponent<'wireguard/config'> {
                         onValue={(v) => this.setState({internal_ip: v.ip, internal_subnet: v.subnet, internal_gateway: v.gateway})}
                         value={{ip: state.internal_ip, subnet: state.internal_subnet, gateway: state.internal_gateway}}
                         setValid={(v) => this.ipconfig_valid = v}
+
+                        ip_label={__("wireguard.content.internal_ip")}
+                        subnet_label={__("wireguard.content.internal_subnet")}
+                        gateway_label={__("wireguard.content.internal_gateway")}
                         />
 
                     <FormRow label={__("wireguard.content.remote_host")}>

@@ -40,6 +40,10 @@ interface IPConfigurationProps extends Omit<JSXInternal.HTMLAttributes<HTMLInput
     value: IPConfig
     onValue: (value: IPConfig) => void
     setValid: (valid: boolean) => void
+
+    ip_label?: string
+    gateway_label?: string
+    subnet_label?: string
 }
 
 
@@ -75,20 +79,20 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
         this.props.setValid(!(gateway_out_of_subnet || subnet_captures_localhost))
 
         let inner = (<>
-            <FormRow label={__("component.ip_configuration.static_ip")}>
+            <FormRow label={props.ip_label ? props.ip_label : __("component.ip_configuration.static_ip")}>
                 <InputIP invalidFeedback={__("component.ip_configuration.static_ip_invalid")}
                          required={!props.showDhcp || !dhcp}
                          value={props.value.ip}
                          onValue={(v) => this.onUpdate("ip", v)}/>
             </FormRow>
-            <FormRow label={__("component.ip_configuration.gateway")}>
+            <FormRow label={props.gateway_label ? props.gateway_label : __("component.ip_configuration.gateway")}>
                 <InputIP invalidFeedback={gateway_out_of_subnet ? __("component.ip_configuration.gateway_out_of_subnet") : __("component.ip_configuration.gateway_invalid")}
                          moreClasses={gateway_out_of_subnet ? ["is-invalid"] : [""]}
                          required={!props.showDhcp || !dhcp}
                          value={props.value.gateway}
                          onValue={(v) => this.onUpdate("gateway", v)}/>
             </FormRow>
-            <FormRow label={__("component.ip_configuration.subnet")}>
+            <FormRow label={props.subnet_label ? props.subnet_label : __("component.ip_configuration.subnet")}>
                 <InputSelect classList={subnet_captures_localhost ? "is-invalid" : ""}
                         required={!props.showDhcp || !dhcp}
                         value={props.value.subnet}
