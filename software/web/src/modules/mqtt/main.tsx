@@ -47,7 +47,7 @@ export class Mqtt extends ConfigComponent<'mqtt/config'> {
 
         return (
             <>
-                <ConfigForm id="mqtt_config_form" title={__("mqtt.content.mqtt")} onSave={() => this.save()} onDirtyChange={(d) => this.ignore_updates = d}>
+                <ConfigForm id="mqtt_config_form" title={__("mqtt.content.mqtt")} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("mqtt.content.enable_mqtt")}>
                         <Switch desc={__("mqtt.content.enable_mqtt_desc")}
                                 checked={state.enable_mqtt}

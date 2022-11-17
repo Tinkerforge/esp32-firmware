@@ -49,6 +49,7 @@ export class Network extends ConfigComponent<'network/config'> {
                 <ConfigForm id="network_config_form"
                             title={__("network.content.network")}
                             onSave={this.save}
+                            onReset={this.reset}
                             onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("network.content.hostname")}>
                         <InputText maxLength={32}
