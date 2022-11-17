@@ -155,6 +155,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                                             value={tag.user_id.toString()}
                                             onValue={(v) => this.setTag(i, {user_id: parseInt(v)})}
                                             />
+                                        {tag.user_id == 0 ? <div class="mt-2">{__("nfc.script.not_assigned_desc")}</div> : undefined}
                                     </FormGroup>
                                     <FormGroup label={__("nfc.script.tag_type")}>
                                         <InputSelect items={[

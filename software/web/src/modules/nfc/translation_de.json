@@ -40,7 +40,7 @@
             "save_failed": "Aktualisieren der NFC-Einstellungen fehlgeschlagen",
             "reboot_content_changed": "NFC-Einstellungen",
             "not_assigned": "nicht zugeordnet",
-            "not_assigned_desc": "Mit diesem Tag kann kein Ladevorgang freigegeben werden"
+            "not_assigned_desc": "Dieses Tag kann keinen Ladevorgang freigeben"
         }
     }
 }
