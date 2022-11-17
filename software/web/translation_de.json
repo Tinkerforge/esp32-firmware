@@ -15,7 +15,8 @@
     },
     "component": {
         "config_page_header": {
-            "save": "Speichern"
+            "save": "Speichern",
+            "reset": "Zurücksetzen"
         },
         "input_password": {
             "to_be_cleared": "Wird beim Speichern geleert",
@@ -71,6 +72,12 @@
         "download_abort": "Download abgebrochen",
         "download_error": "Fehler beim Herunterladen",
         "download_timeout": "Timeout beim Herunterladen"
+    },
+    "reset": {
+        "reset_modal": "Zurücksetzen",
+        "reset_modal_body": "Konfiguration wirklich zurücksetzen?",
+        "reset_modal_abort": "Abbrechen",
+        "reset_modal_confirm": "Zurücksetzen"
     },
     "days": "Tage",
     "day": "Tag"

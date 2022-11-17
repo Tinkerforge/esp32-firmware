@@ -70,6 +70,10 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
         await this.sendSave(this.t, cfg);
     }
 
+    reset = async () => {
+        await API.reset(this.t, this.error_string, this.reboot_string);
+    }
+
     set<T extends keyof (API.getType[Config] & S)>(x: T) {
         return (s: (API.getType[Config] & S)[T]) => this.setState({ [x]: s } as unknown as Partial<API.getType[Config] & S>);
     }
