@@ -14,7 +14,6 @@
             "browse": "Browse",
             "select_file": "Firmware file",
             "update": "Upload",
-            "uploading": "Uploading firmware...",
             "current_spiffs": "Configuration version",
             "factory_reset_desc": null,
             "factory_reset": "Factory reset",

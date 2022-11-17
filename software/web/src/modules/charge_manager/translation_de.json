@@ -32,13 +32,10 @@
 
             "configuration_mode": "Experteneinstellungen",
             "configuration_mode_muted": "",
-            "show_hide_expert": "Anzeigen / Verstecken",
 
             "add_charger_modal_title": "Wallbox hinzufügen",
             "add_charger_modal_name": "Anzeigename",
-            "add_charger_modal_name_invalid": "Kann nicht leer sein",
             "add_charger_modal_host": "IP-Adresse oder Hostname",
-            "add_charger_modal_host_invalid": "Kann nicht leer sein",
             "add_charger_modal_abort": "Verwerfen",
             "add_charger_modal_save": "Hinzufügen",
             "add_charger_modal_found": "Gefundene Wallboxen",

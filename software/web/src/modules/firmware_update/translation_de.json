@@ -14,7 +14,6 @@
             "browse": "Durchsuchen",
             "select_file": "Firmware-Datei",
             "update": "Hochladen",
-            "uploading": "Firmware wird hochgeladen...",
             "current_spiffs": "Konfigurationsversion",
             "factory_reset_desc": null,
             "factory_reset": "Zurücksetzen auf Werkszustand",

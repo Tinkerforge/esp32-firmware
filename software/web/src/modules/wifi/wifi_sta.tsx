@@ -235,7 +235,6 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                                        onValue={this.set("passphrase")}
                                        value={state.passphrase}
                                        placeholder={state.passphrase_placeholder} />
-                        <div class="invalid-feedback" data-i18n="wifi.content.sta_passphrase_invalid"></div>
                     </FormRow>
 
                     <IPConfiguration
