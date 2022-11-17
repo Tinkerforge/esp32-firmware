@@ -125,7 +125,6 @@ bool API::addPersistentConfig(String path, ConfigRoot *config, std::initializer_
         API::writeConfig(path, config);
     }, false);
     addCommand(path + String("_reset"), Config::Null(), {}, [path]() {
-        logger.printfln("reset config %s", path);
         API::removeConfig(path);
     }, false);
 
