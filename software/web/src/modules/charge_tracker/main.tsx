@@ -121,7 +121,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
                         <InputFloat value={state.electricity_price} onValue={this.set('electricity_price')} digits={2} unit={'ct/kWh'} max={20000} min={0}/>
                     </FormRow>
 
-                    <FormSeparator/>
+                    <FormSeparator heading={__("charge_tracker.content.download")}/>
 
                     <FormRow label={__("charge_tracker.content.user_filter")} label_muted={__("charge_tracker.content.user_filter_muted")}>
                         <InputSelect
@@ -154,7 +154,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
                         </div>
                     </FormRow>
 
-                    <FormRow label={__("charge_tracker.content.download")} label_muted={__("charge_tracker.content.download_desc")}>
+                    <FormRow label="" label_muted={__("charge_tracker.content.download_desc")}>
                         <Button variant="primary" className="form-control" onClick={async () => {
                             this.setState({show_spinner: true});
 
@@ -179,7 +179,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
                         </Button>
                     </FormRow>
 
-                    <FormSeparator/>
+                    <FormSeparator heading={__("charge_tracker.content.tracked_charges")}/>
 
                     <FormRow label={__("charge_tracker.content.tracked_charges")} label_muted={__("charge_tracker.content.tracked_charges_muted")}>
                         <InputText value={state.tracked_charges}/>
@@ -225,9 +225,23 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
 
 render(<ChargeTracker/>, $('#charge_tracker')[0]);
 
+let x = <svg class="feather feather-credit-card" width="24" height="24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="6.0999" width="22" height="16" rx="2" ry="2"/><path d="m2.9474 6.0908 15.599-4.8048s0.59352-0.22385 0.57647 0.62527c-0.02215 1.1038-0.01535 3.6833-0.01535 3.6833"/></svg>
+
+function show_charge_cost(charged: number)
+{
+    let price = API.get("charge_tracker/config").electricity_price;
+    if (price == 0)
+        return;
+
+
+    let icon = '<svg class="feather feather-wallet mr-1" width="24" height="24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="6.0999" width="22" height="16" rx="2" ry="2"/><path d="m2.9474 6.0908 15.599-4.8048s0.59352-0.22385 0.57647 0.62527c-0.02215 1.1038-0.01535 3.6833-0.01535 3.6833"/></svg>'
+
+    return `<div>${icon}<span style="vertical-align: middle;">${util.toLocaleFixed(price / 100 * charged / 100, 2)} €</span></div>`;
+}
+
 function update_last_charges() {
     let charges = API.get('charge_tracker/last_charges');
-    let users_config = API.get('users/config');
+    let users_config = API.get('users/config')
 
     let last_charges_html = charges.slice(-3).map((user) => {
         let display_name = __("charge_tracker.script.unknown_user")
@@ -248,7 +262,8 @@ function update_last_charges() {
             </div>
             <div class="col-auto">
                 <div class="mb-2"><span class="mr-1" data-feather="battery-charging"></span><span style="vertical-align: middle;">${user.energy_charged === null ? "N/A" : util.toLocaleFixed(user.energy_charged, 3)} kWh</span></div>
-                <div><span class="mr-1" data-feather="clock"></span><span style="vertical-align: middle;">${util.format_timespan(user.charge_duration)}</span></div>
+                <div class="mb-2"><span class="mr-1" data-feather="clock"></span><span style="vertical-align: middle;">${util.format_timespan(user.charge_duration)}</span></div>
+                ${show_charge_cost(user.energy_charged)}
             </div>
         </div>
         </div>`
