@@ -63,6 +63,7 @@ export function InputFloat(props: InputFloatProps) {
                        id={id}
                        type="number"
                        ref={input}
+                       step={1/pow10}
                        onInput={(e) => {
                         let target = parseFloat((e.target as HTMLInputElement).value) * pow10;
                         target = util.clamp(props.min, target, props.max);
