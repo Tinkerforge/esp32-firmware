@@ -36,6 +36,13 @@ export function get<T extends keyof ConfigMap>(topic: T): Readonly<ConfigMap[T]>
     return api_cache[topic];
 }
 
+export async function get_modified<T extends keyof ConfigMap>(topic: T) {
+    let response = await fetch(topic + "_modified");
+    let data = await response.json();
+    return data['modified'] != 0;
+
+}
+
 export function get_maybe<T extends string>(topic: T): (T extends keyof ConfigMap ? Readonly<ConfigMap[T]> : any) {
     if (topic in api_cache)
         return api_cache[topic as keyof ConfigMap] as any;
