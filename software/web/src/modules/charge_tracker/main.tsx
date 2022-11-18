@@ -36,8 +36,12 @@ import { PageHeader } from "src/ts/components/page_header";
 import { InputSelect } from "src/ts/components/input_select";
 import { BatteryCharging, Calendar, Clock, Download, User } from "react-feather";
 import { getAllUsernames } from "../users/main";
+import { ConfigComponent } from "src/ts/components/config_component";
+import { ConfigForm } from "src/ts/components/config_form";
+import { InputFloat } from "src/ts/components/input_float";
 
-type Charge = API.getType['charge_tracker/last_charges'][0]
+type Charge = API.getType['charge_tracker/last_charges'][0];
+type ChargetrackerConfig = API.getType['charge_tracker/config'];
 
 interface S {
     user_filter: string
@@ -50,9 +54,9 @@ interface S {
 
 type ChargeTrackerState = S & API.getType['charge_tracker/state'];
 
-export class ChargeTracker extends Component<{}, ChargeTrackerState> {
+export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, ChargeTrackerState & ChargetrackerConfig> {
     constructor() {
-        super();
+        super('charge_tracker/config');
 
         util.eventTarget.addEventListener('users/config', () => {
             let user_filter_items: [string, string][] = API.get('users/config').users.map(x => [x.id.toString(), (x.display_name == "Anonymous" && x.id == 0) ? __("charge_tracker.script.unknown_users") : x.display_name]);
@@ -67,6 +71,10 @@ export class ChargeTracker extends Component<{}, ChargeTrackerState> {
 
         util.eventTarget.addEventListener('charge_tracker/last_charges', () => {
             this.setState({last_charges: API.get('charge_tracker/last_charges')});
+        });
+
+        util.eventTarget.addEventListener('charge_tracker/config', () => {
+            this.setState({electricity_price: API.get('charge_tracker/config').electricity_price});
         });
 
         this.setState({user_filter: "-2"});
@@ -100,13 +108,13 @@ export class ChargeTracker extends Component<{}, ChargeTrackerState> {
             </ListGroupItem>}).reverse();
     }
 
-    render(props: {}, state: Readonly<ChargeTrackerState>) {
+    render(props: {}, state: Readonly<ChargeTrackerState> & ChargetrackerConfig) {
         if (!state)
             return (<></>);
 
         return (
             <>
-                <PageHeader title={__("charge_tracker.content.charge_tracker")} />
+                <ConfigForm id="charge_tracker_config_form" title={__("charge_tracker.content.charge_tracker")} onSave={this.save} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("charge_tracker.content.user_filter")} label_muted={__("charge_tracker.content.user_filter_muted")}>
                         <InputSelect
                             value={state.user_filter}
@@ -138,6 +146,11 @@ export class ChargeTracker extends Component<{}, ChargeTrackerState> {
                         </div>
                     </FormRow>
 
+                    <FormRow label={__("charge_tracker.content.price")}>
+                        <InputFloat value={state.electricity_price} onValue={this.set('electricity_price')} digits={2} unit={'€'} max={20000} min={0}/>
+                    </FormRow>
+
+
                     <FormRow label={__("charge_tracker.content.download")} label_muted={__("charge_tracker.content.download_desc")}>
                         <Button variant="primary" className="form-control" onClick={async () => {
                             this.setState({show_spinner: true});
@@ -152,7 +165,7 @@ export class ChargeTracker extends Component<{}, ChargeTrackerState> {
                                 end = new Date(Date.now());
 
                             try {
-                                await downloadChargeLog(parseInt(state.user_filter), start ,end);
+                                await downloadChargeLog(parseInt(state.user_filter), start ,end, state.electricity_price);
                             } finally {
                                 this.setState({show_spinner: false});
                             }
@@ -201,6 +214,7 @@ export class ChargeTracker extends Component<{}, ChargeTrackerState> {
                             {this.get_last_charges(state.last_charges ?? [])}
                         </ListGroup>
                     </FormRow>
+                </ConfigForm>
             </>
         );
     }
@@ -247,7 +261,7 @@ function to_csv_line(vals: string[]) {
     return line.join(",") + "\r\n";
 }
 
-async function downloadChargeLog(user_filter: number, start_date: Date, end_date: Date) {
+async function downloadChargeLog(user_filter: number, start_date: Date, end_date: Date, price?: number) {
     const [usernames, display_names] = await getAllUsernames()
         .catch(err => {
             util.add_alert("download-usernames", "danger", __("charge_tracker.script.download_usernames_failed"), err);
@@ -269,6 +283,7 @@ async function downloadChargeLog(user_filter: number, start_date: Date, end_date
                 __("charge_tracker.script.csv_header_meter_start"),
                 __("charge_tracker.script.csv_header_meter_end"),
                 __("charge_tracker.script.csv_header_username"),
+                typeof price == 'number' && price > 0 ? __("charge_tracker.script.csv_header_price") : "",
             ];
 
             let header = to_csv_line(line);
@@ -336,10 +351,12 @@ async function downloadChargeLog(user_filter: number, start_date: Date, end_date
 
                     let charged = (Number.isNaN(meter_start) || Number.isNaN(meter_end)) ? NaN : (meter_end - meter_start);
                     let charged_string;
+                    let charged_price;
                     if (Number.isNaN(charged) || charged < 0) {
                         charged_string = 'N/A';
                     } else {
                         charged_string = util.toLocaleFixed(charged, 3);
+                        charged_price = typeof price == 'number' ? charged * price / 100 : 0;
                     }
 
                     let line = [
@@ -350,7 +367,8 @@ async function downloadChargeLog(user_filter: number, start_date: Date, end_date
                         "",
                         Number.isNaN(meter_start) ? 'N/A' : util.toLocaleFixed(meter_start, 3),
                         Number.isNaN(meter_end) ? 'N/A' : util.toLocaleFixed(meter_end, 3),
-                        username
+                        username,
+                        charged_price > 0 ? util.toLocaleFixed(charged_price, 2) : ""
                     ];
 
                     result += to_csv_line(line);

@@ -32,7 +32,8 @@
 
             "charge_tracker_remove_modal_text": null,
             "abort_remove": "Abort",
-            "confirm_remove": "Delete"
+            "confirm_remove": "Delete",
+            "price": "Price"
         },
         "script": {
             "csv_header_start": "Start time",
@@ -42,6 +43,7 @@
             "csv_header_duration": "Charge duration in s",
             "csv_header_meter_start": "Meter reading start",
             "csv_header_meter_end": "Meter reading end",
+            "csv_header_price": "Charging cost",
             "unknown_user": "Unknown user",
             "unknown_users": "unknown users",
             "deleted_user": "Deleted user",

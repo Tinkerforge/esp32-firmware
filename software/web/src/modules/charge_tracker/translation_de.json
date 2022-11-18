@@ -32,7 +32,8 @@
 
             "charge_tracker_remove_modal_text": null,
             "abort_remove": "Abbrechen",
-            "confirm_remove": "Löschen"
+            "confirm_remove": "Löschen",
+            "price": "Strompreis"
         },
         "script": {
             "csv_header_start": "Startzeit",
@@ -42,6 +43,7 @@
             "csv_header_duration": "Ladedauer in s",
             "csv_header_meter_start": "Zählerstand Start",
             "csv_header_meter_end": "Zählerstand Ende",
+            "csv_header_price": "Ladekosten",
             "unknown_user": "Unbekannter Benutzer",
             "unknown_users": "unbekannte Benutzer",
             "deleted_user": "Gelöschter Benutzer",
