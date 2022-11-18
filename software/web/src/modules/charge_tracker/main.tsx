@@ -374,7 +374,7 @@ async function downloadChargeLog(user_filter: number, start_date: Date, end_date
                         charged_string = 'N/A';
                     } else {
                         charged_string = util.toLocaleFixed(charged, 3);
-                        charged_price = typeof price == 'number' ? (charged * price) / 100 : 0;
+                        charged_price = typeof price == 'number' ? charged / 100 * price / 100 : 0;
                     }
 
                     let line = [
