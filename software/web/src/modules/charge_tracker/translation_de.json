@@ -43,7 +43,7 @@
             "csv_header_duration": "Ladedauer in s",
             "csv_header_meter_start": "Zählerstand Start",
             "csv_header_meter_end": "Zählerstand Ende",
-            "csv_header_price": "Ladekosten",
+            "csv_header_price": "Ladekosten in € Arbeitspreis ",
             "unknown_user": "Unbekannter Benutzer",
             "unknown_users": "unbekannte Benutzer",
             "deleted_user": "Gelöschter Benutzer",
@@ -54,7 +54,10 @@
             "remove_failed": "Löschen der aufgezeichneten Ladevorgänge fehlgeschlagen",
             "remove_init": "Lösche aufgezeichnete Ladevorgänge und starte neu...",
             "download_charge_log_failed": "Herunterladen der aufgezeichneten Ladevorgänge fehlgeschlagen",
-            "download_usernames_failed": "Herunterladen der verwendeten Benutzernamen in aufgezeichneten Ladevorgängen fehlgeschlagen"
+            "download_usernames_failed": "Herunterladen der verwendeten Benutzernamen in aufgezeichneten Ladevorgängen fehlgeschlagen",
+
+            "save_failed": "Speichern der Ladetracker-Konfiguration fehlgeschlagen",
+            "reboot_content_changed": "Ladetracker-Einstellungen"
         }
     }
 }

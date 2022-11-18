@@ -56,7 +56,9 @@ type ChargeTrackerState = S & API.getType['charge_tracker/state'];
 
 export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, ChargeTrackerState & ChargetrackerConfig> {
     constructor() {
-        super('charge_tracker/config');
+        super('charge_tracker/config',
+                __("charge_tracker.script.save_failed"),
+                __("charge_tracker.script.reboot_content_changed"));
 
         util.eventTarget.addEventListener('users/config', () => {
             let user_filter_items: [string, string][] = API.get('users/config').users.map(x => [x.id.toString(), (x.display_name == "Anonymous" && x.id == 0) ? __("charge_tracker.script.unknown_users") : x.display_name]);
@@ -115,6 +117,12 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
         return (
             <>
                 <ConfigForm id="charge_tracker_config_form" title={__("charge_tracker.content.charge_tracker")} onSave={this.save} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+                    <FormRow label={__("charge_tracker.content.price")}>
+                        <InputFloat value={state.electricity_price} onValue={this.set('electricity_price')} digits={2} unit={'ct/kWh'} max={20000} min={0}/>
+                    </FormRow>
+
+                    <FormSeparator/>
+
                     <FormRow label={__("charge_tracker.content.user_filter")} label_muted={__("charge_tracker.content.user_filter_muted")}>
                         <InputSelect
                             value={state.user_filter}
@@ -146,11 +154,6 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
                         </div>
                     </FormRow>
 
-                    <FormRow label={__("charge_tracker.content.price")}>
-                        <InputFloat value={state.electricity_price} onValue={this.set('electricity_price')} digits={2} unit={'€'} max={20000} min={0}/>
-                    </FormRow>
-
-
                     <FormRow label={__("charge_tracker.content.download")} label_muted={__("charge_tracker.content.download_desc")}>
                         <Button variant="primary" className="form-control" onClick={async () => {
                             this.setState({show_spinner: true});
@@ -176,6 +179,16 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
                         </Button>
                     </FormRow>
 
+                    <FormSeparator/>
+
+                    <FormRow label={__("charge_tracker.content.tracked_charges")} label_muted={__("charge_tracker.content.tracked_charges_muted")}>
+                        <InputText value={state.tracked_charges}/>
+                    </FormRow>
+
+                    <FormRow label={__("charge_tracker.content.first_charge_timestamp")} label_muted={__("charge_tracker.content.first_charge_timestamp_muted")}>
+                        <InputText value={util.timestamp_min_to_date(state.first_charge_timestamp, __("charge_tracker.script.unknown_charge_start"))}/>
+                    </FormRow>
+
                     <FormRow label={__("charge_tracker.content.remove")} label_muted={__("charge_tracker.content.remove_desc")}>
                         <Button variant="danger" className="form-control" onClick={async () => {
                             const modal = util.async_modal_ref.current;
@@ -197,16 +210,6 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
                         }}>
                             {__("charge_tracker.content.remove_btn")}
                         </Button>
-                    </FormRow>
-
-                    <FormSeparator/>
-
-                    <FormRow label={__("charge_tracker.content.tracked_charges")} label_muted={__("charge_tracker.content.tracked_charges_muted")}>
-                        <InputText value={state.tracked_charges}/>
-                    </FormRow>
-
-                    <FormRow label={__("charge_tracker.content.first_charge_timestamp")} label_muted={__("charge_tracker.content.first_charge_timestamp_muted")}>
-                        <InputText value={util.timestamp_min_to_date(state.first_charge_timestamp, __("charge_tracker.script.unknown_charge_start"))}/>
                     </FormRow>
 
                     <FormRow label={__("charge_tracker.content.last_charges")} label_muted={__("charge_tracker.content.last_charges_desc")}>
@@ -283,7 +286,7 @@ async function downloadChargeLog(user_filter: number, start_date: Date, end_date
                 __("charge_tracker.script.csv_header_meter_start"),
                 __("charge_tracker.script.csv_header_meter_end"),
                 __("charge_tracker.script.csv_header_username"),
-                typeof price == 'number' && price > 0 ? __("charge_tracker.script.csv_header_price") : "",
+                typeof price == 'number' && price > 0 ? __("charge_tracker.script.csv_header_price") + util.toLocaleFixed(price / 100, 2) + "ct/kWh" : "",
             ];
 
             let header = to_csv_line(line);
@@ -356,7 +359,7 @@ async function downloadChargeLog(user_filter: number, start_date: Date, end_date
                         charged_string = 'N/A';
                     } else {
                         charged_string = util.toLocaleFixed(charged, 3);
-                        charged_price = typeof price == 'number' ? charged * price / 100 : 0;
+                        charged_price = typeof price == 'number' ? (charged * price) / 100 : 0;
                     }
 
                     let line = [
