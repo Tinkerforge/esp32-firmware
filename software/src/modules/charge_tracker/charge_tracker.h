@@ -59,5 +59,7 @@ public:
     ConfigRoot current_charge;
     ConfigRoot state;
 
+    ConfigRoot config;
+
     std::mutex records_mutex;
 };

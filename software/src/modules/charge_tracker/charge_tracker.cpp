@@ -79,6 +79,10 @@ void ChargeTracker::pre_setup()
         {"tracked_charges", Config::Uint16(0)},
         {"first_charge_timestamp", Config::Uint32(0)}
     });
+
+    config = Config::Object({
+        {"electricity_price", Config::Float(0)}
+    });
 }
 
 String ChargeTracker::chargeRecordFilename(uint32_t i)
@@ -381,6 +385,8 @@ void ChargeTracker::setup()
         return;
     }
 
+    api.restorePersistentConfig("charge_tracker/config", &config);
+
     // Fill charge_tracker/last_charges
     bool charging = currentlyCharging();
     size_t records_in_last_file = completeRecordsInLastFile();
@@ -405,6 +411,8 @@ void ChargeTracker::setup()
 
 void ChargeTracker::register_urls()
 {
+    api.addPersistentConfig("charge_tracker/config", &config, {}, 1000);
+
     server.on("/charge_tracker/charge_log", HTTP_GET, [this](WebServerRequest request) {
         std::lock_guard<std::mutex> lock{records_mutex};
 
