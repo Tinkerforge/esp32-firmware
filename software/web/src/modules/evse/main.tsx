@@ -61,7 +61,6 @@ export class EVSE extends Component<{}, EVSEState> {
         });
 
         util.eventTarget.addEventListener('evse/low_level_state', () => {
-            console.log("hier");
             this.setState({ll_state: API.get('evse/low_level_state')});
         });
 
@@ -154,7 +153,7 @@ export class EVSE extends Component<{}, EVSEState> {
     render(props: {}, s: Readonly<EVSEState>) {
         if (!s || !s.slots)
             return (<></>);
-        console.log("da");
+
         let {state,
             ll_state,
             hardware_cfg,
