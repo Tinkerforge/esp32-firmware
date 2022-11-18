@@ -82,7 +82,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
         this.setState({user_filter: "-2"});
     }
 
-    get_last_charges(charges: typeof this.state.last_charges) {
+    get_last_charges(charges: typeof this.state.last_charges, price: number) {
         let users_config = API.get('users/config');
 
         return charges.map(c => {
@@ -96,6 +96,9 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
                     display_name = filtered[0].display_name
             }
 
+            let icon = <svg class="feather feather-wallet mr-1" width="24" height="24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="6.0999" width="22" height="16" rx="2" ry="2"/><path d="m2.9474 6.0908 15.599-4.8048s0.59352-0.22385 0.57647 0.62527c-0.02215 1.1038-0.01535 3.6833-0.01535 3.6833"/></svg>
+            let price_div = <div>{icon}<span style="vertical-align: middle;">{util.toLocaleFixed(price / 100 * c.energy_charged / 100, 2)} €</span></div>
+
             return <ListGroupItem>
                 <div class="row">
                     <div class="col">
@@ -104,7 +107,8 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
                     </div>
                     <div class="col-auto">
                         <div class="mb-2"><BatteryCharging/><span class="ml-1" style="vertical-align: middle;">{c.energy_charged === null ? "N/A" : util.toLocaleFixed(c.energy_charged, 3)} kWh</span></div>
-                        <div><Clock/><span class="ml-1" style="vertical-align: middle;">{util.format_timespan(c.charge_duration)}</span></div>
+                        <div class="mb-2"><Clock/><span class="ml-1" style="vertical-align: middle;">{util.format_timespan(c.charge_duration)}</span></div>
+                        {price > 0 ? price_div : <></>}
                     </div>
                 </div>
             </ListGroupItem>}).reverse();
@@ -214,7 +218,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
 
                     <FormRow label={__("charge_tracker.content.last_charges")} label_muted={__("charge_tracker.content.last_charges_desc")}>
                         <ListGroup>
-                            {this.get_last_charges(state.last_charges ?? [])}
+                            {this.get_last_charges(state.last_charges ?? [], state.electricity_price)}
                         </ListGroup>
                     </FormRow>
                 </ConfigForm>
