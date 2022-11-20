@@ -28,14 +28,20 @@
 #include <esp_netif.h>
 
 #include "timezone_translation.h"
+#include "build_timestamp.h"
 
 extern TaskScheduler task_scheduler;
 extern API api;
 
-static Config *ntp_state;
+#if MODULE_RTC_AVAILABLE()
+extern Rtc rtc;
+#endif
+
 static bool first = true;
 
-void ntp_sync_cb(struct timeval *t)
+#define NTP_DESYNC_THRESHOLD_S 25 * 60 * 60
+
+static void ntp_sync_cb(struct timeval *t)
 {
     if (first) {
         first = false;
@@ -45,11 +51,44 @@ void ntp_sync_cb(struct timeval *t)
         logger.printfln("NTP synchronized at %lu,%03lu!", secs, ms);
 
         task_scheduler.scheduleWithFixedDelay([](){
-            ntp_state->get("time")->updateUint(timestamp_minutes());
+            ntp.state.get("time")->updateUint(timestamp_minutes());
         }, 0, 1000);
     }
 
-    ntp_state->get("synced")->updateBool(true);
+    task_scheduler.scheduleOnce([]() {
+        ntp.state.get("synced")->updateBool(true);
+    }, 0);
+
+#if MODULE_RTC_AVAILABLE()
+    if (api.hasFeature("rtc"))
+    {
+        task_scheduler.scheduleOnce([]() {
+            timeval time;
+            gettimeofday(&time, nullptr);
+            rtc.set_time(time);
+        }, 0);
+    }
+#endif
+
+    ntp.set_synced();
+}
+
+// Because there is the risk of a race condition with the rtc module,
+// we have to replace the sntp_sync_time function with a thread-safe implementation.
+extern "C" void sntp_sync_time(struct timeval *tv)
+{
+    if (sntp_get_sync_mode() == SNTP_SYNC_MODE_IMMED)
+    {
+        {
+            std::lock_guard<std::mutex> lock{ntp.mtx};
+            settimeofday(tv, NULL);
+            ntp.sync_counter++;
+        }
+        sntp_set_sync_status(SNTP_SYNC_STATUS_COMPLETED);
+    }
+    else
+        logger.printfln("This sync mode is not supported.");
+    ntp_sync_cb(tv);
 }
 
 void NTP::pre_setup()
@@ -78,11 +117,8 @@ void NTP::setup()
 
     api.restorePersistentConfig("ntp/config", &config);
 
-    if (!config.get("enable")->asBool())
-        return;
-
-    ntp_state = &state;
-    sntp_set_time_sync_notification_cb(ntp_sync_cb);
+    // As we use our own sntp_sync_time function, we do not need to register the cb function.
+    // sntp_set_time_sync_notification_cb(ntp_sync_cb);
 
     bool dhcp = config.get("use_dhcp")->asBool();
     sntp_servermode_dhcp(dhcp ? 1 : 0);
@@ -100,8 +136,8 @@ void NTP::setup()
     if (config.get("server2")->asString() != "")
         sntp_setservername(dhcp ? 2 : 1, config.get("server2")->asCStr());
 
-    sntp_init();
     const char *tzstring = lookup_timezone(config.get("timezone")->asCStr());
+
     if (tzstring == nullptr) {
         logger.printfln("Failed to look up timezone information for %s. Will not set timezone", config.get("timezone")->asCStr());
         return;
@@ -109,12 +145,28 @@ void NTP::setup()
     setenv("TZ", tzstring, 1);
     tzset();
     logger.printfln("Set timezone to %s", config.get("timezone")->asCStr());
+
+    if (config.get("enable")->asBool())
+         sntp_init();
+}
+
+void NTP::set_synced()
+{
+    gettimeofday(&last_sync, NULL);
+    ntp.state.get("synced")->updateBool(true);
 }
 
 void NTP::register_urls()
 {
     api.addPersistentConfig("ntp/config", &config, {}, 1000);
     api.addState("ntp/state", &state, {}, 1000);
+
+    task_scheduler.scheduleWithFixedDelay([this]() {
+        struct timeval time;
+        gettimeofday(&time, NULL);
+        if (time.tv_sec - this->last_sync.tv_sec >= NTP_DESYNC_THRESHOLD_S || time.tv_sec < BUILD_TIMESTAMP)
+            ntp.state.get("synced")->updateBool(false);
+    }, 0, 30 * 1000);
 }
 
 void NTP::loop()

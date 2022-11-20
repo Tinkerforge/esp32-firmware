@@ -24,7 +24,6 @@
             "add_user_modal_display_name": "Anzeigename",
             "add_user_modal_display_name_desc": "zur Anzeige im Ladeprotokoll und Webinterface",
             "add_user_modal_current": "Maximaler Ladestrom",
-            "add_user_modal_current_desc": "nicht beschränkt",
             "add_user_modal_password": "Passwort",
             "add_user_modal_password_desc": "Anmeldung deaktiviert",
             "add_user_modal_abort": "Verwerfen",
@@ -33,11 +32,10 @@
             "evse_user_description": "Ladefreigabe",
             "evse_user_description_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
 
-            "evse_user_enable": "Verlangt eine Freigabe des Ladevorgangs durch einen Benutzer zum Laden (z.B. per NFC-Tag)"
+            "evse_user_enable": "Verlangt eine Freigabe des Ladevorgangs durch einen Benutzer zum Laden (z.B. per NFC-Tag)",
+            "evse_user_enable_invalid": "Für die Ladefreigabe ist mindestens ein Benutzer notwendig."
         },
         "script": {
-            "id": "ID",
-            "roles": "Rollen",
             "username": "Benutzername",
             "delete": "Löschen",
             "display_name": "Anzeigename",
@@ -47,12 +45,10 @@
             "add_user_disabled_prefix": "Es werden nur bis zu ",
             "add_user_disabled_suffix": " Benutzer unterstützt",
             "add_user_disabled_user_ids_exhausted": "Die maximale Anzahl an Benutzern hat Ladevorgänge aufgezeichnet. Damit ein neuer Benutzer angelegt werden kann, müssen aufgezeichnete Ladevorgänge oder ein existierender Benutzer ohne aufgezeichnete Ladevorgänge gelöscht werden.",
-            "unchanged": "unverändert",
             "reboot_content_changed": "Benutzereinstellungen",
             "login_disabled": "Anmeldung deaktiviert",
             "save_failed": "Speichern der Benutzereinstellungen fehlgeschlagen.",
-            "username_already_tracked": "Benutzername ist bereits vergeben (in aufgezeichneten Ladevorgängen)",
-            "download_usernames_failed": "Herunterladen der verwendeten Benutzernamen in aufgezeichneten Ladevorgängen fehlgeschlagen"
+            "username_already_tracked": "Benutzername ist bereits vergeben (in aufgezeichneten Ladevorgängen)"
         }
     }
 }

@@ -153,8 +153,6 @@ void Wifi::pre_setup()
         {"sta_rssi", Config::Int8(0)},
         {"sta_bssid", Config::Str("", 0, 20)}
     });
-
-    wifi_scan_config = Config::Null();
 }
 
 float rssi_to_weight(int rssi)
@@ -642,7 +640,7 @@ void Wifi::register_urls()
 {
     api.addState("wifi/state", &wifi_state, {}, 1000);
 
-    api.addCommand("wifi/scan", &wifi_scan_config, {}, [this](){
+    api.addCommand("wifi/scan", Config::Null(), {}, [this](){
         start_scan();
     }, true);
 

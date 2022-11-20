@@ -32,7 +32,8 @@
 
             "charge_tracker_remove_modal_text": null,
             "abort_remove": "Abort",
-            "confirm_remove": "Delete"
+            "confirm_remove": "Delete",
+            "price": "Price"
         },
         "script": {
             "csv_header_start": "Start time",
@@ -42,6 +43,7 @@
             "csv_header_duration": "Charge duration in s",
             "csv_header_meter_start": "Meter reading start",
             "csv_header_meter_end": "Meter reading end",
+            "csv_header_price": "Charging costs in € Working price ",
             "unknown_user": "Unknown user",
             "unknown_users": "unknown users",
             "deleted_user": "Deleted user",
@@ -51,7 +53,11 @@
 
             "remove_failed": "Failed to remove tracked charges",
             "remove_init": "Removing tracked charges and rebooting...",
-            "download_charge_log_failed": "Failed to download tracked charges"
+            "download_charge_log_failed": "Failed to download tracked charges",
+            "download_usernames_failed": "Failed to download the usernames used in tracked charges",
+
+            "save_failed": "Failed to save the charge manager configuration",
+            "reboot_content_changed": "charge manager configuration"
         }
     }
 }

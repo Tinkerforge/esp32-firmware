@@ -17,7 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Component, VNode, Fragment } from "preact";
+import * as util from "../../ts/util";
+
+import { h, Component, VNode, Fragment, JSX } from "preact";
 import { __ } from "../translation";
 
 interface ConfigFormState {
@@ -31,6 +33,7 @@ interface ConfigFormProps {
     id: string
     title: string
     onSave: () => Promise<void>
+    onReset?: () => Promise<void>
     onDirtyChange: (dirty: boolean) => void
 }
 
@@ -62,16 +65,42 @@ export class ConfigForm extends Component<ConfigFormProps,ConfigFormState> {
         });
     }
 
+    showResetButton = () => {
+        if (typeof this.props.onReset == 'function')
+        {
+            return  <button onClick={async () => {
+                                                const modal = util.async_modal_ref.current;
+                                                if (!await modal.show({
+                                                        title: __("reset.reset_modal"),
+                                                        body: __("reset.reset_modal_body"),
+                                                        no_text: __("reset.reset_modal_abort"),
+                                                        yes_text: __("reset.reset_modal_confirm"),
+                                                        no_variant: "secondary",
+                                                        yes_variant: "danger"
+                                                    }))
+                                                    return;
+                                                this.props.onReset();
+                                            }} class="btn btn-danger mb-2">
+                        {__("component.config_page_header.reset")}
+                        <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!this.state.showSpinner}></span>
+                    </button>
+        }
+        return <></>
+    }
+
     override render (props: ConfigFormProps, state: Readonly<ConfigFormState>) {
         return (
             <>
                 <div class="row sticky-under-top mb-3 pt-3">
                     <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-header-shadow">
                         <h1 class="h2" dangerouslySetInnerHTML={{__html: props.title}}></h1>
-                        <button type="submit" form={props.id} class="btn btn-primary mb-2" disabled={state.saveDisabled}>
-                            {__("component.config_page_header.save")}
-                            <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!state.showSpinner}></span>
-                        </button>
+                        <div>
+                            {this.showResetButton()}
+                            <button type="submit" form={props.id} class="btn btn-primary mb-2 ml-3" disabled={state.saveDisabled}>
+                                {__("component.config_page_header.save")}
+                                <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!state.showSpinner}></span>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <form id={props.id}

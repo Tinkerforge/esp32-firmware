@@ -61,13 +61,18 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
         await super.sendSave(t, cfg);
     }
 
+    override async sendReset(t: "ocpp/config") {
+        await API.save_maybe('evse/ocpp_enabled', {enabled: false}, __("evse.script.save_failed"));
+        await super.sendReset(t);
+    }
+
     render(props: {}, state: OcppConfig & OcppState) {
         if (!state || !state.state)
             return (<></>);
 
         return (
             <>
-                <ConfigForm id="ocpp_config_form" title={__("ocpp.content.ocpp")} onSave={this.save} onDirtyChange={(d) => this.ignore_updates = d}>
+                <ConfigForm id="ocpp_config_form" title={__("ocpp.content.ocpp")} onSave={this.save} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("ocpp.content.enable_ocpp")}>
                         <Switch desc={__("ocpp.content.enable_ocpp_desc")}
                                 checked={state.enable}

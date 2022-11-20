@@ -23,6 +23,7 @@ import { h, Context, Fragment } from "preact";
 import {useContext, useState} from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { Button } from "react-bootstrap";
+import { __ } from "../../ts/translation";
 
 interface InputFileProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "accept"> {
     idContext?: Context<string>
@@ -82,13 +83,13 @@ export function InputFile(props: InputFileProps) {
                 <Button className="form-control" variant="primary" onClick={upload} disabled={file == null}>{props.upload}</Button>
             </div>
         </div>
-        <div id="firmware-progress" hidden={!uploading}>
+        <div hidden={!uploading}>
             <div class="form-progress mb-1">
-                <div id="firmware-progress-bar" class="progress-bar form-control progress-bar-no-transition"
+                <div class="progress-bar form-control progress-bar-no-transition"
                     role="progressbar" style={"width: " + percent + "%"} aria-valuenow={percent} aria-valuemin="0"
                     aria-valuemax="100"></div>
             </div>
-            <label for='firmware-progress-bar' data-i18n="firmware_update.content.uploading"></label>
+            <label>{__("component.input_file.uploading")}</label>
         </div>
         </>
     );

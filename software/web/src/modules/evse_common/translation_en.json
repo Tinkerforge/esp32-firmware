@@ -60,10 +60,8 @@
             "evse_version": "Charge controller version",
             "charging_current": "Charging current limits",
             "charging_current_muted": "minimum of the charging current limits",
-            "reset_configured_current": "Release",
-            "reset_external_slot": "Release",
+            "reset_slot": "Release",
             "low_level_state": "Low Level State",
-            "low_level_state_show": "Show / Hide",
             "led_state": "LED state",
             "led_state_off": "Off",
             "led_state_on": "On",
@@ -86,10 +84,6 @@
             "debug_description_muted": "to diagnose charging problems",
 
             "settings": "Settings",
-            "charge_management_description": "Charge management",
-            "charge_management_description_muted": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
-            "charge_management_enable": "Requires the clearance of a charge manager (of this or another WARP charger) to charge",
-
 
             "external_description": "External control",
             "external_description_muted": "<a href=\"https://www.warp-charger.com/evcc.html?v=2\">see setup tutorial for details</a>",
@@ -140,7 +134,7 @@
             "slot_blocks": "blocks",
             "slot_no_limit": "no limit",
 
-            "reset_external_slot_failed": "Releasing the external current limit failed",
+            "reset_slot_failed": "Releasing the current limit failed",
 
             "slot_0": "Supply cable",
             "slot_1": "Charging cable",

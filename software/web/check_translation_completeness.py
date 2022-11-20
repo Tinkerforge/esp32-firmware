@@ -32,30 +32,23 @@ def get_and_delete(d, keys):
     del last_d[k]
     return d
 
+def get_all_ts_files(folder):
+    result = []
+    for root, dirs, files in os.walk(folder):
+        for name in files:
+            if not name.endswith(".ts") and not name.endswith(".tsx"):
+                continue
+            result.append(os.path.join(root, name))
+    return result
+
 def main():
-    ts_files = []
-    for root, dirs, files in os.walk("./src/ts"):
-        for name in files:
-            if not name.endswith(".ts") and not name.endswith(".tsx"):
-                continue
-            ts_files.append(os.path.join(root, name))
+    ts_files = [os.path.join("src", "main.ts")]
 
-    for root, dirs, files in os.walk("./src/typings"):
-        for name in files:
-            if not name.endswith(".ts") and not name.endswith(".tsx"):
-                continue
-            ts_files.append(os.path.join(root, name))
-
-    ts_files.append(os.path.join("src", "main.ts"))
+    ts_files += get_all_ts_files("./src/ts")
+    ts_files += get_all_ts_files("./src/typings")
 
     for frontend_module in sys.argv[1:]:
-        folder = os.path.join("src", "modules", frontend_module)
-
-        if os.path.exists(os.path.join(folder, "main.ts")):
-            ts_files.append(os.path.join(folder, "main.ts"))
-
-        if os.path.exists(os.path.join(folder, "main.tsx")):
-            ts_files.append(os.path.join(folder, "main.tsx"))
+        ts_files += get_all_ts_files(os.path.join("src", "modules", frontend_module))
 
     used_placeholders, template_literals = util.parse_ts_files(ts_files)
 

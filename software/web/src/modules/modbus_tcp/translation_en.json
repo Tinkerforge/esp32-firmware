@@ -103,7 +103,7 @@
             "register14": "2000",
             "name14": "Meter type",
             "type14": "uint32",
-            "expl14": "0\u00A0–\u00A0No meter available, 1\u00A0–\u00A0SDM72 (WARP1 only), 2\u00A0–\u00A0SDM630, 3\u00A0–\u00A0SDM72 V2",
+            "expl14": "0\u00A0-\u00A0No meter available, 1\u00A0-\u00A0SDM72 (WARP1 only), 2\u00A0-\u00A0SDM630, 3\u00A0-\u00A0SDM72 V2",
             "feat14": "meter",
             "register15": "2002",
             "name15": "Power (W)",

@@ -13,24 +13,7 @@
         "content": {
             "ethernet": "LAN-Verbindung",
             "enable": "Verbindung aktiviert",
-            "enable_desc": null,
-
-            "ip_configuration": "IP-Konfiguration",
-            "dhcp": "automatisch (DHCP)",
-            "static": "statisch",
-
-            "static_ip": "IP-Adresse",
-            "subnet": "Subnetzmaske",
-            "subnet_placeholder": "Subnetzmaske auswählen...",
-            "gateway": "Gateway",
-            "dns": "DNS-Server",
-            "dns2": "Alternativer DNS-Server",
-            "dns2_muted": "optional",
-            "static_ip_invalid": "Die IP-Adresse muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrennt durch einen Punkt, bestehen. Zum Beispiel 10.0.0.2",
-            "subnet_invalid": "Die Subnetzmaske muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrennt durch einen Punkt, bestehen. Zum Beispiel 255.255.255.0",
-            "gateway_invalid": "Die IP des Gateways muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrennt durch einen Punkt, bestehen. Zum Beispiel 10.0.0.1",
-            "dns_invalid": "Die IP des DNS-Servers muss entweder leer bleiben, oder aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrennt durch einen Punkt, bestehen. Zum Beispiel 10.0.0.1.",
-            "dns2_invalid": "Die IP des alternativen DNS-Servers muss entweder leer bleiben, oder aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrennt durch einen Punkt, bestehen. Zum Beispiel 10.0.0.1."
+            "enable_desc": null
         },
         "script": {
             "config_failed": "Speichern der Verbindungseinstellungen fehlgeschlagen.",
