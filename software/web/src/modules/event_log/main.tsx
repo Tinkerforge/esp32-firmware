@@ -103,7 +103,8 @@ export class EventLog extends Component<{}, EventLogState> {
                               readonly
                               id="event_log_content"
                               rows={20}
-                              style="resize: both; width: 100%; white-space: pre; line-height: 1.2; text-shadow: none; font-size: 0.875rem;">
+                              style="resize: both; width: 100%; white-space: pre; line-height: 1.2; text-shadow: none; font-size: 0.875rem;"
+                              placeholder={__("event_log.content.event_log_placeholder")}>
                         {state.log}
                     </textarea>
                 </FormRow>

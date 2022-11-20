@@ -199,7 +199,7 @@ int32_t platform_get_energy(int32_t connectorId) {
     return (int32_t)(meter_values->get("energy_abs")->asFloat() * 1000);
 }
 
-bool platform_get_signed_meter_value(int32_t connectorId, SampledValueMeasurand measurand, SampledValuePhase phase, SampledValueLocation location, char buf[PLATFORM_MEASURAND_MAX_DATA_LEN]){
+bool platform_get_signed_meter_value(int32_t connectorId, SampledValueMeasurand measurand, SampledValuePhase phase, SampledValueLocation location, char buf[OCPP_PLATFORM_MEASURAND_MAX_DATA_LEN]){
     logger.printfln("platform_get_signed_meter_value not implemented yet!");
     return false;
 }

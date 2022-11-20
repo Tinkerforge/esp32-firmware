@@ -70,6 +70,7 @@ export class NTP extends ConfigComponent<'ntp/config'> {
                 <ConfigForm id="ntp_config_form"
                             title={__("ntp.content.ntp")}
                             onSave={this.save}
+                            onReset={this.reset}
                             onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("ntp.content.enable")}>
                         <Switch desc={__("ntp.content.enable_desc")}
@@ -131,6 +132,8 @@ export class NTP extends ConfigComponent<'ntp/config'> {
                                    onValue={this.set("server2")}/>
                     </FormRow>
                 </ConfigForm>
+
+
             </>
         );
     }

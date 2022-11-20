@@ -70,6 +70,10 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
         await this.sendSave(this.t, cfg);
     }
 
+    reset = async () => {
+        this.sendReset(this.t);
+    }
+
     set<T extends keyof (API.getType[Config] & S)>(x: T) {
         return (s: (API.getType[Config] & S)[T]) => this.setState({ [x]: s } as unknown as Partial<API.getType[Config] & S>);
     }
@@ -87,5 +91,10 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
     // Override this to implement custom saving logic
     async sendSave(t: Config, cfg: API.getType[Config]) {
         await API.save(t, cfg, this.error_string, this.reboot_string);
+    }
+
+    // Override this to implement custom reset logic
+    async sendReset(t: Config) {
+        await API.reset(t, this.error_string, this.reboot_string);
     }
 }

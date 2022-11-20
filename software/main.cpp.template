@@ -65,7 +65,6 @@ int8_t button_pin = -1;
 bool factory_reset_requested = false;
 
 ConfigRoot modules;
-ConfigRoot reboot;
 
 bool firmware_update_allowed = true;
 
@@ -93,9 +92,8 @@ static void register_default_urls(void) {
         return send_index_html(request);
     });
 
-    reboot = ConfigRoot{Config::Null()};
 
-    api.addCommand("reboot", &reboot, {}, []() {
+    api.addCommand("reboot", Config::Null(), {}, []() {
         trigger_reboot("API");
     }, true);
 

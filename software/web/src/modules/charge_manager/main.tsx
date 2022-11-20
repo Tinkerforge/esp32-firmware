@@ -123,6 +123,11 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
         await super.sendSave(t, cfg);
     }
 
+    override async sendReset(t: "charge_manager/config"){
+        await API.save_maybe('evse/management_enabled', {"enabled": false}, translate_unchecked("evse.script.save_failed"));
+        await super.sendReset(t);
+    }
+
     insertLocalHost() {
         if (this.state.chargers.some(v => v.host == "127.0.0.1"))
             return;
@@ -208,7 +213,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                         onClick={this.toggle("verbose")}/>
             </FormRow>;
 
-        let watchdog = <FormRow label={__("charge_manager.content.enable_watchdog")}>
+        let watchdog = <FormRow label={__("charge_manager.content.enable_watchdog")} label_muted={__("charge_manager.content.enable_watchdog_muted")}>
                 <Switch desc={__("charge_manager.content.enable_watchdog_desc")}
                         checked={state.enable_watchdog}
                         onClick={this.toggle("enable_watchdog")}/>
@@ -365,7 +370,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
 
         return (
             <>
-                <ConfigForm id="charge_manager_config_form" title={__("charge_manager.content.charge_manager")} onSave={() => this.save()} onDirtyChange={(d) => this.ignore_updates = d}>
+                <ConfigForm id="charge_manager_config_form" title={__("charge_manager.content.charge_manager")} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                     {state.energyManagerMode ? null:
                         charge_manager_mode
                     }
@@ -388,8 +393,8 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
                                 <div>
                                     {verbose}
                                     {watchdog}
-                                    {default_available_current}
                                     {maximum_available_current}
+                                    {default_available_current}
                                     {minimum_current}
                                 </div>
                             </Collapse>

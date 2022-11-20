@@ -5,6 +5,10 @@ interface Charge {
     energy_charged: number
 }
 
+export interface config {
+    electricity_price: number
+}
+
 export type last_charges = Charge[];
 
 export interface current_charge {

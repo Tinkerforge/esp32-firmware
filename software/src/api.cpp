@@ -124,6 +124,9 @@ bool API::addPersistentConfig(String path, ConfigRoot *config, std::initializer_
     addCommand(path + String("_update"), config, keys_to_censor, [path, config]() {
         API::writeConfig(path, config);
     }, false);
+    addCommand(path + String("_reset"), Config::Null(), {}, [path]() {
+        API::removeConfig(path);
+    }, false);
 
     return true;
 }

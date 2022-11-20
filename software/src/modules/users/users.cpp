@@ -459,6 +459,14 @@ void Users::search_next_free_user() {
 
 void Users::register_urls()
 {
+    // No users (except anonymous) configured: Make sure the EVSE's user slot is disabled.
+    if (user_config.get("users")->count() <= 1) {
+        logger.printfln("User slot enabled, but no users configured. Disabling user slot.");
+        api.callCommand("evse/user_enabled_update", Config::ConfUpdateObject{{
+            {"enabled", false}
+        }});
+    }
+
     api.addRawCommand("users/modify", [this](char *c, size_t s) -> String {
         if (user_api_blocked) {
             for(int i = 0; i < 50; ++i) {

@@ -126,7 +126,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
 
         return (
             <>
-                <ConfigForm id="nfc_config_form" title={__("nfc.content.nfc")} onSave={() => this.save()} onDirtyChange={(d) => this.ignore_updates = d}>
+                <ConfigForm id="nfc_config_form" title={__("nfc.content.nfc")} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("nfc.content.authorized_tags")}>
                         <div class="row row-cols-1 row-cols-md-2">
                         {state.authorized_tags.map((tag, i) => (
@@ -155,6 +155,7 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
                                             value={tag.user_id.toString()}
                                             onValue={(v) => this.setTag(i, {user_id: parseInt(v)})}
                                             />
+                                        {tag.user_id == 0 ? <div class="mt-2">{__("nfc.script.not_assigned_desc")}</div> : undefined}
                                     </FormGroup>
                                     <FormGroup label={__("nfc.script.tag_type")}>
                                         <InputSelect items={[

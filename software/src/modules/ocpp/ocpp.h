@@ -47,5 +47,4 @@ public:
     ConfigRoot config_in_use;
     ConfigRoot state;
     ConfigRoot configuration;
-    ConfigRoot reset;
 };

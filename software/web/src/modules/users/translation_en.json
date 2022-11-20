@@ -24,7 +24,6 @@
             "add_user_modal_display_name": "Display name",
             "add_user_modal_display_name_desc": "Shown in web interface and charge log",
             "add_user_modal_current": "Maximum charge current",
-            "add_user_modal_current_desc": "not limited",
             "add_user_modal_password": "Password",
             "add_user_modal_password_desc": "Login disabled",
             "add_user_modal_abort": "Discard",
@@ -33,11 +32,10 @@
             "evse_user_description": "Charge release",
             "evse_user_description_muted": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
 
-            "evse_user_enable": "Requires a user authorization (via NFC card) to charge"
+            "evse_user_enable": "Requires a user authorization (via NFC card) to charge",
+            "evse_user_enable_invalid": "At least one user is required for the charge_release."
         },
         "script": {
-            "id": "ID",
-            "roles": "Roles",
             "username": "Username",
             "delete": "Delete",
             "display_name": "Display name",
@@ -47,12 +45,10 @@
             "add_user_disabled_prefix": "Only up to ",
             "add_user_disabled_suffix": " users are supported.",
             "add_user_disabled_user_ids_exhausted": "The maximum number of users has tracked charges. To be able to add a new user, tracked charges or a user without tracked charges have to be removed.",
-            "unchanged": "unchanged",
             "reboot_content_changed": "User configuration",
             "login_disabled": "Login disabled",
             "save_failed": "Failed to save the user configuration.",
-            "username_already_tracked": "Username is already in use (in tracked charges)",
-            "download_usernames_failed": "Failed to download the usernames used in tracked charges"
+            "username_already_tracked": "Username is already in use (in tracked charges)"
         }
     }
 }

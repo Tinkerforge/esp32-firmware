@@ -24,6 +24,9 @@ import { JSXInternal } from "preact/src/jsx";
 interface OutputDatetimeProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>, "value" | "class" | "id" | "type" | "onInput" | "disabled"> {
     idContext?: Context<string>
     date: Date
+    onClick?: () => void
+    buttonText?: string
+    disabled?: boolean
 }
 
 function toIsoString(date: Date) {
@@ -42,14 +45,26 @@ function toIsoString(date: Date) {
 
 export function OutputDatetime(props: OutputDatetimeProps) {
     let id = props.idContext === undefined ? "" : useContext(props.idContext);
+
+    let inner = <input class={"form-control " + props.className}
+                id={id}
+                type="datetime-local"
+                step={1}
+                disabled={true}
+                value={toIsoString(props.date)}
+                required
+                />
+
+    if (!props.onClick)
+        return inner;
+
     return (
-        <input class={"form-control " + props.className}
-               id={id}
-               type="datetime-local"
-               step={1}
-               disabled={true}
-               value={toIsoString(props.date)}
-               required
-               />
+        <div class="input-group">
+            {inner}
+            <div class="input-group-append">
+                <button class="btn btn-primary form-control rounded-right" type="button" onClick={props.onClick} disabled={props.disabled}>{props.buttonText}</button>
+            </div>
+        </div>
+
     );
 }

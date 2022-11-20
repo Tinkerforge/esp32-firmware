@@ -61,7 +61,6 @@ export class EVSE extends Component<{}, EVSEState> {
         });
 
         util.eventTarget.addEventListener('evse/low_level_state', () => {
-            console.log("hier");
             this.setState({ll_state: API.get('evse/low_level_state')});
         });
 
@@ -154,7 +153,7 @@ export class EVSE extends Component<{}, EVSEState> {
     render(props: {}, s: Readonly<EVSEState>) {
         if (!s || !s.slots)
             return (<></>);
-        console.log("da");
+
         let {state,
             ll_state,
             hardware_cfg,
@@ -300,25 +299,25 @@ export class EVSE extends Component<{}, EVSEState> {
                             <InputIndicator value={value} variant={variant as any}
                                 onReset={
                                     i == EVSE_SLOT_GLOBAL ?
-                                    () => API.save('evse/global_current', {"current": 32000}, __("evse.script.set_charging_current_failed")) :
+                                    () => API.save('evse/global_current', {"current": 32000}, __("evse.script.reset_slot_failed")) :
                                     () => {
                                         API.save('evse/external_defaults', {
                                                 "current": 32000,
                                                 "clear_on_disconnect": false
                                             },
-                                            __("evse.script.reset_external_slot_failed"));
+                                            __("evse.script.reset_slot_failed"));
 
 
                                         API.save('evse/external_current',
                                             {"current": 32000},
-                                            __("evse.script.reset_external_slot_failed"));
+                                            __("evse.script.reset_slot_failed"));
 
                                         API.save('evse/external_clear_on_disconnect',
                                             {"clear_on_disconnect": false},
-                                            __("evse.script.reset_external_slot_failed"));
+                                            __("evse.script.reset_slot_failed"));
                                     }
                                 }
-                                resetText={__("evse.content.reset_configured_current")}
+                                resetText={__("evse.content.reset_slot")}
                                 resetDisabled={!slot.active || slot.max_current == 32000}/>
                         </FormRow>
                     })}

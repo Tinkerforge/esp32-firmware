@@ -60,10 +60,8 @@
             "evse_version": "Hardware-Version des Ladecontrollers",
             "charging_current": "Ladestromgrenzen",
             "charging_current_muted": "Minimum der Ladestromgrenzen",
-            "reset_configured_current": "Freigeben",
-            "reset_external_slot": "Freigeben",
+            "reset_slot": "Freigeben",
             "low_level_state": "Low-Level-Zustand",
-            "low_level_state_show": "Anzeigen / Verstecken",
             "led_state": "LED-Zustand",
             "led_state_off": "Aus",
             "led_state_on": "An",
@@ -86,9 +84,6 @@
             "debug_description_muted": "zur Diagnose bei Ladeproblemen",
 
             "settings": "Einstellungen",
-            "charge_management_description": "Lastmanagement",
-            "charge_management_description_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
-            "charge_management_enable": "Verlangt die Freigabe eines Lastmanagers (von diesem oder einem anderen WARP Charger) zum Laden",
 
             "external_description": "Externe Steuerung",
             "external_description_muted": "<a href=\"https://www.warp-charger.com/evcc.html?v=2\">siehe Einrichtungs-Tutorial für Details</a>",
@@ -135,7 +130,7 @@
 
             "save_failed": "(De-)Aktivieren des Lastmanagements fehlgeschlagen",
 
-            "reset_external_slot_failed": "Freigeben der externen Stromgrenze fehlgeschlagen",
+            "reset_slot_failed": "Freigeben der Stromgrenze fehlgeschlagen",
 
             "slot_disabled": "nicht aktiv",
             "slot_blocks": "blockiert",

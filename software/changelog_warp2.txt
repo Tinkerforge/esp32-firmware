@@ -208,5 +208,27 @@
 - Move "require user authorization to charge" to users sub-page
 - Improve translations
 
-2022-09-14: 2.0.90 (<unknown>)
+2022-09-14: 2.0.90 (54cb4e17)
 - OCPP Beta 1
+
+2022-11-17: 2.0.91 (c8d2c30f)
+- OCPP Beta 2
+- Add OCPP debug infos
+- Add OCPP smart charging profile
+- Fix OCPP bugs
+- Fix error message if firmware update is too small
+- Retry flashing Bricklets once; continue gracefully if this fails
+- Improve firmware update error handling in web interface
+- Improve network timeout handing in web interface
+- Disable current reset buttons if already 32A
+- Update timezone database
+- Add Modbus TCP
+- Add WireGuard
+- Add RTC support (via Real Time Clock 2.0 Bricklet)
+- Improve translations
+- Add "are you sure"-dialog to meter reset
+- Fix EVSE low level value labels
+- Fix HTTP GET for payload-less commands
+- Fix losing current limits when reenabling already enabled slot
+- Make button and GPIO configuration persistent (through EVSE 2.0 Bricklet firmware 2.1.8)
+- Add EVSE communication watchdog (through EVSE 2.0 Bricklet firmware 2.1.8)

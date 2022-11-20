@@ -41,7 +41,6 @@ extern WebServer server;
 
 void CMNetworking::pre_setup()
 {
-    scan_cfg = Config::Null();
 }
 
 void CMNetworking::setup()
@@ -52,7 +51,7 @@ void CMNetworking::setup()
 
 void CMNetworking::register_urls()
 {
-    api.addCommand("charge_manager/scan", &scan_cfg, {}, [this]() {
+    api.addCommand("charge_manager/scan", Config::Null(), {}, [this]() {
         start_scan();
     }, true);
 

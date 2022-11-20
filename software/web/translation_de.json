@@ -15,7 +15,8 @@
     },
     "component": {
         "config_page_header": {
-            "save": "Speichern"
+            "save": "Speichern",
+            "reset": "Zurücksetzen"
         },
         "input_password": {
             "to_be_cleared": "Wird beim Speichern geleert",
@@ -34,7 +35,6 @@
             "dns2": "Alternativer DNS-Server",
             "dns2_muted": "optional",
             "static_ip_invalid": "Die IP-Adresse muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrennt durch einen Punkt, bestehen. Zum Beispiel 10.0.0.2",
-            "subnet_invalid": "Die Subnetzmaske muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrennt durch einen Punkt, bestehen. Zum Beispiel 255.255.255.0",
             "gateway_invalid": "Die IP des Gateways muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrennt durch einen Punkt, bestehen. Zum Beispiel 10.0.0.1",
             "dns_invalid": "Die IP des DNS-Servers muss entweder leer bleiben, oder aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrennt durch einen Punkt, bestehen. Zum Beispiel 10.0.0.1.",
             "dns2_invalid": "Die IP des alternativen DNS-Servers muss entweder leer bleiben, oder aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrennt durch einen Punkt, bestehen. Zum Beispiel 10.0.0.1.",
@@ -53,6 +53,9 @@
             "min_max_prefix": "Mindestens ",
             "min_max_infix": ", aber maximal ",
             "min_max_suffix": " Zeichen erforderlich"
+        },
+        "input_file": {
+            "uploading": "wird hochgeladen..."
         }
     },
     "util": {
@@ -62,10 +65,6 @@
         "event_connection_lost": "Verbindung wird wiederhergestellt...",
         "to_be_cleared": "Wird beim Speichern geleert",
         "unchanged": "unverändert",
-        "subnet_invalid": "Die Subnetzmaske muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrent durch einen Punkt, bestehen. Zum Beispiel 255.255.255.0",
-        "gateway_invalid": "Die IP des Gateways muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrent durch einen Punkt, bestehen. Zum Beispiel 10.0.0.1",
-        "gateway_out_of_subnet": "Gateway-Adresse liegt außerhalb des konfigurierten Subnetzes!",
-        "subnet_captures_localhost": "Kombination aus IP-Adresse und Subnetzmaske nicht erlaubt, da sie localhost (127.0.0.1) übernehmen würde.",
 
         "upload_abort": "Upload abgebrochen",
         "upload_error": "Fehler beim Hochladen",
@@ -73,6 +72,12 @@
         "download_abort": "Download abgebrochen",
         "download_error": "Fehler beim Herunterladen",
         "download_timeout": "Timeout beim Herunterladen"
+    },
+    "reset": {
+        "reset_modal": "Zurücksetzen",
+        "reset_modal_body": "Konfiguration wirklich zurücksetzen?",
+        "reset_modal_abort": "Abbrechen",
+        "reset_modal_confirm": "Zurücksetzen"
     },
     "days": "Tage",
     "day": "Tag"

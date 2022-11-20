@@ -83,3 +83,5 @@ public:
         setLen(len);
     }
 };
+
+void list_dir(fs::FS &fs, const char * dirname, uint8_t depth, uint8_t current_depth = 0);

@@ -43,47 +43,72 @@ extern EVSE evse;
 
 #define MODBUS_TABLE_VERSION 1
 
+// We can't implicit convert from an uint32_t to this, as the conversion is done by a constructor.
+// If we add a constructor, this is not a POD type anymore so we can't use it in packed structs.
+struct uint32swapped_t {
+    //uint32swapped_t(uint32_t x): val(swapReg(x)) {}
+    operator uint32_t() {return swapReg(val);}
+
+    static inline uint32_t swapReg(uint32_t x) { return (x << 16) | (x >> 16);}
+    uint32_t val;
+};
+static uint32swapped_t fromUint(uint32_t x) {return {uint32swapped_t::swapReg(x)};}
+
+struct floatswapped_t {
+    //floatswapped_t(float x): val(swapReg(x)) {}
+    operator float() {return swapReg(val);}
+
+    static inline float swapReg(float x) {
+        uint32_t a = *(uint32_t *) &x;
+        a = (a << 16) | (a >> 16);
+        x = *(float *) &a;
+        return x;
+    }
+    float val;
+};
+static floatswapped_t fromFloat(float x) {return {floatswapped_t::swapReg(x)};}
+
 //-------------------
 // Input Registers
 //-------------------
 struct input_regs_t {
     static const mb_param_type_t TYPE = MB_PARAM_INPUT;
     static const uint16_t OFFSET = 0;
-    uint32_t table_version;
-    uint32_t firmware_major;
-    uint32_t firmware_minor;
-    uint32_t firmware_patch;
-    uint32_t firmware_build_ts;
-    uint32_t box_id;
-    uint32_t uptime;
+    uint32swapped_t table_version;
+    uint32swapped_t firmware_major;
+    uint32swapped_t firmware_minor;
+    uint32swapped_t firmware_patch;
+    uint32swapped_t firmware_build_ts;
+    uint32swapped_t box_id;
+    uint32swapped_t uptime;
 };
 
 struct evse_input_regs_t {
     static const mb_param_type_t TYPE = MB_PARAM_INPUT;
     static const uint16_t OFFSET = 1000;
-    uint32_t iec_state;
-    uint32_t charger_state;
-    uint32_t current_user;
-    uint32_t start_time_min;
-    uint32_t charging_time_sec;
-    uint32_t max_current;
-    uint32_t slots[CHARGING_SLOT_COUNT_SUPPORTED_BY_EVSE];
+    uint32swapped_t iec_state;
+    uint32swapped_t charger_state;
+    uint32swapped_t current_user;
+    uint32swapped_t start_time_min;
+    uint32swapped_t charging_time_sec;
+    uint32swapped_t max_current;
+    uint32swapped_t slots[CHARGING_SLOT_COUNT_SUPPORTED_BY_EVSE];
 };
 
 struct meter_input_regs_t {
     static const mb_param_type_t TYPE = MB_PARAM_INPUT;
     static const uint16_t OFFSET = 2000;
-    uint32_t meter_type;
-    float power;
-    float energy_absolute;
-    float energy_relative;
-    float energy_this_charge;
+    uint32swapped_t meter_type;
+    floatswapped_t power;
+    floatswapped_t energy_absolute;
+    floatswapped_t energy_relative;
+    floatswapped_t energy_this_charge;
 };
 
 struct meter_all_values_input_regs_t {
     static const mb_param_type_t TYPE = MB_PARAM_INPUT;
     static const uint16_t OFFSET = 2100;
-    float meter_values[85];
+    floatswapped_t meter_values[85];
 };
 
 //-------------------
@@ -93,21 +118,21 @@ struct holding_regs_t {
     static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
     static const uint16_t OFFSET = 0;
     static const uint32_t REBOOT_PASSWORD = 0x012EB007;
-    uint32_t reboot;
+    uint32swapped_t reboot;
 };
 
 struct evse_holding_regs_t {
     static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
     static const uint16_t OFFSET = 1000;
-    uint32_t enable_charging;
-    uint32_t allowed_current;
+    uint32swapped_t enable_charging;
+    uint32swapped_t allowed_current;
 };
 
 struct meter_holding_regs_t {
     static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
     static const uint16_t OFFSET = 2000;
     static const uint32_t TRIGGER_RESET_PASSWORD = 0x3E12E5E7;
-    uint32_t trigger_reset;
+    uint32swapped_t trigger_reset;
 };
 
 struct bender_general_s {
@@ -116,7 +141,7 @@ struct bender_general_s {
     char firmware_version[4];
     uint16_t padding[2];
     uint16_t ocpp_cp_state;
-    uint32_t errorcodes[4];
+    uint32swapped_t errorcodes[4];
     uint16_t padding2[7];
     char protocol_version[4];
     uint16_t vehicle_state;
@@ -134,19 +159,19 @@ struct bender_general_s {
     uint16_t rcmb_dc_frac;
     uint16_t relays_state;
     uint16_t device_id;
-    uint32_t charger_model[5];
+    uint32swapped_t charger_model[5];
     uint16_t pluglock_detected;
 } __attribute__((packed));
 
 struct bender_phases_s {
     static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
     static const uint16_t OFFSET = 200;
-    uint32_t energy[3];
-    uint32_t power[3];
-    uint32_t current[3];
-    uint32_t total_energy;
-    uint32_t total_power;
-    uint32_t voltage[3];
+    uint32swapped_t energy[3];
+    uint32swapped_t power[3];
+    uint32swapped_t current[3];
+    uint32swapped_t total_energy;
+    uint32swapped_t total_power;
+    uint32swapped_t voltage[3];
 } __attribute__((packed));
 
 struct bender_dlm_s {
@@ -170,17 +195,17 @@ struct bender_charge_s {
     uint16_t padding[5];
     uint16_t wh_charged;
     uint16_t current_signaled;
-    uint32_t start_time;
+    uint32swapped_t start_time;
     uint16_t charge_duration;
-    uint32_t end_time;
+    uint32swapped_t end_time;
     uint16_t minimum_current_limit;
-    uint32_t ev_required_energy;
+    uint32swapped_t ev_required_energy;
     uint16_t ev_max_curr;
-    uint32_t charged_energy;
-    uint32_t charge_duration_new;
-    uint32_t user_id[5];
+    uint32swapped_t charged_energy;
+    uint32swapped_t charge_duration_new;
+    uint32swapped_t user_id[5];
     uint16_t padding3[10];
-    uint32_t evccid[3];
+    uint32swapped_t evccid[3];
 } __attribute__((packed));
 
 struct bender_hems_s {
@@ -192,42 +217,42 @@ struct bender_hems_s {
 struct bender_write_uid_s {
     static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
     static const uint32_t OFFSET = 1110;
-    uint32_t user_id[5];
+    uint32swapped_t user_id[5];
 } __attribute__((packed));
 
 
 struct keba_read_general_s {
     static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
     static const uint32_t OFFSET = 1000;
-    uint32_t charging_state;
-    uint32_t padding;
-    uint32_t cable_state;
-    uint32_t error_code;
-    uint32_t currents[3];
-    uint32_t serial_number;
-    uint32_t features;
-    uint32_t firmware_version;
-    uint32_t power;
+    uint32swapped_t charging_state;
+    uint32swapped_t padding;
+    uint32swapped_t cable_state;
+    uint32swapped_t error_code;
+    uint32swapped_t currents[3];
+    uint32swapped_t serial_number;
+    uint32swapped_t features;
+    uint32swapped_t firmware_version;
+    uint32swapped_t power;
     uint16_t padding2[14];
-    uint32_t total_energy;
-    uint32_t padding3;
-    uint32_t volatages[3];
-    uint32_t power_factor;
+    uint32swapped_t total_energy;
+    uint32swapped_t padding3;
+    uint32swapped_t volatages[3];
+    uint32swapped_t power_factor;
 } __attribute__((packed));
 
 struct keba_read_max_s {
     static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
     static const uint32_t OFFSET = 1100;
-    uint32_t max_current;
+    uint32swapped_t max_current;
     uint16_t padding[8];
-    uint32_t max_hardware_current;
+    uint32swapped_t max_hardware_current;
 } __attribute__((packed));
 
 struct keba_read_charge_s {
     static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
     static const uint32_t OFFSET = 1500;
-    uint32_t rfid_tag;
-    uint32_t charged_energy;
+    uint32swapped_t rfid_tag;
+    uint32swapped_t charged_energy;
 } __attribute__((packed));
 
 struct keba_write_s {
@@ -435,20 +460,6 @@ void ModbusTcp::setup()
     initialized = true;
 }
 
-static uint32_t swap_regs(uint32_t src)
-{
-    uint32_t first = src << 16;
-    uint32_t second = src >> 16;
-    return first | second;
-}
-
-static float swap_float(float src)
-{
-    uint32_t *c = reinterpret_cast<uint32_t *>(&src);
-    *c = swap_regs(*c);
-    return *reinterpret_cast<float *>(c);
-}
-
 void ModbusTcp::update_bender_regs()
 {
     portENTER_CRITICAL(&mtx);
@@ -462,29 +473,29 @@ void ModbusTcp::update_bender_regs()
 
     bender_general_cpy->device_id = 0xEBEE;
 
-#define SPACER 0
+#define NOT_SUPPORTED 0
 
     for (int i = 0; i < 4; i++)
-        bender_general_cpy->errorcodes[i] = SPACER;
+        bender_general_cpy->errorcodes[i] = fromUint(NOT_SUPPORTED);
     for (int i = 0; i < 5; i++)
     {
         if (bender_write_uid_cpy->user_id[i])
         {
             logger.printfln("Writing userid is not supported");
-            bender_write_uid_cpy->user_id[i] = SPACER;
+            bender_write_uid_cpy->user_id[i] = fromUint(NOT_SUPPORTED);
         }
     }
 
     if (bender_general_cpy->comm_timeout)
     {
         logger.printfln("Writing communication timeout is not supported");
-        bender_general_cpy->comm_timeout = SPACER;
+        bender_general_cpy->comm_timeout = fromUint(NOT_SUPPORTED);
     }
 
     if (bender_general_cpy->safe_current)
     {
         logger.printfln("Writing safe current is not supported");
-        bender_general_cpy->safe_current = SPACER;
+        bender_general_cpy->safe_current = fromUint(NOT_SUPPORTED);
     }
 
     for (int i = 0; i < 3; i++)
@@ -492,7 +503,7 @@ void ModbusTcp::update_bender_regs()
         if (bender_dlm_cpy->operator_evse_limit[i])
         {
             logger.printfln("Writing dlm operator current l%i is not supported", i);
-            bender_dlm_cpy->operator_evse_limit[i] = SPACER;
+            bender_dlm_cpy->operator_evse_limit[i] = fromUint(NOT_SUPPORTED);
         }
     }
 
@@ -534,11 +545,11 @@ void ModbusTcp::update_bender_regs()
         int32_t user_id = api.getState("charge_tracker/current_charge")->get("user_id")->asInt();
         charging = user_id != -1;
         if (charging) {
-            bender_charge_cpy->charge_duration = (api.getState("evse/low_level_state")->get("uptime")->asUint() - api.getState("charge_tracker/current_charge")->get("evse_uptime_start")->asUint()) / 1000;
-            bender_charge_cpy->charge_duration_new = swap_regs((api.getState("evse/low_level_state")->get("uptime")->asUint() - api.getState("charge_tracker/current_charge")->get("evse_uptime_start")->asUint()) / 1000);
+            bender_charge_cpy->charge_duration = fromUint((api.getState("evse/low_level_state")->get("uptime")->asUint() - api.getState("charge_tracker/current_charge")->get("evse_uptime_start")->asUint()) / 1000);
+            bender_charge_cpy->charge_duration_new = fromUint((api.getState("evse/low_level_state")->get("uptime")->asUint() - api.getState("charge_tracker/current_charge")->get("evse_uptime_start")->asUint()) / 1000);
         } else {
-            bender_charge_cpy->charge_duration = 0;
-            bender_charge_cpy->charge_duration_new = 0;
+            bender_charge_cpy->charge_duration = fromUint(0);
+            bender_charge_cpy->charge_duration_new = fromUint(0);
         }
 #endif
     }
@@ -553,13 +564,13 @@ void ModbusTcp::update_bender_regs()
 
             for (int i = 0; i < 3; i++)
             {
-                bender_phases_cpy->current[i] = swap_regs((uint32_t)(meter_values->get(i + METER_ALL_VALUES_CURRENT_L1_A)->asFloat() * 1000));
-                bender_phases_cpy->energy[i] =  swap_regs((uint32_t)(meter_values->get(i + METER_ALL_VALUES_IMPORT_KWH_L1)->asFloat() * 1000));
-                bender_phases_cpy->power[i] =  swap_regs((uint32_t)(meter_values->get(i + METER_ALL_VALUES_POWER_L1_W)->asFloat() * 1000));
-                bender_phases_cpy->voltage[i] = swap_regs((uint32_t)(meter_values->get(i)->asFloat() * 1000));
+                bender_phases_cpy->current[i] = fromUint(meter_values->get(i + METER_ALL_VALUES_CURRENT_L1_A)->asFloat() * 1000);
+                bender_phases_cpy->energy[i] =  fromUint(meter_values->get(i + METER_ALL_VALUES_IMPORT_KWH_L1)->asFloat() * 1000);
+                bender_phases_cpy->power[i] =  fromUint(meter_values->get(i + METER_ALL_VALUES_POWER_L1_W)->asFloat() * 1000);
+                bender_phases_cpy->voltage[i] = fromUint(meter_values->get(i)->asFloat() * 1000);
             }
-            bender_phases_cpy->total_energy = swap_regs((uint32_t)(meter_values->get(METER_ALL_VALUES_TOTAL_IMPORT_KWH)->asFloat() * 1000));
-            bender_phases_cpy->total_power = swap_regs((uint32_t)(meter_values->get(METER_ALL_VALUES_TOTAL_SYSTEM_POWER_W)->asFloat()));
+            bender_phases_cpy->total_energy = fromUint(meter_values->get(METER_ALL_VALUES_TOTAL_IMPORT_KWH)->asFloat() * 1000);
+            bender_phases_cpy->total_power = fromUint(meter_values->get(METER_ALL_VALUES_TOTAL_SYSTEM_POWER_W)->asFloat());
         }
 
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
@@ -567,18 +578,18 @@ void ModbusTcp::update_bender_regs()
         auto meter_absolute = api.getState("meter/values")->get("energy_abs")->asFloat();
         if (!charging)
         {
-            bender_charge_cpy->wh_charged = 0;
-            bender_charge_cpy->charged_energy = 0;
+            bender_charge_cpy->wh_charged = fromUint(0);
+            bender_charge_cpy->charged_energy = fromUint(0);
         }
         else if (isnan(meter_start))
         {
-            bender_charge_cpy->wh_charged = uint16_t(NAN);
-            bender_charge_cpy->charged_energy = swap_regs((uint32_t)(NAN));
+            bender_charge_cpy->wh_charged = 0;
+            bender_charge_cpy->charged_energy = fromUint(0);
         }
         else
         {
             bender_charge_cpy->wh_charged = uint16_t((meter_absolute - meter_start) * 1000);
-            bender_charge_cpy->charged_energy = swap_regs((uint32_t)((meter_absolute - meter_start) * 1000));
+            bender_charge_cpy->charged_energy = fromUint((meter_absolute - meter_start) * 1000);
         }
 #endif
 
@@ -613,20 +624,20 @@ void ModbusTcp::update_regs()
     if (holding_regs_copy->reboot == holding_regs_copy->REBOOT_PASSWORD && write_allowed)
         trigger_reboot("Modbus TCP");
 
-    input_regs_copy->table_version = swap_regs(MODBUS_TABLE_VERSION);
-    input_regs_copy->box_id = local_uid_num;
-    input_regs_copy->firmware_major = swap_regs(BUILD_VERSION_MAJOR);
-    input_regs_copy->firmware_minor = swap_regs(BUILD_VERSION_MINOR);
-    input_regs_copy->firmware_patch = swap_regs(BUILD_VERSION_PATCH);
-    input_regs_copy->firmware_build_ts = swap_regs(BUILD_TIMESTAMP);
-    input_regs_copy->uptime = swap_regs((uint32_t)(esp_timer_get_time() / 1000000));
+    input_regs_copy->table_version = fromUint(MODBUS_TABLE_VERSION);
+    input_regs_copy->box_id = fromUint(local_uid_num);
+    input_regs_copy->firmware_major = fromUint(BUILD_VERSION_MAJOR);
+    input_regs_copy->firmware_minor = fromUint(BUILD_VERSION_MINOR);
+    input_regs_copy->firmware_patch = fromUint(BUILD_VERSION_PATCH);
+    input_regs_copy->firmware_build_ts = fromUint(BUILD_TIMESTAMP);
+    input_regs_copy->uptime = fromUint((uint32_t)(esp_timer_get_time() / 1000000));
 
 #if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
     if (api.hasFeature("evse"))
     {
         discrete_inputs_copy->evse = true;
-        evse_input_regs_copy->iec_state = swap_regs(api.getState("evse/state")->get("iec61851_state")->asUint());
-        evse_input_regs_copy->charger_state = swap_regs(api.getState("evse/state")->get("charger_state")->asUint());
+        evse_input_regs_copy->iec_state = fromUint(api.getState("evse/state")->get("iec61851_state")->asUint());
+        evse_input_regs_copy->charger_state = fromUint(api.getState("evse/state")->get("charger_state")->asUint());
 
 #if MODULE_EVSE_V2_AVAILABLE()
         evse_v2.set_modbus_current(evse_holding_regs_copy->allowed_current);
@@ -647,23 +658,23 @@ void ModbusTcp::update_regs()
             {
                 val = current;
             }
-            evse_input_regs_copy->slots[i] = swap_regs(val);
+            evse_input_regs_copy->slots[i] = fromUint(val);
         }
 
-        evse_input_regs_copy->max_current = swap_regs(api.getState("evse/state")->get("allowed_charging_current")->asUint());
-        evse_input_regs_copy->start_time_min = 0;
-        evse_input_regs_copy->charging_time_sec = 0;
+        evse_input_regs_copy->max_current = fromUint(api.getState("evse/state")->get("allowed_charging_current")->asUint());
+        evse_input_regs_copy->start_time_min = fromUint(0);
+        evse_input_regs_copy->charging_time_sec = fromUint(0);
 
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
         int32_t user_id = api.getState("charge_tracker/current_charge")->get("user_id")->asInt();
         charging = user_id != -1;
-        evse_input_regs_copy->current_user = charging ? swap_regs(UINT32_MAX) : swap_regs((uint32_t)user_id);
+        evse_input_regs_copy->current_user = fromUint(charging ? UINT32_MAX : (uint32_t)user_id);
         if (charging) {
-            evse_input_regs_copy->start_time_min = swap_regs(api.getState("charge_tracker/current_charge")->get("timestamp_minutes")->asUint());
-            evse_input_regs_copy->charging_time_sec = swap_regs((api.getState("evse/low_level_state")->get("uptime")->asUint() - api.getState("charge_tracker/current_charge")->get("evse_uptime_start")->asUint()) / 1000);
+            evse_input_regs_copy->start_time_min = fromUint(api.getState("charge_tracker/current_charge")->get("timestamp_minutes")->asUint());
+            evse_input_regs_copy->charging_time_sec = fromUint((api.getState("evse/low_level_state")->get("uptime")->asUint() - api.getState("charge_tracker/current_charge")->get("evse_uptime_start")->asUint()) / 1000);
         } else {
-            evse_input_regs_copy->start_time_min = 0;
-            evse_input_regs_copy->charging_time_sec = 0;
+            evse_input_regs_copy->start_time_min = fromUint(0);
+            evse_input_regs_copy->charging_time_sec = fromUint(0);
         }
 #endif
     }
@@ -674,20 +685,20 @@ void ModbusTcp::update_regs()
     {
         discrete_inputs_copy->meter = true;
 
-        meter_input_regs_copy->meter_type = swap_regs(api.getState("meter/state")->get("type")->asUint());
+        meter_input_regs_copy->meter_type = fromUint(api.getState("meter/state")->get("type")->asUint());
 
         auto meter_values = api.getState("meter/values");
-        meter_input_regs_copy->power = swap_float(meter_values->get("power")->asFloat());
-        meter_input_regs_copy->energy_relative = swap_float(meter_values->get("energy_rel")->asFloat());
-        meter_input_regs_copy->energy_absolute = swap_float(meter_values->get("energy_abs")->asFloat());
+        meter_input_regs_copy->power = fromFloat(meter_values->get("power")->asFloat());
+        meter_input_regs_copy->energy_relative = fromFloat(meter_values->get("energy_rel")->asFloat());
+        meter_input_regs_copy->energy_absolute = fromFloat(meter_values->get("energy_abs")->asFloat());
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
         auto meter_start = api.getState("charge_tracker/current_charge")->get("meter_start")->asFloat();
         if (!charging)
-            meter_input_regs_copy->energy_this_charge = 0;
+            meter_input_regs_copy->energy_this_charge = fromFloat(0);
         else if (isnan(meter_start))
-            meter_input_regs_copy->energy_this_charge = NAN;
+            meter_input_regs_copy->energy_this_charge = fromFloat(NAN);
         else
-            meter_input_regs_copy->energy_this_charge = swap_float(meter_input_regs_copy->energy_absolute - meter_start);
+            meter_input_regs_copy->energy_this_charge = fromFloat(meter_input_regs_copy->energy_absolute - meter_start);
 #endif
 
         if (meter_holding_regs_copy->trigger_reset == meter_holding_regs_copy->TRIGGER_RESET_PASSWORD && write_allowed)
@@ -712,9 +723,9 @@ void ModbusTcp::update_regs()
         discrete_inputs_copy->meter_all_values = true;
 
         auto meter_all_values = api.getState("meter/all_values");
-        meter_all_values->fillFloatArray(meter_all_values_input_regs_copy->meter_values, sizeof(meter_all_values_input_regs_copy->meter_values) / sizeof(meter_all_values_input_regs_copy->meter_values[0]));
+
         for (int i = 0; i < 85; i++)
-            meter_all_values_input_regs_copy->meter_values[i] = swap_float(meter_all_values_input_regs_copy->meter_values[i]);
+            meter_all_values_input_regs_copy->meter_values[i] = fromFloat(meter_all_values->get(i)->asFloat());
     }
 #endif
 
@@ -812,8 +823,8 @@ void ModbusTcp::update_keba_regs()
         *keba_write_cpy = *keba_write;
     portEXIT_CRITICAL(&mtx);
 
-    keba_read_general_cpy->features = swap_regs(keba_get_features());
-    keba_read_general_cpy->firmware_version = swap_regs(0x30A1B00);
+    keba_read_general_cpy->features = fromUint(keba_get_features());
+    keba_read_general_cpy->firmware_version = fromUint(0x30A1B00);
 
 #if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
     if (api.hasFeature("evse"))
@@ -826,19 +837,19 @@ void ModbusTcp::update_keba_regs()
         evse.set_modbus_enabled(keba_write_cpy->enable_station == 1 ? true : false);
 #endif
         if (api.getState("evse/state")->get("iec61851_state")->asUint() == 4)
-            keba_read_general_cpy->charging_state = swap_regs(4);
+            keba_read_general_cpy->charging_state = fromUint(4);
         else
-            keba_read_general_cpy->charging_state = swap_regs(api.getState("evse/state")->get("iec61851_state")->asUint() + 1);
+            keba_read_general_cpy->charging_state = fromUint(api.getState("evse/state")->get("iec61851_state")->asUint() + 1);
         if (api.getState("evse/state")->get("charger_state")->asUint() == 0)
-            keba_read_general_cpy->cable_state = 0;
+            keba_read_general_cpy->cable_state = fromUint(0);
         else if (api.getState("evse/state")->get("charger_state")->asUint() == 1 || api.getState("evse/state")->get("charger_state")->asUint() == 2)
-            keba_read_general_cpy->cable_state = swap_regs(3);
+            keba_read_general_cpy->cable_state = fromUint(3);
         else
-            keba_read_general_cpy->cable_state = swap_regs(7);
+            keba_read_general_cpy->cable_state = fromUint(7);
 
-        keba_read_max_cpy->max_current = swap_regs(api.getState("evse/state")->get("allowed_charging_current")->asUint());
+        keba_read_max_cpy->max_current = fromUint(api.getState("evse/state")->get("allowed_charging_current")->asUint());
 
-        keba_read_max_cpy->max_hardware_current = swap_regs(api.getState("evse/slots")->get(CHARGING_SLOT_INCOMING_CABLE)->get("max_current")->asUint());
+        keba_read_max_cpy->max_hardware_current = fromUint(api.getState("evse/slots")->get(CHARGING_SLOT_INCOMING_CABLE)->get("max_current")->asUint());
     }
 #endif
 
@@ -852,16 +863,16 @@ void ModbusTcp::update_keba_regs()
         auto meter_start = api.getState("charge_tracker/current_charge")->get("meter_start")->asFloat();
 
         if (!charging)
-            keba_read_charge->charged_energy = 0;
+            keba_read_charge->charged_energy = fromUint(0);
         else if (isnan(meter_start))
-            keba_read_charge->charged_energy = swap_regs((uint32_t)NAN);
+            keba_read_charge->charged_energy = fromUint(0);
         else
-            keba_read_charge->charged_energy = swap_float((uint32_t)((meter_absolute - meter_start) * 1000));
+            keba_read_charge->charged_energy = fromUint((uint32_t)((meter_absolute - meter_start) * 1000));
 
         if (api.getState("charge_tracker/current_charge")->get("authorization_type")->asUint() == 2)
         {
             auto tag_id = api.getState("charge_tracker/current_charge")->get("authorization_info")->get("tag_id")->asString();
-            keba_read_charge_cpy->rfid_tag = swap_regs(export_tag_id_as_uint32(tag_id));
+            keba_read_charge_cpy->rfid_tag = fromUint(export_tag_id_as_uint32(tag_id));
         }
 #endif
 
@@ -870,13 +881,13 @@ void ModbusTcp::update_keba_regs()
             auto meter_all_values = api.getState("meter/all_values");
             for (int i = 0; i < 3; i++)
             {
-                keba_read_general_cpy->currents[i] = swap_regs((uint32_t)(meter_all_values->get(i + METER_ALL_VALUES_CURRENT_L1_A)->asFloat() * 1000));
-                keba_read_general_cpy->volatages[i] = swap_regs((uint32_t)meter_all_values->get(i)->asFloat());
+                keba_read_general_cpy->currents[i] = fromUint(meter_all_values->get(i + METER_ALL_VALUES_CURRENT_L1_A)->asFloat() * 1000);
+                keba_read_general_cpy->volatages[i] = fromUint(meter_all_values->get(i)->asFloat());
             }
-            keba_read_general_cpy->power_factor = swap_regs((uint32_t)meter_all_values->get(METER_ALL_VALUES_TOTAL_SYSTEM_POWER_FACTOR)->asFloat() * 1000);
+            keba_read_general_cpy->power_factor = fromUint(meter_all_values->get(METER_ALL_VALUES_TOTAL_SYSTEM_POWER_FACTOR)->asFloat() * 1000);
         }
-        keba_read_general_cpy->power = swap_regs((uint32_t)(api.getState("meter/values")->get("power")->asFloat() * 1000));
-        keba_read_general_cpy->total_energy = swap_regs((uint32_t)(api.getState("meter/values")->get("energy_abs")->asFloat() * 1000));
+        keba_read_general_cpy->power = fromUint(api.getState("meter/values")->get("power")->asFloat() * 1000);
+        keba_read_general_cpy->total_energy = fromUint(api.getState("meter/values")->get("energy_abs")->asFloat() * 1000);
     }
 #endif
 
@@ -911,15 +922,15 @@ void ModbusTcp::register_urls()
     #endif
 
             portENTER_CRITICAL(&mtx);
-                input_regs->table_version = MODBUS_TABLE_VERSION;
-                input_regs->box_id = local_uid_num;
-                input_regs->firmware_major = BUILD_VERSION_MAJOR;
-                input_regs->firmware_minor = BUILD_VERSION_MINOR;
-                input_regs->firmware_patch = BUILD_VERSION_PATCH;
-                input_regs->firmware_build_ts = BUILD_TIMESTAMP;
+                input_regs->table_version = fromUint(MODBUS_TABLE_VERSION);
+                input_regs->box_id = fromUint(local_uid_num);
+                input_regs->firmware_major = fromUint(BUILD_VERSION_MAJOR);
+                input_regs->firmware_minor = fromUint(BUILD_VERSION_MINOR);
+                input_regs->firmware_patch = fromUint(BUILD_VERSION_PATCH);
+                input_regs->firmware_build_ts = fromUint(BUILD_TIMESTAMP);
 
-                evse_holding_regs->allowed_current = allowed_current;
-                evse_holding_regs->enable_charging = enable_charging;
+                evse_holding_regs->allowed_current = fromUint(allowed_current);
+                evse_holding_regs->enable_charging = fromUint(enable_charging);
             portEXIT_CRITICAL(&mtx);
 
             task_scheduler.scheduleWithFixedDelay([this]() {

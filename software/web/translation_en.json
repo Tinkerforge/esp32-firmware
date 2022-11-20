@@ -15,7 +15,8 @@
     },
     "component": {
         "config_page_header": {
-            "save": "Save"
+            "save": "Save",
+            "reset": "Reset"
         },
         "input_password": {
             "to_be_cleared": "Will be cleared on save.",
@@ -34,7 +35,6 @@
             "dns2": "Alternative DNS server",
             "dns2_muted": "optional",
             "static_ip_invalid": "The IP address must have four groups between 0 and 255 separated with a dot. For example 10.0.0.2",
-            "subnet_invalid": "The subnet mask must have four groups between 0 and 255 separated with a dot. For example 255.255.255.0",
             "gateway_invalid": "The gateway IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1",
             "dns_invalid": "The DNS server IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1, or be empty.",
             "dns2_invalid": "The alternative DNS server IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1, or be empty.",
@@ -53,6 +53,9 @@
             "min_max_prefix": "At least ",
             "min_max_infix": " but at most ",
             "min_max_suffix": " characters allowed"
+        },
+        "input_file": {
+            "uploading": "uploading..."
         }
     },
     "util": {
@@ -62,10 +65,6 @@
         "event_connection_lost": "Connection will be reestablished...",
         "to_be_cleared": "Will be cleared on save.",
         "unchanged": "unchanged",
-        "subnet_invalid": "The subnet mask must have four groups between 0 and 255 separated with a dot. For example 255.255.255.0",
-        "gateway_invalid": "The gateway IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1",
-        "gateway_out_of_subnet": "Gateway address not in the configured subnet",
-        "subnet_captures_localhost": "Specified IP address and subnet mask not allowed: Would capture localhost (127.0.0.1).",
 
         "upload_abort": "Upload aborted",
         "upload_error": "Upload error",
@@ -73,6 +72,12 @@
         "download_abort": "Download aborted",
         "download_error": "Download error",
         "download_timeout": "Download timed out"
+    },
+    "reset": {
+        "reset_modal": "Reset Config",
+        "reset_modal_body": "Really reset the configuration?",
+        "reset_modal_abort": "Abort",
+        "reset_modal_confirm": "Reset"
     },
     "days": "days",
     "day": "day"

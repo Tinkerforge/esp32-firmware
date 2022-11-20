@@ -58,8 +58,6 @@ void Meter::pre_setup()
         new Config{Config::Float(0)},
         0, METER_ALL_VALUES_COUNT, Config::type_id<Config::ConfFloat>());
 
-    reset = Config::Null();
-
     last_reset = Config::Object({
         {"last_reset", Config::Uint32(0)}
     });
@@ -169,7 +167,7 @@ void Meter::register_urls()
     api.addState("meter/all_values", &all_values, {}, 1000);
     api.addState("meter/last_reset", &last_reset, {}, 1000);
 
-    api.addCommand("meter/reset", &reset, {}, [this](){
+    api.addCommand("meter/reset", Config::Null(), {}, [this](){
         for (auto cb : this->reset_callbacks)
             cb();
 
