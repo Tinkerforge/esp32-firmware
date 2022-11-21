@@ -69,19 +69,7 @@ export class ConfigForm extends Component<ConfigFormProps,ConfigFormState> {
     showResetButton = () => {
         if (typeof this.props.onReset == 'function')
         {
-            return  <button onClick={async () => {
-                                                const modal = util.async_modal_ref.current;
-                                                if (!await modal.show({
-                                                        title: __("reset.reset_modal"),
-                                                        body: __("reset.reset_modal_body"),
-                                                        no_text: __("reset.reset_modal_abort"),
-                                                        yes_text: __("reset.reset_modal_confirm"),
-                                                        no_variant: "secondary",
-                                                        yes_variant: "danger"
-                                                    }))
-                                                    return;
-                                                this.props.onReset();
-                                            }} class="btn btn-danger mb-2 col ml-2" disabled={!this.props.isModified()}>
+            return  <button onClick={async () => {this.props.onReset();}} class="btn btn-danger mb-2" disabled={!this.props.isModified()}>
                         {__("component.config_page_header.reset")}
                         <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!this.state.showSpinner} ></span>
                     </button>

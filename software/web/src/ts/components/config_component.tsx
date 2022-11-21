@@ -18,7 +18,8 @@
  */
 
 import { Component} from "preact";
-import { api_cache, ConfigMap, ConfigModified } from "../api_defs";
+import { ConfigMap } from "../api_defs";
+import { __ } from "../translation";
 import * as API from "../api";
 import * as util from "../util";
 
@@ -71,6 +72,16 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
     }
 
     reset = async () => {
+        const modal = util.async_modal_ref.current;
+        if (!await modal.show({
+                title: __("reset.reset_modal"),
+                body: this.reboot_string != undefined ? __("reset.reset_modal_body_prefix") + this.reboot_string + __("reset.reset_modal_body_postfix") : __("reset.reset_modal_body"),
+                no_text: __("reset.reset_modal_abort"),
+                yes_text: __("reset.reset_modal_confirm"),
+                no_variant: "secondary",
+                yes_variant: "danger"
+            }))
+            return;
         await this.sendReset(this.t);
     }
 
