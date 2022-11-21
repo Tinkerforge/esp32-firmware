@@ -80,7 +80,7 @@ export class ConfigForm extends Component<ConfigFormProps,ConfigFormState> {
                                                     }))
                                                     return;
                                                 this.props.onReset();
-                                            }} class="btn btn-danger mb-2">
+                                            }} class="btn btn-danger mb-2 col ml-2">
                         {__("component.config_page_header.reset")}
                         <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!this.state.showSpinner}></span>
                     </button>
@@ -92,14 +92,16 @@ export class ConfigForm extends Component<ConfigFormProps,ConfigFormState> {
         return (
             <>
                 <div class="row sticky-under-top mb-3 pt-3">
-                    <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-header-shadow">
-                        <h1 class="h2" dangerouslySetInnerHTML={{__html: props.title}}></h1>
-                        <div>
-                            {this.showResetButton()}
-                            <button type="submit" form={props.id} class="btn btn-primary mb-2 ml-3" disabled={state.saveDisabled}>
-                                {__("component.config_page_header.save")}
-                                <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!state.showSpinner}></span>
-                            </button>
+                    <div class="col-xl-8 pb-2 border-bottom tab-header-shadow">
+                        <div class="row no-gutters">
+                            <h1 class="config-header col-12 col-sm text-center text-sm-left text-nowrap" dangerouslySetInnerHTML={{__html: props.title}}></h1>
+                            <div class="col-12 col-sm row no-gutters">
+                                {this.showResetButton()}
+                                <button type="submit" form={props.id} class="btn btn-primary col mb-2 mx-2 ml-md-3 mr-sm-0" disabled={state.saveDisabled}>
+                                    {__("component.config_page_header.save")}
+                                    <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!state.showSpinner}></span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -502,3 +502,15 @@ body {
 .modal-body {
     font-size: 1rem;
 }
+
+@include media-breakpoint-only(xs) {
+    .config-header {
+        font-size: 1.75rem;
+    }
+}
+
+@include media-breakpoint-up(sm) {
+    .config-header {
+        font-size: 2rem;
+    }
+}
