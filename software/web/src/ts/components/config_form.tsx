@@ -32,7 +32,7 @@ interface ConfigFormProps {
     children: VNode | VNode[]
     id: string
     title: string
-    modified: boolean
+    is_modified?: () => boolean
     onSave: () => Promise<void>
     onReset: () => Promise<void>
     onDirtyChange: (dirty: boolean) => void
@@ -69,6 +69,9 @@ export class ConfigForm extends Component<ConfigFormProps,ConfigFormState> {
     showResetButton = () => {
         if (typeof this.props.onReset == 'function')
         {
+            if (typeof this.props.is_modified == 'function')
+
+
             return  <button onClick={async () => {
                                                 const modal = util.async_modal_ref.current;
                                                 if (!await modal.show({
@@ -81,7 +84,7 @@ export class ConfigForm extends Component<ConfigFormProps,ConfigFormState> {
                                                     }))
                                                     return;
                                                 this.props.onReset();
-                                            }} class="btn btn-danger mb-2 col ml-2" disabled={!this.props.modified}>
+                                            }} class="btn btn-danger mb-2 col ml-2" disabled={!this.props.is_modified()}>
                         {__("component.config_page_header.reset")}
                         <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!this.state.showSpinner} ></span>
                     </button>
