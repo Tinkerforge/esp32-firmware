@@ -53,7 +53,7 @@ export class Wireguard extends ConfigComponent<'wireguard/config'> {
 
         return (
             <>
-                <ConfigForm id="wireguard_config_form" title={__("wireguard.content.wireguard")} isModified={this.isModified} onSave={() => this.save()} onReset={() => this.reset()} onDirtyChange={(d) => this.ignore_updates = d}>
+                <ConfigForm id="wireguard_config_form" title={__("wireguard.content.wireguard")} isModified={this.isModified()} onSave={() => this.save()} onReset={() => this.reset()} onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("wireguard.content.enable_wireguard")}>
                         <Switch desc={__("wireguard.content.enable_wireguard_desc")}
                                 checked={state.enable}

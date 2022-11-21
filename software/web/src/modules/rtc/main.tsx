@@ -103,7 +103,7 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
                                 onSave={this.save}
                                 onReset={this.reset}
                                 onDirtyChange={(d) => this.ignore_updates = d}
-                                isModified={this.isModified}>
+                                isModified={this.isModified()}>
                         <FormRow label={__("rtc.content.enable_auto_sync")}>
                             <Switch desc={__("rtc.content.auto_sync_desc")} checked={state.sync_enabled} onClick={() => {
                                     this.setState({"sync_enabled": !state.sync_enabled})

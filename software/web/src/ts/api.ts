@@ -40,7 +40,7 @@ export function is_modified<T extends keyof ConfigMap>(topic: T): boolean {
     let modified = api_cache[(topic + "_modified") as T] as ConfigModified;
     if (modified == null)
         return false;
-    return modified.modified > 0;
+    return modified.modified > 1;
 }
 
 export function get_maybe<T extends string>(topic: T): (T extends keyof ConfigMap ? Readonly<ConfigMap[T]> : any) {

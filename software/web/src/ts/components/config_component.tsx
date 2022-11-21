@@ -55,6 +55,11 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
             if (!this.ignore_updates)
                 this.setState(API.get(t) as Partial<API.getType[Config] & S>);
         });
+
+        util.eventTarget.addEventListener((t + "_modified") as Config, () => {
+            if (!this.ignore_updates)
+                this.setState(API.get(t) as Partial<API.getType[Config] & S>);
+        })
     }
 
     toggle(x: keyof PickByValue<API.getType[Config] & S, boolean>) {
