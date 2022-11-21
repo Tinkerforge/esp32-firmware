@@ -123,9 +123,9 @@ bool API::addPersistentConfig(String path, ConfigRoot *config, std::initializer_
     ConfigRoot *modified_conf = new ConfigRoot(Config::Object({{"modified", Config::Uint8(0)}}));
 
     String modified_conf_path = path + String("_modified");
-    auto tmp = modified_conf_path;
 
     {
+        auto tmp = modified_conf_path;
         tmp.replace('/', '_');
         String filename = String("/config/") + tmp;
 
