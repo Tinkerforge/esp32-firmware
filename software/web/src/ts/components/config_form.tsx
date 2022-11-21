@@ -32,9 +32,9 @@ interface ConfigFormProps {
     children: VNode | VNode[]
     id: string
     title: string
-    modified?: boolean
+    modified: boolean
     onSave: () => Promise<void>
-    onReset?: () => Promise<void>
+    onReset: () => Promise<void>
     onDirtyChange: (dirty: boolean) => void
 }
 
