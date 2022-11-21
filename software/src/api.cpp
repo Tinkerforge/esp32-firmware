@@ -131,7 +131,7 @@ bool API::addPersistentConfig(String path, ConfigRoot *config, std::initializer_
 
         if (LittleFS.exists(filename)) {
             File file = LittleFS.open(filename);
-            String error = modified_conf->update_from_file(file);
+            modified_conf->update_from_file(file);
             file.close();
         }
     }
@@ -143,7 +143,7 @@ bool API::addPersistentConfig(String path, ConfigRoot *config, std::initializer_
         API::writeConfig(path, config);
         ConfigRoot tmp = ConfigRoot(Config::Object({{"modified", Config::Uint8(2)}}));
         API::writeConfig(modified_conf_path, &tmp);
-        modified_conf->get("modified")->updateUint(1);
+        modified_conf->get("modified")->updateUint(3);
     }, false);
 
     addCommand(path + String("_reset"), Config::Null(), {}, [path, modified_conf, modified_conf_path]() {
