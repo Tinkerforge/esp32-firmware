@@ -615,6 +615,8 @@ void Users::register_urls()
         if (!charge_tracker.is_user_tracked(remove.get("id")->asUint()))
         {
             this->rename_user(remove.get("id")->asUint(), "", "");
+            // If this user still has tracked charges, we can't recycle their ID, so it is correct
+            // to check this here (and not one level up).
             if (user_config.get("next_user_id")->asUint() == 0)
             {
                 user_config.get("next_user_id")->updateUint(remove.get("id")->asUint());
