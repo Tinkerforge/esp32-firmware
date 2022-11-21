@@ -316,7 +316,16 @@ de_hyph = [
     "per-sis-tente",
     "sämt-licher",
     "un-gültiger",
-    "Öffent-licher"
+    "Öffent-licher",
+    "An-ge-schlos-se-ne",
+    "Au-then-ti-fi-zier-ung",
+    "Au-then-ti-fi-zier-ungs-ge-heim-nis",
+    "Fehler-zähler",
+    "Inter-faces",
+    "Ty-pi-scher-wei-se",
+    "Zugangs-daten",
+    "un-be-kann-tes",
+    "un-er-war-tet",
 ]
 
 en_hyph = [
@@ -411,6 +420,11 @@ en_hyph = [
     "per-sis-tent",
     "re-gis-tra-tion",
     "un-avail-able",
+    "Au-then-ti-ca-tion",
+    "Au-then-ti-ca-tion",
+    "Cre-den-tials",
+    "cre-den-tials",
+    "Un-ex-pected",
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
@@ -483,5 +497,6 @@ allowed_missing = set([
     "GetCompositeSchedule",
     "SetChargingProfile",
     "TriggerMessageResponse",
-    "TriggerMessage"
+    "TriggerMessage",
+    "Tutorial_Authentication"
 ])

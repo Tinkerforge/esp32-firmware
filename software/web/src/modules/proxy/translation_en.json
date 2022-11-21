@@ -18,13 +18,13 @@
             "tfp_frame": "TFP Frame",
             "tfp_unexpected": "TFP Unexpected",
 
-            "auth_secret": "Authentification secret",
-            "auth_secret_muted": "See <a href=\"https://www.tinkerforge.com/en/doc/Tutorials/Tutorial_Authentication/Tutorial.html\">Tutorial - Authentification</a>",
-            "auth_disabled": "Authentification disabled",
+            "auth_secret": "Authentication secret",
+            "auth_secret_muted": "See <a href=\"https://www.tinkerforge.com/en/doc/Tutorials/Tutorial_Authentication/Tutorial.html\">Tutorial - Authentication</a>",
+            "auth_disabled": "Authentication disabled",
             "listen_address": "Listen address",
-            "listen_address_muted": "IP address that the TFP server waits for requests on. 0.0.0.0 to listen on any network interface",
+            "listen_address_muted": "",
             "listen_port": "Listen port",
-            "listen_port_muted": "Port that the TFP server waits for requests on. Typically 4223"
+            "listen_port_muted": ""
         },
         "script": {
             "no_bricklets": "No Bricklets connected.",

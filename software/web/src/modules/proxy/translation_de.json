@@ -21,10 +21,10 @@
             "auth_secret": "Authentifizierungsgeheimnis",
             "auth_secret_muted": "Siehe <a href=\"https://www.tinkerforge.com/de/doc/Tutorials/Tutorial_Authentication/Tutorial.html\">Tutorial - Authentifizierung</a>",
             "auth_disabled": "Authentifizierung deaktiviert",
-            "listen_address": "Server-Adresse",
-            "listen_address_muted": "IP-Adresse, auf der der TFP-Server auf Anfragen wartet. 0.0.0.0 damit auf allen Netzwerk-Interfaces auf Anfragen gewartet wird",
+            "listen_address": "Server-Bind-Adresse",
+            "listen_address_muted": "",
             "listen_port": "Server-Port",
-            "listen_port_muted": "Port, auf dem der TFP-Server auf Anfragen wartet. Typischerweise 4223"
+            "listen_port_muted": ""
         },
         "script": {
             "no_bricklets": "Keine Bricklets angeschlossen.",
