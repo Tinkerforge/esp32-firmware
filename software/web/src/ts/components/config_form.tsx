@@ -70,7 +70,7 @@ export class ConfigForm extends Component<ConfigFormProps,ConfigFormState> {
     showResetButton = () => {
         if (typeof this.props.onReset == 'function')
         {;
-            return  <button onClick={async () => {await this.props.onReset()}} class="btn btn-danger mb-2" disabled={!this.props.isModified}>
+            return  <button onClick={async () => {await this.props.onReset()}} class="btn btn-danger mb-2 ml-2 col" disabled={!this.props.isModified}>
                         {__("component.config_page_header.reset")}
                         <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!this.state.showSpinner} ></span>
                     </button>
