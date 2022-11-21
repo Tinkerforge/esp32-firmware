@@ -7,6 +7,8 @@ export interface config {
     global_topic_prefix: string
     client_name: string,
     interval: number
+    enable_auto_discovery: boolean,
+    auto_discovery_prefix: string
 }
 
 export interface state {

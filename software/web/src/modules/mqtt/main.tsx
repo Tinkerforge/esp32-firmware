@@ -107,6 +107,22 @@ export class Mqtt extends ConfigComponent<'mqtt/config'> {
                                      unit="s"
                                      onValue={this.set("interval")}/>
                     </FormRow>
+
+                    <FormRow label={__("mqtt.content.enable_auto_discovery")}>
+                        <Switch desc={__("mqtt.content.enable_auto_discovery_desc")}
+                                checked={state.enable_auto_discovery}
+                                onClick={this.toggle('enable_auto_discovery')}/>
+                    </FormRow>
+
+                    <FormRow label={__("mqtt.content.auto_discovery_prefix")} label_muted={__("mqtt.content.auto_discovery_prefix_muted")}>
+                        <InputText required
+                                   maxLength={64}
+                                   pattern="^[^#+$][^#+]*"
+                                   value={state.auto_discovery_prefix}
+                                   onValue={this.set("auto_discovery_prefix")}
+                                   invalidFeedback={__("mqtt.content.auto_discovery_prefix_invalid")}
+                                   />
+                    </FormRow>
                 </ConfigForm>
             </>
         );
