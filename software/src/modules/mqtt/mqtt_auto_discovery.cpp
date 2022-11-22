@@ -258,11 +258,11 @@ void MqttAutoDiscovery::check_discovery_topic(const char *topic, size_t topic_le
 
 void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
 {
-    uint32_t delay = 0;
+    uint32_t delay_ms = 0;
 
     if (mqtt.mqtt_state.get("connection_state")->asInt() != (int)MqttConnectionState::CONNECTED) {
         topic_num = 0;
-        delay = 5000; // 5 sec
+        delay_ms = 5 * 1000;
     }
     // deal with one topic
     else if (api.hasFeature(mqtt_discovery_topic_infos[topic_num].feature)) {
@@ -311,13 +311,13 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
 
         if (++topic_num >= TOPIC_COUNT) {
             topic_num = 0;
-            delay = 900000; // 15 min
+            delay_ms = 15 * 60 * 1000;
         }
     }
 
     task_scheduler.scheduleOnce([this, topic_num](){
         this->announce_next_topic(topic_num);
-    }, delay);
+    }, delay_ms);
 }
 
 void MqttAutoDiscovery::start_announcing()
