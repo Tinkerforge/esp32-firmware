@@ -27,6 +27,10 @@
 #include "mqtt_auto_discovery.h"
 #include "task_scheduler.h"
 
+extern API api;
+extern TaskScheduler task_scheduler;
+extern char local_uid_str[32];
+
 #define TOPIC_COUNT (sizeof(mqtt_discovery_topic_infos)/sizeof(mqtt_discovery_topic_infos[0]))
 
 enum class MqttDiscoveryType {
@@ -176,10 +180,6 @@ static const struct DiscoveryTopicInfo mqtt_discovery_topic_infos[] = {
 
 static struct DiscoveryTopic mqtt_discovery_topics[TOPIC_COUNT];
 static String device_info;
-
-extern API api;
-extern TaskScheduler task_scheduler;
-extern char local_uid_str[32];
 
 MqttAutoDiscovery mqtt_auto_discovery;
 
