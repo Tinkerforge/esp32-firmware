@@ -108,7 +108,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
                     <div class="col-auto">
                         <div class="mb-2"><BatteryCharging/><span class="ml-1" style="vertical-align: middle;">{c.energy_charged === null ? "N/A" : util.toLocaleFixed(c.energy_charged, 3)} kWh</span></div>
                         <div class="mb-2"><Clock/><span class="ml-1" style="vertical-align: middle;">{util.format_timespan(c.charge_duration)}</span></div>
-                        {price > 0 ? price_div : <></>}
+                        {price > 0 && c.energy_charged != null ? price_div : <></>}
                     </div>
                 </div>
             </ListGroupItem>}).reverse();
@@ -234,7 +234,7 @@ let x = <svg class="feather feather-credit-card" width="24" height="24" fill="no
 function show_charge_cost(charged: number)
 {
     let price = API.get("charge_tracker/config").electricity_price;
-    if (price > 0)
+    if (price > 0 && charged != null)
     {
         let icon = '<svg class="feather feather-wallet mr-1" width="24" height="24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="6.0999" width="22" height="16" rx="2" ry="2"/><path d="m2.9474 6.0908 15.599-4.8048s0.59352-0.22385 0.57647 0.62527c-0.02215 1.1038-0.01535 3.6833-0.01535 3.6833"/></svg>'
 
@@ -375,12 +375,14 @@ async function downloadChargeLog(user_filter: number, start_date: Date, end_date
 
                     let charged = (Number.isNaN(meter_start) || Number.isNaN(meter_end)) ? NaN : (meter_end - meter_start);
                     let charged_string;
-                    let charged_price;
+                    let charged_price = typeof price == 'number' ? charged / 100 * price / 100 : 0;
+                    let charged_price_string;
                     if (Number.isNaN(charged) || charged < 0) {
                         charged_string = 'N/A';
+                        charged_price_string = 'N/A';
                     } else {
                         charged_string = util.toLocaleFixed(charged, 3);
-                        charged_price = typeof price == 'number' ? charged / 100 * price / 100 : 0;
+                        charged_price_string = util.toLocaleFixed(charged_price, 2);
                     }
 
                     let line = [
@@ -392,7 +394,7 @@ async function downloadChargeLog(user_filter: number, start_date: Date, end_date
                         Number.isNaN(meter_start) ? 'N/A' : util.toLocaleFixed(meter_start, 3),
                         Number.isNaN(meter_end) ? 'N/A' : util.toLocaleFixed(meter_end, 3),
                         username,
-                        charged_price > 0 ? util.toLocaleFixed(charged_price, 2) : ""
+                        price > 0 ? charged_price_string : ""
                     ];
 
                     result += to_csv_line(line);
@@ -428,6 +430,8 @@ function update_current_charge() {
 
     time_charging = Math.floor(time_charging / 1000);
 
+    let price = API.get("charge_tracker/config").electricity_price;
+
     if (filtered.length == 0)
         $('#users_status_charging_user').html(__("charge_tracker.script.deleted_user"));
     else if (filtered[0].display_name == "Anonymous" && cc.user_id == 0)
@@ -435,8 +439,15 @@ function update_current_charge() {
     else
         $('#users_status_charging_user').html(user_display_name);
     $('#users_status_charging_time').html(util.format_timespan(time_charging));
-    $('#users_status_charged_energy').html(cc.meter_start == null ? "N/A" : util.toLocaleFixed(energy_charged, 3) + " kWh");
+    $('#users_status_charged_energy').html(cc.meter_start == null ? "N/A kWh" : util.toLocaleFixed(energy_charged, 3) + " kWh");
     $('#users_status_charging_start').html(util.timestamp_min_to_date(cc.timestamp_minutes, __("charge_tracker.script.unknown_charge_start")));
+    if (price > 0 && cc.meter_start != null)
+    {
+        $('#current_charge_price').text(util.toLocaleFixed(price / 100 * energy_charged / 100, 2) + " €");
+        $('#current_charge_price_div').prop('hidden', false);
+    }
+    else
+        $('#current_charge_price_div').prop('hidden', true);
 }
 
 export function init() {
