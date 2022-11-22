@@ -260,64 +260,59 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
 {
     uint32_t delay = 0;
 
-    for (;;) {
-        if (mqtt.mqtt_state.get("connection_state")->asInt() != (int)MqttConnectionState::CONNECTED) {
-            topic_num = 0;
-            delay = 5000; // 5 sec
-            break;
+    if (mqtt.mqtt_state.get("connection_state")->asInt() != (int)MqttConnectionState::CONNECTED) {
+        topic_num = 0;
+        delay = 5000; // 5 sec
+    }
+    // deal with one topic
+    else if (api.hasFeature(mqtt_discovery_topic_infos[topic_num].feature)) {
+        const String topic_prefix = mqtt.mqtt_config_in_use.get("global_topic_prefix")->asString();
+        const char *name = mqtt_discovery_topic_infos[topic_num].name_de;
+
+        String payload;
+        payload.reserve(639);
+
+        payload.concat("{\"name\":\"");
+        payload.concat(name);
+        payload.concat("\",\"unique_id\":\"");
+        payload.concat(mqtt.mqtt_config_in_use.get("client_name")->asString());
+        payload.concat('-');
+        payload.concat(mqtt_discovery_topic_infos[topic_num].object_id);
+        payload.concat("\",");
+        switch (mqtt_discovery_topic_infos[topic_num].type) {
+            case MqttDiscoveryType::STATE_AND_UPDATE:
+                payload.concat("\"command_topic\":\"");
+                payload.concat(topic_prefix);
+                payload.concat('/');
+                payload.concat(mqtt_discovery_topic_infos[topic_num].path);
+                payload.concat("_update\",");
+                /* FALLTHROUGH */
+            case MqttDiscoveryType::STATE_ONLY:
+                payload.concat("\"state_topic\":\"");
+                payload.concat(topic_prefix);
+                payload.concat('/');
+                payload.concat(mqtt_discovery_topic_infos[topic_num].path);
+                payload.concat("\",");
+                break;
+            case MqttDiscoveryType::COMMAND_ONLY:
+                payload.concat("\"command_topic\":\"");
+                payload.concat(topic_prefix);
+                payload.concat('/');
+                payload.concat(mqtt_discovery_topic_infos[topic_num].path);
+                payload.concat("\",");
+                break;
         }
+        payload.concat(mqtt_discovery_topic_infos[topic_num].static_info);
+        payload.concat(',');
+        payload.concat(device_info);
+        payload.concat('}');
 
-        // deal with one topic
-        if (api.hasFeature(mqtt_discovery_topic_infos[topic_num].feature)) {
-            const String topic_prefix = mqtt.mqtt_config_in_use.get("global_topic_prefix")->asString();
-            const char *name = mqtt_discovery_topic_infos[topic_num].name_de;
-
-            String payload;
-            payload.reserve(639);
-
-            payload.concat("{\"name\":\"");
-            payload.concat(name);
-            payload.concat("\",\"unique_id\":\"");
-            payload.concat(mqtt.mqtt_config_in_use.get("client_name")->asString());
-            payload.concat('-');
-            payload.concat(mqtt_discovery_topic_infos[topic_num].object_id);
-            payload.concat("\",");
-            switch (mqtt_discovery_topic_infos[topic_num].type) {
-                case MqttDiscoveryType::STATE_AND_UPDATE:
-                    payload.concat("\"command_topic\":\"");
-                    payload.concat(topic_prefix);
-                    payload.concat('/');
-                    payload.concat(mqtt_discovery_topic_infos[topic_num].path);
-                    payload.concat("_update\",");
-                    /* FALLTHROUGH */
-                case MqttDiscoveryType::STATE_ONLY:
-                    payload.concat("\"state_topic\":\"");
-                    payload.concat(topic_prefix);
-                    payload.concat('/');
-                    payload.concat(mqtt_discovery_topic_infos[topic_num].path);
-                    payload.concat("\",");
-                    break;
-                case MqttDiscoveryType::COMMAND_ONLY:
-                    payload.concat("\"command_topic\":\"");
-                    payload.concat(topic_prefix);
-                    payload.concat('/');
-                    payload.concat(mqtt_discovery_topic_infos[topic_num].path);
-                    payload.concat("\",");
-                    break;
-            }
-            payload.concat(mqtt_discovery_topic_infos[topic_num].static_info);
-            payload.concat(',');
-            payload.concat(device_info);
-            payload.concat('}');
-
-            mqtt.publish(mqtt_discovery_topics[topic_num].full_path, payload, true);
-        }
+        mqtt.publish(mqtt_discovery_topics[topic_num].full_path, payload, true);
 
         if (++topic_num >= TOPIC_COUNT) {
             topic_num = 0;
             delay = 900000; // 15 min
         }
-        break;
     }
 
     task_scheduler.scheduleOnce([this, topic_num](){
