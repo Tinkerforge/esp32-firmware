@@ -241,3 +241,28 @@ def green(s):
 
 def gray(s):
     return colors['gray']+s+colors["off"]
+
+def specialize_template(template_filename, destination_filename, replacements, check_completeness=True, remove_template=False):
+    lines = []
+    replaced = set()
+
+    with open(template_filename, 'r', encoding='utf-8') as f:
+        for line in f.readlines():
+            for key in replacements:
+                replaced_line = line.replace(key, replacements[key])
+
+                if replaced_line != line:
+                    replaced.add(key)
+
+                line = replaced_line
+
+            lines.append(line)
+
+    if check_completeness and replaced != set(replacements.keys()):
+        raise Exception('Not all replacements for {0} have been applied. Missing are {1}'.format(template_filename, ', '.join(set(replacements.keys() - replaced))))
+
+    with open(destination_filename, 'w', encoding='utf-8') as f:
+        f.writelines(lines)
+
+    if remove_template:
+        os.remove(template_filename)
