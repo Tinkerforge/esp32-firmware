@@ -428,7 +428,9 @@ function update_current_charge() {
 
     time_charging = Math.floor(time_charging / 1000);
 
-    if (filtered[0].display_name == "Anonymous" && cc.user_id == 0)
+    if (filtered.length == 0)
+        $('#users_status_charging_user').html(__("charge_tracker.script.deleted_user"));
+    else if (filtered[0].display_name == "Anonymous" && cc.user_id == 0)
         $('#users_status_charging_user').html(__("charge_tracker.script.unknown_user"));
     else
         $('#users_status_charging_user').html(user_display_name);
