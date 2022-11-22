@@ -55,6 +55,12 @@ class Entity:
     name_en: str
     static_info: str
 
+    def get_json_len(self):
+        return max(len(self.name_de), len(self.name_en)) + len(self.object_id) + len(self.path) + len(self.get_static_info_str())
+
+    def get_static_info_str(self):
+        return ",".join(['\\"{}\\":\\"{}\\"'.format(k, v.replace('"','\\"')) for k, v in self.static_info.items()])
+
 topic_template = """    {{
         .feature = "{feature}",
         .path = "{path}",
@@ -157,5 +163,6 @@ util.specialize_template("mqtt_discovery_topics.cpp.template", "mqtt_discovery_t
     })
 
 util.specialize_template("mqtt_discovery_topics.h.template", "mqtt_discovery_topics.h", {
-    "{{{topic_count}}}": str(len(topics))
+    "{{{topic_count}}}": str(len(topics)),
+    "{{{max_json_len}}}": str(max([x.get_json_len() for x in entities]))
     })
