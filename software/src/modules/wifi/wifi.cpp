@@ -175,6 +175,11 @@ void Wifi::apply_soft_ap_config_and_start()
     static uint32_t scan_start_time = 0;
     static int channel_to_use = wifi_ap_config_in_use.get("channel")->asUint();
 
+    // We don't want apply_soft_ap_config_and_start
+    // to be called over and over in the loop
+    // if we are still scanning for a channel.
+    soft_ap_running = true;
+
     if (channel_to_use == 0 && scan_start_time == 0) {
         logger.printfln("Starting scan to select unoccupied channel for soft AP.");
         WiFi.scanDelete();
@@ -260,7 +265,6 @@ void Wifi::apply_soft_ap_config_and_start()
                 wifi_ap_config_in_use.get("hide_ssid")->asBool());
     WiFi.setSleep(false);
 
-    soft_ap_running = true;
     IPAddress myIP = WiFi.softAPIP();
     logger.printfln("    MAC address: %s", WiFi.softAPmacAddress().c_str());
     logger.printfln("    IP address: %s", myIP.toString().c_str());
