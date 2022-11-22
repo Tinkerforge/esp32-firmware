@@ -26,156 +26,15 @@
 #include "modules.h"
 #include "mqtt_auto_discovery.h"
 #include "task_scheduler.h"
+#include "mqtt_discovery_topics.h"
 
 extern API api;
 extern TaskScheduler task_scheduler;
 extern char local_uid_str[32];
 
-#define TOPIC_COUNT (sizeof(mqtt_discovery_topic_infos)/sizeof(mqtt_discovery_topic_infos[0]))
-
-enum class MqttDiscoveryType {
-    STATE_ONLY,
-    STATE_AND_UPDATE,
-    COMMAND_ONLY
-};
-
-struct DiscoveryTopicInfo {
-    const char * const feature;
-    const char * const path;
-    const char * const component;
-    const char * const object_id;
-    const char * const name_de;
-    const char * const name_en;
-    const char * const static_info;
-    const MqttDiscoveryType type;
-};
 
 struct DiscoveryTopic {
     String full_path;
-};
-
-static const struct DiscoveryTopicInfo mqtt_discovery_topic_infos[] = {
-    {
-        .feature = "evse",
-        .path = "evse/state",
-        .component = "binary_sensor",
-        .object_id = "cable",
-        .name_de = "Wallbox Ladekabel verbunden",
-        .name_en = "Wallbox cable connected",
-        .static_info = "\"value_template\":\"{{value_json.charger_state in [1, 2, 3]}}\"," "\"payload_on\":\"True\","   "\"payload_off\":\"False\","    "\"device_class\":\"plug\"",
-        .type = MqttDiscoveryType::STATE_ONLY,
-    },
-    {
-        .feature = "evse",
-        .path = "evse/state",
-        .component = "binary_sensor",
-        .object_id = "ready",
-        .name_de = "Wallbox ladebereit",
-        .name_en = "Wallbox ready to charge",
-        .static_info = "\"value_template\":\"{{value_json.charger_state in [2, 3]}}\","     "\"payload_on\":\"True\","  "\"payload_off\":\"False\","    "\"device_class\":\"power\"",
-        .type = MqttDiscoveryType::STATE_ONLY,
-    },
-    {
-        .feature = "evse",
-        .path = "evse/state",
-        .component = "binary_sensor",
-        .object_id = "charging",
-        .name_de = "Wallbox Ladevorgang",
-        .name_en = "Wallbox charging",
-        .static_info = "\"value_template\":\"{{value_json.charger_state in [3]}}\","        "\"payload_on\":\"True\","  "\"payload_off\":\"False\","    "\"device_class\":\"battery_charging\"",
-        .type = MqttDiscoveryType::STATE_ONLY,
-    },
-    {
-        .feature = "evse",
-        .path = "evse/state",
-        .component = "binary_sensor",
-        .object_id = "error",
-        .name_de = "Wallbox Fehler",
-        .name_en = "Wallbox error",
-        .static_info = "\"value_template\":\"{{value_json.charger_state in [4]}}\","		"\"payload_on\":\"True\","	"\"payload_off\":\"False\","    "\"device_class\":\"problem\"",
-        .type = MqttDiscoveryType::STATE_ONLY,
-    },
-    {
-        .feature = "evse",
-        .path = "evse/low_level_state",
-        .component = "binary_sensor",
-        .object_id = "online",
-        .name_de = "Wallbox verfügbar",
-        .name_en = "Wallbox online",
-        .static_info = "\"value_template\":\"{{value_json.uptime>0}}\","			        "\"payload_on\":\"True\","	"\"payload_off\":\"False\","	"\"device_class\":\"connectivity\","     "\"expire_after\":\"30\"",
-        .type = MqttDiscoveryType::STATE_ONLY,
-    },
-/*    {
-        .feature = "evse",
-        .path = "evse/low_level_state",
-        .component = "sensor",
-        .object_id = "p12vrail",
-        .name_de = "+12V Rail",
-        .name_en = "+12V rail",
-        .static_info = "\"value_template\":\"{{value_json.voltages[5]}}\","                 "\"unit_of_measurement\":\"mV\","   "\"entity_category\":\"diagnostic\","   "\"icon\":\"mdi:speedometer\"",
-        .type = MqttDiscoveryType::STATE_ONLY,
-    },
-*/    {
-        .feature = "meter",
-        .path = "meter/values",
-        .component = "sensor",
-        .object_id = "powernow",
-        .name_de = "Wallbox aktuelle Ladeleistung",
-        .name_en = "Wallbox current charge power",
-        .static_info = "\"value_template\":\"{{value_json.power}}\","                       "\"unit_of_measurement\":\"W\","    "\"device_class\":\"power\","           "\"state_class\":\"measurement\"",
-        .type = MqttDiscoveryType::STATE_ONLY,
-    },
-    {
-        .feature = "meter",
-        .path = "meter/values",
-        .component = "sensor",
-        .object_id = "energyabs",
-        .name_de = "Wallbox Zählerstand absolut",
-        .name_en = "Wallbox meter value (absolute)",
-        .static_info = "\"value_template\":\"{{value_json.energy_abs}}\","                  "\"unit_of_measurement\":\"kWh\","  "\"device_class\":\"energy\","          "\"state_class\":\"total\"",
-        .type = MqttDiscoveryType::STATE_ONLY,
-    },
-    {
-        .feature = "meter",
-        .path = "meter/values",
-        .component = "sensor",
-        .object_id = "energyrel",
-        .name_de = "Wallbox Zählerstand relativ",
-        .name_en = "Wallbox meter value (relative)",
-        .static_info = "\"value_template\":\"{{value_json.energy_rel}}\","                  "\"unit_of_measurement\":\"kWh\","  "\"device_class\":\"energy\","          "\"state_class\":\"total\"",
-        .type = MqttDiscoveryType::STATE_ONLY,
-    },
-    {
-        .feature = "evse",
-        .path = "evse/auto_start_charging",
-        .component = "switch",
-        .object_id = "autocharge",
-        .name_de = "Wallbox automatisches Laden",
-        .name_en = "Wallbox automatic charging",
-        .static_info = "\"value_template\":\"{{value_json.auto_start_charging}}\","     "\"state_on\":\"True\","    "\"state_off\":\"False\","  "\"payload_on\":\"{\\\"auto_start_charging\\\":true}\","    "\"payload_off\":\"{\\\"auto_start_charging\\\":false}\","  "\"icon\":\"mdi:ev-plug-type2\"",
-        .type = MqttDiscoveryType::STATE_AND_UPDATE,
-    },
-    /* Ladestrom? */
-    {
-        .feature = "evse",
-        .path = "evse/start_charging",
-        .component = "button",
-        .object_id = "startcharge",
-        .name_de = "Wallbox Ladevorgang freigeben",
-        .name_en = "Wallbox start charging",
-        .static_info = "\"payload_press\":\"null\","    "\"icon\":\"mdi:flash\"",
-        .type = MqttDiscoveryType::COMMAND_ONLY,
-    },
-    {
-        .feature = "evse",
-        .path = "evse/stop_charging",
-        .component = "button",
-        .object_id = "stopcharge",
-        .name_de = "Wallbox Ladevorgang beenden",
-        .name_en = "Wallbox stop charging",
-        .static_info = "\"payload_press\":\"null\","    "\"icon\":\"mdi:flash-off\"",
-        .type = MqttDiscoveryType::COMMAND_ONLY,
-    }
 };
 
 static struct DiscoveryTopic mqtt_discovery_topics[TOPIC_COUNT];
