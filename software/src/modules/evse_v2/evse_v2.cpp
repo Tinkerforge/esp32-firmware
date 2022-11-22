@@ -722,11 +722,13 @@ void EVSEV2::register_urls()
     }, true);
 
     api.addCommand("evse/stop_charging", Config::Null(), {}, [this](){
-        is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_AUTOSTART_BUTTON, 0));
+        if (state.get("iec61851_state")->asUint() != IEC_STATE_A)
+            is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_AUTOSTART_BUTTON, 0));
     }, true);
 
     api.addCommand("evse/start_charging", Config::Null(), {}, [this](){
-        is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_AUTOSTART_BUTTON, 32000));
+        if (state.get("iec61851_state")->asUint() != IEC_STATE_A)
+            is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_AUTOSTART_BUTTON, 32000));
     }, true);
 
 #if MODULE_WS_AVAILABLE()
