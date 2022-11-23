@@ -10,7 +10,7 @@ import shutil
 from urllib.request import urlretrieve
 from zipfile import ZipFile
 
-VERSION = '1.0.0'
+VERSION = '1.1.0'
 
 print('Updating packages')
 
@@ -70,20 +70,21 @@ for name in sorted(os.listdir('packages')):
     else:
         tinkerforge_json_path = os.path.join('packages', name, 'tinkerforge.json')
 
+        base = config[name]['base']
+        branch = config[name]['branch']
+        commit = config[name]['commit']
+        url = config[name]['url']
+
         try:
             with open(tinkerforge_json_path, 'r') as f:
                 tinkerforge_json = json.loads(f.read())
 
-                if tinkerforge_json.get('version') == VERSION:
+                if tinkerforge_json.get('version') == VERSION and tinkerforge_json.get('commit') == commit:
                     print('Skipping {0}'.format(name))
                     continue
         except FileNotFoundError:
             pass
 
-        base = config[name]['base']
-        branch = config[name]['branch']
-        commit = config[name]['commit']
-        url = config[name]['url']
         zip_path = os.path.join('packages', '{0}.zip'.format(name))
 
         if os.path.exists(zip_path):
@@ -120,7 +121,7 @@ for name in sorted(os.listdir('packages')):
 
             for n in zf.namelist():
                 if not n.startswith(prefix_zip):
-                    print('Error: {0} has malformed entry {1}'.format(name, n))
+                    print('Error: {0} has malformed entry {1}. Expected prefix {2}'.format(name, n, prefix_zip))
                     sys.exit(1)
 
                 with zf.open(n) as f:
@@ -141,6 +142,6 @@ for name in sorted(os.listdir('packages')):
             f.write('*\n!package.json\n')
 
         with open(tinkerforge_json_path, 'w') as f:
-            f.write(json.dumps({'version': VERSION}))
+            f.write(json.dumps({'version': VERSION, 'commit': commit}))
 
         os.remove(zip_path)
