@@ -37,9 +37,9 @@ import { IPConfiguration } from "src/ts/components/ip_configuration";
 import { Slash } from "react-feather";
 import { InputIP } from "src/ts/components/input_ip";
 
-type WireguardConfig = API.getType['wireguard/config'];
+type WireGuardConfig = API.getType['wireguard/config'];
 
-export class Wireguard extends ConfigComponent<'wireguard/config'> {
+export class WireGuard extends ConfigComponent<'wireguard/config'> {
     ipconfig_valid: boolean = true;
     constructor() {
         super('wireguard/config',
@@ -47,7 +47,7 @@ export class Wireguard extends ConfigComponent<'wireguard/config'> {
               __("wireguard.script.reboot_content_changed"));
     }
 
-    render(props: {}, state: Readonly<WireguardConfig>) {
+    render(props: {}, state: Readonly<WireGuardConfig>) {
         if (!state)
             return (<></>);
 
@@ -134,7 +134,7 @@ export class Wireguard extends ConfigComponent<'wireguard/config'> {
     }
 }
 
-render(<Wireguard/>, $('#wireguard')[0])
+render(<WireGuard/>, $('#wireguard')[0])
 
 function update_wireguard_state() {
     let state = API.get("wireguard/state").state;
