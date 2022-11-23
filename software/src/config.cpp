@@ -692,7 +692,6 @@ Config::ConfString& Config::ConfString::operator=(const ConfString &cpy)
     return *this;
 }
 
-#pragma region ConfFloat
 bool Config::ConfFloat::slotEmpty(size_t i) {
     return float_buf[i].val == 0
         && float_buf[i].min == 0
