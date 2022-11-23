@@ -19,6 +19,7 @@
 
 import { Component} from "preact";
 import { ConfigMap } from "../api_defs";
+import { __ } from "../translation";
 import * as API from "../api";
 import * as util from "../util";
 
@@ -54,6 +55,11 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
             if (!this.ignore_updates)
                 this.setState(API.get(t) as Partial<API.getType[Config] & S>);
         });
+
+        util.eventTarget.addEventListener((t + "_modified") as Config, () => {
+            if (!this.ignore_updates)
+                this.setState(API.get(t) as Partial<API.getType[Config] & S>);
+        })
     }
 
     toggle(x: keyof PickByValue<API.getType[Config] & S, boolean>) {
@@ -71,7 +77,21 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
     }
 
     reset = async () => {
-        this.sendReset(this.t);
+        const modal = util.async_modal_ref.current;
+        if (!await modal.show({
+                title: __("reset.reset_modal"),
+                body: this.reboot_string != undefined ? __("reset.reset_modal_body_prefix") + this.reboot_string + __("reset.reset_modal_body_postfix") : __("reset.reset_modal_body"),
+                no_text: __("reset.reset_modal_abort"),
+                yes_text: __("reset.reset_modal_confirm"),
+                no_variant: "secondary",
+                yes_variant: "danger"
+            }))
+            return;
+        await this.sendReset(this.t);
+    }
+
+    isModified = () => {
+        return this.getIsModified(this.t);
     }
 
     set<T extends keyof (API.getType[Config] & S)>(x: T) {
@@ -96,5 +116,9 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
     // Override this to implement custom reset logic
     async sendReset(t: Config) {
         await API.reset(t, this.error_string, this.reboot_string);
+    }
+
+    getIsModified(t: Config): boolean {
+        return API.is_modified(t);
     }
 }

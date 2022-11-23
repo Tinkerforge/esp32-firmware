@@ -19,6 +19,7 @@
 
 #include "../bindings/macros.h"
 #include "../bindings/hal_common.h"
+#include "../bindings/errors.h"
 #include "hmac.h"
 
 static void remove_open_request(TF_Net *net, size_t idx) {
@@ -62,7 +63,7 @@ static int set_tcp_options(int fd, const char **op) {
     return 0;
 }
 
-static int build_server_socket() {
+static int build_server_socket(const sockaddr_in *addr) {
     const char *op = "";
     int one = 1;
 
@@ -72,9 +73,6 @@ static int build_server_socket() {
     if (fd < 0) {
         goto error;
     }
-
-    struct sockaddr_in addr;
-    memset(&addr, 0, sizeof(struct sockaddr_in));
 
     if (set_tcp_options(fd, &op) < 0) {
         goto close_and_error;
@@ -87,11 +85,8 @@ static int build_server_socket() {
     }
 
     op = "bind socket";
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = INADDR_ANY;
-    addr.sin_port = htons(4223);
 
-    if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+    if (bind(fd, (const sockaddr *)addr, sizeof(sockaddr_in)) < 0) {
         goto close_and_error;
     }
 
@@ -282,7 +277,7 @@ static int accept_connections(TF_Net *net) {
 
     if (net->server_fd == -1) {
         if (net->clients_used != max_clients) {
-            net->server_fd = build_server_socket();
+            net->server_fd = build_server_socket(&net->listen_addr);
         }
 
         return 0;
@@ -538,18 +533,22 @@ static void reassemble_packets(TF_Net *net) {
 }
 
 int tf_net_create(TF_Net *net, const char* listen_addr, uint16_t port, const char* auth_secret) {
-    (void)listen_addr;
-    (void)port;
-    (void)auth_secret;
-
     memset(net, 0, sizeof(TF_Net));
-    net->server_fd = build_server_socket();
     net->send_buf_timeout_us = 20000;
     net->recv_timeout_ms = 60000;
     net->auth_secret = auth_secret;
 
+    net->listen_addr.sin_family = AF_INET;
+    net->listen_addr.sin_port = htons(port);
+
+    if(ipaddr_aton(listen_addr, (ip_addr_t *)&net->listen_addr.sin_addr) == 0) {
+        return TF_E_INVALID_ADDRESS;
+    }
+
+    net->server_fd = build_server_socket(&net->listen_addr);
+
     if (auth_secret == nullptr)
-        return 0;
+        return TF_E_OK;
 
     wifi_mode_t _wifi_mode;
     if (esp_wifi_get_mode(&_wifi_mode) == ESP_ERR_WIFI_NOT_INIT) {
@@ -558,7 +557,7 @@ int tf_net_create(TF_Net *net, const char* listen_addr, uint16_t port, const cha
 
     net->next_auth_nonce = esp_random();
 
-    return 0;
+    return TF_E_OK;
 }
 
 int tf_net_destroy(TF_Net *net) {

@@ -110,8 +110,8 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
     //json_buf.clear(); // happens implicitly in deserializeJson
     DeserializationError error = deserializeJson(json_buf, recv_buf, bytes_written);
     if (error) {
-        logger.printfln("Failed to parse command payload: %s", error.c_str());
-        return req.send(400);
+        String message = String("Failed to parse command payload: ") + error.f_str();
+        return req.send(400, "text/html", message.c_str());
     }
     JsonVariant json = json_buf.as<JsonVariant>();
     String message = reg.config->update_from_json(json);

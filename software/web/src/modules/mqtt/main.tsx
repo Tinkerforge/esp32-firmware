@@ -20,6 +20,7 @@
 import $ from "../../ts/jq";
 
 import * as API from "../../ts/api";
+import * as util from "../../ts/util";
 
 import { h, render, Fragment } from "preact";
 import { __ } from "../../ts/translation";
@@ -34,20 +35,34 @@ import { Switch } from "../../ts/components/switch";
 
 type MqttConfig = API.getType['mqtt/config'];
 
-export class Mqtt extends ConfigComponent<'mqtt/config'> {
+interface MqttState {
+    auto_discovery_config: API.getType['mqtt/auto_discovery_config'];
+}
+
+export class Mqtt extends ConfigComponent<'mqtt/config', {}, MqttState> {
     constructor() {
         super('mqtt/config',
               __("mqtt.script.save_failed"),
               __("mqtt.script.reboot_content_changed"));
+
+        util.eventTarget.addEventListener('mqtt/auto_discovery_config', () => {
+            this.setState({auto_discovery_config: API.get('mqtt/auto_discovery_config')});
+        });
     }
 
-    render(props: {}, state: Readonly<MqttConfig>) {
+    override async sendSave(t: "mqtt/config", cfg: API.getType["mqtt/config"]) {
+        if (API.hasModule('mqtt_auto_discovery'))
+            await API.save('mqtt/auto_discovery_config', this.state.auto_discovery_config, __("mqtt.script.save_failed"));
+        await super.sendSave(t, cfg);
+    }
+
+    render(props: {}, state: Readonly<MqttConfig & MqttState>) {
         if (!state)
             return (<></>);
 
         return (
             <>
-                <ConfigForm id="mqtt_config_form" title={__("mqtt.content.mqtt")} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+                <ConfigForm id="mqtt_config_form" title={__("mqtt.content.mqtt")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("mqtt.content.enable_mqtt")}>
                         <Switch desc={__("mqtt.content.enable_mqtt_desc")}
                                 checked={state.enable_mqtt}
@@ -107,6 +122,23 @@ export class Mqtt extends ConfigComponent<'mqtt/config'> {
                                      unit="s"
                                      onValue={this.set("interval")}/>
                     </FormRow>
+
+                    {API.hasModule('mqtt_auto_discovery') ? <>
+                        <FormRow label={__("mqtt.content.enable_auto_discovery")}>
+                            <Switch desc={__("mqtt.content.enable_auto_discovery_desc")}
+                                    checked={state.auto_discovery_config.enable_auto_discovery}
+                                    onClick={() => this.setState({auto_discovery_config: {...this.state.auto_discovery_config, enable_auto_discovery: !state.auto_discovery_config.enable_auto_discovery}})}/>
+                        </FormRow>
+
+                        <FormRow label={__("mqtt.content.auto_discovery_prefix")} label_muted={__("mqtt.content.auto_discovery_prefix_muted")}>
+                            <InputText required
+                                    maxLength={64}
+                                    pattern="^[^#+$][^#+]*"
+                                    value={state.auto_discovery_config.auto_discovery_prefix}
+                                    onValue={(v) => this.setState({auto_discovery_config: {...this.state.auto_discovery_config, auto_discovery_prefix: v}})}
+                                    invalidFeedback={__("mqtt.content.auto_discovery_prefix_invalid")}
+                                    />
+                        </FormRow></> : null}
                 </ConfigForm>
             </>
         );

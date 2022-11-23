@@ -22,12 +22,19 @@ import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 
-import { h, render, Fragment, Component} from "preact";
+import { h, render, Fragment} from "preact";
 import { __ } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
 
 import { FormRow } from "../../ts/components/form_row";
+import { FormSeparator } from "../../ts/components/form_separator";
 import { Table} from "react-bootstrap";
+import { ConfigComponent } from "src/ts/components/config_component";
+import { ConfigForm } from "src/ts/components/config_form";
+import { InputPassword } from "src/ts/components/input_password";
+import { InputNumber } from "src/ts/components/input_number";
+import { InputIP } from "src/ts/components/input_ip";
+import { Slash } from "react-feather";
 
 interface ProxyState {
     devices: Readonly<API.getType['proxy/devices']>;
@@ -35,9 +42,11 @@ interface ProxyState {
 }
 
 
-export class Proxy extends Component<{}, ProxyState> {
+export class Proxy extends ConfigComponent<'proxy/config', {}, ProxyState> {
     constructor() {
-        super();
+        super('proxy/config',
+            __("proxy.script.save_failed"),
+            __("proxy.script.reboot_content_changed"));
 
         util.eventTarget.addEventListener('proxy/devices', () => {
             this.setState({devices: API.get('proxy/devices')});
@@ -49,55 +58,83 @@ export class Proxy extends Component<{}, ProxyState> {
 
     }
 
-    render(props: {}, state: Readonly<ProxyState>) {
+    render(props: {}, state: Readonly<API.getType['proxy/config'] & ProxyState>) {
         if (!state || !state.devices)
             return (<></>);
 
         return (
             <>
-                <PageHeader title={__("proxy.content.proxy")} />
-                <FormRow label={__("proxy.content.bricklet_table")}>
-                    <Table hover borderless>
-                        <thead class="thead-light">
-                            <tr>
-                                <th scope="col">{__("proxy.content.port")}</th>
-                                <th scope="col">{__("proxy.content.UID")}</th>
-                                <th scope="col">{__("proxy.content.device_type")}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {state.devices.length == 0 ? <tr><td colSpan={3}>{__("proxy.script.no_bricklets")}</td></tr>
-                                : state.devices.map(d => <tr>
-                                <td>{d.port}</td>
-                                <td>{d.uid}</td>
-                                <td>{d.name == "unknown device" ? __("proxy.script.unknown_device") : d.name}</td>
-                            </tr>)}
-                        </tbody>
-                    </Table>
-                </FormRow>
+                <ConfigForm id="proxy_config_form" title={__("proxy.content.proxy")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+                    <FormRow label={__("proxy.content.auth_secret")} label_muted={__("proxy.content.auth_secret_muted")}>
+                        <InputPassword maxLength={64}
+                                       value={state.authentication_secret}
+                                       onValue={this.set("authentication_secret")}
+                                       clearPlaceholder={__("proxy.content.auth_disabled")}
+                                       clearSymbol={<Slash/>}
+                                       allowAPIClear
+                                       />
+                    </FormRow>
 
-                <FormRow label={__("proxy.content.error_counters")}>
-                    <Table hover borderless>
-                        <thead class="thead-light">
-                            <tr>
-                                <th scope="col">{__("proxy.content.port")}</th>
-                                <th scope="col">{__("proxy.content.spitfp_checksum")}</th>
-                                <th scope="col">{__("proxy.content.spitfp_frame")}</th>
-                                <th scope="col">{__("proxy.content.tfp_frame")}</th>
-                                <th scope="col">{__("proxy.content.tfp_unexpected")}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {Object.keys(state.error_counters).map(port => <tr>
-                                <td>{port}</td>
-                                <td>{state.error_counters[port].SpiTfpChecksum}</td>
-                                <td>{state.error_counters[port].SpiTfpFrame}</td>
-                                <td>{state.error_counters[port].TfpFrame}</td>
-                                <td>{state.error_counters[port].TfpUnexpected}</td>
-                            </tr>)}
-                        </tbody>
-                    </Table>
-                </FormRow>
+                    <FormRow label={__("proxy.content.listen_address")} label_muted={__("proxy.content.listen_address_muted")}>
+                        <InputIP invalidFeedback={__("component.ip_configuration.static_ip_invalid")}
+                                 required
+                                 value={state.listen_address}
+                                 onValue={this.set("listen_address")}/>
+                    </FormRow>
+
+                    <FormRow label={__("proxy.content.listen_port")} label_muted={__("proxy.content.listen_port_muted")}>
+                        <InputNumber required
+                                     min={1}
+                                     max={65536}
+                                     value={state.listen_port}
+                                     onValue={this.set("listen_port")}/>
+                    </FormRow>
+
+                    <FormSeparator/>
+
+                    <FormRow label={__("proxy.content.bricklet_table")}>
+                        <Table hover borderless>
+                            <thead class="thead-light">
+                                <tr>
+                                    <th scope="col">{__("proxy.content.port")}</th>
+                                    <th scope="col">{__("proxy.content.UID")}</th>
+                                    <th scope="col">{__("proxy.content.device_type")}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {state.devices.length == 0 ? <tr><td colSpan={3}>{__("proxy.script.no_bricklets")}</td></tr>
+                                    : state.devices.map(d => <tr>
+                                    <td>{d.port}</td>
+                                    <td>{d.uid}</td>
+                                    <td>{d.name == "unknown device" ? __("proxy.script.unknown_device") : d.name}</td>
+                                </tr>)}
+                            </tbody>
+                        </Table>
+                    </FormRow>
+
+                    <FormRow label={__("proxy.content.error_counters")}>
+                        <Table hover borderless>
+                            <thead class="thead-light">
+                                <tr>
+                                    <th scope="col">{__("proxy.content.port")}</th>
+                                    <th scope="col">{__("proxy.content.spitfp_checksum")}</th>
+                                    <th scope="col">{__("proxy.content.spitfp_frame")}</th>
+                                    <th scope="col">{__("proxy.content.tfp_frame")}</th>
+                                    <th scope="col">{__("proxy.content.tfp_unexpected")}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {Object.keys(state.error_counters).map(port => <tr>
+                                    <td>{port}</td>
+                                    <td>{state.error_counters[port].SpiTfpChecksum}</td>
+                                    <td>{state.error_counters[port].SpiTfpFrame}</td>
+                                    <td>{state.error_counters[port].TfpFrame}</td>
+                                    <td>{state.error_counters[port].TfpUnexpected}</td>
+                                </tr>)}
+                            </tbody>
+                        </Table>
+                    </FormRow>
+                </ConfigForm>
             </>
         )
     }

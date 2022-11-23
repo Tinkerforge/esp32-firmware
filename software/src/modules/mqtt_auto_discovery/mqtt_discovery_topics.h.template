@@ -1,0 +1,22 @@
+
+#define TOPIC_COUNT {{{topic_count}}}
+#define MAX_JSON_LEN {{{max_json_len}}}
+
+enum class MqttDiscoveryType {
+    STATE_ONLY,
+    STATE_AND_UPDATE,
+    COMMAND_ONLY
+};
+
+struct DiscoveryTopicInfo {
+    const char * const feature;
+    const char * const path;
+    const char * const component;
+    const char * const object_id;
+    const char * const name_de;
+    const char * const name_en;
+    const char * const static_info;
+    const MqttDiscoveryType type;
+};
+
+extern const struct DiscoveryTopicInfo mqtt_discovery_topic_infos[TOPIC_COUNT];

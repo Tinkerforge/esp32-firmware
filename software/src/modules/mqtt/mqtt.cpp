@@ -45,7 +45,7 @@ extern API api;
 void Mqtt::pre_setup()
 {
     // The real UID will be patched in later
-    mqtt_config = Config::Object({
+    mqtt_config = ConfigRoot(Config::Object({
         {"enable_mqtt", Config::Bool(false)},
         {"broker_host", Config::Str("", 0, 128)},
         {"broker_port", Config::Uint16(1883)},
@@ -54,6 +54,15 @@ void Mqtt::pre_setup()
         {"global_topic_prefix", Config::Str(String(BUILD_HOST_PREFIX) + String("/") + String("ABC"), 0, 64)},
         {"client_name", Config::Str(String(BUILD_HOST_PREFIX) + String("-") + String("ABC"), 1, 64)},
         {"interval", Config::Uint32(1)}
+    }), [](Config &cfg) -> String {
+#if MODULE_MQTT_AUTO_DISCOVERY_AVAILABLE()
+        const String global_topic_prefix = cfg.get("global_topic_prefix")->asString();
+        const String auto_discovery_prefix = mqtt_auto_discovery.config.get("auto_discovery_prefix")->asString();
+
+        if (global_topic_prefix == auto_discovery_prefix)
+            return "Global topic prefix cannot be the same as the MQTT auto discovery topic prefix.";
+#endif
+        return "";
     });
 
     mqtt_state = Config::Object({
@@ -181,6 +190,10 @@ void Mqtt::onMqttConnect()
     for (auto &reg : api.states) {
         publish_with_prefix(reg.path, reg.config->to_string_except(reg.keys_to_censor));
     }
+
+#if MODULE_MQTT_AUTO_DISCOVERY_AVAILABLE()
+    mqtt_auto_discovery.onMqttConnect();
+#endif
 }
 
 void Mqtt::onMqttDisconnect()
@@ -191,6 +204,11 @@ void Mqtt::onMqttDisconnect()
 
 void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain)
 {
+#if MODULE_MQTT_AUTO_DISCOVERY_AVAILABLE()
+    if (mqtt_auto_discovery.onMqttMessage(topic, topic_len, data, data_len, retain))
+        return;
+#endif
+
     for (auto &c : commands) {
         if (c.topic.length() != topic_len)
             continue;
@@ -203,7 +221,10 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
         }
 
         c.callback(data, data_len);
+        return;
     }
+
+    logger.printfln("MQTT: Received message on unknown topic '%.*s'. data_len=%i", topic_len, topic, data_len);
 }
 
 static char err_buf[64] = {0};
@@ -340,6 +361,7 @@ void Mqtt::setup()
 
     client = esp_mqtt_client_init(&mqtt_cfg);
     esp_mqtt_client_register_event(client, (esp_mqtt_event_id_t)ESP_EVENT_ANY_ID, mqtt_event_handler, this);
+
 
     initialized = true;
 }

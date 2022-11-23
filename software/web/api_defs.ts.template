@@ -6,6 +6,10 @@ export interface Modules {
 
 export type Features = string[];
 
+export interface ConfigModified {
+    modified: number
+}
+
 export interface ConfigMap {
     {{{config_map_entries}}}
     'info/modules': Modules

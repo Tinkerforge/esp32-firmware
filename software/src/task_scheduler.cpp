@@ -31,8 +31,29 @@ Task::Task(std::function<void(void)> fn, uint32_t first_run_delay_ms, uint32_t d
 
 }
 
+/*
+A Compare type providing a strict weak ordering.
+
+Note that the Compare parameter is defined such that it returns true
+if its first argument comes before its second argument in a weak ordering.
+But because the priority queue outputs largest elements first,
+the elements that "come before" are actually output last.
+That is, the front of the queue contains the "last" element
+according to the weak ordering imposed by Compare.
+(https://en.cppreference.com/w/cpp/container/priority_queue)
+*/
 bool compare(const Task &a, const Task &b)
 {
+    if (millis() > 0x7FFFFFFF) {
+        // We are close to a timer overflow
+        if (a.next_deadline_ms <= 0x7FFFFFFF && b.next_deadline_ms > 0x7FFFFFFF)
+            // b is close to the overflow, a is behind the overflow
+            return true;
+        if (b.next_deadline_ms <= 0x7FFFFFFF && a.next_deadline_ms > 0x7FFFFFFF)
+            // b is behind to the overflow, a is close to the overflow
+            return false;
+    }
+
     return a.next_deadline_ms >= b.next_deadline_ms;
 }
 

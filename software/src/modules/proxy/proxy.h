@@ -37,4 +37,6 @@ private:
     TF_Net net;
     ConfigRoot devices;
     ConfigRoot error_counters;
+    ConfigRoot config;
+    String auth_secret;
 };

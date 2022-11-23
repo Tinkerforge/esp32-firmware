@@ -71,7 +71,8 @@ export class NTP extends ConfigComponent<'ntp/config'> {
                             title={__("ntp.content.ntp")}
                             onSave={this.save}
                             onReset={this.reset}
-                            onDirtyChange={(d) => this.ignore_updates = d}>
+                            onDirtyChange={(d) => this.ignore_updates = d}
+                            isModified={this.isModified()}>
                     <FormRow label={__("ntp.content.enable")}>
                         <Switch desc={__("ntp.content.enable_desc")}
                                 checked={state.enable}

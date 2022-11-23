@@ -3,7 +3,7 @@
         "status": {
             "connection": "WireGuard connection",
             "not_configured": "Deactivated",
-            "waiting_for_timesync": "Waiting for NTP",
+            "waiting_for_timesync": "Waiting for time synchronization",
             "not_connected": "Connecting",
             "connected": "Connected"
         },
@@ -13,21 +13,21 @@
         "content": {
             "wireguard": "WireGuard",
             "enable_wireguard": "WireGuard enabled",
-            "enable_wireguard_desc": "Connection will be established when network time synchronization is available.",
+            "enable_wireguard_desc": "Connection will be established when time synchronization is available.",
             "default_if": "Use as default interface",
             "default_if_desc": "While WireGuard connection is established, all non-local traffic is sent over the VPN.",
-            "internal_ip": "IP in the WireGuard network",
+            "internal_ip": "IP address in the WireGuard network",
             "internal_subnet": "Subnet mask of the WireGuard network",
             "internal_gateway": "Gateway of the WireGuard network",
-            "remote_host": "Peer hostname or IP",
+            "remote_host": "Peer hostname or IP address",
             "port": "Peer port",
             "private_key": "Own private key",
             "remote_public_key": "Peer public key",
             "preshared_key": "Preshared key (optional)",
-            "allowed_ip": "Allowed source IP of received packets",
+            "allowed_ip": "Allowed source IP address of received packets",
             "allowed_ip_invalid": "The IP address must have four groups between 0 and 255 separated with a dot. For example 10.0.0.2",
             "allowed_subnet": "Allowed subnet mask of received packets",
-            "allowed_subnet_invalid": "The subnet mask IP must have four groups between 0 and 255 separated with a dot. For example 255.255.255.0"
+            "allowed_subnet_invalid": "The subnet mask must have four groups between 0 and 255 separated with a dot. For example 255.255.255.0"
         },
         "script": {
             "save_failed": "Failed to save the WireGuard settings",

@@ -50,7 +50,8 @@ export class Network extends ConfigComponent<'network/config'> {
                             title={__("network.content.network")}
                             onSave={this.save}
                             onReset={this.reset}
-                            onDirtyChange={(d) => this.ignore_updates = d}>
+                            onDirtyChange={(d) => this.ignore_updates = d}
+                            isModified={this.isModified()}>
                     <FormRow label={__("network.content.hostname")}>
                         <InputText maxLength={32}
                                    pattern="[a-zA-Z0-9\-]*"
