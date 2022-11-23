@@ -340,12 +340,6 @@ void Mqtt::setup()
 #ifdef DEFAULT_MQTT_BROKER_PASSWORD
         mqtt_config.get("broker_password")->updateString(DEFAULT_MQTT_BROKER_PASSWORD);
 #endif
-#ifdef DEFAULT_MQTT_AUTO_DISCOVERY_ENABLE
-        mqtt_config.get("enable_auto_discovery")->updateString(DEFAULT_MQTT_AUTO_DISCOVERY_ENABLE);
-#endif
-#ifdef DEFAULT_MQTT_AUTO_DISCOVERY_PREFIX
-        mqtt_config.get("auto_discovery_prefix")->updateString(DEFAULT_MQTT_AUTO_DISCOVERY_PREFIX);
-#endif
     }
 
     if (mqtt_config.get("auto_discovery_prefix")->asString().length() == 0) {
