@@ -251,7 +251,6 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
         payload.concat(device_info);
         payload.concat('}');
 
-        logger.printfln("%s", mqtt_discovery_topics[topic_num].full_path.c_str());
         mqtt.publish(mqtt_discovery_topics[topic_num].full_path, payload, true);
 
         if (++topic_num >= TOPIC_COUNT) {
