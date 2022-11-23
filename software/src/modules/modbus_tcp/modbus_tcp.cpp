@@ -26,7 +26,6 @@
 #include "modules.h"
 #include "modbus_tcp.h"
 #include "build.h"
-#include "build_timestamp.h"
 #include "math.h"
 
 extern TaskScheduler task_scheduler;
@@ -629,7 +628,7 @@ void ModbusTcp::update_regs()
     input_regs_copy->firmware_major = fromUint(BUILD_VERSION_MAJOR);
     input_regs_copy->firmware_minor = fromUint(BUILD_VERSION_MINOR);
     input_regs_copy->firmware_patch = fromUint(BUILD_VERSION_PATCH);
-    input_regs_copy->firmware_build_ts = fromUint(BUILD_TIMESTAMP);
+    input_regs_copy->firmware_build_ts = fromUint(build_timestamp());
     input_regs_copy->uptime = fromUint((uint32_t)(esp_timer_get_time() / 1000000));
 
 #if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
@@ -927,7 +926,7 @@ void ModbusTcp::register_urls()
                 input_regs->firmware_major = fromUint(BUILD_VERSION_MAJOR);
                 input_regs->firmware_minor = fromUint(BUILD_VERSION_MINOR);
                 input_regs->firmware_patch = fromUint(BUILD_VERSION_PATCH);
-                input_regs->firmware_build_ts = fromUint(BUILD_TIMESTAMP);
+                input_regs->firmware_build_ts = fromUint(build_timestamp());
 
                 evse_holding_regs->allowed_current = fromUint(allowed_current);
                 evse_holding_regs->enable_charging = fromUint(enable_charging);

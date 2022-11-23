@@ -24,7 +24,6 @@
 #include "bindings/errors.h"
 
 #include "build.h"
-#include "build_timestamp.h"
 #include "config_migrations.h"
 #include "event_log.h"
 #include "task_scheduler.h"
@@ -42,7 +41,7 @@ void API::pre_setup()
     );
 
     version = Config::Object({
-        {"firmware", Config::Str(BUILD_VERSION_FULL_STR)},
+        {"firmware", Config::Str(build_version_full_str())},
         {"config", Config::Str("", 0, 12)},
     });
 }

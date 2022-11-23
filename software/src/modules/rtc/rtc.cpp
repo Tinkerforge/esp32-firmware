@@ -18,7 +18,7 @@
  */
 
 #include "rtc.h"
-#include "build_timestamp.h"
+#include "build.h"
 #include "esp_sntp.h"
 #include "modules.h"
 #include <ctime>
@@ -147,7 +147,7 @@ struct timeval Rtc::get_time()
 
     time.tv_sec += 946684800;
 
-    if (time.tv_sec < BUILD_TIMESTAMP)
+    if (time.tv_sec < build_timestamp())
     {
         struct timeval tmp;
         tmp.tv_sec = 0;

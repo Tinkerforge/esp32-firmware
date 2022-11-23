@@ -28,7 +28,7 @@
 #include <esp_netif.h>
 
 #include "timezone_translation.h"
-#include "build_timestamp.h"
+#include "build.h"
 
 extern TaskScheduler task_scheduler;
 extern API api;
@@ -164,7 +164,7 @@ void NTP::register_urls()
     task_scheduler.scheduleWithFixedDelay([this]() {
         struct timeval time;
         gettimeofday(&time, NULL);
-        if (time.tv_sec - this->last_sync.tv_sec >= NTP_DESYNC_THRESHOLD_S || time.tv_sec < BUILD_TIMESTAMP)
+        if (time.tv_sec - this->last_sync.tv_sec >= NTP_DESYNC_THRESHOLD_S || time.tv_sec < build_timestamp())
             ntp.state.get("synced")->updateBool(false);
     }, 0, 30 * 1000);
 }

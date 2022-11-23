@@ -12,7 +12,7 @@ src/**/*.embedded.cpp
 src/main.cpp
 src/modules.h
 src/build.h
-src/build_timestamp.h
+src/build.cpp
 web/**/*.digest
 web/node_modules/
 web/build/

@@ -13,7 +13,7 @@
 
 #include "modules.h"
 #include "api.h"
-#include "build_timestamp.h"
+#include "build.h"
 extern API api;
 
 void(*recv_cb)(char *, size_t, void *) = nullptr;
@@ -490,7 +490,7 @@ const char *platform_get_charge_point_serial_number() {
     return device_name.name.get("name")->asCStr();
 }
 const char *platform_get_firmware_version() {
-    return BUILD_VERSION_FULL_STR;
+    return build_version_full_str();
 }
 const char *platform_get_iccid() {
     return nullptr;
