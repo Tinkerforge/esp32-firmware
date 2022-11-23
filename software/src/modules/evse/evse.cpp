@@ -555,12 +555,12 @@ void EVSE::register_urls()
     api.addState("evse/indicator_led", &evse_indicator_led, {}, 1000);
 
     api.addCommand("evse/stop_charging", Config::Null(), {}, [this](){
-        if (state.get("iec61851_state")->asUint() != IEC_STATE_A)
+        if (evse_state.get("iec61851_state")->asUint() != IEC_STATE_A)
             is_in_bootloader(tf_evse_set_charging_slot_max_current(&device, CHARGING_SLOT_AUTOSTART_BUTTON, 0));
     }, true);
 
     api.addCommand("evse/start_charging", Config::Null(), {}, [this](){
-        if (state.get("iec61851_state")->asUint() != IEC_STATE_A)
+        if (evse_state.get("iec61851_state")->asUint() != IEC_STATE_A)
             is_in_bootloader(tf_evse_set_charging_slot_max_current(&device, CHARGING_SLOT_AUTOSTART_BUTTON, 32000));
     }, true);
 
