@@ -56,7 +56,7 @@ void Mqtt::pre_setup()
         {"client_name", Config::Str(String(BUILD_HOST_PREFIX) + String("-") + String("ABC"), 1, 64)},
         {"interval", Config::Uint32(1)},
         {"enable_auto_discovery", Config::Bool(false)},
-        {"auto_discovery_prefix", Config::Str("", 0, 64)}
+        {"auto_discovery_prefix", Config::Str("homeassistant", 0, 64)}
     }), [](Config &cfg) -> String {
         const String global_topic_prefix = cfg.get("global_topic_prefix")->asString();
         const String auto_discovery_prefix = cfg.get("auto_discovery_prefix")->asString();
@@ -324,7 +324,6 @@ void Mqtt::setup()
     if (!api.restorePersistentConfig("mqtt/config", &mqtt_config)) {
         mqtt_config.get("global_topic_prefix")->updateString(String(BUILD_HOST_PREFIX) + String("/") + String(local_uid_str));
         mqtt_config.get("client_name")->updateString(String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str));
-        mqtt_config.get("auto_discovery_prefix")->updateString("homeassistant");
 
 #ifdef DEFAULT_MQTT_ENABLE
         mqtt_config.get("enable_mqtt")->updateBool(DEFAULT_MQTT_ENABLE);
