@@ -192,7 +192,8 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                             title={__("wifi.content.sta_settings")}
                             onSave={this.save}
                             onReset={this.reset}
-                            onDirtyChange={(d) => this.ignore_updates = d}>
+                            onDirtyChange={(d) => this.ignore_updates = d}
+                            isModified={this.isModified()}>
                     <FormRow label={__("wifi.content.sta_enable_sta")}>
                         <Switch desc={__("wifi.content.sta_enable_sta_desc")}
                                 checked={state.enable_sta}

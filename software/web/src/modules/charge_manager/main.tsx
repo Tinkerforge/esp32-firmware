@@ -128,6 +128,14 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
         await super.sendReset(t);
     }
 
+    override getIsModified(t: "charge_manager/config"): boolean {
+        let evse_enabled = API.get_maybe("evse/management_enabled");
+        if (evse_enabled != null)
+            if (evse_enabled.enabled)
+                return true;
+        return super.getIsModified(t);
+    }
+
     insertLocalHost() {
         if (this.state.chargers.some(v => v.host == "127.0.0.1"))
             return;
@@ -370,7 +378,7 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
 
         return (
             <>
-                <ConfigForm id="charge_manager_config_form" title={__("charge_manager.content.charge_manager")} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+                <ConfigForm id="charge_manager_config_form" title={__("charge_manager.content.charge_manager")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                     {state.energyManagerMode ? null:
                         charge_manager_mode
                     }

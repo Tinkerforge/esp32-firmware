@@ -392,7 +392,7 @@ String WebServerRequest::header(const char *header_name)
     if (buf_len == 1)
         return String("");
 
-    StringWithSettableLength result;
+    CoolString result;
     result.reserve(buf_len);
     char *buf = result.begin();
     /* Copy null terminated value string into buffer */

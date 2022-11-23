@@ -526,7 +526,7 @@ String CMNetworking::get_scan_results()
 
     size_t payload_size = build_scan_result_json(scan_results, nullptr, 0);
 
-    StringWithSettableLength result;
+    CoolString result;
     result.reserve(payload_size);
 
     build_scan_result_json(scan_results, result.begin(), payload_size);

@@ -62,7 +62,8 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
                             title={__("wifi.content.ap_settings")}
                             onSave={this.save}
                             onReset={this.reset}
-                            onDirtyChange={(d) => this.ignore_updates = d}>
+                            onDirtyChange={(d) => this.ignore_updates = d}
+                            isModified={this.isModified()}>
                     <FormRow label={__("wifi.content.ap_enable")} label_muted={__("wifi.content.ap_enable_muted")}>
                         <InputSelect
                             value={

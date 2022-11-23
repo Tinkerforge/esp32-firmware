@@ -31,8 +31,6 @@
 
 #include "tools.h"
 
-#include "ArduinoJson.h"
-
 struct Task {
     std::function<void(void)> fn;
     uint32_t next_deadline_ms;

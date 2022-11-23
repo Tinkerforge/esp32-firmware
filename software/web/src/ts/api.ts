@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import {ConfigMap, api_cache, Modules} from './api_defs';
+import {ConfigMap, api_cache, Modules, ConfigModified} from './api_defs';
 
 import * as util from './util';
 import $ from "./jq";
@@ -34,6 +34,13 @@ export function update<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T
 
 export function get<T extends keyof ConfigMap>(topic: T): Readonly<ConfigMap[T]> {
     return api_cache[topic];
+}
+
+export function is_modified<T extends keyof ConfigMap>(topic: T): boolean {
+    let modified = api_cache[(topic + "_modified") as T] as ConfigModified;
+    if (modified == null)
+        return false;
+    return modified.modified > 1;
 }
 
 export function get_maybe<T extends string>(topic: T): (T extends keyof ConfigMap ? Readonly<ConfigMap[T]> : any) {
@@ -93,6 +100,10 @@ export async function call<T extends keyof ConfigMap>(topic: T, payload: ConfigM
 
 export function hasFeature(feature: string) {
     return get('info/features').indexOf(feature) >= 0;
+}
+
+export function hasModule(module: string) {
+    return get('info/modules')?.hasOwnProperty(module) && (get('info/modules') as any)[module];
 }
 
 export function default_updater<T extends keyof ConfigMap>(topic: T, exclude?: Array<keyof ConfigMap[T]>, has_save_button=true) {

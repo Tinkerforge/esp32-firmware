@@ -181,8 +181,14 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
     override async sendReset(t: "users/config"){
         let users = this.state.users;
         this.state = {...this.state, users: [users[0]], userSlotEnabled: false, http_auth_enabled: false};
-        console.log(this.state);
+        this.state.users[0].display_name = "";
         this.save();
+    }
+
+    override getIsModified(t: "users/config"): boolean {
+        if (this.state.users.length > 1 || this.state.users[0].display_name != "Anonymous")
+            return true;
+        return false
     }
 
     override render(props: {}, state: UsersConfig & UsersState) {
@@ -212,7 +218,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
 
         return (
             <>
-                <ConfigForm id="users_config_form" title={__("users.content.users")} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+                <ConfigForm id="users_config_form" title={__("users.content.users")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("users.content.enable_authentication")}>
                         <Switch desc={__("users.content.enable_authentication_desc")}
                                 checked={auth_allowed && state.http_auth_enabled}

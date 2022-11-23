@@ -76,6 +76,8 @@
     "reset": {
         "reset_modal": "Reset Config",
         "reset_modal_body": "Really reset the configuration?",
+        "reset_modal_body_prefix": "Really reset ",
+        "reset_modal_body_postfix": " ?",
         "reset_modal_abort": "Abort",
         "reset_modal_confirm": "Reset"
     },

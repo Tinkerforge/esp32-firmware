@@ -26,7 +26,12 @@
             "topic_prefix_invalid": "Der Topic-Präfix darf nicht mit $ beginnen, oder ein # oder + enthalten.",
             "client_name": "Client-ID",
             "interval": "Maximales Sendeintervall",
-            "interval_muted": "Daten werden nur bei Änderung übertragen"
+            "interval_muted": "Daten werden nur bei Änderung übertragen",
+            "enable_auto_discovery": "Auto Discovery aktiviert",
+            "enable_auto_discovery_desc": "Unterstützt automatische Erkennung durch eine Hausautomatisierung.",
+            "auto_discovery_prefix": "Topic-Präfix",
+            "auto_discovery_prefix_muted": "für Auto Discovery",
+            "auto_discovery_prefix_invalid": "Der Topic-Präfix darf nicht mit $ beginnen, oder ein # oder + enthalten, oder leer sein."
         },
         "script": {
             "save_failed": "Speichern der MQTT-Einstellungen fehlgeschlagen.",

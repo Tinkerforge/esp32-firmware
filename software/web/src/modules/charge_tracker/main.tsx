@@ -108,7 +108,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
                     <div class="col-auto">
                         <div class="mb-2"><BatteryCharging/><span class="ml-1" style="vertical-align: middle;">{c.energy_charged === null ? "N/A" : util.toLocaleFixed(c.energy_charged, 3)} kWh</span></div>
                         <div class="mb-2"><Clock/><span class="ml-1" style="vertical-align: middle;">{util.format_timespan(c.charge_duration)}</span></div>
-                        {price > 0 ? price_div : <></>}
+                        {price > 0 && c.energy_charged != null ? price_div : <></>}
                     </div>
                 </div>
             </ListGroupItem>}).reverse();
@@ -120,108 +120,108 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
 
         return (
             <>
-                <ConfigForm id="charge_tracker_config_form" title={__("charge_tracker.content.charge_tracker")} onSave={this.save} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+                <ConfigForm id="charge_tracker_config_form" title={__("charge_tracker.content.charge_tracker")} onSave={this.save} isModified={this.isModified()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("charge_tracker.content.price")}>
                         <InputFloat value={state.electricity_price} onValue={this.set('electricity_price')} digits={2} unit={'ct/kWh'} max={20000} min={0}/>
                     </FormRow>
+                </ConfigForm>
 
-                    <FormSeparator heading={__("charge_tracker.content.download")}/>
+                <FormSeparator heading={__("charge_tracker.content.download")}/>
 
-                    <FormRow label={__("charge_tracker.content.user_filter")} label_muted={__("charge_tracker.content.user_filter_muted")}>
-                        <InputSelect
-                            value={state.user_filter}
-                            onValue={(v) => this.setState({user_filter: v})}
-                            items={state.user_filter_items ?? []}
-                        />
-                    </FormRow>
+                <FormRow label={__("charge_tracker.content.user_filter")} label_muted={__("charge_tracker.content.user_filter_muted")}>
+                    <InputSelect
+                        value={state.user_filter}
+                        onValue={(v) => this.setState({user_filter: v})}
+                        items={state.user_filter_items ?? []}
+                    />
+                </FormRow>
 
-                    <FormRow label={__("charge_tracker.content.date_filter")} label_muted={__("charge_tracker.content.date_filter_muted")}>
-                        <div class="row no-gutters">
-                            <div class="col-md-6">
-                                <div class="input-group">
-                                    <div class="input-group-prepend"><span class="input-group-text">{__("charge_tracker.content.from")}</span></div>
-                                    <InputDate className="charge-tracker-input-group-prepend"
-                                            date={state.start_date}
-                                            onDate={(d: Date) => this.setState({start_date: d})}
-                                        />
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="input-group">
-                                    <div class="input-group-prepend charge-tracker-input-group-append"><span class="input-group-text">{__("charge_tracker.content.to")}</span></div>
-                                    <InputDate className="charge-tracker-input-group-prepend"
-                                            date={state.end_date}
-                                            onDate={(d: Date) => this.setState({end_date: d})}
-                                        />
-                                </div>
+                <FormRow label={__("charge_tracker.content.date_filter")} label_muted={__("charge_tracker.content.date_filter_muted")}>
+                    <div class="row no-gutters">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <div class="input-group-prepend"><span class="input-group-text">{__("charge_tracker.content.from")}</span></div>
+                                <InputDate className="charge-tracker-input-group-prepend"
+                                        date={state.start_date}
+                                        onDate={(d: Date) => this.setState({start_date: d})}
+                                    />
                             </div>
                         </div>
-                    </FormRow>
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <div class="input-group-prepend charge-tracker-input-group-append"><span class="input-group-text">{__("charge_tracker.content.to")}</span></div>
+                                <InputDate className="charge-tracker-input-group-prepend"
+                                        date={state.end_date}
+                                        onDate={(d: Date) => this.setState({end_date: d})}
+                                    />
+                            </div>
+                        </div>
+                    </div>
+                </FormRow>
 
-                    <FormRow label="" label_muted={__("charge_tracker.content.download_desc")}>
-                        <Button variant="primary" className="form-control" onClick={async () => {
-                            this.setState({show_spinner: true});
+                <FormRow label="" label_muted={__("charge_tracker.content.download_desc")}>
+                    <Button variant="primary" className="form-control" onClick={async () => {
+                        this.setState({show_spinner: true});
 
-                            let start = state.start_date ?? new Date(0);
-                            // Start and end dates are "invalid date" if the user clicks the input's clear button.
-                            if (isNaN(start.getTime()))
-                                start = new Date(0);
+                        let start = state.start_date ?? new Date(0);
+                        // Start and end dates are "invalid date" if the user clicks the input's clear button.
+                        if (isNaN(start.getTime()))
+                            start = new Date(0);
 
-                            let end = state.end_date ?? new Date(Date.now());
-                            if (isNaN(end.getTime()))
-                                end = new Date(Date.now());
+                        let end = state.end_date ?? new Date(Date.now());
+                        if (isNaN(end.getTime()))
+                            end = new Date(Date.now());
 
-                            try {
-                                await downloadChargeLog(parseInt(state.user_filter), start ,end, state.electricity_price);
-                            } finally {
-                                this.setState({show_spinner: false});
-                            }
-                        }}>
-                            <span class="mr-2">{__("charge_tracker.content.download_btn")}</span>
-                            <Download/>
-                            <Spinner animation="border" size="sm" as="span" className="ml-2" hidden={!state.show_spinner}/>
-                        </Button>
-                    </FormRow>
+                        try {
+                            await downloadChargeLog(parseInt(state.user_filter), start ,end, state.electricity_price);
+                        } finally {
+                            this.setState({show_spinner: false});
+                        }
+                    }}>
+                        <span class="mr-2">{__("charge_tracker.content.download_btn")}</span>
+                        <Download/>
+                        <Spinner animation="border" size="sm" as="span" className="ml-2" hidden={!state.show_spinner}/>
+                    </Button>
+                </FormRow>
 
-                    <FormSeparator heading={__("charge_tracker.content.tracked_charges")}/>
+                <FormSeparator heading={__("charge_tracker.content.tracked_charges")}/>
 
-                    <FormRow label={__("charge_tracker.content.tracked_charges")} label_muted={__("charge_tracker.content.tracked_charges_muted")}>
-                        <InputText value={state.tracked_charges}/>
-                    </FormRow>
+                <FormRow label={__("charge_tracker.content.tracked_charges")} label_muted={__("charge_tracker.content.tracked_charges_muted")}>
+                    <InputText value={state.tracked_charges}/>
+                </FormRow>
 
-                    <FormRow label={__("charge_tracker.content.first_charge_timestamp")} label_muted={__("charge_tracker.content.first_charge_timestamp_muted")}>
-                        <InputText value={util.timestamp_min_to_date(state.first_charge_timestamp, __("charge_tracker.script.unknown_charge_start"))}/>
-                    </FormRow>
+                <FormRow label={__("charge_tracker.content.first_charge_timestamp")} label_muted={__("charge_tracker.content.first_charge_timestamp_muted")}>
+                    <InputText value={util.timestamp_min_to_date(state.first_charge_timestamp, __("charge_tracker.script.unknown_charge_start"))}/>
+                </FormRow>
 
-                    <FormRow label={__("charge_tracker.content.remove")} label_muted={__("charge_tracker.content.remove_desc")}>
-                        <Button variant="danger" className="form-control" onClick={async () => {
-                            const modal = util.async_modal_ref.current;
-                            if (!await modal.show({
-                                    title: __("charge_tracker.content.remove"),
-                                    body: __("charge_tracker.content.charge_tracker_remove_modal_text"),
-                                    no_text: __("charge_tracker.content.abort_remove"),
-                                    yes_text: __("charge_tracker.content.confirm_remove"),
-                                    no_variant: "secondary",
-                                    yes_variant: "danger"
-                                }))
-                                return;
+                <FormRow label={__("charge_tracker.content.remove")} label_muted={__("charge_tracker.content.remove_desc")}>
+                    <Button variant="danger" className="form-control" onClick={async () => {
+                        const modal = util.async_modal_ref.current;
+                        if (!await modal.show({
+                                title: __("charge_tracker.content.remove"),
+                                body: __("charge_tracker.content.charge_tracker_remove_modal_text"),
+                                no_text: __("charge_tracker.content.abort_remove"),
+                                yes_text: __("charge_tracker.content.confirm_remove"),
+                                no_variant: "secondary",
+                                yes_variant: "danger"
+                            }))
+                            return;
 
-                                await API.call('charge_tracker/remove_all_charges', {
-                                        "do_i_know_what_i_am_doing": true
-                                    }, __("charge_tracker.script.remove_failed"));
+                            await API.call('charge_tracker/remove_all_charges', {
+                                    "do_i_know_what_i_am_doing": true
+                                }, __("charge_tracker.script.remove_failed"));
 
-                                util.postReboot(__("charge_tracker.script.remove_init"), __("util.reboot_text"));
-                        }}>
-                            {__("charge_tracker.content.remove_btn")}
-                        </Button>
-                    </FormRow>
+                            util.postReboot(__("charge_tracker.script.remove_init"), __("util.reboot_text"));
+                    }}>
+                        {__("charge_tracker.content.remove_btn")}
+                    </Button>
+                </FormRow>
 
-                    <FormRow label={__("charge_tracker.content.last_charges")} label_muted={__("charge_tracker.content.last_charges_desc")}>
-                        <ListGroup>
-                            {this.get_last_charges(state.last_charges ?? [], state.electricity_price)}
-                        </ListGroup>
-                    </FormRow>
-                </ConfigForm>
+                <FormRow label={__("charge_tracker.content.last_charges")} label_muted={__("charge_tracker.content.last_charges_desc")}>
+                    <ListGroup>
+                        {this.get_last_charges(state.last_charges ?? [], state.electricity_price)}
+                    </ListGroup>
+                </FormRow>
             </>
         );
     }
@@ -234,13 +234,15 @@ let x = <svg class="feather feather-credit-card" width="24" height="24" fill="no
 function show_charge_cost(charged: number)
 {
     let price = API.get("charge_tracker/config").electricity_price;
-    if (price == 0)
-        return;
+    if (price > 0 && charged != null)
+    {
+        let icon = '<svg class="feather feather-wallet mr-1" width="24" height="24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="6.0999" width="22" height="16" rx="2" ry="2"/><path d="m2.9474 6.0908 15.599-4.8048s0.59352-0.22385 0.57647 0.62527c-0.02215 1.1038-0.01535 3.6833-0.01535 3.6833"/></svg>'
+
+        return `<div>${icon}<span style="vertical-align: middle;">${util.toLocaleFixed(price / 100 * charged / 100, 2)} €</span></div>`;
+    }
+    return "";
 
 
-    let icon = '<svg class="feather feather-wallet mr-1" width="24" height="24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="6.0999" width="22" height="16" rx="2" ry="2"/><path d="m2.9474 6.0908 15.599-4.8048s0.59352-0.22385 0.57647 0.62527c-0.02215 1.1038-0.01535 3.6833-0.01535 3.6833"/></svg>'
-
-    return `<div>${icon}<span style="vertical-align: middle;">${util.toLocaleFixed(price / 100 * charged / 100, 2)} €</span></div>`;
 }
 
 function update_last_charges() {
@@ -373,12 +375,14 @@ async function downloadChargeLog(user_filter: number, start_date: Date, end_date
 
                     let charged = (Number.isNaN(meter_start) || Number.isNaN(meter_end)) ? NaN : (meter_end - meter_start);
                     let charged_string;
-                    let charged_price;
+                    let charged_price = typeof price == 'number' ? charged / 100 * price / 100 : 0;
+                    let charged_price_string;
                     if (Number.isNaN(charged) || charged < 0) {
                         charged_string = 'N/A';
+                        charged_price_string = 'N/A';
                     } else {
                         charged_string = util.toLocaleFixed(charged, 3);
-                        charged_price = typeof price == 'number' ? charged / 100 * price / 100 : 0;
+                        charged_price_string = util.toLocaleFixed(charged_price, 2);
                     }
 
                     let line = [
@@ -390,7 +394,7 @@ async function downloadChargeLog(user_filter: number, start_date: Date, end_date
                         Number.isNaN(meter_start) ? 'N/A' : util.toLocaleFixed(meter_start, 3),
                         Number.isNaN(meter_end) ? 'N/A' : util.toLocaleFixed(meter_end, 3),
                         username,
-                        charged_price > 0 ? util.toLocaleFixed(charged_price, 2) : ""
+                        price > 0 ? charged_price_string : ""
                     ];
 
                     result += to_csv_line(line);
@@ -426,13 +430,24 @@ function update_current_charge() {
 
     time_charging = Math.floor(time_charging / 1000);
 
-    if (filtered[0].display_name == "Anonymous" && cc.user_id == 0)
+    let price = API.get("charge_tracker/config").electricity_price;
+
+    if (filtered.length == 0)
+        $('#users_status_charging_user').html(__("charge_tracker.script.deleted_user"));
+    else if (filtered[0].display_name == "Anonymous" && cc.user_id == 0)
         $('#users_status_charging_user').html(__("charge_tracker.script.unknown_user"));
     else
         $('#users_status_charging_user').html(user_display_name);
     $('#users_status_charging_time').html(util.format_timespan(time_charging));
-    $('#users_status_charged_energy').html(cc.meter_start == null ? "N/A" : util.toLocaleFixed(energy_charged, 3) + " kWh");
+    $('#users_status_charged_energy').html(cc.meter_start == null ? "N/A kWh" : util.toLocaleFixed(energy_charged, 3) + " kWh");
     $('#users_status_charging_start').html(util.timestamp_min_to_date(cc.timestamp_minutes, __("charge_tracker.script.unknown_charge_start")));
+    if (price > 0 && cc.meter_start != null)
+    {
+        $('#current_charge_price').text(util.toLocaleFixed(price / 100 * energy_charged / 100, 2) + " €");
+        $('#current_charge_price_div').prop('hidden', false);
+    }
+    else
+        $('#current_charge_price_div').prop('hidden', true);
 }
 
 export function init() {

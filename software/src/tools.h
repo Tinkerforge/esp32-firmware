@@ -75,12 +75,21 @@ public:
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
-class StringWithSettableLength : public String
+// Arduino String that allows accessing more methods.
+class CoolString : public String
 {
 public:
     void setLength(int len)
     {
         setLen(len);
+    }
+
+    unsigned int getCapacity() {
+        return capacity();
+    }
+
+    void shrinkToFit() {
+        changeBuffer(len());
     }
 };
 

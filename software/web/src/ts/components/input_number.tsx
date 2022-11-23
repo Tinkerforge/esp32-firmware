@@ -18,7 +18,7 @@
  */
 
 import { h, Context } from "preact";
-import {useContext} from "preact/hooks";
+import {useContext, useRef} from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { Button } from "react-bootstrap";
 import { Minus, Plus } from "react-feather";
@@ -33,9 +33,13 @@ interface InputNumberProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElem
 }
 
 export function InputNumber(props: InputNumberProps) {
+
+    const input = useRef<HTMLInputElement>();
+
     return (
         <div class="input-group">
             <input class="form-control no-spin"
+                       ref={input}
                        id={props.idContext ? useContext(props.idContext) : undefined}
                        type="number"
                        disabled={props.onValue === undefined}
@@ -47,14 +51,16 @@ export function InputNumber(props: InputNumberProps) {
                         className="form-control px-1"
                         style="margin-right: .125rem !important;"
                         onClick={() => {
-                            props.onValue(util.clamp(props.min as number, props.value - 1, props.max as number))
+                            props.onValue(util.clamp(props.min as number, props.value - 1, props.max as number));
+                            input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
                         }}>
                     <Minus/>
                 </Button>
                 <Button variant="primary"
                         className="form-control px-1 rounded-right"
                         onClick={() => {
-                            props.onValue(util.clamp(props.min as number, props.value + 1, props.max as number))
+                            props.onValue(util.clamp(props.min as number, props.value + 1, props.max as number));
+                            input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
                         }}>
                     <Plus/>
                 </Button>

@@ -66,13 +66,21 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
         await super.sendReset(t);
     }
 
+    override getIsModified(t: "ocpp/config"): boolean {
+        let evse = API.get_maybe("evse/ocpp_enabled");
+        if (evse != null)
+            if (evse.enabled)
+                return true;
+        return super.getIsModified(t);
+    }
+
     render(props: {}, state: OcppConfig & OcppState) {
         if (!state || !state.state)
             return (<></>);
 
         return (
             <>
-                <ConfigForm id="ocpp_config_form" title={__("ocpp.content.ocpp")} onSave={this.save} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+                <ConfigForm id="ocpp_config_form" title={__("ocpp.content.ocpp")} isModified={this.isModified()} onSave={this.save} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("ocpp.content.enable_ocpp")}>
                         <Switch desc={__("ocpp.content.enable_ocpp_desc")}
                                 checked={state.enable}

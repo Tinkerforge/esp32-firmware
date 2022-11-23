@@ -1,0 +1,5 @@
+#include "mqtt_discovery_topics.h"
+
+const struct DiscoveryTopicInfo mqtt_discovery_topic_infos[TOPIC_COUNT] = {
+{{{topics}}}
+};

@@ -21,6 +21,7 @@ import * as util from "../../ts/util";
 
 import { h, Component, VNode, Fragment, JSX } from "preact";
 import { __ } from "../translation";
+import { is_modified } from "../api";
 
 interface ConfigFormState {
     saveDisabled: boolean
@@ -32,8 +33,9 @@ interface ConfigFormProps {
     children: VNode | VNode[]
     id: string
     title: string
+    isModified: boolean
     onSave: () => Promise<void>
-    onReset?: () => Promise<void>
+    onReset: () => Promise<void>
     onDirtyChange: (dirty: boolean) => void
 }
 
@@ -67,22 +69,10 @@ export class ConfigForm extends Component<ConfigFormProps,ConfigFormState> {
 
     showResetButton = () => {
         if (typeof this.props.onReset == 'function')
-        {
-            return  <button onClick={async () => {
-                                                const modal = util.async_modal_ref.current;
-                                                if (!await modal.show({
-                                                        title: __("reset.reset_modal"),
-                                                        body: __("reset.reset_modal_body"),
-                                                        no_text: __("reset.reset_modal_abort"),
-                                                        yes_text: __("reset.reset_modal_confirm"),
-                                                        no_variant: "secondary",
-                                                        yes_variant: "danger"
-                                                    }))
-                                                    return;
-                                                this.props.onReset();
-                                            }} class="btn btn-danger mb-2">
+        {;
+            return  <button onClick={async () => {await this.props.onReset()}} class="btn btn-danger mb-2 ml-sm-2 col" disabled={!this.props.isModified}>
                         {__("component.config_page_header.reset")}
-                        <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!this.state.showSpinner}></span>
+                        <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!this.state.showSpinner} ></span>
                     </button>
         }
         return <></>
@@ -92,14 +82,16 @@ export class ConfigForm extends Component<ConfigFormProps,ConfigFormState> {
         return (
             <>
                 <div class="row sticky-under-top mb-3 pt-3">
-                    <div class="col-xl-8 d-flex justify-content-between pb-2 border-bottom tab-header-shadow">
-                        <h1 class="h2" dangerouslySetInnerHTML={{__html: props.title}}></h1>
-                        <div>
-                            {this.showResetButton()}
-                            <button type="submit" form={props.id} class="btn btn-primary mb-2 ml-3" disabled={state.saveDisabled}>
-                                {__("component.config_page_header.save")}
-                                <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!state.showSpinner}></span>
-                            </button>
+                    <div class="col-xl-8 pb-2 border-bottom tab-header-shadow">
+                        <div class="row no-gutters">
+                            <h1 class="config-header col-12 col-sm text-center text-sm-left text-nowrap" dangerouslySetInnerHTML={{__html: props.title}}></h1>
+                            <div class="col-12 col-sm row no-gutters">
+                                {this.showResetButton()}
+                                <button type="submit" form={props.id} class="btn btn-primary col mb-2 ml-2 ml-md-3 mr-0" disabled={state.saveDisabled}>
+                                    {__("component.config_page_header.save")}
+                                    <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!state.showSpinner}></span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

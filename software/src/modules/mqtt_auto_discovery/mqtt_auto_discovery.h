@@ -20,50 +20,41 @@
 #pragma once
 
 #include "config.h"
+#include "mqtt_discovery_topics.h"
+#include "tools.h"
 
-#define MAX_CONNECT_ATTEMPT_INTERVAL_MS (5 * 60 * 1000)
-
-enum class WifiState {
-    NOT_CONFIGURED,
-    NOT_CONNECTED,
-    CONNECTING,
-    CONNECTED
-};
-
-class Wifi
+class MqttAutoDiscovery
 {
 public:
-    Wifi(){}
+    MqttAutoDiscovery(){}
+
     void pre_setup();
     void setup();
     void register_urls();
     void loop();
-
     bool initialized = false;
 
-    bool was_connected = false;
+    void onMqttConnect();
+    bool onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain);
 
-    WifiState get_connection_state();
-
+    ConfigRoot config;
+    ConfigRoot config_in_use;
 private:
-    void apply_soft_ap_config_and_start();
-    bool apply_sta_config_and_connect();
+    struct DiscoveryTopic {
+        String full_path;
+    };
 
-    int get_ap_state();
+    struct DiscoveryTopic mqtt_discovery_topics[TOPIC_COUNT];
 
-    void start_scan();
-    void check_for_scan_completion();
-    String get_scan_results();
+    CoolString device_info;
 
-    ConfigRoot wifi_ap_config;
-    ConfigRoot wifi_sta_config;
-    ConfigRoot wifi_state;
+    void announce_next_topic(uint32_t next_topic);
 
-    ConfigRoot wifi_ap_config_in_use;
-    ConfigRoot wifi_sta_config_in_use;
+    void prepare_topics(const ConfigRoot &mqtt_config_in_use);
+    void subscribe_to_own();
+    void check_discovery_topic(const char *topic, size_t topic_len, size_t data_len);
 
-    bool soft_ap_running = false;
-    uint32_t connect_attempt_interval_ms;
-
-    uint32_t last_connected_ms;
+    size_t subscribed_topics_difference_at;
+    char subscribed_topics_difference_commands;
+    char subscribed_topics_difference_discovery;
 };
