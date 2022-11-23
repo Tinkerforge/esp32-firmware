@@ -70,7 +70,7 @@ export class ConfigForm extends Component<ConfigFormProps,ConfigFormState> {
     showResetButton = () => {
         if (typeof this.props.onReset == 'function')
         {;
-            return  <button onClick={async () => {await this.props.onReset()}} class="btn btn-danger mb-2 ml-2 col" disabled={!this.props.isModified}>
+            return  <button onClick={async () => {await this.props.onReset()}} class="btn btn-danger mb-2 ml-sm-2 col" disabled={!this.props.isModified}>
                         {__("component.config_page_header.reset")}
                         <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!this.state.showSpinner} ></span>
                     </button>
@@ -87,7 +87,7 @@ export class ConfigForm extends Component<ConfigFormProps,ConfigFormState> {
                             <h1 class="config-header col-12 col-sm text-center text-sm-left text-nowrap" dangerouslySetInnerHTML={{__html: props.title}}></h1>
                             <div class="col-12 col-sm row no-gutters">
                                 {this.showResetButton()}
-                                <button type="submit" form={props.id} class="btn btn-primary col mb-2 mx-2 ml-md-3 mr-sm-0" disabled={state.saveDisabled}>
+                                <button type="submit" form={props.id} class="btn btn-primary col mb-2 ml-2 ml-md-3 mr-0" disabled={state.saveDisabled}>
                                     {__("component.config_page_header.save")}
                                     <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!state.showSpinner}></span>
                                 </button>
