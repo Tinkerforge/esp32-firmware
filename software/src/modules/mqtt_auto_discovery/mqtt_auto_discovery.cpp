@@ -54,11 +54,6 @@ void MqttAutoDiscovery::setup()
 
     initialized = true;
 
-    if (!config_in_use.get("enable_auto_discovery")->asBool())
-        return;
-
-    mqtt_auto_discovery.prepare_topics(mqtt.mqtt_config_in_use);
-
     const String global_topic_prefix = mqtt.mqtt_config_in_use.get("global_topic_prefix")->asString();
     const String auto_discovery_prefix = config_in_use.get("auto_discovery_prefix")->asString();
     subscribed_topics_difference_at = 0;
@@ -77,6 +72,11 @@ void MqttAutoDiscovery::setup()
     if (subscribed_topics_difference_discovery == '\0')
         subscribed_topics_difference_discovery = '/';
 
+    if (!config_in_use.get("enable_auto_discovery")->asBool())
+        return;
+
+    mqtt_auto_discovery.prepare_topics(mqtt.mqtt_config_in_use);
+
     task_scheduler.scheduleOnce([this](){
         this->announce_next_topic(0);
     }, 1000);
@@ -94,18 +94,12 @@ void MqttAutoDiscovery::loop()
 
 void MqttAutoDiscovery::onMqttConnect()
 {
-    if (!config_in_use.get("enable_auto_discovery")->asBool())
-        return;
-
     // Always subscribe to own discovery topics. Clears all topics when auto discovery is not enabled.
     mqtt_auto_discovery.subscribe_to_own();
 }
 
 bool MqttAutoDiscovery::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain)
 {
-    if (!config_in_use.get("enable_auto_discovery")->asBool())
-        return false;
-
     if (topic_len <= subscribed_topics_difference_at) {
         String tp;
         tp.concat(topic, topic_len);
@@ -171,6 +165,17 @@ void MqttAutoDiscovery::subscribe_to_own()
 
 void MqttAutoDiscovery::check_discovery_topic(const char *topic, size_t topic_len, size_t data_len)
 {
+    // auto discovery is disabled. remove all entities
+    if (!config_in_use.get("enable_auto_discovery")->asBool()) {
+        if (data_len == 0) //already removed
+            return;
+
+        String tp;
+        tp.concat(topic, topic_len);
+        mqtt.publish(tp, String(), true);
+        return;
+    }
+
     for (size_t i = 0; i < TOPIC_COUNT; ++i) {
         if (mqtt_discovery_topics[i].full_path.length() != topic_len)
             continue;
@@ -186,7 +191,7 @@ void MqttAutoDiscovery::check_discovery_topic(const char *topic, size_t topic_le
     tp.concat(topic, topic_len);
 
     // Unknown discovery topic with zero-length data probably caused by us removing it. Catch it to avoid an infinite loop.
-    if (data_len ==  0) {
+    if (data_len == 0) {
         logger.printfln("MQTT auto discovery: Topic '%s' was removed.", tp.c_str());
         return;
     }
