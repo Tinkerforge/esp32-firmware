@@ -19,8 +19,6 @@
 
 #pragma once
 
-#include "ArduinoJson.h"
-
 #include "config.h"
 
 #define MAX_CONNECT_ATTEMPT_INTERVAL_MS (5 * 60 * 1000)

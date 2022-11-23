@@ -33,8 +33,6 @@
 #include "modules.h"
 #include "build.h"
 
-#include "ArduinoJson.h"
-
 #include <algorithm>
 
 extern API api;
