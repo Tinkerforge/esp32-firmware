@@ -18,7 +18,6 @@
  */
 
 #include "mqtt.h"
-#include "mqtt_auto_discovery.h"
 
 #include <Arduino.h>
 
@@ -54,16 +53,15 @@ void Mqtt::pre_setup()
         {"broker_password", Config::Str("", 0, 64)},
         {"global_topic_prefix", Config::Str(String(BUILD_HOST_PREFIX) + String("/") + String("ABC"), 0, 64)},
         {"client_name", Config::Str(String(BUILD_HOST_PREFIX) + String("-") + String("ABC"), 1, 64)},
-        {"interval", Config::Uint32(1)},
-        {"enable_auto_discovery", Config::Bool(false)},
-        {"auto_discovery_prefix", Config::Str("homeassistant", 1, 64)}
+        {"interval", Config::Uint32(1)}
     }), [](Config &cfg) -> String {
+#if MODULE_MQTT_AUTO_DISCOVERY_AVAILABLE()
         const String global_topic_prefix = cfg.get("global_topic_prefix")->asString();
-        const String auto_discovery_prefix = cfg.get("auto_discovery_prefix")->asString();
+        const String auto_discovery_prefix = mqtt_auto_discovery.config.get("auto_discovery_prefix")->asString();
 
         if (global_topic_prefix == auto_discovery_prefix)
-            return "Auto discovery topic prefix cannot be the same as the MQTT API topic prefix.";
-
+            return "Global topic prefix cannot be the same as the MQTT auto discovery topic prefix.";
+#endif
         return "";
     });
 
@@ -193,8 +191,9 @@ void Mqtt::onMqttConnect()
         publish_with_prefix(reg.path, reg.config->to_string_except(reg.keys_to_censor));
     }
 
-    // Always subscribe to own discovery topics. Clears all topics when auto discovery is not enabled.
-    mqtt_auto_discovery.subscribe_to_own();
+#if MODULE_MQTT_AUTO_DISCOVERY_AVAILABLE()
+    mqtt_auto_discovery.onMqttConnect();
+#endif
 }
 
 void Mqtt::onMqttDisconnect()
@@ -205,34 +204,27 @@ void Mqtt::onMqttDisconnect()
 
 void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain)
 {
-    if (topic_len <= subscribed_topics_difference_at) {
-        String tp;
-        tp.concat(topic, topic_len);
-        logger.printfln("MQTT: Received invalid short topic: '%s'", topic);
+#if MODULE_MQTT_AUTO_DISCOVERY_AVAILABLE()
+    if (mqtt_auto_discovery.onMqttMessage(topic, topic_len, data, data_len, retain))
+        return;
+#endif
+
+    for (auto &c : commands) {
+        if (c.topic.length() != topic_len)
+            continue;
+        if (memcmp(c.topic.c_str(), topic, topic_len) != 0)
+            continue;
+
+        if (retain && c.forbid_retained) {
+            logger.printfln("MQTT: Topic %s is an action. Ignoring retained message.", c.topic.c_str());
+            return;
+        }
+
+        c.callback(data, data_len);
         return;
     }
 
-    if (topic[subscribed_topics_difference_at] == subscribed_topics_difference_commands) {
-        for (auto &c : commands) {
-            if (c.topic.length() != topic_len)
-                continue;
-            if (memcmp(c.topic.c_str(), topic, topic_len) != 0)
-                continue;
-
-            if (retain && c.forbid_retained) {
-                logger.printfln("MQTT: Topic %s is an action. Ignoring retained message.", c.topic.c_str());
-                return;
-            }
-
-            c.callback(data, data_len);
-        }
-    } else if (topic[subscribed_topics_difference_at] == subscribed_topics_difference_discovery) {
-        mqtt_auto_discovery.check_discovery_topic(topic, topic_len, data_len);
-    } else {
-        String tp;
-        tp.concat(topic, topic_len);
-        logger.printfln("MQTT: Received unexpected topic '%s'. topic_len=%i data_len=%i", tp.c_str(), topic_len, data_len);
-    }
+    logger.printfln("MQTT: Received message on unknown topic '%.*s'. data_len=%i", topic_len, topic, data_len);
 }
 
 static char err_buf[64] = {0};
@@ -357,27 +349,6 @@ void Mqtt::setup()
 
     mqtt_config_in_use = mqtt_config;
 
-    if (mqtt.mqtt_config_in_use.get("enable_auto_discovery")->asBool())
-        mqtt_auto_discovery.prepare_topics(mqtt_config_in_use);
-
-    const String global_topic_prefix = mqtt_config_in_use.get("global_topic_prefix")->asString();
-    const String auto_discovery_prefix = mqtt_config_in_use.get("auto_discovery_prefix")->asString();
-    subscribed_topics_difference_at = 0;
-
-    // Include zero-termination in comparison, in case global_topic_prefix is entirely a prefix of auto_discovery_prefix.
-    for (size_t i = 0; i < global_topic_prefix.length() + 1; ++i) {
-        if (global_topic_prefix[i] != auto_discovery_prefix[i]) {
-            subscribed_topics_difference_at = i;
-            subscribed_topics_difference_commands = global_topic_prefix[i];
-            subscribed_topics_difference_discovery = auto_discovery_prefix[i];
-            break;
-        }
-    }
-    if (subscribed_topics_difference_commands == '\0')
-        subscribed_topics_difference_commands = '/';
-    if (subscribed_topics_difference_discovery == '\0')
-        subscribed_topics_difference_discovery = '/';
-
     esp_mqtt_client_config_t mqtt_cfg = {};
 
     mqtt_cfg.host = mqtt_config_in_use.get("broker_host")->asCStr();
@@ -391,8 +362,6 @@ void Mqtt::setup()
     client = esp_mqtt_client_init(&mqtt_cfg);
     esp_mqtt_client_register_event(client, (esp_mqtt_event_id_t)ESP_EVENT_ANY_ID, mqtt_event_handler, this);
 
-    if (mqtt.mqtt_config_in_use.get("enable_auto_discovery")->asBool())
-        mqtt_auto_discovery.start_announcing();
 
     initialized = true;
 }

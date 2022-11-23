@@ -7,6 +7,9 @@ export interface config {
     global_topic_prefix: string
     client_name: string,
     interval: number
+}
+
+export interface auto_discovery_config {
     enable_auto_discovery: boolean,
     auto_discovery_prefix: string
 }

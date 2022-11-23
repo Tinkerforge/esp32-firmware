@@ -102,6 +102,10 @@ export function hasFeature(feature: string) {
     return get('info/features').indexOf(feature) >= 0;
 }
 
+export function hasModule(module: string) {
+    return get('info/modules')?.hasOwnProperty(module) && (get('info/modules') as any)[module];
+}
+
 export function default_updater<T extends keyof ConfigMap>(topic: T, exclude?: Array<keyof ConfigMap[T]>, has_save_button=true) {
     let prefix = topic.replace('/', '_');
     let config = get(topic);

@@ -20,19 +20,41 @@
 #pragma once
 
 #include "config.h"
-#include "mqtt.h"
+#include "mqtt_discovery_topics.h"
+#include "tools.h"
 
 class MqttAutoDiscovery
 {
 public:
     MqttAutoDiscovery(){}
+
+    void pre_setup();
+    void setup();
+    void register_urls();
+    void loop();
+    bool initialized = false;
+
+    void onMqttConnect();
+    bool onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain);
+
+    ConfigRoot config;
+    ConfigRoot config_in_use;
+private:
+    struct DiscoveryTopic {
+        String full_path;
+    };
+
+    struct DiscoveryTopic mqtt_discovery_topics[TOPIC_COUNT];
+
+    CoolString device_info;
+
+    void announce_next_topic(uint32_t next_topic);
+
     void prepare_topics(const ConfigRoot &mqtt_config_in_use);
     void subscribe_to_own();
     void check_discovery_topic(const char *topic, size_t topic_len, size_t data_len);
-    void start_announcing();
 
-private:
-    void announce_next_topic(uint32_t next_topic);
+    size_t subscribed_topics_difference_at;
+    char subscribed_topics_difference_commands;
+    char subscribed_topics_difference_discovery;
 };
-
-extern MqttAutoDiscovery mqtt_auto_discovery;

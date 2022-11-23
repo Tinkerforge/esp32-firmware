@@ -26,26 +26,105 @@
 #include "modules.h"
 #include "mqtt_auto_discovery.h"
 #include "task_scheduler.h"
-#include "mqtt_discovery_topics.h"
 
 extern API api;
 extern TaskScheduler task_scheduler;
 extern char local_uid_str[32];
 
+void MqttAutoDiscovery::pre_setup()
+{
+    config = ConfigRoot(Config::Object({
+        {"enable_auto_discovery", Config::Bool(false)},
+        {"auto_discovery_prefix", Config::Str("homeassistant", 1, 64)}
+    }),  [](Config &cfg) -> String {
+        const String global_topic_prefix = mqtt.mqtt_config.get("global_topic_prefix")->asString();
+        const String auto_discovery_prefix = cfg.get("auto_discovery_prefix")->asString();
 
-struct DiscoveryTopic {
-    String full_path;
-};
+        if (global_topic_prefix == auto_discovery_prefix)
+            return "Auto discovery topic prefix cannot be the same as the MQTT API topic prefix.";
 
-static struct DiscoveryTopic mqtt_discovery_topics[TOPIC_COUNT];
-static CoolString device_info;
+        return "";
+    });
+}
 
-MqttAutoDiscovery mqtt_auto_discovery;
+void MqttAutoDiscovery::setup()
+{
+    api.restorePersistentConfig("mqtt/auto_discovery_config", &config);
+    config_in_use = config;
+
+    initialized = true;
+
+    if (!config_in_use.get("enable_auto_discovery")->asBool())
+        return;
+
+    mqtt_auto_discovery.prepare_topics(mqtt.mqtt_config_in_use);
+
+    const String global_topic_prefix = mqtt.mqtt_config_in_use.get("global_topic_prefix")->asString();
+    const String auto_discovery_prefix = config_in_use.get("auto_discovery_prefix")->asString();
+    subscribed_topics_difference_at = 0;
+
+    // Include zero-termination in comparison, in case global_topic_prefix is entirely a prefix of auto_discovery_prefix.
+    for (size_t i = 0; i < global_topic_prefix.length() + 1; ++i) {
+        if (global_topic_prefix[i] != auto_discovery_prefix[i]) {
+            subscribed_topics_difference_at = i;
+            subscribed_topics_difference_commands = global_topic_prefix[i];
+            subscribed_topics_difference_discovery = auto_discovery_prefix[i];
+            break;
+        }
+    }
+    if (subscribed_topics_difference_commands == '\0')
+        subscribed_topics_difference_commands = '/';
+    if (subscribed_topics_difference_discovery == '\0')
+        subscribed_topics_difference_discovery = '/';
+
+    task_scheduler.scheduleOnce([this](){
+        this->announce_next_topic(0);
+    }, 1000);
+}
+
+void MqttAutoDiscovery::register_urls()
+{
+    api.addPersistentConfig("mqtt/auto_discovery_config", &config, {}, 1000);
+}
+
+void MqttAutoDiscovery::loop()
+{
+
+}
+
+void MqttAutoDiscovery::onMqttConnect()
+{
+    if (!config_in_use.get("enable_auto_discovery")->asBool())
+        return;
+
+    // Always subscribe to own discovery topics. Clears all topics when auto discovery is not enabled.
+    mqtt_auto_discovery.subscribe_to_own();
+}
+
+bool MqttAutoDiscovery::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain)
+{
+    if (!config_in_use.get("enable_auto_discovery")->asBool())
+        return false;
+
+    if (topic_len <= subscribed_topics_difference_at) {
+        String tp;
+        tp.concat(topic, topic_len);
+        logger.printfln("MQTT: Received invalid short topic: '%s'", topic);
+        return true;
+    }
+
+    if (topic[subscribed_topics_difference_at] == subscribed_topics_difference_discovery) {
+        mqtt_auto_discovery.check_discovery_topic(topic, topic_len, data_len);
+        return true;
+    }
+
+    return false;
+}
 
 void MqttAutoDiscovery::prepare_topics(const ConfigRoot &mqtt_config_in_use)
 {
-    const String auto_discovery_prefix = mqtt_config_in_use.get("auto_discovery_prefix")->asString();
-    const String client_name = mqtt_config_in_use.get("client_name")->asString();
+    const String auto_discovery_prefix = config_in_use.get("auto_discovery_prefix")->asString();
+    const String client_name = mqtt.mqtt_config_in_use.get("client_name")->asString();
     unsigned int topic_length;
 
     for (size_t i = 0; i < TOPIC_COUNT; ++i) {
@@ -82,7 +161,7 @@ void MqttAutoDiscovery::subscribe_to_own()
     String topic;
     topic.reserve(256); // no need to be efficient here: esp_mqtt_client_subscribe copies this string
 
-    topic.concat(mqtt.mqtt_config_in_use.get("auto_discovery_prefix")->asString());
+    topic.concat(config_in_use.get("auto_discovery_prefix")->asString());
     topic.concat("/+/");
     topic.concat(mqtt.mqtt_config_in_use.get("client_name")->asString());
     topic.concat("/+/config");
@@ -172,6 +251,7 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
         payload.concat(device_info);
         payload.concat('}');
 
+        logger.printfln("%s", mqtt_discovery_topics[topic_num].full_path.c_str());
         mqtt.publish(mqtt_discovery_topics[topic_num].full_path, payload, true);
 
         if (++topic_num >= TOPIC_COUNT) {
@@ -185,9 +265,3 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
     }, delay_ms);
 }
 
-void MqttAutoDiscovery::start_announcing()
-{
-    task_scheduler.scheduleOnce([this](){
-        this->announce_next_topic(0);
-    }, 1000);
-}

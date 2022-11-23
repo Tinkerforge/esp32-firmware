@@ -81,8 +81,4 @@ public:
     std::vector<MqttCommand> commands;
     std::vector<MqttState> states;
     esp_mqtt_client_handle_t client;
-
-    size_t subscribed_topics_difference_at;
-    char subscribed_topics_difference_commands;
-    char subscribed_topics_difference_discovery;
 };
