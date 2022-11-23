@@ -3,7 +3,7 @@
         "status": {
             "connection": "WireGuard-Verbindung",
             "not_configured": "Deaktiviert",
-            "waiting_for_timesync": "Warte auf NTP",
+            "waiting_for_timesync": "Warte auf Zeitsynchronisierung",
             "not_connected": "Verbinde",
             "connected": "Verbunden"
         },
@@ -13,7 +13,7 @@
         "content": {
             "wireguard": "WireGuard",
             "enable_wireguard": "WireGuard aktiviert",
-            "enable_wireguard_desc": "Verbindung wird automatisch aufgebaut, sobald eine Netzwerk-Zeitsynchronisierung besteht.",
+            "enable_wireguard_desc": "Verbindung wird automatisch aufgebaut, sobald eine Zeitsynchronisierung besteht.",
             "default_if": "Als Default-Interface verwenden",
             "default_if_desc": "Bei aktiver WireGuard-Verbindung wird sämtlicher nicht-lokaler Netzwerkverkehr über das VPN geschickt.",
             "internal_ip": "IP-Adresse im WireGuard-Netz",
