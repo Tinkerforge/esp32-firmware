@@ -7,8 +7,8 @@
     },
     {
         "base": "arduino-esp32",
-        "branch": "warp-2.0.7-1",
-        "commit": "5a32cef9d41d229fb071ddb99954134b6e28928b",
+        "branch": "warp-2.0.8",
+        "commit": "f28d3f3005822befe76f8decd052322e41459846",
         "url": "https://github.com/Tinkerforge/arduino-esp32"
     },
     {
