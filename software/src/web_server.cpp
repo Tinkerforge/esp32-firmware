@@ -49,10 +49,8 @@ void WebServer::start()
     config.global_user_ctx = this;
     config.max_open_sockets = 10;
 
-#if MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
     config.enable_so_linger = true;
     config.linger_timeout = 0;
-#endif
 
 #if MODULE_HTTP_AVAILABLE()
     config.uri_match_fn = custom_uri_match;
