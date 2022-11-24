@@ -9,7 +9,7 @@ def line_filter(line):
     return True
 
 def parse_line(line):
-    m = re.search(r"CONFIG_[A-Z0-9_]*", line)
+    m = re.search(r"CONFIG_[A-Za-z0-9_]*", line)
     if m is None:
         print("Failed to parse line '{}'".format(line))
         sys.exit(1)
