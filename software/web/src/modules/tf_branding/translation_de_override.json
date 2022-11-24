@@ -1,9 +1,4 @@
 {
-    "authentication": {
-        "content": {
-            "confirm_content": "Soll die Anmeldung wirklich aktiviert werden? Falls das Passwort vergessen wird, muss der Brick auf den Werkszustand zurückgesetzt werden. <a href=\"{{{manual_url}}}\">Siehe Betriebsanleitung für Details.</a>"
-        }
-    },
     "charge_manager": {
         "status": {
             "charge_manager": "Lastmanager"
