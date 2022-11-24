@@ -332,6 +332,14 @@ de_hyph = [
     "Zugangs-daten",
     "un-be-kann-tes",
     "un-er-war-tet",
+    "Ka-li-brie-rung",
+    "Ka-li-brie-rungs-datei",
+    "Ka-li-brie-rungs-status",
+    "Mo-di-fi-ziert",
+    "Schlüssel-schalter",
+    "Span-nungs-ka-li-brie-rung",
+    "Werks-ein-stel-lungen",
+    "Wider-stands-ka-li-brie-rung",
 ]
 
 en_hyph = [
@@ -431,6 +439,8 @@ en_hyph = [
     "Cre-den-tials",
     "cre-den-tials",
     "Un-ex-pected",
+    "Re-sis-tance",
+    "ca-li-bra-tion"
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
