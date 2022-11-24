@@ -119,36 +119,42 @@ bool API::addPersistentConfig(String path, ConfigRoot *config, std::initializer_
         return false;
     }
 
-    ConfigRoot *modified_conf = new ConfigRoot(Config::Object({{"modified", Config::Uint8(0)}}));
+    // It is okay to leak this: Configs cannot be deregistered.
+    // The [path]_modified config has to live forever
+    ConfigRoot *conf_modified = new ConfigRoot(Config::Object({
+        // 0 - Config not modified since boot, config has default values (i.e. does not exist in flash)
+        // 1 - Config modified since boot,     config has default values (i.e. does not exist in flash)
+        // 2 - Config not modified since boot, config is changed from defaults (i.e. exists in flash)
+        // 3 - Config modified since boot,     config is changed from defaults (i.e. exists in flash)
+        {"modified", Config::Uint8(0)}
+    }));
 
-    String modified_conf_path = path + String("_modified");
+    String conf_modified_path = path + String("_modified");
 
     {
-        auto tmp = modified_conf_path;
+        // If the config is written to flash, we assume that it is not the default configuration.
+        // This does not have to be the case, however then we allow resetting the config once
+        // before reporting that it how has the default values. This is good enough (tm).
+        auto tmp = path;
         tmp.replace('/', '_');
         String filename = String("/config/") + tmp;
 
         if (LittleFS.exists(filename)) {
-            File file = LittleFS.open(filename);
-            modified_conf->update_from_file(file);
-            file.close();
+            conf_modified->get("modified")->updateUint(2);
         }
     }
 
-    addState(modified_conf_path, modified_conf, {}, interval_ms);
+    addState(conf_modified_path, conf_modified, {}, interval_ms);
     addState(path, config, keys_to_censor, interval_ms);
 
-    addCommand(path + String("_update"), config, keys_to_censor, [path, config, modified_conf, modified_conf_path]() {
+    addCommand(path + String("_update"), config, keys_to_censor, [path, config, conf_modified, conf_modified_path]() {
         API::writeConfig(path, config);
-        ConfigRoot tmp = ConfigRoot(Config::Object({{"modified", Config::Uint8(2)}}));
-        API::writeConfig(modified_conf_path, &tmp);
-        modified_conf->get("modified")->updateUint(3);
+        conf_modified->get("modified")->updateUint(3);
     }, false);
 
-    addCommand(path + String("_reset"), Config::Null(), {}, [path, modified_conf, modified_conf_path]() {
+    addCommand(path + String("_reset"), Config::Null(), {}, [path, conf_modified, conf_modified_path]() {
         API::removeConfig(path);
-        API::removeConfig(modified_conf_path);
-        modified_conf->get("modified")->updateUint(1);
+        conf_modified->get("modified")->updateUint(1);
     }, false);
 
     return true;
