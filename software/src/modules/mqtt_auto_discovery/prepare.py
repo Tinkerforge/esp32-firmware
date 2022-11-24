@@ -137,11 +137,13 @@ Entity(Component.SWITCH, Feature.EVSE, "autocharge", "evse/auto_start_charging",
      "icon": "mdi:ev-plug-type2"}),
 
 Entity(Component.BUTTON, Feature.EVSE, "startcharge", "evse/start_charging", "Wallbox Ladevorgang freigeben", "Wallbox start charging",
-    {"payload_press": "null",
+    {"payload_press": "null",   # for Home Assistant
+     "payload_on":"null",       # for Domoticz
      "icon": "mdi:flash"}),
 
 Entity(Component.BUTTON, Feature.EVSE, "stopcharge", "evse/stop_charging", "Wallbox Ladevorgang beenden", "Wallbox stop charging",
-    {"payload_press": "null",
+    {"payload_press": "null",   # for Home Assistant
+     "payload_on":"null",       # for Domoticz
      "icon": "mdi:flash-off"}),
 
 ]
