@@ -31,14 +31,30 @@ for name in sorted(os.listdir('packages')):
         continue
 
     if name not in config:
-        print('Removing {0}'.format(name))
+        package_path = os.path.join('packages', name)
 
-        path = os.path.join('packages', name)
+        if not os.path.isdir(package_path):
+            print('Removing {0}'.format(name))
+            os.remove(package_path)
+        else:
+            package_json_path = os.path.join('packages', name, 'package.json')
 
-        try:
-            shutil.rmtree(path)
-        except NotADirectoryError:
-            os.remove(path)
+            try:
+                with open(os.path.join(package_json_path), 'r') as f:
+                    package_json = f.read()
+            except FileNotFoundError:
+                package_json = None
+
+            shutil.rmtree(package_path)
+
+            if package_json == None:
+                print('Removing {0}'.format(name))
+            else:
+                print('Clearing {0}'.format(name))
+                os.makedirs(package_path)
+
+                with open(package_json_path, 'w') as f:
+                    f.write(package_json)
 
         continue
 
