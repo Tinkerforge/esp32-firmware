@@ -35,7 +35,7 @@ def make_absolute_path(path):
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
 
 def main():
-    with open(make_absolute_path('config.json'), 'r') as f:
+    with open(make_absolute_path(os.path.join('packages', 'config.json')), 'r') as f:
         config_json = json.loads(f.read())
 
     exisiting_package_names = set()
@@ -54,12 +54,12 @@ def main():
         commit = get('Commit:', None)
         package_name = f'{base}#{branch}_{commit}'
 
-        if package_name in config:
+        if package_name in exisiting_package_names:
             print('Error: Package already exists')
             return
 
         url = get(f'Base (default: https://github.com/Tinkerforge/{base}):', f'https://github.com/Tinkerforge/{base}').rstrip('/')
-        package_path = make_absolute_path(package_name)
+        package_path = make_absolute_path(os.path.join('packages', package_name))
         package_json_url = f'{url}/raw/{commit}/package.json'
         package_json_path = os.path.join(package_path, 'package.json')
 
@@ -76,7 +76,7 @@ def main():
             'url': url,
         })
 
-        with open(make_absolute_path('config.json'), 'w') as f:
+        with open(make_absolute_path(os.path.join('packages', 'config.json')), 'w') as f:
             f.write(json.dumps(config_json, indent=4) + '\n')
 
         print(f'Added package {package_name}')
@@ -87,7 +87,7 @@ def main():
 
         config_json.pop(index)
 
-        with open(make_absolute_path('config.json'), 'w') as f:
+        with open(make_absolute_path(os.path.join('packages', 'config.json')), 'w') as f:
             f.write(json.dumps(config_json, indent=4) + '\n')
 
         print(f'Removed package {package_name}')
