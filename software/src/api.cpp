@@ -129,8 +129,6 @@ bool API::addPersistentConfig(String path, ConfigRoot *config, std::initializer_
         {"modified", Config::Uint8(0)}
     }));
 
-    String conf_modified_path = path + String("_modified");
-
     {
         // If the config is written to flash, we assume that it is not the default configuration.
         // This does not have to be the case, however then we allow resetting the config once
@@ -142,17 +140,19 @@ bool API::addPersistentConfig(String path, ConfigRoot *config, std::initializer_
         if (LittleFS.exists(filename)) {
             conf_modified->get("modified")->updateUint(2);
         }
+
+        String conf_modified_path = path + String("_modified");
+        addState(conf_modified_path, conf_modified, {}, interval_ms);
+
+        addState(path, config, keys_to_censor, interval_ms);
     }
 
-    addState(conf_modified_path, conf_modified, {}, interval_ms);
-    addState(path, config, keys_to_censor, interval_ms);
-
-    addCommand(path + String("_update"), config, keys_to_censor, [path, config, conf_modified, conf_modified_path]() {
+    addCommand(path + String("_update"), config, keys_to_censor, [path, config, conf_modified]() {
         API::writeConfig(path, config);
         conf_modified->get("modified")->updateUint(3);
     }, false);
 
-    addCommand(path + String("_reset"), Config::Null(), {}, [path, conf_modified, conf_modified_path]() {
+    addCommand(path + String("_reset"), Config::Null(), {}, [path, conf_modified]() {
         API::removeConfig(path);
         conf_modified->get("modified")->updateUint(1);
     }, false);
