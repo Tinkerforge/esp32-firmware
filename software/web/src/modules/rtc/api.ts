@@ -9,5 +9,5 @@ export interface time {
 }
 
 export interface config {
-    sync_enabled: boolean
+    auto_sync: boolean
 }

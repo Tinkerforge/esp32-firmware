@@ -54,7 +54,7 @@ void Rtc::pre_setup()
     });
 
     config = Config::Object({
-        {"sync_enabled", Config::Bool(true)},
+        {"auto_sync", Config::Bool(true)},
     });
 }
 
