@@ -245,3 +245,7 @@
 - Fix softAP as fallback not starting correctly
 - Fix deserialization errors not being returned via HTTP
 - Fix evse/(start/stop)_charging behaviour if not connected
+
+2022-11-25: 2.0.92 (<unknown>)
+- OCPP Beta 3
+- (Re-enable OCPP and Modbus TCP)
