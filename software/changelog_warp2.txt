@@ -233,7 +233,7 @@
 - Make button and GPIO configuration persistent (through EVSE 2.0 Bricklet firmware 2.1.8)
 - Add EVSE communication watchdog (through EVSE 2.0 Bricklet firmware 2.1.8)
 
-2022-11-25: 2.0.9 (<unknown>)
+2022-11-25: 2.0.9 (9dbdd9f5)
 - (Disable OCPP and Modbus TCP for non-beta firmware)
 - Add config reset API
 - Add reset button to configuration pages
