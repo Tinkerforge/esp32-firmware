@@ -137,11 +137,6 @@ for name in sorted(os.listdir('packages')):
                 with open(path, 'wb') as f:
                     f.write(data)
 
-        print('zip_path {0}'.format(zip_path))
-        print('prefix_fs {0}'.format(prefix_fs))
-        print('prefix_zip {0}'.format(prefix_zip))
-        print('path {0}'.format(path))
-
         with open(os.path.join('packages', name, '.gitignore'), 'w') as f:
             f.write('*\n!package.json\n')
 
