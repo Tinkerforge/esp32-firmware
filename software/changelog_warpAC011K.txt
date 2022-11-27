@@ -5,7 +5,7 @@
 - Try to catch up to official WARP Charger release
   with the same version number
 
-2022-02-27: 1.2.99 (c4accc11)
+2022-02-27: 1.2.91 (c4accc11)
 - Lots of ENplus fixes
   first beta release
 
@@ -31,5 +31,9 @@
 - Step up
 
 2022-11-12: 2.0.7 (<unknown>)
+- Step up
+  alpha version, not ready for production
+
+2022-11-20: 2.0.8 (<unknown>)
 - Step up
   alpha version, not ready for production
