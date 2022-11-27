@@ -604,13 +604,13 @@ void Users::register_urls()
         user_config.get("users")->remove(idx);
         API::writeConfig("users/config", &user_config);
 
-        Config *tags = (Config *)nfc.config.get("authorized_tags");
+        Config *tags = (Config *)anfc.config.get("authorized_tags");
 
         for(int i = 0; i < tags->count(); ++i) {
             if(tags->get(i)->get("user_id")->asUint() == remove.get("id")->asUint())
                 tags->get(i)->get("user_id")->updateUint(0);
         }
-        API::writeConfig("nfc/config", &nfc.config);
+        API::writeConfig("nfc/config", &anfc.config);
 
         if (!charge_tracker.is_user_tracked(remove.get("id")->asUint()))
         {
