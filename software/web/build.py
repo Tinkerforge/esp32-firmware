@@ -5,7 +5,8 @@ import subprocess
 from base64 import b64encode
 
 JS_ANALYZE = False
-JS_SOURCE_MAP = False
+#JS_SOURCE_MAP = False
+JS_SOURCE_MAP = True
 
 CSS_SOURCE_MAP = False
 
