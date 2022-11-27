@@ -57,6 +57,18 @@
 #define DATA_STORE_PAGE_CHARGE_TRACKER 0
 #define DATA_STORE_PAGE_RECOVERY 15
 
+
+#define PRIVCOMM_MAGIC      0
+#define PRIVCOMM_VERSION    1
+#define PRIVCOMM_ADDR       2
+#define PRIVCOMM_CMD        3
+#define PRIVCOMM_SEQ        4
+#define PRIVCOMM_LEN        5
+#define PRIVCOMM_PAYLOAD    6
+#define PRIVCOMM_CRC        7
+
+#define PayloadStart        8
+
 void evse_v2_button_recovery_handler();
 #define TF_ESP_PREINIT evse_v2_button_recovery_handler();
 
@@ -67,12 +79,17 @@ public:
     void setup();
     void register_urls();
     void loop();
+    void myloop();
+    void register_my_urls();
 
     // Called in evse_v2_meter setup
     void update_all_data();
 
     bool evse_found = false;
     bool initialized = false;
+
+    byte sendSequenceNumber = 1;
+    int transactionNumber = 100000;
 
     /* GD Firmware updater */
     bool firmware_update_running = false;
@@ -90,6 +107,7 @@ public:
     /* bool wait_for_bootloader_mode(int mode); */
 
     void setup_evse();
+    void my_setup_evse();
     String get_evse_debug_header();
     String get_evse_debug_line();
     void set_managed_current(uint16_t current);
