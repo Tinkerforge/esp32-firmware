@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+import "preact/debug";
+
 import $ from "jquery";
 
 import "bootstrap";
