@@ -1,6 +1,6 @@
-/* warp-charger
+/* esp32-firmware
  * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
- * Copyright (C)      2021 Birger Schmidt <bs-warp@netgaroo.com>
+ * Copyright (C) 2021-2022 Birger Schmidt <bs-warp@netgaroo.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,11 @@
 //#include "bindings/bricklet_evse.h"
 
 #include "config.h"
+#include "device_module.h"
 #include "web_server.h"
+
+#define CHARGING_SLOT_COUNT 12
+#define CHARGING_SLOT_COUNT_SUPPORTED_BY_EVSE 20
 
 #define CHARGING_SLOT_INCOMING_CABLE 0
 #define CHARGING_SLOT_OUTGOING_CABLE 1
@@ -34,6 +38,9 @@
 #define CHARGING_SLOT_USER 6
 #define CHARGING_SLOT_CHARGE_MANAGER 7
 #define CHARGING_SLOT_EXTERNAL 8
+#define CHARGING_SLOT_MODBUS_TCP 9
+#define CHARGING_SLOT_MODBUS_TCP_ENABLE 10
+#define CHARGING_SLOT_OCPP 11
 
 #define IEC_STATE_A 0
 #define IEC_STATE_B 1
@@ -47,6 +54,12 @@
 #define CHARGER_STATE_CHARGING 3
 #define CHARGER_STATE_ERROR 4
 
+#define DATA_STORE_PAGE_CHARGE_TRACKER 0
+#define DATA_STORE_PAGE_RECOVERY 15
+
+void evse_v2_button_recovery_handler();
+#define TF_ESP_PREINIT evse_v2_button_recovery_handler();
+
 class AC011K {
 public:
     AC011K(){};
@@ -55,30 +68,39 @@ public:
     void register_urls();
     void loop();
 
+    // Called in evse_v2_meter setup
+    void update_all_data();
+
     bool evse_found = false;
     bool initialized = false;
 
     /* GD Firmware updater */
     bool firmware_update_running = false;
 
-    void setup_evse();
-    void update_evse_state();
-    void update_evse_low_level_state();
-    void update_evse_max_charging_current();
-    void update_evse_auto_start_charging();
-    void update_evse_managed();
-    void update_evse_user_calibration();
-    void update_evse_charge_stats();
-    bool is_in_bootloader(int rc);
-    bool flash_firmware();
-    bool flash_plugin(int regular_plugin_upto);
-    bool wait_for_bootloader_mode(int mode);
+    /* void update_evse_state(); */
+    /* void update_evse_low_level_state(); */
+    /* void update_evse_max_charging_current(); */
+    /* void update_evse_auto_start_charging(); */
+    /* void update_evse_managed(); */
+    /* void update_evse_user_calibration(); */
+    /* void update_evse_charge_stats(); */
+    /* bool is_in_bootloader(int rc); */
+    /* bool flash_firmware(); */
+    /* bool flash_plugin(int regular_plugin_upto); */
+    /* bool wait_for_bootloader_mode(int mode); */
 
+    void setup_evse();
     String get_evse_debug_header();
     String get_evse_debug_line();
     void set_managed_current(uint16_t current);
 
     void set_user_current(uint16_t current);
+
+    void set_modbus_current(uint16_t current);
+    void set_modbus_enabled(bool enabled);
+
+    void set_ocpp_current(uint16_t current);
+    uint16_t get_ocpp_current();
 
     bool apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear);
     void apply_defaults();
@@ -108,7 +130,7 @@ public:
     int bs_evse_set_charging_autostart(bool autostart);
     int bs_evse_set_max_charging_current(uint16_t max_current);
     int bs_evse_persist_config();
-    int bs_evse_get_state(uint8_t *ret_iec61851_state, uint8_t *ret_charger_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint8_t *ret_charge_release, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state, uint32_t *ret_time_since_state_change, uint32_t *ret_uptime);
+    int bs_evse_get_state(uint8_t *ret_iec61851_state, uint8_t *ret_charger_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state, uint32_t *ret_time_since_state_change, uint32_t *ret_uptime);
 
     const char* timeStr(byte *data, uint8_t offset);
 
@@ -122,15 +144,23 @@ public:
     ConfigRoot evse_low_level_state;
     ConfigRoot evse_energy_meter_values;
     ConfigRoot evse_energy_meter_errors;
+    ConfigRoot evse_button_state;
     ConfigRoot evse_slots;
-    ConfigRoot evse_stop_charging;
-    ConfigRoot evse_start_charging;
     ConfigRoot evse_max_charging_current;
+    ConfigRoot evse_indicator_led;
+    ConfigRoot evse_control_pilot_connected;
+    ConfigRoot evse_reset_dc_fault_current_state;
+    ConfigRoot evse_gpio_configuration;
+    ConfigRoot evse_gpio_configuration_update;
+    ConfigRoot evse_button_configuration;
+    ConfigRoot evse_button_configuration_update;
+    ConfigRoot evse_control_pilot_configuration;
+    ConfigRoot evse_control_pilot_configuration_update;
     ConfigRoot evse_auto_start_charging;
     ConfigRoot evse_auto_start_charging_update;
     ConfigRoot evse_global_current;
     ConfigRoot evse_global_current_update;
-    ConfigRoot evse_current_limit;
+    /* ConfigRoot evse_current_limit; */
     ConfigRoot evse_management_enabled;
     ConfigRoot evse_management_enabled_update;
     ConfigRoot evse_user_current;
@@ -146,6 +176,10 @@ public:
     ConfigRoot evse_external_current_update;
     ConfigRoot evse_external_clear_on_disconnect;
     ConfigRoot evse_external_clear_on_disconnect_update;
+    ConfigRoot evse_modbus_enabled;
+    ConfigRoot evse_modbus_enabled_update;
+    ConfigRoot evse_ocpp_enabled;
+    ConfigRoot evse_ocpp_enabled_update;
     ConfigRoot evse_managed;
     ConfigRoot evse_managed_update;
     ConfigRoot evse_managed_current;
