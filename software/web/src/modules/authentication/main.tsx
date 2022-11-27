@@ -34,7 +34,6 @@ import { InputText } from "../../ts/components/input_text";
 import { Switch } from "src/ts/components/switch";
 import { InputPassword } from "src/ts/components/input_password";
 import { Slash } from "react-feather";
-import { config } from "./api";
 
 type AuthenticationState = API.getType['authentication/config'] & {password: string};
 
@@ -50,7 +49,7 @@ export class Authentication extends ConfigComponent<'authentication/config', {},
                (this.state.digest_hash == "" && this.state.password !== undefined && this.state.password !== null && this.state.password !== "");
     };
 
-    override transformSave(cfg: config & {password: string}): config {
+    override async transformSave(cfg: AuthenticationState) {
         cfg.digest_hash = (this.state.password != null && this.state.password != "") ? YaMD5.YaMD5.hashStr(cfg.username + ":esp32-lib:" + this.state.password) : this.state.password;
         return cfg;
     }

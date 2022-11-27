@@ -18,7 +18,7 @@
  */
 
 #include "rtc.h"
-#include "build_timestamp.h"
+#include "build.h"
 #include "esp_sntp.h"
 #include "modules.h"
 #include <ctime>
@@ -54,7 +54,7 @@ void Rtc::pre_setup()
     });
 
     config = Config::Object({
-        {"sync_enabled", Config::Bool(true)},
+        {"auto_sync", Config::Bool(true)},
     });
 }
 
@@ -147,7 +147,7 @@ struct timeval Rtc::get_time()
 
     time.tv_sec += 946684800;
 
-    if (time.tv_sec < BUILD_TIMESTAMP)
+    if (time.tv_sec < build_timestamp())
     {
         struct timeval tmp;
         tmp.tv_sec = 0;

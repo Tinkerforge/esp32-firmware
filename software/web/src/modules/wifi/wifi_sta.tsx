@@ -70,7 +70,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
         }, false);
     }
 
-    override isSaveAllowed(cfg: STAConfig) {
+    override async isSaveAllowed(cfg: STAConfig) {
         return this.ipconfig_valid;
     }
 

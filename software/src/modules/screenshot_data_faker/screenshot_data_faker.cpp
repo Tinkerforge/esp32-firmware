@@ -19,7 +19,7 @@
 
 #include "screenshot_data_faker.h"
 #include "modules.h"
-#include "build_timestamp.h"
+#include "build.h"
 
 struct ChargeStart {
     uint32_t timestamp_minutes = 0;
@@ -64,7 +64,7 @@ void ScreenshotDataFaker::setup()
         LittleFS.mkdir("/charge-records");
         File file = LittleFS.open("/charge-records/charge-record-1.bin", "w");
         ChargeStart cs;
-        cs.timestamp_minutes = (BUILD_TIMESTAMP / 60) - 1540;
+        cs.timestamp_minutes = (build_timestamp() / 60) - 1540;
         cs.meter_start = 0;
         cs.user_id = 1;
 
@@ -80,7 +80,7 @@ void ScreenshotDataFaker::setup()
         memcpy(buf2, &ce, sizeof(ce));
         file.write(buf2, sizeof(ce));
 
-        cs.timestamp_minutes = (BUILD_TIMESTAMP / 60) - 272;
+        cs.timestamp_minutes = (build_timestamp() / 60) - 272;
         cs.meter_start = ce.meter_end;
         cs.user_id = 2;
 

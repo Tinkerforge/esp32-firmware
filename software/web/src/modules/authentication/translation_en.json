@@ -12,13 +12,7 @@
             "enable_authentication_desc": "The configured credentials must be entered to open the web interface or use the HTTP API",
             "enable_authentication_invalid": "To enable the login a configured password is required.",
             "username": "Username",
-            "password": "Password",
-            "username_invalid": "An empty username is not allowed.",
-            "password_invalid": "An empty password is not allowed.",
-            "confirm_title": "Enable authentication?",
-            "confirm_content": null,
-            "confirm_abort": "Abort",
-            "confirm_confirm": "Enable"
+            "password": "Password"
         },
         "script": {
             "save_failed": "Failed to save the credentials.",

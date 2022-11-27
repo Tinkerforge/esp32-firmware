@@ -19,6 +19,7 @@ de_hyph = [
     'Anzeige-name',
     'Anzeige-namens',
     'anzu-wenden',
+    'Arbeits-preis',
     'auf-ge-nommen',
     'auf-gezeich-net',
     'Auf-ge-zeichnete',
@@ -29,9 +30,11 @@ de_hyph = [
     'aus-geführt',
     'aus-gelesen',
     'aus-ge-wählten',
+    'auto-ma-tion',
     'Auto-ma-tisch',
     'auto-matisch',
     'auto-matische',
+    "Auto-matische",
     'bei-lie-genden',
     'be-inhalten',
     'be-inhaltet',
@@ -115,6 +118,7 @@ de_hyph = [
     'ge-schlos-sen',
     'ge-änder-ten',
     'Gleich-strom-fehler',
+    'Haus-auto-mati-sierung',
     'Her-stel-lung',
     'Herunter-laden',
     'her-unter-laden',
@@ -152,6 +156,7 @@ de_hyph = [
     'Lade-freigabe',
     'Lade-kabels',
     'Lade-kontrolle',
+    'Lade-kosten',
     'Lade-leistung',
     'Lade-problemen',
     'Lade-proto-koll',
@@ -218,6 +223,7 @@ de_hyph = [
     'Strom-grenze',
     'Strom-grenzen',
     'Strom-kon-figura-tion',
+    'Strom-preis',
     'Strom-verbrauch',
     'Strom-verbrauchs-wert',
     'Strom-verbrauchs-werts',
@@ -242,6 +248,7 @@ de_hyph = [
     'Unter-brechung',
     'unter-brochen',
     'unter-stützt',
+    'Unter-stützt',
     'un-ver-ändert',
     'Ver-bin-dung',
     'Ver-bindungs-einstel-lungen',
@@ -290,7 +297,6 @@ de_hyph = [
     "erfolg-reiche",
     "über-tragen",
     "An-ge-schlos-sen",
-    "Automatische",
     "Au-to-ri-siere",
     "Au-to-ri-sierung",
     "Fertig-stellen",
@@ -326,6 +332,14 @@ de_hyph = [
     "Zugangs-daten",
     "un-be-kann-tes",
     "un-er-war-tet",
+    "Ka-li-brie-rung",
+    "Ka-li-brie-rungs-datei",
+    "Ka-li-brie-rungs-status",
+    "Mo-di-fi-ziert",
+    "Schlüssel-schalter",
+    "Span-nungs-ka-li-brie-rung",
+    "Werks-ein-stel-lungen",
+    "Wider-stands-ka-li-brie-rung",
 ]
 
 en_hyph = [
@@ -425,6 +439,8 @@ en_hyph = [
     "Cre-den-tials",
     "cre-den-tials",
     "Un-ex-pected",
+    "Re-sis-tance",
+    "ca-li-bra-tion"
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]

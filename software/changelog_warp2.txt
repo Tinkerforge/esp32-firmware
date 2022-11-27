@@ -232,3 +232,17 @@
 - Fix losing current limits when reenabling already enabled slot
 - Make button and GPIO configuration persistent (through EVSE 2.0 Bricklet firmware 2.1.8)
 - Add EVSE communication watchdog (through EVSE 2.0 Bricklet firmware 2.1.8)
+
+2022-11-25: 2.0.9 (<unknown>)
+- (Disable OCPP and Modbus TCP for non-beta firmware)
+- Add config reset API
+- Add reset button to configuration pages
+- Improve translations
+- Add electricity price configuration; show cost of charge in web interface and charge log
+- Show cost of charge in web interface and charge log
+- Fix firmware hanging after 2^32 ms (~ 49 days 17 hours)
+- Web interface: Allow saving if only a +/- button was clicked
+- Fix softAP as fallback not starting correctly
+- Fix deserialization errors not being returned via HTTP
+- Fix evse/(start/stop)_charging behaviour if not connected
+- Add meter/type_override

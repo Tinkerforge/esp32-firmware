@@ -13,13 +13,7 @@
             "enable_authentication_invalid": "Damit die Anmeldung aktiviert sein kann, muss zunächst ein Passwort konfiguriert werden.",
 
             "username": "Benutzername",
-            "password": "Passwort",
-            "username_invalid": "Der Benutzername darf nicht leer sein.",
-            "password_invalid": "Das Passwort darf nicht leer sein.",
-            "confirm_title": "Anmeldung aktivieren?",
-            "confirm_content": null,
-            "confirm_abort": "Abbrechen",
-            "confirm_confirm": "Aktivieren"
+            "password": "Passwort"
         },
         "script": {
             "save_failed": "Speichern der Zugangsdaten fehlgeschlagen.",

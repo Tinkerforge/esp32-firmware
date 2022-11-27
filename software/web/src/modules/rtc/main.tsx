@@ -53,7 +53,7 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
             if (!this.state.state)
             {
                 window.setTimeout(() => {
-                    if (API.get("rtc/config").sync_enabled && !API.get("ntp/state").synced)
+                    if (API.get("rtc/config").auto_sync && !API.get("ntp/state").synced)
                         this.set_current_time();
                 }, 1000);
             }
@@ -105,8 +105,8 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
                                 onDirtyChange={(d) => this.ignore_updates = d}
                                 isModified={this.isModified()}>
                         <FormRow label={__("rtc.content.enable_auto_sync")}>
-                            <Switch desc={__("rtc.content.auto_sync_desc")} checked={state.sync_enabled} onClick={() => {
-                                    this.setState({"sync_enabled": !state.sync_enabled})
+                            <Switch desc={__("rtc.content.auto_sync_desc")} checked={state.auto_sync} onClick={() => {
+                                    this.setState({"auto_sync": !state.auto_sync})
                             }}/>
                         </FormRow>
                         <FormRow label={__("rtc.content.live_date")}>
@@ -118,7 +118,7 @@ export class Rtc extends ConfigComponent<'rtc/config', {}, RtcPageState> {
                                                         this.add_leading_zero(state.state.second) + ".000Z")}
                                             onClick={() => this.set_current_time()}
                                             buttonText={__("rtc.content.set_time")}
-                                            disabled={this.state.sync_enabled}/>
+                                            disabled={this.state.auto_sync}/>
                         </FormRow>
                     </ConfigForm>
                 </>
