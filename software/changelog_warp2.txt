@@ -250,6 +250,6 @@
 - OCPP Beta 3
 - (Re-enable OCPP and Modbus TCP)
 
-2022-11-28: 2.0.10 (<unknown>)
+2022-11-28: 2.0.10 (7b54347e)
 - (Disable OCPP and Modbus TCP for non-beta firmware)
 - Fix hidden_proxy used in provisioning
