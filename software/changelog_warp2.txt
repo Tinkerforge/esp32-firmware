@@ -246,6 +246,10 @@
 - Fix deserialization errors not being returned via HTTP
 - Fix evse/(start/stop)_charging behaviour if not connected
 
-2022-11-25: 2.0.92 (<unknown>)
+2022-11-25: 2.0.92 (a5bdcf66)
 - OCPP Beta 3
 - (Re-enable OCPP and Modbus TCP)
+
+2022-11-28: 2.0.10 (<unknown>)
+- (Disable OCPP and Modbus TCP for non-beta firmware)
+- Fix hidden_proxy used in provisioning
