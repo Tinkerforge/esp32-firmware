@@ -59,7 +59,9 @@ class Entity:
         return max(len(self.name_de), len(self.name_en)) + len(self.object_id) + len(self.path) + len(self.get_static_info_str())
 
     def get_static_info_str(self):
-        return ",".join(['\\"{}\\":\\"{}\\"'.format(k, v.replace('"','\\"')) for k, v in self.static_info.items()])
+        # static info is not a json object, but only more key value pairs, so remove the {}.
+        # also this is a string literal, so escape inner ".
+        return json.dumps(self.static_info).strip().lstrip("{").rstrip("}").replace('"', '\\"')
 
 topic_template = """    {{
         .feature = "{feature}",
@@ -155,7 +157,7 @@ topics = [topic_template.format(
             object_id=x.object_id,
             name_de=x.name_de,
             name_en=x.name_en,
-            static_info=",".join(['\\"{}\\":\\"{}\\"'.format(k, v.replace('"','\\"')) for k, v in x.static_info.items()]),
+            static_info=x.get_static_info_str(),
             discovery_type=x.component.get_discovery_type().value,
             )
           for x in entities]
