@@ -34,7 +34,7 @@ extern char local_uid_str[32];
 void MqttAutoDiscovery::pre_setup()
 {
     config = ConfigRoot(Config::Object({
-        {"enable_auto_discovery", Config::Bool(false)},
+        {"auto_discovery_mode", Config::Int32(-1)},
         {"auto_discovery_prefix", Config::Str("homeassistant", 1, 64)}
     }),  [](Config &cfg) -> String {
         const String global_topic_prefix = mqtt.mqtt_config.get("global_topic_prefix")->asString();
@@ -50,8 +50,14 @@ void MqttAutoDiscovery::pre_setup()
 void MqttAutoDiscovery::setup()
 {
     api.restorePersistentConfig("mqtt/auto_discovery_config", &config);
-    config_in_use = config;
 
+    int32_t mode = config.get("auto_discovery_mode")->asInt();
+    if ((mode < MQTT_AUTO_DISCOVERY_MODE_MIN) || (MQTT_AUTO_DISCOVERY_MODE_MAX < mode)) {
+        mode = static_cast<int32_t>(MqttAutoDiscoveryMode::DISCOVERY_DISABLED);
+        config.get("auto_discovery_mode")->updateInt(mode);
+    }
+
+    config_in_use = config;
     initialized = true;
 
     const String global_topic_prefix = mqtt.mqtt_config_in_use.get("global_topic_prefix")->asString();
@@ -72,10 +78,10 @@ void MqttAutoDiscovery::setup()
     if (subscribed_topics_difference_discovery == '\0')
         subscribed_topics_difference_discovery = '/';
 
-    if (!config_in_use.get("enable_auto_discovery")->asBool())
+    if (mode == static_cast<int32_t>(MqttAutoDiscoveryMode::DISCOVERY_DISABLED))
         return;
 
-    mqtt_auto_discovery.prepare_topics(mqtt.mqtt_config_in_use);
+    mqtt_auto_discovery.prepare_topics();
 
     task_scheduler.scheduleOnce([this](){
         this->announce_next_topic(0);
@@ -115,13 +121,21 @@ bool MqttAutoDiscovery::onMqttMessage(char *topic, size_t topic_len, char *data,
     return false;
 }
 
-void MqttAutoDiscovery::prepare_topics(const ConfigRoot &mqtt_config_in_use)
+void MqttAutoDiscovery::prepare_topics()
 {
     const String auto_discovery_prefix = config_in_use.get("auto_discovery_prefix")->asString();
     const String client_name = mqtt.mqtt_config_in_use.get("client_name")->asString();
+    const int32_t mode = config_in_use.get("auto_discovery_mode")->asInt();
     unsigned int topic_length;
 
+    if (mode == static_cast<int32_t>(MqttAutoDiscoveryMode::DISCOVERY_DISABLED))
+        return;
+
     for (size_t i = 0; i < TOPIC_COUNT; ++i) {
+        const char *static_info = mqtt_discovery_topic_infos[i].static_infos[mode];
+        if (!static_info) // No static info? Skip topic.
+            continue;
+
         // <discovery_prefix>/<component>/<node_id>/<object_id>/config
         topic_length = auto_discovery_prefix.length() + strlen(mqtt_discovery_topic_infos[i].component)
             + client_name.length() + strlen(mqtt_discovery_topic_infos[i].object_id) + 10; // "config" + 4*'/' = 10
@@ -166,12 +180,11 @@ void MqttAutoDiscovery::subscribe_to_own()
 void MqttAutoDiscovery::check_discovery_topic(const char *topic, size_t topic_len, size_t data_len)
 {
     // auto discovery is disabled. remove all entities
-    if (!config_in_use.get("enable_auto_discovery")->asBool()) {
+    if (config_in_use.get("auto_discovery_mode")->asInt() == static_cast<int32_t>(MqttAutoDiscoveryMode::DISCOVERY_DISABLED)) {
         if (data_len == 0) //already removed
             return;
 
-        String tp;
-        tp.concat(topic, topic_len);
+        String tp(topic, topic_len);
         mqtt.publish(tp, String(), true);
         return;
     }
@@ -186,15 +199,12 @@ void MqttAutoDiscovery::check_discovery_topic(const char *topic, size_t topic_le
         }
     }
 
-    // topic is not null-terminated and needs to be copied to terminate properly.
-    String tp;
-    tp.concat(topic, topic_len);
-
     // Unknown discovery topic with zero-length data probably caused by us removing it. Catch it to avoid an infinite loop.
-    if (data_len == 0) {
-        logger.printfln("MQTT auto discovery: Topic '%s' was removed.", tp.c_str());
+    if (data_len == 0)
         return;
-    }
+
+    // topic is not null-terminated and needs to be copied to terminate properly.
+    String tp(topic, topic_len);
 
     // Unknown discovery topic with data; needs to be removed by sending a retained empty payload.
     logger.printfln("MQTT auto discovery: Removing unused topic '%s'.", tp.c_str());
@@ -211,52 +221,55 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
     } else {
         // deal with one topic
         if (api.hasFeature(mqtt_discovery_topic_infos[topic_num].feature)) {
-            const String topic_prefix = mqtt.mqtt_config_in_use.get("global_topic_prefix")->asString();
-            const char *name = mqtt_discovery_topic_infos[topic_num].name_de;
+            const char *static_info = mqtt_discovery_topic_infos[topic_num].static_infos[config_in_use.get("auto_discovery_mode")->asInt()];
+            if (static_info) { // No static info? Skip topic.
+                const String topic_prefix = mqtt.mqtt_config_in_use.get("global_topic_prefix")->asString();
+                const char *name = mqtt_discovery_topic_infos[topic_num].name_de;
 
-            String payload;
-            // MAX_JSON_LEN: max length generated by prepare.py
-            // 100: String literals
-            // 3*64: topic_prefix (twice) and client name
-            // 250: device_info
-            payload.reserve(MAX_JSON_LEN + 100 + 64 + 64 + 64 + 250);
+                String payload;
+                // MAX_JSON_LEN: max length generated by prepare.py
+                // 100: String literals
+                // 3*64: topic_prefix (twice) and client name
+                // 250: device_info
+                payload.reserve(MAX_JSON_LEN + 100 + 64 + 64 + 64 + 250);
 
-            payload.concat("{\"name\":\"");
-            payload.concat(name);
-            payload.concat("\",\"unique_id\":\"");
-            payload.concat(mqtt.mqtt_config_in_use.get("client_name")->asString());
-            payload.concat('-');
-            payload.concat(mqtt_discovery_topic_infos[topic_num].object_id);
-            payload.concat("\",");
-            switch (mqtt_discovery_topic_infos[topic_num].type) {
-                case MqttDiscoveryType::STATE_AND_UPDATE:
-                    payload.concat("\"command_topic\":\"");
-                    payload.concat(topic_prefix);
-                    payload.concat('/');
-                    payload.concat(mqtt_discovery_topic_infos[topic_num].path);
-                    payload.concat("_update\",");
-                    /* FALLTHROUGH */
-                case MqttDiscoveryType::STATE_ONLY:
-                    payload.concat("\"state_topic\":\"");
-                    payload.concat(topic_prefix);
-                    payload.concat('/');
-                    payload.concat(mqtt_discovery_topic_infos[topic_num].path);
-                    payload.concat("\",");
-                    break;
-                case MqttDiscoveryType::COMMAND_ONLY:
-                    payload.concat("\"command_topic\":\"");
-                    payload.concat(topic_prefix);
-                    payload.concat('/');
-                    payload.concat(mqtt_discovery_topic_infos[topic_num].path);
-                    payload.concat("\",");
-                    break;
+                payload.concat("{\"name\":\"");
+                payload.concat(name);
+                payload.concat("\",\"unique_id\":\"");
+                payload.concat(mqtt.mqtt_config_in_use.get("client_name")->asString());
+                payload.concat('-');
+                payload.concat(mqtt_discovery_topic_infos[topic_num].object_id);
+                payload.concat("\",");
+                switch (mqtt_discovery_topic_infos[topic_num].type) {
+                    case MqttDiscoveryType::STATE_AND_UPDATE:
+                        payload.concat("\"command_topic\":\"");
+                        payload.concat(topic_prefix);
+                        payload.concat('/');
+                        payload.concat(mqtt_discovery_topic_infos[topic_num].path);
+                        payload.concat("_update\",");
+                        /* FALLTHROUGH */
+                    case MqttDiscoveryType::STATE_ONLY:
+                        payload.concat("\"state_topic\":\"");
+                        payload.concat(topic_prefix);
+                        payload.concat('/');
+                        payload.concat(mqtt_discovery_topic_infos[topic_num].path);
+                        payload.concat("\",");
+                        break;
+                    case MqttDiscoveryType::COMMAND_ONLY:
+                        payload.concat("\"command_topic\":\"");
+                        payload.concat(topic_prefix);
+                        payload.concat('/');
+                        payload.concat(mqtt_discovery_topic_infos[topic_num].path);
+                        payload.concat("\",");
+                        break;
+                }
+                payload.concat(static_info);
+                payload.concat(',');
+                payload.concat(device_info);
+                payload.concat('}');
+
+                mqtt.publish(mqtt_discovery_topics[topic_num].full_path, payload, true);
             }
-            payload.concat(mqtt_discovery_topic_infos[topic_num].static_info);
-            payload.concat(',');
-            payload.concat(device_info);
-            payload.concat('}');
-
-            mqtt.publish(mqtt_discovery_topics[topic_num].full_path, payload, true);
         }
 
         if (++topic_num >= TOPIC_COUNT) {
