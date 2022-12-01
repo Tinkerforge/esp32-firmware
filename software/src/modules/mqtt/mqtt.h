@@ -54,10 +54,10 @@ public:
     void loop();
     void connect();
 
-    void publish_with_prefix(String path, String payload);
-    void subscribe_with_prefix(String path, std::function<void(char *, size_t)> callback, bool forbid_retained);
-    void publish(String topic, String payload, bool retain);
-    void subscribe(String topic, std::function<void(char *, size_t)> callback, bool forbid_retained);
+    void publish_with_prefix(const String &path, const String &payload);
+    void subscribe_with_prefix(const String &path, std::function<void(char *, size_t)> callback, bool forbid_retained);
+    void publish(const String &topic, const String &payload, bool retain);
+    void subscribe(const String &topic, std::function<void(char *, size_t)> callback, bool forbid_retained);
 
     // IAPIBackend implementation
     void addCommand(size_t commandIdx, const CommandRegistration &reg) override;
