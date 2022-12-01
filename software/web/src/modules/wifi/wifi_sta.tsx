@@ -74,6 +74,12 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
         return this.ipconfig_valid;
     }
 
+    override async transformSave(cfg: STAConfig) {
+        cfg.dns = cfg.dns == "" ? "0.0.0.0" : cfg.dns;
+        cfg.dns2 = cfg.dns2 == "" ? "0.0.0.0" : cfg.dns;
+        return cfg;
+    }
+
     toggleDropdown = async (isOpen: boolean, event: Event, metadata: {source: 'select' | 'click' | 'rootClose' | 'keydown'}) => {
         if (!isOpen)
             return;
