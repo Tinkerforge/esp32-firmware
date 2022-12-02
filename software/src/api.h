@@ -71,7 +71,7 @@ public:
     void setup();
     void loop();
 
-    String callCommand(const String &path, Config::ConfUpdate payload);
+    String callCommand(const String &path, const Config::ConfUpdate &payload);
 
     Config *getState(const String &path, bool log_if_not_found = true);
 

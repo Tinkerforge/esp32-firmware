@@ -395,7 +395,7 @@ struct from_json {
         if (!json_node.is<JsonObject>())
             return "JSON node was not an object.";
 
-        JsonObject obj = json_node.as<JsonObject>();
+        const JsonObject obj = json_node.as<JsonObject>();
 
         if (force_same_keys && obj.size() != x.getVal()->size())
             return String("JSON object had ") + obj.size() + " entries instead of the expected " + x.getVal()->size();
@@ -412,7 +412,7 @@ struct from_json {
         return String("");
     }
 
-    JsonVariant json_node;
+    const JsonVariant json_node;
     bool force_same_keys;
     bool permit_null_updates;
     bool is_root;
@@ -489,7 +489,7 @@ struct from_update {
         if (update->get<Config::ConfUpdateArray>() == nullptr)
             return "ConfUpdate node was not an array.";
 
-        Config::ConfUpdateArray *arr = update->get<Config::ConfUpdateArray>();
+        const Config::ConfUpdateArray *arr = update->get<Config::ConfUpdateArray>();
 
         // C++17 adds https://en.cppreference.com/w/cpp/utility/as_const
         // until then we have to use this to make sure the const version of getSlot() is called.
@@ -515,7 +515,7 @@ struct from_update {
             return "ConfUpdate node was not an object.";
         }
 
-        Config::ConfUpdateObject *obj = update->get<Config::ConfUpdateObject>();
+        const Config::ConfUpdateObject *obj = update->get<Config::ConfUpdateObject>();
 
         if (obj->elements.size() != x.getVal()->size())
             return String("ConfUpdate object had ") + obj->elements.size() + " entries instead of the expected " + x.getVal()->size();
@@ -539,7 +539,7 @@ struct from_update {
         return String("");
     }
 
-    Config::ConfUpdate *update;
+    const Config::ConfUpdate *update;
 };
 
 struct is_updated {
@@ -654,7 +654,7 @@ const String* Config::ConfString::getVal() const { return &string_buf[idx].val; 
 const Config::ConfString::Slot* Config::ConfString::getSlot() const { return &string_buf[idx]; }
 Config::ConfString::Slot* Config::ConfString::getSlot() { return &string_buf[idx]; }
 
-Config::ConfString::ConfString(String val, uint16_t minChars, uint16_t maxChars)
+Config::ConfString::ConfString(const String &val, uint16_t minChars, uint16_t maxChars)
 {
     idx = nextSlot<Config::ConfString>(string_buf, string_buf_size);
     this->getSlot()->inUse = true;
@@ -895,7 +895,7 @@ bool Config::ConfObject::slotEmpty(size_t i) {
     return !object_buf[i].inUse;
 }
 
-Config *Config::ConfObject::get(String s)
+Config *Config::ConfObject::get(const String &s)
 {
     for (size_t i = 0; i < this->getVal()->size(); ++i) {
         if (this->getVal()->at(i).first == s)
@@ -907,7 +907,7 @@ Config *Config::ConfObject::get(String s)
     return nullptr;
 }
 
-const Config *Config::ConfObject::get(String s) const
+const Config *Config::ConfObject::get(const String &s) const
 {
     for (size_t i = 0; i < this->getVal()->size(); ++i) {
         if (this->getVal()->at(i).first == s)
@@ -961,7 +961,7 @@ Config::ConfObject& Config::ConfObject::operator=(const ConfObject &cpy) {
     return *this;
 }
 
-Config Config::Str(String s, uint16_t minChars, uint16_t maxChars)
+Config Config::Str(const String &s, uint16_t minChars, uint16_t maxChars)
 {
     if (!config_constructors_allowed)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
@@ -1055,7 +1055,7 @@ Config Config::Int32(int32_t i)
     return Config::Int(i, std::numeric_limits<int32_t>::lowest(), std::numeric_limits<int32_t>::max());
 }
 
-Config::Wrap Config::get(String s)
+Config::Wrap Config::get(const String &s)
 {
 
     if (!this->is<Config::ConfObject>()) {
@@ -1081,7 +1081,7 @@ Config::Wrap Config::get(String s)
     return wrap;
 }
 
-const Config::ConstWrap Config::get(String s) const
+const Config::ConstWrap Config::get(const String &s) const
 {
     if (!this->is<Config::ConfObject>()) {
         logger.printfln("Config key %s not in this node: is not an object!", s.c_str());
@@ -1186,7 +1186,7 @@ size_t Config::max_string_length() const
     return Config::apply_visitor(string_length_visitor{}, value);
 }
 
-void Config::save_to_file(File file)
+void Config::save_to_file(File &file)
 {
     DynamicJsonDocument doc(json_size(false));
 
@@ -1224,7 +1224,7 @@ String Config::to_string() const
     return this->to_string_except({});
 }
 
-String Config::to_string_except(std::initializer_list<String> keys_to_censor) const
+String Config::to_string_except(const std::initializer_list<String> &keys_to_censor) const
 {
     DynamicJsonDocument doc(json_size(false));
 
@@ -1262,7 +1262,7 @@ String Config::to_string_except(const std::vector<String> &keys_to_censor) const
     return result;
 }
 
-void Config::write_to_stream_except(Print &output, std::initializer_list<String> keys_to_censor)
+void Config::write_to_stream_except(Print &output, const std::initializer_list<String> &keys_to_censor)
 {
     DynamicJsonDocument doc(json_size(false));
 
@@ -1307,7 +1307,7 @@ void Config::set_update_handled(uint8_t api_backend_flag)
     Config::apply_visitor(set_updated_false{api_backend_flag}, value);
 }
 
-String ConfigRoot::update_from_file(File file)
+String ConfigRoot::update_from_file(File &file)
 {
     DynamicJsonDocument doc(this->json_size(false));
     DeserializationError error = deserializeJson(doc, file);
@@ -1317,7 +1317,7 @@ String ConfigRoot::update_from_file(File file)
     return this->update_from_json(doc.as<JsonVariant>());
 }
 
-String ConfigRoot::update_from_cstr(char *c, size_t len)
+String ConfigRoot::update_from_cstr(const char *c, size_t len)
 {
     DynamicJsonDocument doc(this->json_size(true));
     DeserializationError error = deserializeJson(doc, c, len);
@@ -1329,7 +1329,7 @@ String ConfigRoot::update_from_cstr(char *c, size_t len)
     return this->update_from_json(doc.as<JsonVariant>());
 }
 
-String ConfigRoot::update_from_string(String s)
+String ConfigRoot::update_from_string(const String &s)
 {
     DynamicJsonDocument doc(this->json_size(false));
     DeserializationError error = deserializeJson(doc, s);
@@ -1341,7 +1341,7 @@ String ConfigRoot::update_from_string(String s)
     return this->update_from_json(doc.as<JsonVariant>());
 }
 
-String ConfigRoot::update_from_json(JsonVariant root)
+String ConfigRoot::update_from_json(const JsonVariant &root)
 {
     Config copy = *this;
     String err = Config::apply_visitor(from_json{root, !this->permit_null_updates, this->permit_null_updates, true}, copy.value);
@@ -1366,7 +1366,7 @@ String ConfigRoot::update_from_json(JsonVariant root)
     return err;
 }
 
-String ConfigRoot::update(Config::ConfUpdate *val)
+String ConfigRoot::update(const Config::ConfUpdate *val)
 {
     Config copy = *this;
     String err = Config::apply_visitor(from_update{val}, copy.value);

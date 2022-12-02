@@ -349,7 +349,7 @@ void API::loop()
 {
 }
 
-String API::callCommand(const String &path, Config::ConfUpdate payload)
+String API::callCommand(const String &path, const Config::ConfUpdate &payload)
 {
     for (CommandRegistration &reg : commands) {
         if (reg.path != path) {
