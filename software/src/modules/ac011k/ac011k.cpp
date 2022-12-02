@@ -62,7 +62,6 @@ void AC011K::pre_setup()
         {"lock_state", Config::Uint8(0)},
         {"time_since_state_change", Config::Uint32(0)},
         {"last_state_change", Config::Uint32(0)},
-        {"uptime", Config::Uint32(0)}
     });
 
     evse_hardware_configuration = Config::Object({
@@ -583,7 +582,7 @@ void AC011K::register_urls()
             evse_state.get("iec61851_state")->asUint(),
             evse_state.get("charger_state")->asUint(),
             evse_state.get("error_state")->asUint(),
-            evse_state.get("uptime")->asUint(),
+            evse_low_level_state.get("uptime")->asUint(),
             evse_low_level_state.get("charging_time")->asUint(),
             evse_slots.get(CHARGING_SLOT_CHARGE_MANAGER)->get("max_current")->asUint(),
             supported_current,
@@ -847,10 +846,55 @@ void AC011K::update_all_data()
 {
     if(!initialized)
         return;
-    uint8_t iec61851_state, charger_state, contactor_state, contactor_error, error_state, lock_state;
-    uint16_t last_allowed_charging_current = evse_state.get("allowed_charging_current")->asUint();
+
+    // get_all_data_1 - 51 byte
+    uint8_t iec61851_state;
+    uint8_t charger_state;
+    uint8_t contactor_state;
+    uint8_t contactor_error;
     uint16_t allowed_charging_current;
-    uint32_t time_since_state_change, uptime;
+    uint16_t last_allowed_charging_current = evse_state.get("allowed_charging_current")->asUint();
+    uint8_t error_state;
+    uint8_t lock_state;
+    uint8_t dc_fault_current_state;
+    uint8_t jumper_configuration;
+    bool has_lock_switch;
+    uint8_t evse_version;
+    uint8_t energy_meter_type;
+    float power;
+    float energy_relative;
+    float energy_absolute;
+    bool phases_active[3];
+    bool phases_connected[3];
+    uint32_t error_count[6];
+
+    // get_all_data_2 - 19 byte
+    uint8_t shutdown_input_configuration;
+    uint8_t input_configuration;
+    uint8_t output_configuration;
+    int16_t indication;
+    uint16_t duration;
+    uint8_t button_configuration;
+    uint32_t button_press_time;
+    uint32_t button_release_time;
+    bool button_pressed;
+    uint8_t control_pilot;
+    bool control_pilot_connected;
+
+    // get_low_level_state - 57 byte
+    uint8_t led_state;
+    uint16_t cp_pwm_duty_cycle;
+    uint16_t adc_values[7];
+    int16_t voltages[7];
+    uint32_t resistances[2];
+    bool gpio[24];
+    uint32_t charging_time;
+    uint32_t time_since_state_change;
+    uint32_t uptime;
+
+    // get_all_charging_slots - 60 byte
+    uint16_t max_current[20];
+    uint8_t active_and_clear_on_disconnect[20];
 
     int rc = bs_evse_get_state(
         &iec61851_state,
@@ -863,66 +907,189 @@ void AC011K::update_all_data()
         &time_since_state_change,
         &uptime);
 
-    firmware_update_allowed = charger_state == 0;
-
     evse_state.get("iec61851_state")->updateUint(iec61851_state);
     evse_state.get("charger_state")->updateUint(charger_state);
 //logger.printfln("EVSE: charger_state %d", charger_state);
     evse_state.get("contactor_state")->updateUint(contactor_state);
     bool contactor_error_changed = evse_state.get("contactor_error")->updateUint(contactor_error);
+    // TODO: implement current changes during charging (if possible)
     if(last_allowed_charging_current != allowed_charging_current) {
         evse_state.get("allowed_charging_current")->updateUint(allowed_charging_current);
         logger.printfln("EVSE: allowed_charging_current %d", allowed_charging_current);
         //bs_evse_set_max_charging_current(allowed_charging_current);  // Uwe: not needed here since requested by GD during start charging sequence
         logger.printfln("---->   bs_evse_set_max_charging_current function call dropped!");
     }
-    bool error_state_changed = evse_state.get("error_state")->updateUint(error_state);
-    evse_state.get("lock_state")->updateUint(lock_state);
-    //evse_state.get("time_since_state_change")->updateUint(time_since_state_change);
-    evse_state.get("uptime")->updateUint(uptime);
-
-/* void AC011K::update_evse_low_level_state()  */
 
     bool low_level_mode_enabled;
-    uint8_t led_state;
-    uint16_t cp_pwm_duty_cycle;
 
-    uint16_t adc_values[2];
-    int16_t voltages[3];
-    uint32_t resistances[2];
-    bool gpio[5];
+    low_level_mode_enabled = true;
+    led_state = 1;
+    /* cp_pwm_duty_cycle = 100; */
+    /* adc_values[0] = 200; */
+    /* adc_values[1] = 201; */
+    /* voltages[0] = 300; */
+    /* voltages[1] = 301; */
+    /* voltages[2] = 302; */
+    /* resistances[0] = 400; */
+    /* resistances[1] = 401; */
+    /* gpio[0] = false; */
+    /* gpio[1] = false; */
+    /* gpio[2] = false; */
+    /* gpio[3] = false; */
+    /* gpio[4] = false; */
 
-        low_level_mode_enabled = true;
-        led_state = 1;
-        cp_pwm_duty_cycle = 100;
-        adc_values[0] = 200;
-        adc_values[1] = 201;
-        voltages[0] = 300;
-        voltages[1] = 301;
-        voltages[2] = 302;
-        resistances[0] = 400;
-        resistances[1] = 401;
-        gpio[0] = false;
-        gpio[1] = false;
-        gpio[2] = false;
-        gpio[3] = false;
-        gpio[4] = false;
+    uint16_t external_default_current;
+    bool external_default_enabled;
+    bool external_default_clear_on_disconnect;
 
-    //evse_low_level_state.get("low_level_mode_enabled")->updateBool(low_level_mode_enabled);
+
+    // We don't allow firmware updates when a vehicle is connected,
+    // to be sure a potential EVSE firmware update does not interrupt a
+    // charge and/or does strange stuff with the vehicle while updating.
+    // However if we are in an error state, either after the EVSE update
+    // the error is still there (this is fine for us) or it is cleared,
+    // then the EVSE could potentially start to charge, which is okay,
+    // as the ESP firmware is already running, so we can for example
+    // track the charge.
+    firmware_update_allowed = charger_state == 0 || charger_state == 4;
+
+    // get_state
+
+    /* We just can not get all the data and therefore ignore it and stick to our own fake default values. */
+    /*
+    evse_state.get("iec61851_state")->updateUint(iec61851_state);
+    evse_state.get("charger_state")->updateUint(charger_state);
+    evse_state.get("contactor_state")->updateUint(contactor_state);
+    bool contactor_error_changed = evse_state.get("contactor_error")->updateUint(contactor_error);
+    evse_state.get("allowed_charging_current")->updateUint(allowed_charging_current);
+    bool error_state_changed = evse_state.get("error_state")->updateUint(error_state);
+    evse_state.get("lock_state")->updateUint(lock_state);
+    bool dc_fault_current_state_changed = evse_state.get("dc_fault_current_state")->updateUint(dc_fault_current_state);
+
+    if (contactor_error_changed) {
+        if (contactor_error != 0) {
+            logger.printfln("EVSE: Contactor error %d", contactor_error);
+        } else {
+            logger.printfln("EVSE: Contactor error cleared");
+        }
+    }
+
+    if (error_state_changed) {
+        if (error_state != 0) {
+            logger.printfln("EVSE: Error state %d", error_state);
+        } else {
+            logger.printfln("EVSE: Error state cleared");
+        }
+    }
+
+    if (dc_fault_current_state_changed) {
+        if (dc_fault_current_state != 0) {
+            logger.printfln("EVSE: DC Fault current state %d", dc_fault_current_state);
+        } else {
+            logger.printfln("EVSE: DC Fault current state cleared");
+        }
+    }
+
+    // get_hardware_configuration
+    evse_hardware_configuration.get("jumper_configuration")->updateUint(jumper_configuration);
+    evse_hardware_configuration.get("has_lock_switch")->updateBool(has_lock_switch);
+    evse_hardware_configuration.get("evse_version")->updateUint(evse_version);
+    evse_hardware_configuration.get("energy_meter_type")->updateUint(energy_meter_type);
+
+    // get_low_level_state
     evse_low_level_state.get("led_state")->updateUint(led_state);
     evse_low_level_state.get("cp_pwm_duty_cycle")->updateUint(cp_pwm_duty_cycle);
 
-    for(int i = 0; i < sizeof(adc_values)/sizeof(adc_values[0]); ++i)
+    for (int i = 0; i < sizeof(adc_values) / sizeof(adc_values[0]); ++i)
         evse_low_level_state.get("adc_values")->get(i)->updateUint(adc_values[i]);
 
-    for(int i = 0; i < sizeof(voltages)/sizeof(voltages[0]); ++i)
+    for (int i = 0; i < sizeof(voltages) / sizeof(voltages[0]); ++i)
         evse_low_level_state.get("voltages")->get(i)->updateInt(voltages[i]);
 
-    for(int i = 0; i < sizeof(resistances)/sizeof(resistances[0]); ++i)
+    for (int i = 0; i < sizeof(resistances) / sizeof(resistances[0]); ++i)
         evse_low_level_state.get("resistances")->get(i)->updateUint(resistances[i]);
 
-    for(int i = 0; i < sizeof(gpio)/sizeof(gpio[0]); ++i)
+    for (int i = 0; i < sizeof(gpio) / sizeof(gpio[0]); ++i)
         evse_low_level_state.get("gpio")->get(i)->updateBool(gpio[i]);
+    */
+
+    evse_low_level_state.get("charging_time")->updateUint(charging_time);
+    evse_low_level_state.get("time_since_state_change")->updateUint(time_since_state_change);
+    //evse_state.get("time_since_state_change")->updateUint(time_since_state_change);
+    evse_low_level_state.get("uptime")->updateUint(uptime);
+
+    /*
+    for (int i = 0; i < CHARGING_SLOT_COUNT; ++i) {
+        evse_slots.get(i)->get("max_current")->updateUint(max_current[i]);
+        evse_slots.get(i)->get("active")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[i]));
+        evse_slots.get(i)->get("clear_on_disconnect")->updateBool(SLOT_CLEAR_ON_DISCONNECT(active_and_clear_on_disconnect[i]));
+    }
+    */
+
+    evse_auto_start_charging.get("auto_start_charging")->updateBool(
+        !evse_slots.get(CHARGING_SLOT_AUTOSTART_BUTTON)->get("clear_on_disconnect")->asBool());
+
+    /*
+    // get_energy_meter_values
+    evse_energy_meter_values.get("power")->updateFloat(power);
+    evse_energy_meter_values.get("energy_rel")->updateFloat(energy_relative);
+    evse_energy_meter_values.get("energy_abs")->updateFloat(energy_absolute);
+
+    for (int i = 0; i < 3; ++i)
+        evse_energy_meter_values.get("phases_active")->get(i)->updateBool(phases_active[i]);
+
+    for (int i = 0; i < 3; ++i)
+        evse_energy_meter_values.get("phases_connected")->get(i)->updateBool(phases_connected[i]);
+
+    // get_energy_meter_errors
+    evse_energy_meter_errors.get("local_timeout")->updateUint(error_count[0]);
+    evse_energy_meter_errors.get("global_timeout")->updateUint(error_count[1]);
+    evse_energy_meter_errors.get("illegal_function")->updateUint(error_count[2]);
+    evse_energy_meter_errors.get("illegal_data_access")->updateUint(error_count[3]);
+    evse_energy_meter_errors.get("illegal_data_value")->updateUint(error_count[4]);
+    evse_energy_meter_errors.get("slave_device_failure")->updateUint(error_count[5]);
+
+    // get_gpio_configuration
+    evse_gpio_configuration.get("shutdown_input")->updateUint(shutdown_input_configuration);
+    evse_gpio_configuration.get("input")->updateUint(input_configuration);
+    evse_gpio_configuration.get("output")->updateUint(output_configuration);
+
+    // get_button_configuration
+    evse_button_configuration.get("button")->updateUint(button_configuration);
+
+    // get_button_state
+    evse_button_state.get("button_press_time")->updateUint(button_press_time);
+    evse_button_state.get("button_release_time")->updateUint(button_release_time);
+    evse_button_state.get("button_pressed")->updateBool(button_pressed);
+
+    // get_control_pilot
+    evse_control_pilot_configuration.get("control_pilot")->updateUint(control_pilot);
+    evse_control_pilot_connected.get("connected")->updateBool(control_pilot_connected);
+
+    // get_indicator_led
+    evse_indicator_led.get("indication")->updateInt(indication);
+    evse_indicator_led.get("duration")->updateUint(duration);
+    */
+
+    evse_auto_start_charging.get("auto_start_charging")->updateBool(!SLOT_CLEAR_ON_DISCONNECT(active_and_clear_on_disconnect[CHARGING_SLOT_AUTOSTART_BUTTON]));
+
+    evse_management_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_CHARGE_MANAGER]));
+
+    evse_user_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_USER]));
+
+    evse_modbus_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_MODBUS_TCP]));
+    evse_ocpp_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_OCPP]));
+
+    evse_external_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_EXTERNAL]));
+    evse_external_clear_on_disconnect.get("clear_on_disconnect")->updateBool(SLOT_CLEAR_ON_DISCONNECT(active_and_clear_on_disconnect[CHARGING_SLOT_EXTERNAL]));
+
+    evse_global_current.get("current")->updateUint(max_current[CHARGING_SLOT_GLOBAL]);
+    evse_management_current.get("current")->updateUint(max_current[CHARGING_SLOT_CHARGE_MANAGER]);
+    evse_external_current.get("current")->updateUint(max_current[CHARGING_SLOT_EXTERNAL]);
+    evse_user_current.get("current")->updateUint(max_current[CHARGING_SLOT_USER]);
+
+    evse_external_defaults.get("current")->updateUint(external_default_current);
+    evse_external_defaults.get("clear_on_disconnect")->updateBool(external_default_clear_on_disconnect);
 }
 
 
@@ -941,6 +1108,8 @@ bool ready_for_next_chunk = false;
 size_t MAXLENGTH;
 byte flash_seq;
 uint32_t last_flash = 0;
+bool phases_active[3];
+bool phases_connected[3];
 bool log_heartbeat = false;
 //bool log_heartbeat = true;
 
@@ -1385,6 +1554,8 @@ void AC011K::update_evseStatus(uint8_t evseStatus) {
             break;
         case 3:                                              // Charging (charging ongoing, power output)
             evse_state.get("iec61851_state")->updateUint(2); // Lädt
+            for (int i = 0; i < 3; ++i)
+                phases_active[i] = phases_connected[i];
             break;
         case 4:                                              // Suspended by charger (started but no power available)
             evse_state.get("iec61851_state")->updateUint(1); // Verbunden
@@ -1394,6 +1565,25 @@ void AC011K::update_evseStatus(uint8_t evseStatus) {
             break;
         case 6:                                              // Finishing, charging acomplished (RFID stop or EMS control stop)
             evse_state.get("iec61851_state")->updateUint(1); // Verbunden
+            for (int i = 0; i < 3; ++i)
+                phases_active[i] = false;
+                    // clear meter values
+                    // voltages
+                    meter.updateMeterAllValues(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L1, 0);
+                    meter.updateMeterAllValues(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L2, 0);
+                    meter.updateMeterAllValues(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L3, 0);
+                    // current
+                    meter.updateMeterAllValues(METER_ALL_VALUES_CURRENT_L1_A, 0);
+                    meter.updateMeterAllValues(METER_ALL_VALUES_CURRENT_L2_A, 0);
+                    meter.updateMeterAllValues(METER_ALL_VALUES_CURRENT_L3_A, 0);
+
+                    /* // meter power */
+                    /* meter.updateMeterValues( */
+                    /*           0,  // charging power W  (power) */
+                    /*           PrivCommRxBuffer[84]+256*PrivCommRxBuffer[85],  // charged energy Wh (energy_rel) */
+                    /*           PrivCommRxBuffer[88]+256*PrivCommRxBuffer[89]   // charged energy Wh (energy_abs) */
+                    /*           ); */
+
             break;
         case 7:                                              // (Reserved)
             evse_state.get("iec61851_state")->updateUint(4);
@@ -1408,6 +1598,8 @@ void AC011K::update_evseStatus(uint8_t evseStatus) {
             logger.printfln("err: can not determine EVSE status %d", evseStatus);
             break;
     }
+    meter.updateMeterPhases(phases_connected, phases_active);
+    
     if(last_iec61851_state != evse_state.get("iec61851_state")->asUint()) {
         evse_state.get("last_state_change")->updateUint(millis());
         evse_state.get("time_since_state_change")->updateUint(millis() - evse_state.get("last_state_change")->asUint());
@@ -1808,6 +2000,21 @@ void AC011K::my_setup_evse()
         StopChargingA7[i+1] = byte(buffer[i]);
         StopChargingA6[i+33] = byte(buffer[i]);
     }
+    
+    // TODO fix this, the api.call way is probably the right way, but it does not work like below.
+    // therefore the call to the module directly (meter.update...)
+    String error = api.callCommand("meter/state_update", Config::ConfUpdateObject{{
+        {"state", 2}, // meter connected
+        {"type", 99},
+    }});
+    if (error == "") {
+        logger.printfln("internal meter enabeled");
+    } else {
+        logger.printfln("could not enable the internal meter: %s", error.c_str());
+    }
+
+    meter.updateMeterState(2, 99);
+
     logger.printfln("Initial transaction number %05d", transactionNumber);
 }
             
@@ -2135,6 +2342,32 @@ void AC011K::myloop()
                               float(PrivCommRxBuffer[110]+256*PrivCommRxBuffer[111])/10,  // L3 charging current * 10
                               PrivCommRxBuffer[113]+256*PrivCommRxBuffer[114]
                               );
+                    // push values to the meter
+                    // voltages
+                    meter.updateMeterAllValues(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L1, float(PrivCommRxBuffer[100]+256*PrivCommRxBuffer[101])/10);
+                    meter.updateMeterAllValues(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L2, float(PrivCommRxBuffer[102]+256*PrivCommRxBuffer[103])/10);
+                    meter.updateMeterAllValues(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L3, float(PrivCommRxBuffer[104]+256*PrivCommRxBuffer[105])/10);
+                    // current
+                    meter.updateMeterAllValues(METER_ALL_VALUES_CURRENT_L1_A, float(PrivCommRxBuffer[106]+256*PrivCommRxBuffer[107])/10);
+                    meter.updateMeterAllValues(METER_ALL_VALUES_CURRENT_L2_A, float(PrivCommRxBuffer[108]+256*PrivCommRxBuffer[109])/10);
+                    meter.updateMeterAllValues(METER_ALL_VALUES_CURRENT_L3_A, float(PrivCommRxBuffer[110]+256*PrivCommRxBuffer[111])/10);
+
+                    // meter power
+                    meter.updateMeterValues(
+                              PrivCommRxBuffer[96]+256*PrivCommRxBuffer[97],  // charging power W  (power)
+                              PrivCommRxBuffer[84]+256*PrivCommRxBuffer[85],  // charged energy Wh (energy_rel)
+                              PrivCommRxBuffer[88]+256*PrivCommRxBuffer[89]   // charged energy Wh (energy_abs)
+                              );
+                    /*
+                    meter.updateMeterAllValues(i, all_values_update.get(i)->asFloat());
+                    */
+
+                    /* fill phases status values */
+                    /* consider a voltage > 10V as real, below that it is probably a faulty reading */
+                    if ((PrivCommRxBuffer[100]+256*PrivCommRxBuffer[101]) > 100) { phases_connected[0] = true; } // L1 plug voltage
+                    if ((PrivCommRxBuffer[102]+256*PrivCommRxBuffer[103]) > 100) { phases_connected[1] = true; } // L2 plug voltage
+                    if ((PrivCommRxBuffer[104]+256*PrivCommRxBuffer[105]) > 100) { phases_connected[2] = true; } // L3 plug voltage
+                    meter.updateMeterPhases(phases_connected, phases_active);
 // experimental:
                     send_http(String(",\"type\":\"en+08\",\"data\":{")
                         +"\"status\":"+String(PrivCommRxBuffer[77])  // status
@@ -2298,6 +2531,8 @@ void AC011K::myloop()
             case 0x0E:
 // [2021-08-07 07:55:05] Tx(cmd_0E len:76) : FA 03 00 00 0E 11 42 00 00 00 00 00 00 00 00 00 00 0A 01 77 02 37 35 32 30 33 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 66 08 97 08 14 00 7A 01 01 00 00 00 00 00 00 00 00 00 00 DE 91
 // [2021-08-07 07:55:05] cmd0E_DutyData pwmMax:266
+                evse_low_level_state.get("cp_pwm_duty_cycle")->updateUint(PrivCommRxBuffer[17]+256*PrivCommRxBuffer[18]); //duty
+                evse_low_level_state.get("adc_values")->get(6)->updateUint(PrivCommRxBuffer[19]+256*PrivCommRxBuffer[20]); //cpVolt
                 logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Duty data duty:%d cpVolt:%d",
                     cmd, seq, len, crc,
                     PrivCommRxBuffer[17]+256*PrivCommRxBuffer[18],
