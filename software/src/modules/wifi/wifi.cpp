@@ -602,7 +602,7 @@ void Wifi::check_for_scan_completion()
     logger.printfln("Scan done. %d networks.", WiFi.scanComplete());
 
 #if MODULE_WS_AVAILABLE()
-    ws.pushRawStateUpdate(this->get_scan_results(), "wifi/scan_results");
+    ws.pushRawStateUpdate(result, "wifi/scan_results");
 #endif
 }
 
@@ -623,7 +623,7 @@ void Wifi::start_scan()
     if (WiFi.scanNetworks(true, true) != WIFI_SCAN_FAILED) {
         task_scheduler.scheduleOnce([this]() {
             this->check_for_scan_completion();
-        }, 500);
+        }, 2000);
         return;
     }
 
@@ -636,7 +636,7 @@ void Wifi::start_scan()
 
         task_scheduler.scheduleOnce([this]() {
             this->check_for_scan_completion();
-        }, 500);
+        }, 2000);
     }, 6000);
 }
 
