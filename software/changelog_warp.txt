@@ -277,7 +277,7 @@
 - Improve translations
 - Disable start charging button in web interface if keyswitch is locked
 
-2022-11-25: 2.0.8 (<unknown>)
+2022-11-25: 2.0.8 (9dbdd9f5)
 - Add WireGuard
 - Add RTC support (via Real Time Clock 2.0 Bricklet)
 - Add "are you sure"-dialog to meter reset
