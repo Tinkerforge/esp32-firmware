@@ -216,12 +216,12 @@ void Http::addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg
 {
 }
 
-bool Http::pushStateUpdate(size_t stateIdx, String payload, String path)
+bool Http::pushStateUpdate(size_t stateIdx, const String &payload, const String &path)
 {
     return true;
 }
 
-void Http::pushRawStateUpdate(String payload, String path)
+void Http::pushRawStateUpdate(const String &payload, const String &path)
 {
 }
 

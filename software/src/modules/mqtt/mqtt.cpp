@@ -148,7 +148,7 @@ void Mqtt::publish(const String &topic, const String &payload, bool retain)
     esp_mqtt_client_publish(this->client, topic.c_str(), payload.c_str(), payload.length(), 0, retain);
 }
 
-bool Mqtt::pushStateUpdate(size_t stateIdx, String payload, String path)
+bool Mqtt::pushStateUpdate(size_t stateIdx, const String &payload, const String &path)
 {
     auto &state = this->states[stateIdx];
 
@@ -160,7 +160,7 @@ bool Mqtt::pushStateUpdate(size_t stateIdx, String payload, String path)
     return true;
 }
 
-void Mqtt::pushRawStateUpdate(String payload, String path)
+void Mqtt::pushRawStateUpdate(const String &payload, const String &path)
 {
     this->publish_with_prefix(path, payload);
 }

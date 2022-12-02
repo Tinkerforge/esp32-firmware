@@ -79,7 +79,7 @@ static size_t prefix_len = strlen(prefix);
 static size_t infix_len = strlen(infix);
 static size_t suffix_len = strlen(suffix);
 
-bool WS::pushStateUpdate(size_t stateIdx, String payload, String path)
+bool WS::pushStateUpdate(size_t stateIdx, const String &payload, const String &path)
 {
     if (!web_sockets.haveActiveClient())
         return true;
@@ -113,7 +113,7 @@ bool WS::pushStateUpdate(size_t stateIdx, String payload, String path)
     return true;
 }
 
-void WS::pushRawStateUpdate(String payload, String path)
+void WS::pushRawStateUpdate(const String &payload, const String &path)
 {
     pushStateUpdate(0, payload, path);
 }
