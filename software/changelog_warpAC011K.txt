@@ -37,3 +37,4 @@
 2022-11-20: 2.0.8 (<unknown>)
 - Step up
   alpha version, not ready for production
+  publish meter values
