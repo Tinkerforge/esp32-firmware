@@ -1011,14 +1011,11 @@ void AC011K::update_all_data()
 
     for (int i = 0; i < sizeof(gpio) / sizeof(gpio[0]); ++i)
         evse_low_level_state.get("gpio")->get(i)->updateBool(gpio[i]);
-    */
 
     evse_low_level_state.get("charging_time")->updateUint(charging_time);
     evse_low_level_state.get("time_since_state_change")->updateUint(time_since_state_change);
-    //evse_state.get("time_since_state_change")->updateUint(time_since_state_change);
     evse_low_level_state.get("uptime")->updateUint(uptime);
 
-    /*
     for (int i = 0; i < CHARGING_SLOT_COUNT; ++i) {
         evse_slots.get(i)->get("max_current")->updateUint(max_current[i]);
         evse_slots.get(i)->get("active")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[i]));
@@ -1521,7 +1518,7 @@ int AC011K::bs_evse_get_state(uint8_t *ret_iec61851_state, uint8_t *ret_charger_
 //    tf_tfp_prepare_send(evse->tfp, TF_EVSE_FUNCTION_GET_STATE, 0, 17, response_expected);
 
     *ret_iec61851_state = evse_state.get("iec61851_state")->asUint();
-    *ret_charger_state = evse_state.get("iec61851_state")->asUint(); // == 1 ? // charging ? 2 : 1; // 1 verbunden 2 leadt
+    *ret_charger_state = evse_state.get("charger_state")->asUint();
     *ret_contactor_state = 2; // 1 - Stromführend vor, aber nicht stromführend nach dem Schütz, 3 - Stromführend vor und nach dem Schütz
     *ret_contactor_error = 0;
     //*ret_charge_release = 1; // manuell 0 automatisch
@@ -1546,25 +1543,31 @@ void AC011K::update_evseStatus(uint8_t evseStatus) {
     uint8_t last_evseStatus = evse_state.get("GD_state")->asUint();
     evse_state.get("GD_state")->updateUint(evseStatus);
     switch (evseStatus) {
-        case 1:                                              // Available (not engaged)
-            evse_state.get("iec61851_state")->updateUint(0); // Nicht verbunden (Sicht des Fahrzeugs)
+        case 1: // Available (not engaged)
+            evse_state.get("iec61851_state")->updateUint(IEC_STATE_A); // Nicht verbunden
+            evse_state.get("charger_state")->updateUint(CHARGER_STATE_NOT_PLUGGED_IN);
             break;
-        case 2:                                              // Preparing (engaged, not started)
-            evse_state.get("iec61851_state")->updateUint(1); // Verbunden
+        case 2: // Preparing (engaged, not started)
+            evse_state.get("iec61851_state")->updateUint(IEC_STATE_B); // Verbunden
+            evse_state.get("charger_state")->updateUint(CHARGER_STATE_WAITING_FOR_RELEASE);
             break;
-        case 3:                                              // Charging (charging ongoing, power output)
-            evse_state.get("iec61851_state")->updateUint(2); // Lädt
+        case 3: // Charging (charging ongoing, power output)
+            evse_state.get("iec61851_state")->updateUint(IEC_STATE_C); // Lädt
+            evse_state.get("charger_state")->updateUint(CHARGER_STATE_CHARGING);
             for (int i = 0; i < 3; ++i)
                 phases_active[i] = phases_connected[i];
             break;
-        case 4:                                              // Suspended by charger (started but no power available)
-            evse_state.get("iec61851_state")->updateUint(1); // Verbunden
+        case 4: // Suspended by charger (started but no power available)
+            evse_state.get("iec61851_state")->updateUint(IEC_STATE_B); // Verbunden
+            evse_state.get("charger_state")->updateUint(CHARGER_STATE_WAITING_FOR_RELEASE);
             break;
-        case 5:                                              // Suspended by EV (power available but waiting for the EV response)
-            evse_state.get("iec61851_state")->updateUint(1); // Verbunden
+        case 5: // Suspended by EV (power available but waiting for the EV response)
+            evse_state.get("iec61851_state")->updateUint(IEC_STATE_B); // Verbunden
+            evse_state.get("charger_state")->updateUint(CHARGER_STATE_READY_TO_CHARGE);
             break;
-        case 6:                                              // Finishing, charging acomplished (RFID stop or EMS control stop)
-            evse_state.get("iec61851_state")->updateUint(1); // Verbunden
+        case 6: // Finishing, charging acomplished (RFID stop or EMS control stop)
+            evse_state.get("iec61851_state")->updateUint(IEC_STATE_B); // Verbunden
+            evse_state.get("charger_state")->updateUint(CHARGER_STATE_WAITING_FOR_RELEASE);
             for (int i = 0; i < 3; ++i)
                 phases_active[i] = false;
                     // clear meter values
@@ -1585,14 +1588,17 @@ void AC011K::update_evseStatus(uint8_t evseStatus) {
                     /*           ); */
 
             break;
-        case 7:                                              // (Reserved)
-            evse_state.get("iec61851_state")->updateUint(4);
+        case 7: // (Reserved)
+            evse_state.get("iec61851_state")->updateUint(IEC_STATE_EF);
+            evse_state.get("charger_state")->updateUint(CHARGER_STATE_ERROR);
             break;
-        case 8:                                              // (Unavailable)
-            evse_state.get("iec61851_state")->updateUint(4);
+        case 8: // (Unavailable)
+            evse_state.get("iec61851_state")->updateUint(IEC_STATE_EF);
+            evse_state.get("charger_state")->updateUint(CHARGER_STATE_ERROR);
             break;
-        case 9:                                              // Fault (charger in fault condition)
-            evse_state.get("iec61851_state")->updateUint(4);
+        case 9: // Fault (charger in fault condition)
+            evse_state.get("iec61851_state")->updateUint(IEC_STATE_EF);
+            evse_state.get("charger_state")->updateUint(CHARGER_STATE_ERROR);
             break;
         default:
             logger.printfln("err: can not determine EVSE status %d", evseStatus);
@@ -1603,6 +1609,7 @@ void AC011K::update_evseStatus(uint8_t evseStatus) {
     if(last_iec61851_state != evse_state.get("iec61851_state")->asUint()) {
         evse_state.get("last_state_change")->updateUint(millis());
         evse_state.get("time_since_state_change")->updateUint(millis() - evse_state.get("last_state_change")->asUint());
+        evse_low_level_state.get("time_since_state_change")->updateUint(evse_state.get("time_since_state_change")->asUint());
 	if((evseStatus != last_evseStatus == 1) && (evseStatus == 1)) { // plugged out
             if (evse_hardware_configuration.get("GDFirmwareVersion")->asUint() == 212)
                 //sendChargingLimit2(16, sendSequenceNumber++);  // hack to ensure full current range is available in next charging session 
@@ -1626,7 +1633,9 @@ void AC011K::update_evseStatus(uint8_t evseStatus) {
             bs_evse_start_charging();
         }
     }
-    evse_state.get("charger_state")->updateUint(evse_state.get("iec61851_state")->asUint());
+    //TODO alter the state to show the right state on the status page
+    //TODO - this is probably not needed here at all
+    //evse_state.get("charger_state")->updateUint(evse_state.get("iec61851_state")->asUint());
 }
 
 
@@ -2368,6 +2377,10 @@ void AC011K::myloop()
                     if ((PrivCommRxBuffer[102]+256*PrivCommRxBuffer[103]) > 100) { phases_connected[1] = true; } // L2 plug voltage
                     if ((PrivCommRxBuffer[104]+256*PrivCommRxBuffer[105]) > 100) { phases_connected[2] = true; } // L3 plug voltage
                     meter.updateMeterPhases(phases_connected, phases_active);
+
+                    /* set charging_time */
+                    evse_low_level_state.get("charging_time")->updateUint((PrivCommRxBuffer[113]+256*PrivCommRxBuffer[114])*60*1000);   // in ms
+                              
 // experimental:
                     send_http(String(",\"type\":\"en+08\",\"data\":{")
                         +"\"status\":"+String(PrivCommRxBuffer[77])  // status
@@ -2577,6 +2590,7 @@ void AC011K::myloop()
     }
 
     evse_state.get("time_since_state_change")->updateUint(millis() - evse_state.get("last_state_change")->asUint());
+    evse_low_level_state.get("time_since_state_change")->updateUint(evse_state.get("time_since_state_change")->asUint());
     
     //resend flash commands if needed
     if(this->firmware_update_running && flash_seq == PrivCommTxBuffer[5] && !ready_for_next_chunk && deadline_elapsed(last_flash + 2000)) {

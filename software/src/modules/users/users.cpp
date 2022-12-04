@@ -77,6 +77,8 @@ uint8_t get_iec_state()
     return evse.evse_state.get("iec61851_state")->asUint();
 #elif MODULE_EVSE_V2_AVAILABLE()
     return evse_v2.evse_state.get("iec61851_state")->asUint();
+#elif MODULE_AC011K_AVAILABLE()
+    return ac011k.evse_state.get("iec61851_state")->asUint();
 #endif
     return 0;
 }
@@ -87,6 +89,8 @@ uint8_t get_charger_state()
     return evse.evse_state.get("charger_state")->asUint();
 #elif MODULE_EVSE_V2_AVAILABLE()
     return evse_v2.evse_state.get("charger_state")->asUint();
+#elif MODULE_AC011K_AVAILABLE()
+    return ac011k.evse_state.get("charger_state")->asUint();
 #endif
     return 0;
 }
@@ -97,6 +101,8 @@ Config *get_user_slot()
     return (Config *)evse.evse_slots.get(CHARGING_SLOT_USER);
 #elif MODULE_EVSE_V2_AVAILABLE()
     return (Config *)evse_v2.evse_slots.get(CHARGING_SLOT_USER);
+#elif MODULE_AC011K_AVAILABLE()
+    return (Config *)ac011k.evse_slots.get(CHARGING_SLOT_USER);
 #endif
     return nullptr;
 }
@@ -107,6 +113,8 @@ Config *get_low_level_state()
     return &evse.evse_low_level_state;
 #elif MODULE_EVSE_V2_AVAILABLE()
     return &evse_v2.evse_low_level_state;
+#elif MODULE_AC011K_AVAILABLE()
+    return &ac011k.evse_low_level_state;
 #endif
     return nullptr;
 }
@@ -117,6 +125,8 @@ void set_user_current(uint16_t current)
     evse.set_user_current(current);
 #elif MODULE_EVSE_V2_AVAILABLE()
     evse_v2.set_user_current(current);
+#elif MODULE_AC011K_AVAILABLE()
+    ac011k.set_user_current(current);
 #endif
 }
 
