@@ -239,7 +239,7 @@ void API::unblockCommand(const String &path)
     blockCommand(path, "");
 }
 
-String API::getCommandBlockedReason(size_t commandIdx)
+const String &API::getCommandBlockedReason(size_t commandIdx) const
 {
     return this->commands[commandIdx].blockedReason;
 }

@@ -90,7 +90,7 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
 {
     CommandRegistration reg = api.commands[cmdidx];
 
-    String reason = api.getCommandBlockedReason(cmdidx);
+    const String &reason = api.getCommandBlockedReason(cmdidx);
     if (reason != "")
         return req.send(400, "text/plain", reason.c_str());
 

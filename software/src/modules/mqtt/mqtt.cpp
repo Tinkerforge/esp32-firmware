@@ -100,7 +100,7 @@ void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)
         return;
 
     subscribe_with_prefix(reg.path, [reg, commandIdx](char *payload, size_t payload_len){
-        String reason = api.getCommandBlockedReason(commandIdx);
+        const String &reason = api.getCommandBlockedReason(commandIdx);
         if (reason != "") {
             logger.printfln("MQTT: Command %s is blocked: %s", reg.path.c_str(), reason.c_str());
             return;

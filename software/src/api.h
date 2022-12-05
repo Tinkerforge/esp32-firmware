@@ -91,7 +91,7 @@ public:
 
     void blockCommand(const String &path, const String &reason);
     void unblockCommand(const String &path);
-    String getCommandBlockedReason(size_t commandIdx);
+    const String &getCommandBlockedReason(size_t commandIdx) const;
 
     static bool restorePersistentConfig(const String &path, ConfigRoot *config);
 
