@@ -93,6 +93,11 @@ def main():
         write_config_json(config_json)
 
         print(f'Added package {package_name}')
+        print()
+        print('Next (for a git clone):')
+        print(' Commit software/packages/config.json')
+        print(f' Commit software/packages/{package_name}/package.json')
+        print(' Modify platform_packages option in platformio.ini')
     elif answer == 'm':
         if len(config_json) == 0:
             print('No packages to modify')
@@ -100,11 +105,11 @@ def main():
 
         index = int(get(f'Package [0..{len(config_json) - 1}]:', None))
         config = config_json[index]
-        package_name = f"{config['base']}#{config['branch']}_{config['commit']}"
-        package_path = make_absolute_path(os.path.join('packages', package_name))
+        old_package_name = f"{config['base']}#{config['branch']}_{config['commit']}"
+        old_package_path = make_absolute_path(os.path.join('packages', old_package_name))
 
         try:
-            os.remove(os.path.join(package_path, 'tinkerforge.json'))
+            os.remove(os.path.join(old_package_path, 'tinkerforge.json'))
         except FileNotFoundError:
             pass
 
@@ -112,12 +117,20 @@ def main():
         config['branch'] = get(f" Branch (default: {config['branch']}):", config['branch'])
         config['commit'] = get(f" Commit (default: {config['commit']}):", config['commit'])
         config['url'] = get(f" URL (default: {config['url']}):", config['url'])
-        package_name = f"{config['base']}#{config['branch']}_{config['commit']}"
+        new_package_name = f"{config['base']}#{config['branch']}_{config['commit']}"
 
-        download_package_json(package_name, config['url'], config['commit'])
+        download_package_json(new_package_name, config['url'], config['commit'])
         write_config_json(config_json)
 
-        print(f'Modified package {package_name}')
+        print(f'Modified package {old_package_name}')
+        print()
+        print('Next (for a git clone):')
+        print(' Commit software/packages/config.json')
+
+        if old_package_name != new_package_name:
+            print(f' Commit software/packages/{new_package_name}/package.json')
+
+        print(' Modify platform_packages option in platformio.ini')
     elif answer == 'r':
         if len(config_json) == 0:
             print('No packages to remove')
@@ -131,6 +144,10 @@ def main():
         write_config_json(config_json)
 
         print(f'Removed package {package_name}')
+        print()
+        print('Next (for a git clone):')
+        print(' Commit software/packages/config.json')
+        print(' Modify platform_packages option in platformio.ini')
 
 if __name__ == '__main__':
     try:
