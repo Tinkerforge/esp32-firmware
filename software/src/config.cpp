@@ -1331,7 +1331,7 @@ String ConfigRoot::update_from_cstr(char *c, size_t len)
     return this->update_from_json(doc.as<JsonVariant>());
 }
 
-String ConfigRoot::update_from_json(const JsonVariant &root)
+String ConfigRoot::update_from_json(JsonVariant root)
 {
     Config copy = *this;
     String err = Config::apply_visitor(from_json{root, !this->permit_null_updates, this->permit_null_updates, true}, copy.value);
