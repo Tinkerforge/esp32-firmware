@@ -1324,11 +1324,22 @@ String ConfigRoot::update_from_cstr(char *c, size_t len)
     DynamicJsonDocument doc(this->json_size(true));
     DeserializationError error = deserializeJson(doc, c, len);
 
-    if (error) {
-        return String("Failed to deserialize string: ") + String(error.c_str());
+    switch (error.code()) {
+        case DeserializationError::Ok:
+            return this->update_from_json(doc.as<JsonVariant>());
+        case DeserializationError::NoMemory:
+            return String("Failed to deserialize: JSON payload was longer than expected and possibly contained unknown keys.");
+        case DeserializationError::EmptyInput:
+            return String("Failed to deserialize: Payload was empty. Please send valid JSON.");
+        case DeserializationError::IncompleteInput:
+            return String("Failed to deserialize: JSON payload incomplete or truncated");
+        case DeserializationError::InvalidInput:
+            return String("Failed to deserialize: JSON payload could not be parsed");
+        case DeserializationError::TooDeep:
+            return String("Failed to deserialize: JSON payload nested too deep");
+        default:
+            return String("Failed to deserialize string: ") + String(error.c_str());
     }
-
-    return this->update_from_json(doc.as<JsonVariant>());
 }
 
 String ConfigRoot::update_from_json(JsonVariant root)
