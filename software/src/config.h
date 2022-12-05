@@ -570,7 +570,7 @@ struct Config {
         }
 
         children.push_back(*arr.getSlot()->prototype);
-        return Wrap(arr.getSlot()->prototype);
+        return Wrap(&children.back());
     }
 
     bool removeLast()
