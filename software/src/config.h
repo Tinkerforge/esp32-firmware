@@ -589,6 +589,21 @@ struct Config {
         return true;
     }
 
+    bool removeAll()
+    {
+        if (!this->is<Config::ConfArray>()) {
+            logger.printfln("Tried to add to a node that is not an array!");
+            delay(100);
+            return false;
+        }
+
+        std::vector<Config> &children = this->asArray();
+
+        children.clear();
+
+        return true;
+    }
+
     bool remove(size_t i)
     {
         if (!this->is<Config::ConfArray>()) {
