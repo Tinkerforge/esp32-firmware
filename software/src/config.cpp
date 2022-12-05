@@ -1317,7 +1317,9 @@ String ConfigRoot::update_from_file(File &file)
     return this->update_from_json(doc.as<JsonVariant>());
 }
 
-String ConfigRoot::update_from_cstr(const char *c, size_t len)
+// Intentionally take a non-const char * here:
+// This allows ArduinoJson to deserialize in zero-copy mode
+String ConfigRoot::update_from_cstr(char *c, size_t len)
 {
     DynamicJsonDocument doc(this->json_size(true));
     DeserializationError error = deserializeJson(doc, c, len);

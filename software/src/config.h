@@ -790,9 +790,11 @@ public:
 
     String update_from_file(File &file);
 
-    String update_from_cstr(const char *c, size_t payload_len);
 
     String update_from_string(const String &s);
+    // Intentionally take a non-const char * here:
+    // This allows ArduinoJson to deserialize in zero-copy mode
+    String update_from_cstr(char *c, size_t payload_len);
 
     String update_from_json(const JsonVariant &root);
 
