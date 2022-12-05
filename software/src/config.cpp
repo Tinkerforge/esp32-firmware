@@ -1331,18 +1331,6 @@ String ConfigRoot::update_from_cstr(char *c, size_t len)
     return this->update_from_json(doc.as<JsonVariant>());
 }
 
-String ConfigRoot::update_from_string(const String &s)
-{
-    DynamicJsonDocument doc(this->json_size(false));
-    DeserializationError error = deserializeJson(doc, s);
-
-    if (error) {
-        return String("Failed to deserialize string: ") + String(error.c_str());
-    }
-
-    return this->update_from_json(doc.as<JsonVariant>());
-}
-
 String ConfigRoot::update_from_json(const JsonVariant &root)
 {
     Config copy = *this;
