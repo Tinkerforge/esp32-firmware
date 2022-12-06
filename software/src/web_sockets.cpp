@@ -23,6 +23,7 @@
 #include "web_server.h"
 
 #include "esp_httpd_priv.h"
+#include "modules.h"
 
 extern TaskScheduler task_scheduler;
 extern WebServer server;
@@ -31,6 +32,8 @@ extern EventLog logger;
 #define KEEP_ALIVE_TIMEOUT_MS 10000
 #define WORKER_START_ERROR_THRES 60 * 10
 #define WORKER_START_ERROR_MIN_UPTIME_FOR_REBOOT 60 * 60 * 1000
+
+static int watchdog_handle = -1;
 
 void clear_ws_work_item(ws_work_item *wi)
 {
@@ -122,6 +125,9 @@ static void work(void *arg)
     work_state = "done";
     ws->worker_start_errors = 0;
     ws->worker_active = false;
+#if MODULE_WATCHDOG_AVAILABLE()
+    watchdog.reset(watchdog_handle);
+#endif
 }
 
 static esp_err_t ws_handler(httpd_req_t *req)
@@ -503,20 +509,14 @@ void WebSockets::start(const char *uri)
         this->triggerHttpThread();
     }, 100, 100);
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
-        if (millis() < WORKER_START_ERROR_MIN_UPTIME_FOR_REBOOT)
-            return;
-
-        if (this->worker_start_errors > WORKER_START_ERROR_THRES) {
-            logger.printfln("Websocket worker was not able to start for five minutes. The control socket is probably dead. Restarting ESP in one minute.");
-            task_scheduler.scheduleOnce([](){
-                ESP.restart();
-            }, 60 * 1000);
-            // reset error counter to not hit this condition in the next run.
-            this->worker_start_errors = 0;
-        }
-
-    }, 1000, 1000);
+#if MODULE_WATCHDOG_AVAILABLE()
+    task_scheduler.scheduleOnce([this]() {
+        watchdog_handle = watchdog.add(
+            "websocket_worker",
+            "Websocket worker was not able to start for five minutes. The control socket is probably dead.",
+            5 * 60 * 1000);
+    }, WORKER_START_ERROR_MIN_UPTIME_FOR_REBOOT);
+#endif
 
     task_scheduler.scheduleWithFixedDelay([this](){
         this->pingActiveClients();
