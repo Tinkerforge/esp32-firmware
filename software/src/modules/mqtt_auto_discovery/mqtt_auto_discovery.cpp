@@ -37,8 +37,8 @@ void MqttAutoDiscovery::pre_setup()
         {"auto_discovery_mode", Config::Int32(-1)},
         {"auto_discovery_prefix", Config::Str("homeassistant", 1, 64)}
     }),  [](Config &cfg) -> String {
-        const String global_topic_prefix = mqtt.mqtt_config.get("global_topic_prefix")->asString();
-        const String auto_discovery_prefix = cfg.get("auto_discovery_prefix")->asString();
+        const String &global_topic_prefix = mqtt.mqtt_config.get("global_topic_prefix")->asString();
+        const String &auto_discovery_prefix = cfg.get("auto_discovery_prefix")->asString();
 
         if (global_topic_prefix == auto_discovery_prefix)
             return "Auto discovery topic prefix cannot be the same as the MQTT API topic prefix.";
@@ -60,8 +60,8 @@ void MqttAutoDiscovery::setup()
     config_in_use = config;
     initialized = true;
 
-    const String global_topic_prefix = mqtt.mqtt_config_in_use.get("global_topic_prefix")->asString();
-    const String auto_discovery_prefix = config_in_use.get("auto_discovery_prefix")->asString();
+    const String &global_topic_prefix = mqtt.mqtt_config_in_use.get("global_topic_prefix")->asString();
+    const String &auto_discovery_prefix = config_in_use.get("auto_discovery_prefix")->asString();
     subscribed_topics_difference_at = 0;
 
     // Include zero-termination in comparison, in case global_topic_prefix is entirely a prefix of auto_discovery_prefix.
@@ -123,8 +123,8 @@ bool MqttAutoDiscovery::onMqttMessage(char *topic, size_t topic_len, char *data,
 
 void MqttAutoDiscovery::prepare_topics()
 {
-    const String auto_discovery_prefix = config_in_use.get("auto_discovery_prefix")->asString();
-    const String client_name = mqtt.mqtt_config_in_use.get("client_name")->asString();
+    const String &auto_discovery_prefix = config_in_use.get("auto_discovery_prefix")->asString();
+    const String &client_name = mqtt.mqtt_config_in_use.get("client_name")->asString();
     const int32_t mode = config_in_use.get("auto_discovery_mode")->asInt();
     unsigned int topic_length;
 
@@ -223,7 +223,7 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
         if (api.hasFeature(mqtt_discovery_topic_infos[topic_num].feature)) {
             const char *static_info = mqtt_discovery_topic_infos[topic_num].static_infos[config_in_use.get("auto_discovery_mode")->asInt()];
             if (static_info) { // No static info? Skip topic.
-                const String topic_prefix = mqtt.mqtt_config_in_use.get("global_topic_prefix")->asString();
+                const String &topic_prefix = mqtt.mqtt_config_in_use.get("global_topic_prefix")->asString();
                 const char *name = mqtt_discovery_topic_infos[topic_num].name_de;
 
                 String payload;

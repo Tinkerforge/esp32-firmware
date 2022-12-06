@@ -801,7 +801,7 @@ static uint8_t hextouint(const char c)
     return i;
 }
 
-static uint32_t export_tag_id_as_uint32(String str)
+static uint32_t export_tag_id_as_uint32(const String &str)
 {
     int str_idx = 0;
     char c[4];
@@ -870,7 +870,7 @@ void ModbusTcp::update_keba_regs()
 
         if (api.getState("charge_tracker/current_charge")->get("authorization_type")->asUint() == 2)
         {
-            auto tag_id = api.getState("charge_tracker/current_charge")->get("authorization_info")->get("tag_id")->asString();
+            const auto &tag_id = api.getState("charge_tracker/current_charge")->get("authorization_info")->get("tag_id")->asString();
             keba_read_charge_cpy->rfid_tag = fromUint(export_tag_id_as_uint32(tag_id));
         }
 #endif
