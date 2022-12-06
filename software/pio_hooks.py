@@ -110,6 +110,10 @@ def get_changelog_version(name):
             if re.match(r'^(?:- [A-Z0-9\(]|  ([A-Za-z0-9\(\"]|--hide-payload)).*$', line) != None:
                 continue
 
+            # Allow to write changelog for future releases if revision is set to "TBD"
+            if line.endswith('(TBD)'):
+                continue
+
             m = re.match(r'^(?:<unknown>|20[0-9]{2}-[0-9]{2}-[0-9]{2}): ([0-9]+)\.([0-9]+)\.([0-9]+) \((?:<unknown>|[a-f0-9]+)\)$', line)
 
             if m == None:
