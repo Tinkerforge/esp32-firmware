@@ -576,7 +576,7 @@ struct Config {
     bool removeLast()
     {
         if (!this->is<Config::ConfArray>()) {
-            logger.printfln("Tried to add to a node that is not an array!");
+            logger.printfln("Tried to remove the last element from a node that is not an array!");
             delay(100);
             return false;
         }
@@ -592,7 +592,7 @@ struct Config {
     bool removeAll()
     {
         if (!this->is<Config::ConfArray>()) {
-            logger.printfln("Tried to add to a node that is not an array!");
+            logger.printfln("Tried to remove all from a node that is not an array!");
             delay(100);
             return false;
         }
@@ -607,7 +607,7 @@ struct Config {
     bool remove(size_t i)
     {
         if (!this->is<Config::ConfArray>()) {
-            logger.printfln("Tried to add to a node that is not an array!");
+            logger.printfln("Tried to remove from a node that is not an array!");
             delay(100);
             return false;
         }
