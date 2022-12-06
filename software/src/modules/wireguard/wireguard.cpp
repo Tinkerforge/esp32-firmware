@@ -30,7 +30,7 @@ extern TaskScheduler task_scheduler;
 
 #include "mbedtls/base64.h"
 
-String check_key(String key, bool enable)
+String check_key(const String &key, bool enable)
 {
     if (key.length() > 0) {
         if (key.length() != 44)
@@ -92,17 +92,17 @@ void Wireguard::pre_setup()
 
 
         bool enable = cfg.get("enable")->asBool();
-        String private_key = cfg.get("private_key")->asString();
+        const String &private_key = cfg.get("private_key")->asString();
         String result = check_key(private_key, enable);
         if (result != "")
             return String("\"private_key\"") + result;
 
-        String remote_public_key = cfg.get("remote_public_key")->asString();
+        const String &remote_public_key = cfg.get("remote_public_key")->asString();
         result = check_key(remote_public_key, enable);
         if (result != "")
             return String("\"remote_public_key\"") + result;
 
-        String preshared_key = cfg.get("preshared_key")->asString();
+        const String &preshared_key = cfg.get("preshared_key")->asString();
 
         // pass false because an empty preshared_key is always allowed.
         result = check_key(preshared_key, false);

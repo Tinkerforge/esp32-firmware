@@ -137,7 +137,7 @@ struct UserSlotInfo {
     float meter_start;
 };
 
-uint16_t calc_checksum(UserSlotInfo info)
+uint16_t calc_checksum(const UserSlotInfo &info)
 {
     uint32_t float_buf = 0;
     memcpy(&float_buf, &info.meter_start, sizeof(float_buf));
