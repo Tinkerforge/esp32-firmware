@@ -111,6 +111,14 @@ void NTP::pre_setup()
     });
 }
 
+static void copy_server_name(char **dst, const String &src) {
+    size_t len = src.length() + 1;
+    *dst = static_cast<char*>(malloc(len));
+    if (*dst) {
+        memcpy(*dst, src.c_str(), len); // use of emphemeral C string ok
+    }
+}
+
 void NTP::setup()
 {
     initialized = true;
@@ -131,10 +139,16 @@ void NTP::setup()
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
     sntp_set_sync_mode(SNTP_SYNC_MODE_IMMED);
 
-    if (config.get("server")->asString() != "")
-        sntp_setservername(dhcp ? 1 : 0, config.get("server")->asCStr());
-    if (config.get("server2")->asString() != "")
-        sntp_setservername(dhcp ? 2 : 1, config.get("server2")->asCStr());
+    const String &server1 = config.get("server")->asString();
+    const String &server2 = config.get("server2")->asString();
+    if (server1 != "") {
+        copy_server_name(&ntp_server1_copy, server1);
+        sntp_setservername(dhcp ? 1 : 0, ntp_server1_copy);
+    }
+    if (server2 != "") {
+        copy_server_name(&ntp_server2_copy, server2);
+        sntp_setservername(dhcp ? 2 : 1, ntp_server2_copy);
+    }
 
     const char *tzstring = lookup_timezone(config.get("timezone")->asCStr());
 
