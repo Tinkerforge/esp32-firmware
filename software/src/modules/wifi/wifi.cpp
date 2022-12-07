@@ -257,10 +257,10 @@ void Wifi::apply_soft_ap_config_and_start()
     }
     logger.printfln("Had to configure soft AP IP address %d times.", counter);
     logger.printfln("Wifi soft AP started");
-    logger.printfln("    SSID: %s", wifi_ap_config_in_use.get("ssid")->asString().c_str());
+    logger.printfln("    SSID: %s", wifi_ap_config_in_use.get("ssid")->asCStr());
 
-    WiFi.softAP(wifi_ap_config_in_use.get("ssid")->asString().c_str(),
-                wifi_ap_config_in_use.get("passphrase")->asString().c_str(),
+    WiFi.softAP(wifi_ap_config_in_use.get("ssid")->asCStr(),
+                wifi_ap_config_in_use.get("passphrase")->asCStr(),
                 channel_to_use,
                 wifi_ap_config_in_use.get("hide_ssid")->asBool());
     WiFi.setSleep(false);
@@ -407,16 +407,16 @@ void Wifi::setup()
             uint8_t reason_code = info.wifi_sta_disconnected.reason;
             const char *reason = reason2str(reason_code);
             if (!this->was_connected) {
-                logger.printfln("Wifi failed to connect to %s: %s (%u)", wifi_sta_config_in_use.get("ssid")->asString().c_str(), reason, reason_code);
+                logger.printfln("Wifi failed to connect to %s: %s (%u)", wifi_sta_config_in_use.get("ssid")->asCStr(), reason, reason_code);
             } else {
                 uint32_t now = millis();
                 uint32_t connected_for = now - last_connected_ms;
 
                 // FIXME: Use a better way of time keeping here.
                 if (connected_for < 0x7FFFFFFF)
-                    logger.printfln("Wifi disconnected from %s: %s (%u). Was connected for %d seconds.", wifi_sta_config_in_use.get("ssid")->asString().c_str(), reason, reason_code, connected_for / 1000);
+                    logger.printfln("Wifi disconnected from %s: %s (%u). Was connected for %d seconds.", wifi_sta_config_in_use.get("ssid")->asCStr(), reason, reason_code, connected_for / 1000);
                 else
-                    logger.printfln("Wifi disconnected from %s: %s (%u). Was connected for a long time.", wifi_sta_config_in_use.get("ssid")->asString().c_str(), reason, reason_code);
+                    logger.printfln("Wifi disconnected from %s: %s (%u). Was connected for a long time.", wifi_sta_config_in_use.get("ssid")->asCStr(), reason, reason_code);
 
             }
             this->was_connected = false;
