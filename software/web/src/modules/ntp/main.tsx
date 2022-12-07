@@ -127,8 +127,7 @@ export class NTP extends ConfigComponent<'ntp/config'> {
                     </FormRow>
 
                     <FormRow label={__("ntp.content.server2")}>
-                        <InputText required
-                                   maxLength={64}
+                        <InputText maxLength={64}
                                    value={state.server2}
                                    onValue={this.set("server2")}/>
                     </FormRow>
