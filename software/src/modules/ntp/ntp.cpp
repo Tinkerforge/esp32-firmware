@@ -113,7 +113,7 @@ static void copy_server_name(char **dst, const String &src) {
     size_t len = src.length() + 1;
     *dst = static_cast<char*>(malloc(len));
     if (*dst) {
-        memcpy(*dst, src.c_str(), len); // use of emphemeral C string ok
+        src.toCharArray(*dst, len);
     }
 }
 
