@@ -31,7 +31,7 @@ public:
     void loop();
 
     uint8_t next_user_id();
-    void rename_user(uint8_t user_id, const char *username, const char *display_name);
+    void rename_user(uint8_t user_id, const String &username, const String &display_name);
     void remove_from_username_file(uint8_t user_id);
     void search_next_free_user();
 
