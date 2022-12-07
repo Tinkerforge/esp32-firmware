@@ -56,7 +56,7 @@ static void ntp_sync_cb(struct timeval *t)
     }
 
     task_scheduler.scheduleOnce([]() {
-        ntp.state.get("synced")->updateBool(true);
+        ntp.set_synced();
     }, 0);
 
 #if MODULE_RTC_AVAILABLE()
@@ -69,8 +69,6 @@ static void ntp_sync_cb(struct timeval *t)
         }, 0);
     }
 #endif
-
-    ntp.set_synced();
 }
 
 // Because there is the risk of a race condition with the rtc module,
