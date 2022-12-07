@@ -100,7 +100,7 @@ void Ping::setup()
     ip_addr_t target_addr;
     memset(&target_addr, 0, sizeof(target_addr));
 
-    const char *host = config.get("host")->asCStr();
+    const char *host = config.get("host")->asEphemeralCStr();
 
     if (inet_pton(AF_INET6, host, &sock_addr6.sin6_addr) == 1) {
         /* convert ip6 string to ip6 address */

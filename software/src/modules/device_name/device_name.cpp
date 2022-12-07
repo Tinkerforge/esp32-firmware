@@ -74,7 +74,7 @@ void DeviceName::updateDisplayType()
 #endif
 
     if (name.get("display_type")->updateString(display_type)) {
-        logger.printfln("This is %s (%s), a %s", display_name.get("display_name")->asCStr(), name.get("name")->asCStr(), name.get("display_type")->asCStr());
+        logger.printfln("This is %s (%s), a %s", display_name.get("display_name")->asEphemeralCStr(), name.get("name")->asEphemeralCStr(), name.get("display_type")->asEphemeralCStr());
     }
 }
 

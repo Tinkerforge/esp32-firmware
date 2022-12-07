@@ -482,7 +482,7 @@ const char *platform_get_charge_point_vendor() {
 
 char model[20] = {0};
 const char *platform_get_charge_point_model() {
-    strncpy(model, device_name.name.get("display_type")->asCStr(), ARRAY_SIZE(model));
+    device_name.name.get("display_type")->asString().toCharArray(model, ARRAY_SIZE(model));
     return model;
 }
 

@@ -313,7 +313,7 @@ void NFC::update_seen_tags()
         new_tags[TAG_LIST_LENGTH - 1].last_seen = 0;
     } else {
         new_tags[TAG_LIST_LENGTH - 1].tag_type = inject_tag.get("tag_type")->asUint();
-        strncpy(new_tags[TAG_LIST_LENGTH - 1].tag_id, inject_tag.get("tag_id")->asCStr(), sizeof(new_tags[TAG_LIST_LENGTH - 1].tag_id));
+        strncpy(new_tags[TAG_LIST_LENGTH - 1].tag_id, inject_tag.get("tag_id")->asEphemeralCStr(), sizeof(new_tags[TAG_LIST_LENGTH - 1].tag_id));
         new_tags[TAG_LIST_LENGTH - 1].last_seen = millis() - last_tag_injection;
     }
 

@@ -1110,6 +1110,11 @@ const String &Config::asString() const
     return *this->get<ConfString>()->getVal();
 }
 
+const char *Config::asEphemeralCStr() const
+{
+    return this->get<ConfString>()->getVal()->c_str();
+}
+
 const char *Config::asCStr() const
 {
     return this->get<ConfString>()->getVal()->c_str();

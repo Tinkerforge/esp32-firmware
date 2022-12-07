@@ -98,7 +98,7 @@ void NTP::pre_setup()
         {"server", Config::Str("ptbtime1.ptb.de", 0, 64)}, // We've applied for a vendor zone @ pool.ntp.org, however this seems to take quite a while. Use the ptb servers for now.
         {"server2", Config::Str("ptbtime2.ptb.de", 0, 64)},
     }), [](Config &conf) -> String {
-        if (lookup_timezone(conf.get("timezone")->asCStr()) == nullptr)
+        if (lookup_timezone(conf.get("timezone")->asEphemeralCStr()) == nullptr)
             return "Can't update config: Failed to look up timezone.";
         return "";
     }};
@@ -148,15 +148,15 @@ void NTP::setup()
         sntp_setservername(dhcp ? 2 : 1, ntp_server2_copy);
     }
 
-    const char *tzstring = lookup_timezone(config.get("timezone")->asCStr());
+    const char *tzstring = lookup_timezone(config.get("timezone")->asEphemeralCStr());
 
     if (tzstring == nullptr) {
-        logger.printfln("Failed to look up timezone information for %s. Will not set timezone", config.get("timezone")->asCStr());
+        logger.printfln("Failed to look up timezone information for %s. Will not set timezone", config.get("timezone")->asEphemeralCStr());
         return;
     }
     setenv("TZ", tzstring, 1);
     tzset();
-    logger.printfln("Set timezone to %s", config.get("timezone")->asCStr());
+    logger.printfln("Set timezone to %s", config.get("timezone")->asEphemeralCStr());
 
     if (config.get("enable")->asBool())
          sntp_init();

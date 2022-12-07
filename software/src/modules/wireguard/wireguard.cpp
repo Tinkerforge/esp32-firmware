@@ -67,27 +67,21 @@ void Wireguard::pre_setup()
         {"allowed_ip",     Config::Str("0.0.0.0", 7, 15)},
         {"allowed_subnet", Config::Str("0.0.0.0", 7, 15)}
     }), [](Config &cfg) -> String {
-        const char *internal_ip = cfg.get("internal_ip")->asCStr();
-        const char *internal_subnet = cfg.get("internal_subnet")->asCStr();
-        const char *internal_gateway = cfg.get("internal_gateway")->asCStr();
-        const char *allowed_ip = cfg.get("allowed_ip")->asCStr();
-        const char *allowed_subnet = cfg.get("allowed_subnet")->asCStr();
-
         IPAddress unused;
 
-        if (!unused.fromString(internal_ip))
+        if (!unused.fromString(cfg.get("internal_ip")->asEphemeralCStr()))
             return "Failed to parse \"internal_ip\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!unused.fromString(internal_subnet))
+        if (!unused.fromString(cfg.get("internal_subnet")->asEphemeralCStr()))
             return "Failed to parse \"internal_subnet\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!unused.fromString(internal_gateway))
+        if (!unused.fromString(cfg.get("internal_gateway")->asEphemeralCStr()))
             return "Failed to parse \"internal_gateway\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!unused.fromString(allowed_ip))
+        if (!unused.fromString(cfg.get("allowed_ip")->asEphemeralCStr()))
             return "Failed to parse \"allowed_ip\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!unused.fromString(allowed_subnet))
+        if (!unused.fromString(cfg.get("allowed_subnet")->asEphemeralCStr()))
             return "Failed to parse \"allowed_subnet\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
 
@@ -135,13 +129,13 @@ void Wireguard::start_wireguard()
     IPAddress allowed_ip;
     IPAddress allowed_subnet;
 
-    internal_ip.fromString(config.get("internal_ip")->asCStr());
-    internal_subnet.fromString(config.get("internal_subnet")->asCStr());
-    internal_gateway.fromString(config.get("internal_gateway")->asCStr());
-    allowed_ip.fromString(config.get("allowed_ip")->asCStr());
-    allowed_subnet.fromString(config.get("allowed_subnet")->asCStr());
+    internal_ip.fromString(config.get("internal_ip")->asEphemeralCStr());
+    internal_subnet.fromString(config.get("internal_subnet")->asEphemeralCStr());
+    internal_gateway.fromString(config.get("internal_gateway")->asEphemeralCStr());
+    allowed_ip.fromString(config.get("allowed_ip")->asEphemeralCStr());
+    allowed_subnet.fromString(config.get("allowed_subnet")->asEphemeralCStr());
 
-    logger.printfln("Got NTP sync. Connecting to WireGuard peer %s:%u", config.get("remote_host")->asCStr(), config.get("remote_port")->asUint());
+    logger.printfln("Got NTP sync. Connecting to WireGuard peer %s:%u", config.get("remote_host")->asEphemeralCStr(), config.get("remote_port")->asUint());
 
     wg.begin(internal_ip,
              internal_subnet,

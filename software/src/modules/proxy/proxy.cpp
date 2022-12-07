@@ -98,9 +98,8 @@ void Proxy::pre_setup()
          {"listen_address", Config::Str("0.0.0.0", 7, 15)},
          {"listen_port", Config::Uint16(4223)}
     }),  [](Config &cfg) -> String {
-        const char *listen = cfg.get("listen_address")->asCStr();
         IPAddress listen_address;
-        if (!listen_address.fromString(listen))
+        if (!listen_address.fromString(cfg.get("listen_address")->asEphemeralCStr()))
             return "Failed to parse \"listen_address\": Expected format is dotted decimal, i.e. 10.0.0.1";
         return "";
     });
@@ -116,7 +115,7 @@ void Proxy::setup()
     this->auth_secret = config.get("authentication_secret")->asString();
     const char *secret = this->auth_secret.length() == 0 ? nullptr : this->auth_secret.c_str();
 
-    int ret = tf_net_create(&net, config.get("listen_address")->asCStr(), config.get("listen_port")->asUint(), secret);
+    int ret = tf_net_create(&net, config.get("listen_address")->asEphemeralCStr(), config.get("listen_port")->asUint(), secret);
 
     if (ret != TF_E_OK) {
         logger.printfln("Failed to initialize proxy: Listen address invalid?");

@@ -351,11 +351,11 @@ void Mqtt::setup()
 
     esp_mqtt_client_config_t mqtt_cfg = {};
 
-    mqtt_cfg.host = mqtt_config_in_use.get("broker_host")->asCStr();
+    mqtt_cfg.host = mqtt_config_in_use.get("broker_host")->asEphemeralCStr();
     mqtt_cfg.port = mqtt_config_in_use.get("broker_port")->asUint();
-    mqtt_cfg.client_id = mqtt_config_in_use.get("client_name")->asCStr();
-    mqtt_cfg.username = mqtt_config_in_use.get("broker_username")->asCStr();
-    mqtt_cfg.password = mqtt_config_in_use.get("broker_password")->asCStr();
+    mqtt_cfg.client_id = mqtt_config_in_use.get("client_name")->asEphemeralCStr();
+    mqtt_cfg.username = mqtt_config_in_use.get("broker_username")->asEphemeralCStr();
+    mqtt_cfg.password = mqtt_config_in_use.get("broker_password")->asEphemeralCStr();
     mqtt_cfg.buffer_size = MQTT_RECV_BUFFER_SIZE;
     mqtt_cfg.network_timeout_ms = 100;
 
