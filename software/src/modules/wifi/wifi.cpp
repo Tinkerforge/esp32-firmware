@@ -101,8 +101,8 @@ void Wifi::pre_setup()
         {"dns", Config::Str("0.0.0.0", 7, 15)},
         {"dns2", Config::Str("0.0.0.0", 7, 15)},
     }), [](Config &cfg) -> String {
-        const String &value = cfg.get("passphrase")->asString();
-        if (value.length() > 0 && value.length() < 8)
+        const String &phrase = cfg.get("passphrase")->asString();
+        if (phrase.length() > 0 && phrase.length() < 8)
             return "Passphrase too short. Must be at least 8 characters, or zero if open network.";
         // Fixme: Check if only hex if exactly 64 bytes long: then it's a PSK instead of a passphrase.
 
