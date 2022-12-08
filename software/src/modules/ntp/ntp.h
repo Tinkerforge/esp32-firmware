@@ -27,8 +27,8 @@ class NTP
 private:
     struct timeval last_sync;
 
-    char *ntp_server1_copy;
-    char *ntp_server2_copy;
+    String ntp_server1;
+    String ntp_server2;
 
 public:
     NTP(){}

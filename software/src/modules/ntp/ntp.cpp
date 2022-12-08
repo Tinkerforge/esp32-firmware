@@ -109,14 +109,6 @@ void NTP::pre_setup()
     });
 }
 
-static void copy_server_name(char **dst, const String &src) {
-    size_t len = src.length() + 1;
-    *dst = static_cast<char*>(malloc(len));
-    if (*dst) {
-        src.toCharArray(*dst, len);
-    }
-}
-
 void NTP::setup()
 {
     initialized = true;
@@ -137,15 +129,14 @@ void NTP::setup()
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
     sntp_set_sync_mode(SNTP_SYNC_MODE_IMMED);
 
-    const String &server1 = config.get("server")->asString();
-    const String &server2 = config.get("server2")->asString();
-    if (server1 != "") {
-        copy_server_name(&ntp_server1_copy, server1);
-        sntp_setservername(dhcp ? 1 : 0, ntp_server1_copy);
+    // Keep local copies of ephemeral conf Strings because the SNTP lib doesn't create its own copies and holds references to whatever we pass to it.
+    ntp_server1 = config.get("server")->asString();
+    ntp_server2 = config.get("server2")->asString();
+    if (ntp_server1 != "") {
+        sntp_setservername(dhcp ? 1 : 0, ntp_server1.c_str());
     }
-    if (server2 != "") {
-        copy_server_name(&ntp_server2_copy, server2);
-        sntp_setservername(dhcp ? 2 : 1, ntp_server2_copy);
+    if (ntp_server2 != "") {
+        sntp_setservername(dhcp ? 2 : 1, ntp_server2.c_str());
     }
 
     const char *tzstring = lookup_timezone(config.get("timezone")->asEphemeralCStr());
