@@ -39,4 +39,7 @@ private:
     ConfigRoot config;
     ConfigRoot state;
     WireGuard wg;
+
+    String private_key;
+    String remote_host;
 };

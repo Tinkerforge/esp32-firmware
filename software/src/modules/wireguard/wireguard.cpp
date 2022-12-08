@@ -135,13 +135,16 @@ void Wireguard::start_wireguard()
     allowed_ip.fromString(config.get("allowed_ip")->asEphemeralCStr());
     allowed_subnet.fromString(config.get("allowed_subnet")->asEphemeralCStr());
 
-    logger.printfln("Got NTP sync. Connecting to WireGuard peer %s:%u", config.get("remote_host")->asEphemeralCStr(), config.get("remote_port")->asUint());
+    private_key = config.get("private_key")->asString(); // Local copy of ephemeral conf String. The network interface created by WG might hold a reference to the C string.
+    remote_host = config.get("remote_host")->asString(); // Local copy of ephemeral conf String. lwip_getaddrinfo() might hold a reference to the C string.
+
+    logger.printfln("Got NTP sync. Connecting to WireGuard peer %s:%u", remote_host.c_str(), config.get("remote_port")->asUint());
 
     wg.begin(internal_ip,
              internal_subnet,
              internal_gateway,
-             config.get("private_key")->asUnsafeCStr(), // Possibly unsafe. The network interface created by WG might hold a reference to this.
-             config.get("remote_host")->asUnsafeCStr(), // Possibly unsafe. lwip_getaddrinfo() might hold a reference to this.
+             private_key.c_str(),
+             remote_host.c_str(),
              config.get("remote_public_key")->asEphemeralCStr(),
              config.get("remote_port")->asUint(),
              allowed_ip,
