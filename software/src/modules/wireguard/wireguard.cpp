@@ -142,12 +142,12 @@ void Wireguard::start_wireguard()
              internal_gateway,
              config.get("private_key")->asCStr(),
              config.get("remote_host")->asCStr(),
-             config.get("remote_public_key")->asCStr(),
+             config.get("remote_public_key")->asEphemeralCStr(),
              config.get("remote_port")->asUint(),
              allowed_ip,
              allowed_subnet,
              config.get("make_default_interface")->asBool(),
-             config.get("preshared_key")->asString().length() > 0 ? config.get("preshared_key")->asCStr() : nullptr);
+             config.get("preshared_key")->asString().length() > 0 ? config.get("preshared_key")->asEphemeralCStr() : nullptr);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         bool up = wg.is_peer_up(nullptr, nullptr);
