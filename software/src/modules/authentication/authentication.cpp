@@ -56,8 +56,8 @@ void Authentication::setup()
     api.restorePersistentConfig("authentication/config", &authentication_config);
 
     if (authentication_config.get("enable_auth")->asBool()) {
-        const String &user = authentication_config.get("username")->asString();
-        const String &digest_hash = authentication_config.get("digest_hash")->asString();
+        String user = authentication_config.get("username")->asString(); // Create copies of possibly emphemeral Strings from config.
+        String digest_hash = authentication_config.get("digest_hash")->asString();
 
         server.setAuthentication([user, digest_hash](WebServerRequest req) -> bool {
             String auth = req.header("Authorization");
