@@ -1115,7 +1115,7 @@ const char *Config::asEphemeralCStr() const
     return this->get<ConfString>()->getVal()->c_str();
 }
 
-const char *Config::asCStr() const
+const char *Config::asUnsafeCStr() const
 {
     return this->get<ConfString>()->getVal()->c_str();
 }

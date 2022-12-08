@@ -656,7 +656,7 @@ struct Config {
     const String &asString() const;
 
     const char *asEphemeralCStr() const;
-    const char *asCStr() const;
+    const char *asUnsafeCStr() const;
 
     const float &asFloat() const;
 

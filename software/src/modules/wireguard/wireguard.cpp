@@ -140,8 +140,8 @@ void Wireguard::start_wireguard()
     wg.begin(internal_ip,
              internal_subnet,
              internal_gateway,
-             config.get("private_key")->asCStr(),
-             config.get("remote_host")->asCStr(),
+             config.get("private_key")->asUnsafeCStr(), // Possibly unsafe. The network interface created by WG might hold a reference to this.
+             config.get("remote_host")->asUnsafeCStr(), // Possibly unsafe. lwip_getaddrinfo() might hold a reference to this.
              config.get("remote_public_key")->asEphemeralCStr(),
              config.get("remote_port")->asUint(),
              allowed_ip,

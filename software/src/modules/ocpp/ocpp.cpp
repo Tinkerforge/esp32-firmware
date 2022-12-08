@@ -114,7 +114,7 @@ void Ocpp::setup()
     if (!config.get("enable")->asBool() || config.get("url")->asString().length() == 0)
         return;
 
-    cp.start(config.get("url")->asCStr(), (String(BUILD_HOST_PREFIX) + '-' + local_uid_str).c_str());
+    cp.start(config.get("url")->asUnsafeCStr(), (String(BUILD_HOST_PREFIX) + '-' + local_uid_str).c_str()); // FIXME: Check if use of returned C string is safe or if cp object will hold an unsafe reference.
 
     task_scheduler.scheduleWithFixedDelay([this](){
         cp.tick();

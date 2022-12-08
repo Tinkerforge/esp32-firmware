@@ -487,7 +487,7 @@ const char *platform_get_charge_point_model() {
 }
 
 const char *platform_get_charge_point_serial_number() {
-    return device_name.name.get("name")->asCStr();
+    return device_name.name.get("name")->asUnsafeCStr(); // FIXME: Check if this use of the returned C string is safe or if a local copy like in platform_get_charge_point_model() is required.
 }
 const char *platform_get_firmware_version() {
     return build_version_full_str();
