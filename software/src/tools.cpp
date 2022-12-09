@@ -698,14 +698,20 @@ void remove_directory(const char *path)
     // is only called /spiffs for historical reasons, we use
     // LittleFS instead. Calling ::rmdir directly bypasses
     // this and other helpful checks.
-    for_file_in(path, [](File *f) {
+    for_file_in(path_string.c_str(), [](File *f) {
             bool dir = f->isDirectory();
-            const char *file_path = f->path();
+            String file_path = String(f->path());
+            // F will be closed after the callback returns.
+            // However the recursive call below can potentially open
+            // many files in parallel.
+            // As we close the file before using the path, we have to
+            // copy the path into a String. close() frees the buffer that
+            // f->path() points to.
             f->close();
             if (dir)
-                remove_directory(file_path);
+                remove_directory(file_path.c_str());
             else
-                LittleFS.remove(file_path);
+                LittleFS.remove(file_path.c_str());
             return true;
         }, false);
 
