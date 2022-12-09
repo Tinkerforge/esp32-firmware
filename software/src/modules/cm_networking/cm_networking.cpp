@@ -67,10 +67,14 @@ void CMNetworking::register_urls()
 // If we don't have the evse or evse_v2 module, but have cm_networking, this is probably an energy manager.
 // We only want to announce manageable chargers, not managers.
 #if MODULE_EVSE_AVAILABLE() || MODULE_EVSE_V2_AVAILABLE()
+    if (!network.config.get("enable_mdns")->asBool())
+        return;
+
     MDNS.addService("tf-warp-cm", "udp", 34127);
     MDNS.addServiceTxt("tf-warp-cm", "udp", "version", String(PROTOCOL_VERSION));
     task_scheduler.scheduleWithFixedDelay([](){
         #if MODULE_DEVICE_NAME_AVAILABLE()
+            // Keep "display_name" updated because it can be changed at runtime without clicking "Save".
             MDNS.addServiceTxt("tf-warp-cm", "udp", "display_name", device_name.display_name.get("display_name")->asString());
         #endif
 
@@ -81,6 +85,7 @@ void CMNetworking::register_urls()
             management_enabled = evse_v2.evse_management_enabled.get("enabled")->asBool();
         #endif
 
+        // Keep "enabled" updated because it is retrieved from the EVSE.
         MDNS.addServiceTxt("tf-warp-cm", "udp", "enabled", management_enabled ? "true" : "false");
     }, 0, 10000);
 #endif
