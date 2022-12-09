@@ -311,7 +311,7 @@ bool prepare_migrations()
     */
 
     if (LittleFS.exists("/migration"))
-        LittleFS.rmdir("/migration");
+        remove_directory("/migration");
 
     LittleFS.mkdir("/migration");
     return for_file_in("/config", [](File *source) {
