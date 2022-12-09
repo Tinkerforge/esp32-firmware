@@ -36,8 +36,6 @@
 extern API api;
 extern TaskScheduler task_scheduler;
 
-extern char local_uid_str[32];
-
 struct ConfigMigration {
     const int major, minor, patch;
     void (*const fn)(void);
@@ -131,7 +129,7 @@ static const ConfigMigration migrations[] = {
                 ip.set(s);
             };
 
-            String default_hostname = String(BUILD_HOST_PREFIX) + '-' + local_uid_str;
+            String default_hostname = String(BUILD_HOST_PREFIX) + '-';
             String ethernet_hostname = default_hostname;
             if (read_config_file("ethernet/config", json)) {
                 ip_to_string(json["ip"]);
