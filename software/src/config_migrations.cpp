@@ -176,10 +176,12 @@ static const ConfigMigration migrations[] = {
             if (ethernet_hostname != default_hostname)
                 new_hostname = ethernet_hostname;
 
-            json.to<JsonObject>();
-            json["enable_mdns"] = true;
-            json["hostname"] = new_hostname;
-            write_config_file("network/config", json);
+            if (new_hostname != default_hostname){
+                json.to<JsonObject>();
+                json["enable_mdns"] = true;
+                json["hostname"] = new_hostname;
+                write_config_file("network/config", json);
+            }
 
             {
                 DynamicJsonDocument users_json{1024};
