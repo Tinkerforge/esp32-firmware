@@ -681,6 +681,14 @@ bool for_file_in(const char *dir, bool (*callback)(File *open_file), bool skip_d
 
 void remove_directory(const char *path)
 {
+    String path_string;
+    if (*path != '/') {
+        logger.printfln("Remove directory called with path %s that does not start with a /.", path);
+        path_string = String("/") + path;
+    } else {
+        path_string = path;
+    }
+
     // This is more involved than expected:
     // rmdir only deletes empty directories, so remove all files first
     // Also LittleFS.rmdir will call the vfs_api.cpp implementation that
@@ -701,7 +709,7 @@ void remove_directory(const char *path)
             return true;
         }, false);
 
-    ::rmdir((String("/spiffs/") + path).c_str());
+    ::rmdir((String("/spiffs") + path_string).c_str());
 }
 
 
