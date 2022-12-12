@@ -201,7 +201,7 @@ void CMNetworking::register_manager(std::vector<String> &&hosts,
             initialized = true;
         }
 
-        response_packet recv_buf[2] = {};
+        state_packet recv_buf[2] = {};
         struct sockaddr_in source_addr;
         socklen_t socklen = sizeof(source_addr);
 
@@ -213,7 +213,7 @@ void CMNetworking::register_manager(std::vector<String> &&hosts,
             return;
         }
 
-        if (len != sizeof(response_packet)) {
+        if (len != sizeof(state_packet)) {
             logger.printfln("Received datagram of wrong size %d from %s", len, inet_ntoa(source_addr.sin_addr));
             return;
         }
@@ -234,31 +234,31 @@ void CMNetworking::register_manager(std::vector<String> &&hosts,
             return;
         }
 
-        response_packet response;
-        memcpy(&response, recv_buf, sizeof(response));
+        state_packet state_pkt;
+        memcpy(&state_pkt, recv_buf, sizeof(state_pkt));
 
-        if (response.header.seq_num <= last_seen_seq_num[charger_idx] && last_seen_seq_num[charger_idx] - response.header.seq_num < 5) {
+        if (state_pkt.header.seq_num <= last_seen_seq_num[charger_idx] && last_seen_seq_num[charger_idx] - state_pkt.header.seq_num < 5) {
             logger.printfln("Received stale (out of order?) packet from %s (%s). Last seen seq_num is %u, Received seq_num is %u",
                 names[charger_idx].c_str(),
                 inet_ntoa(source_addr.sin_addr),
                 last_seen_seq_num[charger_idx],
-                response.header.seq_num);
+                state_pkt.header.seq_num);
             return;
         }
 
-        if (response.header.version != PROTOCOL_VERSION) {
+        if (state_pkt.header.version != PROTOCOL_VERSION) {
             manager_error_callback(charger_idx, CM_NETWORKING_ERROR_FW_MISMATCH);
             logger.printfln("Received packet from %s (%s) with incompatible firmware. Our protocol version is %u, received packet had %u",
                 names[charger_idx].c_str(),
                 inet_ntoa(source_addr.sin_addr),
                 PROTOCOL_VERSION,
-                response.header.version);
+                state_pkt.header.version);
             return;
         }
 
-        last_seen_seq_num[charger_idx] = response.header.seq_num;
+        last_seen_seq_num[charger_idx] = state_pkt.header.seq_num;
 
-        if (!response.managed) {
+        if (!state_pkt.managed) {
             manager_error_callback(charger_idx, CM_NETWORKING_ERROR_NOT_MANAGED);
             logger.printfln("%s (%s) reports managed is not activated!",
                 names[charger_idx].c_str(),
@@ -267,13 +267,13 @@ void CMNetworking::register_manager(std::vector<String> &&hosts,
         }
 
         manager_callback(charger_idx,
-                         response.iec61851_state,
-                         response.charger_state,
-                         response.error_state,
-                         response.uptime,
-                         response.charging_time,
-                         response.allowed_charging_current,
-                         response.supported_current);
+                         state_pkt.iec61851_state,
+                         state_pkt.charger_state,
+                         state_pkt.error_state,
+                         state_pkt.uptime,
+                         state_pkt.charging_time,
+                         state_pkt.allowed_charging_current,
+                         state_pkt.supported_current);
         }, 100, 100);
 }
 
@@ -284,18 +284,18 @@ bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_cur
     if (manager_sock < 0)
         return true;
 
-    request_packet request;
-    request.header.version = PROTOCOL_VERSION;
-    request.header.seq_num = next_seq_num;
+    command_packet command_pkt;
+    command_pkt.header.version = PROTOCOL_VERSION;
+    command_pkt.header.seq_num = next_seq_num;
     ++next_seq_num;
 
-    request.allocated_current = allocated_current;
+    command_pkt.allocated_current = allocated_current;
 
     int err = -1;
 
 
     resolve_hostname(client_id);
-    err = sendto(manager_sock, &request, sizeof(request), 0, (sockaddr *)&dest_addrs[client_id], sizeof(dest_addrs[client_id]));
+    err = sendto(manager_sock, &command_pkt, sizeof(command_pkt), 0, (sockaddr *)&dest_addrs[client_id], sizeof(dest_addrs[client_id]));
 
     if (err < 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -309,8 +309,8 @@ bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_cur
         logger.printfln("Failed to send: %s %d", strerror(errno), errno);
         return true;
     }
-    if (err != sizeof(request)) {
-        logger.printfln("Failed to send. sendto truncated request (of %u bytes) to %d bytes.", sizeof(request), err);
+    if (err != sizeof(command_pkt)) {
+        logger.printfln("Failed to send. sendto truncated command packet (of %u bytes) to %d bytes.", sizeof(command_pkt), err);
         return true;
     }
     return true;
@@ -329,7 +329,7 @@ void CMNetworking::register_client(std::function<void(uint16_t)> client_callback
         static uint8_t last_seen_seq_num = 255;
         static uint32_t last_successful_recv = millis();
 
-        request_packet recv_buf[2] = {};
+        command_packet recv_buf[2] = {};
 
         struct sockaddr_storage temp_addr;
         socklen_t socklen = sizeof(temp_addr);
@@ -340,41 +340,41 @@ void CMNetworking::register_client(std::function<void(uint16_t)> client_callback
                 logger.printfln("recvfrom failed: errno %d", errno);
 
             // If we have not received a valid packet for one minute, devalidate source_addr.
-            // Otherwise we would send response packets to this address forever.
+            // Otherwise we would send state packets packets to this address forever.
             if (deadline_elapsed(last_successful_recv + 60 * 1000))
                 source_addr_valid = false;
 
             return;
         }
 
-        if (len != sizeof(request_packet)) {
+        if (len != sizeof(command_packet)) {
             logger.printfln("received datagram of wrong size %d", len);
             return;
         }
 
-        request_packet request;
-        memcpy(&request, recv_buf, sizeof(request));
+        command_packet command_pkt;
+        memcpy(&command_pkt, recv_buf, sizeof(command_pkt));
 
-        if (request.header.seq_num <= last_seen_seq_num && last_seen_seq_num - request.header.seq_num < 5) {
-            logger.printfln("received stale (out of order?) packet. last seen seq_num is %u, received seq_num is %u", last_seen_seq_num, request.header.seq_num);
+        if (command_pkt.header.seq_num <= last_seen_seq_num && last_seen_seq_num - command_pkt.header.seq_num < 5) {
+            logger.printfln("received stale (out of order?) packet. last seen seq_num is %u, received seq_num is %u", last_seen_seq_num, command_pkt.header.seq_num);
             return;
         }
 
-        if (request.header.version != PROTOCOL_VERSION) {
+        if (command_pkt.header.version != PROTOCOL_VERSION) {
             logger.printfln("received packet from box with incompatible firmware. Our protocol version is %u, received packet had %u",
                 PROTOCOL_VERSION,
-                request.header.version);
+                command_pkt.header.version);
             return;
         }
 
-        last_seen_seq_num = request.header.seq_num;
+        last_seen_seq_num = command_pkt.header.seq_num;
 
         last_successful_recv = millis();
         source_addr = temp_addr;
 
         source_addr_valid = true;
-        client_callback(request.allocated_current);
-        //logger.printfln("Received request. Allocated current is %u", request.allocated_current);
+        client_callback(command_pkt.allocated_current);
+        //logger.printfln("Received command packet. Allocated current is %u", command_pkt.allocated_current);
     }, 100, 100);
 }
 
@@ -393,30 +393,30 @@ bool CMNetworking::send_client_update(uint8_t iec61851_state,
         //logger.printfln("source addr not valid.");
         return false;
     }
-    //logger.printfln("Sending response.");
+    //logger.printfln("Sending state packet.");
 
-    response_packet response;
-    response.header.seq_num = next_seq_num;
+    state_packet state_pkt;
+    state_pkt.header.seq_num = next_seq_num;
     ++next_seq_num;
-    response.header.version = PROTOCOL_VERSION;
+    state_pkt.header.version = PROTOCOL_VERSION;
 
-    response.iec61851_state = iec61851_state;
-    response.charger_state = charger_state;
-    response.error_state = error_state;
-    response.uptime = uptime;
-    response.charging_time = charging_time;
-    response.allowed_charging_current = allowed_charging_current;
-    response.supported_current = supported_current;
-    response.managed = managed;
+    state_pkt.iec61851_state = iec61851_state;
+    state_pkt.charger_state = charger_state;
+    state_pkt.error_state = error_state;
+    state_pkt.uptime = uptime;
+    state_pkt.charging_time = charging_time;
+    state_pkt.allowed_charging_current = allowed_charging_current;
+    state_pkt.supported_current = supported_current;
+    state_pkt.managed = managed;
 
-    int err = sendto(client_sock, &response, sizeof(response), 0, (sockaddr *)&source_addr, sizeof(source_addr));
+    int err = sendto(client_sock, &state_pkt, sizeof(state_pkt), 0, (sockaddr *)&source_addr, sizeof(source_addr));
     if (err < 0) {
         if (errno != EAGAIN && errno != EWOULDBLOCK)
             logger.printfln("sendto failed: errno %d", errno);
         return false;
     }
-    if (err != sizeof(response)) {
-        logger.printfln("sendto truncated the response (of size %u bytes) to %d bytes.", sizeof(response), err);
+    if (err != sizeof(state_pkt)) {
+        logger.printfln("sendto truncated the state packet (of size %u bytes) to %d bytes.", sizeof(state_pkt), err);
         return false;
     }
 

@@ -10,13 +10,13 @@ struct packet_header {
     uint16_t padding;
 } __attribute__ ((packed));
 
-struct request_packet {
+struct command_packet {
     packet_header header;
 
     uint16_t allocated_current;
 } __attribute__ ((packed));
 
-struct response_packet {
+struct state_packet {
     packet_header header;
 
     uint8_t iec61851_state;
@@ -31,12 +31,12 @@ struct response_packet {
 """
 
 header_format = "<BBH"
-request_format = header_format + "H"
-response_format = header_format + "BBBIIHH?"
+command_format = header_format + "H"
+state_format = header_format + "BBBIIHH?"
 
-request_len = struct.calcsize(request_format)
-response_len = struct.calcsize(response_format)
-print(response_len)
+command_len = struct.calcsize(command_format)
+state_len = struct.calcsize(state_format)
+print(state_len)
 
 
 listen_addr = sys.argv[1]
@@ -135,13 +135,13 @@ def recieve():
     global addr
     global charging_time_start
     try:
-        data, addr = sock.recvfrom(request_len)
+        data, addr = sock.recvfrom(command_len)
     except BlockingIOError:
         return
-    if len(data) != request_len:
+    if len(data) != command_len:
         return
 
-    seq_num, version, _, allocated_current = struct.unpack(request_format, data)
+    seq_num, version, _, allocated_current = struct.unpack(command_format, data)
 
     req_seq_num.setText(str(seq_num))
     req_version.setText(str(version))
@@ -178,7 +178,7 @@ def send():
     charging_time = 0 if charging_time_start == 0 else int((time.time() - charging_time_start) * 1000)
     resp_charging_time.setText("{} ms".format(charging_time))
 
-    b = struct.pack(response_format,
+    b = struct.pack(state_format,
                     next_seq_num,
                     protocol_version if not resp_wrong_proto_version.isChecked() else 234,
                     0,

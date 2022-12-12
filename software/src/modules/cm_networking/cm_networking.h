@@ -51,13 +51,13 @@ struct packet_header {
     uint16_t padding;
 } __attribute__((packed));
 
-struct request_packet {
+struct command_packet {
     packet_header header;
 
     uint16_t allocated_current;
 } __attribute__((packed));
 
-struct response_packet {
+struct state_packet {
     packet_header header;
 
     uint8_t iec61851_state;
