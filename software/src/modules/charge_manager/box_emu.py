@@ -4,35 +4,66 @@ import sys
 import time
 
 """
-struct packet_header {
-    uint8_t seq_num;
+struct cm_packet_header {
+    uint16_t magic;
+    uint16_t length;
+    uint16_t seq_num;
     uint8_t version;
-    uint16_t padding;
-} __attribute__ ((packed));
+    uint8_t padding;
+} __attribute__((packed));
 
-struct command_packet {
-    packet_header header;
-
+struct cm_command_v1 {
     uint16_t allocated_current;
-} __attribute__ ((packed));
+    /* command_flags
+    bit 6 - control pilot permanently disconnected
+    Other bits must be sent unset and ignored on reception.
+    */
+    uint8_t command_flags;
+    uint8_t padding;
+} __attribute__((packed));
 
-struct state_packet {
-    packet_header header;
+struct cm_command_packet {
+    cm_packet_header header;
+    cm_command_v1 v1;
+} __attribute__((packed));
 
-    uint8_t iec61851_state;
-    uint8_t vehicle_state;
-    uint8_t error_state;
-    uint32_t uptime;
+struct cm_state_v1 {
+    uint32_t feature_flags; /* unused */
+    uint32_t evse_uptime;
     uint32_t charging_time;
     uint16_t allowed_charging_current;
     uint16_t supported_current;
-    bool managed;
-} __attribute__ ((packed));
+
+    uint8_t iec61851_state;
+    uint8_t charger_state;
+    uint8_t error_state;
+    /* state_flags
+    bit 7 - managed
+    bit 6 - control_pilot_permanently_disconnected
+    bit 5 - L1_connected
+    bit 4 - L2_connected
+    bit 3 - L3_connected
+    bit 2 - L1_active
+    bit 1 - L2_active
+    bit 0 - L3_active
+    */
+    uint8_t state_flags;
+    float line_voltages[3];
+    float line_currents[3];
+    float line_power_factors[3];
+    float energy_rel;
+    float energy_abs;
+} __attribute__((packed));
+
+struct cm_state_packet {
+    cm_packet_header header;
+    cm_state_v1 v1;
+} __attribute__((packed));
 """
 
-header_format = "<BBH"
-command_format = header_format + "H"
-state_format = header_format + "BBBIIHH?"
+header_format = "<HHHBx"
+command_format = header_format + "HBx"
+state_format = header_format + "IIIHHBBBBfffffffffff"
 
 command_len = struct.calcsize(command_format)
 state_len = struct.calcsize(state_format)
@@ -127,7 +158,7 @@ layout.addRow("Managed", resp_managed)
 
 
 next_seq_num = 0
-protocol_version = 3
+protocol_version = 1
 start = time.time()
 charging_time_start = 0
 
@@ -141,7 +172,7 @@ def recieve():
     if len(data) != command_len:
         return
 
-    seq_num, version, _, allocated_current = struct.unpack(command_format, data)
+    magic, length, seq_num, version, allocated_current, command_flags = struct.unpack(command_format, data)
 
     req_seq_num.setText(str(seq_num))
     req_version.setText(str(version))
@@ -179,18 +210,30 @@ def send():
     resp_charging_time.setText("{} ms".format(charging_time))
 
     b = struct.pack(state_format,
+                    34127,                                      # magic
+                    state_len,                                  # length
                     next_seq_num,
-                    protocol_version if not resp_wrong_proto_version.isChecked() else 234,
-                    0,
-                    resp_iec61851_state.currentIndex(),
-                    resp_charger_state.currentIndex(),
-                    resp_error_state.value(),
+                    protocol_version if not resp_wrong_proto_version.isChecked() else 0,
+                    0,                                          # features
                     uptime,
                     charging_time,
                     resp_allowed_charging_current.value() * 1000,
                     resp_supported_current.value() * 1000,
-                    resp_managed.isChecked())
-
+                    resp_iec61851_state.currentIndex(),
+                    resp_charger_state.currentIndex(),
+                    resp_error_state.value(),
+                    0x80 if resp_managed.isChecked() else 0,    # flags
+                    0,  # LV0
+                    0,  # LV1
+                    0,  # LV2
+                    0,  # LC0
+                    0,  # LC1
+                    0,  # LC2
+                    0,  # LPF0
+                    0,  # LPF1
+                    0,  # LPF2
+                    0,  # energy_rel
+                    0)  # energy_abs
     if not resp_block_seq_num.isChecked():
         next_seq_num += 1
         next_seq_num %= 256

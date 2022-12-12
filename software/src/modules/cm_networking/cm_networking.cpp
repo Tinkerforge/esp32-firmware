@@ -71,7 +71,7 @@ void CMNetworking::register_urls()
         return;
 
     MDNS.addService("tf-warp-cm", "udp", 34127);
-    MDNS.addServiceTxt("tf-warp-cm", "udp", "version", String(PROTOCOL_VERSION));
+    MDNS.addServiceTxt("tf-warp-cm", "udp", "version", String(CM_PROTOCOL_VERSION));
     task_scheduler.scheduleWithFixedDelay([](){
         #if MODULE_DEVICE_NAME_AVAILABLE()
             // Keep "display_name" updated because it can be changed at runtime without clicking "Save".
@@ -166,6 +166,78 @@ void CMNetworking::resolve_hostname(uint8_t charger_idx)
     resolve_state[charger_idx] = RESOLVE_STATE_RESOLVED;
 }
 
+static const uint8_t cm_command_packet_length_versions[] = {
+    sizeof(struct cm_packet_header),
+    sizeof(struct cm_packet_header) + sizeof(struct cm_command_v1),
+};
+static_assert(ARRAY_SIZE(cm_command_packet_length_versions) == (CM_PROTOCOL_VERSION + 1));
+
+static const uint8_t cm_state_packet_length_versions[] = {
+    sizeof(struct cm_packet_header),
+    sizeof(struct cm_packet_header) + sizeof(struct cm_state_v1),
+};
+static_assert(ARRAY_SIZE(cm_state_packet_length_versions) == (CM_PROTOCOL_VERSION + 1));
+
+String CMNetworking::validate_packet_header(const struct cm_packet_header *header, ssize_t recv_length) const
+{
+    if (recv_length < sizeof(struct cm_packet_header)) {
+        return String("Truncated header with ") + recv_length + " bytes.";
+    }
+
+    if (header->magic != CM_PACKET_MAGIC) {
+        return String("Invalid magic. Got ") + header->magic + '.';
+    }
+
+    if (header->version < CM_PROTOCOL_VERSION_MIN) {
+        return String("Protocol version ") + header->version + " too old. Need at least version " + CM_PROTOCOL_VERSION_MIN + '.';
+    }
+
+    return String();
+}
+
+String CMNetworking::validate_command_packet_header(const struct cm_command_packet *pkt, ssize_t recv_length) const
+{
+    String err = validate_packet_header(&(pkt->header), recv_length);
+    if (err != "")
+        return err;
+
+    if (((pkt->header.version > CM_PROTOCOL_VERSION) && (pkt->header.length < cm_command_packet_length_versions[CM_PROTOCOL_VERSION]))  // Newer protocol than known. Packet must be at least as long as our newest known version.
+        || (pkt->header.length != cm_command_packet_length_versions[pkt->header.version])) {                                            // Match length of known protocol version.
+        return String("Invalid packet length for protocol version ") + pkt->header.version + ": " + pkt->header.length + "B.";
+    }
+
+    if (((pkt->header.version > CM_PROTOCOL_VERSION) && (recv_length < cm_command_packet_length_versions[CM_PROTOCOL_VERSION])) // Newer protocol than known. Packet must be at least as long as our newest known version.
+        || (recv_length != cm_command_packet_length_versions[pkt->header.version])) {                                           // Match length of known protocol version.
+        return String("Received truncated packet for protocol version ") + pkt->header.version + ": " + recv_length + "B.";
+    }
+
+    return String();
+}
+
+String CMNetworking::validate_state_packet_header(const struct cm_state_packet *pkt, ssize_t recv_length) const
+{
+    String err = validate_packet_header(&(pkt->header), recv_length);
+    if (err != "")
+        return err;
+
+    if (((pkt->header.version > CM_PROTOCOL_VERSION) && (pkt->header.length < cm_state_packet_length_versions[CM_PROTOCOL_VERSION]))    // Newer protocol than known. Packet must be at least as long as our newest known version.
+        || (pkt->header.length != cm_state_packet_length_versions[pkt->header.version])) {                                              // Match length of known protocol version.
+        return String("Invalid packet length for protocol version ") + pkt->header.version + ": " + pkt->header.length + "B.";
+    }
+
+    if (((pkt->header.version > CM_PROTOCOL_VERSION) && (recv_length < cm_state_packet_length_versions[CM_PROTOCOL_VERSION]))    // Newer protocol than known. Packet must be at least as long as our newest known version.
+        || (recv_length != cm_state_packet_length_versions[pkt->header.version])) {                                              // Match length of known protocol version.
+        return String("Received truncated packet for protocol version ") + pkt->header.version + ": " + recv_length + "B.";
+    }
+
+    return String();
+}
+
+bool CMNetworking::seq_num_invalid(uint16_t received_sn, uint16_t last_seen_sn) const
+{
+    return received_sn <= last_seen_sn && last_seen_sn - received_sn < 5;
+}
+
 void CMNetworking::register_manager(std::vector<String> &&hosts,
                                     const std::vector<String> &names,
                                     std::function<void(uint8_t,  // client_id
@@ -194,27 +266,22 @@ void CMNetworking::register_manager(std::vector<String> &&hosts,
         return;
 
     task_scheduler.scheduleWithFixedDelay([this, names, manager_callback, manager_error_callback](){
-        static uint8_t last_seen_seq_num[MAX_CLIENTS];
+        static uint16_t last_seen_seq_num[MAX_CLIENTS];
         static bool initialized = false;
         if (!initialized) {
-            memset(last_seen_seq_num, 255, MAX_CLIENTS);
+            memset(last_seen_seq_num, 255, sizeof(last_seen_seq_num));
             initialized = true;
         }
 
-        state_packet recv_buf[2] = {};
+        struct cm_state_packet state_pkt;
         struct sockaddr_in source_addr;
         socklen_t socklen = sizeof(source_addr);
 
-        int len = recvfrom(manager_sock, recv_buf, sizeof(recv_buf), 0, (sockaddr *)&source_addr, &socklen);
+        int len = recvfrom(manager_sock, &state_pkt, sizeof(state_pkt), 0, (sockaddr *)&source_addr, &socklen);
 
         if (len < 0) {
             if (errno != EAGAIN && errno != EWOULDBLOCK)
                 logger.printfln("recvfrom failed: errno %d", errno);
-            return;
-        }
-
-        if (len != sizeof(state_packet)) {
-            logger.printfln("Received datagram of wrong size %d from %s", len, inet_ntoa(source_addr.sin_addr));
             return;
         }
 
@@ -234,11 +301,19 @@ void CMNetworking::register_manager(std::vector<String> &&hosts,
             return;
         }
 
-        state_packet state_pkt;
-        memcpy(&state_pkt, recv_buf, sizeof(state_pkt));
+        String validation_error = validate_state_packet_header(&state_pkt, len);
+        if (validation_error != "") {
+            logger.printfln("Received state packet from %s (%s) (%iB) failed validation: %s",
+                names[charger_idx].c_str(),
+                inet_ntoa(source_addr.sin_addr),
+                len,
+                validation_error.c_str());
+            manager_error_callback(charger_idx, CM_NETWORKING_ERROR_INVALID_HEADER);
+            return;
+        }
 
-        if (state_pkt.header.seq_num <= last_seen_seq_num[charger_idx] && last_seen_seq_num[charger_idx] - state_pkt.header.seq_num < 5) {
-            logger.printfln("Received stale (out of order?) packet from %s (%s). Last seen seq_num is %u, Received seq_num is %u",
+        if (seq_num_invalid(state_pkt.header.seq_num, last_seen_seq_num[charger_idx])) {
+            logger.printfln("Received stale (out of order?) state packet from %s (%s). Last seen seq_num is %u, Received seq_num is %u",
                 names[charger_idx].c_str(),
                 inet_ntoa(source_addr.sin_addr),
                 last_seen_seq_num[charger_idx],
@@ -246,19 +321,9 @@ void CMNetworking::register_manager(std::vector<String> &&hosts,
             return;
         }
 
-        if (state_pkt.header.version != PROTOCOL_VERSION) {
-            manager_error_callback(charger_idx, CM_NETWORKING_ERROR_FW_MISMATCH);
-            logger.printfln("Received packet from %s (%s) with incompatible firmware. Our protocol version is %u, received packet had %u",
-                names[charger_idx].c_str(),
-                inet_ntoa(source_addr.sin_addr),
-                PROTOCOL_VERSION,
-                state_pkt.header.version);
-            return;
-        }
-
         last_seen_seq_num[charger_idx] = state_pkt.header.seq_num;
 
-        if (!state_pkt.managed) {
+        if (!CM_STATE_FLAGS_MANAGED_IS_SET(state_pkt.v1.state_flags)) {
             manager_error_callback(charger_idx, CM_NETWORKING_ERROR_NOT_MANAGED);
             logger.printfln("%s (%s) reports managed is not activated!",
                 names[charger_idx].c_str(),
@@ -267,29 +332,32 @@ void CMNetworking::register_manager(std::vector<String> &&hosts,
         }
 
         manager_callback(charger_idx,
-                         state_pkt.iec61851_state,
-                         state_pkt.charger_state,
-                         state_pkt.error_state,
-                         state_pkt.uptime,
-                         state_pkt.charging_time,
-                         state_pkt.allowed_charging_current,
-                         state_pkt.supported_current);
+                         state_pkt.v1.iec61851_state,
+                         state_pkt.v1.charger_state,
+                         state_pkt.v1.error_state,
+                         state_pkt.v1.evse_uptime,
+                         state_pkt.v1.charging_time,
+                         state_pkt.v1.allowed_charging_current,
+                         state_pkt.v1.supported_current);
         }, 100, 100);
 }
 
 bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_current)
 {
-    static uint8_t next_seq_num = 1;
+    static uint16_t next_seq_num = 1;
 
     if (manager_sock < 0)
         return true;
 
-    command_packet command_pkt;
-    command_pkt.header.version = PROTOCOL_VERSION;
+    struct cm_command_packet command_pkt;
+    command_pkt.header.magic = CM_PACKET_MAGIC;
+    command_pkt.header.length = CM_COMMAND_PACKET_LENGTH;
     command_pkt.header.seq_num = next_seq_num;
     ++next_seq_num;
+    command_pkt.header.version = CM_PROTOCOL_VERSION;
 
-    command_pkt.allocated_current = allocated_current;
+    command_pkt.v1.allocated_current = allocated_current;
+    command_pkt.v1.command_flags = 0;
 
     int err = -1;
 
@@ -309,8 +377,8 @@ bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_cur
         logger.printfln("Failed to send: %s %d", strerror(errno), errno);
         return true;
     }
-    if (err != sizeof(command_pkt)) {
-        logger.printfln("Failed to send. sendto truncated command packet (of %u bytes) to %d bytes.", sizeof(command_pkt), err);
+    if (err != CM_COMMAND_PACKET_LENGTH) {
+        logger.printfln("Failed to send. sendto truncated command packet (of %u bytes) to %d bytes.", CM_COMMAND_PACKET_LENGTH, err);
         return true;
     }
     return true;
@@ -326,44 +394,38 @@ void CMNetworking::register_client(std::function<void(uint16_t)> client_callback
     memset(&manager_addr, 0, sizeof(manager_addr));
 
     task_scheduler.scheduleWithFixedDelay([this, client_callback](){
-        static uint8_t last_seen_seq_num = 255;
+        static uint16_t last_seen_seq_num = 255;
         static uint32_t last_successful_recv = millis();
 
-        command_packet recv_buf[2] = {};
+        struct cm_command_packet command_pkt;
 
         struct sockaddr_storage temp_addr;
         socklen_t socklen = sizeof(temp_addr);
-        int len = recvfrom(client_sock, recv_buf, sizeof(recv_buf), 0, (struct sockaddr *)&temp_addr, &socklen);
+        int len = recvfrom(client_sock, &command_pkt, sizeof(command_pkt), 0, (struct sockaddr *)&temp_addr, &socklen);
 
         if (len < 0) {
             if (errno != EAGAIN && errno != EWOULDBLOCK)
                 logger.printfln("recvfrom failed: errno %d", errno);
 
             // If we have not received a valid packet for one minute, invalidate manager_addr.
-            // Otherwise we would send state packets packets to this address forever.
+            // Otherwise we would send state packets to this address forever.
             if (deadline_elapsed(last_successful_recv + 60 * 1000))
                 manager_addr_valid = false;
 
             return;
         }
 
-        if (len != sizeof(command_packet)) {
-            logger.printfln("received datagram of wrong size %d", len);
+        String validation_error = validate_command_packet_header(&command_pkt, len);
+        if (validation_error != "") {
+            logger.printfln("Received command packet from %s (%iB) failed validation: %s",
+                inet_ntoa(((struct sockaddr_in*)&temp_addr)->sin_addr),
+                len,
+                validation_error.c_str());
             return;
         }
 
-        command_packet command_pkt;
-        memcpy(&command_pkt, recv_buf, sizeof(command_pkt));
-
-        if (command_pkt.header.seq_num <= last_seen_seq_num && last_seen_seq_num - command_pkt.header.seq_num < 5) {
-            logger.printfln("received stale (out of order?) packet. last seen seq_num is %u, received seq_num is %u", last_seen_seq_num, command_pkt.header.seq_num);
-            return;
-        }
-
-        if (command_pkt.header.version != PROTOCOL_VERSION) {
-            logger.printfln("received packet from box with incompatible firmware. Our protocol version is %u, received packet had %u",
-                PROTOCOL_VERSION,
-                command_pkt.header.version);
+        if (seq_num_invalid(command_pkt.header.seq_num, last_seen_seq_num)) {
+            logger.printfln("received stale (out of order?) command packet. last seen seq_num is %u, received seq_num is %u", last_seen_seq_num, command_pkt.header.seq_num);
             return;
         }
 
@@ -373,8 +435,8 @@ void CMNetworking::register_client(std::function<void(uint16_t)> client_callback
         manager_addr = temp_addr;
 
         manager_addr_valid = true;
-        client_callback(command_pkt.allocated_current);
-        //logger.printfln("Received command packet. Allocated current is %u", command_pkt.allocated_current);
+        client_callback(command_pkt.v1.allocated_current);
+        //logger.printfln("Received command packet. Allocated current is %u", command_pkt.v1.allocated_current);
     }, 100, 100);
 }
 
@@ -387,7 +449,7 @@ bool CMNetworking::send_client_update(uint8_t iec61851_state,
                                       uint16_t supported_current,
                                       bool managed)
 {
-    static uint8_t next_seq_num = 0;
+    static uint16_t next_seq_num = 0;
 
     if (!manager_addr_valid) {
         //logger.printfln("manager addr not valid.");
@@ -395,19 +457,57 @@ bool CMNetworking::send_client_update(uint8_t iec61851_state,
     }
     //logger.printfln("Sending state packet.");
 
-    state_packet state_pkt;
+    struct cm_state_packet state_pkt;
+    state_pkt.header.magic = CM_PACKET_MAGIC;
+    state_pkt.header.length = CM_STATE_PACKET_LENGTH;
     state_pkt.header.seq_num = next_seq_num;
     ++next_seq_num;
-    state_pkt.header.version = PROTOCOL_VERSION;
+    state_pkt.header.version = CM_PROTOCOL_VERSION;
 
-    state_pkt.iec61851_state = iec61851_state;
-    state_pkt.charger_state = charger_state;
-    state_pkt.error_state = error_state;
-    state_pkt.uptime = uptime;
-    state_pkt.charging_time = charging_time;
-    state_pkt.allowed_charging_current = allowed_charging_current;
-    state_pkt.supported_current = supported_current;
-    state_pkt.managed = managed;
+    state_pkt.v1.evse_uptime = uptime;
+    state_pkt.v1.charging_time = charging_time;
+    state_pkt.v1.allowed_charging_current = allowed_charging_current;
+    state_pkt.v1.supported_current = supported_current;
+    state_pkt.v1.iec61851_state = iec61851_state;
+    state_pkt.v1.charger_state = charger_state;
+    state_pkt.v1.error_state = error_state;
+
+    long flags = managed << CM_STATE_FLAGS_MANAGED_BIT_POS;
+    // TODO bit 6 - control_pilot_permanently_disconnected
+    if (api.hasFeature("meter_phases")) {
+        auto meter_phase_values = api.getState("meter/phases");
+        flags |= meter_phase_values->get("phases_connected")->get(0)->asBool() << CM_STATE_FLAGS_L1_CONNECTED_BIT_POS;
+        flags |= meter_phase_values->get("phases_connected")->get(1)->asBool() << CM_STATE_FLAGS_L2_CONNECTED_BIT_POS;
+        flags |= meter_phase_values->get("phases_connected")->get(2)->asBool() << CM_STATE_FLAGS_L3_CONNECTED_BIT_POS;
+        flags |= meter_phase_values->get("phases_active")->get(0)->asBool() << CM_STATE_FLAGS_L1_ACTIVE_BIT_POS;
+        flags |= meter_phase_values->get("phases_active")->get(1)->asBool() << CM_STATE_FLAGS_L2_ACTIVE_BIT_POS;
+        flags |= meter_phase_values->get("phases_active")->get(2)->asBool() << CM_STATE_FLAGS_L3_ACTIVE_BIT_POS;
+    }
+    state_pkt.v1.state_flags = static_cast<uint8_t>(flags);
+
+    if (api.hasFeature("meter_all_values")) {
+        auto meter_all_values = api.getState("meter/all_values");
+        for (int i = 0; i < 3; i++) {
+            state_pkt.v1.line_voltages[i]      = meter_all_values->get(i + METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L1)->asFloat();
+            state_pkt.v1.line_currents[i]      = meter_all_values->get(i + METER_ALL_VALUES_CURRENT_L1_A            )->asFloat();
+            state_pkt.v1.line_power_factors[i] = meter_all_values->get(i + METER_ALL_VALUES_POWER_FACTOR_L1         )->asFloat();
+        }
+    } else {
+        for (int i = 0; i < 3; i++) {
+            state_pkt.v1.line_voltages[i]      = 0;
+            state_pkt.v1.line_currents[i]      = 0;
+            state_pkt.v1.line_power_factors[i] = 0;
+        }
+    }
+
+    if (api.hasFeature("meter")) {
+        auto meter_values = api.getState("meter/values");
+        state_pkt.v1.energy_rel = meter_values->get("energy_rel")->asFloat();
+        state_pkt.v1.energy_abs = meter_values->get("energy_abs")->asFloat();
+    } else {
+        state_pkt.v1.energy_rel = 0;
+        state_pkt.v1.energy_abs = 0;
+    }
 
     int err = sendto(client_sock, &state_pkt, sizeof(state_pkt), 0, (sockaddr *)&manager_addr, sizeof(manager_addr));
     if (err < 0) {
@@ -415,8 +515,8 @@ bool CMNetworking::send_client_update(uint8_t iec61851_state,
             logger.printfln("sendto failed: errno %d", errno);
         return false;
     }
-    if (err != sizeof(state_pkt)) {
-        logger.printfln("sendto truncated the state packet (of size %u bytes) to %d bytes.", sizeof(state_pkt), err);
+    if (err != CM_STATE_PACKET_LENGTH) {
+        logger.printfln("sendto truncated the state packet (of size %u bytes) to %d bytes.", CM_STATE_PACKET_LENGTH, err);
         return false;
     }
 
@@ -492,7 +592,7 @@ void CMNetworking::add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer 
 
     uint8_t error = SCAN_RESULT_ERROR_OK;
 
-    if (String(version) != String(PROTOCOL_VERSION))
+    if (String(version) != String(CM_PROTOCOL_VERSION)) //TODO needs more validation around here
         error = SCAN_RESULT_ERROR_FIRMWARE_MISMATCH;
     else if (String(enabled) != "true")
         error = SCAN_RESULT_ERROR_MANAGEMENT_DISABLED;

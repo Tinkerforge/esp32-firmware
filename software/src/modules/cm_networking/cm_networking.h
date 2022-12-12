@@ -38,37 +38,123 @@
 #define MAX_CLIENTS 10
 
 // Increment when changing packet structs
-#define PROTOCOL_VERSION 3
+#define CM_PROTOCOL_VERSION 1
+
+// Minimum protocol version supported
+#define CM_PROTOCOL_VERSION_MIN 1
+
+#define CM_PACKET_MAGIC (34127)
 
 #define CM_NETWORKING_ERROR_NO_ERROR 0
 #define CM_NETWORKING_ERROR_UNREACHABLE 1
-#define CM_NETWORKING_ERROR_FW_MISMATCH 2
+#define CM_NETWORKING_ERROR_INVALID_HEADER 2
 #define CM_NETWORKING_ERROR_NOT_MANAGED 3
 
-struct packet_header {
-    uint8_t seq_num;
+struct cm_packet_header {
+    uint16_t magic;
+    uint16_t length;
+    uint16_t seq_num;
     uint8_t version;
-    uint16_t padding;
+    uint8_t padding;
 } __attribute__((packed));
 
-struct command_packet {
-    packet_header header;
+#define CM_PACKET_HEADER_LENGTH (sizeof(cm_packet_header))
+static_assert(CM_PACKET_HEADER_LENGTH == 8);
 
+#define CM_COMMAND_FLAGS_CPPDISC_BIT_POS 6
+#define CM_COMMAND_FLAGS_CPPDISC_MASK (1 << CM_COMMAND_FLAGS_CPPDISC_BIT_POS)
+#define CM_COMMAND_FLAGS_CPPDISC_IS_SET(FLAGS) (((FLAGS) & CM_FLAGS_CPPDISC_MASK) != 0)
+
+struct cm_command_v1 {
     uint16_t allocated_current;
+    /* command_flags
+    bit 6 - control pilot permanently disconnected
+    Other bits must be sent unset and ignored on reception.
+    */
+    uint8_t command_flags;
+    uint8_t padding;
 } __attribute__((packed));
 
-struct state_packet {
-    packet_header header;
+#define CM_COMMAND_V1_LENGTH (sizeof(cm_command_v1))
+static_assert(CM_COMMAND_V1_LENGTH == 4);
 
-    uint8_t iec61851_state;
-    uint8_t charger_state;
-    uint8_t error_state;
-    uint32_t uptime;
+struct cm_command_packet {
+    cm_packet_header header;
+    cm_command_v1 v1;
+} __attribute__((packed));
+
+#define CM_COMMAND_PACKET_LENGTH (sizeof(cm_command_packet))
+static_assert(CM_COMMAND_PACKET_LENGTH == 12);
+
+#define CM_STATE_FLAGS_MANAGED_BIT_POS 7
+#define CM_STATE_FLAGS_MANAGED_MASK (1 << CM_STATE_FLAGS_MANAGED_BIT_POS)
+#define CM_STATE_FLAGS_MANAGED_IS_SET(FLAGS) (((FLAGS) & CM_STATE_FLAGS_MANAGED_MASK) != 0)
+#define CM_STATE_FLAGS_CPPDISC_BIT_POS 6
+#define CM_STATE_FLAGS_CPPDISC_MASK (1 << CM_STATE_FLAGS_CPPDISC_BIT_POS)
+#define CM_STATE_FLAGS_CPPDISC_IS_SET(FLAGS) (((FLAGS) & CM_FLAGS_CPPDISC_MASK) != 0)
+#define CM_STATE_FLAGS_L1_CONNECTED_BIT_POS 5
+#define CM_STATE_FLAGS_L1_CONNECTED_MASK (1 << CM_STATE_FLAGS_L1_CONNECTED_BIT_POS)
+#define CM_STATE_FLAGS_L1_CONNECTED_IS_SET(FLAGS) (((FLAGS) & CM_FLAGS_L1_CONNECTED_MASK) != 0)
+#define CM_STATE_FLAGS_L2_CONNECTED_BIT_POS 4
+#define CM_STATE_FLAGS_L2_CONNECTED_MASK (1 << CM_STATE_FLAGS_L2_CONNECTED_BIT_POS)
+#define CM_STATE_FLAGS_L2_CONNECTED_IS_SET(FLAGS) (((FLAGS) & CM_FLAGS_L2_CONNECTED_MASK) != 0)
+#define CM_STATE_FLAGS_L3_CONNECTED_BIT_POS 3
+#define CM_STATE_FLAGS_L3_CONNECTED_MASK (1 << CM_STATE_FLAGS_L3_CONNECTED_BIT_POS)
+#define CM_STATE_FLAGS_L3_CONNECTED_IS_SET(FLAGS) (((FLAGS) & CM_FLAGS_L3_CONNECTED_MASK) != 0)
+#define CM_STATE_FLAGS_CONNECTED_BIT_POS 3
+#define CM_STATE_FLAGS_CONNECTED_MASK (0x7 << CM_STATE_FLAGS_CONNECTED_BIT_POS)
+#define CM_STATE_FLAGS_CONNECTED_GET(FLAGS) (((FLAGS) & CM_FLAGS_CONNECTED_MASK) >> 3)
+#define CM_STATE_FLAGS_L1_ACTIVE_BIT_POS 2
+#define CM_STATE_FLAGS_L1_ACTIVE_MASK (1 << CM_STATE_FLAGS_L1_ACTIVE_BIT_POS)
+#define CM_STATE_FLAGS_L1_ACTIVE_IS_SET(FLAGS) (((FLAGS) & CM_FLAGS_L1_ACTIVE_MASK) != 0)
+#define CM_STATE_FLAGS_L2_ACTIVE_BIT_POS 1
+#define CM_STATE_FLAGS_L2_ACTIVE_MASK (1 << CM_STATE_FLAGS_L2_ACTIVE_BIT_POS)
+#define CM_STATE_FLAGS_L2_ACTIVE_IS_SET(FLAGS) (((FLAGS) & CM_FLAGS_L2_ACTIVE_MASK) != 0)
+#define CM_STATE_FLAGS_L3_ACTIVE_BIT_POS 0
+#define CM_STATE_FLAGS_L3_ACTIVE_MASK (1 << CM_STATE_FLAGS_L3_ACTIVE_BIT_POS)
+#define CM_STATE_FLAGS_L3_ACTIVE_IS_SET(FLAGS) (((FLAGS) & CM_FLAGS_L3_ACTIVE_MASK) != 0)
+#define CM_STATE_FLAGS_ACTIVE_BIT_POS 0
+#define CM_STATE_FLAGS_ACTIVE_MASK (0x7 << CM_STATE_FLAGS_ACTIVE_BIT_POS)
+#define CM_STATE_FLAGS_ACTIVE_GET(FLAGS) ((FLAGS) & CM_FLAGS_ACTIVE_MASK)
+
+struct cm_state_v1 {
+    uint32_t feature_flags; /* unused */
+    uint32_t evse_uptime;
     uint32_t charging_time;
     uint16_t allowed_charging_current;
     uint16_t supported_current;
-    bool managed;
+    
+    uint8_t iec61851_state;
+    uint8_t charger_state;
+    uint8_t error_state;    
+    /* state_flags
+    bit 7 - managed
+    bit 6 - control_pilot_permanently_disconnected
+    bit 5 - L1_connected
+    bit 4 - L2_connected
+    bit 3 - L3_connected
+    bit 2 - L1_active
+    bit 1 - L2_active
+    bit 0 - L3_active
+    */
+    uint8_t state_flags;
+    float line_voltages[3];
+    float line_currents[3];
+    float line_power_factors[3];
+    float energy_rel;
+    float energy_abs;
 } __attribute__((packed));
+
+#define CM_STATE_V1_LENGTH (sizeof(cm_state_v1))
+static_assert(CM_STATE_V1_LENGTH == 64);
+
+struct cm_state_packet {
+    cm_packet_header header;
+    cm_state_v1 v1;
+} __attribute__((packed));
+
+#define CM_STATE_PACKET_LENGTH (sizeof(cm_state_packet))
+static_assert(CM_STATE_PACKET_LENGTH == 72);
 
 class CMNetworking
 {
@@ -111,6 +197,11 @@ public:
     String get_scan_results();
 
     void resolve_hostname(uint8_t charger_idx);
+
+    String validate_packet_header(const struct cm_packet_header *header, ssize_t recv_length) const;
+    String validate_command_packet_header(const struct cm_command_packet *pkt, ssize_t recv_length) const;
+    String validate_state_packet_header(const struct cm_state_packet *pkt, ssize_t recv_length) const;
+    bool seq_num_invalid(uint16_t received_sn, uint16_t last_seen_sn) const;
 
     bool check_results();
 

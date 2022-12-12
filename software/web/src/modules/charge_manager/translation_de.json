@@ -63,7 +63,7 @@
 
             "charge_error_0": "OK",
             "charge_error_1": "Kommunikationsfehler",
-            "charge_error_2": "Firmware inkompatibel",
+            "charge_error_2": "Paketheader ungültig oder Firmware inkompatibel",
             "charge_error_3": "Lastmanagement deaktiviert",
             "charge_error_128": "Wallbox nicht erreichbar",
             "charge_error_129": "Ladecontroller nicht erreichbar",
