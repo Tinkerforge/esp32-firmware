@@ -464,6 +464,19 @@ bool CMNetworking::send_client_update(uint8_t iec61851_state,
     ++next_seq_num;
     state_pkt.header.version = CM_PROTOCOL_VERSION;
 
+    bool has_meter_values = api.hasFeature("meter_all_values");
+    bool has_meter_phases = api.hasFeature("meter_phases");
+    bool has_meter        = api.hasFeature("meter");
+
+    state_pkt.v1.feature_flags = 0
+        | api.hasFeature("cp_disconnect")           << CM_FEATURE_FLAGS_CP_DISCONNECT_BIT_POS
+        | api.hasFeature("evse")                    << CM_FEATURE_FLAGS_EVSE_BIT_POS
+        | api.hasFeature("nfc")                     << CM_FEATURE_FLAGS_NFC_BIT_POS
+        | has_meter_values                          << CM_FEATURE_FLAGS_METER_ALL_VALUES_BIT_POS
+        | has_meter_phases                          << CM_FEATURE_FLAGS_METER_PHASES_BIT_POS
+        | has_meter                                 << CM_FEATURE_FLAGS_METER_BIT_POS
+        | api.hasFeature("button_configuration")    << CM_FEATURE_FLAGS_BUTTON_CONFIGURATION_BIT_POS;
+
     state_pkt.v1.evse_uptime = uptime;
     state_pkt.v1.charging_time = charging_time;
     state_pkt.v1.allowed_charging_current = allowed_charging_current;
@@ -474,7 +487,7 @@ bool CMNetworking::send_client_update(uint8_t iec61851_state,
 
     long flags = managed << CM_STATE_FLAGS_MANAGED_BIT_POS;
     // TODO bit 6 - control_pilot_permanently_disconnected
-    if (api.hasFeature("meter_phases")) {
+    if (has_meter_phases) {
         auto meter_phase_values = api.getState("meter/phases");
         flags |= meter_phase_values->get("phases_connected")->get(0)->asBool() << CM_STATE_FLAGS_L1_CONNECTED_BIT_POS;
         flags |= meter_phase_values->get("phases_connected")->get(1)->asBool() << CM_STATE_FLAGS_L2_CONNECTED_BIT_POS;
@@ -485,7 +498,7 @@ bool CMNetworking::send_client_update(uint8_t iec61851_state,
     }
     state_pkt.v1.state_flags = static_cast<uint8_t>(flags);
 
-    if (api.hasFeature("meter_all_values")) {
+    if (has_meter_values) {
         auto meter_all_values = api.getState("meter/all_values");
         for (int i = 0; i < 3; i++) {
             state_pkt.v1.line_voltages[i]      = meter_all_values->get(i + METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L1)->asFloat();
@@ -500,7 +513,7 @@ bool CMNetworking::send_client_update(uint8_t iec61851_state,
         }
     }
 
-    if (api.hasFeature("meter")) {
+    if (has_meter) {
         auto meter_values = api.getState("meter/values");
         state_pkt.v1.energy_rel = meter_values->get("energy_rel")->asFloat();
         state_pkt.v1.energy_abs = meter_values->get("energy_abs")->asFloat();
