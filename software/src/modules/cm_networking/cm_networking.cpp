@@ -323,7 +323,7 @@ void CMNetworking::register_client(std::function<void(uint16_t)> client_callback
     if (client_sock < 0)
         return;
 
-    memset(&source_addr, 0, sizeof(source_addr));
+    memset(&manager_addr, 0, sizeof(manager_addr));
 
     task_scheduler.scheduleWithFixedDelay([this, client_callback](){
         static uint8_t last_seen_seq_num = 255;
@@ -339,10 +339,10 @@ void CMNetworking::register_client(std::function<void(uint16_t)> client_callback
             if (errno != EAGAIN && errno != EWOULDBLOCK)
                 logger.printfln("recvfrom failed: errno %d", errno);
 
-            // If we have not received a valid packet for one minute, devalidate source_addr.
+            // If we have not received a valid packet for one minute, invalidate manager_addr.
             // Otherwise we would send state packets packets to this address forever.
             if (deadline_elapsed(last_successful_recv + 60 * 1000))
-                source_addr_valid = false;
+                manager_addr_valid = false;
 
             return;
         }
@@ -370,9 +370,9 @@ void CMNetworking::register_client(std::function<void(uint16_t)> client_callback
         last_seen_seq_num = command_pkt.header.seq_num;
 
         last_successful_recv = millis();
-        source_addr = temp_addr;
+        manager_addr = temp_addr;
 
-        source_addr_valid = true;
+        manager_addr_valid = true;
         client_callback(command_pkt.allocated_current);
         //logger.printfln("Received command packet. Allocated current is %u", command_pkt.allocated_current);
     }, 100, 100);
@@ -389,8 +389,8 @@ bool CMNetworking::send_client_update(uint8_t iec61851_state,
 {
     static uint8_t next_seq_num = 0;
 
-    if (!source_addr_valid) {
-        //logger.printfln("source addr not valid.");
+    if (!manager_addr_valid) {
+        //logger.printfln("manager addr not valid.");
         return false;
     }
     //logger.printfln("Sending state packet.");
@@ -409,7 +409,7 @@ bool CMNetworking::send_client_update(uint8_t iec61851_state,
     state_pkt.supported_current = supported_current;
     state_pkt.managed = managed;
 
-    int err = sendto(client_sock, &state_pkt, sizeof(state_pkt), 0, (sockaddr *)&source_addr, sizeof(source_addr));
+    int err = sendto(client_sock, &state_pkt, sizeof(state_pkt), 0, (sockaddr *)&manager_addr, sizeof(manager_addr));
     if (err < 0) {
         if (errno != EAGAIN && errno != EWOULDBLOCK)
             logger.printfln("sendto failed: errno %d", errno);

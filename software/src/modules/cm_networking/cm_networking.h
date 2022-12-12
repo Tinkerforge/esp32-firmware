@@ -134,8 +134,8 @@ private:
     std::vector<String> hostnames;
 
     int client_sock;
-    bool source_addr_valid = false;
-    struct sockaddr_storage source_addr;
+    bool manager_addr_valid = false;
+    struct sockaddr_storage manager_addr;
 
     void start_scan();
 
