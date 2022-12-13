@@ -45,6 +45,8 @@ interface EVSEState {
     button_cfg: API.getType['evse/button_configuration']
     slots: Readonly<API.getType['evse/slots']>;
     gpio_cfg: API.getType['evse/gpio_configuration'];
+    cp_state: API.getType['evse/control_pilot_connected'];
+    cp_cfg: API.getType['evse/control_pilot_configuration'];
     debug_running: boolean;
     debug_status: string;
 }
@@ -80,6 +82,14 @@ export class EVSEV2 extends Component<{}, EVSEState> {
         util.eventTarget.addEventListener('evse/button_configuration', () => {
             this.setState({button_cfg: API.get('evse/button_configuration')});
         });
+
+        util.eventTarget.addEventListener('evse/control_pilot_connected', () => {
+            this.setState({cp_state: API.get('evse/control_pilot_connected')});
+        });
+
+        util.eventTarget.addEventListener('evse/control_pilot_configuration', () => {
+            this.setState({cp_cfg: API.get('evse/control_pilot_configuration')});
+        });    
 
         util.eventTarget.addEventListener("evse/debug_header", (e) => {
             this.debug_log += e.data + "\n";
@@ -165,6 +175,8 @@ export class EVSEV2 extends Component<{}, EVSEState> {
             button_cfg,
             slots,
             gpio_cfg,
+            cp_state,
+            cp_cfg,
             debug_running,
             debug_status} = s;
 
@@ -486,6 +498,25 @@ export class EVSEV2 extends Component<{}, EVSEState> {
                                     ["danger",    __("evse.content.led_state_flickering")],
                                     ["primary",   __("evse.content.led_state_breathing")],
                                     ["primary",   __("evse.content.led_state_api")]
+                                ]}/>
+                        </FormRow>
+
+                        <FormRow label={__("evse.content.control_pilot_state")}>
+                            <IndicatorGroup
+                                value={cp_state.connected ? 1 : 0}
+                                items={[
+                                    ["secondary", __("evse.content.control_pilot_disconnected")],
+                                    ["primary",   __("evse.content.control_pilot_connected")]
+                                ]}/>
+                        </FormRow>
+
+                        <FormRow label={__("evse.content.control_pilot_cfg")} label_muted={__("evse.content.control_pilot_cfg_muted")}>
+                            <IndicatorGroup
+                                value={cp_cfg.control_pilot}
+                                items={[
+                                    ["secondary", __("evse.content.control_pilot_disconnected")],
+                                    ["primary",   __("evse.content.control_pilot_connected")],
+                                    ["primary",   __("evse.content.control_pilot_automatic")]
                                 ]}/>
                         </FormRow>
 
