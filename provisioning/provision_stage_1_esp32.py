@@ -111,7 +111,7 @@ def main():
 
     label_success = "n"
     while label_success != "y":
-        run(["python3", "print-esp32-label.py", ssid, passphrase, "-p", PRINTER_HOST_PCBA, "-c", "3" if firmware_type == "warp1" else "1"])
+        run(["python3", "print-esp32-label.py", ssid, passphrase, "-p", get_printer_host_pcba(), "-c", "3" if firmware_type == "warp1" else "1"])
         label_prompt = "Stick one label on the ESP, put ESP in the ESD bag. Press n to retry printing the label. [y/n]"
 
         label_success = input(label_prompt)

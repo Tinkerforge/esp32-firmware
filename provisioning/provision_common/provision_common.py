@@ -37,6 +37,9 @@ def common_init(port):
     with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'printer_host_pcba.txt'), 'r') as f:
         PRINTER_HOST_PCBA = f.read().strip()
 
+def get_printer_host_pcba():
+    return PRINTER_HOST_PCBA
+
 # use "with ChangedDirectory('/path/to/abc')" instead of "os.chdir('/path/to/abc')"
 class ChangedDirectory:
     def __init__(self, path):
@@ -513,7 +516,7 @@ def my_input(s, color_fn=green):
 def check_label_printer():
     try:
         with socket.create_connection((PRINTER_HOST_PCBA, PRINTER_PORT_PCBA)):
-            print("PCBA label printer is online")
+            print("PCBA label printer {0} is online".format(PRINTER_HOST_PCBA))
     except Exception as e:
         if input("Failed to reach PCBA label printer {0}. Continue anyway? [y/N] ".format(PRINTER_HOST_PCBA)) != "y":
             sys.exit(0)
