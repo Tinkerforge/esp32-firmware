@@ -36,7 +36,7 @@ def main():
 
     PORT = sys.argv[2]
 
-    common_init(PORT, None, None)
+    common_init(PORT)
 
     if not os.path.exists(PORT):
         fatal_error("Port {} not found.".format(PORT))

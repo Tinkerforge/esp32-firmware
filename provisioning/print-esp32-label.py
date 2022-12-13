@@ -20,7 +20,7 @@ PASSPHRASE_PLACEHOLDER = b'ZZZZ-ZZZZ-ZZZZ-ZZZZ'
 
 COPIES_FORMAT = '^C{0}\r'
 
-def print_esp32_label(ssid, passphrase, copies, stdout):
+def print_esp32_label(ssid, passphrase, printer_host, copies, stdout):
     # check SSID
     if re.match('^(esp32|warp|warp2)-[{0}]{{3,6}}$'.format(BASE58), ssid) == None:
         raise Exception('Invalid SSID: {0}'.format(ssid))
@@ -73,7 +73,7 @@ def print_esp32_label(ssid, passphrase, copies, stdout):
         sys.stdout.buffer.write(data)
         sys.stdout.buffer.flush()
     else:
-        with socket.create_connection((PRINTER_HOST, PRINTER_PORT)) as s:
+        with socket.create_connection((printer_host, PRINTER_PORT)) as s:
             s.send(data)
 
 def main():
@@ -81,12 +81,13 @@ def main():
 
     parser.add_argument('ssid')
     parser.add_argument('passphrase')
+    parser.add_argument('-p', '--printer-host', type=str, default=PRINTER_HOST)
     parser.add_argument('-c', '--copies', type=int, default=1)
     parser.add_argument('-s', '--stdout', action='store_true')
 
     args = parser.parse_args()
 
-    print_esp32_label(args.ssid, args.passphrase, args.copies, args.stdout)
+    print_esp32_label(args.ssid, args.passphrase, args.printer_host, args.copies, args.stdout)
 
 if __name__ == '__main__':
     main()
