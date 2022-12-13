@@ -489,7 +489,7 @@ function update_charge_manager_state() {
         let status_text = util.toLocaleFixed(s.supported_current / 1000.0, 3) + " " + __("charge_manager.script.ampere_supported");
 
         if (last_update >= 10)
-            status_text += "; " + __("charge_manager.script.last_update_prefix") + util.format_timespan(last_update) + (__("charge_manager.script.last_update_suffix"));
+            status_text += "; " + __("charge_manager.script.last_update_prefix") + " " + util.format_timespan(last_update) + (__("charge_manager.script.last_update_suffix"));
         $(`#charge_manager_status_charger_${i}_details`).text(status_text);
     }
 
