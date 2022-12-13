@@ -21,9 +21,8 @@
 #include "ac011k_hardware.h"
 
 #include <Arduino.h>
-
+#include "api.h"
 #include "tools.h"
-//#include "hal_arduino_esp32_brick.h"
 #include "task_scheduler.h"
 
 extern TaskScheduler task_scheduler;
@@ -32,7 +31,6 @@ extern TaskScheduler task_scheduler;
 #define BLUE_LED 33
 #define BUTTON T9
 
-//TF_HAL hal;
 extern uint32_t uid_numeric;
 extern char uid[7];
 extern char passphrase[20];
@@ -40,15 +38,33 @@ extern int8_t blue_led_pin;
 extern int8_t green_led_pin;
 extern int8_t button_pin;
 extern bool factory_reset_requested;
+extern API api;
+extern char local_uid_str[32];
 
 AC011KHardware::AC011KHardware()
 {
-
 }
 
 void AC011KHardware::pre_setup()
 {
+    ac011k_hardware = Config::Object({
+        {"UID", Config::Str("", 0, 16)},
+    });
 
+    if(!api.restorePersistentConfig("ac011k/hardware", &ac011k_hardware)) {
+        logger.printfln("AC011K error, could not restore persistent storage ac011k_hardware");
+    } else {
+        sprintf(local_uid_str, "%s", ac011k_hardware.get("UID")->asCStr());
+    }
+
+    initialized = true;
+}
+
+void AC011KHardware::persist_config()
+{
+    ac011k_hardware.get("UID")->updateString(local_uid_str);
+    api.writeConfig("ac011k/hardware", &ac011k_hardware);
+    logger.printfln("AC011K hardware persistent config stored.");
 }
 
 void AC011KHardware::setup()

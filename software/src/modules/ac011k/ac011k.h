@@ -133,7 +133,7 @@ public:
     void PrivCommAck(byte cmd, byte *data);
     void sendCommand(byte *data, int datasize, byte sendSequenceNumber);
     void sendTime(byte cmd, byte action, byte len, byte sendSequenceNumber);
-    void sendTimeLong (byte sendSequenceNumber);
+    void sendTimeLong ();
     void update_evseStatus(uint8_t evseStatus);
     time_t now();
     void filltime(byte *year, byte *month, byte *day, byte *hour, byte *minute, byte *second);
@@ -148,7 +148,6 @@ public:
     int bs_evse_set_charging_autostart(bool autostart);
     int bs_evse_set_max_charging_current(uint16_t max_current);
     int bs_evse_persist_config();
-    int bs_evse_get_state(uint8_t *ret_iec61851_state, uint8_t *ret_charger_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state, uint32_t *ret_time_since_state_change, uint32_t *ret_uptime);
 
     const char* timeStr(byte *data, uint8_t offset);
 

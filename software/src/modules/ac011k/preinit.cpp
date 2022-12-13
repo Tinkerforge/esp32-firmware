@@ -29,7 +29,7 @@ void evse_v2_button_recovery_handler() {
     uint32_t button_press_time = BUTTON_IS_PRESSED;
     bool first = true;
 
-    logger.printfln("Factory reset ...");
+    //logger.printfln("Factory reset ...");
     
     /* while(button_press_time == BUTTON_IS_PRESSED && !deadline_elapsed(start + BUTTON_MAX_PRESS_THRES)) { */
     /*     // Handle first boot with new firmware (i.e. the firmware supporting get_button_press_boot_time is not flashed yet) */

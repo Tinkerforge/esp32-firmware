@@ -1,6 +1,5 @@
-/* en+ hardware
- * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
- * Copyright (C)      2021 Birger Schmidt <bs-warp@netgaroo.com>
+/* esp32-firmware
+ * Copyright (C) 2022 Frederic Henrichs <frederic@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,18 +21,26 @@
 
 #include "config.h"
 
-class AC011KHardware {
-public:
-    AC011KHardware();
-    void pre_setup();
-    void persist_config();
-    void setup();
-    void register_urls();
-    void loop();
 
-    ConfigRoot ac011k_hardware;
+class Browserclock {
+    private:
 
-    bool initialized = false;
-private:
 
+    public:
+
+        bool initialized = false;
+
+        Browserclock();
+        void pre_setup();
+        void setup();
+        void loop();
+        void register_urls();
+
+        void setup_browserclock();
+        void set_time(timeval time);
+        void update_system_time();
+
+        ConfigRoot time;
+        ConfigRoot time_update;
+        ConfigRoot config;
 };
