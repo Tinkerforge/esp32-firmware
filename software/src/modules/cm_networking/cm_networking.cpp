@@ -374,11 +374,11 @@ bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_cur
             return true;
         }
 
-        logger.printfln("Failed to send: %s %d", strerror(errno), errno);
+        logger.printfln("CM failed to send command: %s (%d)", strerror(errno), errno);
         return true;
     }
     if (err != CM_COMMAND_PACKET_LENGTH) {
-        logger.printfln("Failed to send. sendto truncated command packet (of %u bytes) to %d bytes.", CM_COMMAND_PACKET_LENGTH, err);
+        logger.printfln("CM failed to send command: sendto truncated packet (of %u bytes) to %d bytes.", CM_COMMAND_PACKET_LENGTH, err);
         return true;
     }
     return true;
@@ -525,11 +525,11 @@ bool CMNetworking::send_client_update(uint8_t iec61851_state,
     int err = sendto(client_sock, &state_pkt, sizeof(state_pkt), 0, (sockaddr *)&manager_addr, sizeof(manager_addr));
     if (err < 0) {
         if (errno != EAGAIN && errno != EWOULDBLOCK)
-            logger.printfln("sendto failed: errno %d", errno);
+            logger.printfln("CM failed to send state: %s (%d)", strerror(errno), errno);
         return false;
     }
     if (err != CM_STATE_PACKET_LENGTH) {
-        logger.printfln("sendto truncated the state packet (of size %u bytes) to %d bytes.", CM_STATE_PACKET_LENGTH, err);
+        logger.printfln("CM failed to send state: sendto truncated packet (of %u bytes) to %d bytes.", CM_STATE_PACKET_LENGTH, err);
         return false;
     }
 
