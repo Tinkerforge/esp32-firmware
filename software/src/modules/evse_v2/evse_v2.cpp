@@ -687,7 +687,8 @@ void EVSEV2::register_urls()
             evse_low_level_state.get("charging_time")->asUint(),
             evse_slots.get(CHARGING_SLOT_CHARGE_MANAGER)->get("max_current")->asUint(),
             supported_current,
-            evse_management_enabled.get("enabled")->asBool()
+            evse_management_enabled.get("enabled")->asBool(),
+            !evse_control_pilot_connected.get("connected")->asBool()
         );
     }, 1000, 1000);
 

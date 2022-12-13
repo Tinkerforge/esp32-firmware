@@ -447,7 +447,8 @@ bool CMNetworking::send_client_update(uint8_t iec61851_state,
                                       uint32_t charging_time,
                                       uint16_t allowed_charging_current,
                                       uint16_t supported_current,
-                                      bool managed)
+                                      bool managed,
+                                      bool cp_disconnected_state)
 {
     static uint16_t next_seq_num = 0;
 
@@ -485,8 +486,9 @@ bool CMNetworking::send_client_update(uint8_t iec61851_state,
     state_pkt.v1.charger_state = charger_state;
     state_pkt.v1.error_state = error_state;
 
-    long flags = managed << CM_STATE_FLAGS_MANAGED_BIT_POS;
-    // TODO bit 6 - control_pilot_permanently_disconnected
+    long flags = 0
+        | managed               << CM_STATE_FLAGS_MANAGED_BIT_POS
+        | cp_disconnected_state << CM_STATE_FLAGS_CPPDISC_BIT_POS;
     if (has_meter_phases) {
         auto meter_phase_values = api.getState("meter/phases");
         flags |= meter_phase_values->get("phases_connected")->get(0)->asBool() << CM_STATE_FLAGS_L1_CONNECTED_BIT_POS;

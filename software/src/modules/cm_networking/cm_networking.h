@@ -224,7 +224,8 @@ public:
                             uint32_t charging_time,
                             uint16_t allowed_charging_current,
                             uint16_t supported_current,
-                            bool managed);
+                            bool managed,
+                            bool cp_disconnected_state);
 
     String get_scan_results();
 
