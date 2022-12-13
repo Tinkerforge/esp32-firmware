@@ -43,7 +43,7 @@
 // Minimum protocol version supported
 #define CM_PROTOCOL_VERSION_MIN 1
 
-#define CM_PACKET_MAGIC (34127)
+#define CM_PACKET_MAGIC 34127
 
 #define CM_NETWORKING_ERROR_NO_ERROR 0
 #define CM_NETWORKING_ERROR_UNREACHABLE 1

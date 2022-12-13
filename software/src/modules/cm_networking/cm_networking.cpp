@@ -71,7 +71,7 @@ void CMNetworking::register_urls()
         return;
 
     MDNS.addService("tf-warp-cm", "udp", 34127);
-    MDNS.addServiceTxt("tf-warp-cm", "udp", "version", String(CM_PROTOCOL_VERSION));
+    MDNS.addServiceTxt("tf-warp-cm", "udp", "version", __XSTRING(CM_PACKET_MAGIC) "." __XSTRING(CM_PROTOCOL_VERSION));
     task_scheduler.scheduleWithFixedDelay([](){
         #if MODULE_DEVICE_NAME_AVAILABLE()
             // Keep "display_name" updated because it can be changed at runtime without clicking "Save".
@@ -189,7 +189,7 @@ String CMNetworking::validate_packet_header(const struct cm_packet_header *heade
     }
 
     if (header->version < CM_PROTOCOL_VERSION_MIN) {
-        return String("Protocol version ") + header->version + " too old. Need at least version " + CM_PROTOCOL_VERSION_MIN + '.';
+        return String("Protocol version ") + header->version + " too old. Need at least version " __XSTRING(CM_PROTOCOL_VERSION_MIN) ".";
     }
 
     return String();
@@ -203,12 +203,12 @@ String CMNetworking::validate_command_packet_header(const struct cm_command_pack
 
     if (((pkt->header.version > CM_PROTOCOL_VERSION) && (pkt->header.length < cm_command_packet_length_versions[CM_PROTOCOL_VERSION]))  // Newer protocol than known. Packet must be at least as long as our newest known version.
         || (pkt->header.length != cm_command_packet_length_versions[pkt->header.version])) {                                            // Match length of known protocol version.
-        return String("Invalid packet length for protocol version ") + pkt->header.version + ": " + pkt->header.length + "B.";
+        return String("Invalid packet length for protocol version ") + pkt->header.version + ": " + pkt->header.length + " bytes.";
     }
 
     if (((pkt->header.version > CM_PROTOCOL_VERSION) && (recv_length < cm_command_packet_length_versions[CM_PROTOCOL_VERSION])) // Newer protocol than known. Packet must be at least as long as our newest known version.
         || (recv_length != cm_command_packet_length_versions[pkt->header.version])) {                                           // Match length of known protocol version.
-        return String("Received truncated packet for protocol version ") + pkt->header.version + ": " + recv_length + "B.";
+        return String("Received truncated packet for protocol version ") + pkt->header.version + ": " + recv_length + " bytes.";
     }
 
     return String();
@@ -222,12 +222,12 @@ String CMNetworking::validate_state_packet_header(const struct cm_state_packet *
 
     if (((pkt->header.version > CM_PROTOCOL_VERSION) && (pkt->header.length < cm_state_packet_length_versions[CM_PROTOCOL_VERSION]))    // Newer protocol than known. Packet must be at least as long as our newest known version.
         || (pkt->header.length != cm_state_packet_length_versions[pkt->header.version])) {                                              // Match length of known protocol version.
-        return String("Invalid packet length for protocol version ") + pkt->header.version + ": " + pkt->header.length + "B.";
+        return String("Invalid packet length for protocol version ") + pkt->header.version + ": " + pkt->header.length + " bytes.";
     }
 
     if (((pkt->header.version > CM_PROTOCOL_VERSION) && (recv_length < cm_state_packet_length_versions[CM_PROTOCOL_VERSION]))    // Newer protocol than known. Packet must be at least as long as our newest known version.
         || (recv_length != cm_state_packet_length_versions[pkt->header.version])) {                                              // Match length of known protocol version.
-        return String("Received truncated packet for protocol version ") + pkt->header.version + ": " + recv_length + "B.";
+        return String("Received truncated packet for protocol version ") + pkt->header.version + ": " + recv_length + " bytes.";
     }
 
     return String();
@@ -303,7 +303,7 @@ void CMNetworking::register_manager(std::vector<String> &&hosts,
 
         String validation_error = validate_state_packet_header(&state_pkt, len);
         if (validation_error != "") {
-            logger.printfln("Received state packet from %s (%s) (%iB) failed validation: %s",
+            logger.printfln("Received state packet from %s (%s) (%i bytes) failed validation: %s",
                 names[charger_idx].c_str(),
                 inet_ntoa(source_addr.sin_addr),
                 len,
@@ -586,15 +586,15 @@ void CMNetworking::add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer 
 
     int found = 0;
     for(size_t i = 0; i < entry->txt_count; ++i) {
-        if (String(entry->txt[i].key) == "enabled" && entry->txt_value_len[i] > 0) {
+        if (strcmp(entry->txt[i].key, "enabled") == 0 && entry->txt_value_len[i] > 0) {
             enabled = entry->txt[i].value;
             ++found;
         }
-        else if (String(entry->txt[i].key) == "display_name" && entry->txt_value_len[i] > 0) {
+        else if (strcmp(entry->txt[i].key, "display_name") == 0 && entry->txt_value_len[i] > 0) {
             display_name = entry->txt[i].value;
             ++found;
         }
-        else if (String(entry->txt[i].key) == "version" && entry->txt_value_len[i] > 0) {
+        else if (strcmp(entry->txt[i].key, "version") == 0 && entry->txt_value_len[i] > 0) {
             version = entry->txt[i].value;
             ++found;
         }
@@ -605,10 +605,23 @@ void CMNetworking::add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer 
 
     uint8_t error = SCAN_RESULT_ERROR_OK;
 
-    if (String(version) != String(CM_PROTOCOL_VERSION)) //TODO needs more validation around here
-        error = SCAN_RESULT_ERROR_FIRMWARE_MISMATCH;
-    else if (String(enabled) != "true")
+    if (strcmp(enabled, "true") != 0) {
         error = SCAN_RESULT_ERROR_MANAGEMENT_DISABLED;
+    } else {
+        const char *protocol_version = strchr(version, '.');
+        if (!protocol_version) {
+            error = SCAN_RESULT_ERROR_FIRMWARE_MISMATCH;
+        } else {
+            if (strncmp(version, __XSTRING(CM_PACKET_MAGIC), protocol_version - version) != 0) {
+                error = SCAN_RESULT_ERROR_FIRMWARE_MISMATCH;
+            } else {
+                long num_version = strtol(++protocol_version, nullptr, 10);
+                if (num_version < CM_PROTOCOL_VERSION_MIN) {
+                    error = SCAN_RESULT_ERROR_FIRMWARE_MISMATCH;
+                }
+            }
+        }
+    }
 
     json.addObject();
         json.add("hostname", entry->hostname);
