@@ -96,6 +96,9 @@ layout.addRow("Protocol version", req_version)
 req_allocated_current = QLabel("no packet received yet")
 layout.addRow("Allocated current", req_allocated_current)
 
+req_cp_disconnect = QLabel("no packet received yet")
+layout.addRow("CP disconnect", req_cp_disconnect)
+
 layout.addRow(QLabel("Response"))
 
 resp_seq_num = QLabel("no packet sent yet")
@@ -156,6 +159,9 @@ resp_managed = QCheckBox("")
 resp_managed.setChecked(True)
 layout.addRow("Managed", resp_managed)
 
+resp_cp_disconnect = QCheckBox("CP disconnected")
+layout.addRow("CP disconnect state", resp_cp_disconnect)
+
 
 next_seq_num = 0
 protocol_version = 1
@@ -177,6 +183,7 @@ def recieve():
     req_seq_num.setText(str(seq_num))
     req_version.setText(str(version))
     req_allocated_current.setText("{:2.3f} A".format(allocated_current / 1000.0))
+    req_cp_disconnect.setText(str((command_flags & 0x40) >> 6))
     if allocated_current == 0 and resp_iec61851_state.currentIndex() == 2:
         charging_time_start = 0
         resp_iec61851_state.setCurrentIndex(1)
@@ -209,6 +216,10 @@ def send():
     charging_time = 0 if charging_time_start == 0 else int((time.time() - charging_time_start) * 1000)
     resp_charging_time.setText("{} ms".format(charging_time))
 
+    flags = 0
+    flags |= 0x80 if resp_managed.isChecked() else 0
+    flags |= 0x40 if resp_cp_disconnect.isChecked() else 0
+
     b = struct.pack(state_format,
                     34127,                                      # magic
                     state_len,                                  # length
@@ -222,7 +233,7 @@ def send():
                     resp_iec61851_state.currentIndex(),
                     resp_charger_state.currentIndex(),
                     resp_error_state.value(),
-                    0x80 if resp_managed.isChecked() else 0,    # flags
+                    flags,
                     0,  # LV0
                     0,  # LV1
                     0,  # LV2
