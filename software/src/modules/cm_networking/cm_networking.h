@@ -63,7 +63,7 @@ static_assert(CM_PACKET_HEADER_LENGTH == 8);
 
 #define CM_COMMAND_FLAGS_CPPDISC_BIT_POS 6
 #define CM_COMMAND_FLAGS_CPPDISC_MASK (1 << CM_COMMAND_FLAGS_CPPDISC_BIT_POS)
-#define CM_COMMAND_FLAGS_CPPDISC_IS_SET(FLAGS) (((FLAGS) & CM_FLAGS_CPPDISC_MASK) != 0)
+#define CM_COMMAND_FLAGS_CPPDISC_IS_SET(FLAGS) (((FLAGS) & CM_COMMAND_FLAGS_CPPDISC_MASK) != 0)
 
 struct cm_command_v1 {
     uint16_t allocated_current;
@@ -113,31 +113,31 @@ static_assert(CM_COMMAND_PACKET_LENGTH == 12);
 #define CM_STATE_FLAGS_MANAGED_IS_SET(FLAGS) (((FLAGS) & CM_STATE_FLAGS_MANAGED_MASK) != 0)
 #define CM_STATE_FLAGS_CPPDISC_BIT_POS 6
 #define CM_STATE_FLAGS_CPPDISC_MASK (1 << CM_STATE_FLAGS_CPPDISC_BIT_POS)
-#define CM_STATE_FLAGS_CPPDISC_IS_SET(FLAGS) (((FLAGS) & CM_FLAGS_CPPDISC_MASK) != 0)
+#define CM_STATE_FLAGS_CPPDISC_IS_SET(FLAGS) (((FLAGS) & CM_STATE_FLAGS_CPPDISC_MASK) != 0)
 #define CM_STATE_FLAGS_L1_CONNECTED_BIT_POS 5
 #define CM_STATE_FLAGS_L1_CONNECTED_MASK (1 << CM_STATE_FLAGS_L1_CONNECTED_BIT_POS)
-#define CM_STATE_FLAGS_L1_CONNECTED_IS_SET(FLAGS) (((FLAGS) & CM_FLAGS_L1_CONNECTED_MASK) != 0)
+#define CM_STATE_FLAGS_L1_CONNECTED_IS_SET(FLAGS) (((FLAGS) & CM_STATE_FLAGS_L1_CONNECTED_MASK) != 0)
 #define CM_STATE_FLAGS_L2_CONNECTED_BIT_POS 4
 #define CM_STATE_FLAGS_L2_CONNECTED_MASK (1 << CM_STATE_FLAGS_L2_CONNECTED_BIT_POS)
-#define CM_STATE_FLAGS_L2_CONNECTED_IS_SET(FLAGS) (((FLAGS) & CM_FLAGS_L2_CONNECTED_MASK) != 0)
+#define CM_STATE_FLAGS_L2_CONNECTED_IS_SET(FLAGS) (((FLAGS) & CM_STATE_FLAGS_L2_CONNECTED_MASK) != 0)
 #define CM_STATE_FLAGS_L3_CONNECTED_BIT_POS 3
 #define CM_STATE_FLAGS_L3_CONNECTED_MASK (1 << CM_STATE_FLAGS_L3_CONNECTED_BIT_POS)
-#define CM_STATE_FLAGS_L3_CONNECTED_IS_SET(FLAGS) (((FLAGS) & CM_FLAGS_L3_CONNECTED_MASK) != 0)
+#define CM_STATE_FLAGS_L3_CONNECTED_IS_SET(FLAGS) (((FLAGS) & CM_STATE_FLAGS_L3_CONNECTED_MASK) != 0)
 #define CM_STATE_FLAGS_CONNECTED_BIT_POS 3
 #define CM_STATE_FLAGS_CONNECTED_MASK (0x7 << CM_STATE_FLAGS_CONNECTED_BIT_POS)
-#define CM_STATE_FLAGS_CONNECTED_GET(FLAGS) (((FLAGS) & CM_FLAGS_CONNECTED_MASK) >> 3)
+#define CM_STATE_FLAGS_CONNECTED_GET(FLAGS) (((FLAGS) & CM_STATE_FLAGS_CONNECTED_MASK) >> 3)
 #define CM_STATE_FLAGS_L1_ACTIVE_BIT_POS 2
 #define CM_STATE_FLAGS_L1_ACTIVE_MASK (1 << CM_STATE_FLAGS_L1_ACTIVE_BIT_POS)
-#define CM_STATE_FLAGS_L1_ACTIVE_IS_SET(FLAGS) (((FLAGS) & CM_FLAGS_L1_ACTIVE_MASK) != 0)
+#define CM_STATE_FLAGS_L1_ACTIVE_IS_SET(FLAGS) (((FLAGS) & CM_STATE_FLAGS_L1_ACTIVE_MASK) != 0)
 #define CM_STATE_FLAGS_L2_ACTIVE_BIT_POS 1
 #define CM_STATE_FLAGS_L2_ACTIVE_MASK (1 << CM_STATE_FLAGS_L2_ACTIVE_BIT_POS)
-#define CM_STATE_FLAGS_L2_ACTIVE_IS_SET(FLAGS) (((FLAGS) & CM_FLAGS_L2_ACTIVE_MASK) != 0)
+#define CM_STATE_FLAGS_L2_ACTIVE_IS_SET(FLAGS) (((FLAGS) & CM_STATE_FLAGS_L2_ACTIVE_MASK) != 0)
 #define CM_STATE_FLAGS_L3_ACTIVE_BIT_POS 0
 #define CM_STATE_FLAGS_L3_ACTIVE_MASK (1 << CM_STATE_FLAGS_L3_ACTIVE_BIT_POS)
-#define CM_STATE_FLAGS_L3_ACTIVE_IS_SET(FLAGS) (((FLAGS) & CM_FLAGS_L3_ACTIVE_MASK) != 0)
+#define CM_STATE_FLAGS_L3_ACTIVE_IS_SET(FLAGS) (((FLAGS) & CM_STATE_FLAGS_L3_ACTIVE_MASK) != 0)
 #define CM_STATE_FLAGS_ACTIVE_BIT_POS 0
 #define CM_STATE_FLAGS_ACTIVE_MASK (0x7 << CM_STATE_FLAGS_ACTIVE_BIT_POS)
-#define CM_STATE_FLAGS_ACTIVE_GET(FLAGS) ((FLAGS) & CM_FLAGS_ACTIVE_MASK)
+#define CM_STATE_FLAGS_ACTIVE_GET(FLAGS) ((FLAGS) & CM_STATE_FLAGS_ACTIVE_MASK)
 
 struct cm_state_v1 {
     /* feature_flags
@@ -210,13 +210,14 @@ public:
                                              uint32_t, // uptime
                                              uint32_t, // charging_time
                                              uint16_t, // allowed_charging_current
-                                             uint16_t  // supported_current
+                                             uint16_t, // supported_current
+                                             bool      // cp_disconnected_state
                                              )> manager_callback,
                           std::function<void(uint8_t, uint8_t)> manager_error_callback);
 
-    bool send_manager_update(uint8_t client_id, uint16_t allocated_current);
+    bool send_manager_update(uint8_t client_id, uint16_t allocated_current, bool cp_disconnect_requested);
 
-    void register_client(std::function<void(uint16_t)> client_callback);
+    void register_client(std::function<void(uint16_t, bool)> client_callback);
     bool send_client_update(uint8_t iec61851_state,
                             uint8_t charger_state,
                             uint8_t error_state,

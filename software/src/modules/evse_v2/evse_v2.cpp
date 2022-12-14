@@ -665,8 +665,11 @@ void EVSEV2::register_urls()
         return;
 
 #if MODULE_CM_NETWORKING_AVAILABLE()
-    cm_networking.register_client([this](uint16_t current) {
+    cm_networking.register_client([this](uint16_t current, bool cp_disconnect_requested) {
         set_managed_current(current);
+
+        uint8_t cp_mode = cp_disconnect_requested ? TF_EVSE_V2_CONTROL_PILOT_DISCONNECTED : TF_EVSE_V2_CONTROL_PILOT_AUTOMATIC;
+        is_in_bootloader(tf_evse_v2_set_control_pilot_configuration(&device, cp_mode, nullptr));
     });
 
     task_scheduler.scheduleWithFixedDelay([this](){

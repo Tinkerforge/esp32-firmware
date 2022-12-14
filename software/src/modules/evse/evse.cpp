@@ -504,8 +504,10 @@ void EVSE::register_urls()
         return;
 
 #if MODULE_CM_NETWORKING_AVAILABLE()
-    cm_networking.register_client([this](uint16_t current) {
+    cm_networking.register_client([this](uint16_t current, bool cp_disconnect_requested) {
         set_managed_current(current);
+
+        (void)cp_disconnect_requested; // not supported
     });
 
     task_scheduler.scheduleWithFixedDelay([this](){

@@ -247,7 +247,8 @@ void CMNetworking::register_manager(std::vector<String> &&hosts,
                                                        uint32_t, // uptime
                                                        uint32_t, // charging_time
                                                        uint16_t, // allowed_charging_current
-                                                       uint16_t  // supported_current
+                                                       uint16_t, // supported_current
+                                                       bool      // cp_disconnected_state
                                                        )> manager_callback,
                                     std::function<void(uint8_t, uint8_t)> manager_error_callback)
 {
@@ -338,11 +339,12 @@ void CMNetworking::register_manager(std::vector<String> &&hosts,
                          state_pkt.v1.evse_uptime,
                          state_pkt.v1.charging_time,
                          state_pkt.v1.allowed_charging_current,
-                         state_pkt.v1.supported_current);
+                         state_pkt.v1.supported_current,
+                         CM_STATE_FLAGS_CPPDISC_IS_SET(state_pkt.v1.state_flags));
         }, 100, 100);
 }
 
-bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_current)
+bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_current, bool cp_disconnect_requested)
 {
     static uint16_t next_seq_num = 1;
 
@@ -357,7 +359,7 @@ bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_cur
     command_pkt.header.version = CM_PROTOCOL_VERSION;
 
     command_pkt.v1.allocated_current = allocated_current;
-    command_pkt.v1.command_flags = 0;
+    command_pkt.v1.command_flags = cp_disconnect_requested << CM_COMMAND_FLAGS_CPPDISC_BIT_POS;
 
     int err = -1;
 
@@ -384,7 +386,7 @@ bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_cur
     return true;
 }
 
-void CMNetworking::register_client(std::function<void(uint16_t)> client_callback)
+void CMNetworking::register_client(std::function<void(uint16_t, bool)> client_callback)
 {
     client_sock = create_socket(CHARGE_MANAGEMENT_PORT);
 
@@ -433,9 +435,9 @@ void CMNetworking::register_client(std::function<void(uint16_t)> client_callback
 
         last_successful_recv = millis();
         manager_addr = temp_addr;
-
         manager_addr_valid = true;
-        client_callback(command_pkt.v1.allocated_current);
+
+        client_callback(command_pkt.v1.allocated_current, CM_COMMAND_FLAGS_CPPDISC_IS_SET(command_pkt.v1.command_flags));
         //logger.printfln("Received command packet. Allocated current is %u", command_pkt.v1.allocated_current);
     }, 100, 100);
 }

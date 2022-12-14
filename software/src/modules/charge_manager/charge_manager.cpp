@@ -181,7 +181,8 @@ void ChargeManager::start_manager_task()
             uint32_t uptime,
             uint32_t charging_time,
             uint16_t allowed_charging_current,
-            uint16_t supported_current
+            uint16_t supported_current,
+            bool cp_disconnected_state //TODO use me
         ){
             Config &target = charge_manager_state.get("chargers")->asArray()[client_id];
             // Don't update if the uptimes are the same.
@@ -249,7 +250,7 @@ void ChargeManager::start_manager_task()
             i = 0;
 
         Config &state = charge_manager_state.get("chargers")->asArray()[i];
-        if(cm_networking.send_manager_update(i, state.get("allocated_current")->asUint()))
+        if(cm_networking.send_manager_update(i, state.get("allocated_current")->asUint(), false)) //TODO implement cp_disconnect_requested
             ++i;
 
     }, cm_send_delay, cm_send_delay);
