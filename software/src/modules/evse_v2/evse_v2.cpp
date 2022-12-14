@@ -787,6 +787,10 @@ void EVSEV2::register_urls()
 
     api.addState("evse/control_pilot_configuration", &evse_control_pilot_configuration, {}, 1000);
     api.addCommand("evse/control_pilot_configuration_update", &evse_control_pilot_configuration_update, {}, [this](){
+        if (evse_management_enabled.get("enabled")->asBool()) { // Disallow updating control pilot configuration if management is enabled because the charge manager will override the CP config every second.
+            logger.printfln("evse: Control pilot configuration cannot be updated by API while charge management is enabled.");
+            return;
+        }
         auto cp = evse_control_pilot_configuration_update.get("control_pilot")->asUint();
         int rc = tf_evse_v2_set_control_pilot_configuration(&device, cp, nullptr);
         logger.printfln("updating control pilot to %u. rc %d", cp, rc);
