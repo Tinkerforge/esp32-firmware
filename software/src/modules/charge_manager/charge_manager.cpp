@@ -120,6 +120,9 @@ void ChargeManager::pre_setup()
                 {"wants_to_charge_low_priority", Config::Bool(false)},
                 {"is_charging", Config::Bool(false)},
 
+                {"cp_disconnect_state", Config::Bool(false)}, // last CP disconnect state reported by the charger: false - automatic, true - disconnected
+                {"cp_disconnect", Config::Bool(false)}, // last CP disconnect request sent to charger: false - automatic/don't care, true - disconnect
+
                 {"last_sent_config", Config::Uint32(0)},
                 {"allocated_current", Config::Uint16(0)}, // last current limit send to the charger
 
@@ -137,6 +140,10 @@ void ChargeManager::pre_setup()
             return String("Current too large: maximum available current is configured to ") + String(max_avail_current);
         return "";
     }};
+
+    charge_manager_control_pilot_disconnect = ConfigRoot{Config::Object({
+        {"disconnect", Config::Bool(false)},
+    })};
 }
 
 uint8_t get_charge_state(uint8_t charger_state, uint16_t supported_current, uint32_t charging_time, uint16_t target_allocated_current)
@@ -182,7 +189,7 @@ void ChargeManager::start_manager_task()
             uint32_t charging_time,
             uint16_t allowed_charging_current,
             uint16_t supported_current,
-            bool cp_disconnected_state //TODO use me
+            bool cp_disconnected_state
         ){
             Config &target = charge_manager_state.get("chargers")->asArray()[client_id];
             // Don't update if the uptimes are the same.
@@ -217,6 +224,7 @@ void ChargeManager::start_manager_task()
             target.get("is_charging")->updateBool(charger_state == 3);
             target.get("allowed_current")->updateUint(allowed_charging_current);
             target.get("supported_current")->updateUint(supported_current);
+            target.get("cp_disconnect_state")->updateBool(cp_disconnected_state);
             target.get("last_update")->updateUint(millis());
 
             if (error_state != 0) {
@@ -250,7 +258,7 @@ void ChargeManager::start_manager_task()
             i = 0;
 
         Config &state = charge_manager_state.get("chargers")->asArray()[i];
-        if(cm_networking.send_manager_update(i, state.get("allocated_current")->asUint(), false)) //TODO implement cp_disconnect_requested
+        if(cm_networking.send_manager_update(i, state.get("allocated_current")->asUint(), state.get("cp_disconnect")->asBool()))
             ++i;
 
     }, cm_send_delay, cm_send_delay);
@@ -330,6 +338,14 @@ void ChargeManager::distribute_current()
     auto &configs = charge_manager_config_in_use.get("chargers")->asArray();
 
     uint32_t current_array[MAX_CLIENTS] = {0};
+
+    // Update control pilot disconnect
+    {
+        bool disconnect_requested = charge_manager_control_pilot_disconnect.get("disconnect")->asBool();
+        for (auto &charger : chargers) {
+            charger.get("cp_disconnect")->updateBool(disconnect_requested);
+        }
+    }
 
     // Handle unreachable EVSEs
     {
@@ -648,7 +664,8 @@ void ChargeManager::register_urls()
     api.addCommand("charge_manager/available_current_update", &charge_manager_available_current, {}, [this](){
         this->last_available_current_update = millis();
     }, false);
-
+    api.addState("charge_manager/control_pilot_disconnect", &charge_manager_control_pilot_disconnect, {}, 1000);
+    api.addCommand("charge_manager/control_pilot_disconnect_update", &charge_manager_control_pilot_disconnect, {}, [](){}, false);
 }
 
 void ChargeManager::loop()
