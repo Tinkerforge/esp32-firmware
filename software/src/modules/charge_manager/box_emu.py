@@ -247,7 +247,7 @@ def send():
                     0)  # energy_abs
     if not resp_block_seq_num.isChecked():
         next_seq_num += 1
-        next_seq_num %= 256
+        next_seq_num %= 65536
 
     sock.sendto(b, addr)
 
