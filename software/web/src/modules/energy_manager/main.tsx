@@ -38,8 +38,6 @@ function update_energy_manager_state() {
     util.update_button_group(`btn_group_gpio0`, state.gpio_input_state[0] ? 1 : 0);
     util.update_button_group(`btn_group_gpio1`, state.gpio_input_state[1] ? 1 : 0);
     util.update_button_group(`btn_group_gpio2`, state.gpio_output_state ? 1 : 0);
-    $('#state_input_configuration_0').val(state.gpio_input_configuration[0]);
-    $('#state_input_configuration_1').val(state.gpio_input_configuration[1]);
     $('#state_input_voltage').val(`${state.input_voltage} mV`);
     $('#state_contactor_check').val(state.contactor_check_state);
 }
