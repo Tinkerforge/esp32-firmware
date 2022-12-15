@@ -268,7 +268,6 @@ String EnergyManager::get_energy_manager_debug_line()
              "%.3f,%.3f,%.3f,%c,%c,%c,%c,%c,%c,,"
              "%u,%u,%u,%u,%u,%u,%u,,"
              "%c,%c,,"
-             "%u,%u,,"
              "%u,,"
              "%u,,"
              "%u\"",
