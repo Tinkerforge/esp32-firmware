@@ -22,8 +22,6 @@
             "gpio_names_0": "FIXME",
             "gpio_low": "FIXME",
             "gpio_high": "FIXME",
-            "state_input_configuration": "FIXME",
-            "state_input_configuration_names": "FIXME",
             "state_input_voltage": "FIXME",
             "state_contactor_check": "FIXME",
             "relay": "FIXME",

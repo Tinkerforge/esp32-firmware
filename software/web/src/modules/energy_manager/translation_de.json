@@ -22,8 +22,6 @@
             "gpio_names_0": "Eingang 3, Eingang 4, Ausgang",
             "gpio_low": "Low",
             "gpio_high": "High",
-            "state_input_configuration": "Konfiguration Eingänge",
-            "state_input_configuration_names": "Eingang 3, Eingang 4",
             "state_input_voltage": "Eingangsspannung",
             "state_contactor_check": "Zustand Schützüberwachung",
             "relay": "Relais",

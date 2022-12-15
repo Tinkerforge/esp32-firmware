@@ -78,7 +78,6 @@ typedef struct {
     uint32_t error_count[6];
 
     bool input[2];
-    uint8_t input_configuration[2];
     bool output;
     uint16_t voltage;
     uint8_t contactor_check_state;

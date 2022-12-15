@@ -51,9 +51,6 @@ void EnergyManager::pre_setup()
             new Config{Config::Bool(false)}, 2, 2, Config::type_id<Config::ConfBool>())
         },
         {"gpio_output_state", Config::Bool(false)},
-        {"gpio_input_configuration", Config::Array({Config::Uint8(0), Config::Uint8(0)},
-            new Config{Config::Uint8(0)}, 2, 2, Config::type_id<Config::ConfUint>())
-        },
         {"input_voltage", Config::Uint16(0)},
         {"contactor_check_state", Config::Uint8(0)},
         {"energy_meter_type", Config::Uint8(0)},
@@ -253,7 +250,6 @@ String EnergyManager::get_energy_manager_debug_header()
            "ENERGY METER ERRORS,"
            "input,"
            "output,"
-           "input_configuration,"
            "input_voltage,"
            "contactor_check_state,"
            "\"";
@@ -303,9 +299,6 @@ String EnergyManager::get_energy_manager_debug_line()
 
              all_data.input[0] ? '1' : '0',
              all_data.input[1] ? '1' : '0',
-
-             all_data.input_configuration[0],
-             all_data.input_configuration[1],
 
              all_data.output,
              all_data.voltage,
@@ -377,8 +370,6 @@ void EnergyManager::update_all_data()
     energy_manager_state.get("gpio_input_state")->get(0)->updateBool(all_data.input[0]);
     energy_manager_state.get("gpio_input_state")->get(1)->updateBool(all_data.input[1]);
     energy_manager_state.get("gpio_output_state")->updateBool(all_data.output);
-    energy_manager_state.get("gpio_input_configuration")->get(0)->updateUint(all_data.input_configuration[0]);
-    energy_manager_state.get("gpio_input_configuration")->get(1)->updateUint(all_data.input_configuration[1]);
     energy_manager_state.get("input_voltage")->updateUint(all_data.voltage);
     energy_manager_state.get("contactor_check_state")->updateUint(all_data.contactor_check_state);
 
@@ -411,7 +402,6 @@ void EnergyManager::update_all_data_struct()
         all_data.error_count,
         all_data.input,
         &all_data.output,
-        all_data.input_configuration,
         &all_data.voltage,
         &all_data.contactor_check_state
     );

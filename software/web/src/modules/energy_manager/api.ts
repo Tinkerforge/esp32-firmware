@@ -3,7 +3,6 @@ export interface state {
     led_rgb: Uint8Array,
     gpio_input_state: boolean[],
     gpio_output_state: boolean,
-    gpio_input_configuration: Uint8Array,
     input_voltage: number,
     contactor_check_state: number,
     energy_meter_type: number,

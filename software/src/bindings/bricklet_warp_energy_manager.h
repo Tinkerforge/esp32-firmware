@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2022-12-15.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -41,7 +41,7 @@ typedef struct TF_WARPEnergyManager {
 
 #endif
     uint16_t magic;
-    uint8_t response_expected[2];
+    uint8_t response_expected[1];
 } TF_WARPEnergyManager;
 
 /**
@@ -102,27 +102,17 @@ typedef struct TF_WARPEnergyManager {
 /**
  * \ingroup TF_WARPEnergyManager
  */
-#define TF_WARP_ENERGY_MANAGER_FUNCTION_SET_INPUT_CONFIGURATION 12
+#define TF_WARP_ENERGY_MANAGER_FUNCTION_GET_INPUT_VOLTAGE 12
 
 /**
  * \ingroup TF_WARPEnergyManager
  */
-#define TF_WARP_ENERGY_MANAGER_FUNCTION_GET_INPUT_CONFIGURATION 13
+#define TF_WARP_ENERGY_MANAGER_FUNCTION_GET_STATE 13
 
 /**
  * \ingroup TF_WARPEnergyManager
  */
-#define TF_WARP_ENERGY_MANAGER_FUNCTION_GET_INPUT_VOLTAGE 14
-
-/**
- * \ingroup TF_WARPEnergyManager
- */
-#define TF_WARP_ENERGY_MANAGER_FUNCTION_GET_STATE 15
-
-/**
- * \ingroup TF_WARPEnergyManager
- */
-#define TF_WARP_ENERGY_MANAGER_FUNCTION_GET_ALL_DATA_1 16
+#define TF_WARP_ENERGY_MANAGER_FUNCTION_GET_ALL_DATA_1 14
 
 /**
  * \ingroup TF_WARPEnergyManager
@@ -456,20 +446,6 @@ int tf_warp_energy_manager_get_output(TF_WARPEnergyManager *warp_energy_manager,
  *
  * TODO
  */
-int tf_warp_energy_manager_set_input_configuration(TF_WARPEnergyManager *warp_energy_manager, const uint8_t input_configuration[2]);
-
-/**
- * \ingroup TF_WARPEnergyManager
- *
- * TODO
- */
-int tf_warp_energy_manager_get_input_configuration(TF_WARPEnergyManager *warp_energy_manager, uint8_t ret_input_configuration[2]);
-
-/**
- * \ingroup TF_WARPEnergyManager
- *
- * TODO
- */
 int tf_warp_energy_manager_get_input_voltage(TF_WARPEnergyManager *warp_energy_manager, uint16_t *ret_voltage);
 
 /**
@@ -484,7 +460,7 @@ int tf_warp_energy_manager_get_state(TF_WARPEnergyManager *warp_energy_manager, 
  *
  * TODO
  */
-int tf_warp_energy_manager_get_all_data_1(TF_WARPEnergyManager *warp_energy_manager, bool *ret_value, uint8_t *ret_r, uint8_t *ret_g, uint8_t *ret_b, float *ret_power, float *ret_energy_relative, float *ret_energy_absolute, bool ret_phases_active[3], bool ret_phases_connected[3], uint8_t *ret_energy_meter_type, uint32_t ret_error_count[6], bool ret_input[2], bool *ret_output, uint8_t ret_input_configuration[2], uint16_t *ret_voltage, uint8_t *ret_contactor_check_state);
+int tf_warp_energy_manager_get_all_data_1(TF_WARPEnergyManager *warp_energy_manager, bool *ret_value, uint8_t *ret_r, uint8_t *ret_g, uint8_t *ret_b, float *ret_power, float *ret_energy_relative, float *ret_energy_absolute, bool ret_phases_active[3], bool ret_phases_connected[3], uint8_t *ret_energy_meter_type, uint32_t ret_error_count[6], bool ret_input[2], bool *ret_output, uint16_t *ret_voltage, uint8_t *ret_contactor_check_state);
 
 /**
  * \ingroup TF_WARPEnergyManager
