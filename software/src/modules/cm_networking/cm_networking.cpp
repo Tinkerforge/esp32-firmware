@@ -166,6 +166,10 @@ void CMNetworking::resolve_hostname(uint8_t charger_idx)
     resolve_state[charger_idx] = RESOLVE_STATE_RESOLVED;
 }
 
+bool CMNetworking::is_resolved(uint8_t charger_idx) {
+    return resolve_state[charger_idx] == RESOLVE_STATE_RESOLVED;
+}
+
 static const uint8_t cm_command_packet_length_versions[] = {
     sizeof(struct cm_packet_header),
     sizeof(struct cm_packet_header) + sizeof(struct cm_command_v1),
@@ -351,6 +355,10 @@ bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_cur
     if (manager_sock < 0)
         return true;
 
+    resolve_hostname(client_id);
+    if (!is_resolved(client_id))
+        return true;
+
     struct cm_command_packet command_pkt;
     command_pkt.header.magic = CM_PACKET_MAGIC;
     command_pkt.header.length = CM_COMMAND_PACKET_LENGTH;
@@ -361,11 +369,7 @@ bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_cur
     command_pkt.v1.allocated_current = allocated_current;
     command_pkt.v1.command_flags = cp_disconnect_requested << CM_COMMAND_FLAGS_CPPDISC_BIT_POS;
 
-    int err = -1;
-
-
-    resolve_hostname(client_id);
-    err = sendto(manager_sock, &command_pkt, sizeof(command_pkt), 0, (sockaddr *)&dest_addrs[client_id], sizeof(dest_addrs[client_id]));
+    int err = sendto(manager_sock, &command_pkt, sizeof(command_pkt), 0, (sockaddr *)&dest_addrs[client_id], sizeof(dest_addrs[client_id]));
 
     if (err < 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
