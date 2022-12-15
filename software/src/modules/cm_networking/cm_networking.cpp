@@ -154,7 +154,7 @@ void CMNetworking::resolve_hostname(uint8_t charger_idx)
 
     in_addr_t in;
 
-    // using memcpy to guaranty alignment https://mail.gnu.org/archive/html/lwip-users/2008-08/msg00166.html
+    // using memcpy to guarantee alignment https://mail.gnu.org/archive/html/lwip-users/2008-08/msg00166.html
     std::memcpy(&in, &ip.u_addr, sizeof(ip4_addr_t));
 
     std::lock_guard<std::mutex> lock{dns_resolve_mutex};
