@@ -139,7 +139,7 @@ void Browserclock::register_urls()
             auto now = millis();
             auto secs = now / 1000;
             auto ms = now % 1000;
-            logger.printfln("update RTC via web API to %d/%d/%d %d:%d:%d.%d, weekday %d at %lu,%03lu", 
+            logger.printfln("Update clock via web API to %d/%d/%d %d:%d:%d.%d, weekday %d at %lu,%03lu", 
                                                        time_update.get("year")->asUint(),
                                                        time_update.get("month")->asUint(),
                                                        time_update.get("day")->asUint(),

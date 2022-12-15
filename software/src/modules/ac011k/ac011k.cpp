@@ -73,7 +73,7 @@ void AC011K::pre_setup()
         {"GDFirmwareVersion", Config::Uint16(0)},
         {"jumper_configuration", Config::Uint8(3)}, // 3 = 16 Ampere = 11KW for the EN+ wallbox
         {"has_lock_switch", Config::Bool(false)},   // no key lock switch
-        {"evse_version", Config::Uint8(0)},
+        {"evse_version", Config::Uint16(0)},
         {"energy_meter_type", Config::Uint8(99)}
     });
 
@@ -1099,8 +1099,8 @@ void AC011K::update_all_data()
         allowed_charging_current = min(allowed_charging_current, (uint16_t)evse_slots.get(i)->get("max_current")->asUint());
     }
 
-    //*ret_time_since_state_change = evse_state.get("time_since_state_change")->asUint();
-    //*ret_uptime = millis();
+    evse_low_level_state.get("time_since_state_change")->updateUint(evse_state.get("time_since_state_change")->asUint());
+    evse_low_level_state.get("uptime")->updateUint(millis());
 
     // TODO: implement current changes during charging (if possible)
     if(last_allowed_charging_current != allowed_charging_current) {
@@ -1580,7 +1580,7 @@ void AC011K::update_evseStatus(uint8_t evseStatus) {
             break;
         case 4: // Suspended by charger (started but no power available)
             evse_state.get("iec61851_state")->updateUint(IEC_STATE_B); // Verbunden
-            evse_state.get("charger_state")->updateUint(CHARGER_STATE_WAITING_FOR_RELEASE);
+            evse_state.get("charger_state")->updateUint(CHARGER_STATE_READY_TO_CHARGE);
             evse_state.get("contactor_state")->updateUint(1); // TF_EVSE_V2_CONTACTOR_STATE_AC1_LIVE_AC2_NLIVE
             break;
         case 5: // Suspended by EV (power available but waiting for the EV response)
@@ -1603,14 +1603,14 @@ void AC011K::update_evseStatus(uint8_t evseStatus) {
                     meter.updateMeterAllValues(METER_ALL_VALUES_CURRENT_L1_A, 0);
                     meter.updateMeterAllValues(METER_ALL_VALUES_CURRENT_L2_A, 0);
                     meter.updateMeterAllValues(METER_ALL_VALUES_CURRENT_L3_A, 0);
-
-                    /* // meter power */
-                    /* meter.updateMeterValues( */
-                    /*           0,  // charging power W  (power) */
-                    /*           PrivCommRxBuffer[84]+256*PrivCommRxBuffer[85],  // charged energy Wh (energy_rel) */
-                    /*           PrivCommRxBuffer[88]+256*PrivCommRxBuffer[89]   // charged energy Wh (energy_abs) */
-                    /*           ); */
-
+                    // power
+                    if (PrivCommRxBuffer[4] == 0x08) {
+                        meter.updateMeterValues(
+                            0,                                              // charging power W  (power)
+                            PrivCommRxBuffer[84]+256*PrivCommRxBuffer[85],  // charged energy Wh (energy_rel)
+                            PrivCommRxBuffer[88]+256*PrivCommRxBuffer[89]   // charged energy Wh (energy_abs)
+                            );
+                    }
             break;
         case 7: // (Reserved)
             evse_state.get("iec61851_state")->updateUint(IEC_STATE_EF);
@@ -2234,6 +2234,7 @@ void AC011K::myloop()
                         );
                     evse_hardware_configuration.get("initialized")->updateBool(initialized);
                     evse_hardware_configuration.get("GDFirmwareVersion")->updateUint(evse_hardware_configuration.get("FirmwareVersion")->asString().substring(4).toInt());
+                    evse_hardware_configuration.get("evse_version")->updateUint(evse_hardware_configuration.get("FirmwareVersion")->asString().substring(4).toInt());
                     logger.printfln("EVSE serial: %s hw: %s fw: %s", 
                         evse_hardware_configuration.get("SerialNumber")->asCStr(),
                         evse_hardware_configuration.get("Hardware")->asCStr(),
