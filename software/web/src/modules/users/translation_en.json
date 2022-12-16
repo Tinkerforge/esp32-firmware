@@ -48,7 +48,9 @@
             "reboot_content_changed": "User configuration",
             "login_disabled": "Login disabled",
             "save_failed": "Failed to save the user configuration.",
-            "username_already_tracked": "Username is already in use (in tracked charges)"
+            "username_already_tracked": "Username is already in tracked charges",
+            "username_already_used": "Username is already in use",
+            "all_user_ids_in_use": "All user-ids in use."
         }
     }
 }

@@ -42,7 +42,7 @@ import { EVSE_SLOT_USER } from "../evse_common/api";
 
 const MAX_ACTIVE_USERS = 16;
 
-type User = (API.getType['users/config']['users'][0]) & {password: string};
+type User = (API.getType['users/config']['users'][0]) & {password: string, is_invalid: number};
 type UsersConfig = Omit<API.getType['users/config'], 'users'> & {users: User[]};
 
 interface UsersState {
@@ -65,7 +65,7 @@ function remove_user(id: number) {
 }
 
 function modify_user(user: User) {
-    let {password, ...u} = user;
+    let {password, is_invalid, ...u} = user;
     return retry_once(() => API.call("users/modify", u, __("users.script.save_failed")), "users_modify_failed");
 }
 
@@ -82,7 +82,7 @@ function modify_unknown_user(name: string) {
 }
 
 function add_user(user: User) {
-    let {password, ...u} = user;
+    let {password, is_invalid, ...u} = user;
     return retry_once(() => API.call("users/add", u, __("users.script.save_failed")), "users_add_failed");
 }
 
@@ -98,6 +98,56 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
             this.setState({userSlotEnabled: API.get('evse/slots')[EVSE_SLOT_USER].active});
         });
     }
+
+    isChangedUser(changed_user: User): boolean {
+        let users = API.get("users/config").users;
+
+        for (let user of users)
+        {
+            if (user.username == changed_user.username && user.id == changed_user.id)
+                return false;
+        }
+        return true;
+    }
+
+    override async isSaveAllowed(cfg: UsersConfig): Promise<boolean> {
+            let all_usernames = await getAllUsernames();
+            let save_allowed = true;
+            let new_users = cfg.users.slice();
+            for (let i = 0; i < cfg.users.length; i++)
+            {
+                new_users[i].is_invalid = 0;
+                for (let a = 0; a < cfg.users.length; a++)
+                {
+                    if (this.isChangedUser(cfg.users[i]) &&  cfg.users[i].username == cfg.users[a].username && a != i)
+                    {
+                        new_users[i].is_invalid = 1;
+                        this.setState({users: new_users});
+                        save_allowed = false;
+                        break;
+                    }
+                    else if (this.isChangedUser(cfg.users[i]) && cfg.next_user_id == 0)
+                    {
+                        new_users[i].is_invalid = 3;
+                        this.setState({users: new_users});
+                        save_allowed = false;
+                        break;
+                    }
+                }
+                for (let user of all_usernames[0])
+                {
+                    if (this.isChangedUser(cfg.users[i]) && cfg.users[i].username == user &&
+                            (cfg.users[i].is_invalid == undefined || cfg.users[i].is_invalid == 0))
+                    {
+                        new_users[i].is_invalid = 2;
+                        this.setState({users: new_users});
+                        save_allowed = false;
+                        break;
+                    }
+                }
+            }
+            return save_allowed;
+        }
 
 
     async save_authentication_config(enabled: boolean) {
@@ -167,9 +217,11 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
         await API.save_maybe('evse/user_enabled', {"enabled": this.state.userSlotEnabled}, __("evse.script.save_failed"));
     }
 
-    setUser (i: number, val: Partial<User>){
+
+    setUser(i: number, val: Partial<User>) {
         // We have to copy the users array here to make sure the change detection in sendSave works.
         let users = this.state.users.slice(0);
+
         users[i] = {...users[i], ...val};
         this.setState({users: users});
     }
@@ -191,11 +243,25 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
         return false
     }
 
+    errorMessage(user: User): string {
+        console.log(user.username, user.is_invalid);
+        switch (user.is_invalid) {
+            case 1:
+                return __("users.script.username_already_used");
+            case 2:
+                return __("users.script.username_already_tracked");
+            case 3:
+                return __("users.script.all_user_ids_in_use");
+            default:
+                return undefined;
+        }
+    }
+
     override render(props: {}, state: UsersConfig & UsersState) {
         if (!state || !state.users)
             return (<></>);
 
-        let addUserCard = <div class="col mb-4">
+        let addUserCard = this.state.next_user_id != 0 ? <div class="col mb-4">
                 <Card className="h-100" key={999}>
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <UserPlus/>
@@ -209,7 +275,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                         : <Button variant="light" size="lg" block style="height: 100%;" onClick={() => this.setState({showModal: true})}>{__("users.script.add_user")}</Button>}
                 </Card.Body>
             </Card>
-        </div>
+        </div> : <></>
 
         let auth_allowed = this.http_auth_allowed();
 
@@ -218,7 +284,9 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
 
         return (
             <>
-                <ConfigForm id="users_config_form" title={__("users.content.users")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+                <ConfigForm id="users_config_form" title={__("users.content.users")} isModified={this.isModified()} onSave={async () =>{this.save();}}
+                    onReset={this.reset}
+                    onDirtyChange={(d) => this.ignore_updates = d}>
                     <FormRow label={__("users.content.enable_authentication")}>
                         <Switch desc={__("users.content.enable_authentication_desc")}
                                 checked={auth_allowed && state.http_auth_enabled}
@@ -263,9 +331,11 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                                 <Card.Body>
                                     <FormGroup label={__("users.script.username")}>
                                         <InputText value={user.username}
-                                                   onValue={(v) => this.setUser(i+1, {username: v})}
+                                                   onValue={(v) => {this.setUser(i+1, {username: v});}}
                                                    minLength={1} maxLength={32}
-                                                   required/>
+                                                   required
+                                                   class={state.users[i + 1].is_invalid != undefined && state.users[i + 1].is_invalid != 0 ? "is-invalid" : ""}
+                                                   invalidFeedback={this.errorMessage(state.users[i + 1])}/>
                                     </FormGroup>
                                     <FormGroup label={__("users.script.display_name")}>
                                         <InputText value={user.display_name}
@@ -348,7 +418,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                         <Button variant="primary"
                                 onClick={() => {this.setState({showModal: false,
                                                                users: state.users.concat({...state.newUser, id: -1, roles: 0xFFFF}),
-                                                               newUser: {id: -1, roles: 0xFFFF, username: "", display_name: "", current: 32000, digest_hash: "", password: ""}});
+                                                               newUser: {id: -1, roles: 0xFFFF, username: "", display_name: "", current: 32000, digest_hash: "", password: "", is_invalid: 0}});
                                                 this.hackToAllowSave();}}>
                             {__("users.content.add_user_modal_save")}
                         </Button>
