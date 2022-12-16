@@ -24,21 +24,23 @@ import { __ } from "../translation";
 
 import * as util from "../util";
 
-interface InputTextProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "pattern"> {
+interface InputTextProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "pattern" | "className"> {
     idContext?: Context<string>
     onValue?: (value: string) => void
+    class?: string
 }
 
-interface InputTextWithValidationProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput"> {
+interface InputTextWithValidationProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "className"> {
     idContext?: Context<string>
     onValue?: (value: string) => void
     invalidFeedback: string
+    class?: string
 }
 
 export function InputText<T extends (InputTextProps | InputTextWithValidationProps)>(props: util.NoExtraProperties<InputTextProps, T> | InputTextWithValidationProps) {
     let id = props.idContext === undefined ? "" : useContext(props.idContext);
     let invalidFeedback = undefined;
-    if ("invalidFeedback" in props)
+    if ("invalidFeedback" in props && props.invalidFeedback)
         invalidFeedback = <div class="invalid-feedback">{props.invalidFeedback}</div>;
     else if ("minLength" in props && !("maxLength" in props))
         invalidFeedback = <div class="invalid-feedback">{__("component.input_text.min_only_prefix") + props.minLength.toString() + __("component.input_text.min_only_suffix")}</div>;
@@ -49,12 +51,12 @@ export function InputText<T extends (InputTextProps | InputTextWithValidationPro
 
     return (
         <>
-            <input class="form-control"
+            <input {...props}
+                class={"form-control " + (props.class ?? "")}
                 id={id}
                 type="text"
                 onInput={props.onValue ? (e) => props.onValue((e.target as HTMLInputElement).value) : undefined}
-                readonly={!props.onValue}
-                {...props}/>
+                readonly={!props.onValue}/>
             {invalidFeedback}
         </>
     );
