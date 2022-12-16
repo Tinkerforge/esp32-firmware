@@ -43,6 +43,7 @@
 #endif
 
 extern TaskScheduler task_scheduler;
+uint8_t DATA_STORE_PAGE_CHARGE_TRACKER_buf[63] = {0};
 
 // We have to do access the evse/evse_v2 configs manually
 // because a lot of the code runs in setup(), i.e. before APIs
@@ -53,6 +54,8 @@ void set_data_storage(uint8_t *buf)
     tf_evse_set_data_storage(&evse.device, DATA_STORE_PAGE_CHARGE_TRACKER, buf);
 #elif MODULE_EVSE_V2_AVAILABLE()
     tf_evse_v2_set_data_storage(&evse_v2.device, DATA_STORE_PAGE_CHARGE_TRACKER, buf);
+#elif MODULE_AC011K_AVAILABLE()
+    memcpy(&DATA_STORE_PAGE_CHARGE_TRACKER_buf, buf, sizeof(DATA_STORE_PAGE_CHARGE_TRACKER_buf));
 #endif
 }
 
@@ -62,6 +65,8 @@ void get_data_storage(uint8_t *buf)
     tf_evse_get_data_storage(&evse.device, DATA_STORE_PAGE_CHARGE_TRACKER, buf);
 #elif MODULE_EVSE_V2_AVAILABLE()
     tf_evse_v2_get_data_storage(&evse_v2.device, DATA_STORE_PAGE_CHARGE_TRACKER, buf);
+#elif MODULE_AC011K_AVAILABLE()
+    memcpy(buf, &DATA_STORE_PAGE_CHARGE_TRACKER_buf, sizeof(DATA_STORE_PAGE_CHARGE_TRACKER_buf));
 #endif
 }
 
