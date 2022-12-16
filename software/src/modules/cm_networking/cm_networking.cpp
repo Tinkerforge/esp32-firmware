@@ -252,6 +252,7 @@ void CMNetworking::register_manager(std::vector<String> &&hosts,
                                                        uint32_t, // charging_time
                                                        uint16_t, // allowed_charging_current
                                                        uint16_t, // supported_current
+                                                       bool,     // cp_disconnect_supported
                                                        bool      // cp_disconnected_state
                                                        )> manager_callback,
                                     std::function<void(uint8_t, uint8_t)> manager_error_callback)
@@ -344,7 +345,8 @@ void CMNetworking::register_manager(std::vector<String> &&hosts,
                          state_pkt.v1.charging_time,
                          state_pkt.v1.allowed_charging_current,
                          state_pkt.v1.supported_current,
-                         CM_STATE_FLAGS_CPPDISC_IS_SET(state_pkt.v1.state_flags));
+                         CM_FEATURE_FLAGS_CP_DISCONNECT_IS_SET(state_pkt.v1.feature_flags),
+                         CM_STATE_FLAGS_CP_DISCONNECTED_IS_SET(state_pkt.v1.state_flags));
         }, 100, 100);
 }
 
@@ -494,7 +496,7 @@ bool CMNetworking::send_client_update(uint8_t iec61851_state,
 
     long flags = 0
         | managed               << CM_STATE_FLAGS_MANAGED_BIT_POS
-        | cp_disconnected_state << CM_STATE_FLAGS_CPPDISC_BIT_POS;
+        | cp_disconnected_state << CM_STATE_FLAGS_CP_DISCONNECTED_BIT_POS;
     if (has_meter_phases) {
         auto meter_phase_values = api.getState("meter/phases");
         flags |= meter_phase_values->get("phases_connected")->get(0)->asBool() << CM_STATE_FLAGS_L1_CONNECTED_BIT_POS;

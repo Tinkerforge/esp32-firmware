@@ -38,6 +38,11 @@ public:
     void distribute_current();
     void start_manager_task();
     void check_watchdog();
+    void set_available_current(uint32_t current);
+    bool is_charging_stopped(uint32_t last_update_cutoff);
+    void set_all_control_pilot_disconnect(bool disconnect);
+    bool are_all_control_pilot_disconnected(uint32_t last_update_cutoff);
+    bool is_control_pilot_disconnect_supported(uint32_t last_update_cutoff);
 
     ConfigRoot charge_manager_config;
     ConfigRoot charge_manager_config_in_use;

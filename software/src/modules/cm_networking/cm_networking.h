@@ -111,9 +111,9 @@ static_assert(CM_COMMAND_PACKET_LENGTH == 12);
 #define CM_STATE_FLAGS_MANAGED_BIT_POS 7
 #define CM_STATE_FLAGS_MANAGED_MASK (1 << CM_STATE_FLAGS_MANAGED_BIT_POS)
 #define CM_STATE_FLAGS_MANAGED_IS_SET(FLAGS) (((FLAGS) & CM_STATE_FLAGS_MANAGED_MASK) != 0)
-#define CM_STATE_FLAGS_CPPDISC_BIT_POS 6
-#define CM_STATE_FLAGS_CPPDISC_MASK (1 << CM_STATE_FLAGS_CPPDISC_BIT_POS)
-#define CM_STATE_FLAGS_CPPDISC_IS_SET(FLAGS) (((FLAGS) & CM_STATE_FLAGS_CPPDISC_MASK) != 0)
+#define CM_STATE_FLAGS_CP_DISCONNECTED_BIT_POS 6
+#define CM_STATE_FLAGS_CP_DISCONNECTED_MASK (1 << CM_STATE_FLAGS_CP_DISCONNECTED_BIT_POS)
+#define CM_STATE_FLAGS_CP_DISCONNECTED_IS_SET(FLAGS) (((FLAGS) & CM_STATE_FLAGS_CP_DISCONNECTED_MASK) != 0)
 #define CM_STATE_FLAGS_L1_CONNECTED_BIT_POS 5
 #define CM_STATE_FLAGS_L1_CONNECTED_MASK (1 << CM_STATE_FLAGS_L1_CONNECTED_BIT_POS)
 #define CM_STATE_FLAGS_L1_CONNECTED_IS_SET(FLAGS) (((FLAGS) & CM_STATE_FLAGS_L1_CONNECTED_MASK) != 0)
@@ -211,6 +211,7 @@ public:
                                              uint32_t, // charging_time
                                              uint16_t, // allowed_charging_current
                                              uint16_t, // supported_current
+                                             bool,     // cp_disconnect_supported
                                              bool      // cp_disconnected_state
                                              )> manager_callback,
                           std::function<void(uint8_t, uint8_t)> manager_error_callback);
