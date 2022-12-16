@@ -302,7 +302,7 @@
 - Improve translations
 - Web interface: Allow saving if only a +/- button was clicked
 
-2022-12-16: 2.0.9 (<unknown>)
+2022-12-16: 2.0.9 (023a279e)
 - Add Modbus TCP
 - Fix repeated WiFi scans taking a long time
 - Fix optional DNS servers in static IP configuration
