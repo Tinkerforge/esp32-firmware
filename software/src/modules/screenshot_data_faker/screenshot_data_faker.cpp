@@ -65,12 +65,20 @@ void ScreenshotDataFaker::setup()
         File file = LittleFS.open("/charge-records/charge-record-1.bin", "w");
         ChargeStart cs;
         cs.timestamp_minutes = (build_timestamp() / 60) - 1540;
+#ifdef SCREENSHOT_DATA_FAKER_PRO
         cs.meter_start = 0;
+#else
+        cs.meter_start = NAN;
+#endif
         cs.user_id = 1;
 
         ChargeEnd ce;
         ce.charge_duration = 256 * 60 + 27;
+#ifdef SCREENSHOT_DATA_FAKER_PRO
         ce.meter_end = 36.913f;
+#else
+        ce.meter_end = NAN;
+#endif
 
         uint8_t buf[sizeof(ChargeStart)] = {0};
         memcpy(buf, &cs, sizeof(cs));
@@ -81,11 +89,19 @@ void ScreenshotDataFaker::setup()
         file.write(buf2, sizeof(ce));
 
         cs.timestamp_minutes = (build_timestamp() / 60) - 272;
+#ifdef SCREENSHOT_DATA_FAKER_PRO
         cs.meter_start = ce.meter_end;
+#else
+        cs.meter_start = NAN;
+#endif
         cs.user_id = 2;
 
         ce.charge_duration = 9727;
+#ifdef SCREENSHOT_DATA_FAKER_PRO
         ce.meter_end += 33.610f;
+#else
+        ce.meter_end = NAN;
+#endif
 
         memset(buf, 0, sizeof(ChargeStart));
         memset(buf2, 0, sizeof(ChargeEnd));
@@ -101,8 +117,6 @@ void ScreenshotDataFaker::setup()
 
 void ScreenshotDataFaker::register_urls()
 {
-    api.addState("meter/values", &values, {}, 1000);
-
     api.callCommand("evse/user_enabled_update", Config::ConfUpdateObject{{
         {"enabled", true}
     }});
@@ -111,10 +125,10 @@ void ScreenshotDataFaker::register_urls()
         {"enabled", true}
     }});
 
-#if defined(MODULE_EVSE_V2_METER_AVAILABLE)
-    evse_v2_meter.power_history.clear();
+#if SCREENSHOT_DATA_FAKER_PRO
+    meter.power_hist.history.clear();
     for (int i = 0; i < sizeof(meter_history) / sizeof(meter_history[0]); ++i)
-        evse_v2_meter.power_history.push(meter_history[i]);
+        meter.power_hist.history.push(meter_history[i]);
 #endif
 }
 
