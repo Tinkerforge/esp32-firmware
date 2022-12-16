@@ -258,6 +258,8 @@ def main():
     require_firmware_info = env.GetProjectOption("custom_require_firmware_info")
     build_flags = env.GetProjectOption("build_flags")
 
+    frontend_debug = env.GetProjectOption("custom_frontend_debug") == "true"
+
     try:
         oldest_version, version = get_changelog_version(name)
     except Exception as e:
@@ -554,6 +556,7 @@ def main():
     specialize_template(os.path.join("web", "main.ts.template"), os.path.join("web", "src", "main.ts"), {
         '{{{module_imports}}}': '\n'.join(['import * as {0} from "./modules/{0}/main";'.format(x) for x in main_ts_entries]),
         '{{{modules}}}': ', '.join([x for x in main_ts_entries]),
+        '{{{preact_debug}}}': 'import "preact/debug";' if frontend_debug else ''
     })
 
     specialize_template(os.path.join("web", "main.scss.template"), os.path.join("web", "src", "main.scss"), {
@@ -729,7 +732,7 @@ def main():
             pass
 
         with ChangedDirectory('web'):
-            subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "build.py"])
+            subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "build.py"] + ([] if not frontend_debug else ['--js-source-map', '--css-source-map']))
 
         with open('web/build/main.min.css', 'r', encoding='utf-8') as f:
             css = f.read()

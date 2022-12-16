@@ -4,10 +4,9 @@ import shutil
 import subprocess
 from base64 import b64encode
 
-JS_ANALYZE = False
-JS_SOURCE_MAP = False
+import argparse
 
-CSS_SOURCE_MAP = False
+JS_ANALYZE = False
 
 BUILD_DIR = 'build'
 
@@ -35,6 +34,11 @@ HTML_MINIFIER_TERSER_OPTIONS = [
 ]
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--js-source-map', action='store_true')
+    parser.add_argument('--css-source-map', action='store_true')
+    build_args = parser.parse_args()
+
     try:
         shutil.rmtree(BUILD_DIR)
     except FileNotFoundError:
@@ -63,12 +67,12 @@ def main():
     if JS_ANALYZE:
         args += ['--analyze=verbose']
 
-    if JS_SOURCE_MAP:
+    if build_args.js_source_map:
         args += ['--sourcemap']
 
     subprocess.check_call(args, shell=sys.platform == 'win32')
 
-    if JS_SOURCE_MAP:
+    if build_args.js_source_map:
         with open(os.path.join(BUILD_DIR, 'bundle.min.js'), 'r') as f:
             js_src = f.read()
 
@@ -88,7 +92,7 @@ def main():
         'sass',
     ]
 
-    if not CSS_SOURCE_MAP:
+    if not build_args.css_source_map:
         args += ['--no-source-map']
 
     args += [
@@ -112,7 +116,7 @@ def main():
         os.path.join(BUILD_DIR, 'main.min.css')
     ], shell=sys.platform == 'win32')
 
-    if CSS_SOURCE_MAP:
+    if build_args.css_source_map:
         with open(os.path.join(BUILD_DIR, 'main.min.css'), 'r') as f:
             css_src = f.read()
 
