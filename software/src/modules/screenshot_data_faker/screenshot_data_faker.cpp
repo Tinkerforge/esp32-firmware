@@ -50,6 +50,7 @@ const char *charge_manager_config = "{\"enable_charge_manager\":true,\"enable_wa
 const char *network_config = "{\"hostname\":\"warp2-dev-box\",\"enable_mdns\":true}";
 const char *wifi_ap_config = "{\"enable_ap\":true,\"ap_fallback_only\":false,\"ssid\":\"warp2-dev-box\",\"hide_ssid\":false,\"passphrase\":null,\"channel\":1,\"ip\":\"10.0.0.1\",\"gateway\":\"10.0.0.1\",\"subnet\":\"255.255.255.0\"}";
 const char *mqtt_config = "{\"enable_mqtt\":false,\"broker_host\":\"\",\"broker_port\":1883,\"broker_username\":\"\",\"broker_password\":\"\",\"global_topic_prefix\":\"warp2/dev-box\",\"client_name\":\"warp2-dev-box\",\"interval\":1}";
+const char *charge_tracker_config = "{\"electricity_price\": 3401}";
 
 void ScreenshotDataFaker::setup()
 {
@@ -59,6 +60,9 @@ void ScreenshotDataFaker::setup()
     LittleFS.open("/config/network_config", "w").write((const uint8_t *)network_config, strlen(network_config));
     LittleFS.open("/config/wifi_ap_config", "w").write((const uint8_t *)wifi_ap_config, strlen(wifi_ap_config));
     LittleFS.open("/config/mqtt_config", "w").write((const uint8_t *)mqtt_config, strlen(mqtt_config));
+#ifdef SCREENSHOT_DATA_FAKER_PRO
+    LittleFS.open("/config/charge_tracker_config", "w").write((const uint8_t *)charge_tracker_config, strlen(charge_tracker_config));
+#endif
 
     {
         LittleFS.mkdir("/charge-records");
