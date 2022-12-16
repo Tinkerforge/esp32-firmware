@@ -425,7 +425,7 @@ struct from_json {
         for (auto i = obj.begin(); i != obj.end(); i += 1)
         {
             if (return_str.length() < 1000)
-                return_str += String("Config has no key '") + i->key().c_str() + "'.\n";
+                return_str += String("JSON object has unknown key '") + i->key().c_str() + "'.\n";
             else
                 more_errors = true;
         }
