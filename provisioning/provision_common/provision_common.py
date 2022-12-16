@@ -539,13 +539,12 @@ def enumerate_devices(ipcon):
     # Register Enumerate Callback
     ipcon.register_callback(IPConnection.CALLBACK_ENUMERATE, cb_enumerate)
 
-    # Trigger Enumerate
-    ipcon.enumerate()
     start = time.time()
-    while time.time() - start < 5:
+    while time.time() - start < 10:
+        ipcon.enumerate()
         if len(uids) == 6:
             break
-        time.sleep(0.1)
+        time.sleep(1)
 
     return uids
 
