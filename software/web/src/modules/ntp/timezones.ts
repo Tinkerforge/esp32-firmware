@@ -1,5 +1,5 @@
 /*
-2022f;2022-11-07T10:44:13.615476
+2022g;2022-12-16T07:59:51.412396
 */
 /* esp32-firmware
  * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
@@ -121,6 +121,7 @@ let timezones: {[key: string]: {[key: string]: null | {[key: string]: null}}} = 
         "Cayman": null,
         "Chicago": null,
         "Chihuahua": null,
+        "Ciudad_Juarez": null,
         "Coral_Harbour": null,
         "Cordoba": null,
         "Costa_Rica": null,
