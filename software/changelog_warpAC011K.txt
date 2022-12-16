@@ -34,7 +34,22 @@
 - Step up
   alpha version, not ready for production
 
-2022-11-20: 2.0.8 (<unknown>)
-- Step up
-  alpha version, not ready for production
-  publish meter values
+2022-12-16: 2.0.8 (<unknown>)
+- 2.0.8 Beta Version based on Warp2 2022-09-14: 2.0.8 (3eb8c6ac)
+- AC011K specific feature list
+  publish meter values (used phases, amperes, volts, power and energy)
+  GD Firmware Version display (EVSE hardware version)
+  CP-PWM (Duty data duty)
+  cpVolt
+- Warp feature list (features that work on the AC011K hardware as well)
+  access point (station and client)
+  web UI
+  OTA updates
+  autostart
+  change of charging power during charging
+  charge tracker
+  load management (share the available power between multiple chargers)
+  MQTT support
+  HTTP-API
+  log and debug download
+  user management (untested)
