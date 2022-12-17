@@ -135,7 +135,9 @@ void Browserclock::register_urls()
             time = { .tv_sec = t };
             settimeofday(&time, nullptr);
             ntp.set_synced();
+#if MODULE_AC011K_AVAILABLE()
             ac011k.sendTimeLong();
+#endif
             auto now = millis();
             auto secs = now / 1000;
             auto ms = now % 1000;
