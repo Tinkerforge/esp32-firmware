@@ -32,12 +32,14 @@ class Component(Enum):
     SENSOR = "sensor"
     SWITCH = "switch"
     BUTTON = "button"
+    NUMBER = "number"
 
     def get_discovery_type(self) -> DiscoveryType:
         return {
             Component.BINARY_SENSOR: DiscoveryType.STATE_ONLY,
             Component.SENSOR: DiscoveryType.STATE_ONLY,
             Component.SWITCH: DiscoveryType.STATE_AND_UPDATE,
+            Component.NUMBER: DiscoveryType.STATE_AND_UPDATE,
             Component.BUTTON: DiscoveryType.COMMAND_ONLY
         }[self]
 
@@ -47,19 +49,28 @@ class Feature(Enum):
 
 @dataclass
 class Entity:
+    include_generic: bool
     component: Component
     feature: Feature
     object_id: str
     path: str
     name_de: str
     name_en: str
-    static_info: str
+    static_info_generic: str
+    static_info_homeassistant: str
 
     def get_json_len(self):
-        return max(len(self.name_de), len(self.name_en)) + len(self.object_id) + len(self.path) + len(self.get_static_info_str())
+        return max(len(self.name_de), len(self.name_en)) + len(self.object_id) + len(self.path) + max(len(self.get_static_info_generic_str()), len(self.get_static_info_homeassistant_str()))
 
-    def get_static_info_str(self):
-        return ",".join(['\\"{}\\":\\"{}\\"'.format(k, v.replace('"','\\"')) for k, v in self.static_info.items()])
+    def get_static_info_generic_str(self):
+        if not self.include_generic:
+            return "NULL"
+        # static info is not a json object, but only more key value pairs, so remove the {}.
+        # also this is a string literal, so escape inner ".
+        return "\"" + json.dumps(self.static_info_generic).strip().lstrip("{").rstrip("}").replace('"', '\\"') + "\""
+
+    def get_static_info_homeassistant_str(self):
+        return "\"" + json.dumps(self.static_info_generic | self.static_info_homeassistant).strip().lstrip("{").rstrip("}").replace('"', '\\"') + "\""
 
 topic_template = """    {{
         .feature = "{feature}",
@@ -68,7 +79,10 @@ topic_template = """    {{
         .object_id = "{object_id}",
         .name_de = "{name_de}",
         .name_en = "{name_en}",
-        .static_info = "{static_info}",
+        .static_infos = {{
+            {static_info_generic},
+            {static_info_homeassistant}
+        }},
         .type = MqttDiscoveryType::{discovery_type},
     }}"""
 
@@ -79,73 +93,94 @@ topic_template = """    {{
 
 entities = [
 
-Entity(Component.BINARY_SENSOR, Feature.EVSE, "cable", "evse/state", "Wallbox Ladekabel verbunden", "Wallbox cable connected",
-    {"value_template":"{{value_json.charger_state in [1, 2, 3]}}",
-     "payload_on":"True",
-     "payload_off":"False",
-     "device_class":"plug"}),
-
-Entity(Component.BINARY_SENSOR, Feature.EVSE, "ready", "evse/state", "Wallbox ladebereit", "Wallbox ready to charge",
-    {"value_template":"{{value_json.charger_state in [2, 3]}}",
-     "payload_on":"True",
-     "payload_off":"False",
-     "device_class":"power"}),
-
-Entity(Component.BINARY_SENSOR, Feature.EVSE, "charging", "evse/state", "Wallbox Ladevorgang", "Wallbox charging",
-    {"value_template":"{{value_json.charger_state in [3]}}",
-     "payload_on":"True",
-     "payload_off":"False",
-     "device_class":"battery_charging"}),
-
-Entity(Component.BINARY_SENSOR, Feature.EVSE, "error", "evse/state", "Wallbox Fehler", "Wallbox error",
-    {"value_template":"{{value_json.charger_state in [4]}}",
-     "payload_on":"True",
-     "payload_off":"False",
-     "device_class":"problem"}),
-
-Entity(Component.BINARY_SENSOR, Feature.EVSE, "online", "evse/low_level_state", "Wallbox verfügbar", "Wallbox online",
-    {"value_template":"{{value_json.uptime>0}}",
-     "payload_on":"True",
-     "payload_off":"False",
-     "device_class":"connectivity",
-     "expire_after": "30"}),
-
-Entity(Component.SENSOR, Feature.METER, "powernow", "meter/values", "Wallbox aktuelle Ladeleistung", "Wallbox current charge power",
+Entity(True, Component.SENSOR, Feature.METER, "powernow", "meter/values", "Leistungsaufnahme", "Power draw",
     {"value_template":"{{value_json.power}}",
      "unit_of_measurement":"W",
      "device_class":"power",
-     "state_class": "measurement"}),
+     "state_class": "measurement"},
+    {}),
 
-Entity(Component.SENSOR, Feature.METER, "energyabs", "meter/values", "Wallbox Zählerstand absolut", "Wallbox meter value (absolute)",
+Entity(True, Component.SENSOR, Feature.METER, "energyabs", "meter/values", "Stromverbrauch absolut", "Energy consumption (absolute)",
     {"value_template":"{{value_json.energy_abs}}",
      "unit_of_measurement":"kWh",
      "device_class":"energy",
-     "state_class": "total"}),
+     "state_class": "total"},
+    {}),
 
-Entity(Component.SENSOR, Feature.METER, "energyrel", "meter/values", "Wallbox Zählerstand relativ", "Wallbox meter value (relative)",
+Entity(True, Component.SENSOR, Feature.METER, "energyrel", "meter/values", "Stromverbrauch relativ", "Energy consumption (relative)",
     {"value_template":"{{value_json.energy_rel}}",
      "unit_of_measurement":"kWh",
      "device_class":"energy",
-     "state_class": "total"}),
+     "state_class": "total"},
+    {}),
 
-Entity(Component.SWITCH, Feature.EVSE, "autocharge", "evse/auto_start_charging", "Wallbox automatisches Laden", "Wallbox automatic charging",
+Entity(True, Component.SENSOR, Feature.EVSE, "chargerstate", "evse/state", "Fahrzeugstatus", "Vehicle state",
+    {"value_template":"{{value_json.charger_state}}",
+     "icon": "mdi:ev-plug-type2"},
+    {}),
+
+Entity(True, Component.NUMBER, Feature.EVSE, "globalcurrent", "evse/global_current", "Konfigurierter Ladestrom", "Configured charging current",
+    {"value_template":"{{value_json.current}}",
+     "unit_of_measurement":"mA",
+     "min": 6000,
+     "max": 32000,
+     "step": 1000,
+     "mode": "box",
+     "icon": "mdi:gauge"},
+    {}),
+
+Entity(True, Component.SWITCH, Feature.EVSE, "autocharge", "evse/auto_start_charging", "Ladevorgang automatisch starten", "Start charging automatically",
     {"value_template":"{{value_json.auto_start_charging}}",
-     "state_on":"True",
-     "state_off":"False",
+     "state_on":"true",
+     "state_off":"false",
      "payload_on":"true",
      "payload_off":"false",
-     "icon": "mdi:ev-plug-type2"}),
+     "icon": "mdi:ev-plug-type2"},
+    {"state_on":"True",
+     "state_off":"False"}),
 
-Entity(Component.BUTTON, Feature.EVSE, "startcharge", "evse/start_charging", "Wallbox Ladevorgang freigeben", "Wallbox start charging",
+Entity(True, Component.BUTTON, Feature.EVSE, "startcharge", "evse/start_charging", "Ladevorgang starten", "Start charging",
     {"payload_press": "null",   # for Home Assistant
      "payload_on":"null",       # for Domoticz
-     "icon": "mdi:flash"}),
+     "icon": "mdi:flash"},
+    {}),
 
-Entity(Component.BUTTON, Feature.EVSE, "stopcharge", "evse/stop_charging", "Wallbox Ladevorgang beenden", "Wallbox stop charging",
+Entity(True, Component.BUTTON, Feature.EVSE, "stopcharge", "evse/stop_charging", "Ladevorgang beenden", "Stop charging",
     {"payload_press": "null",   # for Home Assistant
      "payload_on":"null",       # for Domoticz
-     "icon": "mdi:flash-off"}),
+     "icon": "mdi:flash-off"},
+    {}),
 
+Entity(False, Component.BINARY_SENSOR, Feature.EVSE, "cable", "evse/state", "Wallbox Ladekabel verbunden", "Wallbox cable connected",
+    {"device_class":"plug"},
+    {"value_template":"{{value_json.charger_state in [1, 2, 3]}}",
+     "payload_on":"True",
+     "payload_off":"False"}),
+
+Entity(False, Component.BINARY_SENSOR, Feature.EVSE, "ready", "evse/state", "Wallbox ladebereit", "Wallbox ready to charge",
+    {"device_class":"power"},
+    {"value_template":"{{value_json.charger_state in [2, 3]}}",
+     "payload_on":"True",
+     "payload_off":"False"}),
+
+Entity(False, Component.BINARY_SENSOR, Feature.EVSE, "charging", "evse/state", "Wallbox Ladevorgang", "Wallbox charging",
+    {"device_class":"battery_charging"},
+    {"value_template":"{{value_json.charger_state in [3]}}",
+     "payload_on":"True",
+     "payload_off":"False"}),
+
+Entity(False, Component.BINARY_SENSOR, Feature.EVSE, "error", "evse/state", "Wallbox Fehler", "Wallbox error",
+    {"device_class":"problem"},
+    {"value_template":"{{value_json.charger_state in [4]}}",
+     "payload_on":"True",
+     "payload_off":"False"}),
+
+Entity(False, Component.BINARY_SENSOR, Feature.EVSE, "online", "evse/low_level_state", "Wallbox verfügbar", "Wallbox online",
+    {"device_class":"connectivity",
+     "expire_after": "30"},
+    {"value_template":"{{value_json.uptime>0}}",
+     "payload_on":"True",
+     "payload_off":"False"}),
 ]
 
 topics = [topic_template.format(
@@ -155,7 +190,8 @@ topics = [topic_template.format(
             object_id=x.object_id,
             name_de=x.name_de,
             name_en=x.name_en,
-            static_info=",".join(['\\"{}\\":\\"{}\\"'.format(k, v.replace('"','\\"')) for k, v in x.static_info.items()]),
+            static_info_generic=x.get_static_info_generic_str(),
+            static_info_homeassistant=x.get_static_info_homeassistant_str(),
             discovery_type=x.component.get_discovery_type().value,
             )
           for x in entities]

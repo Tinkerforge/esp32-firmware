@@ -480,14 +480,14 @@ const char *platform_get_charge_point_vendor() {
     return "Tinkerforge GmbH";
 }
 
-char model[20] = {0};
+char model[20] = {0}; // FIXME: Check if this needs to be one byte longer. See https://github.com/Tinkerforge/tfocpp/blob/5f07d2a7821167bf09eb4422d80657bb77ef886e/src/ocpp/Messages.cpp#L377
 const char *platform_get_charge_point_model() {
-    strncpy(model, device_name.name.get("display_type")->asCStr(), ARRAY_SIZE(model));
+    device_name.name.get("display_type")->asString().toCharArray(model, ARRAY_SIZE(model));
     return model;
 }
 
 const char *platform_get_charge_point_serial_number() {
-    return device_name.name.get("name")->asCStr();
+    return device_name.name.get("name")->asUnsafeCStr(); // FIXME: Check if this use of the returned C string is safe or if a local copy like in platform_get_charge_point_model() is required. Might need to be truncated to a length of 25+\0.
 }
 const char *platform_get_firmware_version() {
     return build_version_full_str();

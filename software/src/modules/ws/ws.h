@@ -35,8 +35,8 @@ public:
     void addCommand(size_t commandIdx, const CommandRegistration &reg) override;
     void addState(size_t stateIdx, const StateRegistration &reg) override;
     void addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg) override;
-    bool pushStateUpdate(size_t stateIdx, String payload, String path) override;
-    void pushRawStateUpdate(String payload, String path) override;
+    bool pushStateUpdate(size_t stateIdx, const String &payload, const String &path) override;
+    void pushRawStateUpdate(const String &payload, const String &path) override;
     void wifiAvailable() override;
 
     bool initialized = false;

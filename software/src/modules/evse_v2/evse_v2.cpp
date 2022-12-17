@@ -849,9 +849,11 @@ void EVSEV2::register_urls()
         if (enabled == evse_user_enabled.get("enabled")->asBool())
             return;
 
+#if MODULE_USERS_AVAILABLE()
         if (enabled) {
             users.stop_charging(0, true);
         }
+#endif
 
         if (enabled)
             tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_USER, 0, true, true);
@@ -1226,4 +1228,9 @@ void EVSEV2::update_all_data()
 
     evse_external_defaults.get("current")->updateUint(external_default_current);
     evse_external_defaults.get("clear_on_disconnect")->updateBool(external_default_clear_on_disconnect);
+
+#if MODULE_WATCHDOG_AVAILABLE()
+    static size_t watchdog_handle = watchdog.add("evse_v2_all_data", "EVSE not reachable", 10 * 60 * 1000);
+    watchdog.reset(watchdog_handle);
+#endif
 }

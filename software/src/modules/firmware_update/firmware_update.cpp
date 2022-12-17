@@ -53,7 +53,7 @@ extern int8_t green_led_pin;
 #define FIRMWARE_INFO_OFFSET (0xd000 - 0x1000)
 #define FIRMWARE_INFO_LENGTH 0x1000
 
-TaskHandle_t xTaskBuffer;
+static TaskHandle_t xTaskBuffer;
 
 void blinky(void *arg)
 {

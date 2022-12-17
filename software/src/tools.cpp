@@ -681,6 +681,14 @@ bool for_file_in(const char *dir, bool (*callback)(File *open_file), bool skip_d
 
 void remove_directory(const char *path)
 {
+    String path_string;
+    if (*path != '/') {
+        logger.printfln("Remove directory called with path %s that does not start with a /.", path);
+        path_string = String("/") + path;
+    } else {
+        path_string = path;
+    }
+
     // This is more involved than expected:
     // rmdir only deletes empty directories, so remove all files first
     // Also LittleFS.rmdir will call the vfs_api.cpp implementation that
@@ -690,18 +698,24 @@ void remove_directory(const char *path)
     // is only called /spiffs for historical reasons, we use
     // LittleFS instead. Calling ::rmdir directly bypasses
     // this and other helpful checks.
-    for_file_in(path, [](File *f) {
+    for_file_in(path_string.c_str(), [](File *f) {
             bool dir = f->isDirectory();
-            const char *file_path = f->path();
+            String file_path = String(f->path());
+            // F will be closed after the callback returns.
+            // However the recursive call below can potentially open
+            // many files in parallel.
+            // As we close the file before using the path, we have to
+            // copy the path into a String. close() frees the buffer that
+            // f->path() points to.
             f->close();
             if (dir)
-                remove_directory(file_path);
+                remove_directory(file_path.c_str());
             else
-                LittleFS.remove(file_path);
+                LittleFS.remove(file_path.c_str());
             return true;
         }, false);
 
-    ::rmdir((String("/spiffs/") + path).c_str());
+    ::rmdir((String("/spiffs") + path_string).c_str());
 }
 
 

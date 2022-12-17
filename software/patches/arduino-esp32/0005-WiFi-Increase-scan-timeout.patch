@@ -1,0 +1,38 @@
+From 123e6c6e03121cc2d3ad72130fc6ae505704afce Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Fri, 2 Dec 2022 13:58:17 +0100
+Subject: [PATCH] WiFi: Increase scan timeout.
+
+Previous timeout might be long enough to scan 11 channels but it is barely not enough to scan 13 channels.
+Also fix misleading indentation.
+---
+ libraries/WiFi/src/WiFiScan.cpp | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/libraries/WiFi/src/WiFiScan.cpp b/libraries/WiFi/src/WiFiScan.cpp
+index f4a32e49..e3909c5f 100644
+--- a/libraries/WiFi/src/WiFiScan.cpp
++++ b/libraries/WiFi/src/WiFiScan.cpp
+@@ -60,7 +60,7 @@ int16_t WiFiScanClass::scanNetworks(bool async, bool show_hidden, bool passive,
+         return WIFI_SCAN_RUNNING;
+     }
+ 
+-    WiFiScanClass::_scanTimeout = max_ms_per_chan * 20;
++    WiFiScanClass::_scanTimeout = max_ms_per_chan * 30; // Previous multiplicator of 20 might be enough for 11 channels, but 13 channels require a multiplicator of at least 22.
+     WiFiScanClass::_scanAsync = async;
+ 
+     WiFi.enableSTA(true);
+@@ -83,8 +83,8 @@ int16_t WiFiScanClass::scanNetworks(bool async, bool show_hidden, bool passive,
+     if(esp_wifi_scan_start(&config, false) == ESP_OK) {
+         _scanStarted = millis();
+         if (!_scanStarted) { //Prevent 0 from millis overflow
+-	    ++_scanStarted;
+-	}
++            ++_scanStarted;
++        }
+ 
+         WiFiGenericClass::clearStatusBits(WIFI_SCAN_DONE_BIT);
+         WiFiGenericClass::setStatusBits(WIFI_SCANNING_BIT);
+-- 
+2.30.2
+

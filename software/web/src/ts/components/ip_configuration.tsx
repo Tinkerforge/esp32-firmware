@@ -171,8 +171,8 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
                                         ip: "0.0.0.0",
                                         gateway: "0.0.0.0",
                                         subnet: "0.0.0.0",
-                                        dns: null,
-                                        dns2: null
+                                        dns: "",
+                                        dns2: ""
                                     });
                                 else {
                                     props.onValue({

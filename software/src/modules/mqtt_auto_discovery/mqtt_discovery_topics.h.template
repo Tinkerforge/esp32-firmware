@@ -1,6 +1,14 @@
 
-#define TOPIC_COUNT {{{topic_count}}}
-#define MAX_JSON_LEN {{{max_json_len}}}
+#define TOPIC_COUNT ({{{topic_count}}})
+#define MAX_JSON_LEN ({{{max_json_len}}})
+#define MQTT_AUTO_DISCOVERY_MODE_MIN (-1)
+#define MQTT_AUTO_DISCOVERY_MODE_MAX (1)
+
+enum class MqttAutoDiscoveryMode {
+    DISCOVERY_DISABLED = -1,
+    GENERIC = 0,
+    HOMEASSISTANT = 1,
+};
 
 enum class MqttDiscoveryType {
     STATE_ONLY,
@@ -15,7 +23,7 @@ struct DiscoveryTopicInfo {
     const char * const object_id;
     const char * const name_de;
     const char * const name_en;
-    const char * const static_info;
+    const char * const static_infos[2];
     const MqttDiscoveryType type;
 };
 

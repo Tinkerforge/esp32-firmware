@@ -30,7 +30,7 @@ extern TaskScheduler task_scheduler;
 
 #include "mbedtls/base64.h"
 
-String check_key(String key, bool enable)
+String check_key(const String &key, bool enable)
 {
     if (key.length() > 0) {
         if (key.length() != 44)
@@ -67,42 +67,36 @@ void Wireguard::pre_setup()
         {"allowed_ip",     Config::Str("0.0.0.0", 7, 15)},
         {"allowed_subnet", Config::Str("0.0.0.0", 7, 15)}
     }), [](Config &cfg) -> String {
-        const char *internal_ip = cfg.get("internal_ip")->asCStr();
-        const char *internal_subnet = cfg.get("internal_subnet")->asCStr();
-        const char *internal_gateway = cfg.get("internal_gateway")->asCStr();
-        const char *allowed_ip = cfg.get("allowed_ip")->asCStr();
-        const char *allowed_subnet = cfg.get("allowed_subnet")->asCStr();
-
         IPAddress unused;
 
-        if (!unused.fromString(internal_ip))
+        if (!unused.fromString(cfg.get("internal_ip")->asEphemeralCStr()))
             return "Failed to parse \"internal_ip\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!unused.fromString(internal_subnet))
+        if (!unused.fromString(cfg.get("internal_subnet")->asEphemeralCStr()))
             return "Failed to parse \"internal_subnet\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!unused.fromString(internal_gateway))
+        if (!unused.fromString(cfg.get("internal_gateway")->asEphemeralCStr()))
             return "Failed to parse \"internal_gateway\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!unused.fromString(allowed_ip))
+        if (!unused.fromString(cfg.get("allowed_ip")->asEphemeralCStr()))
             return "Failed to parse \"allowed_ip\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!unused.fromString(allowed_subnet))
+        if (!unused.fromString(cfg.get("allowed_subnet")->asEphemeralCStr()))
             return "Failed to parse \"allowed_subnet\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
 
         bool enable = cfg.get("enable")->asBool();
-        String private_key = cfg.get("private_key")->asString();
+        const String &private_key = cfg.get("private_key")->asString();
         String result = check_key(private_key, enable);
         if (result != "")
             return String("\"private_key\"") + result;
 
-        String remote_public_key = cfg.get("remote_public_key")->asString();
+        const String &remote_public_key = cfg.get("remote_public_key")->asString();
         result = check_key(remote_public_key, enable);
         if (result != "")
             return String("\"remote_public_key\"") + result;
 
-        String preshared_key = cfg.get("preshared_key")->asString();
+        const String &preshared_key = cfg.get("preshared_key")->asString();
 
         // pass false because an empty preshared_key is always allowed.
         result = check_key(preshared_key, false);
@@ -135,25 +129,28 @@ void Wireguard::start_wireguard()
     IPAddress allowed_ip;
     IPAddress allowed_subnet;
 
-    internal_ip.fromString(config.get("internal_ip")->asCStr());
-    internal_subnet.fromString(config.get("internal_subnet")->asCStr());
-    internal_gateway.fromString(config.get("internal_gateway")->asCStr());
-    allowed_ip.fromString(config.get("allowed_ip")->asCStr());
-    allowed_subnet.fromString(config.get("allowed_subnet")->asCStr());
+    internal_ip.fromString(config.get("internal_ip")->asEphemeralCStr());
+    internal_subnet.fromString(config.get("internal_subnet")->asEphemeralCStr());
+    internal_gateway.fromString(config.get("internal_gateway")->asEphemeralCStr());
+    allowed_ip.fromString(config.get("allowed_ip")->asEphemeralCStr());
+    allowed_subnet.fromString(config.get("allowed_subnet")->asEphemeralCStr());
 
-    logger.printfln("Got NTP sync. Connecting to WireGuard peer %s:%u", config.get("remote_host")->asCStr(), config.get("remote_port")->asUint());
+    private_key = config.get("private_key")->asString(); // Local copy of ephemeral conf String. The network interface created by WG might hold a reference to the C string.
+    remote_host = config.get("remote_host")->asString(); // Local copy of ephemeral conf String. lwip_getaddrinfo() might hold a reference to the C string.
+
+    logger.printfln("Got NTP sync. Connecting to WireGuard peer %s:%u", remote_host.c_str(), config.get("remote_port")->asUint());
 
     wg.begin(internal_ip,
              internal_subnet,
              internal_gateway,
-             config.get("private_key")->asCStr(),
-             config.get("remote_host")->asCStr(),
-             config.get("remote_public_key")->asCStr(),
+             private_key.c_str(),
+             remote_host.c_str(),
+             config.get("remote_public_key")->asEphemeralCStr(),
              config.get("remote_port")->asUint(),
              allowed_ip,
              allowed_subnet,
              config.get("make_default_interface")->asBool(),
-             config.get("preshared_key")->asString().length() > 0 ? config.get("preshared_key")->asCStr() : nullptr);
+             config.get("preshared_key")->asString().length() > 0 ? config.get("preshared_key")->asEphemeralCStr() : nullptr);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         bool up = wg.is_peer_up(nullptr, nullptr);

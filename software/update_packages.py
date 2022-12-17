@@ -10,7 +10,7 @@ import shutil
 from urllib.request import urlretrieve
 from zipfile import ZipFile
 
-VERSION = '2.0.0'
+VERSION = '2.1.0'
 
 print('Updating packages')
 
@@ -69,7 +69,7 @@ for name in sorted(os.listdir('packages')):
         with open(tinkerforge_json_path, 'r') as f:
             tinkerforge_json = json.loads(f.read())
 
-            if tinkerforge_json.get('version') == VERSION:
+            if tinkerforge_json.get('version') == VERSION and tinkerforge_json.get('url') == url:
                 print('Skipping {0}'.format(name))
                 continue
     except FileNotFoundError:
@@ -124,6 +124,6 @@ for name in sorted(os.listdir('packages')):
         f.write('*\n!package.json\n')
 
     with open(tinkerforge_json_path, 'w') as f:
-        f.write(json.dumps({'version': VERSION}))
+        f.write(json.dumps({'version': VERSION, 'url': url}))
 
     os.remove(zip_path)

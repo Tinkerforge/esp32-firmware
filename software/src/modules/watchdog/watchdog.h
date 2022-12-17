@@ -19,26 +19,19 @@
 
 #pragma once
 
-#include "api.h"
+#include "config.h"
 
-bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len);
-
-class Http : public IAPIBackend
+class Watchdog
 {
 public:
-    Http(){}
+    Watchdog(){}
     void pre_setup();
     void setup();
     void register_urls();
     void loop();
 
-    // IAPIBackend implementation
-    void addCommand(size_t commandIdx, const CommandRegistration &reg) override;
-    void addState(size_t stateIdx, const StateRegistration &reg) override;
-    void addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg) override;
-    bool pushStateUpdate(size_t stateIdx, const String &payload, const String &path) override;
-    void pushRawStateUpdate(const String &payload, const String &path) override;
-    void wifiAvailable() override;
-
     bool initialized = false;
+
+    int add(const char *name, const char *message, uint32_t timeout_ms);
+    void reset(int handle);
 };

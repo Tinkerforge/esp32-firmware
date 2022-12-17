@@ -137,7 +137,7 @@ struct UserSlotInfo {
     float meter_start;
 };
 
-uint16_t calc_checksum(UserSlotInfo info)
+uint16_t calc_checksum(const UserSlotInfo &info)
 {
     uint32_t float_buf = 0;
     memcpy(&float_buf, &info.meter_start, sizeof(float_buf));
@@ -329,7 +329,7 @@ void Users::setup()
         create_username_file();
         for (int i = 0; i < user_config.get("users")->count(); ++i) {
             Config *user = (Config *)user_config.get("users")->get(i);
-            this->rename_user(user->get("id")->asUint(), user->get("username")->asCStr(), user->get("display_name")->asCStr());
+            this->rename_user(user->get("id")->asUint(), user->get("username")->asString(), user->get("display_name")->asString());
         }
     }
 
@@ -424,7 +424,7 @@ void Users::setup()
 
             for (int i = 0; i < user_config.get("users")->count(); ++i) {
                 if (user_config.get("users")->get(i)->get("username")->asString().equals(fields.username))
-                    return checkDigestAuthentication(fields, req.methodString(), fields.username.c_str(), user_config.get("users")->get(i)->get("digest_hash")->asCStr(), nullptr, true, nullptr, nullptr, nullptr);
+                    return checkDigestAuthentication(fields, req.methodString(), fields.username.c_str(), user_config.get("users")->get(i)->get("digest_hash")->asEphemeralCStr(), nullptr, true, nullptr, nullptr, nullptr); // use of emphemeral C string ok
             }
 
             return false;
@@ -560,7 +560,7 @@ void Users::register_urls()
             API::writeConfig("users/config", &user_config);
 
             if (display_name_changed || username_changed)
-                this->rename_user(user->get("id")->asUint(), user->get("username")->asCStr(), user->get("display_name")->asCStr());
+                this->rename_user(user->get("id")->asUint(), user->get("username")->asString(), user->get("display_name")->asString());
 
             user_api_blocked = false;
         }, 0);
@@ -578,12 +578,12 @@ void Users::register_urls()
         user->get("current")->updateUint(add.get("current")->asUint());
         user->get("display_name")->updateString(add.get("display_name")->asString());
         user->get("username")->updateString(add.get("username")->asString());
-        user->get("digest_hash")->updateString(add.get("digest_hash")->asCStr());
+        user->get("digest_hash")->updateString(add.get("digest_hash")->asString());
 
         search_next_free_user();
 
         API::writeConfig("users/config", &user_config);
-        this->rename_user(user->get("id")->asUint(), user->get("username")->asCStr(), user->get("display_name")->asCStr());
+        this->rename_user(user->get("id")->asUint(), user->get("username")->asString(), user->get("display_name")->asString());
         user_api_blocked = false;
     }, true);
 
@@ -661,11 +661,11 @@ uint8_t Users::next_user_id()
     return this->user_config.get("next_user_id")->asUint();
 }
 
-void Users::rename_user(uint8_t user_id, const char *username, const char *display_name)
+void Users::rename_user(uint8_t user_id, const String &username, const String &display_name)
 {
     char buf[USERNAME_ENTRY_LENGTH] = {0};
-    snprintf(buf, USERNAME_LENGTH, "%s", username);
-    snprintf(buf + USERNAME_LENGTH, DISPLAY_NAME_LENGTH, "%s", display_name);
+    username.toCharArray(buf, USERNAME_LENGTH);
+    display_name.toCharArray(buf + USERNAME_LENGTH, DISPLAY_NAME_LENGTH);
 
     File f = LittleFS.open(USERNAME_FILE, "r+");
     f.seek(user_id * USERNAME_ENTRY_LENGTH, SeekMode::SeekSet);

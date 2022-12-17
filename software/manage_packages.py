@@ -34,6 +34,21 @@ def get(title, default):
 def make_absolute_path(path):
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
 
+def download_package_json(package_name, url, commit):
+    package_path = make_absolute_path(os.path.join('packages', package_name))
+    package_json_url = f'{url}/raw/{commit}/package.json'
+    package_json_path = os.path.join(package_path, 'package.json')
+
+    print(f'Downloading {package_json_url}')
+
+    os.makedirs(package_path, exist_ok=True)
+    urlretrieve(package_json_url, package_json_path + '.tmp')
+    os.replace(package_json_path + '.tmp', package_json_path)
+
+def write_config_json(config_json):
+    with open(make_absolute_path(os.path.join('packages', 'config.json')), 'w') as f:
+        f.write(json.dumps(config_json, indent=4) + '\n')
+
 def main():
     with open(make_absolute_path(os.path.join('packages', 'config.json')), 'r') as f:
         config_json = json.loads(f.read())
@@ -50,7 +65,7 @@ def main():
         print(f" URL:    {config['url']}")
         print()
 
-    answer = choose('[A]dd or [R]emove package?', ['a', 'r'])
+    answer = choose('[A]dd, [M]odify or [R]emove package?', ['a', 'm', 'r'])
 
     if answer == 'a':
         print(f'Package {len(config_json)}')
@@ -65,15 +80,8 @@ def main():
             return
 
         url = get(f' Base (default: https://github.com/Tinkerforge/{base}):', f'https://github.com/Tinkerforge/{base}').rstrip('/')
-        package_path = make_absolute_path(os.path.join('packages', package_name))
-        package_json_url = f'{url}/raw/{commit}/package.json'
-        package_json_path = os.path.join(package_path, 'package.json')
 
-        print(f'Downloading {package_json_url}')
-
-        os.makedirs(package_path, exist_ok=True)
-        urlretrieve(package_json_url, package_json_path + '.tmp')
-        os.replace(package_json_path + '.tmp', package_json_path)
+        download_package_json(package_name, url, commit)
 
         config_json.append({
             'base': base,
@@ -82,21 +90,64 @@ def main():
             'url': url,
         })
 
-        with open(make_absolute_path(os.path.join('packages', 'config.json')), 'w') as f:
-            f.write(json.dumps(config_json, indent=4) + '\n')
+        write_config_json(config_json)
 
         print(f'Added package {package_name}')
+        print()
+        print('Next (for a git clone):')
+        print(' Commit software/packages/config.json')
+        print(f' Commit software/packages/{package_name}/package.json')
+        print(' Modify platform_packages option in platformio.ini')
+    elif answer == 'm':
+        if len(config_json) == 0:
+            print('No packages to modify')
+            return
+
+        index = int(get(f'Package [0..{len(config_json) - 1}]:', None))
+        config = config_json[index]
+        old_package_name = f"{config['base']}#{config['branch']}_{config['commit']}"
+        old_package_path = make_absolute_path(os.path.join('packages', old_package_name))
+
+        try:
+            os.remove(os.path.join(old_package_path, 'tinkerforge.json'))
+        except FileNotFoundError:
+            pass
+
+        config['base'] = get(f" Base (default: {config['base']}):", config['base'])
+        config['branch'] = get(f" Branch (default: {config['branch']}):", config['branch'])
+        config['commit'] = get(f" Commit (default: {config['commit']}):", config['commit'])
+        config['url'] = get(f" URL (default: {config['url']}):", config['url'])
+        new_package_name = f"{config['base']}#{config['branch']}_{config['commit']}"
+
+        download_package_json(new_package_name, config['url'], config['commit'])
+        write_config_json(config_json)
+
+        print(f'Modified package {old_package_name}')
+        print()
+        print('Next (for a git clone):')
+        print(' Commit software/packages/config.json')
+
+        if old_package_name != new_package_name:
+            print(f' Commit software/packages/{new_package_name}/package.json')
+
+        print(' Modify platform_packages option in platformio.ini')
     elif answer == 'r':
+        if len(config_json) == 0:
+            print('No packages to remove')
+            return
+
         index = int(get(f'Package [0..{len(config_json) - 1}]:', None))
         config = config_json[index]
         package_name = f"{config['base']}#{config['branch']}_{config['commit']}"
 
         config_json.pop(index)
-
-        with open(make_absolute_path(os.path.join('packages', 'config.json')), 'w') as f:
-            f.write(json.dumps(config_json, indent=4) + '\n')
+        write_config_json(config_json)
 
         print(f'Removed package {package_name}')
+        print()
+        print('Next (for a git clone):')
+        print(' Commit software/packages/config.json')
+        print(' Modify platform_packages option in platformio.ini')
 
 if __name__ == '__main__':
     try:

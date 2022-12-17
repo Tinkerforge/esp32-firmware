@@ -74,7 +74,7 @@ void DeviceName::updateDisplayType()
 #endif
 
     if (name.get("display_type")->updateString(display_type)) {
-        logger.printfln("This is %s (%s), a %s", display_name.get("display_name")->asCStr(), name.get("name")->asCStr(), name.get("display_type")->asCStr());
+        logger.printfln("This is %s (%s), a %s", display_name.get("display_name")->asEphemeralCStr(), name.get("name")->asEphemeralCStr(), name.get("display_type")->asEphemeralCStr());
     }
 }
 
@@ -83,6 +83,9 @@ void DeviceName::setup()
     name.get("name")->updateString(String(BUILD_HOST_PREFIX) + "-" + local_uid_str);
     name.get("uid")->updateString(String(local_uid_str));
 
+    // We intentionally don't use the display_name_in_use = display_name construction here:
+    // We want to be able to change the display_name without a reboot, because in the web interface
+    // we don't use the usual save + reboot modal code-path.
     if (!api.restorePersistentConfig("info/display_name", &display_name)) {
         display_name.get("display_name")->updateString(name.get("name")->asString());
     }

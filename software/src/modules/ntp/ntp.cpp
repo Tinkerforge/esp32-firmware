@@ -56,7 +56,7 @@ static void ntp_sync_cb(struct timeval *t)
     }
 
     task_scheduler.scheduleOnce([]() {
-        ntp.state.get("synced")->updateBool(true);
+        ntp.set_synced();
     }, 0);
 
 #if MODULE_RTC_AVAILABLE()
@@ -69,8 +69,6 @@ static void ntp_sync_cb(struct timeval *t)
         }, 0);
     }
 #endif
-
-    ntp.set_synced();
 }
 
 // Because there is the risk of a race condition with the rtc module,
@@ -100,7 +98,7 @@ void NTP::pre_setup()
         {"server", Config::Str("ptbtime1.ptb.de", 0, 64)}, // We've applied for a vendor zone @ pool.ntp.org, however this seems to take quite a while. Use the ptb servers for now.
         {"server2", Config::Str("ptbtime2.ptb.de", 0, 64)},
     }), [](Config &conf) -> String {
-        if (lookup_timezone(conf.get("timezone")->asCStr()) == nullptr)
+        if (lookup_timezone(conf.get("timezone")->asEphemeralCStr()) == nullptr)
             return "Can't update config: Failed to look up timezone.";
         return "";
     }};
@@ -131,20 +129,25 @@ void NTP::setup()
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
     sntp_set_sync_mode(SNTP_SYNC_MODE_IMMED);
 
-    if (config.get("server")->asString() != "")
-        sntp_setservername(dhcp ? 1 : 0, config.get("server")->asCStr());
-    if (config.get("server2")->asString() != "")
-        sntp_setservername(dhcp ? 2 : 1, config.get("server2")->asCStr());
+    // Keep local copies of ephemeral conf Strings because the SNTP lib doesn't create its own copies and holds references to whatever we pass to it.
+    ntp_server1 = config.get("server")->asString();
+    ntp_server2 = config.get("server2")->asString();
+    if (ntp_server1 != "") {
+        sntp_setservername(dhcp ? 1 : 0, ntp_server1.c_str());
+    }
+    if (ntp_server2 != "") {
+        sntp_setservername(dhcp ? 2 : 1, ntp_server2.c_str());
+    }
 
-    const char *tzstring = lookup_timezone(config.get("timezone")->asCStr());
+    const char *tzstring = lookup_timezone(config.get("timezone")->asEphemeralCStr());
 
     if (tzstring == nullptr) {
-        logger.printfln("Failed to look up timezone information for %s. Will not set timezone", config.get("timezone")->asCStr());
+        logger.printfln("Failed to look up timezone information for %s. Will not set timezone", config.get("timezone")->asEphemeralCStr());
         return;
     }
     setenv("TZ", tzstring, 1);
     tzset();
-    logger.printfln("Set timezone to %s", config.get("timezone")->asCStr());
+    logger.printfln("Set timezone to %s", config.get("timezone")->asEphemeralCStr());
 
     if (config.get("enable")->asBool())
          sntp_init();

@@ -388,7 +388,7 @@ int tf_hal_get_device_info(TF_HAL *hal, uint16_t index, char ret_uid_str[7], cha
         *ret_port_name = tf_hal_get_port_name(hal, hal_common->tfps[index].spitfp->port_id);
     }
 
-    if (ret_port_name != NULL) {
+    if (ret_device_id != NULL) {
         *ret_device_id = hal_common->tfps[index].device_id;
     }
 
