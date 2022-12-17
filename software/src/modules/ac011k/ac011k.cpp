@@ -339,8 +339,10 @@ void AC011K::setup()
     // Get all data once before announcing the EVSE feature.
     update_all_data();
     api.addFeature("evse");
-    api.addFeature("cp_disconnect");
-    api.addFeature("button_configuration");
+    /* api.addFeature("cp_disconnect"); */
+    /* api.addFeature("button_configuration"); */
+    api.addFeature("meter_phases");
+    api.addFeature("meter_all_values");
 
     task_scheduler.scheduleWithFixedDelay([this](){
         update_all_data();
@@ -2236,9 +2238,9 @@ void AC011K::myloop()
                     evse_hardware_configuration.get("GDFirmwareVersion")->updateUint(evse_hardware_configuration.get("FirmwareVersion")->asString().substring(4).toInt());
                     evse_hardware_configuration.get("evse_version")->updateUint(evse_hardware_configuration.get("FirmwareVersion")->asString().substring(4).toInt());
                     logger.printfln("EVSE serial: %s hw: %s fw: %s", 
-                        evse_hardware_configuration.get("SerialNumber")->asCStr(),
-                        evse_hardware_configuration.get("Hardware")->asCStr(),
-                        evse_hardware_configuration.get("FirmwareVersion")->asCStr());
+                        evse_hardware_configuration.get("SerialNumber")->asEphemeralCStr(),
+                        evse_hardware_configuration.get("Hardware")->asEphemeralCStr(),
+                        evse_hardware_configuration.get("FirmwareVersion")->asEphemeralCStr());
                     if(initialized) {
                         logger.printfln("EN+ GD EVSE initialized.");
                     } else {

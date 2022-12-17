@@ -54,7 +54,7 @@ void AC011KHardware::pre_setup()
     if(!api.restorePersistentConfig("ac011k/hardware", &ac011k_hardware)) {
         logger.printfln("AC011K error, could not restore persistent storage ac011k_hardware");
     } else {
-        sprintf(local_uid_str, "%s", ac011k_hardware.get("UID")->asCStr());
+        sprintf(local_uid_str, "%s", ac011k_hardware.get("UID")->asEphemeralCStr());
     }
 
     initialized = true;

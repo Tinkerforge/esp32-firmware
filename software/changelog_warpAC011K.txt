@@ -53,3 +53,13 @@
   HTTP-API
   log and debug download
   user management (untested)
+
+2022-12-17: 2.0.9 (<unknown>)
+- Step up
+
+2022-12-17: 2.0.10 (<unknown>)
+- Step up
+
+2022-12-17: 2.0.11 (<unknown>)
+- Step up
+
