@@ -57,8 +57,8 @@ public:
     virtual void addCommand(size_t commandIdx, const CommandRegistration &reg) = 0;
     virtual void addState(size_t stateIdx, const StateRegistration &reg) = 0;
     virtual void addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg) = 0;
-    virtual bool pushStateUpdate(size_t stateIdx, String payload, String path) = 0;
-    virtual void pushRawStateUpdate(String payload, String path) = 0;
+    virtual bool pushStateUpdate(size_t stateIdx, const String &payload, const String &path) = 0;
+    virtual void pushRawStateUpdate(const String &payload, const String &path) = 0;
     virtual void wifiAvailable() = 0;
 };
 
@@ -71,29 +71,29 @@ public:
     void setup();
     void loop();
 
-    String callCommand(String path, Config::ConfUpdate payload);
+    String callCommand(const String &path, const Config::ConfUpdate &payload);
 
-    Config *getState(String path, bool log_if_not_found = true);
+    Config *getState(const String &path, bool log_if_not_found = true);
 
     void addFeature(const char *name);
-    void addCommand(String path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(void)> callback, bool is_action);
-    void addState(String path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms);
-    bool addPersistentConfig(String path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms);
-    //void addTemporaryConfig(String path, Config *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms, std::function<void(void)> callback);
+    void addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(void)> callback, bool is_action);
+    void addState(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms);
+    bool addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms);
+    //void addTemporaryConfig(const String &path, Config *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms, std::function<void(void)> callback);
 
-    void addRawCommand(String path, std::function<String(char *, size_t)> callback, bool is_action);
+    void addRawCommand(const String &path, std::function<String(char *, size_t)> callback, bool is_action);
 
     bool hasFeature(const char *name);
 
-    static void writeConfig(String path, ConfigRoot *config);
-    static void removeConfig(String path);
+    static void writeConfig(const String &path, ConfigRoot *config);
+    static void removeConfig(const String &path);
     static void removeAllConfig();
 
-    void blockCommand(String path, String reason);
-    void unblockCommand(String path);
-    String getCommandBlockedReason(size_t commandIdx);
+    void blockCommand(const String &path, const String &reason);
+    void unblockCommand(const String &path);
+    const String &getCommandBlockedReason(size_t commandIdx) const;
 
-    static bool restorePersistentConfig(String path, ConfigRoot *config);
+    static bool restorePersistentConfig(const String &path, ConfigRoot *config);
 
     void registerDebugUrl(WebServer *server);
 

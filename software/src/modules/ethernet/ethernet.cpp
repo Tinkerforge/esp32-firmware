@@ -47,21 +47,15 @@ void Ethernet::pre_setup()
         {"dns", Config::Str("0.0.0.0", 7, 15)},
         {"dns2", Config::Str("0.0.0.0", 7, 15)},
     }), [](Config &cfg) -> String {
-        const char *ip = cfg.get("ip")->asCStr();
-        const char *gateway = cfg.get("gateway")->asCStr();
-        const char *subnet = cfg.get("subnet")->asCStr();
-        const char *dns = cfg.get("dns")->asCStr();
-        const char *dns2 = cfg.get("dns2")->asCStr();
-
         IPAddress ip_addr, subnet_mask, gateway_addr, unused;
 
-        if (!ip_addr.fromString(ip))
+        if (!ip_addr.fromString(cfg.get("ip")->asEphemeralCStr()))
             return "Failed to parse \"ip\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!gateway_addr.fromString(gateway))
+        if (!gateway_addr.fromString(cfg.get("gateway")->asEphemeralCStr()))
             return "Failed to parse \"gateway\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!subnet_mask.fromString(subnet))
+        if (!subnet_mask.fromString(cfg.get("subnet")->asEphemeralCStr()))
             return "Failed to parse \"subnet\": Expected format is dotted decimal, i.e. 255.255.255.0";
 
         if (!is_valid_subnet_mask(subnet_mask))
@@ -73,10 +67,10 @@ void Ethernet::pre_setup()
         if (gateway_addr != IPAddress(0,0,0,0) && !is_in_subnet(ip_addr, subnet_mask, gateway_addr))
             return "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask.";
 
-        if (!unused.fromString(dns))
+        if (!unused.fromString(cfg.get("dns")->asEphemeralCStr()))
             return "Failed to parse \"dns\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!unused.fromString(dns2))
+        if (!unused.fromString(cfg.get("dns2")->asEphemeralCStr()))
             return "Failed to parse \"dns2\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
         return "";
@@ -108,7 +102,7 @@ void Ethernet::setup()
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
             logger.printfln("Ethernet started");
-            ETH.setHostname(network.config.get("hostname")->asCStr());
+            ETH.setHostname(network.config.get("hostname")->asEphemeralCStr());
             ethernet_state.get("connection_state")->updateUint((uint)EthernetState::NOT_CONNECTED);
         },
         ARDUINO_EVENT_ETH_START);
@@ -162,11 +156,11 @@ void Ethernet::setup()
 
     IPAddress ip, subnet, gateway, dns, dns2;
 
-    ip.fromString(ethernet_config_in_use.get("ip")->asCStr());
-    subnet.fromString(ethernet_config_in_use.get("subnet")->asCStr());
-    gateway.fromString(ethernet_config_in_use.get("gateway")->asCStr());
-    dns.fromString(ethernet_config_in_use.get("dns")->asCStr());
-    dns2.fromString(ethernet_config_in_use.get("dns2")->asCStr());
+    ip.fromString(ethernet_config_in_use.get("ip")->asEphemeralCStr());
+    subnet.fromString(ethernet_config_in_use.get("subnet")->asEphemeralCStr());
+    gateway.fromString(ethernet_config_in_use.get("gateway")->asEphemeralCStr());
+    dns.fromString(ethernet_config_in_use.get("dns")->asEphemeralCStr());
+    dns2.fromString(ethernet_config_in_use.get("dns2")->asEphemeralCStr());
 
     ETH.begin(ETH_ADDR, ETH_POWER_PIN, ETH_PHY_MDC, ETH_PHY_MDIO, ETH_TYPE);
 

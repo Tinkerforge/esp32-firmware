@@ -120,7 +120,7 @@ def get_changelog_version(name):
             if version[0] not in [0, 1, 2]:
                 raise Exception('Invalid major version in {}: {}'.format(path, version))
 
-            if version[2] < 90 and len(versions) > 0:
+            if len(versions) > 0 and (version[2] < 90 and versions[-1][2] < 90) or  (version[2] >= 90 and versions[-1][2] >= 90):
                 if versions[-1] >= version:
                     raise Exception('Invalid version order in {}: {} -> {}'.format(path, versions[-1], version))
 
@@ -327,6 +327,7 @@ def main():
 
     with open(os.path.join('src', 'build.h'), 'w', encoding='utf-8') as f:
         f.write('#pragma once\n')
+        f.write('#include <stdint.h>\n')
         f.write('#define OLDEST_VERSION_MAJOR {}\n'.format(oldest_version[0]))
         f.write('#define OLDEST_VERSION_MINOR {}\n'.format(oldest_version[1]))
         f.write('#define OLDEST_VERSION_PATCH {}\n'.format(oldest_version[2]))
@@ -338,12 +339,15 @@ def main():
         f.write('#define BUILD_NAME_{}\n'.format(name.upper()))
         f.write('#define BUILD_DISPLAY_NAME "{}"\n'.format(display_name))
         f.write('#define BUILD_REQUIRE_FIRMWARE_INFO {}\n'.format(require_firmware_info))
+        f.write('uint32_t build_timestamp(void);\n')
+        f.write('const char *build_timestamp_hex_str(void);\n')
+        f.write('const char *build_version_full_str(void);\n')
 
-    with open(os.path.join('src', 'build_timestamp.h'), 'w', encoding='utf-8') as f:
-        f.write('#pragma once\n')
-        f.write('#define BUILD_TIMESTAMP {}\n'.format(timestamp))
-        f.write('#define BUILD_TIMESTAMP_HEX_STR "{:x}"\n'.format(timestamp))
-        f.write('#define BUILD_VERSION_FULL_STR "{}.{}.{}-{:x}"\n'.format(*version, timestamp))
+    with open(os.path.join('src', 'build.cpp'), 'w', encoding='utf-8') as f:
+        f.write('#include "build.h"\n')
+        f.write('uint32_t build_timestamp(void) {{ return {}; }}\n'.format(timestamp))
+        f.write('const char *build_timestamp_hex_str(void) {{ return "{:x}"; }}\n'.format(timestamp))
+        f.write('const char *build_version_full_str(void) {{ return "{}.{}.{}-{:x}"; }}\n'.format(*version, timestamp))
 
     with open(os.path.join(env.subst('$BUILD_DIR'), 'firmware_basename'), 'w', encoding='utf-8') as f:
         if not_for_distribution:

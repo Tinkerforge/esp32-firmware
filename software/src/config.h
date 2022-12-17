@@ -57,7 +57,7 @@ struct Config {
         const String *getVal() const;
         const Slot *getSlot() const;
 
-        ConfString(String val, uint16_t min, uint16_t max);
+        ConfString(const String &val, uint16_t min, uint16_t max);
         ConfString(const ConfString &cpy);
         ~ConfString();
 
@@ -193,8 +193,8 @@ struct Config {
         static bool slotEmpty(size_t i);
         static constexpr const char *variantName = "ConfObject";
 
-        Config *get(String s);
-        const Config *get(String s) const;
+        Config *get(const String &s);
+        const Config *get(const String &s) const;
         std::vector<std::pair<String, Config>> *getVal();
         const std::vector<std::pair<String, Config>> *getVal() const;
         const Slot *getSlot() const;
@@ -223,7 +223,7 @@ struct Config {
     // a get<std::nullptr_t>() that returned nullptr because the variant
     // had another type and the same call that returned nullptr because
     // the variant has the std::nullptr_type and thus contains a nullptr.
-    static bool containsNull(ConfUpdate *update)
+    static bool containsNull(const ConfUpdate *update)
     {
         return update->which() == 0;
     }
@@ -469,7 +469,7 @@ struct Config {
         return value.tag == ConfVariant::Tag::EMPTY;
     }
 
-    static Config Str(String s,
+    static Config Str(const String &s,
                       uint16_t minChars = 0,
                       uint16_t maxChars = 0);
 
@@ -542,11 +542,11 @@ struct Config {
             const Config *conf;
     };
 
-    Wrap get(String s);
+    Wrap get(const String &s);
 
     Wrap get(uint16_t i);
 
-    const ConstWrap get(String s) const;
+    const ConstWrap get(const String &s) const;
 
     const ConstWrap get(uint16_t i) const;
 
@@ -570,13 +570,13 @@ struct Config {
         }
 
         children.push_back(*arr.getSlot()->prototype);
-        return Wrap(arr.getSlot()->prototype);
+        return Wrap(&children.back());
     }
 
     bool removeLast()
     {
         if (!this->is<Config::ConfArray>()) {
-            logger.printfln("Tried to add to a node that is not an array!");
+            logger.printfln("Tried to remove the last element from a node that is not an array!");
             delay(100);
             return false;
         }
@@ -589,10 +589,25 @@ struct Config {
         return true;
     }
 
+    bool removeAll()
+    {
+        if (!this->is<Config::ConfArray>()) {
+            logger.printfln("Tried to remove all from a node that is not an array!");
+            delay(100);
+            return false;
+        }
+
+        std::vector<Config> &children = this->asArray();
+
+        children.clear();
+
+        return true;
+    }
+
     bool remove(size_t i)
     {
         if (!this->is<Config::ConfArray>()) {
-            logger.printfln("Tried to add to a node that is not an array!");
+            logger.printfln("Tried to remove from a node that is not an array!");
             delay(100);
             return false;
         }
@@ -640,7 +655,8 @@ struct Config {
 
     const String &asString() const;
 
-    const char *asCStr() const;
+    const char *asEphemeralCStr() const;
+    const char *asUnsafeCStr() const;
 
     const float &asFloat() const;
 
@@ -669,7 +685,7 @@ struct Config {
         return old_value != value;
     }
 
-    bool updateString(String value)
+    bool updateString(const String &value)
     {
         return update_value<String, ConfString>(value);
     }
@@ -762,14 +778,14 @@ struct Config {
     size_t json_size(bool zero_copy) const;
     size_t max_string_length() const;
 
-    void save_to_file(File file);
+    void save_to_file(File &file);
 
     void write_to_stream(Print &output);
-    void write_to_stream_except(Print &output, std::initializer_list<String> keys_to_censor);
+    void write_to_stream_except(Print &output, const std::initializer_list<String> &keys_to_censor);
     void write_to_stream_except(Print &output, const std::vector<String> &keys_to_censor);
 
     String to_string() const;
-    String to_string_except(std::initializer_list<String> keys_to_censor) const;
+    String to_string_except(const std::initializer_list<String> &keys_to_censor) const;
     String to_string_except(const std::vector<String> &keys_to_censor) const;
 };
 
@@ -788,15 +804,15 @@ public:
     std::function<String(Config &)> validator;
     bool permit_null_updates = true;
 
-    String update_from_file(File file);
+    String update_from_file(File &file);
 
+    // Intentionally take a non-const char * here:
+    // This allows ArduinoJson to deserialize in zero-copy mode
     String update_from_cstr(char *c, size_t payload_len);
-
-    String update_from_string(String s);
 
     String update_from_json(JsonVariant root);
 
-    String update(Config::ConfUpdate *val);
+    String update(const Config::ConfUpdate *val);
 
     String validate();
 };

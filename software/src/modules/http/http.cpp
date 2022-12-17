@@ -36,9 +36,6 @@ extern TaskScheduler task_scheduler;
 
 static char recv_buf[RECV_BUF_SIZE] = {0};
 
-static StaticJsonDocument<RECV_BUF_SIZE> json_buf;
-
-
 static int strncmp_with_same_len(const char *left, const char *right, size_t right_len) {
     size_t left_len = strlen(left);
     if (left_len != right_len)
@@ -90,7 +87,7 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
 {
     CommandRegistration reg = api.commands[cmdidx];
 
-    String reason = api.getCommandBlockedReason(cmdidx);
+    const String &reason = api.getCommandBlockedReason(cmdidx);
     if (reason != "")
         return req.send(400, "text/plain", reason.c_str());
 
@@ -107,14 +104,7 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
         return req.send(200, "text/html", "");
     }
 
-    //json_buf.clear(); // happens implicitly in deserializeJson
-    DeserializationError error = deserializeJson(json_buf, recv_buf, bytes_written);
-    if (error) {
-        String message = String("Failed to parse command payload: ") + error.f_str();
-        return req.send(400, "text/html", message.c_str());
-    }
-    JsonVariant json = json_buf.as<JsonVariant>();
-    String message = reg.config->update_from_json(json);
+    String message = reg.config->update_from_cstr(recv_buf, bytes_written);
 
     if (message == "") {
         task_scheduler.scheduleOnce([reg](){reg.callback();}, 0);
@@ -216,12 +206,12 @@ void Http::addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg
 {
 }
 
-bool Http::pushStateUpdate(size_t stateIdx, String payload, String path)
+bool Http::pushStateUpdate(size_t stateIdx, const String &payload, const String &path)
 {
     return true;
 }
 
-void Http::pushRawStateUpdate(String payload, String path)
+void Http::pushRawStateUpdate(const String &payload, const String &path)
 {
 }
 

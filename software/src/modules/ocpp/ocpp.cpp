@@ -114,7 +114,7 @@ void Ocpp::setup()
     if (!config.get("enable")->asBool() || config.get("url")->asString().length() == 0)
         return;
 
-    cp.start(config.get("url")->asCStr(), (String(BUILD_HOST_PREFIX) + '-' + local_uid_str).c_str());
+    cp.start(config.get("url")->asEphemeralCStr(), (String(BUILD_HOST_PREFIX) + '-' + local_uid_str).c_str());
 
     task_scheduler.scheduleWithFixedDelay([this](){
         cp.tick();

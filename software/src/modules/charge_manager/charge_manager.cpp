@@ -190,7 +190,7 @@ void ChargeManager::start_manager_task()
             // the management will stop all charging after some time.
             if (target.get("uptime")->asUint() == uptime) {
                 logger.printfln("Received stale charger state from %s (%s). Reported EVSE uptime (%u) is the same as in the last state. Is the EVSE still reachable?",
-                    chargers[client_id].get("name")->asString().c_str(), chargers[client_id].get("host")->asString().c_str(),
+                    chargers[client_id].get("name")->asEphemeralCStr(), chargers[client_id].get("host")->asEphemeralCStr(),
                     uptime);
                 if (deadline_elapsed(target.get("last_update")->asUint() + 10000)) {
                     target.get("state")->updateUint(5);
@@ -347,7 +347,7 @@ void ChargeManager::distribute_current()
                 charger_error != CHARGE_MANAGER_ERROR_EVSE_NONREACTIVE &&
                 charger_error < CHARGE_MANAGER_CLIENT_ERROR_START) {
                 unreachable_evse_found = true;
-                LOCAL_LOG("stage 0: %s (%s) reports error %u.", charger_cfg.get("name")->asString().c_str(), charger_cfg.get("host")->asString().c_str(), charger.get("error")->asUint());
+                LOCAL_LOG("stage 0: %s (%s) reports error %u.", charger_cfg.get("name")->asEphemeralCStr(), charger_cfg.get("host")->asEphemeralCStr(), charger.get("error")->asUint());
 
                 print_local_log = !last_print_local_log_was_error;
                 last_print_local_log_was_error = true;
@@ -356,7 +356,7 @@ void ChargeManager::distribute_current()
             // Charger does not respond anymore
             if (deadline_elapsed(charger.get("last_update")->asUint() + TIMEOUT_MS)) {
                 unreachable_evse_found = true;
-                LOCAL_LOG("stage 0: Can't reach EVSE of %s (%s): last_update too old.",charger_cfg.get("name")->asString().c_str(), charger_cfg.get("host")->asString().c_str());
+                LOCAL_LOG("stage 0: Can't reach EVSE of %s (%s): last_update too old.",charger_cfg.get("name")->asEphemeralCStr(), charger_cfg.get("host")->asEphemeralCStr());
 
                 if (chargers[i].get("state")->updateUint(5) || charger_error < CHARGE_MANAGER_CLIENT_ERROR_START) {
                     chargers[i].get("error")->updateUint(CHARGE_MANAGER_ERROR_CHARGER_UNREACHABLE);
@@ -370,7 +370,7 @@ void ChargeManager::distribute_current()
             // Charger did not update the charging current in time
             if(charger.get("allocated_current")->asUint() < charger.get("allowed_current")->asUint() && deadline_elapsed(charger.get("last_sent_config")->asUint() + TIMEOUT_MS)) {
                 unreachable_evse_found = true;
-                LOCAL_LOG("stage 0: EVSE of %s (%s) did not react in time.", charger_cfg.get("name")->asString().c_str(), charger_cfg.get("host")->asString().c_str());
+                LOCAL_LOG("stage 0: EVSE of %s (%s) did not react in time.", charger_cfg.get("name")->asEphemeralCStr(), charger_cfg.get("host")->asEphemeralCStr());
 
                 if (chargers[i].get("state")->updateUint(5) || charger_error < CHARGE_MANAGER_CLIENT_ERROR_START) {
                     chargers[i].get("error")->updateUint(CHARGE_MANAGER_ERROR_EVSE_NONREACTIVE);
@@ -448,8 +448,8 @@ void ChargeManager::distribute_current()
             uint16_t supported_current = charger.get("supported_current")->asUint();
             if (supported_current < current_to_set) {
                 LOCAL_LOG("stage 0: Can't unblock %s (%s): It only supports %u mA, but %u mA is the configured minimum current.",
-                          charger_cfg.get("name")->asString().c_str(),
-                          charger_cfg.get("host")->asString().c_str(),
+                          charger_cfg.get("name")->asEphemeralCStr(),
+                          charger_cfg.get("host")->asEphemeralCStr(),
                           supported_current,
                           current_to_set);
                 continue;
@@ -468,8 +468,8 @@ void ChargeManager::distribute_current()
             available_current -= current_to_set;
 
             LOCAL_LOG("stage 0: Calculated target for %s (%s) of %u mA. %u mA left.",
-                      charger_cfg.get("name")->asString().c_str(),
-                      charger_cfg.get("host")->asString().c_str(),
+                      charger_cfg.get("name")->asEphemeralCStr(),
+                      charger_cfg.get("host")->asEphemeralCStr(),
                       current_to_set,
                       available_current);
         }
@@ -499,8 +499,8 @@ void ChargeManager::distribute_current()
 
                 auto &charger_cfg = configs[idx_array[i]];
                 LOCAL_LOG("stage 0: Recalculated target for %s (%s) of %u mA. %u mA left.",
-                          charger_cfg.get("name")->asString().c_str(),
-                          charger_cfg.get("host")->asString().c_str(),
+                          charger_cfg.get("name")->asEphemeralCStr(),
+                          charger_cfg.get("host")->asEphemeralCStr(),
                           current_array[idx_array[i]],
                           available_current);
             }
@@ -525,8 +525,8 @@ void ChargeManager::distribute_current()
                 uint16_t supported_current = charger.get("supported_current")->asUint();
                 if (supported_current < current_to_set) {
                     LOCAL_LOG("stage 0: Can't unblock %s (%s): It only supports %u mA, but %u mA is the configured minimum current.",
-                              charger_cfg.get("name")->asString().c_str(),
-                              charger_cfg.get("host")->asString().c_str(),
+                              charger_cfg.get("name")->asEphemeralCStr(),
+                              charger_cfg.get("host")->asEphemeralCStr(),
                               supported_current,
                               current_to_set);
                     continue;
@@ -545,8 +545,8 @@ void ChargeManager::distribute_current()
                 available_current -= current_to_set;
 
                 LOCAL_LOG("stage 0: Calculated target for %s (%s) of %u mA. %u mA left.",
-                          charger_cfg.get("name")->asString().c_str(),
-                          charger_cfg.get("host")->asString().c_str(),
+                          charger_cfg.get("name")->asEphemeralCStr(),
+                          charger_cfg.get("host")->asEphemeralCStr(),
                           current_to_set,
                           available_current);
             }
@@ -573,8 +573,8 @@ void ChargeManager::distribute_current()
             }
 
             LOCAL_LOG("stage 1: Throttled %s (%s) to %d mA.",
-                      charger_cfg.get("name")->asString().c_str(),
-                      charger_cfg.get("host")->asString().c_str(),
+                      charger_cfg.get("name")->asEphemeralCStr(),
+                      charger_cfg.get("host")->asEphemeralCStr(),
                       current_to_set);
 
             if (charger.get("allocated_current")->updateUint(current_to_set)) {
@@ -611,8 +611,8 @@ void ChargeManager::distribute_current()
                 }
 
                 LOCAL_LOG("stage 2: Unthrottled %s (%s) to %d mA.",
-                          charger_cfg.get("name")->asString().c_str(),
-                          charger_cfg.get("host")->asString().c_str(),
+                          charger_cfg.get("name")->asEphemeralCStr(),
+                          charger_cfg.get("host")->asEphemeralCStr(),
                           current_to_set);
 
                 if (charger.get("allocated_current")->updateUint(current_to_set)) {

@@ -30,7 +30,7 @@
 #include "event_log.h"
 #include "task_scheduler.h"
 #include "web_server.h"
-#include "build_timestamp.h"
+#include "build.h"
 
 #ifndef TF_ESP_PREINIT
 #define TF_ESP_PREINIT
@@ -77,10 +77,10 @@ static bool is_safari(const String &user_agent) {
 
 static WebServerRequestReturnProtect send_index_html(WebServerRequest &request) {
     request.addResponseHeader("Content-Encoding", "gzip");
-    request.addResponseHeader("ETag", BUILD_TIMESTAMP_HEX_STR);
+    request.addResponseHeader("ETag", build_timestamp_hex_str());
     request.addResponseHeader("X-Clacks-Overhead", "GNU Terry Pratchett");
 
-    if (request.header("If-None-Match") == BUILD_TIMESTAMP_HEX_STR) {
+    if (request.header("If-None-Match") == build_timestamp_hex_str()) {
         return request.send(304);
     }
 
@@ -142,7 +142,7 @@ void setup(void) {
 
     logger.setup();
 
-    logger.printfln("    **** TINKERFORGE {{{display_name_upper}}} V" BUILD_VERSION_FULL_STR " ****");
+    logger.printfln("    **** TINKERFORGE {{{display_name_upper}}} V%s ****", build_version_full_str());
     logger.printfln("         %dK RAM SYSTEM   %d HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());
     logger.printfln("READY.");
 

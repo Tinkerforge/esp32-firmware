@@ -232,3 +232,41 @@
 - Fix losing current limits when reenabling already enabled slot
 - Make button and GPIO configuration persistent (through EVSE 2.0 Bricklet firmware 2.1.8)
 - Add EVSE communication watchdog (through EVSE 2.0 Bricklet firmware 2.1.8)
+
+2022-11-25: 2.0.9 (9dbdd9f5)
+- (Disable OCPP and Modbus TCP for non-beta firmware)
+- Add config reset API
+- Add reset button to configuration pages
+- Improve translations
+- Add electricity price configuration; show cost of charge in web interface and charge log
+- Show cost of charge in web interface and charge log
+- Fix firmware hanging after 2^32 ms (~ 49 days 17 hours)
+- Web interface: Allow saving if only a +/- button was clicked
+- Fix softAP as fallback not starting correctly
+- Fix deserialization errors not being returned via HTTP
+- Fix evse/(start/stop)_charging behaviour if not connected
+
+2022-11-25: 2.0.92 (a5bdcf66)
+- OCPP Beta 3
+- (Re-enable OCPP and Modbus TCP)
+
+2022-11-28: 2.0.10 (7b54347e)
+- (Disable OCPP and Modbus TCP for non-beta firmware)
+- Fix hidden_proxy used in provisioning
+
+2022-12-16: 2.0.11 (<unknown>)
+- Add Modbus TCP
+- Fix repeated WiFi scans taking a long time
+- Fix optional DNS servers in static IP configuration
+- Improve API payload parsing performance
+- Improve API error messages
+- Fix WiFi RSSI alt text
+- Add watchdog protecting against WebSocket and EVSE communication failure
+- Fix NTP servers with short names/IPs
+- Don't require second NTP server to be set
+- Fix charge management mDNS log spam if mDNS is disabled
+- Fix config migrations from pre-2.0.0 firmwares
+- Fix config reset
+- Use freshly build bootloader in merged firmware
+- Update timezone database
+- Fix deletion of unsaved users

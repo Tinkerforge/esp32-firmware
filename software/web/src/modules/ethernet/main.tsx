@@ -40,9 +40,9 @@ export class Ethernet extends ConfigComponent<'ethernet/config'> {
               __("ethernet.script.reboot_content_changed"));
     }
 
-    override isSaveAllowed(cfg: EthernetConfig) { return this.ipconfig_valid; }
+    override async isSaveAllowed(cfg: EthernetConfig) { return this.ipconfig_valid; }
 
-    override transformSave(cfg: EthernetConfig) {
+    override async transformSave(cfg: EthernetConfig) {
         cfg.dns = cfg.dns == "" ? "0.0.0.0" : cfg.dns;
         cfg.dns2 = cfg.dns2 == "" ? "0.0.0.0" : cfg.dns2;
         return cfg;

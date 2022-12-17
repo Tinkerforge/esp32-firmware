@@ -64,6 +64,7 @@ Press S Enter to write sdkconfig (don't change the filename!), ~/esp32-firmware/
 ### Add built libs to arduino-esp32 Repo:
 
     (git clone https://github.com/Tinkerforge/arduino-esp32)
+    Go to https://github.com/Tinkerforge/arduino-esp32 and click "sync fork" (so that our master == espressif's master)
     cd ~/arduino-esp32
     git switch master
     git pull
@@ -71,6 +72,7 @@ Press S Enter to write sdkconfig (don't change the filename!), ~/esp32-firmware/
     rm platform.txt
     rm -r tools/sdk
     cp ~/esp32-arduino-lib-builder/out/* ~/arduino-esp32/
+    git commit -m "Add libs for warp-x.y.z."
 
 ### Apply patches to arduino-esp32
 

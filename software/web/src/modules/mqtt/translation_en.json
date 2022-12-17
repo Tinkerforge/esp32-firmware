@@ -27,10 +27,12 @@
             "client_name": "Client ID",
             "interval": "Maximum send interval",
             "interval_muted": "messages are only sent if the payload has changed",
-            "enable_auto_discovery": "Auto discovery enabled",
-            "enable_auto_discovery_desc": "Support auto discovery by home automation.",
-            "auto_discovery_prefix": "Topic prefix",
-            "auto_discovery_prefix_muted": "for auto discovery",
+            "auto_discovery_mode": "Auto discovery mode",
+            "auto_discovery_mode_muted": "Support auto discovery by home automation.",
+            "auto_discovery_mode_disabled": "disabled",
+            "auto_discovery_mode_generic": "generic/universal",
+            "auto_discovery_mode_homeassistant": "Home Assistant",
+            "auto_discovery_prefix": "Auto discovery topic prefix",
             "auto_discovery_prefix_invalid": "The topic prefix can not start with $ or contain a # or + or be empty."
         },
         "script": {

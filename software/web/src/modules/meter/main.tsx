@@ -210,33 +210,37 @@ export class Meter extends Component<{}, MeterState> {
                                 <OutputFloat value={this.state.values.energy_abs} digits={3} scale={0} unit="kWh"/>
                             </FormRow>
 
-                            <FormRow label={ __("meter.content.phases_connected")} label_muted={__("meter.content.phases_connected_desc")} labelColClasses="col-sm-6" contentColClasses="col-sm-6">
-                                <div class="row mx-n1">
-                                    {this.state.phases.phases_connected.map((x, j) => (
-                                        <IndicatorGroup vertical key={j} class="mb-1 px-1 flex-wrap col-4"
-                                            value={x ? 0 : 1} //intentionally inverted: the high button is the first
-                                            items={[
-                                                ["primary", <Zap/>],
-                                                ["secondary", <ZapOff/>]
-                                            ]}/>
-                                    ))}
-                                </div>
-                            </FormRow>
+                            {API.hasFeature("meter_phases") ?
+                            <>
+                                <FormRow label={ __("meter.content.phases_connected")} label_muted={__("meter.content.phases_connected_desc")} labelColClasses="col-sm-6" contentColClasses="col-sm-6">
+                                    <div class="row mx-n1">
+                                        {this.state.phases.phases_connected.map((x, j) => (
+                                            <IndicatorGroup vertical key={j} class="mb-1 px-1 flex-wrap col-4"
+                                                value={x ? 0 : 1} //intentionally inverted: the high button is the first
+                                                items={[
+                                                    ["primary", <Zap/>],
+                                                    ["secondary", <ZapOff/>]
+                                                ]}/>
+                                        ))}
+                                    </div>
+                                </FormRow>
 
-                            <FormRow label={ __("meter.content.phases_active")} label_muted={__("meter.content.phases_active_desc")} labelColClasses="col-sm-6" contentColClasses="col-sm-6">
-                                <div class="row mx-n1">
-                                    {this.state.phases.phases_active.map((x, j) => (
-                                        <IndicatorGroup vertical key={j} class="mb-1 px-1 flex-wrap col-4"
-                                            value={x ? 0 : 1} //intentionally inverted: the high button is the first
-                                            items={[
-                                                ["primary", <Zap/>],
-                                                ["secondary", <ZapOff/>]
-                                            ]}/>
-                                    ))}
-                                </div>
-                            </FormRow>
+                                <FormRow label={ __("meter.content.phases_active")} label_muted={__("meter.content.phases_active_desc")} labelColClasses="col-sm-6" contentColClasses="col-sm-6">
+                                    <div class="row mx-n1">
+                                        {this.state.phases.phases_active.map((x, j) => (
+                                            <IndicatorGroup vertical key={j} class="mb-1 px-1 flex-wrap col-4"
+                                                value={x ? 0 : 1} //intentionally inverted: the high button is the first
+                                                items={[
+                                                    ["primary", <Zap/>],
+                                                    ["secondary", <ZapOff/>]
+                                                ]}/>
+                                        ))}
+                                    </div>
+                                </FormRow>
+                            </>: undefined}
                         </div>
                     </div>
+                    {API.hasFeature("meter_all_values") ?
                     <CollapsedSection colClasses="col-xl-10" label={__("meter.content.detailed_values")}>
                         {
                         entries.filter(e => state.state.type == 2 ? true : !e.sdm630_only).map(e => <FormRow label={e.name} label_muted={e.desc} labelColClasses="col-lg-3 col-xl-3" contentColClasses="col-lg-9 col-xl-7">
@@ -253,7 +257,7 @@ export class Meter extends Component<{}, MeterState> {
                             </div> : <div class="row"><div class="col-sm-4"><OutputFloat value={this.state.all_values[e.i]} digits={e.digits} scale={0} unit={e.unit}/></div></div>}
                         </FormRow>)
                         }
-                    </CollapsedSection>
+                    </CollapsedSection> : undefined}
             </>
         )
     }

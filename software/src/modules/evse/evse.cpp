@@ -664,9 +664,11 @@ void EVSE::register_urls()
         if (enabled == evse_user_enabled.get("enabled")->asBool())
             return;
 
+#if MODULE_USERS_AVAILABLE()
         if (enabled) {
             users.stop_charging(0, true);
         }
+#endif
 
         if (enabled)
             tf_evse_set_charging_slot(&device, CHARGING_SLOT_USER, 0, true, true);
@@ -1007,4 +1009,9 @@ void EVSE::update_all_data()
 
     for (int i = 0; i < sizeof(resistance_880) / sizeof(resistance_880[0]); ++i)
         evse_user_calibration.get("resistance_880")->get(i)->updateInt(resistance_880[i]);
+
+#if MODULE_WATCHDOG_AVAILABLE()
+    static size_t watchdog_handle = watchdog.add("evse_all_data", "EVSE not reachable", 10 * 60 * 1000);
+    watchdog.reset(watchdog_handle);
+#endif
 }

@@ -10,7 +10,7 @@ export interface config {
 }
 
 export interface auto_discovery_config {
-    enable_auto_discovery: boolean,
+    auto_discovery_mode: number,
     auto_discovery_prefix: string
 }
 

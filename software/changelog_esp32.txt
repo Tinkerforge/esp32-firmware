@@ -1,8 +1,37 @@
 2022-05-03: 2.0.0 (5ab6df8c)
 - Initial release
 
-2022-05-13: 2.0.1 (<unknown>)
+2022-05-13: 2.0.1 (bce0b522)
 - More WebSocket fixes
 - Fix initialized flag not being set for some modules
 - Fix WiFi scan sometimes not starting
 - Select unoccupied channel when starting WiFi AP
+
+2022-11-25: 2.0.2 (9dbdd9f5)
+- Add WireGuard
+- Add configuration for authentication secret, listen address and port
+- Add NTP state and synced time to status page
+- Add config reset API
+- Add uptime tracker for debug purposes
+- Add reset button to configuration pages
+- Allow HTTP POST for commands
+- Allow HTTP GET/POST for payload-less commands
+- Support config updates without "_update" suffix (only via HTTP)
+- Print reason for last firmware restart to event log
+- Improve recovery page
+- Allow forcing a firmware update via the recovery page
+- Increase wifi scan timeout for AP channel selection
+- Fix form validation display on success
+- Fix memory leak in WebSocket queue cleanup
+- Fix WebSockets blocking the web server if a connection stays active over weeks
+- Fix softAP as fallback not starting correctly
+- Fix deserialization errors not being returned via HTTP
+- Fix status page showing up before the correct sub-page when reloading the web interface
+- Fix manual and firmware URLs
+- Fix error message if firmware update is too small
+- Check static IP configuration for common mistakes
+- Update timezone database
+- Improve translations
+- Improve firmware update error handling in web interface
+- Improve network timeout handing in web interface
+- Fix firmware hanging after 2^32 ms (~ 49 days 17 hours)

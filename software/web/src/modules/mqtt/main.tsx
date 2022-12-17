@@ -29,6 +29,7 @@ import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { InputText } from "../../ts/components/input_text";
+import { InputSelect } from "src/ts/components/input_select";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputPassword } from "../../ts/components/input_password";
 import { Switch } from "../../ts/components/switch";
@@ -124,13 +125,18 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {}, MqttState> {
                     </FormRow>
 
                     {API.hasModule('mqtt_auto_discovery') ? <>
-                        <FormRow label={__("mqtt.content.enable_auto_discovery")}>
-                            <Switch desc={__("mqtt.content.enable_auto_discovery_desc")}
-                                    checked={state.auto_discovery_config.enable_auto_discovery}
-                                    onClick={() => this.setState({auto_discovery_config: {...this.state.auto_discovery_config, enable_auto_discovery: !state.auto_discovery_config.enable_auto_discovery}})}/>
+                        <FormRow label={__("mqtt.content.auto_discovery_mode")} label_muted={__("mqtt.content.auto_discovery_mode_muted")}>
+                            <InputSelect
+                                items={[
+                                    ["-1", __("mqtt.content.auto_discovery_mode_disabled")],
+                                    ["0", __("mqtt.content.auto_discovery_mode_generic")],
+                                    ["1", __("mqtt.content.auto_discovery_mode_homeassistant")],
+                                ]}
+                                value={state.auto_discovery_config.auto_discovery_mode}
+                                onValue={(v) => {this.setState({auto_discovery_config: {...this.state.auto_discovery_config, auto_discovery_mode: parseInt(v)}})}}/>
                         </FormRow>
 
-                        <FormRow label={__("mqtt.content.auto_discovery_prefix")} label_muted={__("mqtt.content.auto_discovery_prefix_muted")}>
+                        <FormRow label={__("mqtt.content.auto_discovery_prefix")}>
                             <InputText required
                                     maxLength={64}
                                     pattern="^[^#+$][^#+]*"

@@ -26,7 +26,6 @@
 #include "modules.h"
 #include "modbus_tcp.h"
 #include "build.h"
-#include "build_timestamp.h"
 #include "math.h"
 
 extern TaskScheduler task_scheduler;
@@ -236,7 +235,7 @@ struct keba_read_general_s {
     uint16_t padding2[14];
     uint32swapped_t total_energy;
     uint32swapped_t padding3;
-    uint32swapped_t volatages[3];
+    uint32swapped_t voltages[3];
     uint32swapped_t power_factor;
 } __attribute__((packed));
 
@@ -629,7 +628,7 @@ void ModbusTcp::update_regs()
     input_regs_copy->firmware_major = fromUint(BUILD_VERSION_MAJOR);
     input_regs_copy->firmware_minor = fromUint(BUILD_VERSION_MINOR);
     input_regs_copy->firmware_patch = fromUint(BUILD_VERSION_PATCH);
-    input_regs_copy->firmware_build_ts = fromUint(BUILD_TIMESTAMP);
+    input_regs_copy->firmware_build_ts = fromUint(build_timestamp());
     input_regs_copy->uptime = fromUint((uint32_t)(esp_timer_get_time() / 1000000));
 
 #if MODULE_EVSE_V2_AVAILABLE() || MODULE_EVSE_AVAILABLE()
@@ -802,7 +801,7 @@ static uint8_t hextouint(const char c)
     return i;
 }
 
-static uint32_t export_tag_id_as_uint32(String str)
+static uint32_t export_tag_id_as_uint32(const String &str)
 {
     int str_idx = 0;
     char c[4];
@@ -871,7 +870,7 @@ void ModbusTcp::update_keba_regs()
 
         if (api.getState("charge_tracker/current_charge")->get("authorization_type")->asUint() == 2)
         {
-            auto tag_id = api.getState("charge_tracker/current_charge")->get("authorization_info")->get("tag_id")->asString();
+            const auto &tag_id = api.getState("charge_tracker/current_charge")->get("authorization_info")->get("tag_id")->asString();
             keba_read_charge_cpy->rfid_tag = fromUint(export_tag_id_as_uint32(tag_id));
         }
 #endif
@@ -882,7 +881,7 @@ void ModbusTcp::update_keba_regs()
             for (int i = 0; i < 3; i++)
             {
                 keba_read_general_cpy->currents[i] = fromUint(meter_all_values->get(i + METER_ALL_VALUES_CURRENT_L1_A)->asFloat() * 1000);
-                keba_read_general_cpy->volatages[i] = fromUint(meter_all_values->get(i)->asFloat());
+                keba_read_general_cpy->voltages[i] = fromUint(meter_all_values->get(i)->asFloat());
             }
             keba_read_general_cpy->power_factor = fromUint(meter_all_values->get(METER_ALL_VALUES_TOTAL_SYSTEM_POWER_FACTOR)->asFloat() * 1000);
         }
@@ -927,7 +926,7 @@ void ModbusTcp::register_urls()
                 input_regs->firmware_major = fromUint(BUILD_VERSION_MAJOR);
                 input_regs->firmware_minor = fromUint(BUILD_VERSION_MINOR);
                 input_regs->firmware_patch = fromUint(BUILD_VERSION_PATCH);
-                input_regs->firmware_build_ts = fromUint(BUILD_TIMESTAMP);
+                input_regs->firmware_build_ts = fromUint(build_timestamp());
 
                 evse_holding_regs->allowed_current = fromUint(allowed_current);
                 evse_holding_regs->enable_charging = fromUint(enable_charging);

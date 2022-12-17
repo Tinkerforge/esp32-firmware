@@ -27,6 +27,9 @@ class NTP
 private:
     struct timeval last_sync;
 
+    String ntp_server1;
+    String ntp_server2;
+
 public:
     NTP(){}
     void pre_setup();

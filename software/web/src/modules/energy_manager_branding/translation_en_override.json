@@ -1,9 +1,4 @@
 {
-    "authentication": {
-        "content": {
-            "confirm_content": "Are you sure you want to enable authentication? If you forget or lose the password, the energy manager has to be reset to factory defaults. <a href=\"{{{manual_url}}}\">See manual for details.</a>"
-        }
-    },
     "charge_manager": {
         "status": {
             "charge_manager": "Wallboxes"

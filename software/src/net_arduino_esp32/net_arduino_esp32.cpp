@@ -539,9 +539,11 @@ int tf_net_create(TF_Net *net, const char* listen_addr, uint16_t port, const cha
     net->auth_secret = auth_secret;
 
     net->listen_addr.sin_family = AF_INET;
-    net->listen_addr.sin_port = htons(port);
+    net->listen_addr.sin_port = port == 0 ? htons(4223) : htons(port);
 
-    if(ipaddr_aton(listen_addr, (ip_addr_t *)&net->listen_addr.sin_addr) == 0) {
+    if (listen_addr == nullptr) {
+        net->listen_addr.sin_addr.s_addr = INADDR_ANY;
+    } else if(ipaddr_aton(listen_addr, (ip_addr_t *)&net->listen_addr.sin_addr) == 0) {
         return TF_E_INVALID_ADDRESS;
     }
 

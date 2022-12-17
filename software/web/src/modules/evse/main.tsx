@@ -412,7 +412,7 @@ export class EVSE extends Component<{}, EVSEState> {
                         </FormRow>
 
                         <div>
-                        <FormRow label={__("evse.content.gpios")} label_muted={__('evse.content.gpio_names')}>
+                        <FormRow label={__("evse.content.gpios")} label_muted={__("evse.content.gpio_names")}>
                             <div class="row mx-n1">
                                 {ll_state.gpio.map((x, j) => (
                                     <IndicatorGroup vertical key={j} class="mb-1 col px-1"

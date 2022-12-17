@@ -68,10 +68,10 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
 
     save = async () => {
         let cfg = extract(this.t, this.state);
-        if (!this.isSaveAllowed(cfg))
+        if (!await this.isSaveAllowed(cfg))
             throw new Error("saving not allowed");
 
-        cfg = this.transformSave(cfg);
+        cfg = await this.transformSave(cfg);
 
         await this.sendSave(this.t, cfg);
     }
@@ -99,12 +99,12 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
     }
 
     // Override this to block saving on a condition
-    isSaveAllowed(cfg: API.getType[Config]) {
+    async isSaveAllowed(cfg: API.getType[Config]) {
         return true;
     }
 
     // Override this to implement a transformation before the config is saved
-    transformSave(cfg: API.getType[Config]): API.getType[Config] {
+    async transformSave(cfg: API.getType[Config]): Promise<API.getType[Config]> {
         return cfg;
     }
 
