@@ -1380,19 +1380,21 @@ void AC011K::sendCommand(byte *data, int datasize, byte sendSequenceNumber) {
     PrivCommTxBuffer[datasize+7] = crc & 0xFF;
     PrivCommTxBuffer[datasize+8] = crc >> 8;
 
-    get_hex_privcomm_line(PrivCommTxBuffer); // PrivCommHexBuffer now holds the hex representation of the buffer
-    String cmdText = "";
-    switch (PrivCommTxBuffer[4]) {
-        case 0xA3: cmdText = "- Status data ack"; break;
-        case 0xA4: cmdText = "- Heartbeat ack " + String(timeStr(PrivCommTxBuffer+9)); break;
-        case 0xA6: if (PrivCommTxBuffer[72] == 0x40) cmdText = "- Stop charging request"; else cmdText = "- Start charging request"; break;
-        case 0xA7: if (PrivCommTxBuffer[40] == 0x10) cmdText = "- Stop charging command"; else cmdText = "- Start charging command"; break;
-        case 0xA8: cmdText = "- Power data ack"; break;
-        case 0xA9: cmdText = "- Transaction data ack"; break;
-        case 0xAF: cmdText = "- Limit1: " + String(PrivCommTxBuffer[24]) + " Ampere"; break;
-        case 0xAD: if (PrivCommTxBuffer[8] == 0) cmdText = "- Limit2: " + String(PrivCommTxBuffer[72]) + " Ampere"; else cmdText = "- Limit3: " + String(PrivCommTxBuffer[77]) + " Ampere"; break;
+    if(log_heartbeat || (data[0]!=0xA4)) { // we may be silent for the heartbeat //TODO show it at first and after an hour?
+        get_hex_privcomm_line(PrivCommTxBuffer); // PrivCommHexBuffer now holds the hex representation of the buffer
+        String cmdText = "";
+        switch (PrivCommTxBuffer[4]) {
+            case 0xA3: cmdText = "- Status data ack"; break;
+            case 0xA4: cmdText = "- Heartbeat ack " + String(timeStr(PrivCommTxBuffer+9)); break;
+            case 0xA6: if (PrivCommTxBuffer[72] == 0x40) cmdText = "- Stop charging request"; else cmdText = "- Start charging request"; break;
+            case 0xA7: if (PrivCommTxBuffer[40] == 0x10) cmdText = "- Stop charging command"; else cmdText = "- Start charging command"; break;
+            case 0xA8: cmdText = "- Power data ack"; break;
+            case 0xA9: cmdText = "- Transaction data ack"; break;
+            case 0xAF: cmdText = "- Limit1: " + String(PrivCommTxBuffer[24]) + " Ampere"; break;
+            case 0xAD: if (PrivCommTxBuffer[8] == 0) cmdText = "- Limit2: " + String(PrivCommTxBuffer[72]) + " Ampere"; else cmdText = "- Limit3: " + String(PrivCommTxBuffer[77]) + " Ampere"; break;
+        }
+        logger.printfln("Tx cmd_%.2X seq:%.2X len:%d crc:%.4X %s", PrivCommTxBuffer[4], PrivCommTxBuffer[5], datasize+9, crc, cmdText.c_str());
     }
-    logger.printfln("Tx cmd_%.2X seq:%.2X len:%d crc:%.4X %s", PrivCommTxBuffer[4], PrivCommTxBuffer[5], datasize+9, crc, cmdText.c_str());
 
     Serial2write(data, datasize + 9);
 }
@@ -1429,10 +1431,10 @@ void AC011K::PrivCommAck(byte cmd, byte *data) {
     data[9] = crc & 0xFF;
     data[10] = crc >> 8;
 
-    if(log_heartbeat || cmd!=2) { // be silent for the heartbeat //TODO show it at first and after an hour?
-        get_hex_privcomm_line(data); // PrivCommHexBuffer now holds the hex representation of the buffer
-        logger.printfln("Tx cmd_%.2X seq:%.2X, crc:%.4X", data[4], data[5], crc);
-    }
+    /* if(log_heartbeat || cmd!=2) { // be silent for the heartbeat //TODO show it at first and after an hour? */
+    /*     get_hex_privcomm_line(data); // PrivCommHexBuffer now holds the hex representation of the buffer */
+    /*     logger.printfln("Tx cmd_%.2X seq:%.2X, crc:%.4X", data[4], data[5], crc); */
+    /* } */
 
     Serial2write(data, 11);
 }
@@ -1559,6 +1561,11 @@ void AC011K::update_evseStatus(uint8_t evseStatus) {
     uint8_t last_iec61851_state = evse_state.get("iec61851_state")->asUint();
     uint8_t last_evseStatus = evse_state.get("GD_state")->asUint();
     evse_state.get("GD_state")->updateUint(evseStatus);
+
+	if(!log_heartbeat && (evseStatus != last_evseStatus)) {
+        logger.printfln("EVSE GD Status now %d: %s", evseStatus, evse_status_text[evseStatus]);
+    }
+
     switch (evseStatus) {
         case 1: // Available (not engaged)
             evse_state.get("iec61851_state")->updateUint(IEC_STATE_A); // Nicht verbunden
@@ -2155,18 +2162,15 @@ void AC011K::myloop()
                             logger.printfln("PRIVCOMM BUG: process the next command albeit the last one was not finished. Buggy! cmd:%.2X len:%d cut off:%d", cmd, len, PrivCommRxBufferPointer-4);
                             PrivCommRxState = PRIVCOMM_CMD;
                             PrivCommRxBufferPointer = 4;
-                            if(log_heartbeat || cmd!=2) { // be silent for the heartbeat //TODO show it at first and after an hour?
-                                get_hex_privcomm_line(PrivCommRxBuffer); // PrivCommHexBuffer now holds the hex representation of the buffer
-                            }
+                            get_hex_privcomm_line(PrivCommRxBuffer); // PrivCommHexBuffer now holds the hex representation of the buffer
                             cmd_to_process = true;
                         }
                     }
                     break;
                 case PRIVCOMM_CRC:
                     if(PrivCommRxBufferPointer == len + 10) {
-            //Serial.println();
                         PrivCommRxState = PRIVCOMM_MAGIC;
-                        if(log_heartbeat || cmd!=2) { // be silent for the heartbeat //TODO show it at first and after an hour?
+                        if(log_heartbeat || ((cmd!=0x02) && (cmd!=0x04))) { // we may be silent for the heartbeat //TODO show it at first and after an hour?
                             get_hex_privcomm_line(PrivCommRxBuffer); // PrivCommHexBuffer now holds the hex representation of the buffer
                         }
                         crc = (uint16_t)(PrivCommRxBuffer[len + 9] << 8 | PrivCommRxBuffer[len + 8]);
@@ -2197,7 +2201,7 @@ void AC011K::myloop()
             case 0x02: // Info: Serial number, Version
 //W (1970-01-01 00:08:52) [PRIV_COMM, 1919]: Rx(cmd_02 len:135) :  FA 03 00 00 02 26 7D 00 53 4E 31 30 30 35 32 31 30 31 31 39 33 35 37 30 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 24 D1 00 41 43 30 31 31 4B 2D 41 55 2D 32 35 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 31 2E 31 2E 32 37 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 09 00 00 00 00 00 5A 00 1E 00 00 00 00 00 00 00 00 00 D9 25
 //W (1970-01-01 00:08:52) [PRIV_COMM, 1764]: Tx(cmd_A2 len:11) :  FA 03 00 00 A2 26 01 00 00 99 E0
-                if(log_heartbeat || cmd!=2) { // be silent for the heartbeat //TODO show it at first and after an hour?
+                if(log_heartbeat) { // we may be silent for the heartbeat //TODO show it at first and after an hour?
                     logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Serial number and version.", cmd, seq, len, crc);
                 }
                 sprintf(str, "%s", PrivCommRxBuffer+8);
@@ -2267,7 +2271,9 @@ void AC011K::myloop()
 //W (1970-01-01 00:08:52) [PRIV_COMM, 1764]: Tx(cmd_A4 len:17) :  FA 03 00 00 A4 28 07 00 00 E2 01 01 00 08 34 E5 6B
                 evseStatus = PrivCommRxBuffer[8];
                 update_evseStatus(evseStatus);
-                logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Heartbeat request, Status %d: %s, value:%d", cmd, seq, len, crc, evseStatus, evse_status_text[evseStatus], PrivCommRxBuffer[12]);
+                if(log_heartbeat) { // we may be silent for the heartbeat //TODO show it at first and after an hour?
+                    logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Heartbeat request, Status %d: %s, value:%d", cmd, seq, len, crc, evseStatus, evse_status_text[evseStatus], PrivCommRxBuffer[12]);
+                }
 // experimental:
                 send_http(String(",\"type\":\"en+04\",\"data\":{")
                     +"\"status\":"+String(PrivCommRxBuffer[8])  // status
