@@ -1084,12 +1084,31 @@ void AC011K::update_all_data()
     evse_indicator_led.get("indication")->updateInt(indication);
     evse_indicator_led.get("duration")->updateUint(duration);
     */
-
     /* 
     We just can not get all the data above and therefore ignore it and either
     stick to our own fake default values, or 
     use the values that we ijected at the apropiate plce/time when communicating with the GD chip.
     */
+
+    evse_auto_start_charging.get("auto_start_charging")->updateBool(!evse_slots.get(CHARGING_SLOT_AUTOSTART_BUTTON)->get("clear_on_disconnect")->asBool());
+
+    evse_management_enabled.get("enabled")->updateBool(evse_slots.get(CHARGING_SLOT_CHARGE_MANAGER)->get("active")->asBool());
+
+    evse_user_enabled.get("enabled")->updateBool(evse_slots.get(CHARGING_SLOT_USER)->get("active")->asBool());
+
+    evse_modbus_enabled.get("enabled")->updateBool(evse_slots.get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool());
+    evse_ocpp_enabled.get("enabled")->updateBool(evse_slots.get(CHARGING_SLOT_OCPP)->get("active")->asBool());
+
+    evse_external_enabled.get("enabled")->updateBool(evse_slots.get(CHARGING_SLOT_EXTERNAL)->get("active")->asBool());
+    evse_external_clear_on_disconnect.get("clear_on_disconnect")->updateBool(evse_slots.get(CHARGING_SLOT_EXTERNAL)->get("clear_on_disconnect")->asBool());
+
+    evse_global_current.get("current")->updateUint(evse_slots.get(CHARGING_SLOT_GLOBAL)->get("max_current")->asUint());
+    evse_management_current.get("current")->updateUint(evse_slots.get(CHARGING_SLOT_CHARGE_MANAGER)->get("max_current")->asUint());
+    evse_external_current.get("current")->updateUint(evse_slots.get(CHARGING_SLOT_EXTERNAL)->get("max_current")->asUint());
+    evse_user_current.get("current")->updateUint(evse_slots.get(CHARGING_SLOT_USER)->get("max_current")->asUint());
+
+    evse_external_defaults.get("current")->updateUint(evse_slots.get(CHARGING_SLOT_EXTERNAL)->get("max_current")->asUint());
+    evse_external_defaults.get("clear_on_disconnect")->updateBool(evse_slots.get(CHARGING_SLOT_EXTERNAL)->get("clear_on_disconnect")->asBool());
 
     uint16_t last_allowed_charging_current = evse_state.get("allowed_charging_current")->asUint();
 
@@ -1112,23 +1131,6 @@ void AC011K::update_all_data()
         //logger.printfln("---->   bs_evse_set_max_charging_current function call dropped!");
     }
 
-    evse_auto_start_charging.get("auto_start_charging")->updateBool(!evse_slots.get(CHARGING_SLOT_AUTOSTART_BUTTON)->get("clear_on_disconnect")->asBool());
-    evse_management_enabled.get("enabled")->updateBool(evse_slots.get(CHARGING_SLOT_CHARGE_MANAGER)->get("active")->asBool());
-    evse_user_enabled.get("enabled")->updateBool(evse_slots.get(CHARGING_SLOT_USER)->get("active")->asBool());
-
-    evse_modbus_enabled.get("enabled")->updateBool(evse_slots.get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool());
-    evse_ocpp_enabled.get("enabled")->updateBool(evse_slots.get(CHARGING_SLOT_OCPP)->get("active")->asBool());
-
-    evse_external_enabled.get("enabled")->updateBool(evse_slots.get(CHARGING_SLOT_EXTERNAL)->get("active")->asBool());
-    evse_external_clear_on_disconnect.get("clear_on_disconnect")->updateBool(evse_slots.get(CHARGING_SLOT_EXTERNAL)->get("clear_on_disconnect")->asBool());
-
-    evse_global_current.get("current")->updateUint(evse_slots.get(CHARGING_SLOT_GLOBAL)->get("max_current")->asUint());
-    evse_management_current.get("current")->updateUint(evse_slots.get(CHARGING_SLOT_CHARGE_MANAGER)->get("max_current")->asUint());
-    evse_external_current.get("current")->updateUint(evse_slots.get(CHARGING_SLOT_EXTERNAL)->get("max_current")->asUint());
-    evse_user_current.get("current")->updateUint(evse_slots.get(CHARGING_SLOT_USER)->get("max_current")->asUint());
-
-    evse_external_defaults.get("current")->updateUint(evse_slots.get(CHARGING_SLOT_EXTERNAL)->get("max_current")->asUint());
-    evse_external_defaults.get("clear_on_disconnect")->updateBool(evse_slots.get(CHARGING_SLOT_EXTERNAL)->get("clear_on_disconnect")->asBool());
 #if MODULE_WATCHDOG_AVAILABLE()
     static size_t watchdog_handle = watchdog.add("evse_v2_all_data", "EVSE not reachable", 10 * 60 * 1000);
     watchdog.reset(watchdog_handle);
@@ -1136,6 +1138,7 @@ void AC011K::update_all_data()
 }
 
 
+/* anchor to fix the diff to ac011k.cpp */
 
 /********************************************************************/
 /* The code above is a copy of the TinkerForge evse_v2 module with  */ 

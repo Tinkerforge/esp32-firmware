@@ -1234,3 +1234,5 @@ void EVSEV2::update_all_data()
     watchdog.reset(watchdog_handle);
 #endif
 }
+
+/* anchor to fix the diff to ac011k.cpp */
