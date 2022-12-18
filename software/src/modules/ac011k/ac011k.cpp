@@ -1129,6 +1129,10 @@ void AC011K::update_all_data()
 
     evse_external_defaults.get("current")->updateUint(evse_slots.get(CHARGING_SLOT_EXTERNAL)->get("max_current")->asUint());
     evse_external_defaults.get("clear_on_disconnect")->updateBool(evse_slots.get(CHARGING_SLOT_EXTERNAL)->get("clear_on_disconnect")->asBool());
+#if MODULE_WATCHDOG_AVAILABLE()
+    static size_t watchdog_handle = watchdog.add("evse_v2_all_data", "EVSE not reachable", 10 * 60 * 1000);
+    watchdog.reset(watchdog_handle);
+#endif
 }
 
 
