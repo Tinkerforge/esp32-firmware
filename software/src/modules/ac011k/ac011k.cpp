@@ -2002,7 +2002,7 @@ void AC011K::my_setup_evse()
     PrivCommTxBuffer[PayloadStart + 1] = 0x08;
     PrivCommTxBuffer[PayloadStart + 2] = 0x02;
     PrivCommTxBuffer[PayloadStart + 3] = 0x00;
-    PrivCommTxBuffer[PayloadStart + 4] =  120; // 120 sec hb timeout
+    PrivCommTxBuffer[PayloadStart + 4] =   10; // 10 sec hb timeout
     PrivCommTxBuffer[PayloadStart + 5] = 0x00; // hb timeout 16bit?
     PrivCommSend(0xAA, 6, PrivCommTxBuffer);
 
