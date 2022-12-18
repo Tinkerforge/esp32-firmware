@@ -2467,6 +2467,7 @@ void AC011K::myloop()
                 logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Charging stop reason: %d - %s",
                     cmd, seq, len, crc,
                     PrivCommRxBuffer[77], PrivCommRxBuffer[77]<=3 ? stop_reason_text[PrivCommRxBuffer[77]] : stop_reason_text[0]);  // "stopreson": 1 = Remote, 3 = EVDisconnected
+                /* warum sind start zeit und stop zeit gleich? */
                 logger.printfln("start:%s stop:%s meter:%dWh value1:%d value2:%d value3:%d",
                     timeStr(PrivCommRxBuffer+80),
                     timeStr(PrivCommRxBuffer+86),
