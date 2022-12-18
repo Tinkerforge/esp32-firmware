@@ -1160,7 +1160,8 @@ extern char local_uid_str[32];
 // Commands
 // First byte = command code, then payload bytes, no crc bytes
 byte Init1[] = {0xAC, 0x11, 0x0B, 0x01, 0x00, 0x00};
-byte Init2[] = {0xAC, 0x11, 0x09, 0x01, 0x00, 0x01};
+//byte Init2[] = {0xAC, 0x11, 0x09, 0x01, 0x00, 0x01}; // bs & uwe
+byte Init2[] = {0xAC, 0x11, 0x09, 0x01, 0x00, 0x00}; // connie
 byte Init3[] = {0xAC, 0x11, 0x0A, 0x01, 0x00, 0x00};
 byte Init4[] = {0xAC, 0x11, 0x0C, 0x01, 0x00, 0x00};
 byte Init5[] = {0xAA, 0x18, 0x3E, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -1168,8 +1169,10 @@ byte Init6[] = {0xAC, 0x11, 0x0D, 0x04, 0x00, 0xB8, 0x0B, 0x00, 0x00};
 byte Init7[] = {0xAA, 0x18, 0x3F, 0x04, 0x00, 0x1E, 0x00, 0x00, 0x00};
 byte Init8[] = {0xAA, 0x18, 0x25, 0x0E, 0x00, 0x05, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x02};
 
-byte Init9[] = {0xAA, 0x18, 0x12, 0x01, 0x00, 0x03, 0x7B, 0x89};
-byte Init10[] = {0xAA, 0x18, 0x12, 0x01, 0x00, 0x03, 0x3B, 0x9C}; // is Init10 the same as Init12? Probably 0x3B, 0x9C accidently copied from crc
+/* we had init9 and init10 in here, but connie found that it is not in the original FW and */ 
+/* now we think it was just a copy/paste mistake and a duplicate of init12 */
+/* byte Init9[] = {0xAA, 0x18, 0x12, 0x01, 0x00, 0x03, 0x7B, 0x89}; */
+/* byte Init10[] = {0xAA, 0x18, 0x12, 0x01, 0x00, 0x03, 0x3B, 0x9C}; // is Init10 the same as Init12? Probably 0x3B, 0x9C accidently copied from crc */
 
 // ctrl_cmd set ack done, type:0
 //[2019-01-01 03:36:46] cmd_AA [privCommCmdAACfgCtrl]!
@@ -1970,8 +1973,10 @@ void AC011K::my_setup_evse()
     sendCommand(Init6,  sizeof(Init6), sendSequenceNumber++);
     sendCommand(Init7,  sizeof(Init7), sendSequenceNumber++);
     sendCommand(Init8,  sizeof(Init8), sendSequenceNumber++);
-    sendCommand(Init9,  sizeof(Init9), sendSequenceNumber++);
-    sendCommand(Init10, sizeof(Init10), sendSequenceNumber++);  // last two bytes correct?
+    /* we had init9 and init10 in here, but connie found that it is not in the original FW and */ 
+    /* now we think it was just a copy/paste mistake and a duplicate of init12 */
+    /* sendCommand(Init9,  sizeof(Init9), sendSequenceNumber++); */
+    /* sendCommand(Init10, sizeof(Init10), sendSequenceNumber++);  // last two bytes correct? */
 
 //W (1970-01-01 00:08:53) [PRIV_COMM, 1764]: Tx(cmd_AA len:15) :  FA 03 00 00 AA 08 05 00 18 12 01 00 03 BA 45
 //W (2021-04-11 18:36:27) [PRIV_COMM, 1919]: Rx(cmd_0A len:15) :  FA 03 00 00 0A 08 05 00 14 12 01 00 00 12 42
