@@ -588,8 +588,6 @@ void AC011K::register_urls()
     }, 1000, 1000);
 #endif
 
-    //api.addPersistentConfig("evse/config", &evse_config, {}, 1000);
-
     // States
     api.addState("evse/state", &evse_state, {}, 1000);
     api.addState("evse/hardware_configuration", &evse_hardware_configuration, {}, 1000);
@@ -1192,8 +1190,6 @@ byte Init12[] = {0xAA, 0x18, 0x12, 0x01, 0x00, 0x03}; // this triggers 0x02 SN, 
 // cmdAACtrlcantestsetAck test cancom...111
 byte Init11[] = {0xAA, 0x18, 0x2A, 0x00, 0x00};
 
-byte Init13[] = {0xA2, 0x00}; // is this just an ack for 0x02?
-//ack for 03  //byte Init14[] = {0xA3, 0x18, 0x02, 0x06, 0x00, 0x15, 0x06, 0x0A, 0x07, 0x08, 0x26};
 byte TimeAck[] = {'c', 'a', 'y', 'm', 'd', 'h', 'm', 's', 0, 0, 0, 0};
 
 // ctrl_cmd set start power mode done
@@ -1508,8 +1504,6 @@ int AC011K::bs_evse_stop_charging() {
 }
 
 int AC011K::bs_evse_persist_config() {
-    //api.writeConfig("evse/config", &evse_config);
-    //api.writeConfig("evse/hardware_configuration", &evse_hardware_configuration);
     api.writeConfig("evse/slots", &evse_slots);
     /* String error = api.callCommand("evse/config_update", Config::ConfUpdateObject{{ */
     /*     {"auto_start_charging", evse_auto_start_charging.get("auto_start_charging")->asBool()}, */
@@ -1929,20 +1923,9 @@ void AC011K::my_setup_evse()
         apply_slot_default(CHARGING_SLOT_MODBUS_TCP, 0, false, false);
         apply_slot_default(CHARGING_SLOT_MODBUS_TCP_ENABLE, 0, false, false);
         apply_slot_default(CHARGING_SLOT_OCPP, 0, false, false);
-    } else {
-        logger.printfln("EVSE restore persistent storage evse slots SUCCESS");
     }
     evse_auto_start_charging.get("auto_start_charging")->updateBool(
         !evse_slots.get(CHARGING_SLOT_AUTOSTART_BUTTON)->get("clear_on_disconnect")->asBool());
-
-    logger.printfln("EVSE auto_start_charging: %s", evse_auto_start_charging.get("auto_start_charging")->asBool()?"true":"false");
-
-    /* if(!api.restorePersistentConfig("evse/config", &evse_config)) { */
-    /*     logger.printfln("EVSE error, could not restore persistent storage evse config"); */
-    /* } */
-    /* if(!api.restorePersistentConfig("evse/hardware_configuration", &evse_hardware_configuration)) { */
-    /*     logger.printfln("EVSE error, could not restore persistent storage evse_hardware_configuration"); */
-    /* } */
 
     Serial2.setRxBufferSize(1024);
     Serial2.begin(115200, SERIAL_8N1, 26, 27); // PrivComm to EVSE GD32 Chip
