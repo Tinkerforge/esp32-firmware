@@ -729,9 +729,11 @@ void AC011K::register_urls()
         if (enabled == evse_user_enabled.get("enabled")->asBool())
             return;
 
+#if MODULE_USERS_AVAILABLE()
         if (enabled) {
             users.stop_charging(0, true);
         }
+#endif
 
         if (enabled)
             this->apply_slot_default(CHARGING_SLOT_USER, 0, true, true);
