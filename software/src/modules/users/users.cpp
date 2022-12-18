@@ -619,13 +619,21 @@ void Users::register_urls()
         user_config.get("users")->remove(idx);
         API::writeConfig("users/config", &user_config);
 
+#if MODULE_AC011K_AVAILABLE()
         Config *tags = (Config *)anfc.config.get("authorized_tags");
+#else
+        Config *tags = (Config *)nfc.config.get("authorized_tags");
+#endif
 
         for(int i = 0; i < tags->count(); ++i) {
             if(tags->get(i)->get("user_id")->asUint() == remove.get("id")->asUint())
                 tags->get(i)->get("user_id")->updateUint(0);
         }
+#if MODULE_AC011K_AVAILABLE()
         API::writeConfig("nfc/config", &anfc.config);
+#else
+        API::writeConfig("nfc/config", &nfc.config);
+#endif
 
         if (!charge_tracker.is_user_tracked(remove.get("id")->asUint()))
         {
