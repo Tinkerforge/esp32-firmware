@@ -113,10 +113,12 @@ struct default_validator {
                 if ((int)x.get(i)->value.tag != slot->variantType)
                     return String(String("[") + i + "] has wrong type");
 
+        size_t i = 0;
         for (const Config &elem : *x.getVal()) {
             String err = Config::apply_visitor(default_validator{}, elem.value);
             if (err != "")
-                return err;
+                return String("[") + i + "] " + err;
+            ++i;
         }
 
         return String("");
@@ -126,8 +128,9 @@ struct default_validator {
     {
         for (const std::pair<String, Config> &elem : *x.getVal()) {
             String err = Config::apply_visitor(default_validator{}, elem.second.value);
+
             if (err != "")
-                return err;
+                return String("[\"") + elem.first.c_str() + "\"] " + err;
         }
 
         return String("");
@@ -371,7 +374,7 @@ struct from_json {
             x.getVal()->push_back(*prototype);
             String inner_error = Config::apply_visitor(from_json{arr[i], force_same_keys, permit_null_updates, false}, x.get(i)->value);
             if (inner_error != "")
-                return String("[") + i + "]" + inner_error;
+                return String("[") + i + "] " + inner_error;
         }
 
         return String("");
@@ -415,7 +418,7 @@ struct from_json {
             if (inner_error != "")
             {
                 if (return_str.length() < 1000)
-                    return_str += String("[\"") + x.getVal()->at(i).first + "\"]" + inner_error + "\n";
+                    return_str += String("[\"") + x.getVal()->at(i).first + "\"] " + inner_error + "\n";
                 else
                     more_errors = true;
             }
@@ -528,7 +531,7 @@ struct from_update {
             x.getVal()->push_back(*prototype);
             String inner_error = Config::apply_visitor(from_update{&arr->elements[i]}, x.get(i)->value);
             if (inner_error != "")
-                return String("[") + i + "]" + inner_error;
+                return String("[") + i + "] " + inner_error;
         }
 
         return String("");
@@ -561,7 +564,7 @@ struct from_update {
 
             String inner_error = Config::apply_visitor(from_update{&obj->elements[obj_idx].second}, x.getVal()->at(i).second.value);
             if (inner_error != "")
-                return String("[\"") + x.getVal()->at(i).first + "\"]" + inner_error;
+                return String("[\"") + x.getVal()->at(i).first + "\"] " + inner_error;
         }
 
         return String("");
