@@ -240,7 +240,7 @@ void Users::pre_setup()
     add = ConfigRoot(Config::Object({
         {"id", Config::Uint8(0)},
         {"roles", Config::Uint32(0)},
-        {"current", Config::Uint16(32000)},
+        {"current", Config::Uint(32000, 0, 32000)},
         {"display_name", Config::Str("", 0, USERNAME_LENGTH)},
         {"username", Config::Str("", 0, USERNAME_LENGTH)},
         {"digest_hash", Config::Str("", 0, 32)},
@@ -501,6 +501,55 @@ void Users::register_urls()
         if (error) {
             return String("Failed to deserialize string: ") + String(error.c_str());
         }
+
+        const char * const expected_keys[] = {
+            "id",
+            "roles",
+            "current",
+            "display_name",
+            "username",
+            "digest_hash"
+        };
+
+        auto obj = doc.as<JsonObjectConst>();
+
+        for (JsonPairConst kv : obj) {
+            bool found = false;
+            for(int i = 0; i < ARRAY_SIZE(expected_keys); ++i) {
+                if (kv.key() != expected_keys[i])
+                    continue;
+
+                found = true;
+                break;
+            }
+            if (!found)
+                return String("JSON object has unknown key '") + kv.key().c_str() + "'.\n";
+        }
+
+        if (doc["id"] != nullptr && !doc["id"].is<uint32_t>())
+            return String("[\"id\"]JSON node was not an unsigned integer.");
+        if (doc["roles"] != nullptr && !doc["roles"].is<uint32_t>())
+            return String("[\"roles\"]JSON node was not an unsigned integer.");
+        if (doc["current"] != nullptr && !doc["current"].is<uint32_t>())
+            return String("[\"current\"]JSON node was not an unsigned integer.");
+        if (doc["display_name"] != nullptr && !doc["display_name"].is<String>())
+            return String("[\"display_name\"]JSON node was not a string.");
+        if (doc["username"] != nullptr && !doc["username"].is<String>())
+            return String("[\"username\"]JSON node was not a string.");
+        if (doc["digest_hash"] != nullptr && !doc["digest_hash"].is<String>())
+            return String("[\"digest_hash\"]JSON node was not a string.");
+
+        if (doc["display_name"] != nullptr && doc["display_name"].as<String>().length() > USERNAME_LENGTH)
+            return String("[\"display_name\"]String of maximum length ") + USERNAME_LENGTH + " was expected, but got " + doc["display_name"].as<String>().length();
+
+        if (doc["username"] != nullptr && doc["username"].as<String>().length() > USERNAME_LENGTH)
+            return String("[\"username\"]String of maximum length ") + USERNAME_LENGTH + " was expected, but got " + doc["username"].as<String>().length();
+
+        if (doc["digest_hash"] != nullptr && doc["digest_hash"].as<String>().length() > 32)
+            return String("[\"digest_hash\"]String of maximum length 32 was expected, but got ") + doc["digest_hash"].as<String>().length();
+
+        if (doc["current"] != nullptr && doc["current"].as<uint32_t>() > 32000)
+            return String("[\"current\"]Unsigned integer value ") + doc["current"].as<uint32_t>() + " was more than the allowed maximum of 32000";
 
         if (doc["id"] == nullptr)
             return String("Can't modify user. User ID is null or missing.");
