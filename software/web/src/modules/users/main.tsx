@@ -380,6 +380,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                                 value={state.newUser.username}
                                 onValue={(v) => this.setState({newUser: {...state.newUser, username: v}})}
                                 required
+                                maxLength={32}
                                 placeholder={__("users.content.add_user_modal_username_desc")}
                                 />
                         </FormGroup>
@@ -388,6 +389,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                                 value={state.newUser.display_name}
                                 onValue={(v) => this.setState({newUser: {...state.newUser, display_name: v}})}
                                 required
+                                maxLength={32}
                                 placeholder={__("users.content.add_user_modal_display_name_desc")}
                                 />
                         </FormGroup>
