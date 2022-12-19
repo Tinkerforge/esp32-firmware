@@ -261,8 +261,8 @@ export function postReboot(alert_title: string, alert_text: string) {
 let loginReconnectTimeout: number = null;
 
 export function ifLoggedInElse(if_continuation: () => void, else_continuation: () => void) {
-    download("/login_state", 3000)
-        .catch(e => new Blob([e.message.startsWith("404") ? "Logged in" : ""]))
+    download("/login_state", 10000)
+        .catch(e => new Blob(["Logged in"]))
         .then(blob => blob.text())
         .then(text => text == "Logged in" ? if_continuation() : else_continuation());
 }
