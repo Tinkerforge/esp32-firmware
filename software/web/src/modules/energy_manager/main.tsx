@@ -31,7 +31,7 @@ render(<ConfigPageHeader prefix="energy_manager" title={__("energy_manager.conte
 function update_energy_manager_state() {
     let state = API.get('energy_manager/state');
 
-    $('#state_contactor').val(state.contactor ? "Drei Phasen aktiv (Schütz geschaltet)" : "Eine Phase aktiv (Schütz nicht geschaltet)");
+    $('#state_contactor').val(translate_unchecked(state.contactor ?  'energy_manager.content.three_phases_active' : 'energy_manager.content.one_phase_active'));
     $('#state_led_r').val(state.led_rgb[0]);
     $('#state_led_g').val(state.led_rgb[1]);
     $('#state_led_b').val(state.led_rgb[2]);
