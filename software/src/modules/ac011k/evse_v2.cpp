@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
+ * Copyright (C) 2021-2022 Birger Schmidt <bs-warp@netgaroo.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +18,20 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "evse_v2.h"
+
+/* anchor to fix the diff to ac011k.cpp */
+
+/*********************************************************************************************************
+ *
+ * This code is mostly a copy of the TinkerForge evse_v2 module code in src/modules/evse_v2/evse_v2.cpp
+ * Nevertheless it contains the needed alterations to allow it to work on th EN+ hardware.   
+ *
+ * This file may need to be in sync with the original for the other modules (backend as well as frontend) 
+ * to work properly.          
+ *                                                                  
+ *********************************************************************************************************/
+
+#include "ac011k.h"
 
 #include "bindings/errors.h"
 
@@ -39,25 +53,33 @@ extern bool firmware_update_allowed;
 #define SLOT_ACTIVE(x) ((bool)(x & 0x01))
 #define SLOT_CLEAR_ON_DISCONNECT(x) ((bool)(x & 0x02))
 
-void EVSEV2::pre_setup()
+void AC011K::pre_setup()
 {
     // States
     evse_state = Config::Object({
         {"iec61851_state", Config::Uint8(0)},
         {"charger_state", Config::Uint8(0)},
+        {"GD_state", Config::Uint8(0)},
         {"contactor_state", Config::Uint8(0)},
         {"contactor_error", Config::Uint8(0)},
         {"allowed_charging_current", Config::Uint16(0)},
         {"error_state", Config::Uint8(0)},
         {"lock_state", Config::Uint8(0)},
-        {"dc_fault_current_state", Config::Uint8(0)},
+        {"time_since_state_change", Config::Uint32(0)},
+        {"last_state_change", Config::Uint32(0)},
     });
 
     evse_hardware_configuration = Config::Object({
-        {"jumper_configuration", Config::Uint8(0)},
-        {"has_lock_switch", Config::Bool(false)},
-        {"evse_version", Config::Uint8(0)},
-        {"energy_meter_type", Config::Uint8(0)}
+        {"Hardware", Config::Str("", 0, 20)},
+        {"FirmwareVersion", Config::Str("", 0, 20)},
+        {"SerialNumber", Config::Str("", 0, 20)},
+        {"evse_found", Config::Bool(false)},
+        {"initialized", Config::Bool(false)},
+        {"GDFirmwareVersion", Config::Uint16(0)},
+        {"jumper_configuration", Config::Uint8(3)}, // 3 = 16 Ampere = 11KW for the EN+ wallbox
+        {"has_lock_switch", Config::Bool(false)},   // no key lock switch
+        {"evse_version", Config::Uint16(0)},
+        {"energy_meter_type", Config::Uint8(99)}
     });
 
     evse_low_level_state = Config::Object ({
@@ -253,31 +275,31 @@ void EVSEV2::pre_setup()
     evse_ocpp_enabled_update = evse_ocpp_enabled;
 }
 
-bool EVSEV2::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear)
+bool AC011K::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear)
 {
-    uint16_t old_current;
-    bool old_enabled;
-    bool old_clear;
-    int rc = tf_evse_v2_get_charging_slot_default(&device, slot, &old_current, &old_enabled, &old_clear);
-    if (rc != TF_E_OK) {
-        is_in_bootloader(rc);
-        logger.printfln("Failed to apply slot default (read failed). rc %d", rc);
-        return false;
-    }
+    uint16_t old_current = evse_slots.get(slot)->get("max_current")->asUint();
+    bool old_enabled     = evse_slots.get(slot)->get("active")->asBool();
+    bool old_clear       = evse_slots.get(slot)->get("clear_on_disconnect")->asBool();
 
     if ((old_current == current) && (old_enabled == enabled) && (old_clear == clear))
         return false;
 
-    rc = tf_evse_v2_set_charging_slot_default(&device, slot, current, enabled, clear);
-    if (rc != TF_E_OK) {
-        is_in_bootloader(rc);
-        logger.printfln("Failed to apply slot default (write failed). rc %d", rc);
-        return false;
-    }
+    //rc = tf_evse_v2_set_charging_slot_default(&device, slot, current, enabled, clear);
+    evse_slots.get(slot)->get("max_current")->updateUint(current);
+    evse_slots.get(slot)->get("active")->updateBool(enabled);
+    evse_slots.get(slot)->get("clear_on_disconnect")->updateBool(clear);
+    api.writeConfig("evse/slots", &evse_slots);
+
+	logger.printfln("set - slot %d: max_current: %d, active: %s, clear_on_disconnect: %s",
+            slot,
+            current,
+            enabled ?"true":"false",
+            clear ?"true":"false");
+
     return true;
 }
 
-void EVSEV2::apply_defaults()
+void AC011K::apply_defaults()
 {
     // Maybe this is the first start-up after updating the EVSE to firmware 2.1.0 (or higher)
     // (Or the first start-up at all)
@@ -294,81 +316,52 @@ void EVSEV2::apply_defaults()
     // but if for any reason, they are not equal when booting up, just set the current value as
     // default. In the common case this has no effect. Also set enabled and clear in case this is
     // the first start-up.
-    uint16_t global_current;
-    bool global_active;
-    int rc = tf_evse_v2_get_charging_slot(&device, CHARGING_SLOT_GLOBAL, &global_current, &global_active, nullptr);
-    if (rc != TF_E_OK) {
-        is_in_bootloader(rc);
-        logger.printfln("Failed to apply defaults (global read failed). rc %d", rc);
-        return;
-    }
+
     // If this is the first start-up, this slot will not be active.
     // In the old firmwares, the global current was not persistant
     // so setting it to 32000 is expected after start-up.
-    if (!global_active)
-        global_current = 32000;
-
-    if (this->apply_slot_default(CHARGING_SLOT_GLOBAL, global_current, true, false))
-        tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_GLOBAL, global_current, true, false);
 
     // Slot 6 (user) depends on user config.
     // It can be enabled per API (is stored in the EVSEs flash, not ours).
     // Set clear to true and current to 0 in any case: If disabled those are ignored anyway.
-    bool user_enabled;
-    rc = tf_evse_v2_get_charging_slot(&device, CHARGING_SLOT_USER, nullptr, &user_enabled, nullptr);
-    if (rc != TF_E_OK) {
-        is_in_bootloader(rc);
-        logger.printfln("Failed to apply defaults (cm read failed). rc %d", rc);
-        return;
-    }
-    if (this->apply_slot_default(CHARGING_SLOT_USER, 0, user_enabled, true))
-        tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_USER, 0, user_enabled, true);
 
     // Slot 7 (charge manager) can be enabled per API (is stored in the EVSEs flash, not ours).
     // Set clear to true and current to 0 in any case: If disabled those are ignored anyway.
-    bool cm_enabled;
-    rc = tf_evse_v2_get_charging_slot(&device, CHARGING_SLOT_CHARGE_MANAGER, nullptr, &cm_enabled, nullptr);
-    if (rc != TF_E_OK) {
-        is_in_bootloader(rc);
-        logger.printfln("Failed to apply defaults (cm read failed). rc %d", rc);
-        return;
-    }
-    if (this->apply_slot_default(CHARGING_SLOT_CHARGE_MANAGER, 0, cm_enabled, true))
-        tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_CHARGE_MANAGER, 0, cm_enabled, true);
 
     // Slot 8 (external) is controlled via API, no need to change anything here
 }
 
-void EVSEV2::factory_reset()
+void AC011K::factory_reset()
 {
-    tf_evse_v2_factory_reset(&device, 0x2342FACD);
+    logger.printfln("EVSE factory reset is not implemented yet.");
 }
 
-void EVSEV2::setup()
+void AC011K::setup()
 {
     setup_evse();
-    if (!device_found)
-        return;
 
-    task_scheduler.scheduleOnce([this](){
-        uint32_t press_time = 0;
-        tf_evse_v2_get_button_press_boot_time(&device, true, &press_time);
-        if (press_time != 0)
-            logger.printfln("Reset boot button press time");
-    }, 40000);
+    /* TODO: make reset work on AC011K
+    /* task_scheduler.scheduleOnce([this](){ */
+    /*     uint32_t press_time = 0; */
+    /*     tf_evse_v2_get_button_press_boot_time(&device, true, &press_time); */
+    /*     if (press_time != 0) */
+    /*         logger.printfln("Reset boot button press time"); */
+    /* }, 40000); */
 
     // Get all data once before announcing the EVSE feature.
     update_all_data();
     api.addFeature("evse");
-    api.addFeature("cp_disconnect");
-    api.addFeature("button_configuration");
+    /* api.addFeature("cp_disconnect"); */
+    /* api.addFeature("button_configuration"); */
+    api.addFeature("meter_phases");
+    api.addFeature("meter_all_values");
 
     task_scheduler.scheduleWithFixedDelay([this](){
         update_all_data();
     }, 0, 250);
 }
 
-String EVSEV2::get_evse_debug_header()
+String AC011K::get_evse_debug_header()
 {
     return "\"millis,"
            "STATE,"
@@ -455,214 +448,114 @@ String EVSEV2::get_evse_debug_header()
            "\"";
 }
 
-String EVSEV2::get_evse_debug_line()
-{
-    uint8_t iec61851_state;
-    uint8_t charger_state;
-    uint8_t contactor_state;
-    uint8_t contactor_error;
-    uint16_t allowed_charging_current;
-    uint8_t error_state;
-    uint8_t lock_state;
-    uint8_t dc_fault_current_state;
-    uint8_t jumper_configuration;
-    bool has_lock_switch;
-    uint8_t evse_version;
-    uint8_t energy_meter_type;
-    float power;
-    float energy_relative;
-    float energy_absolute;
-    bool phases_active[3];
-    bool phases_connected[3];
-    uint32_t error_count[6];
+String AC011K::get_evse_debug_line() {
+    if(!initialized)
+        return "EVSE is not initialized!";
 
-    // get_low_level_state - 57 byte
+    uint8_t iec61851_state, charger_state, contactor_state, contactor_error, error_state, lock_state;
+    uint16_t allowed_charging_current;
+    uint32_t time_since_state_change, uptime;
+
+    int rc;
+    /* int rc = bs_evse_get_state( */
+    /*     &iec61851_state, */
+    /*     &charger_state, */
+    /*     &contactor_state, */
+    /*     &contactor_error, */
+    /*     &allowed_charging_current, */
+    /*     &error_state, */
+    /*     &lock_state, */
+    /*     &time_since_state_change, */
+    /*     &uptime); */
+
+    /* if(rc != TF_E_OK) { */
+    /*     return String("evse_get_state failed: rc: ") + String(rc); */
+    /* } */
+
+    bool low_level_mode_enabled;
     uint8_t led_state;
     uint16_t cp_pwm_duty_cycle;
-    uint16_t adc_values[7];
-    int16_t voltages[7];
+
+    uint16_t adc_values[2];
+    int16_t voltages[3];
     uint32_t resistances[2];
-    bool gpio[24];
-    uint32_t charging_time;
-    uint32_t time_since_state_change;
-    uint32_t uptime;
+    bool gpio[5];
 
-    int rc = tf_evse_v2_get_all_data_1(&device,
-                                       &iec61851_state,
-                                       &charger_state,
-                                       &contactor_state,
-                                       &contactor_error,
-                                       &allowed_charging_current,
-                                       &error_state,
-                                       &lock_state,
-                                       &dc_fault_current_state,
-                                       &jumper_configuration,
-                                       &has_lock_switch,
-                                       &evse_version,
-                                       &energy_meter_type,
-                                       &power,
-                                       &energy_relative,
-                                       &energy_absolute,
-                                       phases_active,
-                                       phases_connected,
-                                       error_count);
+//    rc = tf_evse_get_low_level_state(
+//        &low_level_mode_enabled,
+//        &led_state,
+//        &cp_pwm_duty_cycle,
+//        adc_values,
+//        voltages,
+//        resistances,
+//        gpio);
 
-    if (rc != TF_E_OK) {
-        logger.printfln("get_all_data_1 %d", rc);
-        is_in_bootloader(rc);
-        return "get_all_data_1 failed";
+    if(rc != TF_E_OK) {
+        return String("evse_get_low_level_state failed: rc: ") + String(rc);
     }
 
-    rc = tf_evse_v2_get_low_level_state(&device,
-                                        &led_state,
-                                        &cp_pwm_duty_cycle,
-                                        adc_values,
-                                        voltages,
-                                        resistances,
-                                        gpio,
-                                        &charging_time,
-                                        &time_since_state_change,
-                                        &uptime);
+    char line[150] = {0};
+    snprintf(line, sizeof(line)/sizeof(line[0]), "%lu,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%c,%u,%u,%u,%u,%d,%d,%d,%u,%u,%c,%c,%c,%c,%c\n",
+        millis(),
+        iec61851_state,
+        charger_state,
+        contactor_state,
+        contactor_error,
+        allowed_charging_current,
+        error_state,
+        lock_state,
+        time_since_state_change,
+        uptime,
+        low_level_mode_enabled ? '1' : '0',
+        led_state,
+        cp_pwm_duty_cycle,
+        adc_values[0],adc_values[1],
+        voltages[0],voltages[1],voltages[2],
+        resistances[0],resistances[1],
+        gpio[0] ? '1' : '0',gpio[1] ? '1' : '0',gpio[2] ? '1' : '0',gpio[3] ? '1' : '0',gpio[4] ? '1' : '0');
 
-    if (rc != TF_E_OK) {
-        logger.printfln("ll_state %d", rc);
-        is_in_bootloader(rc);
-        return "ll_state failed";
-    }
-
-    char line[512] = {0};
-    snprintf(line,
-             sizeof(line) / sizeof(line[0]),
-             "\"%lu,,"
-             "%u,%u,%u,%u,%u,%u,%u,%u,,"
-             "%u,%c,%u,%u,,"
-             "%.3f,%.3f,%.3f,%c,%c,%c,%c,%c,%c,,"
-             "%u,%u,%u,%u,%u,%u,,"
-             "%u,%u,%u,%u,%u,,"
-             "%u,%u,%u,%u,%u,%u,%u,,"
-             "%d,%d,%d,%d,%d,%d,%d,,"
-             "%u,%u,,"
-             "%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c\"",
-             millis(),
-             iec61851_state,
-             charger_state,
-             contactor_state,
-             contactor_error,
-             allowed_charging_current,
-             error_state,
-             lock_state,
-             dc_fault_current_state,
-
-             jumper_configuration,
-             has_lock_switch ? '1' : '0',
-             evse_version,
-             energy_meter_type,
-
-             power,
-             energy_relative,
-             energy_absolute,
-             phases_active[0] ? '1' : '0',
-             phases_active[1] ? '1' : '0',
-             phases_active[2] ? '1' : '0',
-             phases_connected[0] ? '1' : '0',
-             phases_connected[1] ? '1' : '0',
-             phases_connected[2] ? '1' : '0',
-
-             error_count[0],
-             error_count[1],
-             error_count[2],
-             error_count[3],
-             error_count[4],
-             error_count[5],
-
-             led_state,
-             cp_pwm_duty_cycle,
-             charging_time,
-             time_since_state_change,
-             uptime,
-
-             adc_values[0],
-             adc_values[1],
-             adc_values[2],
-             adc_values[3],
-             adc_values[4],
-             adc_values[5],
-             adc_values[6],
-
-             voltages[0],
-             voltages[1],
-             voltages[2],
-             voltages[3],
-             voltages[4],
-             voltages[5],
-             voltages[6],
-
-             resistances[0],
-             resistances[1],
-
-             gpio[0] ? '1' : '0',
-             gpio[1] ? '1' : '0',
-             gpio[2] ? '1' : '0',
-             gpio[3] ? '1' : '0',
-             gpio[4] ? '1' : '0',
-             gpio[5] ? '1' : '0',
-             gpio[6] ? '1' : '0',
-             gpio[7] ? '1' : '0',
-             gpio[8] ? '1' : '0',
-             gpio[9] ? '1' : '0',
-             gpio[10] ? '1' : '0',
-             gpio[11] ? '1' : '0',
-             gpio[12] ? '1' : '0',
-             gpio[13] ? '1' : '0',
-             gpio[14] ? '1' : '0',
-             gpio[15] ? '1' : '0',
-             gpio[16] ? '1' : '0',
-             gpio[17] ? '1' : '0',
-             gpio[18] ? '1' : '0',
-             gpio[19] ? '1' : '0',
-             gpio[20] ? '1' : '0',
-             gpio[21] ? '1' : '0',
-             gpio[22] ? '1' : '0',
-             gpio[23] ? '1' : '0');
     return String(line);
 }
 
-void EVSEV2::set_managed_current(uint16_t current)
+void AC011K::set_managed_current(uint16_t current)
 {
-    is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_CHARGE_MANAGER, current));
+    //tf_evse_v2_set_charging_slot_max_current(CHARGING_SLOT_CHARGE_MANAGER, current));
+    evse_slots.get(CHARGING_SLOT_CHARGE_MANAGER)->get("max_current")->updateUint(current);
     this->last_current_update = millis();
     this->shutdown_logged = false;
 }
 
-void EVSEV2::set_user_current(uint16_t current)
+void AC011K::set_user_current(uint16_t current)
 {
-    is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_USER, current));
+    //is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_USER, current));
+    evse_slots.get(CHARGING_SLOT_USER)->get("max_current")->updateUint(current);
 }
 
-void EVSEV2::set_modbus_current(uint16_t current)
+void AC011K::set_modbus_current(uint16_t current)
 {
-    is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_MODBUS_TCP, current));
+    //is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_MODBUS_TCP, current));
+    evse_slots.get(CHARGING_SLOT_MODBUS_TCP)->get("max_current")->updateUint(current);
 }
 
-void EVSEV2::set_modbus_enabled(bool enabled)
+void AC011K::set_modbus_enabled(bool enabled)
 {
-    is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_MODBUS_TCP_ENABLE, enabled ? 32000 : 0));
+    //is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_MODBUS_TCP_ENABLE, enabled ? 32000 : 0));
+    evse_slots.get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->updateUint(enabled ? 32000 : 0);
 }
 
-void EVSEV2::set_ocpp_current(uint16_t current)
+void AC011K::set_ocpp_current(uint16_t current)
 {
-     is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_OCPP, current));
+    //is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_OCPP, current));
+    evse_slots.get(CHARGING_SLOT_OCPP)->get("max_current")->updateUint(current);
 }
 
-uint16_t EVSEV2::get_ocpp_current()
+uint16_t AC011K::get_ocpp_current()
 {
     return evse_slots.get(CHARGING_SLOT_OCPP)->get("max_current")->asUint();
 }
 
-void EVSEV2::register_urls()
+void AC011K::register_urls()
 {
-    if (!device_found)
-        return;
 
 #if MODULE_CM_NETWORKING_AVAILABLE()
     cm_networking.register_client([this](uint16_t current) {
@@ -703,7 +596,7 @@ void EVSEV2::register_urls()
         if(!this->shutdown_logged)
             logger.printfln("Got no managed current update for more than 30 seconds. Setting managed current to 0");
         this->shutdown_logged = true;
-        is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_CHARGE_MANAGER, 0));
+        evse_slots.get(CHARGING_SLOT_CHARGE_MANAGER)->get("max_current")->updateUint(0);
     }, 1000, 1000);
 #endif
 
@@ -712,23 +605,27 @@ void EVSEV2::register_urls()
     api.addState("evse/hardware_configuration", &evse_hardware_configuration, {}, 1000);
     api.addState("evse/low_level_state", &evse_low_level_state, {}, 1000);
     api.addState("evse/button_state", &evse_button_state, {}, 250);
-    api.addState("evse/slots", &evse_slots, {}, 1000);
+    api.addPersistentConfig("evse/slots", &evse_slots, {}, 1000);
     api.addState("evse/indicator_led", &evse_indicator_led, {}, 1000);
-    api.addState("evse/control_pilot_connected", &evse_control_pilot_connected, {}, 1000);
+    api.addState("evse/control_pilot_connected", &evse_control_pilot_connected, {}, 1000); //TODO
 
     // Actions
     api.addCommand("evse/reset_dc_fault_current_state", &evse_reset_dc_fault_current_state, {}, [this](){
-        is_in_bootloader(tf_evse_v2_reset_dc_fault_current_state(&device, evse_reset_dc_fault_current_state.get("password")->asUint()));
+        //is_in_bootloader(tf_evse_v2_reset_dc_fault_current_state(&device, evse_reset_dc_fault_current_state.get("password")->asUint()));
     }, true);
 
     api.addCommand("evse/stop_charging", Config::Null(), {}, [this](){
-        if (evse_state.get("iec61851_state")->asUint() != IEC_STATE_A)
-            is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_AUTOSTART_BUTTON, 0));
+        if (evse_state.get("iec61851_state")->asUint() != IEC_STATE_A) {
+            evse_slots.get(CHARGING_SLOT_AUTOSTART_BUTTON)->get("max_current")->updateUint(0);
+            bs_evse_stop_charging(); // TODO scheduled function to start stop depending on slots?!
+        }
     }, true);
 
     api.addCommand("evse/start_charging", Config::Null(), {}, [this](){
-        if (evse_state.get("iec61851_state")->asUint() != IEC_STATE_A)
-            is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_AUTOSTART_BUTTON, 32000));
+        if (evse_state.get("iec61851_state")->asUint() != IEC_STATE_A) {
+            evse_slots.get(CHARGING_SLOT_AUTOSTART_BUTTON)->get("max_current")->updateUint(32000);
+            bs_evse_start_charging(); // TODO scheduled function to start stop depending on slots?!
+        }
     }, true);
 
 #if MODULE_WS_AVAILABLE()
@@ -752,12 +649,12 @@ void EVSEV2::register_urls()
 
     api.addState("evse/external_current", &evse_external_current, {}, 1000);
     api.addCommand("evse/external_current_update", &evse_external_current_update, {}, [this](){
-        tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_EXTERNAL, evse_external_current_update.get("current")->asUint());
+        evse_slots.get(CHARGING_SLOT_EXTERNAL)->get("max_current")->updateUint(evse_external_current_update.get("current")->asUint());
     }, false);
 
     api.addState("evse/external_clear_on_disconnect", &evse_external_clear_on_disconnect, {}, 1000);
     api.addCommand("evse/external_clear_on_disconnect_update", &evse_external_clear_on_disconnect_update, {}, [this](){
-        is_in_bootloader(tf_evse_v2_set_charging_slot_clear_on_disconnect(&device, CHARGING_SLOT_EXTERNAL, evse_external_clear_on_disconnect_update.get("clear_on_disconnect")->asBool()));
+        evse_slots.get(CHARGING_SLOT_EXTERNAL)->get("clear_on_disconnect")->updateBool(evse_external_clear_on_disconnect_update.get("clear_on_disconnect")->asBool());
     }, false);
 
     api.addState("evse/management_current", &evse_management_current, {}, 1000);
@@ -771,22 +668,22 @@ void EVSEV2::register_urls()
     // are marked as actions to make sure the flash is not written unnecessarily.
     api.addState("evse/gpio_configuration", &evse_gpio_configuration, {}, 1000);
     api.addCommand("evse/gpio_configuration_update", &evse_gpio_configuration_update, {}, [this](){
-        is_in_bootloader(tf_evse_v2_set_gpio_configuration(&device, evse_gpio_configuration_update.get("shutdown_input")->asUint(),
-                                                                    evse_gpio_configuration_update.get("input")->asUint(),
-                                                                    evse_gpio_configuration_update.get("output")->asUint()));
+        /* is_in_bootloader(tf_evse_v2_set_gpio_configuration(&device, evse_gpio_configuration_update.get("shutdown_input")->asUint(), */
+        /*                                                             evse_gpio_configuration_update.get("input")->asUint(), */
+        /*                                                             evse_gpio_configuration_update.get("output")->asUint())); */
     }, true);
 
     api.addState("evse/button_configuration", &evse_button_configuration, {}, 1000);
     api.addCommand("evse/button_configuration_update", &evse_button_configuration_update, {}, [this](){
-        is_in_bootloader(tf_evse_v2_set_button_configuration(&device, evse_button_configuration_update.get("button")->asUint()));
+        /* is_in_bootloader(tf_evse_v2_set_button_configuration(&device, evse_button_configuration_update.get("button")->asUint())); */
     }, true);
 
     api.addState("evse/control_pilot_configuration", &evse_control_pilot_configuration, {}, 1000);
     api.addCommand("evse/control_pilot_configuration_update", &evse_control_pilot_configuration_update, {}, [this](){
         auto cp = evse_control_pilot_configuration_update.get("control_pilot")->asUint();
-        int rc = tf_evse_v2_set_control_pilot_configuration(&device, cp, nullptr);
-        logger.printfln("updating control pilot to %u. rc %d", cp, rc);
-        is_in_bootloader(rc);
+        /* int rc = tf_evse_v2_set_control_pilot_configuration(&device, cp, nullptr); */
+        /* logger.printfln("updating control pilot to %u.", cp); */
+        /* is_in_bootloader(rc); */
     }, true);
 
     api.addState("evse/auto_start_charging", &evse_auto_start_charging, {}, 1000);
@@ -795,9 +692,10 @@ void EVSEV2::register_urls()
         // 2. make persistent
         // 3. fake a start/stop charging
 
+        /* evse_auto_start_charging.get("auto_start_charging")->updateBool( */
+        /*     !evse_slots.get(CHARGING_SLOT_AUTOSTART_BUTTON)->get("clear_on_disconnect")->asBool()); */
         bool enable_auto_start = evse_auto_start_charging_update.get("auto_start_charging")->asBool();
 
-        is_in_bootloader(tf_evse_v2_set_charging_slot_clear_on_disconnect(&device, CHARGING_SLOT_AUTOSTART_BUTTON, !enable_auto_start));
 
         if (enable_auto_start) {
             this->apply_slot_default(CHARGING_SLOT_AUTOSTART_BUTTON, 32000, true, false);
@@ -806,20 +704,19 @@ void EVSEV2::register_urls()
         }
 
         if (enable_auto_start) {
-            is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_AUTOSTART_BUTTON, 32000));
+            evse_slots.get(CHARGING_SLOT_AUTOSTART_BUTTON)->get("max_current")->updateUint(32000);
         } else {
             // Only "stop" charging if no car is currently plugged in.
             // Clear on disconnect only triggers once, so we have to zero the current manually here.
             uint8_t iec_state = evse_state.get("iec61851_state")->asUint();
             if (iec_state != 2 && iec_state != 3)
-                is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_AUTOSTART_BUTTON, 0));
+                evse_slots.get(CHARGING_SLOT_AUTOSTART_BUTTON)->get("max_current")->updateUint(0);
         }
     }, false);
 
     api.addState("evse/global_current", &evse_global_current, {}, 1000);
     api.addCommand("evse/global_current_update", &evse_global_current_update, {}, [this](){
         uint16_t current = evse_global_current_update.get("current")->asUint();
-        is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_GLOBAL, current));
         this->apply_slot_default(CHARGING_SLOT_GLOBAL, current, true, false);
     }, false);
 
@@ -829,11 +726,6 @@ void EVSEV2::register_urls()
 
         if (enabled == evse_management_enabled.get("enabled")->asBool())
             return;
-
-        if (enabled)
-            tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_CHARGE_MANAGER, 0, true, true);
-        else
-            tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_CHARGE_MANAGER, 32000, false, false);
 
         if (enabled)
             this->apply_slot_default(CHARGING_SLOT_CHARGE_MANAGER, 0, true, true);
@@ -856,11 +748,6 @@ void EVSEV2::register_urls()
 #endif
 
         if (enabled)
-            tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_USER, 0, true, true);
-        else
-            tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_USER, 32000, false, false);
-
-        if (enabled)
             this->apply_slot_default(CHARGING_SLOT_USER, 0, true, true);
         else
             this->apply_slot_default(CHARGING_SLOT_USER, 32000, false, false);
@@ -873,15 +760,14 @@ void EVSEV2::register_urls()
         if (enabled == evse_external_enabled.get("enabled")->asBool())
             return;
 
-        tf_evse_v2_set_charging_slot_active(&device, CHARGING_SLOT_EXTERNAL, enabled);
         this->apply_slot_default(CHARGING_SLOT_EXTERNAL, 32000, enabled, false);
     }, false);
 
     api.addState("evse/external_defaults", &evse_external_defaults, {}, 1000);
     api.addCommand("evse/external_defaults_update", &evse_external_defaults_update, {}, [this](){
         bool enabled;
-        tf_evse_v2_get_charging_slot_default(&device, CHARGING_SLOT_EXTERNAL, nullptr, &enabled, nullptr);
-        this->apply_slot_default(CHARGING_SLOT_EXTERNAL, evse_external_defaults_update.get("current")->asUint(), enabled, evse_external_defaults_update.get("clear_on_disconnect")->asBool());
+        //tf_evse_v2_get_charging_slot_default(&device, CHARGING_SLOT_EXTERNAL, nullptr, &enabled, nullptr);
+        this->apply_slot_default(CHARGING_SLOT_EXTERNAL, evse_external_defaults_update.get("current")->asUint(), evse_slots.get(CHARGING_SLOT_EXTERNAL)->get("active")->asBool(), evse_external_defaults_update.get("clear_on_disconnect")->asBool());
     }, false);
 
     api.addState("evse/modbus_tcp_enabled", &evse_modbus_enabled, {}, 1000);
@@ -892,17 +778,17 @@ void EVSEV2::register_urls()
             return;
 
         if (enabled) {
-            tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_MODBUS_TCP, 32000, true, false);
+            //tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_MODBUS_TCP, 32000, true, false);
             this->apply_slot_default(CHARGING_SLOT_MODBUS_TCP, 32000, true, false);
 
-            tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, true, false);
+            //tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, true, false);
             this->apply_slot_default(CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, true, false);
         }
         else {
-            tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_MODBUS_TCP, 32000, false, false);
+            //tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_MODBUS_TCP, 32000, false, false);
             this->apply_slot_default(CHARGING_SLOT_MODBUS_TCP, 32000, false, false);
 
-            tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, false, false);
+            //tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, false, false);
             this->apply_slot_default(CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, false, false);
         }
     }, false);
@@ -915,21 +801,19 @@ void EVSEV2::register_urls()
             return;
 
         if (enabled) {
-            tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_OCPP, 32000, true, false);
             this->apply_slot_default(CHARGING_SLOT_OCPP, 32000, true, false);
         }
         else {
-            tf_evse_v2_set_charging_slot(&device, CHARGING_SLOT_OCPP, 32000, false, false);
             this->apply_slot_default(CHARGING_SLOT_OCPP, 32000, false, false);
         }
     }, false);
 
-    this->DeviceModule::register_urls();
+    this->register_my_urls();
 }
 
-void EVSEV2::loop()
+void AC011K::loop()
 {
-    this->DeviceModule::loop();
+    myloop();
 
 #if MODULE_WS_AVAILABLE()
     static uint32_t last_debug = 0;
@@ -940,20 +824,23 @@ void EVSEV2::loop()
 #endif
 }
 
-void EVSEV2::setup_evse()
+void AC011K::setup_evse()
 {
-    if (!this->DeviceModule::setup_device()) {
-        return;
-    }
+    my_setup_evse();
 
     this->apply_defaults();
-    initialized = true;
+    // initialized is set to true after we got the SerialNumber from the GD chip
 }
 
-void EVSEV2::update_all_data()
+
+void AC011K::update_all_data()
 {
     if (!initialized)
         return;
+
+/* The TinkerForge hardware stores and maintains a lot of the state in the EVSE bricklet.
+   Our situation is different on the AC011K hardware. 
+   Therefore we do not have to update all the states, as we rely on the data we have in the ESP32.
 
     // get_all_data_1 - 51 byte
     uint8_t iec61851_state;
@@ -1208,26 +1095,53 @@ void EVSEV2::update_all_data()
     // get_indicator_led
     evse_indicator_led.get("indication")->updateInt(indication);
     evse_indicator_led.get("duration")->updateUint(duration);
+    */
+    /* 
+    We just can not get all the data above and therefore ignore it and either
+    stick to our own fake default values, or 
+    use the values that we ijected at the apropiate plce/time when communicating with the GD chip.
+    */
 
-    evse_auto_start_charging.get("auto_start_charging")->updateBool(!SLOT_CLEAR_ON_DISCONNECT(active_and_clear_on_disconnect[CHARGING_SLOT_AUTOSTART_BUTTON]));
+    evse_auto_start_charging.get("auto_start_charging")->updateBool(!evse_slots.get(CHARGING_SLOT_AUTOSTART_BUTTON)->get("clear_on_disconnect")->asBool());
 
-    evse_management_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_CHARGE_MANAGER]));
+    evse_management_enabled.get("enabled")->updateBool(evse_slots.get(CHARGING_SLOT_CHARGE_MANAGER)->get("active")->asBool());
 
-    evse_user_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_USER]));
+    evse_user_enabled.get("enabled")->updateBool(evse_slots.get(CHARGING_SLOT_USER)->get("active")->asBool());
 
-    evse_modbus_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_MODBUS_TCP]));
-    evse_ocpp_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_OCPP]));
+    evse_modbus_enabled.get("enabled")->updateBool(evse_slots.get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool());
+    evse_ocpp_enabled.get("enabled")->updateBool(evse_slots.get(CHARGING_SLOT_OCPP)->get("active")->asBool());
 
-    evse_external_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_EXTERNAL]));
-    evse_external_clear_on_disconnect.get("clear_on_disconnect")->updateBool(SLOT_CLEAR_ON_DISCONNECT(active_and_clear_on_disconnect[CHARGING_SLOT_EXTERNAL]));
+    evse_external_enabled.get("enabled")->updateBool(evse_slots.get(CHARGING_SLOT_EXTERNAL)->get("active")->asBool());
+    evse_external_clear_on_disconnect.get("clear_on_disconnect")->updateBool(evse_slots.get(CHARGING_SLOT_EXTERNAL)->get("clear_on_disconnect")->asBool());
 
-    evse_global_current.get("current")->updateUint(max_current[CHARGING_SLOT_GLOBAL]);
-    evse_management_current.get("current")->updateUint(max_current[CHARGING_SLOT_CHARGE_MANAGER]);
-    evse_external_current.get("current")->updateUint(max_current[CHARGING_SLOT_EXTERNAL]);
-    evse_user_current.get("current")->updateUint(max_current[CHARGING_SLOT_USER]);
+    evse_global_current.get("current")->updateUint(evse_slots.get(CHARGING_SLOT_GLOBAL)->get("max_current")->asUint());
+    evse_management_current.get("current")->updateUint(evse_slots.get(CHARGING_SLOT_CHARGE_MANAGER)->get("max_current")->asUint());
+    evse_external_current.get("current")->updateUint(evse_slots.get(CHARGING_SLOT_EXTERNAL)->get("max_current")->asUint());
+    evse_user_current.get("current")->updateUint(evse_slots.get(CHARGING_SLOT_USER)->get("max_current")->asUint());
 
-    evse_external_defaults.get("current")->updateUint(external_default_current);
-    evse_external_defaults.get("clear_on_disconnect")->updateBool(external_default_clear_on_disconnect);
+    evse_external_defaults.get("current")->updateUint(evse_slots.get(CHARGING_SLOT_EXTERNAL)->get("max_current")->asUint());
+    evse_external_defaults.get("clear_on_disconnect")->updateBool(evse_slots.get(CHARGING_SLOT_EXTERNAL)->get("clear_on_disconnect")->asBool());
+
+    uint16_t last_allowed_charging_current = evse_state.get("allowed_charging_current")->asUint();
+
+    // find the charging current maximum
+    uint16_t allowed_charging_current = 32000;
+    for (int i = 0; i < CHARGING_SLOT_COUNT; ++i) {
+        if (!evse_slots.get(i)->get("active")->asBool())
+            continue;
+        allowed_charging_current = min(allowed_charging_current, (uint16_t)evse_slots.get(i)->get("max_current")->asUint());
+    }
+
+    evse_low_level_state.get("time_since_state_change")->updateUint(evse_state.get("time_since_state_change")->asUint());
+    evse_low_level_state.get("uptime")->updateUint(millis());
+
+    // TODO: implement current changes during charging (if possible)
+    if(last_allowed_charging_current != allowed_charging_current) {
+        evse_state.get("allowed_charging_current")->updateUint(allowed_charging_current);
+        logger.printfln("EVSE: allowed_charging_current %d", allowed_charging_current);
+        bs_evse_set_max_charging_current(allowed_charging_current);  // Uwe: not needed here since requested by GD during start charging sequence
+        //logger.printfln("---->   bs_evse_set_max_charging_current function call dropped!");
+    }
 
 #if MODULE_WATCHDOG_AVAILABLE()
     static size_t watchdog_handle = watchdog.add("evse_v2_all_data", "EVSE not reachable", 10 * 60 * 1000);
