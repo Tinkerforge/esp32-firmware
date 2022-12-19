@@ -58,7 +58,7 @@ function translate<S extends string>(key: string): GetDictValue<S, Translation> 
     let key_parts = key.split(".");
     let subtranslation: any = active_translation;
 
-    while (key_parts.length > 0) {
+    while (subtranslation !== undefined && key_parts.length > 0) {
         subtranslation = subtranslation[key_parts.shift() as any];
     }
 
