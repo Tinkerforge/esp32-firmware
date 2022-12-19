@@ -20,15 +20,22 @@
         </div>
 
         <div class="form-group row">
-            <label for="energy_manager_config_phase_switching" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="energy_manager.content.phase_switching_config"></label>
+            <div class="col-lg-3 col-xl-2">
+                <label for="energy_manager_config_contactor_installed" class="col-form-label form-label" data-i18n="energy_manager.content.contactor_installed"></label>
+            </div>
+            <div class="col-lg-9 col-xl-6">
+                <div class="borderless-form-control custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" id="energy_manager_config_contactor_installed">
+                    <label class="custom-control-label" for="energy_manager_config_contactor_installed" data-i18n="energy_manager.content.contactor_installed_desc"></label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="energy_manager_config_phase_switching_mode" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="energy_manager.content.phase_switching_config"></label>
 
             <div class="col-lg-9 col-xl-6">
-                <select id="energy_manager_config_phase_switching" class="custom-select">
-                    <option value="0" selected data-i18n="energy_manager.content.automatic"></option>
-                    <option value="1" data-i18n="energy_manager.content.always_one_phase_with_contactor"></option>
-                    <option value="2" data-i18n="energy_manager.content.always_one_phase_without_contactor"></option>
-                    <option value="3" data-i18n="energy_manager.content.always_three_phase_with_contactor"></option>
-                    <option value="4" data-i18n="energy_manager.content.always_three_phase_without_contactor"></option>
+                <select id="energy_manager_config_phase_switching_mode" class="custom-select">
                 </select>
             </div>
         </div>

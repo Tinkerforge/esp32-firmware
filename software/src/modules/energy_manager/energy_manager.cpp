@@ -68,7 +68,8 @@ void EnergyManager::pre_setup()
     // Config
     energy_manager_config = Config::Object({
         {"excess_charging_enable", Config::Bool(false)},
-        {"phase_switching", Config::Uint8(PHASE_SWITCHING_AUTOMATIC)},
+        {"contactor_installed", Config::Bool(true)},
+        {"phase_switching_mode", Config::Uint8(PHASE_SWITCHING_AUTOMATIC)},
         {"maximum_power_from_grid", Config::Int32(0)},
         {"maximum_available_current", Config::Uint32(0)}, // Keep in sync with charge_manager.cpp
         {"minimum_current", Config::Uint(6000, 6000, 32000)}, // Keep in sync with charge_manager.cpp
@@ -149,7 +150,7 @@ void EnergyManager::update_io()
             case RELAY_CONFIG_IF_INPUT4:          handle_relay_config_if_input(1);          break;
             case RELAY_CONFIG_IF_PHASE_SWITCHING: handle_relay_config_if_phase_switching(); break;
             case RELAY_CONFIG_IF_METER:           handle_relay_config_if_meter();           break;
-            default: logger.printfln("Unknown RELAY_CONFIG_IF: %u", relay_config_if);        break;
+            default: logger.printfln("Unknown RELAY_CONFIG_IF: %u", relay_config_if);       break;
         }
     }
 
@@ -164,9 +165,9 @@ void EnergyManager::update_io()
     for (uint8_t input = 0; input < 2; input++) {
         uint8_t input_config = energy_manager_config_in_use.get(ENERGY_MANAGER_INPUT_CONFIG_STR[input])->asUint();
         switch(input_config) {
-            case INPUT_CONFIG_DEACTIVATED:                                                         break;
-            case INPUT_CONFIG_RULES_BASED:     handle_input_config_rule_based(input);              break;
-            case INPUT_CONFIG_CONTACTOR_CHECK: handle_input_config_contactor_check(input);         break;
+            case INPUT_CONFIG_DEACTIVATED:                                                          break;
+            case INPUT_CONFIG_RULES_BASED:     handle_input_config_rule_based(input);               break;
+            case INPUT_CONFIG_CONTACTOR_CHECK: handle_input_config_contactor_check(input);          break;
             default: logger.printfln("Unknown INPUT_CONFIG: %u for input %u", input_config, input); break;
         }
     }
@@ -191,9 +192,9 @@ void EnergyManager::update_energy()
     }
 
     uint32_t ma_allowed;
-    if (is_3phase) { // 3phase
+        if (is_3phase) { // 3phase
         ma_allowed = power_allowed * 1000 / (3 * 230);
-    } else { // 1phase
+        } else { // 1phase
         ma_allowed = power_allowed * 1000 / (1 * 230);
     }
 
@@ -201,7 +202,7 @@ void EnergyManager::update_energy()
     if (ma_allowed < 6000) {
         // TODO: Turn charging off if running
         return;
-    }
+        }
 
     // TODO: Set "ma_allowed" in charge manager
 }
@@ -214,6 +215,11 @@ void EnergyManager::setup()
 
     api.restorePersistentConfig("energy_manager/config", &energy_manager_config);
     energy_manager_config_in_use = energy_manager_config;
+
+    if ((energy_manager_config_in_use.get("phase_switching_mode")->asUint() == PHASE_SWITCHING_AUTOMATIC) && !energy_manager_config_in_use.get("contactor_installed")->asBool()) {
+        logger.printfln("energy_manager: Invalid configuration: Automatic phase switching selected but no contactor installed.");
+        return;
+    }
 
     task_scheduler.scheduleWithFixedDelay([this](){
         this->update_all_data();

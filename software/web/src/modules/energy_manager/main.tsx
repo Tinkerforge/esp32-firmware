@@ -74,6 +74,14 @@ function update_energy_manager_html_visibility() {
         }
     }
 
+    // Update contactor section
+    let phase_switching_config_is_dd = $('#energy_manager_config_phase_switching_mode')
+    if ($('#energy_manager_config_contactor_installed').is(':checked')) {
+        update_options(phase_switching_config_is_dd, [{"value": 0, name: "automatic"}, {"value": 1, name: "always_one_phase"}, {"value": 3, name: "always_three_phases"}]);
+    } else {
+        update_options(phase_switching_config_is_dd, [{"value": 1, name: "fixed_one_phase"}, {"value": 3, name: "fixed_three_phases"}]);
+    }
+
     // Update relay section
     if($('#energy_manager_config_relay_config').val()== '1') {
         $('#energy_manager_config_relay_rules').collapse('show');
@@ -208,7 +216,8 @@ export function init() {
             reboot_string: __("energy_manager.script.reboot_content_changed")
         });
 
-    $("#energy_manager_config_relay_config, \
+    $("#energy_manager_config_contactor_installed, \
+       #energy_manager_config_relay_config, \
        #energy_manager_config_relay_config_if, \
        #energy_manager_config_input3_config, \
        #energy_manager_config_input4_config"
