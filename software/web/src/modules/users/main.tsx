@@ -244,7 +244,6 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
     }
 
     errorMessage(user: User): string {
-        console.log(user.username, user.is_invalid);
         switch (user.is_invalid) {
             case 1:
                 return __("users.script.username_already_used");
