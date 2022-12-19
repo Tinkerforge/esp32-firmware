@@ -55,7 +55,13 @@ export function InputText<T extends (InputTextProps | InputTextWithValidationPro
                 class={"form-control " + (props.class ?? "")}
                 id={id}
                 type="text"
-                onInput={props.onValue ? (e) => props.onValue((e.target as HTMLInputElement).value) : undefined}
+                onInput={props.onValue ? (e) => {
+                    if ((props.maxLength != undefined && new Blob([(e.target as HTMLInputElement).value]).size < props.maxLength) ||
+                            props.maxLength == undefined)
+                        props.onValue((e.target as HTMLInputElement).value);
+                    else
+                        props.onValue(props.value as string);
+                } : undefined}
                 readonly={!props.onValue}/>
             {invalidFeedback}
         </>
