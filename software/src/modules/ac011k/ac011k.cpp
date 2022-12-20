@@ -20,14 +20,28 @@
 
 #include "ac011k.h"
 
-#include "bindings/errors.h"
-
 #include "api.h"
 #include "event_log.h"
 #include "task_scheduler.h"
 #include "tools.h"
 #include "web_server.h"
 #include "modules.h"
+
+#include "build.h"
+
+#ifdef GD_FLASH
+#include "enplus_firmware.h"
+//#include "enplus_firmware.1.0.1435h"  // RFID, 1 Ampere limit steps
+//#include "enplus_firmware.1.1.212.h"  // no RFID but climatization possible after charging completed, charging limits 8A/10A/13A/16A only
+//#include "enplus_firmware.1.1.258.h"  // RFID, no climatization possible after charging completed, 1 Ampere limit steps ?
+//#include "enplus_firmware.1.1.538.h"  // RFID, no climatization possible after charging completed, 1 Ampere limit steps ?
+//#include "enplus_firmware.1.1.805.h"  // RFID, no climatization possible after charging completed, 1 Ampere limit steps ?
+#include "enplus_firmware.1.1.888.h"  // RFID, no climatization possible after charging completed, charging limits 8A/10A/13A/16A only
+#include "GD_firmware.1.2.460.h"
+#endif
+
+#include "HardwareSerial.h"
+#include <time.h>
 
 extern EventLog logger;
 
@@ -162,22 +176,6 @@ byte FlashVerify[811] = {0xAB, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x04, 0x00, 0
 38073       Rx cmd_0B seq:5C len:6 crc:55A7
 
 */
-
-
-#include "build.h"
-
-#ifdef GD_FLASH
-#include "enplus_firmware.h"
-//#include "enplus_firmware.1.0.1435h"  // RFID, 1 Ampere limit steps
-#include "enplus_firmware.1.1.212.h"  // no RFID but climatization possible after charging completed, charging limits 8A/10A/13A/16A only
-//#include "enplus_firmware.1.1.258.h"  // RFID, no climatization possible after charging completed, 1 Ampere limit steps
-//#include "enplus_firmware.1.1.538.h"  // RFID, no climatization possible after charging completed, 1 Ampere limit steps
-//#include "enplus_firmware.1.1.805.h"  // RFID, no climatization possible after charging completed, 1 Ampere limit steps
-#include "enplus_firmware.1.1.888.h"  // RFID, no climatization possible after charging completed, 1 Ampere limit steps
-#endif
-
-#include "HardwareSerial.h"
-#include <time.h>
 
 /* experimental: JSON data sender */
 #include <HTTPClient.h>
@@ -673,7 +671,7 @@ bool AC011K::handle_update_chunk1(int command, WebServerRequest request, size_t 
                 return true;
 
             // copy data
-            memcpy(FlashVerify+11, gd_firmware_1_1_212 + chunk_offset, maxlength);  // firmware file for upload button
+            memcpy(FlashVerify+11, gd_firmware_1_1_888 + chunk_offset, maxlength);  //  firmware file for verify button
 
             MAXLENGTH = maxlength;
             sendCommand(FlashVerify, maxlength+11, sendSequenceNumber++); // next chunk (11 bytes header) 
@@ -743,7 +741,7 @@ bool AC011K::handle_update_chunk2(int command, WebServerRequest request, size_t 
                 return true;
 
             // copy data
-            memcpy(FlashVerify+11, gd_firmware_1_1_888 + chunk_offset, maxlength);  //  firmware file for verify button
+            memcpy(FlashVerify+11, gd_firmware_1_2_460 + chunk_offset, maxlength);  // firmware file for upload button
 
             MAXLENGTH = maxlength;
             sendCommand(FlashVerify, maxlength+11, sendSequenceNumber++); // next chunk (11 bytes header) 
@@ -1111,6 +1109,9 @@ void AC011K::myloop()
                             )
                             || (evse_hardware_configuration.get("FirmwareVersion")->asString().startsWith("1.0.", 0)  // known working: 1.0.1435
                                 && evse_hardware_configuration.get("FirmwareVersion")->asString().substring(4).toInt() <= 1435  // higest known working version (we assume earlier versions work as well)
+                            )
+                            || (evse_hardware_configuration.get("FirmwareVersion")->asString().startsWith("1.2.", 0)  // known working: 1.2.460
+                                && evse_hardware_configuration.get("FirmwareVersion")->asString().substring(4).toInt() <= 460  // higest known working version (we assume earlier versions work as well)
                             )
                         );
                     evse_hardware_configuration.get("initialized")->updateBool(initialized);
