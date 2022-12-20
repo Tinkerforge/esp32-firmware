@@ -78,7 +78,7 @@ void read_meter_type_handler(struct TF_RS485 *rs485, uint8_t request_id, int8_t 
         return;
     }
 
-    if (exception_code != 0) {
+    if (exception_code != 0 && exception_code != -1) {
         logger.printfln("Request %u: Exception code %d", request_id, exception_code);
         ud->done = ModbusMeter::UserDataDone::ERROR;
         return;
@@ -237,6 +237,8 @@ void ModbusMeter::checkRS485State()
         logger.printfln("RS485 mode invalid (%u). Did the bricklet reset?", mode);
         error_counters.get("bricklet_reset")->updateUint(error_counters.get("bricklet_reset")->asUint() + 1);
         setupRS485();
+    } else if (meter_in_use == nullptr) {
+        setupRS485();
     }
 }
 
@@ -255,7 +257,7 @@ void ModbusMeter::setup()
 
     task_scheduler.scheduleWithFixedDelay([this](){
         this->checkRS485State();
-    }, 5 * 60 * 1000, 5 * 60 * 1000);
+    }, 10 * 1000, 10 * 1000);
 }
 
 void ModbusMeter::register_urls()
