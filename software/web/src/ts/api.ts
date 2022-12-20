@@ -61,6 +61,7 @@ export class APIEventTarget implements EventTarget {
     }
 
     // Hack to circumvent typed implementation above, to allow adding an event listener for a module that is not compiled in.
+    public addEventListener_unchecked(type: string, callback: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
     public addEventListener_unchecked(...args: any) : void {
         this.delegate.addEventListener.apply(this.delegate, args);
     }
