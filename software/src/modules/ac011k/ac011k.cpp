@@ -1392,7 +1392,7 @@ void AC011K::myloop()
 // [2021-08-07 07:55:18] cmd_A8 [privCommCmdA8RTDataAck]!
 // [2021-08-07 07:55:18] charger A8 settime:21-8-7 7:55:19
 //
-                        logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Heartbeat Timeout:%ds", cmd, seq, len, crc, PrivCommRxBuffer[12]);
+                        logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Heartbeat Timeout: %ds", cmd, seq, len, crc, PrivCommRxBuffer[12]+256*PrivCommRxBuffer[13]);
                         break;
                     case 0x09: // answer to ctrl_cmd set start power mode
 //W (2021-04-11 18:36:27) [PRIV_COMM, 1764]: Tx(cmd_AA len:15) :  FA 03 00 00 AA 40 05 00 18 09 01 00 00 F9 36
@@ -1416,6 +1416,12 @@ void AC011K::myloop()
 //E (1970-01-01 00:00:03) [PRIV_COMM, 78]: cmdAACtrlcantestsetAck test cancom...111
     // cmdAACtrlcantestsetAck test cancom...111
                         logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - cmdAACtrlcantestsetAck test cancom...111 done", cmd, seq, len, crc);
+                        break;
+                    case 0x3E: // 
+                        logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - ClockAlignedDataInterval: %ds", cmd, seq, len, crc, PrivCommRxBuffer[12]+256*PrivCommRxBuffer[13]);
+                        break;
+                    case 0x3F: // 
+                        logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - cmdAAInit7Ack", cmd, seq, len, crc);
                         break;
                     default:
                         logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X -  I don't know what %.2X means.", cmd, seq, len, crc, PrivCommRxBuffer[9]);
