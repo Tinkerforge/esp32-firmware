@@ -1308,10 +1308,10 @@ void AC011K::myloop()
                     */
 
                     /* fill phases status values */
-                    /* consider a voltage > 10V as real, below that it is probably a faulty reading */
-                    if ((PrivCommRxBuffer[100]+256*PrivCommRxBuffer[101]) > 100) { phases_connected[0] = true; } // L1 plug voltage
-                    if ((PrivCommRxBuffer[102]+256*PrivCommRxBuffer[103]) > 100) { phases_connected[1] = true; } // L2 plug voltage
-                    if ((PrivCommRxBuffer[104]+256*PrivCommRxBuffer[105]) > 100) { phases_connected[2] = true; } // L3 plug voltage
+                    /* consider a voltage > 70V as real, below that it is probably a faulty reading (we tried with 10V, which still was too low as a threshold) */
+                    if ((PrivCommRxBuffer[100]+256*PrivCommRxBuffer[101]) > 700) { phases_connected[0] = true; } // L1 plug voltage
+                    if ((PrivCommRxBuffer[102]+256*PrivCommRxBuffer[103]) > 700) { phases_connected[1] = true; } // L2 plug voltage
+                    if ((PrivCommRxBuffer[104]+256*PrivCommRxBuffer[105]) > 700) { phases_connected[2] = true; } // L3 plug voltage
                     meter.updateMeterPhases(phases_connected, phases_active);
 
                     /* set charging_time */
