@@ -256,6 +256,18 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
         }
     }
 
+    require_password(user: User): boolean {
+        let lst = API.get("users/config").users.filter(u => u.id == user.id);
+        if (lst.length != 1)
+            return false;
+
+        let configured = lst[0];
+        if (configured.digest_hash === "")
+            return false;
+
+        return user.username != configured.username;
+    }
+
     override render(props: {}, state: UsersConfig & UsersState) {
         if (!state || !state.users)
             return (<></>);
@@ -354,6 +366,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                                     </FormGroup>
                                     <FormGroup label={__("users.script.password")}>
                                         <InputPassword
+                                            required={this.require_password(user)}
                                             maxLength={64}
                                             value={user.password === undefined ? user.digest_hash : user.password}
                                             onValue={(v) => this.setUser(i+1, {password: v})}

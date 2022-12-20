@@ -578,6 +578,14 @@ void Users::register_urls()
             return "Can't modify user. User with this ID not found.";
         }
 
+        // The digest hash is calculated with the username and password.
+        if (doc["username"] != nullptr
+         && doc["digest_hash"] == nullptr
+         && user->get("username")->asString() != doc["username"]
+         && user->get("digest_hash")->asString() != "") {
+            return String("Changing the username without updating the digest hash is not allowed!");
+        }
+
         for(int i = 0; i < user_config.get("users")->count(); ++i) {
             if (user_config.get("users")->get(i)->get("id")->asUint() == id)
                 continue;
