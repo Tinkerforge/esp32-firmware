@@ -68,7 +68,7 @@ byte Init1[] = {0xAC, 0x11, 0x0B, 0x01, 0x00, 0x00};
 byte Init2[] = {0xAC, 0x11, 0x09, 0x01, 0x00, 0x00}; // connie
 byte Init3[] = {0xAC, 0x11, 0x0A, 0x01, 0x00, 0x00};
 byte Init4[] = {0xAC, 0x11, 0x0C, 0x01, 0x00, 0x00};
-byte Init5[] = {0xAA, 0x18, 0x3E, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00};
+byte ClockAlignedDataInterval[] = {0xAA, 0x18, 0x3E, 0x04, 0x00, 10, 0, 0x00, 0x00}; // 10 + 0*256 sec
 byte Init6[] = {0xAC, 0x11, 0x0D, 0x04, 0x00, 0xB8, 0x0B, 0x00, 0x00};
 byte Init7[] = {0xAA, 0x18, 0x3F, 0x04, 0x00, 0x1E, 0x00, 0x00, 0x00};
 byte Init8[] = {0xAA, 0x18, 0x25, 0x0E, 0x00, 0x05, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x02};
@@ -284,7 +284,7 @@ void AC011K::sendCommand(byte *data, int datasize, byte sendSequenceNumber) {
     PrivCommTxBuffer[datasize+7] = crc & 0xFF;
     PrivCommTxBuffer[datasize+8] = crc >> 8;
 
-    if(log_heartbeat || (data[0]!=0xA4)) { // we may be silent for the heartbeat //TODO show it at first and after an hour?
+    if(log_heartbeat || (data[0]!=0xA4 || data[0]!=0xA8)) { // we may be silent for the heartbeat //TODO show it at first and after an hour?
         get_hex_privcomm_line(PrivCommTxBuffer); // PrivCommHexBuffer now holds the hex representation of the buffer
         String cmdText = "";
         switch (PrivCommTxBuffer[4]) {
@@ -502,25 +502,6 @@ void AC011K::update_evseStatus(uint8_t evseStatus) {
             evse_state.get("iec61851_state")->updateUint(IEC_STATE_B); // Verbunden
             evse_state.get("charger_state")->updateUint(CHARGER_STATE_WAITING_FOR_RELEASE);
             evse_state.get("contactor_state")->updateUint(1); // TF_EVSE_V2_CONTACTOR_STATE_AC1_LIVE_AC2_NLIVE
-            for (int i = 0; i < 3; ++i)
-                phases_active[i] = false;
-                    // clear meter values
-                    // voltages
-                    meter.updateMeterAllValues(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L1, 0);
-                    meter.updateMeterAllValues(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L2, 0);
-                    meter.updateMeterAllValues(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L3, 0);
-                    // current
-                    meter.updateMeterAllValues(METER_ALL_VALUES_CURRENT_L1_A, 0);
-                    meter.updateMeterAllValues(METER_ALL_VALUES_CURRENT_L2_A, 0);
-                    meter.updateMeterAllValues(METER_ALL_VALUES_CURRENT_L3_A, 0);
-                    // power
-                    if (PrivCommRxBuffer[4] == 0x08) {
-                        meter.updateMeterValues(
-                            0,                                              // charging power W  (power)
-                            PrivCommRxBuffer[84]+256*PrivCommRxBuffer[85],  // charged energy Wh (energy_rel)
-                            PrivCommRxBuffer[88]+256*PrivCommRxBuffer[89]   // charged energy Wh (energy_abs)
-                            );
-                    }
             break;
         case 7: // (Reserved)
             evse_state.get("iec61851_state")->updateUint(IEC_STATE_EF);
@@ -882,7 +863,7 @@ void AC011K::my_setup_evse()
     sendCommand(Init2,  sizeof(Init2), sendSequenceNumber++);
     sendCommand(Init3,  sizeof(Init3), sendSequenceNumber++);
     sendCommand(Init4,  sizeof(Init4), sendSequenceNumber++);
-    sendCommand(Init5,  sizeof(Init5), sendSequenceNumber++);
+    sendCommand(ClockAlignedDataInterval,  sizeof(ClockAlignedDataInterval), sendSequenceNumber++);
     sendCommand(Init6,  sizeof(Init6), sendSequenceNumber++);
     sendCommand(Init7,  sizeof(Init7), sendSequenceNumber++);
     sendCommand(Init8,  sizeof(Init8), sendSequenceNumber++);
@@ -908,8 +889,8 @@ void AC011K::my_setup_evse()
     PrivCommTxBuffer[PayloadStart + 1] = 0x08;
     PrivCommTxBuffer[PayloadStart + 2] = 0x02;
     PrivCommTxBuffer[PayloadStart + 3] = 0x00;
-    PrivCommTxBuffer[PayloadStart + 4] =   10; // 10 sec hb timeout
-    PrivCommTxBuffer[PayloadStart + 5] = 0x00; // hb timeout 16bit?
+    PrivCommTxBuffer[PayloadStart + 4] =  240;  /* 240 sec heartbeat timeout */
+    PrivCommTxBuffer[PayloadStart + 5] = 0x00;  /* heartbeat timeout 16bit   */
     PrivCommSend(0xAA, 6, PrivCommTxBuffer);
 
 
@@ -1279,7 +1260,7 @@ void AC011K::myloop()
                 }
                 break;
 
-            case 0x08:
+            case 0x08: /* ClockAlignedDataInterval */
 // W (2021-08-07 07:55:19) [PRIV_COMM, 1764]: Tx(cmd_A8 len:21) :  FA 03 00 00 A8 25 0B 00 40 15 08 07 07 37 13 00 00|[2021-08-07 07:55:18] Rx(cmd_A8 len:21) : FA 03 00 00 A8 25 0B 00 40 15 08 07 07 37 13 00 00 00 00 1B BE 00 00 1B BE                                                                                                      |[2021-08-07 07:55:18] cmd_A8 [privCommCmdA8RTDataAck]!
 //D (2021-08-07 07:55:19) [OCPP_SRV, 3550]: ocpp_sevice_ntc_evt: 9, chan:0,sts:8                                    |[2021-08-07 07:55:18] charger A8 settime:21-8-7 7:55:19
 //D (2021-08-07 07:55:19) [OCPP_SRV, 3031]: startMode(0:app 1:card 2:vin):1, stopreson:Remote timestamp:2021-08-07T0|[2021-08-07 07:55:19] [comm] cmd03 cpNowSts=0, gunNowSts=1,gunPreSts=0,chargerreson=6
@@ -1319,8 +1300,8 @@ void AC011K::myloop()
                     // meter power
                     meter.updateMeterValues(
                               (PrivCommRxBuffer[96]+256*PrivCommRxBuffer[97]),             // charging power W  (power)
-                              float((PrivCommRxBuffer[84]+256*PrivCommRxBuffer[85])/1000), // charged energy Wh (energy_rel)
-                              float((PrivCommRxBuffer[88]+256*PrivCommRxBuffer[89])/1000)  // charged energy Wh (energy_abs)
+                              float(PrivCommRxBuffer[84]+256*PrivCommRxBuffer[85])/1000, // charged energy Wh (energy_rel)
+                              float(PrivCommRxBuffer[88]+256*PrivCommRxBuffer[89])/1000  // charged energy Wh (energy_abs)
                               );
                     /*
                     meter.updateMeterAllValues(i, all_values_update.get(i)->asFloat());
