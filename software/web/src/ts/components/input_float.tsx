@@ -20,7 +20,7 @@
 import * as util from "../util";
 
 import { h, Context } from "preact";
-import {useContext, useRef} from "preact/hooks";
+import {useContext, useRef, useState} from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { Minus, Plus } from "react-feather";
@@ -36,8 +36,6 @@ interface InputFloatProps {
     showMinMax?: boolean
 }
 
-let timeout: number = null;
-
 export function InputFloat(props: InputFloatProps) {
     let id = useContext(props.idContext);
 
@@ -45,17 +43,27 @@ export function InputFloat(props: InputFloatProps) {
 
     const input = useRef<HTMLInputElement>();
 
+    const [inputInFlight, setInputInFlight] = useState<string | null>(null);
+
     const setTarget = (target: number) => {
         target = util.clamp(props.min, target, props.max);
-
-        if (timeout != null)
-            window.clearTimeout(timeout);
-        timeout = null;
-
         input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
-
         props.onValue(target)
     };
+
+    // Firefox does not localize numbers with a fractional part correctly.
+    // OTOH Webkit based browsers (correctly) expect setting the value to a non-localized number.
+    // Unfortunately, setting the value to a localized number (i.e. with , instead of . for German)
+    // does not raise an exception, instead only a warning on the console is shown.
+    // So to make everyone happy, we use user agent detection.
+    let propValue = navigator.userAgent.indexOf("Gecko/") >= 0
+        ? util.toLocaleFixed(props.value / pow10, props.digits)
+        : (props.value / pow10).toFixed(props.digits);
+
+    // If a user is currently typing, we have to preserve the input
+    // (even if it does currently not confirm to the number format).
+    // Otherwise set value to the given property.
+    let value = inputInFlight === null ? propValue : inputInFlight;
 
     return (
         <div class="input-group">
@@ -64,24 +72,16 @@ export function InputFloat(props: InputFloatProps) {
                        type="number"
                        ref={input}
                        step={1/pow10}
-                       onInput={(e) => {
-                        let target = parseFloat((e.target as HTMLInputElement).value) * pow10;
-                        target = util.clamp(props.min, target, props.max);
-
-                        if (timeout != null)
-                            window.clearTimeout(timeout);
-                        timeout = window.setTimeout(() => props.onValue(target), 2000);
-                       }}
-                       value={
-                        // Firefox does not localize numbers with a fractional part correctly.
-                        // OTOH Webkit based browsers (correctly) expect setting the value to a non-localized number.
-                        // Unfortunately, setting the value to a localized number (i.e. with , instead of . for German)
-                        // does not raise an exception, instead only a warning on the console is shown.
-                        // So to make everyone happy, we use user agent detection.
-                        navigator.userAgent.indexOf("Gecko/") >= 0
-                        ? util.toLocaleFixed(props.value / pow10, props.digits)
-                        : (props.value / pow10).toFixed(props.digits)
-                       }/>
+                       onInput={(e) => setInputInFlight((e.target as HTMLInputElement).value)}
+                       onfocusout={() => {
+                            if (inputInFlight !== null) {
+                                let target = parseFloat(inputInFlight) * pow10;
+                                target = util.clamp(props.min, target, props.max);
+                                setTarget(target);
+                            }
+                            setInputInFlight(null);
+                        }}
+                       value={value}/>
             <div class="input-group-append">
                 <div class="form-control input-group-text">
                     {this.props.unit}
