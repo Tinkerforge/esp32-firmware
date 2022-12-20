@@ -284,7 +284,7 @@ void AC011K::sendCommand(byte *data, int datasize, byte sendSequenceNumber) {
     PrivCommTxBuffer[datasize+7] = crc & 0xFF;
     PrivCommTxBuffer[datasize+8] = crc >> 8;
 
-    if(log_heartbeat || (data[0]!=0xA4 || data[0]!=0xA8)) { // we may be silent for the heartbeat //TODO show it at first and after an hour?
+    if(log_heartbeat || ((data[0]!=0xA4) && (data[0]!=0xA8))) { // we may be silent for the heartbeat //TODO show it at first and after an hour?
         get_hex_privcomm_line(PrivCommTxBuffer); // PrivCommHexBuffer now holds the hex representation of the buffer
         String cmdText = "";
         switch (PrivCommTxBuffer[4]) {
@@ -1057,7 +1057,7 @@ void AC011K::myloop()
                 case PRIVCOMM_CRC:
                     if(PrivCommRxBufferPointer == len + 10) {
                         PrivCommRxState = PRIVCOMM_MAGIC;
-                        if(log_heartbeat || ((cmd!=0x02) && (cmd!=0x04))) { // we may be silent for the heartbeat //TODO show it at first and after an hour?
+                        if(log_heartbeat || ((cmd!=0x02) && (cmd!=0x04) && (cmd!=0x08))) { // we may be silent for the heartbeat //TODO show it at first and after an hour?
                             get_hex_privcomm_line(PrivCommRxBuffer); // PrivCommHexBuffer now holds the hex representation of the buffer
                         }
                         crc = (uint16_t)(PrivCommRxBuffer[len + 9] << 8 | PrivCommRxBuffer[len + 8]);
@@ -1269,8 +1269,8 @@ void AC011K::myloop()
                     // TODO is it true that PrivCommRxBuffer[77] is the evseStatus?
                     evseStatus = PrivCommRxBuffer[77];
                     update_evseStatus(evseStatus);
-                    logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Status %d: %s", cmd, seq, len, crc, evseStatus, evse_status_text[evseStatus]);
-                    logger.printfln("\t%dWh\t%d\t%dWh\t%d\t%d\t%d\t%dW\t%d\t%.1fV\t%.1fV\t%.1fV\t%.1fA\t%.1fA\t%.1fA\t%d minutes",
+                    logger.printfln("Rx cmd_%.2X %dWh\t%d\t%dWh\t%d\t%d\t%d\t%dW\t%d\t%.1fV\t%.1fV\t%.1fV\t%.1fA\t%.1fA\t%.1fA\t%d minutes",
+                              cmd,
                               PrivCommRxBuffer[84]+256*PrivCommRxBuffer[85],  // charged energy Wh
                               PrivCommRxBuffer[86]+256*PrivCommRxBuffer[87],
                               PrivCommRxBuffer[88]+256*PrivCommRxBuffer[89],  // charged energy Wh
