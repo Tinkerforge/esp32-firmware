@@ -60,6 +60,11 @@ export class APIEventTarget implements EventTarget {
         this.delegate.addEventListener.apply(this.delegate, args);
     }
 
+    // Hack to circumvent typed implementation above, to allow adding an event listener for a module that is not compiled in.
+    public addEventListener_unchecked(...args: any) : void {
+        this.delegate.addEventListener.apply(this.delegate, args);
+    }
+
     public dispatchEvent(...args: any): boolean {
         return this.delegate.dispatchEvent.apply(this.delegate, args);
     }

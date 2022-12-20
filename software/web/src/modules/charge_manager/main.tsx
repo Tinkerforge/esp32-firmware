@@ -76,8 +76,12 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
             scanResult: []
         } as any;
 
-        util.eventTarget.addEventListener('evse/management_enabled', () => {
-            this.setState({managementEnabled: API.get('evse/management_enabled').enabled});
+        // Does not check if the event exists, in case the evse module is not compiled in.
+        util.eventTarget.addEventListener_unchecked('evse/management_enabled', () => {
+            let evse_enabled = API.get_maybe('evse/management_enabled');
+            if (evse_enabled != null) {
+                this.setState({managementEnabled: evse_enabled.enabled});
+            }
         });
 
         util.eventTarget.addEventListener('charge_manager/scan_result', () => {
