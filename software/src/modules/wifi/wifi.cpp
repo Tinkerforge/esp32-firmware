@@ -286,8 +286,6 @@ bool Wifi::apply_sta_config_and_connect()
     dns.fromString(wifi_sta_config_in_use.get("dns")->asEphemeralCStr());
     dns2.fromString(wifi_sta_config_in_use.get("dns2")->asEphemeralCStr());
 
-    WiFi.begin(ssid.c_str(), passphrase.c_str(), 0, bssid_lock ? bssid : nullptr, false);
-
     if (ip != 0) {
         WiFi.config(ip, gateway, subnet, dns, dns2);
     } else {
