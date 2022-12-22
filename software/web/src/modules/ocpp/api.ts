@@ -1,6 +1,8 @@
 export interface config {
     enable: boolean,
-    url: string
+    url: string,
+    identity: string,
+    pass: string
 }
 
 export interface reset {}

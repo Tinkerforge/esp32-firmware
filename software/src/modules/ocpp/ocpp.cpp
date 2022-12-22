@@ -24,6 +24,8 @@
 #include "api.h"
 #include "task_scheduler.h"
 
+#include <ctype.h>
+
 extern API api;
 extern TaskScheduler task_scheduler;
 
@@ -33,7 +35,9 @@ void Ocpp::pre_setup()
 {
     config = Config::Object({
         {"enable", Config::Bool(false)},
-        {"url", Config::Str("", 0, 128)}
+        {"url", Config::Str("", 0, 128)},
+        {"identity", Config::Str("", 0, 64)},
+        {"pass", Config::Str("", 0, 64)}
     });
 #ifdef OCPP_STATE_CALLBACKS
     state = Config::Object({
@@ -104,17 +108,49 @@ void Ocpp::pre_setup()
 #endif
 }
 
+static const char *lookup = "0123456789ABCDEFabcdef";
+
+static uint8_t hex_digit_to_byte(char digit) {
+    for(size_t i = 0; i < strlen(lookup); ++i) {
+        if (lookup[i] == digit)
+            return i > 15 ? (i - 6) : i;
+    }
+    return 0xFF;
+}
+
 void Ocpp::setup()
 {
     initialized = true;
-    api.restorePersistentConfig("ocpp/config", &config);
+    if (!api.restorePersistentConfig("ocpp/config", &config)) {
+        config.get("identity")->updateString(String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str));
+    }
 
     config_in_use = config;
 
     if (!config.get("enable")->asBool() || config.get("url")->asString().length() == 0)
         return;
 
-    cp.start(config.get("url")->asEphemeralCStr(), (String(BUILD_HOST_PREFIX) + '-' + local_uid_str).c_str());
+    String pass = config_in_use.get("pass")->asString();
+
+    bool pass_is_hex = pass.length() == 40;
+    if (pass_is_hex) {
+        for(size_t i = 0; i < 40; ++i) {
+            if (!isxdigit(pass[i])) {
+                pass_is_hex = false;
+                break;
+            }
+        }
+    }
+
+    if (pass_is_hex) {
+        auto pass_bytes = std::unique_ptr<char[]>(new char[20]());
+        for(size_t i = 0; i < ARRAY_SIZE(pass_bytes); ++i) {
+            pass_bytes[i] = hex_digit_to_byte(pass[i]) << 4 | hex_digit_to_byte(pass[i]);
+        }
+        cp.start(config.get("url")->asEphemeralCStr(), (String(BUILD_HOST_PREFIX) + '-' + local_uid_str).c_str(), pass_bytes.get());
+    } else {
+        cp.start(config.get("url")->asEphemeralCStr(), (String(BUILD_HOST_PREFIX) + '-' + local_uid_str).c_str(), config_in_use.get("pass")->asEphemeralCStr());
+    }
 
     task_scheduler.scheduleWithFixedDelay([this](){
         cp.tick();

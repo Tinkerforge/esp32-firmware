@@ -10,6 +10,8 @@
             "enable_ocpp": "OCPP aktiviert",
             "enable_ocpp_desc": "Hierdurch kann die Wallbox über den konfigurierten OCPP-Server kontrolliert werden.",
             "endpoint_url": "Endpoint-URL",
+            "identity": "Ladepunkt-Identität",
+            "pass": "Passwort oder Hex-Key",
 
             "reset": "Zurücksetzen",
             "reset_muted": "Setzt den gesamten OCPP-Zustand zurück",

@@ -10,6 +10,8 @@
             "enable_ocpp": "OCPP enabled",
             "enable_ocpp_desc": "This allows controlling the charger over the configured OCPP server.",
             "endpoint_url": "Endpoint URL",
+            "identity": "Charge point identity",
+            "pass": "Password or hex key",
 
             "reset": "Reset OCPP state",
             "reset_muted": "",

@@ -33,6 +33,7 @@ import { ConfigComponent } from "../../ts/components/config_component";
 import { Button } from "react-bootstrap";
 import { CollapsedSection } from "src/ts/components/collapsed_section";
 import { state } from "./api";
+import { InputPassword } from "src/ts/components/input_password";
 
 type OcppConfig = API.getType['ocpp/config']
 
@@ -91,6 +92,17 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
                                    maxLength={128}
                                    value={state.url}
                                    onValue={this.set("url")}/>
+                    </FormRow>
+                    <FormRow label={__("ocpp.content.identity")}>
+                        <InputText required
+                                   maxLength={64}
+                                   value={state.identity}
+                                   onValue={this.set("identity")}/>
+                    </FormRow>
+                    <FormRow label={__("ocpp.content.pass")}>
+                        <InputPassword maxLength={64}
+                                       value={state.pass}
+                                       onValue={this.set("pass")}/>
                     </FormRow>
                     <FormRow label={__("ocpp.content.reset")} label_muted={__("ocpp.content.reset_muted")}>
                         <Button variant="danger" className="form-control" onClick={async () =>{

@@ -67,7 +67,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 }
 
 esp_websocket_client_handle_t client;
-void* platform_init(const char *websocket_url)
+void* platform_init(const char *websocket_url, const char *basic_auth_user, const char *basic_auth_pass)
 {
     esp_websocket_client_config_t websocket_cfg = {};
     websocket_cfg.uri = websocket_url;
@@ -77,6 +77,8 @@ void* platform_init(const char *websocket_url)
     websocket_cfg.ping_interval_sec = 10;
     websocket_cfg.pingpong_timeout_sec = 25;
     websocket_cfg.disable_pingpong_discon = false;
+    websocket_cfg.username = basic_auth_user;
+    websocket_cfg.password = basic_auth_pass;
 
     client = esp_websocket_client_init(&websocket_cfg);
     esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
@@ -84,6 +86,10 @@ void* platform_init(const char *websocket_url)
     esp_websocket_client_start(client);
 
     return client;
+}
+
+bool platform_has_fixed_cable(int connectorId) {
+    return true;
 }
 
 void platform_disconnect(void *ctx) {
