@@ -79,7 +79,9 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
             this.setState({electricity_price: API.get('charge_tracker/config').electricity_price});
         });
 
-        this.setState({user_filter: "-2"});
+        this.state = {
+            user_filter: "-2"
+        } as any
     }
 
     get_last_charges(charges: typeof this.state.last_charges, price: number) {
