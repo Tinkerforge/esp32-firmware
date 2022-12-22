@@ -271,7 +271,7 @@
 - Update timezone database
 - Fix deletion of unsaved users
 
-2022-12-22: 2.0.93 (<unknown>)
+2022-12-22: 2.0.93 (3bff8d7f)
 - OCPP Beta 4
 - (Re-enable OCPP)
 - Improve API error messages
