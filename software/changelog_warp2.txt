@@ -270,3 +270,20 @@
 - Use freshly build bootloader in merged firmware
 - Update timezone database
 - Fix deletion of unsaved users
+
+2022-12-22: 2.0.93 (<unknown>)
+- OCPP Beta 4
+- (Re-enable OCPP)
+- Improve API error messages
+- Show multiple API errors in one response
+- Fix user configuration validation
+- Add NFC tag if exactly one tag was seen
+- Fix login page being shown if login check times out
+- Fix user API being blocked until reboot on error
+- Fix charge manager current configuration interdependencies
+- Improve WiFi connection establishment speed
+- Add support for OCPP basic authentication
+- Add boost mode (through EVSE 2.0 Bricklet firmware 2.1.9)
+- Add EV wakeup (through EVSE 2.0 Bricklet firmware 2.1.9)
+- Fix CP disconnect API (through EVSE 2.0 Bricklet firmware 2.1.9)
+- Silence confusing web socket error message
