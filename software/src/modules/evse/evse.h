@@ -121,6 +121,8 @@ public:
     ConfigRoot evse_modbus_enabled_update;
     ConfigRoot evse_ocpp_enabled;
     ConfigRoot evse_ocpp_enabled_update;
+    ConfigRoot evse_boost_mode;
+    ConfigRoot evse_boost_mode_update;
 
     uint32_t last_current_update = 0;
     bool shutdown_logged = false;

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2022-12-22.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -148,6 +148,16 @@ typedef struct TF_EVSE {
  * \ingroup TF_EVSE
  */
 #define TF_EVSE_FUNCTION_FACTORY_RESET 21
+
+/**
+ * \ingroup TF_EVSE
+ */
+#define TF_EVSE_FUNCTION_SET_BOOST_MODE 22
+
+/**
+ * \ingroup TF_EVSE
+ */
+#define TF_EVSE_FUNCTION_GET_BOOST_MODE 23
 
 /**
  * \ingroup TF_EVSE
@@ -732,7 +742,7 @@ int tf_evse_get_button_state(TF_EVSE *evse, uint32_t *ret_button_press_time, uin
  *
  * TODO
  */
-int tf_evse_get_all_data_1(TF_EVSE *evse, uint8_t *ret_iec61851_state, uint8_t *ret_charger_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state, uint8_t *ret_jumper_configuration, bool *ret_has_lock_switch, uint8_t *ret_evse_version, uint8_t *ret_led_state, uint16_t *ret_cp_pwm_duty_cycle, uint16_t ret_adc_values[2], int16_t ret_voltages[3], uint32_t ret_resistances[2], bool ret_gpio[5], uint32_t *ret_charging_time, uint32_t *ret_time_since_state_change, uint32_t *ret_uptime, int16_t *ret_indication, uint16_t *ret_duration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed);
+int tf_evse_get_all_data_1(TF_EVSE *evse, uint8_t *ret_iec61851_state, uint8_t *ret_charger_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state, uint8_t *ret_jumper_configuration, bool *ret_has_lock_switch, uint8_t *ret_evse_version, uint8_t *ret_led_state, uint16_t *ret_cp_pwm_duty_cycle, uint16_t ret_adc_values[2], int16_t ret_voltages[3], uint32_t ret_resistances[2], bool ret_gpio[5], uint32_t *ret_charging_time, uint32_t *ret_time_since_state_change, uint32_t *ret_uptime, int16_t *ret_indication, uint16_t *ret_duration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed, bool *ret_boost_mode_enabled);
 
 /**
  * \ingroup TF_EVSE
@@ -740,6 +750,20 @@ int tf_evse_get_all_data_1(TF_EVSE *evse, uint8_t *ret_iec61851_state, uint8_t *
  * TODO
  */
 int tf_evse_factory_reset(TF_EVSE *evse, uint32_t password);
+
+/**
+ * \ingroup TF_EVSE
+ *
+ * TODO
+ */
+int tf_evse_set_boost_mode(TF_EVSE *evse, bool boost_mode_enabled);
+
+/**
+ * \ingroup TF_EVSE
+ *
+ * TODO
+ */
+int tf_evse_get_boost_mode(TF_EVSE *evse, bool *ret_boost_mode_enabled);
 
 /**
  * \ingroup TF_EVSE

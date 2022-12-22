@@ -28,12 +28,12 @@ export interface button_configuration {
     button: number
 }
 
-export interface control_pilot_configuration {
-    control_pilot: number
+export interface ev_wakeup {
+    enabled: boolean
 }
 
-export interface control_pilot_connected {
-    connected: boolean
+export interface control_pilot_disconnect {
+    disconnect: boolean
 }
 
 export interface reset_dc_fault_current_state {

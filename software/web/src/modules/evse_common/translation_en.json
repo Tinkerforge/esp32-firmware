@@ -89,6 +89,10 @@
             "external_description_muted": "<a href=\"https://www.warp-charger.com/evcc.html?v=2\">see setup tutorial for details</a>",
             "external_enable": "Enables an external control system (for example <a href=\"https://evcc.io/\">EVCC</a>) to control this charger",
 
+            "boost_mode_desc": "Boost Mode",
+            "boost_mode_desc_muted": "Allows the vehicle's charge controller a slightly higher charge current (+ 0.24 A) to compensate measurement errors of the vehicle. Use only if your vehicle charges with less than the allowed charge current!",
+            "boost_mode": "Boost Mode",
+
             "reset_description": "Actions",
             "reset_description_muted": "",
             "reset_evse": "Restart",

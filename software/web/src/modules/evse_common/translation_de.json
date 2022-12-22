@@ -89,6 +89,10 @@
             "external_description_muted": "<a href=\"https://www.warp-charger.com/evcc.html?v=2\">siehe Einrichtungs-Tutorial für Details</a>",
             "external_enable": "Erlaubt einer externen Steuerung (z.B. <a href=\"https://evcc.io/\">EVCC</a>) diese Wallbox zu steuern",
 
+            "boost_mode_desc": "Boost-Modus",
+            "boost_mode_desc_muted": "<a href=\"{{{manual_url}}}\">siehe Betriebsanleitung für Details</a>",
+            "boost_mode": "Gibt der Ladeelektronik des Fahrzeugs einen leicht höheren Ladestrom vor (+ 0,24 A) um Messfehler der Ladeelektronik zu kompensieren. Nur Verwenden, falls ein Fahrzeug mit einem kleineren als dem erlaubten Ladestrom lädt!",
+
             "reset_description": "Aktionen",
             "reset_description_muted": "",
             "reset_evse": "Neu starten",

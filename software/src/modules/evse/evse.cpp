@@ -208,6 +208,11 @@ void EVSE::pre_setup()
         {"enabled", Config::Bool(false)}
     });
     evse_ocpp_enabled_update = evse_ocpp_enabled;
+
+    evse_boost_mode = Config::Object({
+        {"enabled", Config::Bool(false)}
+    });
+    evse_boost_mode_update = evse_boost_mode;
 }
 
 bool EVSE::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear)
@@ -400,6 +405,7 @@ String EVSE::get_evse_debug_line()
                                     &time_since_state_change,
                                     &uptime,
                                     // We don't care about the led and button state here. TODO: do we really not?
+                                    nullptr,
                                     nullptr,
                                     nullptr,
                                     nullptr,
@@ -601,6 +607,13 @@ void EVSE::register_urls()
         this->set_managed_current(evse_management_current_update.get("current")->asUint());
     }, false);
 
+    api.addState("evse/boost_mode", &evse_boost_mode, {}, 1000);
+    api.addCommand("evse/boost_mode_update", &evse_boost_mode_update, {}, [this](){
+        logger.printfln("Setting boost mode to %s", evse_boost_mode_update.get("enabled")->asBool() ? "enabled" : "disabled");
+        int rc = tf_evse_set_boost_mode(&device, evse_boost_mode_update.get("enabled")->asBool());
+        logger.printfln("rc %d", rc),
+        is_in_bootloader(rc);
+    }, true);
 
     // Configurations. Note that those are _not_ configs in the api.addPersistentConfig sense:
     // The configs are stored on the EVSE itself, not the ESP's flash.
@@ -802,6 +815,7 @@ void EVSE::update_all_data()
     uint8_t jumper_configuration;
     bool has_lock_switch;
     uint8_t evse_version;
+    bool boost_mode_enabled;
 
     // get_all_data_2 - 18 byte
     int16_t indication;
@@ -857,7 +871,8 @@ void EVSE::update_all_data()
                                     &duration,
                                     &button_press_time,
                                     &button_release_time,
-                                    &button_pressed);
+                                    &button_pressed,
+                                    &boost_mode_enabled);
 
     if (rc != TF_E_OK) {
         logger.printfln("all_data_1 %d", rc);
@@ -978,6 +993,7 @@ void EVSE::update_all_data()
     evse_button_state.get("button_release_time")->updateUint(button_release_time);
     evse_button_state.get("button_pressed")->updateBool(button_pressed);
 
+    evse_boost_mode.get("enabled")->updateBool(boost_mode_enabled);
 
     // get_indicator_led
     evse_indicator_led.get("indication")->updateInt(indication);

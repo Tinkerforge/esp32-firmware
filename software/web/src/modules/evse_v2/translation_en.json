@@ -30,6 +30,14 @@
             "button_configuration_start_charging": "Start charging",
             "button_configuration_stop_charging": "Stop charging",
             "button_configuration_start_and_stop_charging": "Start or stop charging",
+
+            "ev_wakeup_desc": "EV Wakeup",
+            "ev_wakeup_desc_muted": "<a href=\"{{{manual_url}}}\">see manual for details</a>",
+            "ev_wakeup": "Attempts to wake up the charge controller of the connected vehicle by fake-un and -re-plugging the charge cable.",
+            "control_pilot_disconnect_desc": "Control Pilot Disconnect",
+            "control_pilot_disconnect_desc_muted": "",
+            "control_pilot_disconnect": "Control Pilot Disconnect",
+
             "control_pilot_cfg": "Control Pilot configuration",
             "control_pilot_cfg_muted": "Simulates unplugging and plugging the charging cable",
             "control_pilot_disconnected": "Disconnected",

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-08-23.      *
+ * This file was automatically generated on 2022-12-16.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -41,7 +41,7 @@ typedef struct TF_EVSEV2 {
 
 #endif
     uint16_t magic;
-    uint8_t response_expected[2];
+    uint8_t response_expected[3];
 } TF_EVSEV2;
 
 /**
@@ -172,32 +172,52 @@ typedef struct TF_EVSEV2 {
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_SET_CONTROL_PILOT_CONFIGURATION 26
+#define TF_EVSE_V2_FUNCTION_SET_EV_WAKEUP 26
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_CONTROL_PILOT_CONFIGURATION 27
+#define TF_EVSE_V2_FUNCTION_GET_EV_WAKUEP 27
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_ALL_DATA_1 28
+#define TF_EVSE_V2_FUNCTION_SET_CONTROL_PILOT_DISCONNECT 28
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_ALL_DATA_2 29
+#define TF_EVSE_V2_FUNCTION_GET_CONTROL_PILOT_DISCONNECT 29
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_FACTORY_RESET 30
+#define TF_EVSE_V2_FUNCTION_GET_ALL_DATA_1 30
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_BUTTON_PRESS_BOOT_TIME 31
+#define TF_EVSE_V2_FUNCTION_GET_ALL_DATA_2 31
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_FACTORY_RESET 32
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_GET_BUTTON_PRESS_BOOT_TIME 33
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_SET_BOOST_MODE 34
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_GET_BOOST_MODE 35
 
 /**
  * \ingroup TF_EVSEV2
@@ -918,14 +938,28 @@ int tf_evse_v2_get_button_state(TF_EVSEV2 *evse_v2, uint32_t *ret_button_press_t
  *
  * TODO
  */
-int tf_evse_v2_set_control_pilot_configuration(TF_EVSEV2 *evse_v2, uint8_t control_pilot, bool *ret_control_pilot_connected);
+int tf_evse_v2_set_ev_wakeup(TF_EVSEV2 *evse_v2, bool ev_wakeup_enabled);
 
 /**
  * \ingroup TF_EVSEV2
  *
  * TODO
  */
-int tf_evse_v2_get_control_pilot_configuration(TF_EVSEV2 *evse_v2, uint8_t *ret_control_pilot, bool *ret_control_pilot_connected);
+int tf_evse_v2_get_ev_wakuep(TF_EVSEV2 *evse_v2, bool *ret_ev_wakeup_enabled);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_set_control_pilot_disconnect(TF_EVSEV2 *evse_v2, bool control_pilot_disconnect, bool *ret_is_control_pilot_disconnect);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_get_control_pilot_disconnect(TF_EVSEV2 *evse_v2, bool *ret_control_pilot_disconnect);
 
 /**
  * \ingroup TF_EVSEV2
@@ -939,7 +973,7 @@ int tf_evse_v2_get_all_data_1(TF_EVSEV2 *evse_v2, uint8_t *ret_iec61851_state, u
  *
  * TODO
  */
-int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_configuration, uint8_t *ret_input_configuration, uint8_t *ret_output_configuration, int16_t *ret_indication, uint16_t *ret_duration, uint8_t *ret_button_configuration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed, uint8_t *ret_control_pilot, bool *ret_control_pilot_connected);
+int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_configuration, uint8_t *ret_input_configuration, uint8_t *ret_output_configuration, int16_t *ret_indication, uint16_t *ret_duration, uint8_t *ret_button_configuration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed, bool *ret_ev_wakeup_enabled, bool *ret_control_pilot_disconnected, bool *ret_boost_mode_enabled);
 
 /**
  * \ingroup TF_EVSEV2
@@ -954,6 +988,20 @@ int tf_evse_v2_factory_reset(TF_EVSEV2 *evse_v2, uint32_t password);
  * TODO
  */
 int tf_evse_v2_get_button_press_boot_time(TF_EVSEV2 *evse_v2, bool reset, uint32_t *ret_button_press_boot_time);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_set_boost_mode(TF_EVSEV2 *evse_v2, bool boost_mode_enabled);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_get_boost_mode(TF_EVSEV2 *evse_v2, bool *ret_boost_mode_enabled);
 
 /**
  * \ingroup TF_EVSEV2

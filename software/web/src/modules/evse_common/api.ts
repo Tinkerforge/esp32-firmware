@@ -99,3 +99,7 @@ export interface reflash {
 export interface reset {
 
 }
+
+export interface boost_mode {
+    enabled: boolean
+}
