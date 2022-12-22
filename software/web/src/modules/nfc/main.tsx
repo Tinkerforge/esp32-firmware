@@ -61,8 +61,13 @@ export class Nfc extends ConfigComponent<'nfc/config', {}, NfcState> {
         util.eventTarget.addEventListener('nfc/seen_tags', () => {
             this.setState({seen_tags: API.get('nfc/seen_tags')});
         });
-
-        this.setState({newTag: {tag_id: "", user_id: 0, tag_type: "disabled" as any}})
+        
+        this.state = {
+            newTag: {
+                tag_id: "",
+                user_id: 0,
+                tag_type: "disabled" as any}
+        } as any;
     }
 
     setTag (i: number, val: Partial<NfcConfig['authorized_tags'][0]>){
