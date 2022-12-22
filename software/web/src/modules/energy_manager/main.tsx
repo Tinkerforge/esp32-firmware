@@ -35,8 +35,8 @@ function update_energy_manager_state() {
     $('#state_led_r').val(state.led_rgb[0]);
     $('#state_led_g').val(state.led_rgb[1]);
     $('#state_led_b').val(state.led_rgb[2]);
-    util.update_button_group(`btn_group_gpio0`, state.gpio_input_state[0] ? 1 : 0);
-    util.update_button_group(`btn_group_gpio1`, state.gpio_input_state[1] ? 1 : 0);
+    util.update_button_group(`btn_group_gpio0`, state.gpio_input_state[0] ? 0 : 1); //intentionally inverted: the high button is the first
+    util.update_button_group(`btn_group_gpio1`, state.gpio_input_state[1] ? 0 : 1); //intentionally inverted: the high button is the first
     util.update_button_group(`btn_group_gpio2`, state.gpio_output_state ? 1 : 0);
     $('#state_input_voltage').val(`${state.input_voltage} mV`);
     $('#state_contactor_check').val(state.contactor_check_state);
