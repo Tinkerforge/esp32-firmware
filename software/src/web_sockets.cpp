@@ -180,7 +180,7 @@ static esp_err_t ws_handler(httpd_req_t *req)
     /* Set max_len = 0 to get the frame len */
     esp_err_t ret = httpd_ws_recv_frame(req, &ws_pkt, 0);
     if (ret != ESP_OK) {
-        logger.printfln("httpd_ws_recv_frame failed to get frame len with %d", ret);
+        //logger.printfln("httpd_ws_recv_frame failed to get frame len with %d", ret);
         return ret;
     }
 
@@ -195,7 +195,7 @@ static esp_err_t ws_handler(httpd_req_t *req)
         /* Set max_len = ws_pkt.len to get the frame payload */
         ret = httpd_ws_recv_frame(req, &ws_pkt, ws_pkt.len);
         if (ret != ESP_OK) {
-            logger.printfln("httpd_ws_recv_frame failed with %d", ret);
+            //logger.printfln("httpd_ws_recv_frame failed with %d", ret);
             free(buf);
             return ret;
         }
