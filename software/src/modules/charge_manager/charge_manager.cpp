@@ -389,7 +389,8 @@ bool ChargeManager::is_control_pilot_disconnect_supported(uint32_t last_update_c
 
 void ChargeManager::distribute_current()
 {
-    uint32_t available_current = charge_manager_available_current.get("current")->asUint();
+    uint32_t available_current_init = charge_manager_available_current.get("current")->asUint();
+    uint32_t available_current = available_current_init;
 
     static bool verbose = charge_manager_config_in_use.get("verbose")->asBool();
 
@@ -718,6 +719,15 @@ void ChargeManager::distribute_current()
             len = strlen(local_log);
         }
     }
+
+    if (allocated_current_callback) {
+        // Inform callback about how much current we distributed to chargers.
+        allocated_current_callback(available_current_init - available_current);
+    }
+}
+
+void ChargeManager::set_allocated_current_callback(std::function<void(uint32_t)> callback) {
+    allocated_current_callback = callback;
 }
 
 void ChargeManager::register_urls()
