@@ -21,6 +21,10 @@
 
 #include "config.h"
 
+#define IND_ACK 1001
+#define IND_NACK 1002
+#define IND_NAG 1003
+
 class Users
 {
 public:
