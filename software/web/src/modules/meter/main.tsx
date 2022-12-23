@@ -156,6 +156,12 @@ export class Meter extends Component<{}, MeterState> {
         util.eventTarget.addEventListener("meter/all_values", () => {
             this.setState({all_values: API.get("meter/all_values")});
         });
+
+        this.state = {
+            graph_selected: "history",
+        } as any;
+
+        selected_graph = this.state.graph_selected;
     }
 
     render(props: {}, state: Readonly<MeterState>) {
@@ -275,6 +281,7 @@ function update_meter_values() {
 
 let graph_update_interval: number = null;
 let status_interval: number = null;
+let selected_graph: string;
 
 async function update_live_meter() {
     let result = null;
@@ -358,6 +365,7 @@ function meter_chart_change_time(value: string) {
         graph_update_interval = null;
     }
 
+    selected_graph = value;
     if (value == "live") {
         update_live_meter();
         graph_update_interval = window.setInterval(update_live_meter, 1000);
@@ -416,7 +424,10 @@ function init_chart() {
         ]
     });
 
-    meter_chart_change_time("history");
+    if (selected_graph == "live")
+        meter_chart_change_time("live");
+    else
+        meter_chart_change_time("history");
 }
 
 async function update_status_chart() {
