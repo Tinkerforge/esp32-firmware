@@ -185,7 +185,7 @@ void NFC::handle_event(tag_info_t *tag, bool found, bool injected)
             // Found a new authorized tag. Create/overwrite auth token. Overwrite blink state even if we previously saw a not authorized tag.
             auth_token = idx;
             auth_token_seen = millis();
-            blink_state = IND_ACK;
+            users.set_blink_state(IND_ACK);
             users.trigger_charge_action(user_id, injected ? CHARGE_TRACKER_AUTH_TYPE_NFC_INJECTION : CHARGE_TRACKER_AUTH_TYPE_NFC, Config::Object({
                     {"tag_type", Config::Uint8(tag->tag_type)},
                     {"tag_id", Config::Str(tag->tag_id)}}).value,
@@ -202,29 +202,10 @@ void NFC::handle_event(tag_info_t *tag, bool found, bool injected)
         ocpp.on_tag_seen(tag->tag_id);
 #endif
         // Found a not authorized tag. Blink NACK but only if we did not see an authorized token
-        if (blink_state == -1) {
-            blink_state = IND_NACK;
+        if (users.get_blink_state() == -1) {
+            users.set_blink_state(IND_NACK);
         }
     }
-}
-
-void NFC::handle_evse()
-{
-    static Config *evse_state = api.getState("evse/state", false);
-    static Config *evse_slots = api.getState("evse/slots", false);
-
-    if (evse_state == nullptr || evse_slots == nullptr)
-        return;
-
-    bool waiting_for_start = (evse_state->get("iec61851_state")->asUint() == 1)
-                          && (evse_slots->get(CHARGING_SLOT_USER)->get("active")->asBool())
-                          && (evse_slots->get(CHARGING_SLOT_USER)->get("max_current")->asUint() == 0);
-
-    if (blink_state != -1) {
-        set_led(blink_state);
-        blink_state = -1;
-    } else
-        set_led(waiting_for_start ? IND_NAG : -1);
 }
 
 const char *lookup = "0123456789ABCDEF";
@@ -362,7 +343,6 @@ void NFC::setup()
             last_run = millis();
             this->update_seen_tags();
         }
-        this->handle_evse();
     }, 10, 10);
 }
 

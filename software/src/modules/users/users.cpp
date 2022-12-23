@@ -728,6 +728,34 @@ void Users::register_urls()
         size_t read = f.read((uint8_t *)buf.get(), len);
         return request.send(200, "application/octet-stream", buf.get(), read);
     });
+
+    task_scheduler.scheduleWithFixedDelay([this]() {
+            static Config *evse_state = api.getState("evse/state", false);
+            static Config *evse_slots = api.getState("evse/slots", false);
+
+            if (evse_state == nullptr || evse_slots == nullptr)
+                return;
+
+            bool waiting_for_start = (evse_state->get("iec61851_state")->asUint() == 1)
+                                && (evse_slots->get(CHARGING_SLOT_USER)->get("active")->asBool())
+                                && (evse_slots->get(CHARGING_SLOT_USER)->get("max_current")->asUint() == 0);
+
+            if (blink_state != -1) {
+                set_led(blink_state);
+                blink_state = -1;
+            } else
+                set_led(waiting_for_start ? IND_NAG : -1);
+    }, 10, 10);
+}
+
+int16_t Users::get_blink_state()
+{
+    return blink_state;
+}
+
+void Users::set_blink_state(int16_t state)
+{
+    blink_state = state;
 }
 
 void Users::loop()
