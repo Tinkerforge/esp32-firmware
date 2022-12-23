@@ -869,3 +869,40 @@ bool Users::stop_charging(uint8_t user_id, bool force)
 
     return true;
 }
+
+void set_led(int16_t mode)
+{
+    static int16_t last_mode = -1;
+    static uint32_t last_set = 0;
+
+    if (last_mode == mode && !deadline_elapsed(last_set + 2500))
+        return;
+
+    // sorted by priority
+    switch (mode) {
+        case IND_ACK:
+            break;
+        case IND_NACK:
+            if (last_mode == IND_ACK && !deadline_elapsed(last_set + 2340))
+                return;
+            break;
+        case IND_NAG:
+        case -1:
+            if ((last_mode == IND_ACK && !deadline_elapsed(last_set + 2340))
+                || (last_mode == IND_NACK && !deadline_elapsed(last_set + 3536)))
+                return;
+            break;
+        default:
+            break;
+    }
+
+#if MODULE_EVSE_AVAILABLE()
+    tf_evse_set_indicator_led(&evse.device, mode, mode != IND_NACK ? 2620 : 3930, nullptr);
+#endif
+#if MODULE_EVSE_V2_AVAILABLE()
+    tf_evse_v2_set_indicator_led(&evse_v2.device, mode, mode != IND_NACK ? 2620 : 3930, nullptr);
+#endif
+
+    last_mode = mode;
+    last_set = millis();
+}
