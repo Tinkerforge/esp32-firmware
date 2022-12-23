@@ -81,6 +81,15 @@ typedef struct {
     uint8_t contactor_check_state;
 } EnergyManagerAllData;
 
+enum SwitchingState
+{
+    SwitchingState_Monitoring = 0,
+    SwitchingState_Stopping,
+    SwitchingState_DisconnectingCP,
+    SwitchingState_TogglingContactor,
+    SwitchingState_ConnectingCP
+};
+
 class EnergyManager : public DeviceModule<TF_WARPEnergyManager,
                                           warp_energy_manager_bricklet_firmware_bin_data,
                                           warp_energy_manager_bricklet_firmware_bin_length,
@@ -102,6 +111,7 @@ public:
 
     void update_io();
     void update_energy();
+    void set_available_current(uint32_t current);
 
     void handle_relay_config_if_input(uint8_t input);
     void handle_relay_config_if_phase_switching();
@@ -122,4 +132,30 @@ public:
     ConfigRoot energy_manager_config_in_use;
 
     EnergyManagerAllData all_data;
+
+private:
+    SwitchingState switching_state;
+    uint32_t switching_start;
+    bool wants_3phase;
+    bool wants_3phase_last;
+    bool wants_on_last;
+    bool just_switched_phases;
+    uint32_t phase_state_change_blocked_until;
+    uint32_t on_state_change_blocked_until;
+    int32_t last_current_available_ma;
+    uint32_t charge_manager_allocated_current_ma;
+
+    // Config cache
+    int32_t  max_power_from_grid_w;
+    uint32_t max_current_ma;
+    uint32_t min_current_ma;
+    bool     excess_charging_enable;
+    bool     contactor_installed;
+    uint8_t  phase_switching_mode;
+    uint32_t switching_hysteresis_ms;
+
+    // Pre-calculated limits
+    int32_t  overall_min_power_w;
+    int32_t  threshold_3to1_w;
+    int32_t  threshold_1to3_w;
 };
