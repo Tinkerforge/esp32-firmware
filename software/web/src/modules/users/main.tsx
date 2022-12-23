@@ -179,10 +179,13 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
     }
 
     override async sendReset(t: "users/config"){
-        let users = this.state.users;
-        this.state = {...this.state, users: [users[0]], userSlotEnabled: false, http_auth_enabled: false};
-        this.state.users[0].display_name = "";
-        this.save();
+
+        let new_users = this.state.users.slice(0);
+        new_users = [new_users[0]];
+        new_users[0].display_name = "";
+        let new_state = {...this.state, users: [new_users[0]], userSlotEnabled: false, http_auth_enabled: false};
+
+        this.setState(new_state, this.save);
     }
 
     override getIsModified(t: "users/config"): boolean {
