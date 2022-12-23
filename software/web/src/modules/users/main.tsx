@@ -231,7 +231,6 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
     }
 
     override async sendReset(t: "users/config"){
-
         let new_users = this.state.users.slice(0);
         new_users = [new_users[0]];
         new_users[0].display_name = "";
