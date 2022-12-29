@@ -393,6 +393,7 @@ int AC011K::bs_evse_start_charging() {
         default:
             logger.printfln("Unknown firmware version. Trying commands for latest version.");
         case 258:
+        case 460:
         case 538:
         case 805:
         case 812:
@@ -449,6 +450,7 @@ int AC011K::bs_evse_set_max_charging_current(uint16_t max_current) {
         default:
             logger.printfln("Unknown firmware version. Trying commands for latest version.");
         case 258:
+        case 460:
         case 538:
         case 805:
         case 812:
