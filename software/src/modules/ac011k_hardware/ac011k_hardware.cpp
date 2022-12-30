@@ -47,6 +47,9 @@ AC011KHardware::AC011KHardware()
 
 void AC011KHardware::pre_setup()
 {
+    config = Config::Object({
+        {"verbose_communication", Config::Bool(false)}
+    });
     ac011k_hardware = Config::Object({
         {"UID", Config::Str("", 0, 16)},
     });
@@ -56,8 +59,6 @@ void AC011KHardware::pre_setup()
     } else {
         sprintf(local_uid_str, "%s", ac011k_hardware.get("UID")->asEphemeralCStr());
     }
-
-    initialized = true;
 }
 
 void AC011KHardware::persist_config()
@@ -82,10 +83,15 @@ void AC011KHardware::setup()
         led_blink_state = !led_blink_state;
         digitalWrite(BLUE_LED, led_blink_state ? HIGH : LOW);
     }, 0, 1000);
+
+    api.restorePersistentConfig("ac011k_hardware/config", &config);
+
+    initialized = true;
 }
 
 void AC011KHardware::register_urls()
 {
+    api.addPersistentConfig("ac011k_hardware/config", &config, {}, 1000);
 }
 
 void AC011KHardware::loop()

@@ -65,8 +65,6 @@ byte flash_seq;
 uint32_t last_flash = 0;
 bool phases_active[3];
 bool phases_connected[3];
-bool log_heartbeat = false;
-//bool log_heartbeat = true;
 extern char local_uid_str[32];
 
 // Charging profile:
@@ -284,7 +282,7 @@ void AC011K::sendCommand(byte *data, int datasize, byte sendSequenceNumber) {
     PrivCommTxBuffer[datasize+7] = crc & 0xFF;
     PrivCommTxBuffer[datasize+8] = crc >> 8;
 
-    if(log_heartbeat || ((data[0]!=0xA4) && (data[0]!=0xA8))) { // we may be silent for the heartbeat //TODO show it at first and after an hour?
+    if(ac011k_hardware.config.get("verbose_communication")->asBool() || ((data[0]!=0xA4) && (data[0]!=0xA8))) { // we may be silent for the heartbeat //TODO show it at first and after an hour?
         get_hex_privcomm_line(PrivCommTxBuffer); // PrivCommHexBuffer now holds the hex representation of the buffer
         String cmdText = "";
         switch (PrivCommTxBuffer[4]) {
@@ -335,7 +333,7 @@ void AC011K::PrivCommAck(byte cmd, byte *data) {
     data[9] = crc & 0xFF;
     data[10] = crc >> 8;
 
-    /* if(log_heartbeat || cmd!=2) { // be silent for the heartbeat //TODO show it at first and after an hour? */
+    /* if(ac011k_hardware.config.get("verbose_communication")->asBool() || cmd!=2) { // be silent for the heartbeat //TODO show it at first and after an hour? */
     /*     get_hex_privcomm_line(data); // PrivCommHexBuffer now holds the hex representation of the buffer */
     /*     logger.printfln("Tx cmd_%.2X seq:%.2X, crc:%.4X", data[4], data[5], crc); */
     /* } */
@@ -464,11 +462,12 @@ int AC011K::bs_evse_set_max_charging_current(uint16_t max_current) {
 }
 
 void AC011K::update_evseStatus(uint8_t evseStatus) {
+    //if(evse_hardware_configuration.get("initialized")->asBool()) { // only update the EVSE status if we support the hardware
     uint8_t last_iec61851_state = evse_state.get("iec61851_state")->asUint();
     uint8_t last_evseStatus = evse_state.get("GD_state")->asUint();
     evse_state.get("GD_state")->updateUint(evseStatus);
 
-	if(!log_heartbeat && (evseStatus != last_evseStatus)) {
+	if(!ac011k_hardware.config.get("verbose_communication")->asBool() && (evseStatus != last_evseStatus)) {
         logger.printfln("EVSE GD Status now %d: %s", evseStatus, evse_status_text[evseStatus]);
     }
 
@@ -1059,7 +1058,7 @@ void AC011K::myloop()
                 case PRIVCOMM_CRC:
                     if(PrivCommRxBufferPointer == len + 10) {
                         PrivCommRxState = PRIVCOMM_MAGIC;
-                        if(log_heartbeat || ((cmd!=0x02) && (cmd!=0x04) && (cmd!=0x08))) { // we may be silent for the heartbeat //TODO show it at first and after an hour?
+                        if(ac011k_hardware.config.get("verbose_communication")->asBool() || ((cmd!=0x02) && (cmd!=0x04) && (cmd!=0x08))) { // we may be silent for the heartbeat //TODO show it at first and after an hour?
                             get_hex_privcomm_line(PrivCommRxBuffer); // PrivCommHexBuffer now holds the hex representation of the buffer
                         }
                         crc = (uint16_t)(PrivCommRxBuffer[len + 9] << 8 | PrivCommRxBuffer[len + 8]);
@@ -1090,7 +1089,7 @@ void AC011K::myloop()
             case 0x02: // Info: Serial number, Version
 //W (1970-01-01 00:08:52) [PRIV_COMM, 1919]: Rx(cmd_02 len:135) :  FA 03 00 00 02 26 7D 00 53 4E 31 30 30 35 32 31 30 31 31 39 33 35 37 30 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 24 D1 00 41 43 30 31 31 4B 2D 41 55 2D 32 35 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 31 2E 31 2E 32 37 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 09 00 00 00 00 00 5A 00 1E 00 00 00 00 00 00 00 00 00 D9 25
 //W (1970-01-01 00:08:52) [PRIV_COMM, 1764]: Tx(cmd_A2 len:11) :  FA 03 00 00 A2 26 01 00 00 99 E0
-                if(log_heartbeat) { // we may be silent for the heartbeat //TODO show it at first and after an hour?
+                if(ac011k_hardware.config.get("verbose_communication")->asBool()) { // we may be silent for the heartbeat //TODO show it at first and after an hour?
                     logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Serial number and version.", cmd, seq, len, crc);
                 }
                 sprintf(str, "%s", PrivCommRxBuffer+8);
@@ -1143,18 +1142,12 @@ void AC011K::myloop()
 /* (2021-10-04 10:04:39) [PRIV_COMM, 2033]: Rx(cmd_03 len:24) :  FA 03 00 00 03 03 0E 00 00 02 02 00 00 00 00 00 00 00 00 00 00 00 9C 52 */
 /* (2021-10-04 10:04:40) [PRIV_COMM, 1875]: Tx(cmd_A3 len:17) :  FA 03 00 00 A3 03 07 00 10 15 0A 04 0A 04 27 4A D4 */
                 evseStatus = PrivCommRxBuffer[9];
-                if( PrivCommRxBuffer[8]==0x50 ) { // TODO this 0x50 is a wild guess, I've seen it work, and I'm sure there is more than just the evseStatus byte needed for a well founded decission
-                    logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Status %d: %s", cmd, seq, len, crc, evseStatus, evse_status_text[evseStatus]);
-                    update_evseStatus(evseStatus);
-                } else {
                     //TODO figure out what substatus (PrivCommRxBuffer[8]) is or should be
-                    logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Status %d: %s but substatus %.2X not 0x50.", cmd, seq, len, crc, evseStatus, evse_status_text[evseStatus], PrivCommRxBuffer[8]);
-                    if(evse_hardware_configuration.get("initialized")->asBool()) { // only update the EVSE status if we support the hardware
-                        update_evseStatus(evseStatus);
-                    }
-                }
-                // I think there is the time in the 03 cmd - log it!
-                logger.printfln("       time?: %d/%d/%d %d:%d.%d", PrivCommRxBuffer[14],PrivCommRxBuffer[15],PrivCommRxBuffer[16],PrivCommRxBuffer[17],PrivCommRxBuffer[18],PrivCommRxBuffer[19]);
+                    //TODO figure out what substatus (PrivCommRxBuffer[11]) is or should be
+                    logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Status %d: %s substatus b0 %.2X b3 %.2X", cmd, seq, len, crc, evseStatus, evse_status_text[evseStatus], PrivCommRxBuffer[8], PrivCommRxBuffer[11]);
+                    update_evseStatus(evseStatus);
+                // I think there is the time in the 03 cmd - do we need it for something?
+                logger.printfln("       time: %d/%d/%d %d:%d.%d", PrivCommRxBuffer[22],PrivCommRxBuffer[23],PrivCommRxBuffer[24],PrivCommRxBuffer[25],PrivCommRxBuffer[26],PrivCommRxBuffer[27]);
                 sendTime(0xA3, 0x10, 8, seq);  // send ack
                 break;
 
@@ -1163,7 +1156,7 @@ void AC011K::myloop()
 //W (1970-01-01 00:08:52) [PRIV_COMM, 1764]: Tx(cmd_A4 len:17) :  FA 03 00 00 A4 28 07 00 00 E2 01 01 00 08 34 E5 6B
                 evseStatus = PrivCommRxBuffer[8];
                 update_evseStatus(evseStatus);
-                if(log_heartbeat) { // we may be silent for the heartbeat //TODO show it at first and after an hour?
+                if(ac011k_hardware.config.get("verbose_communication")->asBool()) { // we may be silent for the heartbeat //TODO show it at first and after an hour?
                     logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Heartbeat request, Status %d: %s, value:%d", cmd, seq, len, crc, evseStatus, evse_status_text[evseStatus], PrivCommRxBuffer[12]);
                 }
 // experimental:
@@ -1276,24 +1269,26 @@ void AC011K::myloop()
                     // TODO is it true that PrivCommRxBuffer[77] is the evseStatus?
                     evseStatus = PrivCommRxBuffer[77];
                     update_evseStatus(evseStatus);
-                    logger.printfln("Rx cmd_%.2X %dWh\t%d\t%dWh\t%d\t%d\t%d\t%dW\t%d\t%.1fV\t%.1fV\t%.1fV\t%.1fA\t%.1fA\t%.1fA\t%d minutes",
-                              cmd,
-                              PrivCommRxBuffer[84]+256*PrivCommRxBuffer[85],  // charged energy Wh
-                              PrivCommRxBuffer[86]+256*PrivCommRxBuffer[87],
-                              PrivCommRxBuffer[88]+256*PrivCommRxBuffer[89],  // charged energy Wh
-                              PrivCommRxBuffer[90]+256*PrivCommRxBuffer[91],
-                              PrivCommRxBuffer[92]+256*PrivCommRxBuffer[93],
-                              PrivCommRxBuffer[94]+256*PrivCommRxBuffer[95],
-                              PrivCommRxBuffer[96]+256*PrivCommRxBuffer[97],  // charging power
-                              PrivCommRxBuffer[98]+256*PrivCommRxBuffer[99],
-                              float(PrivCommRxBuffer[100]+256*PrivCommRxBuffer[101])/10,  // L1 plug voltage * 10
-                              float(PrivCommRxBuffer[102]+256*PrivCommRxBuffer[103])/10,  // L2 plug voltage * 10
-                              float(PrivCommRxBuffer[104]+256*PrivCommRxBuffer[105])/10,  // L3 plug voltage * 10
-                              float(PrivCommRxBuffer[106]+256*PrivCommRxBuffer[107])/10,  // L1 charging current * 10
-                              float(PrivCommRxBuffer[108]+256*PrivCommRxBuffer[109])/10,  // L2 charging current * 10
-                              float(PrivCommRxBuffer[110]+256*PrivCommRxBuffer[111])/10,  // L3 charging current * 10
-                              PrivCommRxBuffer[113]+256*PrivCommRxBuffer[114]
-                              );
+                    if(ac011k_hardware.config.get("verbose_communication")->asBool()) { // we may be silent for the heartbeat //TODO show it at first and after an hour?
+                        logger.printfln("Rx cmd_%.2X %dWh\t%d\t%dWh\t%d\t%d\t%d\t%dW\t%d\t%.1fV\t%.1fV\t%.1fV\t%.1fA\t%.1fA\t%.1fA\t%d minutes",
+                            cmd,
+                            PrivCommRxBuffer[84]+256*PrivCommRxBuffer[85],  // charged energy Wh
+                            PrivCommRxBuffer[86]+256*PrivCommRxBuffer[87],
+                            PrivCommRxBuffer[88]+256*PrivCommRxBuffer[89],  // charged energy Wh
+                            PrivCommRxBuffer[90]+256*PrivCommRxBuffer[91],
+                            PrivCommRxBuffer[92]+256*PrivCommRxBuffer[93],
+                            PrivCommRxBuffer[94]+256*PrivCommRxBuffer[95],
+                            PrivCommRxBuffer[96]+256*PrivCommRxBuffer[97],  // charging power
+                            PrivCommRxBuffer[98]+256*PrivCommRxBuffer[99],
+                            float(PrivCommRxBuffer[100]+256*PrivCommRxBuffer[101])/10,  // L1 plug voltage * 10
+                            float(PrivCommRxBuffer[102]+256*PrivCommRxBuffer[103])/10,  // L2 plug voltage * 10
+                            float(PrivCommRxBuffer[104]+256*PrivCommRxBuffer[105])/10,  // L3 plug voltage * 10
+                            float(PrivCommRxBuffer[106]+256*PrivCommRxBuffer[107])/10,  // L1 charging current * 10
+                            float(PrivCommRxBuffer[108]+256*PrivCommRxBuffer[109])/10,  // L2 charging current * 10
+                            float(PrivCommRxBuffer[110]+256*PrivCommRxBuffer[111])/10,  // L3 charging current * 10
+                            PrivCommRxBuffer[113]+256*PrivCommRxBuffer[114]
+                            );
+                    }
                     // push values to the meter
                     // voltages
                     meter.updateMeterAllValues(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L1, float(PrivCommRxBuffer[100]+256*PrivCommRxBuffer[101])/10);
