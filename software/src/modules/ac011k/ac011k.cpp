@@ -51,6 +51,7 @@ extern WebServer server;
 extern API api;
 extern bool firmware_update_allowed;
 
+#ifdef EXPERIMENTAL
 /* experimental: Test command receiver */
 #include <WiFiUdp.h>
 #define UDP_RX_PACKET_MAX_SIZE 1024
@@ -58,6 +59,7 @@ WiFiUDP UdpListener;
 unsigned int commandPort = 43211;  // local port to listen on
 char receiveCommandBuffer[UDP_RX_PACKET_MAX_SIZE];  // buffer to hold incoming UDP data
 /* end experimental */
+#endif
 
 bool ready_for_next_chunk = false;
 size_t MAXLENGTH;
@@ -177,6 +179,7 @@ byte FlashVerify[811] = {0xAB, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x04, 0x00, 0
 
 */
 
+#ifdef EXPERIMENTAL
 /* experimental: JSON data sender */
 #include <HTTPClient.h>
 const char* JSON_DECODER = "";  // e.g. "http://xxx.xxx.xxx.xxx/test.php", should be defined via configuration settings
@@ -193,6 +196,7 @@ void send_http (String jmessage) {
         httpClient.end();  // disconnect
     }
 }
+#endif
 
 uint16_t crc16_modbus(uint8_t *buffer, uint32_t length) {
         //uint16_t crc = 0xFFFF;
@@ -802,7 +806,9 @@ void AC011K::filltime(byte *year, byte *month, byte *day, byte *hour, byte *minu
 
 void AC011K::my_setup_evse()
 {
+#ifdef EXPERIMENTAL
     UdpListener.begin(commandPort); // experimental
+#endif
 
     // Get settings from LittleFS or set them to defaults
     if(!api.restorePersistentConfig("evse/slots", &evse_slots)) {
@@ -1159,6 +1165,7 @@ void AC011K::myloop()
                 if(ac011k_hardware.config.get("verbose_communication")->asBool()) { // we may be silent for the heartbeat //TODO show it at first and after an hour?
                     logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Heartbeat request, Status %d: %s, value:%d", cmd, seq, len, crc, evseStatus, evse_status_text[evseStatus], PrivCommRxBuffer[12]);
                 }
+#ifdef EXPERIMENTAL
 // experimental:
                 send_http(String(",\"type\":\"en+04\",\"data\":{")
                     +"\"status\":"+String(PrivCommRxBuffer[8])  // status
@@ -1166,6 +1173,7 @@ void AC011K::myloop()
                     +"}}"
                 );
 // end experimental
+#endif
                 sendTime(0xA4, 0x01, 8, seq);  // send ack
                 break;
 
@@ -1246,6 +1254,7 @@ void AC011K::myloop()
                 if (PrivCommRxBuffer[72] == 0) {
                     logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Start charging approval", cmd, seq, len, crc);
                     sendCommand(StartChargingA7, sizeof(StartChargingA7), seq);
+#ifdef EXPERIMENTAL
 // experimental:
                     send_http(String(",\"type\":\"en+07\",\"data\":{")
                       +"\"transaction\":"+String(transactionNumber)
@@ -1254,6 +1263,7 @@ void AC011K::myloop()
                       +"}}"
                     );
 // end experimental
+#endif
                 } else {
                     logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Stop charging approval", cmd, seq, len, crc);
                     sendCommand(StopChargingA7, sizeof(StopChargingA7), seq);
@@ -1319,6 +1329,7 @@ void AC011K::myloop()
                     /* set charging_time */
                     evse_low_level_state.get("charging_time")->updateUint((PrivCommRxBuffer[113]+256*PrivCommRxBuffer[114])*60*1000);   // in ms
                               
+#ifdef EXPERIMENTAL
 // experimental:
                     send_http(String(",\"type\":\"en+08\",\"data\":{")
                         +"\"status\":"+String(PrivCommRxBuffer[77])  // status
@@ -1341,6 +1352,7 @@ void AC011K::myloop()
                         +"}}"
                     );
 // end experimental
+#endif
                 } else {
                     logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - type:%.2X", cmd, seq, len, crc, PrivCommRxBuffer[77]);
                     if (PrivCommRxBuffer[77] == 0x10) {  // RFID card
@@ -1364,6 +1376,7 @@ void AC011K::myloop()
                     PrivCommRxBuffer[78]+256*PrivCommRxBuffer[79],
                     PrivCommRxBuffer[92]+256*PrivCommRxBuffer[93],
                     PrivCommRxBuffer[94]+256*PrivCommRxBuffer[95]);
+#ifdef EXPERIMENTAL
 // experimental:
                 send_http(String(",\"type\":\"en+09\",\"data\":{")
                     +"\"transaction\":"+String(transactionNumber)
@@ -1371,9 +1384,10 @@ void AC011K::myloop()
                     +",\"stopReason\":"+String(PrivCommRxBuffer[77])
                     +"}}"
                 );
+// end experimental
+#endif
                 //PrivCommAck(cmd, PrivCommTxBuffer); // privCommCmdA9RecordAck
                 sendCommand(TransactionAck, sizeof(TransactionAck), seq);
-// end experimental
                 break;
 
             case 0x0A:
@@ -1503,6 +1517,7 @@ void AC011K::myloop()
                     PrivCommRxBuffer[61]+256*PrivCommRxBuffer[62],
                     PrivCommRxBuffer[63]);
                 //PrivCommAck(cmd, PrivCommTxBuffer); // Ack?
+#ifdef EXPERIMENTAL
 // experimental:
                 send_http(String(",\"type\":\"en+0E\",\"data\":{")
                     +"\"transaction\":"+String(transactionNumber)
@@ -1520,6 +1535,7 @@ void AC011K::myloop()
                     +"}}"
                 );
 // end experimental
+#endif
                 break;
 
             case 0x0F:
@@ -1545,6 +1561,7 @@ void AC011K::myloop()
     }
 
 
+#ifdef EXPERIMENTAL
 // experimental: UDP command receiver for testing
     int packetSize = UdpListener.parsePacket();
     if (packetSize) {
@@ -1592,6 +1609,7 @@ void AC011K::myloop()
         }
     }
 // end experimental
+#endif
 }
 
 void AC011K::register_my_urls()
