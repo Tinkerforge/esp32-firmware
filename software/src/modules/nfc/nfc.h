@@ -32,10 +32,6 @@
 
 #define TAG_LIST_LENGTH 9
 
-#define IND_ACK 1001
-#define IND_NACK 1002
-#define IND_NAG 1003
-
 class NFC : public DeviceModule<TF_NFC,
                                 nfc_bricklet_firmware_bin_data,
                                 nfc_bricklet_firmware_bin_length,
