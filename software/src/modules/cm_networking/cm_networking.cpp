@@ -425,7 +425,7 @@ void CMNetworking::register_client(std::function<void(uint16_t, bool)> client_ca
 
         String validation_error = validate_command_packet_header(&command_pkt, len);
         if (validation_error != "") {
-            logger.printfln("Received command packet from %s (%iB) failed validation: %s",
+            logger.printfln("Received command packet from %s (%i bytes) failed validation: %s",
                 inet_ntoa(((struct sockaddr_in*)&temp_addr)->sin_addr),
                 len,
                 validation_error.c_str());

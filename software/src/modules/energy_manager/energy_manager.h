@@ -111,7 +111,6 @@ public:
 
     void update_io();
     void update_energy();
-    void set_available_current(uint32_t current);
 
     void handle_relay_config_if_input(uint8_t input);
     void handle_relay_config_if_phase_switching();
@@ -142,7 +141,6 @@ private:
     bool just_switched_phases;
     uint32_t phase_state_change_blocked_until;
     uint32_t on_state_change_blocked_until;
-    int32_t last_current_available_ma;
     uint32_t charge_manager_allocated_current_ma;
 
     // Config cache
