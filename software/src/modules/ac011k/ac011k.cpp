@@ -535,12 +535,14 @@ void AC011K::update_evseStatus(uint8_t evseStatus) {
         evse_state.get("last_state_change")->updateUint(millis());
         evse_state.get("time_since_state_change")->updateUint(millis() - evse_state.get("last_state_change")->asUint());
         evse_low_level_state.get("time_since_state_change")->updateUint(evse_state.get("time_since_state_change")->asUint());
-	if((evseStatus != last_evseStatus == 1) && (evseStatus == 1)) { // plugged out
+
+        if(evse_state.get("iec61851_state")->asUint() == IEC_STATE_A) { // plugged out
             if (evse_hardware_configuration.get("GDFirmwareVersion")->asUint() == 212)
                 //sendChargingLimit2(16, sendSequenceNumber++);  // hack to ensure full current range is available in next charging session 
                 sendChargingLimit3(16, sendSequenceNumber++);  // hack to ensure full current range is available in next charging session
         }
-	if(evseStatus == 2 && last_evseStatus == 1) { // just plugged in
+
+        if(evse_state.get("iec61851_state")->asUint() == IEC_STATE_B && last_iec61851_state == IEC_STATE_A) { // just plugged in
             transactionNumber++;
             char buffer[13];
             sprintf(buffer, "%06d", transactionNumber);
@@ -551,11 +553,11 @@ void AC011K::update_evseStatus(uint8_t evseStatus) {
             }
             logger.printfln("New transaction number %05d", transactionNumber);
         }
-	if(evse_auto_start_charging.get("auto_start_charging")->asBool()
-           && evseStatus == 2 || (evseStatus == 6 && last_evseStatus == 0)) { // just plugged in or already plugged in at startup
-            logger.printfln("Start charging automatically");
-            //update_evseStatus(evseStatus); TODO stört dies beim ladestart?
-            bs_evse_start_charging();
+
+        if(evse_auto_start_charging.get("auto_start_charging")->asBool()
+           && evse_state.get("iec61851_state")->asUint() == IEC_STATE_B) { // just plugged in or already plugged in at startup
+             logger.printfln("Start charging automatically");
+             bs_evse_start_charging();
         }
     }
 }
