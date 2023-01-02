@@ -20,6 +20,8 @@ export interface config {
     maximum_power_from_grid: number,
     maximum_available_current: number,
     minimum_current: number,
+    hysteresis_time: number,
+    hysteresis_wear_accepted: boolean,
     relay_config: number,
     relay_config_if: number,
     relay_config_is: number,

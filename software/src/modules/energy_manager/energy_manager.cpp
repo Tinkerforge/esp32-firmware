@@ -66,13 +66,15 @@ void EnergyManager::pre_setup()
     });
 
     // Config
-    energy_manager_config = Config::Object({
+    energy_manager_config = ConfigRoot(Config::Object({
         {"excess_charging_enable", Config::Bool(false)},
         {"contactor_installed", Config::Bool(true)},
         {"phase_switching_mode", Config::Uint8(PHASE_SWITCHING_AUTOMATIC)},
         {"maximum_power_from_grid", Config::Int32(0)},
         {"maximum_available_current", Config::Uint32(0)}, // Keep in sync with charge_manager.cpp
         {"minimum_current", Config::Uint(6000, 6000, 32000)}, // Keep in sync with charge_manager.cpp
+        {"hysteresis_time", Config::Uint(HYSTERESIS_MIN_TIME_MINUTES, 0, 60)}, // in minutes
+        {"hysteresis_wear_accepted", Config::Bool(false)},
         {"relay_config", Config::Uint8(0)},
         {"relay_config_if", Config::Uint8(0)},
         {"relay_config_is", Config::Uint8(0)},
@@ -83,6 +85,14 @@ void EnergyManager::pre_setup()
         {"input4_config", Config::Uint8(0)},
         {"input4_config_if", Config::Uint8(0)},
         {"input4_config_then", Config::Uint8(0)}
+    }), [](const Config &cfg) -> String {
+        uint32_t switching_hysteresis_min = cfg.get("hysteresis_time")->asUint(); // minutes
+        uint32_t hysteresis_wear_ok       = cfg.get("hysteresis_wear_accepted")->asBool();
+
+        if (switching_hysteresis_min < HYSTERESIS_MIN_TIME_MINUTES && !hysteresis_wear_ok)
+            return "Switching hysteresis time cannot be shorter than " __XSTRING(HYSTERESIS_MIN_TIME_MINUTES) " minutes without accepting additional wear.";
+
+        return "";
     });
 
     switching_state = SwitchingState_Monitoring;
@@ -302,7 +312,7 @@ void EnergyManager::update_energy()
         //last_print = (last_print + 1) % 1;
         //if (last_print == 0)
         //    logger.printfln("power_at_meter_w %i | max_power_from_grid_w %i | power_available_w %i | wants_3phase %i | is_3phase %i | last_current_available_ma %i",
-        //        power_at_meter_w, max_power_from_grid_w, power_available_w, wants_3phase, is_3phase, last_current_available_ma);
+        //        power_at_meter_w, max_power_from_grid_w, power_available_w, wants_3phase, is_3phase, charge_manager.charge_manager_available_current.get("current")->asUint());
     } else if (switching_state == SwitchingState_Stopping) {
         charge_manager.set_available_current(0);
 
@@ -361,13 +371,19 @@ void EnergyManager::setup()
     });
 
     // Cache config for energy update
-    max_power_from_grid_w   = energy_manager_config_in_use.get("maximum_power_from_grid")->asInt();     // watt
-    max_current_ma          = energy_manager_config_in_use.get("maximum_available_current")->asUint();  // milliampere
-    min_current_ma          = energy_manager_config_in_use.get("minimum_current")->asUint();            // milliampere
+    max_power_from_grid_w   = energy_manager_config_in_use.get("maximum_power_from_grid")->asInt();         // watt
+    max_current_ma          = energy_manager_config_in_use.get("maximum_available_current")->asUint();      // milliampere
+    min_current_ma          = energy_manager_config_in_use.get("minimum_current")->asUint();                // milliampere
     excess_charging_enable  = energy_manager_config_in_use.get("excess_charging_enable")->asBool();
     contactor_installed     = energy_manager_config_in_use.get("contactor_installed")->asBool();
     phase_switching_mode    = energy_manager_config_in_use.get("phase_switching_mode")->asUint();
-    switching_hysteresis_ms = 10 * 1000; // milliseconds
+    switching_hysteresis_ms = energy_manager_config_in_use.get("hysteresis_time")->asUint() * 60 * 1000;    // milliseconds (from minutes)
+    hysteresis_wear_ok      = energy_manager_config_in_use.get("hysteresis_wear_accepted")->asBool();
+
+    // If the user accepts the additional wear, the minimum hysteresis time is 10s. Less than that will cause the control algorithm to oscillate.
+    uint32_t hysteresis_min_ms = hysteresis_wear_ok ? 10 * 1000 : HYSTERESIS_MIN_TIME_MINUTES * 60 * 1000;  // milliseconds
+    if (switching_hysteresis_ms < hysteresis_min_ms)
+        switching_hysteresis_ms = hysteresis_min_ms;
 
     // Pre-calculate various limits
     int32_t min_phases;

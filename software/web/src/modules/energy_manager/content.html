@@ -85,6 +85,34 @@
             </div>
         </div>
 
+        <div class="form-group row">
+            <div class="col-lg-3 col-xl-2">
+                <label for="energy_manager_config_hysteresis_time" class="col-form-label">
+                    <span class="form-label pr-2" data-i18n="energy_manager.content.hysteresis_time"></span>
+                    <span class="text-muted" data-i18n="energy_manager.content.hysteresis_time_muted"></span>
+                </label>
+            </div>
+            <div class="col-lg-9 col-xl-6 input-group">
+                <input id="energy_manager_config_hysteresis_time" class="form-control" type="number" min="0" max="60" step="1" required>
+                <div class="input-group-append">
+                    <div class="input-group-text form-control"><span data-i18n="energy_manager.content.hysteresis_time_unit"></span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- When moving to PreAct: Show this setting only when the user chooses a hysteresis time below 10. Maybe add a big fat warning in red or something. -->
+        <div class="form-group row">
+            <div class="col-lg-3 col-xl-2">
+                <label for="energy_manager_config_hysteresis_wear_accepted" class="col-form-label form-label" data-i18n="energy_manager.content.hysteresis_wear_agreement"></label>
+            </div>
+            <div class="col-lg-9 col-xl-6">
+                <div class="borderless-form-control custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" id="energy_manager_config_hysteresis_wear_accepted">
+                    <label class="custom-control-label" for="energy_manager_config_hysteresis_wear_accepted" data-i18n="energy_manager.content.hysteresis_wear_desc"></label>
+                </div>
+            </div>
+        </div>
+
         <div class="row mb-3 pt-3">
             <div class="col-xl-8 d-flex justify-content-between border-bottom">
                 <span class="h3" data-i18n="energy_manager.content.relay"></span>

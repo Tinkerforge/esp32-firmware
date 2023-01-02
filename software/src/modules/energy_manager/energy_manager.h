@@ -58,6 +58,7 @@
 #define INPUT_CONFIG_THEN_ALLOW         0
 #define INPUT_CONFIG_THEN_DISALLOW      1
 
+#define HYSTERESIS_MIN_TIME_MINUTES     10
 
 typedef struct {
     bool contactor_value;
@@ -151,6 +152,7 @@ private:
     bool     contactor_installed;
     uint8_t  phase_switching_mode;
     uint32_t switching_hysteresis_ms;
+    bool     hysteresis_wear_ok;
 
     // Pre-calculated limits
     int32_t  overall_min_power_w;
