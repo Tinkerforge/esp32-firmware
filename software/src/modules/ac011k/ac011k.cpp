@@ -544,13 +544,10 @@ void AC011K::update_evseStatus(uint8_t evseStatus) {
 
         if(evse_state.get("iec61851_state")->asUint() == IEC_STATE_B && last_iec61851_state == IEC_STATE_A) { // just plugged in
             transactionNumber++;
-            char buffer[13];
-            sprintf(buffer, "%06d", transactionNumber);
-            for (int i=0; i<6; i++) {  // patch transaction number into command templates
-                StartChargingA7[i+1] = byte(buffer[i]);
-                StopChargingA7[i+1] = byte(buffer[i]);
-                StopChargingA6[i+33] = byte(buffer[i]);
-            }
+            // patch transaction number into command templates
+            sprintf((char*)StartChargingA7 +1, "%06d", transactionNumber);
+            sprintf((char*)StopChargingA7  +1, "%06d", transactionNumber);
+            sprintf((char*)StopChargingA6 +33, "%06d", transactionNumber);
             logger.printfln("New transaction number %05d", transactionNumber);
         }
 
@@ -952,14 +949,10 @@ void AC011K::my_setup_evse()
         /*     } */
         /* }, 5000); */
 
-    char buffer[13];
-    sprintf(buffer, "%06d", transactionNumber);
-    for (int i=0; i<6; i++) {  // patch transaction number into command templates
-        StartChargingA7[i+1] = byte(buffer[i]);
-        StopChargingA7[i+1] = byte(buffer[i]);
-        StopChargingA6[i+33] = byte(buffer[i]);
-    }
-
+    // patch transaction number into command templates
+    sprintf((char*)StartChargingA7 +1, "%06d", transactionNumber);
+    sprintf((char*)StopChargingA7  +1, "%06d", transactionNumber);
+    sprintf((char*)StopChargingA6 +33, "%06d", transactionNumber);
     logger.printfln("Initial transaction number %05d", transactionNumber);
 
     meter.updateMeterState(2, 99);
