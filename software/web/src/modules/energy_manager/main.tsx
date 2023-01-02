@@ -37,7 +37,7 @@ function update_energy_manager_state() {
     $('#state_led_b').val(state.led_rgb[2]);
     util.update_button_group(`btn_group_gpio0`, state.gpio_input_state[0] ? 0 : 1); //intentionally inverted: the high button is the first
     util.update_button_group(`btn_group_gpio1`, state.gpio_input_state[1] ? 0 : 1); //intentionally inverted: the high button is the first
-    util.update_button_group(`btn_group_gpio2`, state.gpio_output_state ? 1 : 0);
+    util.update_button_group(`btn_group_gpio2`, state.gpio_output_state   ? 0 : 1); //intentionally inverted: the high button is the first
     $('#state_input_voltage').val(`${state.input_voltage} mV`);
     $('#state_contactor_check').val(state.contactor_check_state);
 }
@@ -77,9 +77,9 @@ function update_energy_manager_html_visibility() {
     // Update contactor section
     let phase_switching_config_is_dd = $('#energy_manager_config_phase_switching_mode')
     if ($('#energy_manager_config_contactor_installed').is(':checked')) {
-        update_options(phase_switching_config_is_dd, [{"value": 0, name: "automatic"}, {"value": 1, name: "always_one_phase"}, {"value": 3, name: "always_three_phases"}]);
+        update_options(phase_switching_config_is_dd, [{"value": 0, name: "automatic"}, {"value": 1, name: "always_one_phase"}, {"value": 2, name: "always_three_phases"}]);
     } else {
-        update_options(phase_switching_config_is_dd, [{"value": 1, name: "fixed_one_phase"}, {"value": 3, name: "fixed_three_phases"}]);
+        update_options(phase_switching_config_is_dd, [{"value": 1, name: "fixed_one_phase"}, {"value": 2, name: "fixed_three_phases"}]);
     }
 
     // Update relay section
