@@ -1547,6 +1547,13 @@ void AC011K::myloop()
 
     evse_state.get("time_since_state_change")->updateUint(millis() - evse_state.get("last_state_change")->asUint());
     evse_low_level_state.get("time_since_state_change")->updateUint(evse_state.get("time_since_state_change")->asUint());
+
+    /*
+     * this is probably already (and better) taken care of via the ClockAlignedDataInterval setting
+     * if charging and x seconds elapsed, trigger 0x0E via
+     * sendTime(0xA8, 0x40, 12, seq); // Trigger Message: MeterValues
+     *
+     */
     
     //resend flash commands if needed
     if(this->firmware_update_running && flash_seq == PrivCommTxBuffer[5] && !ready_for_next_chunk && deadline_elapsed(last_flash + 2000)) {
