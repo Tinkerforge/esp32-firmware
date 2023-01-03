@@ -33,7 +33,11 @@
             "auto_discovery_mode_generic": "Generisch/Universal",
             "auto_discovery_mode_homeassistant": "Home Assistant",
             "auto_discovery_prefix": "Auto Discovery Topic-Präfix",
-            "auto_discovery_prefix_invalid": "Der Topic-Präfix darf nicht mit $ beginnen, oder ein # oder + enthalten, oder leer sein."
+            "auto_discovery_prefix_invalid": "Der Topic-Präfix darf nicht mit $ beginnen, oder ein # oder + enthalten, oder leer sein.",
+            "enable_meter": "MQTT Stromzähler",
+            "enable_meter_desc": "Simuliert einen Stromzähler und aktualisiert ihn mit Werten von folgendem Topic.",
+            "meter_topic": "Stromzähler-Topic",
+            "meter_topic_invalid": "Das Topic darf nicht mit $ beginnen, oder ein # oder + enthalten, oder leer sein."
         },
         "script": {
             "save_failed": "Speichern der MQTT-Einstellungen fehlgeschlagen.",
