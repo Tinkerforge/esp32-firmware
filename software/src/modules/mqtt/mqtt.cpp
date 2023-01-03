@@ -191,6 +191,9 @@ void Mqtt::onMqttConnect()
         publish_with_prefix(reg.path, reg.config->to_string_except(reg.keys_to_censor));
     }
 
+#if MODULE_MQTT_METER_AVAILABLE()
+    mqtt_meter.onMqttConnect();
+#endif
 #if MODULE_MQTT_AUTO_DISCOVERY_AVAILABLE()
     mqtt_auto_discovery.onMqttConnect();
 #endif
@@ -204,6 +207,10 @@ void Mqtt::onMqttDisconnect()
 
 void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain)
 {
+#if MODULE_MQTT_METER_AVAILABLE()
+    if (mqtt_meter.onMqttMessage(topic, topic_len, data, data_len, retain))
+        return;
+#endif
 #if MODULE_MQTT_AUTO_DISCOVERY_AVAILABLE()
     if (mqtt_auto_discovery.onMqttMessage(topic, topic_len, data, data_len, retain))
         return;
