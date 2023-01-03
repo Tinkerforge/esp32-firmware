@@ -29,7 +29,6 @@
 
 extern API api;
 extern TaskScheduler task_scheduler;
-extern char local_uid_str[32];
 
 void MqttAutoDiscovery::pre_setup()
 {
@@ -138,7 +137,7 @@ void MqttAutoDiscovery::prepare_topics()
 
         // <discovery_prefix>/<component>/<node_id>/<object_id>/config
         topic_length = auto_discovery_prefix.length() + strlen(mqtt_discovery_topic_infos[i].component)
-            + client_name.length() + strlen(mqtt_discovery_topic_infos[i].object_id) + 10; // "config" + 4*'/' = 10
+            + client_name.length() + strlen(mqtt_discovery_topic_infos[i].object_id) + 10; // "config" + 4*'/' = 10
 
         mqtt_discovery_topics[i].full_path.reserve(topic_length);
 
