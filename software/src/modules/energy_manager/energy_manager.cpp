@@ -103,6 +103,184 @@ void EnergyManager::apply_defaults()
     // TODO: Configure Energy Manager
 }
 
+void EnergyManager::setup_energy_manager()
+{
+    if (!this->DeviceModule::setup_device()) {
+        logger.printfln("setup_device error");
+        return;
+    }
+
+    this->apply_defaults();
+    initialized = true;
+}
+
+void EnergyManager::setup()
+{
+    setup_energy_manager();
+    if (!device_found)
+        return;
+
+    api.restorePersistentConfig("energy_manager/config", &energy_manager_config);
+    energy_manager_config_in_use = energy_manager_config;
+
+    if ((energy_manager_config_in_use.get("phase_switching_mode")->asUint() == PHASE_SWITCHING_AUTOMATIC) && !energy_manager_config_in_use.get("contactor_installed")->asBool()) {
+        logger.printfln("energy_manager: Invalid configuration: Automatic phase switching selected but no contactor installed.");
+        return;
+    }
+
+    charge_manager.set_allocated_current_callback([this](uint32_t current_ma){
+        //logger.printfln("energy_manager: allocated current callback: %u", current_ma);
+        charge_manager_allocated_current_ma = current_ma;
+    });
+
+    // Cache config for energy update
+    max_power_from_grid_w   = energy_manager_config_in_use.get("maximum_power_from_grid")->asInt();         // watt
+    max_current_ma          = energy_manager_config_in_use.get("maximum_available_current")->asUint();      // milliampere
+    min_current_ma          = energy_manager_config_in_use.get("minimum_current")->asUint();                // milliampere
+    excess_charging_enable  = energy_manager_config_in_use.get("excess_charging_enable")->asBool();
+    contactor_installed     = energy_manager_config_in_use.get("contactor_installed")->asBool();
+    phase_switching_mode    = energy_manager_config_in_use.get("phase_switching_mode")->asUint();
+    switching_hysteresis_ms = energy_manager_config_in_use.get("hysteresis_time")->asUint() * 60 * 1000;    // milliseconds (from minutes)
+    hysteresis_wear_ok      = energy_manager_config_in_use.get("hysteresis_wear_accepted")->asBool();
+
+    // If the user accepts the additional wear, the minimum hysteresis time is 10s. Less than that will cause the control algorithm to oscillate.
+    uint32_t hysteresis_min_ms = hysteresis_wear_ok ? 10 * 1000 : HYSTERESIS_MIN_TIME_MINUTES * 60 * 1000;  // milliseconds
+    if (switching_hysteresis_ms < hysteresis_min_ms)
+        switching_hysteresis_ms = hysteresis_min_ms;
+
+    // Pre-calculate various limits
+    int32_t min_phases;
+    if (phase_switching_mode == PHASE_SWITCHING_ALWAYS_1PHASE) {
+        min_phases = 1;
+    } else if (phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE) {
+        min_phases = 3;
+    } else { // automatic
+        min_phases = 1;
+    }
+    overall_min_power_w = 230 * min_phases * min_current_ma / 1000;
+
+    const int32_t max_1phase_w = 230 * 1 * max_current_ma / 1000;
+    const int32_t min_3phase_w = 230 * 3 * min_current_ma / 1000;
+
+    if (min_3phase_w > max_1phase_w) { // have dead current range
+        int32_t range_width = min_3phase_w - max_1phase_w;
+        threshold_3to1_w = max_1phase_w + static_cast<int32_t>(0.25 * range_width);
+        threshold_1to3_w = max_1phase_w + static_cast<int32_t>(0.75 * range_width);
+    } else { // no dead current range, use simple limits
+        threshold_3to1_w = min_3phase_w;
+        threshold_1to3_w = max_1phase_w;
+    }
+
+    task_scheduler.scheduleWithFixedDelay([this](){
+        this->update_all_data();
+    }, 0, 250);
+
+    task_scheduler.scheduleWithFixedDelay([this](){
+        this->update_io();
+    }, 10, 10);
+
+    task_scheduler.scheduleWithFixedDelay([this](){
+        this->update_energy();
+    }, 250, 250);
+
+    initialized = true;
+}
+
+void EnergyManager::register_urls()
+{
+    if (!device_found)
+        return;
+
+#if MODULE_WS_AVAILABLE()
+    server.on("/energy_manager/start_debug", HTTP_GET, [this](WebServerRequest request) {
+        task_scheduler.scheduleOnce([this](){
+            ws.pushRawStateUpdate(this->get_energy_manager_debug_header(), "energy_manager/debug_header");
+            debug = true;
+        }, 0);
+        return request.send(200);
+    });
+
+    server.on("/energy_manager/stop_debug", HTTP_GET, [this](WebServerRequest request){
+        task_scheduler.scheduleOnce([this](){
+            debug = false;
+        }, 0);
+        return request.send(200);
+    });
+#endif
+
+    api.addPersistentConfig("energy_manager/config", &energy_manager_config, {}, 1000);
+    api.addState("energy_manager/state", &energy_manager_state, {}, 1000);
+
+    this->DeviceModule::register_urls();
+}
+
+void EnergyManager::loop()
+{
+    this->DeviceModule::loop();
+
+#if MODULE_WS_AVAILABLE()
+    static uint32_t last_debug = 0;
+    if (debug && deadline_elapsed(last_debug + 50)) {
+        last_debug = millis();
+        ws.pushRawStateUpdate(this->get_energy_manager_debug_line(), "energy_manager/debug");
+    }
+#endif
+}
+
+void EnergyManager::update_all_data()
+{
+    update_all_data_struct();
+
+    energy_manager_state.get("contactor")->updateBool(all_data.contactor_value);
+    energy_manager_state.get("led_rgb")->get(0)->updateUint(all_data.rgb_value_r);
+    energy_manager_state.get("led_rgb")->get(1)->updateUint(all_data.rgb_value_g);
+    energy_manager_state.get("led_rgb")->get(2)->updateUint(all_data.rgb_value_b);
+    energy_manager_state.get("gpio_input_state")->get(0)->updateBool(all_data.input[0]);
+    energy_manager_state.get("gpio_input_state")->get(1)->updateBool(all_data.input[1]);
+    energy_manager_state.get("gpio_output_state")->updateBool(all_data.output);
+    energy_manager_state.get("input_voltage")->updateUint(all_data.voltage);
+    energy_manager_state.get("contactor_check_state")->updateUint(all_data.contactor_check_state);
+
+    if (all_data.energy_meter_type != METER_TYPE_NONE) {
+        energy_manager_state.get("energy_meter_type")->updateUint(all_data.energy_meter_type);
+        energy_manager_state.get("energy_meter_power")->updateFloat(all_data.power);
+        energy_manager_state.get("energy_meter_energy_rel")->updateFloat(all_data.energy_relative);
+        energy_manager_state.get("energy_meter_energy_abs")->updateFloat(all_data.energy_absolute);
+        for (int i = 0; i < 3; i++) {
+            energy_manager_state.get("energy_meter_phases_active")->get(i)->updateBool(all_data.phases_active[i]);
+        }
+        for (int i = 0; i < 3; i++) {
+            energy_manager_state.get("energy_meter_phases_connected")->get(i)->updateBool(all_data.phases_connected[i]);
+        }
+    }
+}
+
+void EnergyManager::update_all_data_struct()
+{
+    int rc = tf_warp_energy_manager_get_all_data_1(
+        &device,
+        &all_data.contactor_value,
+        &all_data.rgb_value_r,
+        &all_data.rgb_value_g,
+        &all_data.rgb_value_b,
+        &all_data.power,
+        &all_data.energy_relative,
+        &all_data.energy_absolute,
+        all_data.phases_active,
+        all_data.phases_connected,
+        &all_data.energy_meter_type,
+        all_data.error_count,
+        all_data.input,
+        &all_data.output,
+        &all_data.voltage,
+        &all_data.contactor_check_state
+    );
+
+    if (rc != TF_E_OK) {
+        logger.printfln("get_all_data_1 error %d", rc);
+    }
+}
+
 void EnergyManager::handle_relay_config_if_input(uint8_t input)
 {
     if (input > 1) {
@@ -359,78 +537,6 @@ void EnergyManager::update_energy()
     }
 }
 
-void EnergyManager::setup()
-{
-    setup_energy_manager();
-    if (!device_found)
-        return;
-
-    api.restorePersistentConfig("energy_manager/config", &energy_manager_config);
-    energy_manager_config_in_use = energy_manager_config;
-
-    if ((energy_manager_config_in_use.get("phase_switching_mode")->asUint() == PHASE_SWITCHING_AUTOMATIC) && !energy_manager_config_in_use.get("contactor_installed")->asBool()) {
-        logger.printfln("energy_manager: Invalid configuration: Automatic phase switching selected but no contactor installed.");
-        return;
-    }
-
-    charge_manager.set_allocated_current_callback([this](uint32_t current_ma){
-        //logger.printfln("energy_manager: allocated current callback: %u", current_ma);
-        charge_manager_allocated_current_ma = current_ma;
-    });
-
-    // Cache config for energy update
-    max_power_from_grid_w   = energy_manager_config_in_use.get("maximum_power_from_grid")->asInt();         // watt
-    max_current_ma          = energy_manager_config_in_use.get("maximum_available_current")->asUint();      // milliampere
-    min_current_ma          = energy_manager_config_in_use.get("minimum_current")->asUint();                // milliampere
-    excess_charging_enable  = energy_manager_config_in_use.get("excess_charging_enable")->asBool();
-    contactor_installed     = energy_manager_config_in_use.get("contactor_installed")->asBool();
-    phase_switching_mode    = energy_manager_config_in_use.get("phase_switching_mode")->asUint();
-    switching_hysteresis_ms = energy_manager_config_in_use.get("hysteresis_time")->asUint() * 60 * 1000;    // milliseconds (from minutes)
-    hysteresis_wear_ok      = energy_manager_config_in_use.get("hysteresis_wear_accepted")->asBool();
-
-    // If the user accepts the additional wear, the minimum hysteresis time is 10s. Less than that will cause the control algorithm to oscillate.
-    uint32_t hysteresis_min_ms = hysteresis_wear_ok ? 10 * 1000 : HYSTERESIS_MIN_TIME_MINUTES * 60 * 1000;  // milliseconds
-    if (switching_hysteresis_ms < hysteresis_min_ms)
-        switching_hysteresis_ms = hysteresis_min_ms;
-
-    // Pre-calculate various limits
-    int32_t min_phases;
-    if (phase_switching_mode == PHASE_SWITCHING_ALWAYS_1PHASE) {
-        min_phases = 1;
-    } else if (phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE) {
-        min_phases = 3;
-    } else { // automatic
-        min_phases = 1;
-    }
-    overall_min_power_w = 230 * min_phases * min_current_ma / 1000;
-
-    const int32_t max_1phase_w = 230 * 1 * max_current_ma / 1000;
-    const int32_t min_3phase_w = 230 * 3 * min_current_ma / 1000;
-
-    if (min_3phase_w > max_1phase_w) { // have dead current range
-        int32_t range_width = min_3phase_w - max_1phase_w;
-        threshold_3to1_w = max_1phase_w + static_cast<int32_t>(0.25 * range_width);
-        threshold_1to3_w = max_1phase_w + static_cast<int32_t>(0.75 * range_width);
-    } else { // no dead current range, use simple limits
-        threshold_3to1_w = min_3phase_w;
-        threshold_1to3_w = max_1phase_w;
-    }
-
-    task_scheduler.scheduleWithFixedDelay([this](){
-        this->update_all_data();
-    }, 0, 250);
-
-    task_scheduler.scheduleWithFixedDelay([this](){
-        this->update_io();
-    }, 10, 10);
-
-    task_scheduler.scheduleWithFixedDelay([this](){
-        this->update_energy();
-    }, 250, 250);
-
-    initialized = true;
-}
-
 String EnergyManager::get_energy_manager_debug_header()
 {
     return "\"millis,"
@@ -505,110 +611,4 @@ String EnergyManager::get_energy_manager_debug_line()
              all_data.contactor_check_state);
 
     return String(line);
-}
-
-void EnergyManager::register_urls()
-{
-    if (!device_found)
-        return;
-
-#if MODULE_WS_AVAILABLE()
-    server.on("/energy_manager/start_debug", HTTP_GET, [this](WebServerRequest request) {
-        task_scheduler.scheduleOnce([this](){
-            ws.pushRawStateUpdate(this->get_energy_manager_debug_header(), "energy_manager/debug_header");
-            debug = true;
-        }, 0);
-        return request.send(200);
-    });
-
-    server.on("/energy_manager/stop_debug", HTTP_GET, [this](WebServerRequest request){
-        task_scheduler.scheduleOnce([this](){
-            debug = false;
-        }, 0);
-        return request.send(200);
-    });
-#endif
-
-    api.addPersistentConfig("energy_manager/config", &energy_manager_config, {}, 1000);
-    api.addState("energy_manager/state", &energy_manager_state, {}, 1000);
-
-    this->DeviceModule::register_urls();
-}
-
-void EnergyManager::loop()
-{
-    this->DeviceModule::loop();
-
-#if MODULE_WS_AVAILABLE()
-    static uint32_t last_debug = 0;
-    if (debug && deadline_elapsed(last_debug + 50)) {
-        last_debug = millis();
-        ws.pushRawStateUpdate(this->get_energy_manager_debug_line(), "energy_manager/debug");
-    }
-#endif
-}
-
-void EnergyManager::setup_energy_manager()
-{
-    if (!this->DeviceModule::setup_device()) {
-        logger.printfln("setup_device error");
-        return;
-    }
-
-    this->apply_defaults();
-    initialized = true;
-}
-
-void EnergyManager::update_all_data()
-{
-    update_all_data_struct();
-
-    energy_manager_state.get("contactor")->updateBool(all_data.contactor_value);
-    energy_manager_state.get("led_rgb")->get(0)->updateUint(all_data.rgb_value_r);
-    energy_manager_state.get("led_rgb")->get(1)->updateUint(all_data.rgb_value_g);
-    energy_manager_state.get("led_rgb")->get(2)->updateUint(all_data.rgb_value_b);
-    energy_manager_state.get("gpio_input_state")->get(0)->updateBool(all_data.input[0]);
-    energy_manager_state.get("gpio_input_state")->get(1)->updateBool(all_data.input[1]);
-    energy_manager_state.get("gpio_output_state")->updateBool(all_data.output);
-    energy_manager_state.get("input_voltage")->updateUint(all_data.voltage);
-    energy_manager_state.get("contactor_check_state")->updateUint(all_data.contactor_check_state);
-
-    if (all_data.energy_meter_type != METER_TYPE_NONE) {
-        energy_manager_state.get("energy_meter_type")->updateUint(all_data.energy_meter_type);
-        energy_manager_state.get("energy_meter_power")->updateFloat(all_data.power);
-        energy_manager_state.get("energy_meter_energy_rel")->updateFloat(all_data.energy_relative);
-        energy_manager_state.get("energy_meter_energy_abs")->updateFloat(all_data.energy_absolute);
-        for (int i = 0; i < 3; i++) {
-            energy_manager_state.get("energy_meter_phases_active")->get(i)->updateBool(all_data.phases_active[i]);
-        }
-        for (int i = 0; i < 3; i++) {
-            energy_manager_state.get("energy_meter_phases_connected")->get(i)->updateBool(all_data.phases_connected[i]);
-        }
-    }
-}
-
-void EnergyManager::update_all_data_struct()
-{
-    int rc = tf_warp_energy_manager_get_all_data_1(
-        &device,
-        &all_data.contactor_value,
-        &all_data.rgb_value_r,
-        &all_data.rgb_value_g,
-        &all_data.rgb_value_b,
-        &all_data.power,
-        &all_data.energy_relative,
-        &all_data.energy_absolute,
-        all_data.phases_active,
-        all_data.phases_connected,
-        &all_data.energy_meter_type,
-        all_data.error_count,
-        all_data.input,
-        &all_data.output,
-        &all_data.voltage,
-        &all_data.contactor_check_state
-    );
-
-    if (rc != TF_E_OK) {
-        logger.printfln("get_all_data_1 error %d", rc);
-    }
 }
