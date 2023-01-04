@@ -59,3 +59,7 @@ public:
 
     bool sending_response = false;
 };
+
+// Make global variable available everywhere because it is not declared in modules.h.
+// Definition is in event_log.cpp.
+extern EventLog logger;

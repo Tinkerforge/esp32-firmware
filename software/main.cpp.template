@@ -43,13 +43,6 @@ bool config_constructors_allowed = false;
 
 const char* DISPLAY_NAME = "{{{display_name}}}";
 
-WebServer server;
-
-EventLog logger;
-
-TaskScheduler task_scheduler;
-API api;
-
 {{{module_decls}}}
 
 // declared and initialized by board module

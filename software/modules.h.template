@@ -5,3 +5,5 @@
 {{{module_defines}}}
 
 {{{module_extern_decls}}}
+
+extern Config modules;

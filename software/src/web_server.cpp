@@ -35,6 +35,8 @@
 
 extern TaskScheduler task_scheduler;
 
+// Global definition here to match the declaration in web_server.h.
+WebServer server;
 
 void WebServer::start()
 {
