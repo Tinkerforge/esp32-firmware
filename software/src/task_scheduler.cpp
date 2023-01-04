@@ -23,6 +23,9 @@
 
 extern WebServer server;
 
+// Global definition here to match the declaration in task_scheduler.h.
+TaskScheduler task_scheduler;
+
 Task::Task(std::function<void(void)> fn, uint32_t first_run_delay_ms, uint32_t delay_ms, bool once) :
           fn(std::move(fn)),
           next_deadline_ms(millis() + first_run_delay_ms),

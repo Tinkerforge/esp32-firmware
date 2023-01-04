@@ -113,3 +113,7 @@ public:
 private:
     bool already_registered(const String &path, const char *api_type);
 };
+
+// Make global variable available everywhere because it is not declared in modules.h.
+// Definition is in api.cpp.
+extern API api;

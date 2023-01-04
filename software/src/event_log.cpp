@@ -27,6 +27,9 @@
 
 extern WebServer server;
 
+// Global definition here to match the declaration in event_log.h.
+EventLog logger;
+
 void EventLog::setup()
 {
     event_buf.setup();

@@ -128,3 +128,7 @@ public:
 
     std::function<bool(WebServerRequest)> auth_fn;
 };
+
+// Make global variable available everywhere because it is not declared in modules.h.
+// Definition is in web_server.cpp.
+extern WebServer server;

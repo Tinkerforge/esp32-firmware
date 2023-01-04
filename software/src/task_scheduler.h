@@ -62,3 +62,7 @@ private:
     std::mutex task_mutex;
     std::priority_queue<Task, std::vector<Task>, decltype(&compare)> tasks;
 };
+
+// Make global variable available everywhere because it is not declared in modules.h.
+// Definition is in task_scheduler.cpp.
+extern TaskScheduler task_scheduler;
