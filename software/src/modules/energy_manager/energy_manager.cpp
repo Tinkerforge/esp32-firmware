@@ -182,8 +182,6 @@ void EnergyManager::setup()
     task_scheduler.scheduleWithFixedDelay([this](){
         this->update_energy();
     }, 250, 250);
-
-    initialized = true;
 }
 
 void EnergyManager::register_urls()
