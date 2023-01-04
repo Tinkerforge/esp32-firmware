@@ -39,5 +39,5 @@ public:
 
 private:
     bool enabled;
-    String meter_topic;
+    String source_meter_topic;
 };
