@@ -28,8 +28,6 @@
 #include "event_log.h"
 #include "build.h"
 
-extern EventLog logger;
-
 static bool getMD5(uint8_t * data, uint16_t len, char * output){//33 bytes or more
     mbedtls_md5_context _ctx;
   uint8_t i;

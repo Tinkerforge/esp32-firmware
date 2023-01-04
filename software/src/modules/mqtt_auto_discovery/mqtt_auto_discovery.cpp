@@ -27,9 +27,6 @@
 #include "mqtt_auto_discovery.h"
 #include "task_scheduler.h"
 
-extern API api;
-extern TaskScheduler task_scheduler;
-
 void MqttAutoDiscovery::pre_setup()
 {
     config = ConfigRoot(Config::Object({

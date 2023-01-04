@@ -22,7 +22,9 @@
 
 #include "task_scheduler.h"
 
+#include "api.h"
 #include "modules.h"
+#include "task_scheduler.h"
 #include "tools.h"
 
 #include "digest_auth.h"
@@ -41,8 +43,6 @@
 #else
 #define MAX_ACTIVE_USERS 10
 #endif
-
-extern TaskScheduler task_scheduler;
 
 // We have to do access the evse/evse_v2 configs manually
 // because a lot of the code runs in setup(), i.e. before APIs

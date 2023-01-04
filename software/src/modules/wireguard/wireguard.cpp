@@ -24,10 +24,6 @@
 
 #include <WiFi.h>
 
-extern API api;
-extern EventLog logger;
-extern TaskScheduler task_scheduler;
-
 #include "mbedtls/base64.h"
 
 String check_key(const String &key, bool enable)

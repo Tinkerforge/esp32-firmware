@@ -19,21 +19,9 @@
 
 #include "em_meter_config.h"
 
-#include "bindings/errors.h"
+//#include "bindings/errors.h"
 
 #include "api.h"
-#include "event_log.h"
-#include "task_scheduler.h"
-#include "tools.h"
-#include "web_server.h"
-#include "modules.h"
-
-extern EventLog logger;
-
-extern TaskScheduler task_scheduler;
-extern WebServer server;
-
-extern API api;
 
 void EMMeterConfig::pre_setup()
 {

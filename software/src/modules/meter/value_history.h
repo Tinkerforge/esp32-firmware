@@ -26,9 +26,6 @@
 #include "task_scheduler.h"
 #include "web_server.h"
 
-extern TaskScheduler task_scheduler;
-extern WebServer server;
-
 // How many hours to keep the coarse history for
 #define HISTORY_HOURS 48
 // How many minutes to keep the fine history for.

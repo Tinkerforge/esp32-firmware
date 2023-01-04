@@ -25,13 +25,6 @@
 #include "task_scheduler.h"
 #include "modules.h"
 
-extern EventLog logger;
-
-extern TaskScheduler task_scheduler;
-extern Config modules;
-
-extern API api;
-
 void Meter::pre_setup()
 {
     state = Config::Object({

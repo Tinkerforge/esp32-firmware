@@ -19,12 +19,7 @@
 
 #pragma once
 
-#include <Arduino.h>
-
-#include "api.h"
-#include "event_log.h"
-#include "task_scheduler.h"
-#include "time.h"
+#include "config.h"
 
 #define MAX_UPTIMES 10
 

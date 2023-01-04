@@ -9,7 +9,6 @@
 
 #include "tools.h"
 #include "api.h"
-extern API api;
 
 #include "modules.h"
 

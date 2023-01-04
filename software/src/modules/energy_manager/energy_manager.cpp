@@ -23,17 +23,10 @@
 
 #include "api.h"
 #include "event_log.h"
+#include "modules.h"
 #include "task_scheduler.h"
 #include "tools.h"
 #include "web_server.h"
-#include "modules.h"
-
-extern EventLog logger;
-
-extern TaskScheduler task_scheduler;
-extern WebServer server;
-
-extern API api;
 
 const char* ENERGY_MANAGER_INPUT_CONFIG_STR[]      = {"input3_config",      "input4_config"};
 const char* ENERGY_MANAGER_INPUT_CONFIG_IF_STR[]   = {"input3_config_if",   "input4_config_if"};

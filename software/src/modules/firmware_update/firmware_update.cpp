@@ -30,6 +30,7 @@
 #include "tools.h"
 #include "build.h"
 #include "modules.h"
+#include "web_server.h"
 
 #include "./crc32.h"
 #include "./recovery_html.embedded.h"
@@ -38,12 +39,6 @@
 #include <freertos/task.h>
 
 extern const char *DISPLAY_NAME;
-
-extern API api;
-extern EventLog logger;
-
-extern WebServer server;
-extern TaskScheduler task_scheduler;
 
 extern bool firmware_update_allowed;
 extern bool factory_reset_requested;

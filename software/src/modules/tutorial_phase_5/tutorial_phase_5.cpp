@@ -27,10 +27,7 @@
 #include "bindings/hal_common.h"
 #include "bindings/errors.h"
 
-extern API api;
-extern EventLog logger;
 extern TF_HAL hal;
-extern TaskScheduler task_scheduler;
 
 // Parse two digit hexadecimal number
 static uint8_t hex2num(String hex)

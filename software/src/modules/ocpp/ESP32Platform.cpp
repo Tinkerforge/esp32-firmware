@@ -14,7 +14,6 @@
 #include "modules.h"
 #include "api.h"
 #include "build.h"
-extern API api;
 
 void(*recv_cb)(char *, size_t, void *) = nullptr;
 void *recv_cb_userdata = nullptr;

@@ -33,8 +33,6 @@
 
 #define MAX_URI_HANDLERS 128
 
-extern TaskScheduler task_scheduler;
-
 // Global definition here to match the declaration in web_server.h.
 WebServer server;
 

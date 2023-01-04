@@ -29,8 +29,6 @@
 #include "task_scheduler.h"
 
 extern TF_HAL hal;
-extern TaskScheduler task_scheduler;
-extern EventLog logger;
 
 // Global definition here to match the declaration in api.h.
 API api;

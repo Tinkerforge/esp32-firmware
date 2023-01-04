@@ -26,11 +26,7 @@
 #include "task_scheduler.h"
 #include "tools.h"
 
-extern EventLog logger;
-
-extern TaskScheduler task_scheduler;
 extern TF_HAL hal;
-extern API api;
 
 #define RED 3
 #define YELLOW 2

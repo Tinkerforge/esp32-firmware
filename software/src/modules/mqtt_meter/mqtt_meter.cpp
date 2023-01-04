@@ -25,8 +25,6 @@
 #include "modules.h"
 #include "mqtt_meter.h"
 
-extern API api;
-
 void MqttMeter::pre_setup()
 {
     config = ConfigRoot(Config::Object({

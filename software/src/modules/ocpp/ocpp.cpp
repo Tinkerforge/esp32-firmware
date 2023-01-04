@@ -26,9 +26,6 @@
 
 #include <ctype.h>
 
-extern API api;
-extern TaskScheduler task_scheduler;
-
 extern char local_uid_str[7];
 
 void Ocpp::pre_setup()

@@ -28,14 +28,6 @@
 #include "web_server.h"
 #include "modules.h"
 
-extern EventLog logger;
-
-extern WebServer server;
-extern TaskScheduler task_scheduler;
-extern Config modules;
-
-extern API api;
-
 void EVSEV2Meter::pre_setup()
 {
 }

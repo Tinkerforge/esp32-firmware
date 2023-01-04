@@ -1,7 +1,6 @@
 #include "sdm630_defs.h"
 
 #include "api.h"
-extern API api;
 
 static ConfigRoot sdm630_reset;
 

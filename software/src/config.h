@@ -30,8 +30,6 @@
 #include "strict_variant/variant.hpp"
 #include "strict_variant/mpl/find_with.hpp"
 
-extern EventLog logger;
-
 void config_preinit();
 void config_postsetup();
 

@@ -24,9 +24,6 @@
 #include "api.h"
 #include "event_log.h"
 
-extern API api;
-extern EventLog logger;
-
 void TutorialPhase3::pre_setup()
 {
 }

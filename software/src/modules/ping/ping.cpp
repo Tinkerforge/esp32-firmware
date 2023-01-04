@@ -31,10 +31,6 @@
 #include "event_log.h"
 #include "task_scheduler.h"
 
-extern API api;
-extern EventLog logger;
-extern TaskScheduler task_scheduler;
-
 // Used to print success/timeout only once
 // 0 - init
 // 1 - success
