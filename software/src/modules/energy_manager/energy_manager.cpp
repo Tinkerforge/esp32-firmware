@@ -194,15 +194,20 @@ void EnergyManager::update_io()
     }
 }
 
+void EnergyManager::set_available_current(uint32_t current) {
+    is_on_last = current > 0;
+    charge_manager.set_available_current(current);
+}
+
 void EnergyManager::update_energy()
 {
     uint32_t time = micros();
 
     if (switching_state == SwitchingState_Monitoring) {
-        const int32_t  power_at_meter_w = all_data.power * 1000; // watt
+        const int32_t  power_at_meter_w = all_data.energy_meter_type ? all_data.power * 1000 : meter.values.get("power")->asFloat(); // watt
         const bool     is_3phase        = contactor_installed ? all_data.contactor_value : phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE;
         const uint32_t have_phases      = 1 + is_3phase * 2;
-        const bool     is_on            = charge_manager_allocated_current_ma != 0;
+        const bool     is_on            = is_on_last;
 
         const uint32_t charge_manager_allocated_power_w = 230 * have_phases * charge_manager_allocated_current_ma / 1000; // watt
         const int32_t  power_available_w = excess_charging_enable ? charge_manager_allocated_power_w + max_power_from_grid_w - power_at_meter_w : 230 * 3 * max_current_ma / 1000; // watt
@@ -211,7 +216,7 @@ void EnergyManager::update_energy()
             if (is_on) {
                 phase_state_change_blocked_until = on_state_change_blocked_until = millis() + switching_hysteresis_ms;
             }
-            charge_manager.set_available_current(0);
+            set_available_current(0);
             just_switched_phases = false;
             return;
         }
@@ -259,7 +264,7 @@ void EnergyManager::update_energy()
 
         // Switch phases or deal with what's available.
         if (switch_phases) {
-            charge_manager.set_available_current(0);
+            set_available_current(0);
             switching_state = SwitchingState_Stopping;
             switching_start = time_now;
         } else {
@@ -304,17 +309,20 @@ void EnergyManager::update_energy()
                 current_available_ma = max_current_ma;
             }
 
-            charge_manager.set_available_current(current_available_ma);
+            set_available_current(current_available_ma);
             just_switched_phases = false;
         }
 
-        //static uint32_t last_print = 0;
-        //last_print = (last_print + 1) % 1;
-        //if (last_print == 0)
-        //    logger.printfln("power_at_meter_w %i | max_power_from_grid_w %i | power_available_w %i | wants_3phase %i | is_3phase %i | last_current_available_ma %i",
-        //        power_at_meter_w, max_power_from_grid_w, power_available_w, wants_3phase, is_3phase, charge_manager.charge_manager_available_current.get("current")->asUint());
+        const uint32_t print_every = 8;
+        if (print_every > 0) {
+            static uint32_t last_print = 0;
+            last_print = (last_print + 1) % print_every;
+            if (last_print == 0)
+                logger.printfln("power_at_meter_w %i | max_power_from_grid_w %i | power_available_w %i | wants_3phase %i | is_3phase %i | is_on %i | cm avail ma %u | cm alloc ma %u",
+                    power_at_meter_w, max_power_from_grid_w, power_available_w, wants_3phase, is_3phase, is_on, charge_manager.charge_manager_available_current.get("current")->asUint(), charge_manager_allocated_current_ma);
+        }
     } else if (switching_state == SwitchingState_Stopping) {
-        charge_manager.set_available_current(0);
+        set_available_current(0);
 
         if (charge_manager.is_charging_stopped(switching_start)) {
             switching_state = SwitchingState_DisconnectingCP;
@@ -565,15 +573,17 @@ void EnergyManager::update_all_data()
     energy_manager_state.get("input_voltage")->updateUint(all_data.voltage);
     energy_manager_state.get("contactor_check_state")->updateUint(all_data.contactor_check_state);
 
-    energy_manager_state.get("energy_meter_type")->updateUint(all_data.energy_meter_type);
-    energy_manager_state.get("energy_meter_power")->updateFloat(all_data.power);
-    energy_manager_state.get("energy_meter_energy_rel")->updateFloat(all_data.energy_relative);
-    energy_manager_state.get("energy_meter_energy_abs")->updateFloat(all_data.energy_absolute);
-    for (int i = 0; i < 3; i++) {
-        energy_manager_state.get("energy_meter_phases_active")->get(i)->updateBool(all_data.phases_active[i]);
-    }
-    for (int i = 0; i < 3; i++) {
-        energy_manager_state.get("energy_meter_phases_connected")->get(i)->updateBool(all_data.phases_connected[i]);
+    if (all_data.energy_meter_type != METER_TYPE_NONE) {
+        energy_manager_state.get("energy_meter_type")->updateUint(all_data.energy_meter_type);
+        energy_manager_state.get("energy_meter_power")->updateFloat(all_data.power);
+        energy_manager_state.get("energy_meter_energy_rel")->updateFloat(all_data.energy_relative);
+        energy_manager_state.get("energy_meter_energy_abs")->updateFloat(all_data.energy_absolute);
+        for (int i = 0; i < 3; i++) {
+            energy_manager_state.get("energy_meter_phases_active")->get(i)->updateBool(all_data.phases_active[i]);
+        }
+        for (int i = 0; i < 3; i++) {
+            energy_manager_state.get("energy_meter_phases_connected")->get(i)->updateBool(all_data.phases_connected[i]);
+        }
     }
 }
 

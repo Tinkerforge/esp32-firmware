@@ -134,11 +134,14 @@ public:
     EnergyManagerAllData all_data;
 
 private:
+    void set_available_current(uint32_t current);
+
     SwitchingState switching_state;
     uint32_t switching_start;
     bool wants_3phase;
     bool wants_3phase_last;
     bool wants_on_last;
+    bool is_on_last;
     bool just_switched_phases;
     uint32_t phase_state_change_blocked_until;
     uint32_t on_state_change_blocked_until;
