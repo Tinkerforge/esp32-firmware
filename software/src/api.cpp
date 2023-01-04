@@ -27,9 +27,6 @@
 #include "event_log.h"
 #include "task_scheduler.h"
 
-extern TaskScheduler task_scheduler;
-extern EventLog logger;
-
 // Global definition here to match the declaration in api.h.
 API api;
 

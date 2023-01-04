@@ -28,9 +28,6 @@
 #include "tools.h"
 #include "task_scheduler.h"
 
-extern TaskScheduler task_scheduler;
-extern API api;
-
 void Debug::pre_setup()
 {
 }

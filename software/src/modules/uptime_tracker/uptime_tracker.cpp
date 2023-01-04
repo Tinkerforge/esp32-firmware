@@ -19,10 +19,9 @@
 
 #include "uptime_tracker.h"
 
-
-extern API api;
-extern EventLog logger;
-extern TaskScheduler task_scheduler;
+#include "api.h"
+#include "event_log.h"
+#include "task_scheduler.h"
 
 RTC_NOINIT_ATTR uptime_data_t data;
 

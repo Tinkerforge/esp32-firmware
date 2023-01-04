@@ -32,13 +32,6 @@
 #include "sdm72dmv2_defs.h"
 #include "sdm72dm_defs.h"
 
-extern EventLog logger;
-
-extern WebServer server;
-extern TaskScheduler task_scheduler;
-
-extern API api;
-
 static uint16_t write_buf[100];
 static uint16_t registers[400];
 

@@ -23,8 +23,6 @@
 
 #include "event_log.h"
 
-extern EventLog logger;
-
 void TutorialPhase1::pre_setup()
 {
 }

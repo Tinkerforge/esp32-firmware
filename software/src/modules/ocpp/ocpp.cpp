@@ -24,8 +24,7 @@
 #include "api.h"
 #include "task_scheduler.h"
 
-extern API api;
-extern TaskScheduler task_scheduler;
+#include <ctype.h>
 
 extern char local_uid_str[7];
 

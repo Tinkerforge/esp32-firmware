@@ -23,6 +23,7 @@
 
 #include "tools.h"
 #include "hal_arduino_esp32_brick/hal_arduino_esp32_brick.h"
+#include "event_log.h"
 #include "task_scheduler.h"
 
 #if TF_LOCAL_ENABLE != 0
@@ -35,14 +36,11 @@
 
 #endif
 
-extern TaskScheduler task_scheduler;
-
 #define GREEN_LED 4
 #define BLUE_LED 32
 #define BUTTON 0
 
 TF_HAL hal;
-extern EventLog logger;
 extern uint32_t local_uid_num;
 extern char local_uid_str[32];
 extern char passphrase[20];

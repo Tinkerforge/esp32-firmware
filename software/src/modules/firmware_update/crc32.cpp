@@ -21,7 +21,6 @@
 
 #include "crc32.h"
 #include "event_log.h"
-extern EventLog logger;
 
 //#include "configs/config.h"
 

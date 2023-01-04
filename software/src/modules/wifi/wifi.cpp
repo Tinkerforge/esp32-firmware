@@ -32,14 +32,8 @@
 #include "build.h"
 #include "tools.h"
 
-extern EventLog logger;
-
-extern TaskScheduler task_scheduler;
-extern WebServer server;
 extern char local_uid_str[32];
 extern char passphrase[20];
-
-extern API api;
 
 void Wifi::pre_setup()
 {

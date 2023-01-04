@@ -21,9 +21,11 @@
 
 #include <Arduino.h>
 
-#include "task_scheduler.h"
-
+#include "api.h"
+#include "event_log.h"
 #include "modules.h"
+#include "task_scheduler.h"
+#include "web_server.h"
 
 #include <ESPmDNS.h>
 #include "NetBIOS.h"
@@ -33,11 +35,6 @@
 #include <cstring>
 
 #include "TFJson.h"
-
-extern TaskScheduler task_scheduler;
-extern API api;
-extern EventLog logger;
-extern WebServer server;
 
 void CMNetworking::pre_setup()
 {

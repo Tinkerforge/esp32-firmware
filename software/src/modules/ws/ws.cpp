@@ -21,12 +21,9 @@
 
 #include <esp_http_server.h>
 
+#include "api.h"
 #include "task_scheduler.h"
 #include "web_server.h"
-
-extern TaskScheduler task_scheduler;
-extern WebServer server;
-extern API api;
 
 void WS::pre_setup()
 {

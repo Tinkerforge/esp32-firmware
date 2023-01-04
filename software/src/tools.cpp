@@ -39,10 +39,6 @@
 
 #include <arpa/inet.h>
 
-extern TaskScheduler task_scheduler;
-
-extern EventLog logger;
-
 const char *tf_reset_reason()
 {
     esp_reset_reason_t reason = esp_reset_reason();

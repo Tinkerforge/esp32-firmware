@@ -26,9 +26,6 @@
 #include "task_scheduler.h"
 #include "tools.h"
 
-extern EventLog logger;
-
-extern TaskScheduler task_scheduler;
 extern TF_HAL hal;
 
 void Kransteuerung::pre_setup()

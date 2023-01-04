@@ -33,9 +33,6 @@
 #include "task_scheduler.h"
 #include "tools.h"
 
-extern API api;
-extern TaskScheduler task_scheduler;
-
 struct ConfigMigration {
     const int major, minor, patch;
     void (*const fn)(void);

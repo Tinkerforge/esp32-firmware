@@ -23,9 +23,7 @@
 #include "event_log.h"
 #include "web_server.h"
 
-extern EventLog logger;
 extern TF_HAL hal;
-extern WebServer server;
 
 extern int8_t green_led_pin;
 

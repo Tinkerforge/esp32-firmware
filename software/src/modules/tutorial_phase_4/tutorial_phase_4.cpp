@@ -26,8 +26,6 @@
 #include "bindings/hal_common.h"
 #include "bindings/errors.h"
 
-extern API api;
-extern EventLog logger;
 extern TF_HAL hal;
 
 // Parse two digit hexadecimal number

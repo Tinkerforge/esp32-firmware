@@ -36,12 +36,7 @@
 
 #include <string.h>
 
-extern EventLog logger;
-
 extern TF_HAL hal;
-extern TaskScheduler task_scheduler;
-
-extern API api;
 
 TF_RotaryPotiV2 poti;
 TF_RGBLEDV2 led;

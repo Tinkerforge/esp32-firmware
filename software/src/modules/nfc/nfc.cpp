@@ -47,12 +47,6 @@
 #define TOKEN_LIFETIME_MS 30000
 #define DETECTION_THRESHOLD_MS 1000
 
-extern EventLog logger;
-
-extern TaskScheduler task_scheduler;
-
-extern API api;
-
 void NFC::pre_setup()
 {
     seen_tags = Config::Array(

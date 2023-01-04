@@ -20,12 +20,10 @@
 #include "rtc.h"
 #include "build.h"
 #include "esp_sntp.h"
+#include "api.h"
 #include "modules.h"
+#include "task_scheduler.h"
 #include <ctime>
-
-extern API api;
-extern TaskScheduler task_scheduler;
-extern NTP ntp;
 
 void Rtc::pre_setup()
 {

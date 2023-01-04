@@ -18,6 +18,7 @@
  */
 #include "ntp.h"
 
+#include "api.h"
 #include "task_scheduler.h"
 
 #include "modules.h"
@@ -29,13 +30,6 @@
 
 #include "timezone_translation.h"
 #include "build.h"
-
-extern TaskScheduler task_scheduler;
-extern API api;
-
-#if MODULE_RTC_AVAILABLE()
-extern Rtc rtc;
-#endif
 
 static bool first = true;
 

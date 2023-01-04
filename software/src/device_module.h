@@ -31,12 +31,7 @@
 #include "tools.h"
 #include "web_server.h"
 
-extern EventLog logger;
-
 extern TF_HAL hal;
-extern WebServer server;
-
-extern API api;
 
 #define BOOTLOADER_MODE_FIRMWARE 1
 #define FIRMWARE_DEVICE_IDENTIFIER_OFFSET 8

@@ -19,15 +19,12 @@
 
 #include "web_sockets.h"
 
+#include "event_log.h"
 #include "task_scheduler.h"
 #include "web_server.h"
 
 #include "esp_httpd_priv.h"
 #include "modules.h"
-
-extern TaskScheduler task_scheduler;
-extern WebServer server;
-extern EventLog logger;
 
 #define KEEP_ALIVE_TIMEOUT_MS 10000
 #define WORKER_START_ERROR_THRES 60 * 10

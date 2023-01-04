@@ -23,22 +23,15 @@
 #include "esp_modbus_slave.h"
 #include "esp_netif.h"
 
+#include "api.h"
 #include "modules.h"
+#include "task_scheduler.h"
+
 #include "modbus_tcp.h"
 #include "build.h"
 #include "math.h"
 
-extern TaskScheduler task_scheduler;
-extern API api;
 extern uint32_t local_uid_num;
-
-#if MODULE_EVSE_V2_AVAILABLE()
-extern EVSEV2 evse_v2;
-#endif
-
-#if MODULE_EVSE_AVAILABLE()
-extern EVSE evse;
-#endif
 
 #define MODBUS_TABLE_VERSION 1
 

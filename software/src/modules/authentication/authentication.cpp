@@ -27,10 +27,6 @@
 
 #include "digest_auth.h"
 
-extern WebServer server;
-extern API api;
-extern EventLog logger;
-
 void Authentication::pre_setup()
 {
     authentication_config = ConfigRoot{Config::Object({

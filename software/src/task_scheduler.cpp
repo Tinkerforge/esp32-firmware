@@ -21,8 +21,6 @@
 
 #include "web_server.h"
 
-extern WebServer server;
-
 // Global definition here to match the declaration in task_scheduler.h.
 TaskScheduler task_scheduler;
 

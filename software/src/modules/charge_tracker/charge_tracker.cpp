@@ -28,8 +28,6 @@
 
 #include <memory>
 
-extern TaskScheduler task_scheduler;
-
 struct ChargeStart {
     uint32_t timestamp_minutes = 0;
     float meter_start = 0.0f;

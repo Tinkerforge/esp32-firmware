@@ -25,8 +25,6 @@
 
 #include "tools.h"
 
-extern WebServer server;
-
 // Global definition here to match the declaration in event_log.h.
 EventLog logger;
 

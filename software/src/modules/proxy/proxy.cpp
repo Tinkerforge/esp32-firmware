@@ -30,11 +30,6 @@
 #include "web_server.h"
 
 extern TF_HAL hal;
-extern WebServer server;
-
-extern TaskScheduler task_scheduler;
-
-extern API api;
 
 void Proxy::pre_setup()
 {

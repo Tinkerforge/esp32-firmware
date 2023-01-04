@@ -26,14 +26,6 @@
 #include "web_server.h"
 #include "modules.h"
 
-extern EventLog logger;
-
-extern WebServer server;
-extern TaskScheduler task_scheduler;
-extern Config modules;
-
-extern API api;
-
 void APIMeter::pre_setup()
 {
     state_update = Config::Object({

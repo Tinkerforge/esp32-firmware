@@ -24,10 +24,6 @@
 #include "web_server.h"
 #include "modules.h"
 
-extern API api;
-extern WebServer server;
-extern TaskScheduler task_scheduler;
-
 #if MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
 #define RECV_BUF_SIZE 4096
 #else
