@@ -257,8 +257,8 @@ def main():
     firmware_url = env.GetProjectOption("custom_firmware_url")
     require_firmware_info = env.GetProjectOption("custom_require_firmware_info")
     build_flags = env.GetProjectOption("build_flags")
-
     frontend_debug = env.GetProjectOption("custom_frontend_debug") == "true"
+    web_only = env.GetProjectOption("custom_web_only") == "true"
 
     try:
         oldest_version, version = get_changelog_version(name)
@@ -745,12 +745,20 @@ def main():
 
         html = html.replace('<link href=css/main.css rel=stylesheet>', '<style rel=stylesheet>{0}</style>'.format(css))
         html = html.replace('<script src=js/bundle.js></script>', '<script>{0}</script>'.format(js))
+        html_bytes = html.encode('utf-8')
 
-        util.embed_data(gzip.compress(html.encode('utf-8')), 'src', 'index_html', 'char')
+        with open('web/build/index.standalone.html', 'wb') as f:
+            f.write(html_bytes)
+
+        util.embed_data(gzip.compress(html_bytes), 'src', 'index_html', 'char')
         util.store_digest(index_html_digest, 'src', 'index_html', env=env)
 
     print("Checking HTML ID usage")
     with ChangedDirectory('web'):
         subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "check_id_usage.py"] + [x.under for x in frontend_modules])
+
+    if web_only:
+        print('Stopping build after web')
+        sys.exit(1)
 
 main()
