@@ -47,7 +47,7 @@ void MqttMeter::setup()
 {
     api.restorePersistentConfig("mqtt/meter_config", &config);
     enabled = config.get("enable")->asBool();
-    meter_topic = config.get("topic")->asString();
+    source_meter_topic = config.get("topic")->asString();
     initialized = true;
 }
 
@@ -65,7 +65,7 @@ void MqttMeter::onMqttConnect()
     if (!enabled)
         return;
 
-    esp_mqtt_client_subscribe(mqtt.client, meter_topic.c_str(), 0);
+    esp_mqtt_client_subscribe(mqtt.client, source_meter_topic.c_str(), 0);
 }
 
 bool MqttMeter::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain)
@@ -73,14 +73,14 @@ bool MqttMeter::onMqttMessage(char *topic, size_t topic_len, char *data, size_t 
     if (!enabled)
         return false;
 
-    if (meter_topic.length() != topic_len && memcmp(meter_topic.c_str(), topic, topic_len) != 0) {
+    if (source_meter_topic.length() != topic_len || memcmp(source_meter_topic.c_str(), topic, topic_len) != 0) {
         // Not our topic
         return false;
     }
 
     if (retain) {
-        logger.printfln("mqtt_meter: Ignoring retained message. Need fresh data.");
-        // Even if we ignore the data, return true because the messages was for our topic.
+        logger.printfln("mqtt_meter: Ignoring retained message.");
+        // Even if we ignore the data, return true because we consumed the message.
         return true;
     }
 
