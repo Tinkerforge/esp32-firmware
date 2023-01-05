@@ -79,7 +79,8 @@ void ChargeTracker::pre_setup()
     });
 
     config = Config::Object({
-        {"electricity_price", Config::Uint16(0)}
+        {"electricity_price", Config::Uint16(0)},
+        {"pdf_text", Config::Str("", 0, 500)}
     });
 }
 
