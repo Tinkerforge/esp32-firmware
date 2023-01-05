@@ -379,7 +379,28 @@ void EnergyManager::update_energy()
         const bool     is_on            = is_on_last;
 
         const uint32_t charge_manager_allocated_power_w = 230 * have_phases * charge_manager_allocated_current_ma / 1000; // watt
-        const int32_t  power_available_w = excess_charging_enable ? charge_manager_allocated_power_w + max_power_from_grid_w - power_at_meter_w : 230 * 3 * max_current_ma / 1000; // watt
+
+        int32_t power_available_w; // watt
+        if (!excess_charging_enable) {
+            power_available_w = 230 * 3 * max_current_ma / 1000;
+        } else {
+            // Excess charging enabled; use a simple P controller to adjust available power.
+            int32_t p_error_w  = max_power_from_grid_w - power_at_meter_w;
+
+            int32_t p_adjust_w;
+            // Some EVs may only be able to adjust their charge power in steps of 1000W
+            // and the absolute minimum power threshold for switching on is 1380W.
+            // Use 1200W as a compromise.
+            if (abs(p_error_w) > 1200) {
+                // Use p=1 for large differences so that the threshold for switching on can be reached and the controller can converge faster.
+                p_adjust_w = p_error_w;
+            } else {
+                // Use p=0.5 for small differences so that the controller can converge without oscillating too much.
+                p_adjust_w = p_error_w / 2;
+            }
+
+            power_available_w  = static_cast<int32_t>(charge_manager_allocated_power_w) + p_adjust_w;
+        }
 
         if (!input_charging_allowed[0] || !input_charging_allowed[1]) {
             if (is_on) {
