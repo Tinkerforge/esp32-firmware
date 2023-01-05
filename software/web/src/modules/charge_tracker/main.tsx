@@ -39,6 +39,7 @@ import { ConfigComponent } from "src/ts/components/config_component";
 import { ConfigForm } from "src/ts/components/config_form";
 import { InputFloat } from "src/ts/components/input_float";
 import { PDFDocument, PDFPage, StandardFonts, PDFFont, rgb } from "pdf-lib";
+import { logo_base64 } from "src/ts/branding"
 
 type Charge = API.getType['charge_tracker/last_charges'][0];
 type ChargetrackerConfig = API.getType['charge_tracker/config'];
@@ -451,7 +452,7 @@ async function add_page(doc: PDFExport, is_first_page: boolean, letter_head?: st
 
     page.moveTo(PDFSPACELEFT, page.getHeight() - 100);
 
-    let img = await doc.doc.embedPng('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQ0AAAAjAQMAAAC0Dc25AAAABlBMVEXwH1b///+8ndbpAAAAAXRSTlMAQObYZgAAAE1JREFUOMtjeMDAwM7AwFDA/h8CDshDGQz1EPoHA3WVMEAA4wEogx1KM1iMKhlCSuiWXthhbpGBOQLmvOGihB1FCXKADwMl0Hj9QGslAM2l6A72PC0DAAAAAElFTkSuQmCC');
+    let img = await doc.doc.embedPng(logo_base64);
 
     page.drawRectangle({
         x: 0,
