@@ -148,10 +148,10 @@ private:
     uint32_t charge_manager_allocated_current_ma;
 
     // Config cache
-    int32_t  max_power_from_grid_w;
+    //bool     excess_charging_enable;
+    //int32_t  max_power_from_grid_w;
     uint32_t max_current_ma;
     uint32_t min_current_ma;
-    bool     excess_charging_enable;
     bool     contactor_installed;
     uint8_t  phase_switching_mode;
     uint32_t switching_hysteresis_ms;

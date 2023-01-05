@@ -127,10 +127,10 @@ void EnergyManager::setup()
     });
 
     // Cache config for energy update
-    max_power_from_grid_w   = energy_manager_config_in_use.get("maximum_power_from_grid")->asInt();         // watt
+    //excess_charging_enable  = energy_manager_config_in_use.get("excess_charging_enable")->asBool();
+    //max_power_from_grid_w   = energy_manager_config_in_use.get("maximum_power_from_grid")->asInt();         // watt
     max_current_ma          = energy_manager_config_in_use.get("maximum_available_current")->asUint();      // milliampere
     min_current_ma          = energy_manager_config_in_use.get("minimum_current")->asUint();                // milliampere
-    excess_charging_enable  = energy_manager_config_in_use.get("excess_charging_enable")->asBool();
     contactor_installed     = energy_manager_config_in_use.get("contactor_installed")->asBool();
     phase_switching_mode    = energy_manager_config_in_use.get("phase_switching_mode")->asUint();
     switching_hysteresis_ms = energy_manager_config_in_use.get("hysteresis_time")->asUint() * 60 * 1000;    // milliseconds (from minutes)
@@ -379,6 +379,10 @@ void EnergyManager::update_energy()
         const bool     is_on            = is_on_last;
 
         const uint32_t charge_manager_allocated_power_w = 230 * have_phases * charge_manager_allocated_current_ma / 1000; // watt
+
+        // Evil: Allow runtime changes.
+        bool    excess_charging_enable  = energy_manager_config.get("excess_charging_enable")->asBool();
+        int32_t max_power_from_grid_w   = energy_manager_config.get("maximum_power_from_grid")->asInt(); // watt
 
         int32_t power_available_w; // watt
         if (!excess_charging_enable) {
