@@ -57,7 +57,7 @@ static char distribution_log[DISTRIBUTION_LOG_LEN] = {0};
 #define WATCHDOG_TIMEOUT_MS 30000
 
 #if MODULE_ENERGY_MANAGER_AVAILABLE()
-static void apply_enegry_manager_config(Config &conf)
+static void apply_energy_manager_config(Config &conf)
 {
     conf.get("enable_charge_manager")->updateBool(true);
     conf.get("enable_watchdog")->updateBool(false);
@@ -85,7 +85,7 @@ void ChargeManager::pre_setup()
         )}
     }), [](Config &conf) -> String {
 #if MODULE_ENERGY_MANAGER_AVAILABLE()
-        apply_enegry_manager_config(conf);
+        apply_energy_manager_config(conf);
 #else
         uint32_t default_available_current = conf.get("default_available_current")->asUint();
         uint32_t maximum_available_current = conf.get("maximum_available_current")->asUint();
@@ -267,11 +267,14 @@ int idx_array[MAX_CLIENTS] = {0};
 
 void ChargeManager::setup()
 {
+    uint32_t control_cycle_time_ms;
     if (!api.restorePersistentConfig("charge_manager/config", &charge_manager_config)) {
 #if MODULE_ENERGY_MANAGER_AVAILABLE()
-        apply_enegry_manager_config(charge_manager_config);
+        apply_energy_manager_config(charge_manager_config);
+        control_cycle_time_ms = 5 * 1000;
 #else
         charge_manager_config.get("maximum_available_current")->updateUint(0);
+        control_cycle_time_ms = 10 * 1000;
 #endif
     }
 
@@ -297,7 +300,7 @@ void ChargeManager::setup()
 
     start_manager_task();
 
-    task_scheduler.scheduleWithFixedDelay([this](){this->distribute_current();}, 10000, 10000);
+    task_scheduler.scheduleWithFixedDelay([this](){this->distribute_current();}, control_cycle_time_ms, control_cycle_time_ms);
 
     if (charge_manager_config_in_use.get("enable_watchdog")->asBool()) {
         task_scheduler.scheduleWithFixedDelay([this](){this->check_watchdog();}, 1000, 1000);

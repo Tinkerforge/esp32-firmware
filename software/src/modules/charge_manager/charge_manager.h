@@ -53,10 +53,6 @@ public:
     ConfigRoot charge_manager_available_current;
     ConfigRoot charge_manager_control_pilot_disconnect;
 
-    bool request_in_progress;
-    uint32_t request_id;
-    String buf;
-
     uint32_t last_available_current_update = 0;
 
 private:
