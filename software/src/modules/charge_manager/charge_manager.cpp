@@ -260,7 +260,7 @@ void ChargeManager::start_manager_task()
         if(cm_networking.send_manager_update(i, state.get("allocated_current")->asUint(), state.get("cp_disconnect")->asBool()))
             ++i;
 
-    }, cm_send_delay, cm_send_delay);
+    }, 0, cm_send_delay);
 }
 
 int idx_array[MAX_CLIENTS] = {0};
