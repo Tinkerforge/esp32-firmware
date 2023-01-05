@@ -175,6 +175,10 @@ void EnergyManager::setup()
     task_scheduler.scheduleWithFixedDelay([this](){
         this->update_energy();
     }, 250, 250);
+
+    task_scheduler.scheduleOnce([this](){
+        uptime_past_hysteresis = true;
+    }, switching_hysteresis_ms);
 }
 
 void EnergyManager::register_urls()
@@ -355,7 +359,7 @@ void EnergyManager::update_io()
         }
     }
 
-    static uint32_t time_max = 0;
+    static uint32_t time_max = 15000;
     time = micros() - time;
     if (time > time_max) {
         time_max = time;
@@ -439,6 +443,7 @@ void EnergyManager::update_energy()
 
         // Remember last decision change to start hysteresis time.
         if (wants_3phase != wants_3phase_last) {
+            logger.printfln("energy_manager: wants_3phase decision changed to %i", wants_3phase);
             phase_state_change_blocked_until = time_now + switching_hysteresis_ms;
             wants_3phase_last = wants_3phase;
         }
@@ -450,6 +455,10 @@ void EnergyManager::update_energy()
                 logger.printfln("energy_manager: Phase switch wanted but no contactor installed. Check configuration.");
             } else if (!charge_manager.is_control_pilot_disconnect_supported(time_now - 5000)) {
                 logger.printfln("energy_manager: Phase switch wanted but not supported by all chargers.");
+            } else if (!uptime_past_hysteresis) {
+                // (Re)booted recently. Allow immediate switching.
+                logger.printfln("energy_manager: Free phase switch to %s during start-up period. available=%i", wants_3phase ? "3 phases" : "1 phase", power_available_w);
+                switch_phases = true;
             } else if (!is_on && a_after_b(time_now, on_state_change_blocked_until) && a_after_b(time_now, phase_state_change_blocked_until - switching_hysteresis_ms/2)) {
                 // On/off deadline passed and at least half of the phase switching deadline passed.
                 logger.printfln("energy_manager: Free phase switch to %s while power is off. available=%i", wants_3phase ? "3 phases" : "1 phase", power_available_w);
@@ -489,8 +498,13 @@ void EnergyManager::update_energy()
                 if (a_after_b(time_now, on_state_change_blocked_until)) {
                     // Start/stop allowed
                     logger.printfln("energy_manager: Switch %s", wants_on ? "on" : "off");
+                } else if (!uptime_past_hysteresis) {
+                    // (Re)booted recently. Allow immediate switching.
+                    logger.printfln("energy_manager: Free switch-%s during start-up period.", wants_on ? "on" : "off");
+                    // Only one immediate switch on/off allowed; mark as used.
+                    uptime_past_hysteresis = true;
                 } else if (just_switched_phases && a_after_b(time_now, on_state_change_blocked_until - switching_hysteresis_ms/2)) {
-                    logger.printfln("energy_manager: Opportunistic switch %s", wants_on ? "on" : "off");
+                    logger.printfln("energy_manager: Opportunistic switch-%s", wants_on ? "on" : "off");
                 } else { // Switched too recently
                     //logger.printfln("energy_manager: Start/stop wanted but decision changed too recently. Have to wait another %ums.", off_state_change_blocked_until - time_now);
                     if (is_on) { // Is on, needs to stay on at minimum current.
@@ -551,7 +565,7 @@ void EnergyManager::update_energy()
         just_switched_phases = true;
     }
 
-    static uint32_t time_max = 0;
+    static uint32_t time_max = 30000;
     time = micros() - time;
     if (time > time_max) {
         time_max = time;
