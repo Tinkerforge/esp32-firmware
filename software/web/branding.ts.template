@@ -1,2 +1,2 @@
 
-export let logo_base64: str = "{{{logo_base64}}}";
+export let logo_base64: string = "{{{logo_base64}}}";
