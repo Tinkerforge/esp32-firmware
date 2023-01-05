@@ -39,7 +39,7 @@ import { ConfigComponent } from "src/ts/components/config_component";
 import { ConfigForm } from "src/ts/components/config_form";
 import { InputFloat } from "src/ts/components/input_float";
 import { PDFDocument, PDFPage, StandardFonts, PDFFont, rgb } from "pdf-lib";
-import { logo_base64 } from "src/ts/branding"
+import { logo_base64, logo_background_color } from "src/ts/branding"
 
 type Charge = API.getType['charge_tracker/last_charges'][0];
 type ChargetrackerConfig = API.getType['charge_tracker/config'];
@@ -458,7 +458,7 @@ async function add_page(doc: PDFExport, is_first_page: boolean, letter_head?: st
         x: 0,
         width: page.getWidth(),
         height: 75,
-        color: rgb(0.35, 0.35, 0.35)
+        color: rgb(logo_background_color[0], logo_background_color[1], logo_background_color[2])
     })
 
     page.drawImage(img, {
