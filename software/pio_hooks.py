@@ -433,6 +433,7 @@ def main():
 
     favicon_path = None
     logo_path = None
+    branding_path = None
 
     for frontend_module in frontend_modules:
         mod_path = os.path.join('web', 'src', 'modules', frontend_module.under)
@@ -458,6 +459,15 @@ def main():
                 sys.exit(1)
 
             logo_path = potential_logo_path
+
+        potential_branding_path = os.path.join(mod_path, 'branding.ts')
+
+        if os.path.exists(potential_branding_path):
+            if branding_path != None:
+                print('Error: Branding path collision ' + potential_branding_path + ' vs ' + branding_path)
+                sys.exit(1)
+
+            branding_path = potential_branding_path
 
         if os.path.exists(os.path.join(mod_path, 'navbar.html')):
             with open(os.path.join(mod_path, 'navbar.html'), encoding='utf-8') as f:
@@ -542,8 +552,15 @@ def main():
         print('Error: Logo missing')
         sys.exit(1)
 
+    if branding_path == None:
+        print('Error: Branding missing')
+        sys.exit(1)
+
     with open(logo_path, 'rb') as f:
         logo_base64 = b64encode(f.read()).decode('ascii')
+
+    with open(branding_path, 'r') as f:
+        branding = f.read()
 
     specialize_template(os.path.join("web", "index.html.template"), os.path.join("web", "src", "index.html"), {
         '{{{favicon}}}': favicon,
@@ -573,6 +590,7 @@ def main():
 
     specialize_template(os.path.join("web", "branding.ts.template"), os.path.join("web", "src", "ts", "branding.ts"), {
         '{{{logo_base64}}}': logo_base64,
+        '{{{branding}}}': branding,
     })
 
     translation_str = ''

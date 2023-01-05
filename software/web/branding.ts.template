@@ -1,2 +1,4 @@
 
 export let logo_base64: string = "{{{logo_base64}}}";
+
+{{{branding}}}
