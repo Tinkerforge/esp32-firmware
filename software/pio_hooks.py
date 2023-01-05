@@ -543,11 +543,11 @@ def main():
         sys.exit(1)
 
     with open(logo_path, 'rb') as f:
-        logo = b64encode(f.read()).decode('ascii')
+        logo_base64 = b64encode(f.read()).decode('ascii')
 
     specialize_template(os.path.join("web", "index.html.template"), os.path.join("web", "src", "index.html"), {
         '{{{favicon}}}': favicon,
-        '{{{logo}}}': logo,
+        '{{{logo_base64}}}': logo_base64,
         '{{{navbar}}}': '\n                        '.join(navbar_entries),
         '{{{content}}}': '\n                    '.join(content_entries),
         '{{{status}}}': '\n                            '.join(status_entries)
@@ -569,6 +569,10 @@ def main():
         '{{{module_interface}}}': ',\n    '.join('{}: boolean'.format(x.under) for x in backend_modules),
         '{{{config_map_entries}}}': '\n    '.join(api_config_map_entries),
         '{{{api_cache_entries}}}': '\n    '.join(api_cache_entries),
+    })
+
+    specialize_template(os.path.join("web", "branding.ts.template"), os.path.join("web", "src", "ts", "branding.ts"), {
+        '{{{logo_base64}}}': logo_base64,
     })
 
     translation_str = ''

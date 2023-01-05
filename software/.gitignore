@@ -20,5 +20,6 @@ web/src/main.ts
 web/src/main.scss
 web/src/index.html
 web/src/ts/api_defs.ts
+web/src/ts/branding.ts
 web/src/ts/translation.tsx
 web/src/ts/translation.json
