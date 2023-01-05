@@ -7,6 +7,7 @@ interface Charge {
 
 export interface config {
     electricity_price: number
+    pdf_text: string
 }
 
 export type last_charges = Charge[];

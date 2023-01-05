@@ -12,6 +12,7 @@
     "chartist-plugin-axistitle": "0.0.7",
     "feather-icons": "^4.28.0",
     "jquery": "^3.6.0",
+    "pdf-lib": "^1.17.1",
     "popper.js": "^1.16.1",
     "preact": "^10.3.2",
     "react": "npm:@preact/compat",
