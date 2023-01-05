@@ -617,14 +617,14 @@ void AC011K::register_urls()
     api.addCommand("evse/stop_charging", Config::Null(), {}, [this](){
         if (evse_state.get("iec61851_state")->asUint() != IEC_STATE_A) {
             evse_slots.get(CHARGING_SLOT_AUTOSTART_BUTTON)->get("max_current")->updateUint(0);
-            bs_evse_stop_charging(); // TODO scheduled function to start stop depending on slots?!
+            /* bs_evse_stop_charging(); // TODO scheduled function to start stop depending on slots?! */
         }
     }, true);
 
     api.addCommand("evse/start_charging", Config::Null(), {}, [this](){
         if (evse_state.get("iec61851_state")->asUint() != IEC_STATE_A) {
             evse_slots.get(CHARGING_SLOT_AUTOSTART_BUTTON)->get("max_current")->updateUint(32000);
-            bs_evse_start_charging(); // TODO scheduled function to start stop depending on slots?!
+            /* bs_evse_start_charging(); // TODO scheduled function to start stop depending on slots?! */
         }
     }, true);
 
@@ -1122,26 +1122,19 @@ void AC011K::update_all_data()
     evse_external_defaults.get("current")->updateUint(evse_slots.get(CHARGING_SLOT_EXTERNAL)->get("max_current")->asUint());
     evse_external_defaults.get("clear_on_disconnect")->updateBool(evse_slots.get(CHARGING_SLOT_EXTERNAL)->get("clear_on_disconnect")->asBool());
 
-    uint16_t last_allowed_charging_current = evse_state.get("allowed_charging_current")->asUint();
-
-    // find the charging current maximum
-    uint16_t allowed_charging_current = 32000;
-    for (int i = 0; i < CHARGING_SLOT_COUNT; ++i) {
-        if (!evse_slots.get(i)->get("active")->asBool())
-            continue;
-        allowed_charging_current = min(allowed_charging_current, (uint16_t)evse_slots.get(i)->get("max_current")->asUint());
-    }
+    /* 
+     * do the things that would have been done on the EVSE on the TinkerForge Box like
+     * - take note of times
+     *
+     * in ac011k.cpp (evse_slot_machine)
+     * - calculate the *allowed_charging_current* and 
+     * - actually start/stop a charge
+     *
+     */
 
     evse_low_level_state.get("time_since_state_change")->updateUint(evse_state.get("time_since_state_change")->asUint());
     evse_low_level_state.get("uptime")->updateUint(millis());
-
-    // TODO: implement current changes during charging (if possible)
-    if(last_allowed_charging_current != allowed_charging_current) {
-        evse_state.get("allowed_charging_current")->updateUint(allowed_charging_current);
-        logger.printfln("EVSE: allowed_charging_current %d", allowed_charging_current);
-        bs_evse_set_max_charging_current(allowed_charging_current);  // Uwe: not needed here since requested by GD during start charging sequence
-        //logger.printfln("---->   bs_evse_set_max_charging_current function call dropped!");
-    }
+    evse_slot_machine();
 
 #if MODULE_WATCHDOG_AVAILABLE()
     static size_t watchdog_handle = watchdog.add("evse_v2_all_data", "EVSE not reachable", 10 * 60 * 1000);

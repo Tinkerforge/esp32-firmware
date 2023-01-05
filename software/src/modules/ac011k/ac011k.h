@@ -134,6 +134,7 @@ public:
     void sendCommand(byte *data, int datasize, byte sendSequenceNumber);
     void sendTime(byte cmd, byte action, byte len, byte sendSequenceNumber);
     void sendTimeLong ();
+    void evse_slot_machine ();
     void update_evseStatus(uint8_t evseStatus);
     time_t now();
     void filltime(byte *year, byte *month, byte *day, byte *hour, byte *minute, byte *second);

@@ -455,10 +455,10 @@ int AC011K::bs_evse_set_charging_autostart(bool autostart) {
 
 int AC011K::bs_evse_set_max_charging_current(uint16_t max_current) {
     //bs_evse_persist_config();
-    update_all_data();
+    //update_all_data();
+    evse_state.get("allowed_charging_current")->updateUint(max_current);
     uint8_t allowed_charging_current = evse_state.get("allowed_charging_current")->asUint()/1000;
-    logger.printfln("EVSE set configured charging limit to %d Ampere", uint8_t(max_current/1000));
-    logger.printfln("EVSE calculated allowed charging limit is %d Ampere", allowed_charging_current);
+    logger.printfln("EVSE set allowed charging limit to %d Ampere", allowed_charging_current);
     switch (evse_hardware_configuration.get("GDFirmwareVersion")->asUint()) {
         case 212:
             sendChargingLimit3(allowed_charging_current, sendSequenceNumber++);
@@ -477,6 +477,55 @@ int AC011K::bs_evse_set_max_charging_current(uint16_t max_current) {
     return 0;
 }
 
+void AC011K::evse_slot_machine() {
+    /* 
+     * this function is to do the logic and calculate the state of the EVSE
+     *
+     */
+
+    static uint16_t last_allowed_charging_current;
+    static uint16_t last_iec61851_state;
+
+    // perform clear on disconnect
+    if((evse_state.get("iec61851_state")->asUint() == IEC_STATE_A) && (last_iec61851_state != IEC_STATE_A)) {
+        for (int i = 0; i < CHARGING_SLOT_COUNT; ++i) {
+            if (evse_slots.get(i)->get("clear_on_disconnect")->asBool())
+                apply_slot_default(i, 0, evse_slots.get(i)->get("active")->asBool(), true);
+        }
+    }
+
+    // find the charging current maximum
+    uint16_t allowed_charging_current = 32000;
+    for (int i = 0; i < CHARGING_SLOT_COUNT; ++i) {
+        if (!evse_slots.get(i)->get("active")->asBool())
+            continue;
+        allowed_charging_current = min(allowed_charging_current, (uint16_t)evse_slots.get(i)->get("max_current")->asUint());
+    }
+
+    if(last_allowed_charging_current != allowed_charging_current) {
+        
+        evse_state.get("allowed_charging_current")->updateUint(allowed_charging_current);
+        logger.printfln("EVSE Allowed charging current changed from %dmA to %dmA", last_allowed_charging_current, allowed_charging_current);
+
+        if(allowed_charging_current == 0) {
+            logger.printfln("EVSE Allowed charging current changed to 0");
+            bs_evse_stop_charging();
+        } else if((last_allowed_charging_current == 0) && (evse_state.get("iec61851_state")->asUint() == IEC_STATE_B)) {
+            logger.printfln("EVSE Start charging, set allowed charging current to %dmA, IEC_STATE %d", allowed_charging_current, evse_state.get("iec61851_state")->asUint());
+            bs_evse_start_charging();
+        } else if((evse_state.get("iec61851_state")->asUint() == IEC_STATE_B) || ((evse_state.get("iec61851_state")->asUint() == IEC_STATE_C))) {
+            logger.printfln("EVSE Allowed charging current change during charging from %dmA to %dmA", last_allowed_charging_current, allowed_charging_current);
+            bs_evse_set_max_charging_current(allowed_charging_current);
+        }
+    } else if((evse_state.get("iec61851_state")->asUint() == IEC_STATE_B) && (last_iec61851_state == IEC_STATE_A) && (allowed_charging_current > 0)) {
+        logger.printfln("EVSE Just plugged in and allowed charging current > 0 (%dmA)", allowed_charging_current/1000);
+        bs_evse_start_charging();
+    }
+
+    last_allowed_charging_current = allowed_charging_current;
+    last_iec61851_state = evse_state.get("iec61851_state")->asUint();
+}
+
 void AC011K::update_evseStatus(uint8_t evseStatus) {
     //if(evse_hardware_configuration.get("initialized")->asBool()) { // only update the EVSE status if we support the hardware
     uint8_t last_iec61851_state = evse_state.get("iec61851_state")->asUint();
@@ -484,7 +533,7 @@ void AC011K::update_evseStatus(uint8_t evseStatus) {
     evse_state.get("GD_state")->updateUint(evseStatus);
 
 	if(!ac011k_hardware.config.get("verbose_communication")->asBool() && (evseStatus != last_evseStatus)) {
-        logger.printfln("EVSE GD Status now %d: %s", evseStatus, evse_status_text[evseStatus]);
+        logger.printfln("EVSE GD Status now %d: %s, allowed charging current %dmA", evseStatus, evse_status_text[evseStatus], evse_state.get("allowed_charging_current")->asUint());
     }
 
     switch (evseStatus) {
@@ -548,26 +597,27 @@ void AC011K::update_evseStatus(uint8_t evseStatus) {
         evse_state.get("time_since_state_change")->updateUint(millis() - evse_state.get("last_state_change")->asUint());
         evse_low_level_state.get("time_since_state_change")->updateUint(evse_state.get("time_since_state_change")->asUint());
 
+        // TODO: move this to evse_slot_machine
         if(evse_state.get("iec61851_state")->asUint() == IEC_STATE_A) { // plugged out
             if (evse_hardware_configuration.get("GDFirmwareVersion")->asUint() == 212)
                 //sendChargingLimit2(16, sendSequenceNumber++);  // hack to ensure full current range is available in next charging session 
                 sendChargingLimit3(16, sendSequenceNumber++);  // hack to ensure full current range is available in next charging session
         }
 
-        if(evse_state.get("iec61851_state")->asUint() == IEC_STATE_B && last_iec61851_state == IEC_STATE_A) { // just plugged in
-            transactionNumber++;
-            // patch transaction number into command templates
-            sprintf((char*)StartChargingA7 +1, "%06d", transactionNumber);
-            sprintf((char*)StopChargingA7  +1, "%06d", transactionNumber);
-            sprintf((char*)StopChargingA6 +33, "%06d", transactionNumber);
-            logger.printfln("New transaction number %05d", transactionNumber);
-        }
+        /* if(evse_state.get("iec61851_state")->asUint() == IEC_STATE_B && last_iec61851_state == IEC_STATE_A) { // just plugged in */
+        /*     transactionNumber++; */
+        /*     // patch transaction number into command templates */
+        /*     sprintf((char*)StartChargingA7 +1, "%06d", transactionNumber); */
+        /*     sprintf((char*)StopChargingA7  +1, "%06d", transactionNumber); */
+        /*     sprintf((char*)StopChargingA6 +33, "%06d", transactionNumber); */
+        /*     logger.printfln("New transaction number %05d", transactionNumber); */
+        /* } */
 
-        if(evse_auto_start_charging.get("auto_start_charging")->asBool()
-           && evse_state.get("iec61851_state")->asUint() == IEC_STATE_B) { // just plugged in or already plugged in at startup
-             logger.printfln("Start charging automatically");
-             bs_evse_start_charging();
-        }
+        /* if(evse_auto_start_charging.get("auto_start_charging")->asBool() */
+        /*    && evse_state.get("iec61851_state")->asUint() == IEC_STATE_B) { // just plugged in or already plugged in at startup */
+        /*      logger.printfln("Start charging automatically"); */
+        /*      bs_evse_start_charging(); */
+        /* } */
     }
 }
 
@@ -1520,6 +1570,9 @@ void AC011K::myloop()
 
             case 0x0D:
                 logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Limit ack", cmd, seq, len, crc);
+                // as of now we set the value when we send the setting to the GD
+                // set the value here? is the value in the ack?
+                // evse_state.get("allowed_charging_current")->updateUint(allowed_charging_current);
                 break;
 
             case 0x0E: // ChargingParameterRpt
@@ -1568,6 +1621,9 @@ void AC011K::myloop()
             case 0x0F:
                 logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Charging limit request, answer: %dA", cmd, seq, len, crc, allowed_charging_current);
                 sendChargingLimit1(allowed_charging_current, seq);
+                // as of now we set the value when we send the setting to the GD
+                // set the value here? is the value in the ack?
+                // evse_state.get("allowed_charging_current")->updateUint(allowed_charging_current);
                 break;
 
             default:
