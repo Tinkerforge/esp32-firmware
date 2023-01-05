@@ -415,6 +415,12 @@ void EnergyManager::update_energy()
             return;
         }
 
+        // CP disconnect support unknown if some chargers haven't replied yet.
+        if (!charge_manager.seen_all_chargers()) {
+            logger.printfln("energy_manager: Not seen all chargers yet.");
+            return;
+        }
+
         // Check how many phases are wanted.
         if (phase_switching_mode == PHASE_SWITCHING_ALWAYS_1PHASE) {
             wants_3phase = false;

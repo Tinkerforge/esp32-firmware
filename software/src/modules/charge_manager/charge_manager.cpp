@@ -328,6 +328,24 @@ void ChargeManager::set_available_current(uint32_t current)
     charge_manager_available_current.get("current")->updateUint(current);
 }
 
+// Check is not 100% reliable after an uptime of 49 days because last_update might legitimately 0.
+// Work around that by caching the value once all chargers were seen once.
+bool ChargeManager::seen_all_chargers() {
+    if (all_chargers_seen)
+        return true;
+
+    std::vector<Config> &chargers = charge_manager_state.get("chargers")->asArray();
+
+    for (auto &charger : chargers) {
+        if (charger.get("last_update")->asUint() == 0) {
+            return false;
+        }
+    }
+
+    all_chargers_seen = true;
+    return true;
+}
+
 bool ChargeManager::is_charging_stopped(uint32_t last_update_cutoff)
 {
     std::vector<Config> &chargers = charge_manager_state.get("chargers")->asArray();

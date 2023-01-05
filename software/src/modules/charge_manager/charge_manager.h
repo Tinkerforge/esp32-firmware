@@ -39,6 +39,7 @@ public:
     void start_manager_task();
     void check_watchdog();
     void set_available_current(uint32_t current);
+    bool seen_all_chargers();
     bool is_charging_stopped(uint32_t last_update_cutoff);
     void set_all_control_pilot_disconnect(bool disconnect);
     bool are_all_control_pilot_disconnected(uint32_t last_update_cutoff);
@@ -56,5 +57,6 @@ public:
     uint32_t last_available_current_update = 0;
 
 private:
+    bool all_chargers_seen;
     std::function<void(uint32_t)> allocated_current_callback;
 };
