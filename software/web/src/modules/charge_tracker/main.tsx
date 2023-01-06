@@ -355,10 +355,11 @@ const wrapText = (text: string, width: number, font: PDFFont, fontSize: number):
     let lines = 1;
     for (let n = 0; n < words.length; n++) {
         // we need to filter this because pdf (or pdf-lib) only allows ascii characters in text.
-        words[n] = words[n].replace(/[^\x00-\xFF]/g, "");
+        words[n] = words[n].replace(/[^\u0000-\u00ff, \u20AC]/g, "");
+        words[n] = words[n].replace(/[\u00AD\u002D\u2011]/g, "");
 
         //new lines must be handled by hand because they confuse the whithOfTextAtSize function.
-        let sub_line = words[n].split('\n');
+        const sub_line = words[n].split('\n');
         if (sub_line.length > 1)
         {
             for (let l = 0; l < sub_line.length - 1; l++)
