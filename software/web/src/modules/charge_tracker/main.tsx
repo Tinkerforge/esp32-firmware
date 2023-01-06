@@ -364,6 +364,7 @@ const wrapText = (text: string, width: number, font: PDFFont, fontSize: number):
             }
             words[n] = sub_line[sub_line.length - 1];
         }
+        words[n] = words[n].replace(/[^\x00-\x7F]/g, "");
         const testLine = line + words[n] + ' ';
         const testWidth = font.widthOfTextAtSize(testLine, fontSize);
         if (testWidth > width) {
