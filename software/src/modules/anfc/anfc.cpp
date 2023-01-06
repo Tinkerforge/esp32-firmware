@@ -27,7 +27,7 @@
 #include "task_scheduler.h"
 #include "modules.h"
 
-#define AUTHORIZED_TAG_LIST_LENGTH 8
+#define AUTHORIZED_TAG_LIST_LENGTH 16
 
 #define IND_ACK 1001
 #define IND_NACK 1002
@@ -207,48 +207,48 @@ void set_led(int16_t mode)
 
 void ANFC::handle_event(tag_info_t *tag, bool found, bool injected)
 {
-    /* uint8_t idx = 0; */
-    /* uint8_t user_id = get_user_id(tag, &idx); */
+    uint8_t idx = 0;
+    uint8_t user_id = get_user_id(tag, &idx);
 
-    /* if (user_id != 0) { */
-    /*     if (found) { */
-    /*         // Found a new authorized tag. Create/overwrite auth token. Overwrite blink state even if we previously saw a not authorized tag. */
-    /*         auth_token = idx; */
-    /*         auth_token_seen = millis(); */
-    /*         blink_state = IND_ACK; */
-    /*         users.trigger_charge_action(user_id, injected ? CHARGE_TRACKER_AUTH_TYPE_NFC_INJECTION : CHARGE_TRACKER_AUTH_TYPE_NFC, Config::Object({ */
-    /*                 {"tag_type", Config::Uint8(tag->tag_type)}, */
-    /*                 {"tag_id", Config::Str(tag->tag_id)}}).value, */
-    /*                 injected ? tag_injection_action : TRIGGER_CHARGE_ANY); */
-/* #if MODULE_OCPP_AVAILABLE() */
-    /*         ocpp.on_tag_seen(tag->tag_id); */
-/* #endif */
-    /*     } else if (auth_token == idx) { */
-    /*         // Lost an authorized tag. If we still have it's auth token, extend the token's validity. */
-    /*         //auth_token_seen = millis(); */
-    /*     } */
-    /* } else if (found) { */
-/* #if MODULE_OCPP_AVAILABLE() */
-    /*     ocpp.on_tag_seen(tag->tag_id); */
-/* #endif */
+    if (user_id != 0) {
+        if (found) {
+            // Found a new authorized tag. Create/overwrite auth token. Overwrite blink state even if we previously saw a not authorized tag.
+            auth_token = idx;
+            auth_token_seen = millis();
+            blink_state = IND_ACK;
+            users.trigger_charge_action(user_id, injected ? CHARGE_TRACKER_AUTH_TYPE_NFC_INJECTION : CHARGE_TRACKER_AUTH_TYPE_NFC, Config::Object({
+                    {"tag_type", Config::Uint8(tag->tag_type)},
+                    {"tag_id", Config::Str(tag->tag_id)}}).value,
+                    injected ? tag_injection_action : TRIGGER_CHARGE_ANY);
+#if MODULE_OCPP_AVAILABLE()
+            ocpp.on_tag_seen(tag->tag_id);
+#endif
+        } else if (auth_token == idx) {
+            // Lost an authorized tag. If we still have it's auth token, extend the token's validity.
+            //auth_token_seen = millis();
+        }
+    } else if (found) {
+#if MODULE_OCPP_AVAILABLE()
+        ocpp.on_tag_seen(tag->tag_id);
+#endif
     /*     // Found a not authorized tag. Blink NACK but only if we did not see an authorized token */
     /*     if (blink_state == -1) { */
     /*         blink_state = IND_NACK; */
     /*     } */
-    /* } */
+    }
 }
 
 void ANFC::handle_evse()
 {
-    /* static Config *evse_state = api.getState("evse/state", false); */
-    /* static Config *evse_slots = api.getState("evse/slots", false); */
+    static Config *evse_state = api.getState("evse/state", false);
+    static Config *evse_slots = api.getState("evse/slots", false);
 
-    /* if (evse_state == nullptr || evse_slots == nullptr) */
-    /*     return; */
+    if (evse_state == nullptr || evse_slots == nullptr)
+        return;
 
-    /* bool waiting_for_start = (evse_state->get("iec61851_state")->asUint() == 1) */
-    /*                       && (evse_slots->get(CHARGING_SLOT_USER)->get("active")->asBool()) */
-    /*                       && (evse_slots->get(CHARGING_SLOT_USER)->get("max_current")->asUint() == 0); */
+    bool waiting_for_start = (evse_state->get("iec61851_state")->asUint() == 1)
+                          && (evse_slots->get(CHARGING_SLOT_USER)->get("active")->asBool())
+                          && (evse_slots->get(CHARGING_SLOT_USER)->get("max_current")->asUint() == 0);
 
     /* if (blink_state != -1) { */
     /*     set_led(blink_state); */
@@ -261,18 +261,18 @@ const char *lookup = "0123456789ABCDEF";
 
 void tag_id_bytes_to_string(const uint8_t *tag_id, uint8_t tag_id_len, char buf[NFC_TAG_ID_STRING_LENGTH + 1])
 {
-    /* for (int i = 0; i < tag_id_len; ++i) { */
-    /*     uint8_t b = tag_id[i]; */
-    /*     uint8_t hi = (b & 0xF0) >> 4; */
-    /*     uint8_t lo = b & 0x0F; */
-    /*     buf[3 * i] = lookup[hi]; */
-    /*     buf[3 * i + 1] = lookup[lo]; */
-    /*     buf[3 * i + 2] = ':'; */
-    /* } */
-    /* if (tag_id_len == 0) */
-    /*     buf[0] = '\0'; */
-    /* else */
-    /*     buf[3 * tag_id_len - 1] = '\0'; */
+    for (int i = 0; i < tag_id_len; ++i) {
+        uint8_t b = tag_id[i];
+        uint8_t hi = (b & 0xF0) >> 4;
+        uint8_t lo = b & 0x0F;
+        buf[3 * i] = lookup[hi];
+        buf[3 * i + 1] = lookup[lo];
+        buf[3 * i + 2] = ':';
+    }
+    if (tag_id_len == 0)
+        buf[0] = '\0';
+    else
+        buf[3 * tag_id_len - 1] = '\0';
 }
 
 void ANFC::update_seen_tags()
@@ -295,105 +295,105 @@ void ANFC::update_seen_tags()
     /*     seen_tags.get(i)->get("last_seen")->updateUint(new_tags[i].last_seen); */
     /* } */
 
-    /* if (last_tag_injection == 0 || deadline_elapsed(last_tag_injection + 1000 * 60 * 60 * 24)) { */
-    /*     last_tag_injection = 0; */
-    /*     new_tags[TAG_LIST_LENGTH - 1].tag_type = 0; */
-    /*     new_tags[TAG_LIST_LENGTH - 1].tag_id[0] = '\0'; */
-    /*     new_tags[TAG_LIST_LENGTH - 1].last_seen = 0; */
-    /* } else { */
-    /*     new_tags[TAG_LIST_LENGTH - 1].tag_type = inject_tag.get("tag_type")->asUint(); */
-    /*     strncpy(new_tags[TAG_LIST_LENGTH - 1].tag_id, inject_tag.get("tag_id")->asCStr(), sizeof(new_tags[TAG_LIST_LENGTH - 1].tag_id)); */
-    /*     new_tags[TAG_LIST_LENGTH - 1].last_seen = millis() - last_tag_injection; */
-    /* } */
+    if (last_tag_injection == 0 || deadline_elapsed(last_tag_injection + 1000 * 60 * 60 * 24)) {
+        last_tag_injection = 0;
+        new_tags[TAG_LIST_LENGTH - 1].tag_type = 0;
+        new_tags[TAG_LIST_LENGTH - 1].tag_id[0] = '\0';
+        new_tags[TAG_LIST_LENGTH - 1].last_seen = 0;
+    } else {
+        new_tags[TAG_LIST_LENGTH - 1].tag_type = inject_tag.get("tag_type")->asUint();
+        strncpy(new_tags[TAG_LIST_LENGTH - 1].tag_id, inject_tag.get("tag_id")->asEphemeralCStr(), sizeof(new_tags[TAG_LIST_LENGTH - 1].tag_id));
+        new_tags[TAG_LIST_LENGTH - 1].last_seen = millis() - last_tag_injection;
+    }
 
-    /* seen_tags.get(TAG_LIST_LENGTH - 1)->get("last_seen")->updateUint(new_tags[TAG_LIST_LENGTH - 1].last_seen); */
-    /* seen_tags.get(TAG_LIST_LENGTH - 1)->get("tag_type")->updateUint(new_tags[TAG_LIST_LENGTH - 1].tag_type); */
-    /* seen_tags.get(TAG_LIST_LENGTH - 1)->get("tag_id")->updateString(new_tags[TAG_LIST_LENGTH - 1].tag_id); */
+    seen_tags.get(TAG_LIST_LENGTH - 1)->get("last_seen")->updateUint(new_tags[TAG_LIST_LENGTH - 1].last_seen);
+    seen_tags.get(TAG_LIST_LENGTH - 1)->get("tag_type")->updateUint(new_tags[TAG_LIST_LENGTH - 1].tag_type);
+    seen_tags.get(TAG_LIST_LENGTH - 1)->get("tag_id")->updateString(new_tags[TAG_LIST_LENGTH - 1].tag_id);
 
-    /* // compare new list with old */
-    /* // tags that are not seen anymore are lost */
-    /* // tags that are seen again or are not in the old list are found */
-    /* for (int new_idx = 0; new_idx < TAG_LIST_LENGTH; ++new_idx) { */
-    /*     if (new_tags[new_idx].last_seen == 0) */
-    /*         continue; */
+    // compare new list with old
+    // tags that are not seen anymore are lost
+    // tags that are seen again or are not in the old list are found
+    for (int new_idx = 0; new_idx < TAG_LIST_LENGTH; ++new_idx) {
+        if (new_tags[new_idx].last_seen == 0)
+            continue;
 
-    /*     bool found = false; */
-    /*     int old_idx; */
-    /*     for (old_idx = 0; old_idx < TAG_LIST_LENGTH; ++old_idx) { */
-    /*         if (old_tags[old_idx].last_seen == 0) */
-    /*             continue; */
+        bool found = false;
+        int old_idx;
+        for (old_idx = 0; old_idx < TAG_LIST_LENGTH; ++old_idx) {
+            if (old_tags[old_idx].last_seen == 0)
+                continue;
 
-    /*         if(strncmp(old_tags[old_idx].tag_id, */
-    /*                    new_tags[new_idx].tag_id, */
-    /*                    NFC_TAG_ID_STRING_LENGTH) != 0) */
-    /*             continue; */
+            if(strncmp(old_tags[old_idx].tag_id,
+                       new_tags[new_idx].tag_id,
+                       NFC_TAG_ID_STRING_LENGTH) != 0)
+                continue;
 
-    /*         found = true; */
-    /*         break; */
-    /*     } */
+            found = true;
+            break;
+        }
 
-    /*     bool new_seen = new_tags[new_idx].last_seen < DETECTION_THRESHOLD_MS; */
+        bool new_seen = new_tags[new_idx].last_seen < DETECTION_THRESHOLD_MS;
 
-    /*     if (!found && new_seen) { */
-    /*         // found new tag */
-    /*         handle_event(&new_tags[new_idx], true, new_idx == TAG_LIST_LENGTH - 1); */
-    /*         continue; */
-    /*     } */
+        if (!found && new_seen) {
+            // found new tag
+            handle_event(&new_tags[new_idx], true, new_idx == TAG_LIST_LENGTH - 1);
+            continue;
+        }
 
-    /*     bool old_seen = old_tags[old_idx].last_seen < DETECTION_THRESHOLD_MS; */
-    /*     old_tags[old_idx].last_seen = 0; */
+        bool old_seen = old_tags[old_idx].last_seen < DETECTION_THRESHOLD_MS;
+        old_tags[old_idx].last_seen = 0;
 
-    /*     if (old_seen && !new_seen) { */
-    /*         // lost old tag */
-    /*         handle_event(&old_tags[old_idx], false, old_idx == TAG_LIST_LENGTH - 1); */
-    /*         continue; */
-    /*     } */
-    /*     if (!old_seen && new_seen) { */
-    /*         // found new tag */
-    /*         handle_event(&new_tags[new_idx], true, new_idx == TAG_LIST_LENGTH - 1); */
-    /*         continue; */
-    /*     } */
-    /* } */
+        if (old_seen && !new_seen) {
+            // lost old tag
+            handle_event(&old_tags[old_idx], false, old_idx == TAG_LIST_LENGTH - 1);
+            continue;
+        }
+        if (!old_seen && new_seen) {
+            // found new tag
+            handle_event(&new_tags[new_idx], true, new_idx == TAG_LIST_LENGTH - 1);
+            continue;
+        }
+    }
 
-    /* // tags that are also in the new list are marked with last_seen = 0 */
-    /* // all other tags are displaced i.e. gone */
-    /* for (int old_idx = 0; old_idx < TAG_LIST_LENGTH; ++old_idx) { */
-    /*     if (old_tags[old_idx].last_seen == 0) */
-    /*         continue; */
+    // tags that are also in the new list are marked with last_seen = 0
+    // all other tags are displaced i.e. gone
+    for (int old_idx = 0; old_idx < TAG_LIST_LENGTH; ++old_idx) {
+        if (old_tags[old_idx].last_seen == 0)
+            continue;
 
-    /*     handle_event(&old_tags[old_idx], false, old_idx == TAG_LIST_LENGTH - 1); */
-    /* } */
+        handle_event(&old_tags[old_idx], false, old_idx == TAG_LIST_LENGTH - 1);
+    }
 
-    /* tag_info_t *tmp = old_tags; */
-    /* old_tags = new_tags; */
-    /* new_tags = tmp; */
+    tag_info_t *tmp = old_tags;
+    old_tags = new_tags;
+    new_tags = tmp;
 }
 
 void ANFC::setup()
 {
-    /* setup_nfc(); */
+    setup_nfc();
     /* if (!device_found) */
     /*     return; */
 
-    /* api.restorePersistentConfig("nfc/config", &config); */
-    /* config_in_use = config; */
+    api.restorePersistentConfig("nfc/config", &config);
+    config_in_use = config;
 
-    /* for (int i = 0; i < TAG_LIST_LENGTH; ++i) { */
-    /*     seen_tags.add(); */
-    /* } */
+    for (int i = 0; i < TAG_LIST_LENGTH; ++i) {
+        seen_tags.add();
+    }
 
     /* task_scheduler.scheduleWithFixedDelay([this](){ */
     /*     this->check_nfc_state(); */
     /* }, 5 * 60 * 1000, 5 * 60 * 1000); */
 
-    /* task_scheduler.scheduleWithFixedDelay([this](){ */
-    /*     static uint32_t last_run = 0; */
-    /*     if (deadline_elapsed(last_run + 300)) { */
-    /*         last_run = millis(); */
-    /*         this->update_seen_tags(); */
-    /*     } */
-    /*     this->handle_evse(); */
-    /* }, 10, 10); */
+    task_scheduler.scheduleWithFixedDelay([this](){
+        static uint32_t last_run = 0;
+        if (deadline_elapsed(last_run + 300)) {
+            last_run = millis();
+            this->update_seen_tags();
+        }
+        this->handle_evse();
+    }, 10, 10);
 }
 
 void ANFC::register_urls()

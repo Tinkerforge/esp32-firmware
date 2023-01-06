@@ -1259,51 +1259,22 @@ void AC011K::myloop()
                 break;
 
             case 0x05:
-//                                                                                        2  0  9  d  e  e  e  1                                                                          10             zeit
-//W (2021-08-07 07:43:39) [PRIV_COMM, 1919]: Rx(cmd_05 len:57) :  FA 03 00 00 05 E3 2F 00 32 30 39 64 65 65 65 31 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 10 00 00 00 00 15 08 07 07 2B 26 01 00 00 00 F7 F7
-//W (2021-08-07 07:43:39) [EN_WSS, 677]: send[0:41] [2,"87","Authorize",{"idTag":"209deee1"}]
-//W (2021-08-07 07:43:39) [EN_WSS, 712]: recv[0:44] [3,"87",{"idTagInfo":{"status":"Accepted"}}]
-//                                                                                                               // 40 = accept RFID charging
-//                                                                                                                                                                                        40
-//W (2021-08-07 07:43:39) [PRIV_COMM, 1764]: Tx(cmd_A5 len:47) :  FA 03 00 00 A5 19 25 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 40 00 00 00 00 D5 41
-//
-//"idTag":"50a674e1"
-//"status":"Invalid"
-//                                                                                        5  0  A  6  7  4  E  1                                                                          10             zeit
-//W (2021-08-07 07:47:56) [PRIV_COMM, 1919]: Rx(cmd_05 len:57) :  FA 03 00 00 05 FA 2F 00 35 30 61 36 37 34 65 31 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 10 00 00 00 00 15 08 07 07 2F 37 01 00 00 00 2E C2
-// D0 = reject RFID charging ?
-//                                                                                                                                                                                        D0
-//W (2021-08-07 07:47:56) [PRIV_COMM, 1764]: Tx(cmd_A5 len:47) :  FA 03 00 00 A5 1D 25 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 D0 00 00 00 00 A4 86
-//
-		// der GD sendet nur ein cmd_05 wenn er in einem bestimmten mode ist?
-		// vor dem cmd_05 sagt er dann: online_net_ok_start (das "create window fail" kommt aber immer)
-//[2021-08-07 07:52:33]
-//[m1] get_sn->5: 59 50 A6 74 E1
-//[2021-08-07 07:52:33]
-//[m1] auth_keyA->7: 06 59 FF FF FF FF FF
-//[2021-08-07 07:52:33] [win] create window !!!
-//[2021-08-07 07:52:33] [win] window had not init, create window fail
-//[2021-08-07 07:52:33] online_net_ok_start
-//                                                                  5  0  A  6  7  4  E  1                                                                          10             zeit
-//[2021-08-07 07:52:33] Tx(cmd_05 len:57) : FA 03 00 00 05 06 2F 00 35 30 61 36 37 34 65 31 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 10 00 00 00 00 15 08 07 07 34 21 01 00 00 00 13 DC
-// D0 = reject ?
-//[2021-08-07 07:52:34] Rx(cmd_A5 len:47) : FA 03 00 00 A5 20 25 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 D0 00 00 00 00 99 D0
-//[2021-08-07 07:52:34] cmd_A5 [privCommCmdA5CardAuthAck]!
-//[2021-08-07 07:52:34] cmdA5 countsta=1,leakmoneysta=3
-//[2021-08-07 07:52:34] cmdA5 order_id=
-//[2021-08-07 07:52:34] illegality_card
-//
-                // Command 05, payload 37 30 38 36 36 31 65 31 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-                //Tx(cmd_A5 len:47) :  FA 03 00 00 A5 1D 25 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 D0 00 00 00 00 A4 86
-		// privCommCmdA5CardAuthAck PrivCommTxBuffer+40 = 0x40; // allow charging
-		// privCommCmdA5CardAuthAck PrivCommTxBuffer+40 = 0xD0; // decline charging
-
-                logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - RFID card detected. ID: %s", cmd, seq, len, crc, PrivCommRxBuffer + PayloadStart); //str);
+                sprintf(str, "%c%c:%c%c:%c%c:%c%c",
+                        PrivCommRxBuffer[PayloadStart + 0],
+                        PrivCommRxBuffer[PayloadStart + 1],
+                        PrivCommRxBuffer[PayloadStart + 2],
+                        PrivCommRxBuffer[PayloadStart + 3],
+                        PrivCommRxBuffer[PayloadStart + 4],
+                        PrivCommRxBuffer[PayloadStart + 5],
+                        PrivCommRxBuffer[PayloadStart + 6],
+                        PrivCommRxBuffer[PayloadStart + 7]
+                );
+                logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - RFID card detected. ID: %s", cmd, seq, len, crc, str);
                 sendCommand(CardAuthAckA5, sizeof(CardAuthAckA5), seq); // offline charging cfgAllowOfflineTxForUnknownId Disabled
-                // Start/stop test with any RFID card:
-                // TODO: implement RFID slot usage
-                if (evseStatus == 2 || evseStatus == 6) sendCommand(StartChargingA6, sizeof(StartChargingA6), sendSequenceNumber++); 
-                if (evseStatus == 3 || evseStatus == 4) sendCommand(StopChargingA6, sizeof(StopChargingA6), sendSequenceNumber++);
+                api.callCommand("nfc/inject_tag", Config::ConfUpdateObject{{
+                    {"tag_type", 0},
+                    {"tag_id", String(str)}
+                }});
 		break;
 
             case 0x06:
