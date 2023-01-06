@@ -347,12 +347,14 @@ interface TextWrap {
     lines: number
 }
 
+//we need a wrapper function to manually inject new lines if lines are to long because pdf-lib does not do this automaticly.
 const wrapText = (text: string, width: number, font: PDFFont, fontSize: number): TextWrap => {
     let words = text.split(' ');
     let line = '';
     let result = '';
     let lines = 1;
     for (let n = 0; n < words.length; n++) {
+        //new lines must be handled by hand because they confuse the whithOfTextAtSize function.
         let sub_line = words[n].split('\n');
         if (sub_line.length > 1)
         {
@@ -364,6 +366,7 @@ const wrapText = (text: string, width: number, font: PDFFont, fontSize: number):
             }
             words[n] = sub_line[sub_line.length - 1];
         }
+        // we need to filter unicode characters because they are not part of the pdf charset (or at least not part of this libs charset).
         words[n] = words[n].replace(/[^\x00-\x7F]/g, "");
         const testLine = line + words[n] + ' ';
         const testWidth = font.widthOfTextAtSize(testLine, fontSize);
