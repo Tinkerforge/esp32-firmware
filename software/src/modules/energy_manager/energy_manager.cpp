@@ -376,6 +376,12 @@ void EnergyManager::update_energy()
 {
     uint32_t time = micros();
 
+    static SwitchingState prev_state = switching_state;
+    if (switching_state != prev_state) {
+        logger.printfln("energy_manager: now in state %u", switching_state);
+        prev_state = switching_state;
+    }
+
     if (switching_state == SwitchingState_Monitoring) {
         const int32_t  power_at_meter_w = all_data.energy_meter_type ? all_data.power * 1000 : meter.values.get("power")->asFloat(); // watt
         const bool     is_3phase        = contactor_installed ? all_data.contactor_value : phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE;
@@ -396,12 +402,15 @@ void EnergyManager::update_energy()
             int32_t p_error_w  = max_power_from_grid_w - power_at_meter_w;
 
             int32_t p_adjust_w;
-            // Some EVs may only be able to adjust their charge power in steps of 1000W
+            // Some EVs may only be able to adjust their charge power in steps of 1300W
             // and the absolute minimum power threshold for switching on is 1380W.
-            // Use 1200W as a compromise.
-            if (abs(p_error_w) > 1200) {
+            // Use 1330W as a compromise.
+            if (p_error_w > 1330) {
                 // Use p=1 for large differences so that the threshold for switching on can be reached and the controller can converge faster.
                 p_adjust_w = p_error_w;
+            } else if (p_error_w < -1330) {
+                // Use p=0.875 for large reductions because some vehicles don't like too large reductions.
+                p_adjust_w = p_error_w * 7 / 8;
             } else {
                 // Use p=0.5 for small differences so that the controller can converge without oscillating too much.
                 p_adjust_w = p_error_w / 2;
