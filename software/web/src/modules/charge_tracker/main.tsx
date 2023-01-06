@@ -325,7 +325,6 @@ function to_csv_line(vals: string[]) {
 //TODO:
 //  - Bindestriche weg machen
 //  - Übersetzungen kürzen
-//  - Layout insgesamt entscheiden
 
 const PDFSPACELEFT = 50;
 const PDFSPACERIGHT = 25
