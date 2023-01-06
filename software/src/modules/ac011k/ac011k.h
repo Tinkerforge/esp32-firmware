@@ -281,3 +281,18 @@ static const char *cmd_0B_text[] = {
     "Reset into boot mode",
 };
 
+static const char *evse_slot_name[] = {
+    "INCOMING_CABLE",
+    "OUTGOING_CABLE",
+    "SHUTDOWN_INPUT",
+    "GP_INPUT",
+    "AUTOSTART_BUTTON",
+    "GLOBAL",
+    "USER",
+    "CHARGE_MANAGER",
+    "EXTERNAL",
+    "MODBUS_TCP",
+    "MODBUS_TCP_ENABLE",
+    "OCPP",
+};
+

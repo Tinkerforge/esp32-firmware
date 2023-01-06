@@ -490,7 +490,10 @@ void AC011K::evse_slot_machine() {
     if((evse_state.get("iec61851_state")->asUint() == IEC_STATE_A) && (last_iec61851_state != IEC_STATE_A)) {
         for (int i = 0; i < CHARGING_SLOT_COUNT; ++i) {
             if (evse_slots.get(i)->get("clear_on_disconnect")->asBool())
-                apply_slot_default(i, 0, evse_slots.get(i)->get("active")->asBool(), true);
+                if ((i == CHARGING_SLOT_AUTOSTART_BUTTON) && (evse_auto_start_charging.get("auto_start_charging")->asBool())) 
+                    apply_slot_default(i, 32000, evse_slots.get(i)->get("active")->asBool(), true);
+                else
+                    apply_slot_default(i, 0, evse_slots.get(i)->get("active")->asBool(), true);
         }
     }
 
@@ -532,7 +535,8 @@ void AC011K::update_evseStatus(uint8_t evseStatus) {
     uint8_t last_evseStatus = evse_state.get("GD_state")->asUint();
     evse_state.get("GD_state")->updateUint(evseStatus);
 
-	if(!ac011k_hardware.config.get("verbose_communication")->asBool() && (evseStatus != last_evseStatus)) {
+	//if(!ac011k_hardware.config.get("verbose_communication")->asBool() && (evseStatus != last_evseStatus)) {
+	if(evseStatus != last_evseStatus) {
         logger.printfln("EVSE GD Status now %d: %s, allowed charging current %dmA", evseStatus, evse_status_text[evseStatus], evse_state.get("allowed_charging_current")->asUint());
     }
 
@@ -873,7 +877,11 @@ void AC011K::my_setup_evse()
 #endif
 
     // Get settings from LittleFS or set them to defaults
-    if(!api.restorePersistentConfig("evse/slots", &evse_slots)) {
+    if(api.restorePersistentConfig("evse/slots", &evse_slots)) {
+        for (int i = 0; i < CHARGING_SLOT_COUNT; ++i) {
+            logger.printfln("Slot %d active: %s clear_on_disconnect: %s %dmA (%s)", i, evse_slots.get(i)->get("active")->asBool()?"true":"false", evse_slots.get(i)->get("clear_on_disconnect")->asBool()?"true":"false", (uint16_t)evse_slots.get(i)->get("max_current")->asUint(), evse_slot_name[i]);
+        }
+    } else {
         logger.printfln("EVSE error, could not restore persistent storage slots config, setting defaults.");
         // Slot 0 to 3 are set according to the hardware
         apply_slot_default(CHARGING_SLOT_INCOMING_CABLE, 16000, true, false);
