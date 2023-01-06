@@ -136,6 +136,7 @@ public:
 private:
     void set_available_current(uint32_t current);
 
+    bool contactor_check_tripped;
     bool uptime_past_hysteresis;
     SwitchingState switching_state;
     uint32_t switching_start;

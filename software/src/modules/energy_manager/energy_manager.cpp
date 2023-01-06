@@ -382,6 +382,23 @@ void EnergyManager::update_energy()
         prev_state = switching_state;
     }
 
+    if (contactor_installed) {
+        bool check_ok = all_data.contactor_check_state & 1;
+        if (!check_ok)
+            contactor_check_tripped = true;
+
+        if (contactor_check_tripped) {
+            set_available_current(0);
+
+            if (!check_ok)
+                logger.printfln("Contactor check tripped. Check contactor.");
+            else
+                logger.printfln("Contactor check tripped in the past but reports ok now. Check contactor and reboot Energy Manager to clear.");
+
+            return;
+        }
+    }
+
     if (switching_state == SwitchingState_Monitoring) {
         const int32_t  power_at_meter_w = all_data.energy_meter_type ? all_data.power * 1000 : meter.values.get("power")->asFloat(); // watt
         const bool     is_3phase        = contactor_installed ? all_data.contactor_value : phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE;
@@ -561,7 +578,7 @@ void EnergyManager::update_energy()
     } else if (switching_state == SwitchingState_TogglingContactor) {
         tf_warp_energy_manager_set_contactor(&device, wants_3phase);
 
-        if (all_data.contactor_check_state == (wants_3phase ? 1 : 0)) {
+        if (all_data.contactor_value == wants_3phase) {
             switching_state = SwitchingState_ConnectingCP;
             switching_start = millis();
         }
