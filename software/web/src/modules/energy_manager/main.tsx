@@ -100,13 +100,22 @@ function update_energy_manager_html_visibility() {
     }
 
     // Update input section
-    if($('#energy_manager_config_input3_config').val() == "1") {
+    let input3_config_dd = $('#energy_manager_config_input3_config');
+    if ($('#energy_manager_config_contactor_installed').is(':checked')) {
+        update_options(input3_config_dd, [{"value": 1, name: "contactor_check"}]);
+        input3_config_dd.prop("disabled", true);
+    } else {
+        update_options(input3_config_dd, [{"value": 0, name: "input_unused"}, {"value": 2, name: "block_charging"}, {"value": 3, name: "switch_excess_charging"}]);
+        input3_config_dd.prop("disabled", false);
+    }
+
+    if($('#energy_manager_config_input3_config').val() as number >= 2) {
         $('#energy_manager_config_input3_rules').collapse('show');
     } else {
         $('#energy_manager_config_input3_rules').collapse('hide');
     }
 
-    if($('#energy_manager_config_input4_config').val() == "1") {
+    if($('#energy_manager_config_input4_config').val() as number >= 2) {
         $('#energy_manager_config_input4_rules').collapse('show');
     } else {
         $('#energy_manager_config_input4_rules').collapse('hide');

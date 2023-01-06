@@ -351,12 +351,7 @@ void EnergyManager::update_io()
     // Handle input3 and input4
     for (uint8_t input = 0; input < 2; input++) {
         uint8_t input_config = energy_manager_config_in_use.get(ENERGY_MANAGER_INPUT_CONFIG_STR[input])->asUint();
-        switch(input_config) {
-            case INPUT_CONFIG_DEACTIVATED:                                                          break;
-            case INPUT_CONFIG_RULES_BASED:     handle_input_config_rule_based(input);               break;
-            case INPUT_CONFIG_CONTACTOR_CHECK: handle_input_config_contactor_check(input);          break;
-            default: logger.printfln("Unknown INPUT_CONFIG: %u for input %u", input_config, input); break;
-        }
+        (void)input_config;
     }
 
     static uint32_t time_max = 15000;
