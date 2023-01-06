@@ -651,7 +651,8 @@ bool AC011K::handle_update_chunk(int command, WebServerRequest request, size_t c
 
     while (length > 0) {
         while (!ready_for_next_chunk) {
-            loop(); //TODO make this more elegant
+            vTaskDelay(100 / portTICK_PERIOD_MS);
+            //loop(); //TODO make this more elegant
         }
 
         //calculate maxlength
