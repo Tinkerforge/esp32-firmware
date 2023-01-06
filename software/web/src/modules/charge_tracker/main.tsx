@@ -622,14 +622,6 @@ async function downloadPdf(user_filter: number, start_date: Date, end_date: Date
                         username = usernames[user_id];
                     }
 
-                    // const max_name_length = 15;
-
-                    // if (username.length > max_name_length)
-                    //     username = username.substring(0, max_name_length);
-
-                    // if (display_name.length > max_name_length)
-                    //     display_name = display_name.substring(0, max_name_length);
-
                     let charged = (Number.isNaN(meter_start) || Number.isNaN(meter_end)) ? NaN : (meter_end - meter_start);
                     doc.total_energy += Number.isNaN(charged) ? 0 : charged;
                     let charged_string;
