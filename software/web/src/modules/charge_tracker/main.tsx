@@ -132,7 +132,11 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {}, 
 
                     <FormRow label={__("charge_tracker.content.pdf_text")} label_muted={__("charge_tracker.content.pdf_text_muted")}>
                         <textarea name="test" class="text-monospace mb-1 form-control" id="test" value={state.pdf_text} onInput={(e) => {
-                            this.setState({pdf_text: (e.target as HTMLInputElement).value})
+                            let value = (e.target as HTMLInputElement).value;
+                            if (new Blob([value]).size < 500)
+                                this.setState({pdf_text: value});
+                            else
+                                this.setState({pdf_text: state.pdf_text});
                         }} cols={30} rows={10}/>
                     </FormRow>
                 </ConfigForm>
