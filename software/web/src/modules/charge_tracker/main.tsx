@@ -384,7 +384,7 @@ const wrapText = (text: string, width: number, font: PDFFont, fontSize: number):
 
 function insert_total_stats(doc: PDFExport) {
     let page = doc.doc.getPage(0);
-    page.moveTo(page.getWidth() - 200, page.getHeight() - 100 - doc.spacing - 10);
+    page.moveTo(page.getWidth() - 250, page.getHeight() - 100 - doc.spacing - 10);
 
     let name = API.get("info/display_name");
     let text = __("charge_tracker.script.pdf_charger") + name.display_name;
@@ -483,8 +483,6 @@ async function add_page(doc: PDFExport, is_first_page: boolean, letter_head?: st
             page.moveTo(page.getX(), 630);
     }
     page = insert_line_pdf(page, doc.spacing, doc.header, doc.font, doc.font_size, false);
-
-    page.moveDown(5);
 
     page.drawLine({
         start: {x: PDFSPACELEFT, y: page.getY() + doc.font_size + 2.5},
