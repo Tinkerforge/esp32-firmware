@@ -47,7 +47,6 @@ public:
 
     void update_seen_tags();
     void handle_event(tag_info_t *tag, bool lost_or_found, bool injected);
-    void handle_evse();
     void setup_nfc();
     void check_nfc_state();
     uint8_t get_user_id(tag_info_t *tag, uint8_t *tag_idx);

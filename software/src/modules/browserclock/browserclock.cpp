@@ -18,7 +18,7 @@
  */
 
 #include "browserclock.h"
-#include "build_timestamp.h"
+//#include "build_timestamp.h"
 #include "esp_sntp.h"
 #include "modules.h"
 #include <ctime>
@@ -132,7 +132,7 @@ void Browserclock::register_urls()
             tm.tm_min  = time_update.get("minute")->asUint();
             tm.tm_sec  = time_update.get("second")->asUint();
             time_t t = mktime(&tm);
-            time = { .tv_sec = t };
+            time = { .tv_sec = t, .tv_usec = 0 };
             settimeofday(&time, nullptr);
             ntp.set_synced();
 #if MODULE_AC011K_AVAILABLE()

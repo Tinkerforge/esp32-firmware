@@ -238,25 +238,6 @@ void ANFC::handle_event(tag_info_t *tag, bool found, bool injected)
     }
 }
 
-void ANFC::handle_evse()
-{
-    static Config *evse_state = api.getState("evse/state", false);
-    static Config *evse_slots = api.getState("evse/slots", false);
-
-    if (evse_state == nullptr || evse_slots == nullptr)
-        return;
-
-    bool waiting_for_start = (evse_state->get("iec61851_state")->asUint() == 1)
-                          && (evse_slots->get(CHARGING_SLOT_USER)->get("active")->asBool())
-                          && (evse_slots->get(CHARGING_SLOT_USER)->get("max_current")->asUint() == 0);
-
-    /* if (blink_state != -1) { */
-    /*     set_led(blink_state); */
-    /*     blink_state = -1; */
-    /* } else */
-    /*     set_led(waiting_for_start ? IND_NAG : -1); */
-}
-
 const char *lookup = "0123456789ABCDEF";
 
 void tag_id_bytes_to_string(const uint8_t *tag_id, uint8_t tag_id_len, char buf[NFC_TAG_ID_STRING_LENGTH + 1])
@@ -392,7 +373,6 @@ void ANFC::setup()
             last_run = millis();
             this->update_seen_tags();
         }
-        this->handle_evse();
     }, 10, 10);
 }
 
