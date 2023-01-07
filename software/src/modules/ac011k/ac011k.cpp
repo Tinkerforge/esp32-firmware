@@ -178,6 +178,51 @@ byte FlashVerify[811] = {0xAB, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x04, 0x00, 0
 38073       Rx cmd_0B seq:5C len:6 crc:55A7
 
 */
+// // evse GD status strings
+static const char *evse_status_text[] = {
+   "undefined",
+   "Available (not engaged)",
+   "Preparing (engaged, not started)",
+   "Charging (charging ongoing, power output)",
+   "Suspended by charger (started but no power available)",
+   "Suspended by EV (power available but waiting for the EV response)",
+   "Finishing, charging acomplished (RFID stop or EMS control stop)",
+   "(Reserved)",
+   "(Unavailable)",
+   "Fault (charger in fault condition)",
+};
+
+static const char *stop_reason_text[] = {
+   "undefined",
+   "Remote",
+   "undefined",
+   "EV disconnected",
+};
+
+static const char *cmd_0B_text[] = {
+    "Reset into application mode",
+    "Handshake",
+    "Flash erase",
+    "Flash write",
+    "Flash verify",
+    "Reset into boot mode",
+};
+
+static const char *evse_slot_name[] = {
+    "INCOMING_CABLE",
+    "OUTGOING_CABLE",
+    "SHUTDOWN_INPUT",
+    "GP_INPUT",
+    "AUTOSTART_BUTTON",
+    "GLOBAL",
+    "USER",
+    "CHARGE_MANAGER",
+    "EXTERNAL",
+    "MODBUS_TCP",
+    "MODBUS_TCP_ENABLE",
+    "OCPP",
+};
+
 
 #ifdef EXPERIMENTAL
 /* experimental: JSON data sender */
@@ -265,11 +310,11 @@ void AC011K::Serial2write(byte *data, int size) {
     }
 }
 
-char timeString[20];  // global since local variable could not be used as return value
+char timeString[25];  // global since local variable could not be used as return value
 const char* AC011K::timeStr(byte *data, uint8_t offset=0) {
     sprintf(timeString, "%04d/%02d/%02d %02d:%02d:%02d",
-        data[offset++]+2000, data[offset++], data[offset++],
-        data[offset++], data[offset++], data[offset]
+        (int)(data[offset])+2000, data[offset+1], data[offset+2],
+        data[offset+3], data[offset+4], data[offset+5]
     );
     return timeString;
 }
@@ -408,6 +453,7 @@ int AC011K::bs_evse_start_charging() {
             break;
         default:
             logger.printfln("Unknown firmware version. Trying commands for latest version.");
+            __attribute__ ((fallthrough));
         case 258:
         case 460:
         case 538:
@@ -444,6 +490,7 @@ int AC011K::bs_evse_persist_config() {
     /*         evse_config.get("max_current_configured")->asUint()); */
     /*     return 0; */
     /* } */
+    return 0;
 }
 
 int AC011K::bs_evse_set_charging_autostart(bool autostart) {
@@ -465,6 +512,7 @@ int AC011K::bs_evse_set_max_charging_current(uint16_t max_current) {
             break;
         default:
             logger.printfln("Unknown firmware version. Trying commands for latest version.");
+            __attribute__ ((fallthrough));
         case 258:
         case 460:
         case 538:
@@ -489,11 +537,14 @@ void AC011K::evse_slot_machine() {
     // perform clear on disconnect
     if((evse_state.get("iec61851_state")->asUint() == IEC_STATE_A) && (last_iec61851_state != IEC_STATE_A)) {
         for (int i = 0; i < CHARGING_SLOT_COUNT; ++i) {
-            if (evse_slots.get(i)->get("clear_on_disconnect")->asBool())
-                if ((i == CHARGING_SLOT_AUTOSTART_BUTTON) && (evse_auto_start_charging.get("auto_start_charging")->asBool())) 
+            if (evse_slots.get(i)->get("clear_on_disconnect")->asBool()) {
+                if ((i == CHARGING_SLOT_AUTOSTART_BUTTON) && (evse_auto_start_charging.get("auto_start_charging")->asBool())){
                     apply_slot_default(i, 32000, evse_slots.get(i)->get("active")->asBool(), true);
-                else
+                }
+                else {
                     apply_slot_default(i, 0, evse_slots.get(i)->get("active")->asBool(), true);
+                }
+            }
         }
     }
 
@@ -1036,14 +1087,13 @@ void AC011K::my_setup_evse()
 void AC011K::myloop()
 {
     static uint32_t last_check = 0;
-    static uint32_t nextMillis = 2000;
     static bool ntp_clock_synced = false;
     static struct timeval tv_now;
     static uint8_t evseStatus = 0;
     static uint8_t cmd;
     static uint8_t seq;
     static uint16_t len;
-    uint16_t crc;
+    uint16_t crc = 0;
     static bool cmd_to_process = false;
     static byte PrivCommRxState = PRIVCOMM_MAGIC;
     static int PrivCommRxBufferPointer = 0;
@@ -1192,16 +1242,22 @@ void AC011K::myloop()
                 sprintf(str, "%s",PrivCommRxBuffer+91);
                 evse_hardware_configuration.get("FirmwareVersion")->updateString(str);
                 if(!evse_hardware_configuration.get("initialized")->asBool()) {
-                    initialized =
-                        ((evse_hardware_configuration.get("Hardware")->asString().compareTo("AC011K-AU-25") == 0 || evse_hardware_configuration.get("Hardware")->asString().compareTo("AC011K-AE-25") == 0)
-                         && (evse_hardware_configuration.get("FirmwareVersion")->asString().startsWith("1.1.", 0)  // known working: 1.1.27, 1.1.212, 1.1.258, 1.1.525, 1.1.538, 1.1.805, 1.1.812, 1.1.888
-                             && evse_hardware_configuration.get("FirmwareVersion")->asString().substring(4).toInt() <= 888  // higest known working version (we assume earlier versions work as well)
+                    initialized = (
+                            (evse_hardware_configuration.get("Hardware")->asString().compareTo("AC011K-AU-25") == 0) 
+                            || (evse_hardware_configuration.get("Hardware")->asString().compareTo("AC011K-AE-25") == 0)
+                        )
+                        && (   
+                            (   
+                                evse_hardware_configuration.get("FirmwareVersion")->asString().startsWith("1.1.", 0)  // known working: 1.1.27, 1.1.212, 1.1.258, 1.1.525, 1.1.538, 1.1.805, 1.1.812, 1.1.888
+                                && (evse_hardware_configuration.get("FirmwareVersion")->asString().substring(4).toInt() <= 888)  // higest known working version (we assume earlier versions work as well)
                             )
-                            || (evse_hardware_configuration.get("FirmwareVersion")->asString().startsWith("1.0.", 0)  // known working: 1.0.1435
-                                && evse_hardware_configuration.get("FirmwareVersion")->asString().substring(4).toInt() <= 1435  // higest known working version (we assume earlier versions work as well)
+                            || (   
+                                evse_hardware_configuration.get("FirmwareVersion")->asString().startsWith("1.0.", 0)  // known working: 1.0.1435
+                                && (evse_hardware_configuration.get("FirmwareVersion")->asString().substring(4).toInt() <= 1435)  // higest known working version (we assume earlier versions work as well)
                             )
-                            || (evse_hardware_configuration.get("FirmwareVersion")->asString().startsWith("1.2.", 0)  // known working: 1.2.460
-                                && evse_hardware_configuration.get("FirmwareVersion")->asString().substring(4).toInt() <= 460  // higest known working version (we assume earlier versions work as well)
+                            || (   
+                                evse_hardware_configuration.get("FirmwareVersion")->asString().startsWith("1.2.", 0)  // known working: 1.2.460
+                                && (evse_hardware_configuration.get("FirmwareVersion")->asString().substring(4).toInt() <= 460)  // higest known working version (we assume earlier versions work as well)
                             )
                         );
                     evse_hardware_configuration.get("initialized")->updateBool(initialized);
@@ -1412,7 +1468,7 @@ void AC011K::myloop()
                     if (PrivCommRxBuffer[77] == 0x10) {  // RFID card
                         String rfid = "";
                         for (int i=0; i<8; i++) {rfid += PrivCommRxBuffer[40 + i];}  // Card number in bytes 40..47
-                        logger.printfln("RFID Card %s", rfid);
+                        logger.printfln("RFID Card %s", rfid.c_str());
                     }
                 }
                 sendTime(0xA8, 0x40, 12, seq); // send ack

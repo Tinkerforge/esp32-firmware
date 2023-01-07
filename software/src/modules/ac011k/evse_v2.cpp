@@ -340,7 +340,7 @@ void AC011K::setup()
 {
     setup_evse();
 
-    /* TODO: make reset work on AC011K
+    /* TODO: make reset work on AC011K */
     /* task_scheduler.scheduleOnce([this](){ */
     /*     uint32_t press_time = 0; */
     /*     tf_evse_v2_get_button_press_boot_time(&device, true, &press_time); */
@@ -452,11 +452,17 @@ String AC011K::get_evse_debug_line() {
     if(!initialized)
         return "EVSE is not initialized!";
 
-    uint8_t iec61851_state, charger_state, contactor_state, contactor_error, error_state, lock_state;
-    uint16_t allowed_charging_current;
-    uint32_t time_since_state_change, uptime;
+    uint8_t iec61851_state = 0;
+    uint8_t charger_state = 0;
+    uint8_t contactor_state = 0;
+    uint8_t contactor_error = 0;
+    uint8_t error_state = 0;
+    uint8_t lock_state = 0;
+    uint16_t allowed_charging_current = 0;
+    uint32_t time_since_state_change = 0;
+    uint32_t uptime = 0;
 
-    int rc;
+    int rc = 0;
     /* int rc = bs_evse_get_state( */
     /*     &iec61851_state, */
     /*     &charger_state, */
@@ -472,14 +478,14 @@ String AC011K::get_evse_debug_line() {
     /*     return String("evse_get_state failed: rc: ") + String(rc); */
     /* } */
 
-    bool low_level_mode_enabled;
-    uint8_t led_state;
-    uint16_t cp_pwm_duty_cycle;
+    bool low_level_mode_enabled = false;
+    uint8_t led_state = 0;
+    uint16_t cp_pwm_duty_cycle = 0;
 
-    uint16_t adc_values[2];
-    int16_t voltages[3];
-    uint32_t resistances[2];
-    bool gpio[5];
+    uint16_t adc_values[2] = {0,0};
+    int16_t voltages[3] = {0,0,0};
+    uint32_t resistances[2] = {0,0};
+    bool gpio[5] = {false,false,false,false,false};
 
 //    rc = tf_evse_get_low_level_state(
 //        &low_level_mode_enabled,
@@ -495,24 +501,38 @@ String AC011K::get_evse_debug_line() {
     }
 
     char line[150] = {0};
-    snprintf(line, sizeof(line)/sizeof(line[0]), "%lu,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%c,%u,%u,%u,%u,%d,%d,%d,%u,%u,%c,%c,%c,%c,%c\n",
+//                                                  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25
+    snprintf(line, sizeof(line)/sizeof(line[0]), "%lu,%u,%u,%u,%u,%u,%u,%u,%u,%u,%c,%u,%u,%u,%u,%d,%d,%d,%u,%u,%c,%c,%c,%c,%c\n",
         millis(),
         iec61851_state,
         charger_state,
         contactor_state,
         contactor_error,
+
         allowed_charging_current,
         error_state,
         lock_state,
         time_since_state_change,
         uptime,
+
         low_level_mode_enabled ? '1' : '0',
         led_state,
         cp_pwm_duty_cycle,
-        adc_values[0],adc_values[1],
-        voltages[0],voltages[1],voltages[2],
-        resistances[0],resistances[1],
-        gpio[0] ? '1' : '0',gpio[1] ? '1' : '0',gpio[2] ? '1' : '0',gpio[3] ? '1' : '0',gpio[4] ? '1' : '0');
+        adc_values[0],
+        adc_values[1],
+
+        voltages[0],
+        voltages[1],
+        voltages[2],
+        resistances[0],
+        resistances[1],
+
+        gpio[0] ? '1' : '0',
+        gpio[1] ? '1' : '0',
+        gpio[2] ? '1' : '0',
+        gpio[3] ? '1' : '0',
+        gpio[4] ? '1' : '0'
+        );
 
     return String(line);
 }
@@ -680,7 +700,7 @@ void AC011K::register_urls()
 
     api.addState("evse/control_pilot_configuration", &evse_control_pilot_configuration, {}, 1000);
     api.addCommand("evse/control_pilot_configuration_update", &evse_control_pilot_configuration_update, {}, [this](){
-        auto cp = evse_control_pilot_configuration_update.get("control_pilot")->asUint();
+        /*auto cp = */ evse_control_pilot_configuration_update.get("control_pilot")->asUint();
         /* int rc = tf_evse_v2_set_control_pilot_configuration(&device, cp, nullptr); */
         /* logger.printfln("updating control pilot to %u.", cp); */
         /* is_in_bootloader(rc); */
@@ -765,7 +785,7 @@ void AC011K::register_urls()
 
     api.addState("evse/external_defaults", &evse_external_defaults, {}, 1000);
     api.addCommand("evse/external_defaults_update", &evse_external_defaults_update, {}, [this](){
-        bool enabled;
+        //bool enabled;
         //tf_evse_v2_get_charging_slot_default(&device, CHARGING_SLOT_EXTERNAL, nullptr, &enabled, nullptr);
         this->apply_slot_default(CHARGING_SLOT_EXTERNAL, evse_external_defaults_update.get("current")->asUint(), evse_slots.get(CHARGING_SLOT_EXTERNAL)->get("active")->asBool(), evse_external_defaults_update.get("clear_on_disconnect")->asBool());
     }, false);
@@ -1096,6 +1116,7 @@ void AC011K::update_all_data()
     evse_indicator_led.get("indication")->updateInt(indication);
     evse_indicator_led.get("duration")->updateUint(duration);
     */
+
     /* 
     We just can not get all the data above and therefore ignore it and either
     stick to our own fake default values, or 

@@ -96,18 +96,18 @@ void AC011KHardware::register_urls()
 
 void AC011KHardware::loop()
 {
-    static bool last_btn_value = false;
-    static uint32_t last_btn_change = 0;
+    //static bool last_btn_value = false;
+    //static uint32_t last_btn_change = 0;
 
     bool btn = touchRead(BUTTON);
     if (!factory_reset_requested)
         digitalWrite(GREEN_LED, btn);
 
-    if (btn != last_btn_value) {
-        last_btn_change = millis();
-    }
+    // if (btn != last_btn_value) {
+    //     last_btn_change = millis();
+    // }
 
-    last_btn_value = btn;
+    //last_btn_value = btn;
 
     /* if (!btn && deadline_elapsed(last_btn_change + 10000)) { */
     /*     logger.printfln("IO0 button was pressed for 10 seconds. Resetting to factory defaults."); */

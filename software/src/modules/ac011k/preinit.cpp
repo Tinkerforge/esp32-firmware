@@ -21,13 +21,13 @@ extern API api;
 #define BUTTON T9
 
 void evse_v2_button_recovery_handler() {
-    uint32_t start = millis();
+    //uint32_t start = millis();
 
     pinMode(GREEN_LED, OUTPUT);
     pinMode(BLUE_LED, OUTPUT);
 
-    uint32_t button_press_time = BUTTON_IS_PRESSED;
-    bool first = true;
+    //uint32_t button_press_time = BUTTON_IS_PRESSED;
+    //bool first = true;
 
     //logger.printfln("Factory reset ...");
     
