@@ -30,13 +30,6 @@
 #include "build.h"
 
 #ifdef GD_FLASH
-#include "enplus_firmware.h"
-//#include "enplus_firmware.1.0.1435h"  // RFID, 1 Ampere limit steps
-//#include "enplus_firmware.1.1.212.h"  // no RFID but climatization possible after charging completed, charging limits 8A/10A/13A/16A only
-//#include "enplus_firmware.1.1.258.h"  // RFID, no climatization possible after charging completed, 1 Ampere limit steps ?
-//#include "enplus_firmware.1.1.538.h"  // RFID, no climatization possible after charging completed, 1 Ampere limit steps ?
-//#include "enplus_firmware.1.1.805.h"  // RFID, no climatization possible after charging completed, 1 Ampere limit steps ?
-#include "enplus_firmware.1.1.888.h"  // RFID, no climatization possible after charging completed, charging limits 8A/10A/13A/16A only
 #include "GD_firmware.1.2.460.h"
 #endif
 
@@ -681,88 +674,12 @@ void AC011K::update_evseStatus(uint8_t evseStatus) {
 #ifdef GD_FLASH
 /* GD Firmware updater */
 
-bool AC011K::handle_update_chunk(int command, WebServerRequest request, size_t chunk_index, uint8_t *data, size_t chunk_length, bool final, size_t complete_length) {
+bool AC011K::handle_update_chunk(int command, WebServerRequest request, size_t chunk_index, uint8_t *data, size_t chunk_length) {
 
     if(chunk_index == 0) {
- /* [PRIV_COMM, 1875]: Tx(cmd_AB len:820) :  FA 03 00 00 AB 18 2A 03 00 00 00 08 00 00 03 00 90 01 68 16 00 20 1D 25 00 08 3B 0E 00 08 3D 0E 00 08 41 0E 00 08 45 0E 00 08 49 0E 00 08 00 00 00 00 00 00 */
-        //sendCommand(EnterBootMode, sizeof(EnterBootMode), sendSequenceNumber++);
         logger.printfln("EVSE RemoteUpdate, reset into boot mode");
         RemoteUpdate[7] = 5; // Reset into boot mode
         sendCommand(RemoteUpdate, sizeof(RemoteUpdate), sendSequenceNumber++);
-        /* logger.printfln("Failed to start update: %s", Update.errorString()); */
-        /* request.send(400, "text/plain", Update.errorString()); */
-        /* update_aborted = true; */
-        /* return true; */
-    }
-
-    size_t chunk_offset = 0;
-    size_t length = chunk_length;
-
-    FlashVerify[7] = command; // flash write (3=write, 4=verify)
-
-    while (length > 0) {
-        while (!ready_for_next_chunk) {
-            vTaskDelay(100 / portTICK_PERIOD_MS);
-            //loop(); //TODO make this more elegant
-        }
-
-        //calculate maxlength
-        size_t maxlength = MIN(length, length % 800); // 800 bytes is the max flash verify/write size
-        maxlength = maxlength > 0 ? maxlength : 800;  // process the reminder first, then 800b chunks
-        FlashVerify[9]  = (maxlength/2 & 0x000000FF); // number of words to process (therefore divided by 2)
-        FlashVerify[10] = (maxlength/2 & 0x0000FF00) >> 8;
-
-        //calculate address
-        uint32_t gd_address = chunk_index + chunk_offset + 0x8000000; // 0x8000000 is the start address for the GD chip
-        FlashVerify[5] = (gd_address & 0x000000FF);
-        FlashVerify[6] = (gd_address & 0x0000FF00) >> 8;
-        FlashVerify[3] = (gd_address & 0x00FF0000) >> 16;
-        FlashVerify[4] = (gd_address & 0xFF000000) >> 24;
-
-        //logger.printfln("Processing update chunk with: chunk_index %.6X (%d), gd(%.2x %.2x %.2x %.2x) chunk_l %d, chunk_offset %d, complete_l %d, final: %s", chunk_index, chunk_index, FlashVerify[3],FlashVerify[4],FlashVerify[5],FlashVerify[6], chunk_length, chunk_offset, complete_length, final?"true":"false");
-        logger.printfln("c_index %d, gd(%.2x %.2x %.2x %.2x) chunk_l %d, chunk_offset %d, l %d, ml %d, ll %d, final: %s", chunk_index, FlashVerify[3],FlashVerify[4],FlashVerify[5],FlashVerify[6], chunk_length, chunk_offset, length, maxlength, complete_length, final?"true":"false");
-
-        if (update_aborted)
-            return true;
-
-        // copy data
-        memcpy(FlashVerify+11, data + chunk_offset, maxlength);
-
-        MAXLENGTH = maxlength;
-        sendCommand(FlashVerify, maxlength+11, sendSequenceNumber++); // next chunk (11 bytes header) 
-        flash_seq = PrivCommTxBuffer[5];
-        last_flash = millis();
-        ready_for_next_chunk = false;
-
-        chunk_offset = chunk_offset + maxlength;
-        length = length - maxlength;
-    } // iterate through big chunks
-
-    if(final) {
-        this->firmware_update_running = false;
-        logger.printfln("   scheduling GD chip app mode in 3s");
-        // after last chunk, get out of flash mode
-        task_scheduler.scheduleOnce([this](){
-            logger.printfln("   getting the GD chip back into app mode");
-            sendCommand(EnterAppMode, sizeof(EnterAppMode), sendSequenceNumber++);
-        }, 3000);
-    }
-
-    return true;
-}
-
-bool AC011K::handle_update_chunk1(int command, WebServerRequest request, size_t chunk_index, uint8_t *data, size_t chunk_length, bool final, size_t complete_length) {
-
-    if(chunk_index == 0) {
- /* [PRIV_COMM, 1875]: Tx(cmd_AB len:820) :  FA 03 00 00 AB 18 2A 03 00 00 00 08 00 00 03 00 90 01 68 16 00 20 1D 25 00 08 3B 0E 00 08 3D 0E 00 08 41 0E 00 08 45 0E 00 08 49 0E 00 08 00 00 00 00 00 00 */
-        //sendCommand(EnterBootMode, sizeof(EnterBootMode), sendSequenceNumber++);
-        logger.printfln("EVSE RemoteUpdate, reset into boot mode");
-        RemoteUpdate[7] = 5; // Reset into boot mode
-        sendCommand(RemoteUpdate, sizeof(RemoteUpdate), sendSequenceNumber++);
-        /* logger.printfln("Failed to start update: %s", Update.errorString()); */
-        /* request.send(400, "text/plain", Update.errorString()); */
-        /* update_aborted = true; */
-        /* return true; */
 
         size_t chunk_offset = 0 + 0x8000;
         size_t length = gd_firmware_len - 0x8000;
@@ -775,80 +692,7 @@ bool AC011K::handle_update_chunk1(int command, WebServerRequest request, size_t 
             }
 
             //calculate maxlength
-            //size_t maxlength = 800;               // 800 byte chunks
             size_t maxlength = 512;               // 512 byte chunks
-            //if (length < 800) maxlength = length; // reminder
-            if (length < 512) maxlength = length; // reminder
-            FlashVerify[9]  = (maxlength/2 & 0x000000FF); // number of words to process (therefore divided by 2)
-            FlashVerify[10] = (maxlength/2 & 0x0000FF00) >> 8;
-
-            //calculate address
-            uint32_t gd_address = chunk_index + chunk_offset + 0x8000000; // 0x8000000 is the start address for the GD chip
-            FlashVerify[5] = (gd_address & 0x000000FF);
-            FlashVerify[6] = (gd_address & 0x0000FF00) >> 8;
-            FlashVerify[3] = (gd_address & 0x00FF0000) >> 16;
-            FlashVerify[4] = (gd_address & 0xFF000000) >> 24;
-
-            //logger.printfln("Processing update chunk with: chunk_index %.6X (%d), gd(%.2x %.2x %.2x %.2x) chunk_l %d, chunk_offset %d, complete_l %d, final: %s", chunk_index, chunk_index, FlashVerify[3],FlashVerify[4],FlashVerify[5],FlashVerify[6], chunk_length, chunk_offset, complete_length, final?"true":"false");
-            logger.printfln("gd(%.2x %.2x %.2x %.2x) binhex(%.2x%.2x) chunk_offset %d, l %d, ml %d, ll %d, final: %s", FlashVerify[3],FlashVerify[4],FlashVerify[5],FlashVerify[6], FlashVerify[6],FlashVerify[5], chunk_offset, length, maxlength, complete_length, final?"true":"false");
-
-            if (update_aborted)
-                return true;
-
-            // copy data
-            memcpy(FlashVerify+11, gd_firmware_1_1_888 + chunk_offset, maxlength);  //  firmware file for verify button
-
-            MAXLENGTH = maxlength;
-            sendCommand(FlashVerify, maxlength+11, sendSequenceNumber++); // next chunk (11 bytes header) 
-            flash_seq = PrivCommTxBuffer[5];
-            last_flash = millis();
-            ready_for_next_chunk = false;
-
-            chunk_offset = chunk_offset + maxlength;
-            length = length - maxlength;
-        } // iterate through big chunks
-    } // first chunk
-
-    if(final) {
-        this->firmware_update_running = false;
-        logger.printfln("   scheduling GD chip app mode in 3s");
-        // after last chunk, get out of flash mode
-        task_scheduler.scheduleOnce([this](){
-            logger.printfln("   getting the GD chip back into app mode");
-            sendCommand(EnterAppMode, sizeof(EnterAppMode), sendSequenceNumber++);
-        }, 3000);
-    }
-
-    return true;
-}
-
-bool AC011K::handle_update_chunk2(int command, WebServerRequest request, size_t chunk_index, uint8_t *data, size_t chunk_length) {
-
-    if(chunk_index == 0) {
- /* [PRIV_COMM, 1875]: Tx(cmd_AB len:820) :  FA 03 00 00 AB 18 2A 03 00 00 00 08 00 00 03 00 90 01 68 16 00 20 1D 25 00 08 3B 0E 00 08 3D 0E 00 08 41 0E 00 08 45 0E 00 08 49 0E 00 08 00 00 00 00 00 00 */
-        //sendCommand(EnterBootMode, sizeof(EnterBootMode), sendSequenceNumber++);
-        logger.printfln("EVSE RemoteUpdate, reset into boot mode");
-        RemoteUpdate[7] = 5; // Reset into boot mode
-        sendCommand(RemoteUpdate, sizeof(RemoteUpdate), sendSequenceNumber++);
-        /* logger.printfln("Failed to start update: %s", Update.errorString()); */
-        /* request.send(400, "text/plain", Update.errorString()); */
-        /* update_aborted = true; */
-        /* return true; */
-
-        size_t chunk_offset = 0 + 0x8000;
-        size_t length = gd_firmware_len - 0x8000;
-
-        FlashVerify[7] = command; // flash write (3=write, 4=verify)
-
-        while (length > 0) {
-            while (!ready_for_next_chunk) {
-                loop(); //TODO make this more elegant
-            }
-
-            //calculate maxlength
-            //size_t maxlength = 800;               // 800 byte chunks
-            size_t maxlength = 512;               // 512 byte chunks
-            //if (length < 800) maxlength = length; // reminder
             if (length < 512) maxlength = length; // reminder
             FlashVerify[9]  = (maxlength/2 & 0x000000FF); // number of words to process (therefore divided by 2)
             FlashVerify[10] = (maxlength/2 & 0x0000FF00) >> 8;
@@ -878,15 +722,6 @@ bool AC011K::handle_update_chunk2(int command, WebServerRequest request, size_t 
             length = length - maxlength;
         } // iterate through big chunks
     } // first chunk
-
-    /* this->firmware_update_running = false; */
-    /* logger.printfln("   scheduling GD chip app mode in 3s"); */
-    /* // after last chunk, get out of flash mode */
-    /* task_scheduler.scheduleOnce([this](){ */
-    /*     logger.printfln("   getting the GD chip back into app mode (scheduled 3s before)"); */
-    /*     sendCommand(EnterAppMode, sizeof(EnterAppMode), sendSequenceNumber++); */
-    /* }, 3000); */
-
     return true;
 }
 #endif
@@ -1742,30 +1577,6 @@ void AC011K::myloop()
 void AC011K::register_my_urls()
 {
 #ifdef GD_FLASH
-    server.on("/update_gd", HTTP_GET, [this](WebServerRequest request){
-        //request.send(200, "text/html", "<form><input id=\"firmware\"type=\"file\"> <button id=\"u_firmware\"type=\"button\"onclick='u(\"firmware\")'>Flash GD Firmware</button> <label id=\"p_firmware\"></label><button id=\"u_verify\"type=\"button\"onclick='u(\"verify\")'>Verify GD Firmware</button> <label id=\"p_verify\"></label></form><script>function u(e){var t,n,d,o=document.getElementById(\"firmware\").files;0==o.length?alert(\"No file selected!\"):(document.getElementById(\"firmware\").disabled=!0,document.getElementById(\"u_firmware\").disabled=!0,document.getElementById(\"u_verify\").disabled=!0,t=o[0],n=new XMLHttpRequest,d=document.getElementById(\"p_\"+e),n.onreadystatechange=function(){4==n.readyState&&(200==n.status?(document.open(),document.write(n.responseText),document.close()):(0==n.status?alert(\"Server closed the connection abruptly!\"):alert(n.status+\" Error!\\n\"+n.responseText),location.reload()))},n.upload.addEventListener(\"progress\",function(e){e.lengthComputable&&(d.innerHTML=e.loaded/e.total*100+\"% (\"+e.loaded+\" / \"+e.total+\")\")},!1),n.open(\"POST\",\"/flash_\"+e,!0),n.send(t))}</script>");
-        return request.send(200, "text/html", "<form><input id=\"gd_firmware\"type=\"file\"> <button id=\"u_firmware\"type=\"button\"onclick='u(\"gd_firmware\")'>Upload GD Firmware</button> <label id=\"p_gd_firmware\"></label></form><form><input id=\"verify\"type=\"file\"> <button id=\"u_verify\"type=\"button\"onclick='u(\"verify\")'>Verify GD Firmware</button> <label id=\"p_verify\"></label></form><script>function u(e){var t,n,d,o=document.getElementById(e).files;0==o.length?alert(\"No file selected!\"):(document.getElementById(\"gd_firmware\").disabled=!0,document.getElementById(\"u_firmware\").disabled=!0,document.getElementById(\"verify\").disabled=!0,document.getElementById(\"u_verify\").disabled=!0,t=o[0],n=new XMLHttpRequest,d=document.getElementById(\"p_\"+e),n.onreadystatechange=function(){4==n.readyState&&(200==n.status?(document.open(),document.write(n.responseText),document.close()):(0==n.status?alert(\"Server closed the connection abruptly!\"):alert(n.status+\" Error!\\n\"+n.responseText),location.reload()))},n.upload.addEventListener(\"progress\",function(e){e.lengthComputable&&(d.innerHTML=e.loaded/e.total*100+\"% (\"+e.loaded+\" / \"+e.total+\")\")},!1),n.open(\"POST\",\"/flash_\"+e,!0),n.send(t))}</script>");
-    });
-    server.on("/flash_gd_firmware", HTTP_POST, [this](WebServerRequest request){
-        if (update_aborted)
-            return request.unsafe_ResponseAlreadySent(); // Already sent in upload callback.
-        this->firmware_update_running = false;
-        if (!firmware_update_allowed) {
-            request.send(423, "text/plain", "vehicle connected");
-            return request.unsafe_ResponseAlreadySent(); // Already sent in upload callback.
-        }
-        /* request.send(Update.hasError() ? 400: 200, "text/plain", Update.hasError() ? Update.errorString() : "Update OK"); */
-        return request.send(200, "text/plain", "Update OK");
-    },[this](WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final){
-        if (!firmware_update_allowed) {
-            request.send(423, "text/plain", "vehicle connected");
-            this->firmware_update_running = false;
-            return false;
-        }
-        this->firmware_update_running = true;
-        return handle_update_chunk1(3, request, index, data, len, final, request.contentLength());
-    });
-
     server.on("/evse/reflash", HTTP_PUT, [this](WebServerRequest request){
         if (update_aborted)
             return request.unsafe_ResponseAlreadySent(); // Already sent in upload callback.
@@ -1784,40 +1595,7 @@ void AC011K::register_my_urls()
         }
         this->firmware_update_running = true;
         logger.printfln("/evse/reflash %d (%d)", index, len);
-        return handle_update_chunk2(3, request, index, data, len);
+        return handle_update_chunk(3, request, index, data, len);
     });
-
-    server.on("/flash_verify", HTTP_POST, [this](WebServerRequest request){
-        if (update_aborted)
-            return request.unsafe_ResponseAlreadySent(); // Already sent in upload callback.
-        this->firmware_update_running = false;
-        if (!firmware_update_allowed) {
-            request.send(423, "text/plain", "vehicle connected");
-            return request.unsafe_ResponseAlreadySent(); // Already sent in upload callback.
-        }
-        /* request.send(Update.hasError() ? 400: 200, "text/plain", Update.hasError() ? Update.errorString() : "Update OK"); */
-        request.send(200, "text/plain", "Update OK");
-    },[this](WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final){
-        if (!firmware_update_allowed) {
-            request.send(423, "text/plain", "vehicle connected");
-            this->firmware_update_running = false;
-            return false;
-        }
-        this->firmware_update_running = true;
-        return handle_update_chunk1(4, request, index, data, len, final, request.contentLength());
-    });
-
-    /* server.on("/flash_verify", HTTP_POST, [this](WebServerRequest request){ */
-    /*     request.send(200, "text/plain", "Update OK"); */
-    /* },[this](WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final){ */
-    /*     return handle_update_chunk(4, request, index, data, len, final, request.contentLength()); */
-    /* }); */
 #endif
-
 }
-
-/* void AC011K:tf_evse_v2_set_charging_slot_max_current:(uint16_t current) */
-/* { */
-/*     evse_slots.get(CHARGING_SLOT_CHARGE_MANAGER)->get("max_current")->updateUint(current); */
-/* } */
-
