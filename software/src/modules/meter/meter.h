@@ -26,10 +26,13 @@
 #define METER_ALL_VALUES_COUNT 85
 
 #define METER_TYPE_NONE 0
+
+// Supported by modbus_meter module
 #define METER_TYPE_SDM72DM 1
+
+// Supported by modbus_meter or evse_v2 module
 #define METER_TYPE_SDM630 2
 #define METER_TYPE_SDM72DMV2 3
-#define METER_TYPE_MQTT 4
 
 // Supported by energy_manager module
 #define METER_TYPE_SDM72CTM 4
