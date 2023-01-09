@@ -43,8 +43,6 @@ static MeterInfo *supported_meters[] = {
 
 static MeterInfo *meter_in_use = nullptr;
 
-#define METER_TYPE_AUTO_DETECT 255
-
 void ModbusMeter::pre_setup()
 {
     error_counters = Config::Object({
