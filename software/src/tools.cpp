@@ -367,34 +367,7 @@ bool mount_or_format_spiffs(void)
     size_t part_used = LittleFS.usedBytes();
     logger.printfln("Mounted data partition. %u of %u bytes (%3.1f %%) used", part_used, part_size, ((float)part_used / (float)part_size) * 100.0f);
 
-    listAllFilesInDir("/");
-
     return true;
-}
-
-void listAllFilesInDir(String dir_path)
-{
-    // File works RAII style, no need to close.
-    File root = LittleFS.open("/" + dir_path);
-    if (!root) {
-        logger.printfln("Failed to open directory %s!", dir_path.c_str());
-        return;
-    }
-    if (!root.isDirectory()) {
-        logger.printfln("Source file %s is not a directory!", dir_path.c_str());
-        return;
-    }
-    File source;
-    while (source = root.openNextFile()) {
-        if (source.isDirectory()) {
-            logger.printfln("Recursing in directory %s.", dir_path.c_str());
-            listAllFilesInDir(String(source.name()) + "/");
-            continue;
-        }
-        else {
-            logger.printfln("File %s%s.", dir_path.c_str(), source.name());
-        }
-    }
 }
 
 String read_config_version()

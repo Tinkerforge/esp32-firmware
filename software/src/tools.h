@@ -40,8 +40,6 @@ int check(int rc, const char *msg);
 
 bool mount_or_format_spiffs(void);
 
-void listAllFilesInDir(String dir_path);
-
 String read_config_version();
 
 int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose, const uint8_t *firmware, size_t firmware_len, EventLog *logger, bool force);
