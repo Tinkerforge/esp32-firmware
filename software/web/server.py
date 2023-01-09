@@ -3,7 +3,7 @@
 import sys
 import os
 import argparse
-from flask import Flask
+from flask import Flask, Response
 from flask_sock import Sock # pip install flask-sock
 from simple_websocket import ws as WS
 import websocket # pip install websocket-client
@@ -24,7 +24,8 @@ def index():
 @app.route('/<path:path>')
 def forward_html(path):
     with urlopen(f'http://{host}/{path}') as f:
-        return f.read()
+        # Exclude Transfer-Encoding: chunked header.  The chunked response is already reassembled.
+        return Response(f.read(), headers={x: f.headers[x] for x in f.headers if x != "Transfer-Encoding"})
 
 @sock.route('/ws')
 def forward_ws(sock):
