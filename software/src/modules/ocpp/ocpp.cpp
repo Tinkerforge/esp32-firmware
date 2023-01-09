@@ -25,6 +25,7 @@
 #include "task_scheduler.h"
 
 #include <ctype.h>
+#include <string.h>
 
 extern char local_uid_str[7];
 
@@ -169,4 +170,28 @@ void Ocpp::register_urls()
 void Ocpp::loop()
 {
 
+}
+
+static void remove_separator(const char * const in, char *out) {
+    int written = 0;
+    size_t s = strlen(in);
+    for(int i = 0; i < s; ++i) {
+        if (in[i] == ':')
+            continue;
+        out[written] = in[i];
+        ++written;
+    }
+    out[written] = '\0';
+}
+
+void Ocpp::on_tag_seen(const char *tag_id) {
+    if (tag_seen_cb == nullptr)
+        return;
+
+    // We have to remove the separating ':'s from the tag_id.
+    // OCPP expectes IDs that map to physical tag IDs to contain only the hex-bytes.
+    char buf[NFC_TAG_ID_STRING_LENGTH + 1] = {};
+    remove_separator(tag_id, buf);
+
+    tag_seen_cb(1, buf, tag_seen_cb_user_data);
 }

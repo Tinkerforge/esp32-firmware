@@ -30,11 +30,7 @@ public:
     void register_urls();
     void loop();
 
-    void on_tag_seen(const char *tag_id) {
-        if (tag_seen_cb == nullptr)
-            return;
-        tag_seen_cb(1, tag_id, tag_seen_cb_user_data);
-    }
+    void on_tag_seen(const char *tag_id);
 
     bool initialized = false;
 
