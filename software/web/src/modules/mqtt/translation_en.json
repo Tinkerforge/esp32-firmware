@@ -35,7 +35,7 @@
             "auto_discovery_prefix": "Auto discovery topic prefix",
             "auto_discovery_prefix_invalid": "The topic prefix can not start with $ or contain a # or + or be empty.",
             "enable_meter": "MQTT meter",
-            "enable_meter_desc": "Simulate a meter and keep it updated with values received on the topic below.",
+            "enable_meter_desc": "Simulate a meter and keep it updated with values received from the topic below.",
             "meter_topic": "Meter topic",
             "meter_topic_invalid": "The topic cannot start with $ or contain a # or + or be empty."
         },
