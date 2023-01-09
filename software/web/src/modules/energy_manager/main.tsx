@@ -90,12 +90,12 @@ function update_energy_manager_html_visibility() {
     }
 
     let relay_config_is_dd = $('#energy_manager_config_relay_config_is')
-    let relay_config_if = $('#energy_manager_config_relay_config_if').val();
-    if((relay_config_if == '0') || (relay_config_if == '1')) {
+    let relay_config_when = $('#energy_manager_config_relay_config_when').val();
+    if((relay_config_when == '0') || (relay_config_when == '1')) {
         update_options(relay_config_is_dd, [{"value": 0, name: "high"}, {"value": 1, name: "low"}]);
-    } else if(relay_config_if == '2') {
+    } else if(relay_config_when == '2') {
         update_options(relay_config_is_dd, [{"value": 2, name: "one_phase"}, {"value": 3, name: "three_phase"}]);
-    } else if(relay_config_if == '3') {
+    } else if(relay_config_when == '3') {
         update_options(relay_config_is_dd, [{"value": 4, name: "greater0"}, {"value": 5, name: "smaller0"}]);
     }
 
@@ -227,7 +227,7 @@ export function init() {
 
     $("#energy_manager_config_contactor_installed, \
        #energy_manager_config_relay_config, \
-       #energy_manager_config_relay_config_if, \
+       #energy_manager_config_relay_config_when, \
        #energy_manager_config_input3_config, \
        #energy_manager_config_input4_config"
     ).on("change", update_energy_manager_html_visibility);

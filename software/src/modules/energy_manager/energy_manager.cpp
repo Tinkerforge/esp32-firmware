@@ -61,7 +61,7 @@ void EnergyManager::pre_setup()
     // Config
     energy_manager_config = ConfigRoot(Config::Object({
         {"excess_charging_enable", Config::Bool(false)},
-        {"contactor_installed", Config::Bool(true)},
+        {"contactor_installed", Config::Bool(false)},
         {"phase_switching_mode", Config::Uint8(PHASE_SWITCHING_AUTOMATIC)},
         {"maximum_power_from_grid", Config::Int32(0)},
         {"maximum_available_current", Config::Uint32(0)}, // Keep in sync with charge_manager.cpp
@@ -69,15 +69,12 @@ void EnergyManager::pre_setup()
         {"hysteresis_time", Config::Uint(HYSTERESIS_MIN_TIME_MINUTES, 0, 60)}, // in minutes
         {"hysteresis_wear_accepted", Config::Bool(false)},
         {"relay_config", Config::Uint8(0)},
-        {"relay_config_if", Config::Uint8(0)},
+        {"relay_config_when", Config::Uint8(0)},
         {"relay_config_is", Config::Uint8(0)},
-        {"relay_config_then", Config::Uint8(0)},
         {"input3_config", Config::Uint8(0)},
-        {"input3_config_if", Config::Uint8(0)},
-        {"input3_config_then", Config::Uint8(0)},
+        {"input3_config_when", Config::Uint8(0)},
         {"input4_config", Config::Uint8(0)},
-        {"input4_config_if", Config::Uint8(0)},
-        {"input4_config_then", Config::Uint8(0)}
+        {"input4_config_when", Config::Uint8(0)},
     }), [](const Config &cfg) -> String {
         uint32_t switching_hysteresis_min = cfg.get("hysteresis_time")->asUint(); // minutes
         uint32_t hysteresis_wear_ok       = cfg.get("hysteresis_wear_accepted")->asBool();
@@ -125,6 +122,10 @@ void EnergyManager::setup()
         //logger.printfln("energy_manager: allocated current callback: %u", current_ma);
         charge_manager_allocated_current_ma = current_ma;
     });
+
+    // Set up input3 and input4
+    input3 = new InputPin(3, 0, energy_manager_config_in_use);
+    input4 = new InputPin(4, 1, energy_manager_config_in_use);
 
     // Cache config for energy update
     //excess_charging_enable  = energy_manager_config_in_use.get("excess_charging_enable")->asBool();
@@ -304,26 +305,6 @@ void EnergyManager::handle_relay_config_if_meter()
     // TODO
 }
 
-void EnergyManager::handle_input_config_rule_based(uint8_t input)
-{
-    bool allowed = true;
-    uint8_t input_config_if = energy_manager_config_in_use.get(ENERGY_MANAGER_INPUT_CONFIG_IF_STR[input])->asUint();
-    uint8_t input_config_then = energy_manager_config_in_use.get(ENERGY_MANAGER_INPUT_CONFIG_THEN_STR[input])->asUint();
-    if (((input_config_if == INPUT_CONFIG_IF_HIGH) && (all_data.input[input])) ||
-        ((input_config_if == INPUT_CONFIG_IF_LOW) && (!all_data.input[input]))) {
-        allowed = (input_config_then == INPUT_CONFIG_THEN_ALLOW);
-    } else {
-        allowed = (input_config_then != INPUT_CONFIG_THEN_ALLOW);
-    }
-
-    input_charging_allowed[input] = allowed;
-}
-
-void EnergyManager::handle_input_config_contactor_check(uint8_t input)
-{
-    // TODO
-}
-
 void EnergyManager::update_io()
 {
     uint32_t time = micros();
@@ -348,11 +329,8 @@ void EnergyManager::update_io()
         logger.printfln("get_input error %d", rc);
     }
 
-    // Handle input3 and input4
-    for (uint8_t input = 0; input < 2; input++) {
-        uint8_t input_config = energy_manager_config_in_use.get(ENERGY_MANAGER_INPUT_CONFIG_STR[input])->asUint();
-        (void)input_config;
-    }
+    input3->update(all_data.input[0]);
+    input4->update(all_data.input[1]);
 
     static uint32_t time_max = 15000;
     time = micros() - time;
@@ -431,7 +409,7 @@ void EnergyManager::update_energy()
             power_available_w  = static_cast<int32_t>(charge_manager_allocated_power_w) + p_adjust_w;
         }
 
-        if (!input_charging_allowed[0] || !input_charging_allowed[1]) {
+        if (charging_blocked.all) {
             if (is_on) {
                 phase_state_change_blocked_until = on_state_change_blocked_until = millis() + switching_hysteresis_ms;
             }

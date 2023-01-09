@@ -23,6 +23,7 @@
 
 #include "config.h"
 #include "device_module.h"
+#include "input_pin.h"
 #include "warp_energy_manager_bricklet_firmware_bin.embedded.h"
 
 #define PHASE_SWITCHING_AUTOMATIC       0
@@ -53,11 +54,8 @@
 #define INPUT_CONFIG_BLOCK_CHARGING     2
 #define INPUT_CONFIG_EXCESS_CHARGING    3
 
-#define INPUT_CONFIG_IF_HIGH            0
-#define INPUT_CONFIG_IF_LOW             1
-
-#define INPUT_CONFIG_THEN_ALLOW         0
-#define INPUT_CONFIG_THEN_DISALLOW      1
+#define INPUT_CONFIG_WHEN_HIGH          0
+#define INPUT_CONFIG_WHEN_LOW           1
 
 #define HYSTERESIS_MIN_TIME_MINUTES     10
 
@@ -117,8 +115,6 @@ public:
     void handle_relay_config_if_input(uint8_t input);
     void handle_relay_config_if_phase_switching();
     void handle_relay_config_if_meter();
-    void handle_input_config_rule_based(uint8_t input);
-    void handle_input_config_contactor_check(uint8_t input);
     void setup_energy_manager();
     String get_energy_manager_debug_header();
     String get_energy_manager_debug_line();
@@ -126,7 +122,6 @@ public:
     void apply_defaults();
 
     bool debug = false;
-    bool input_charging_allowed[2] = {true, true};
 
     ConfigRoot energy_manager_state;
     ConfigRoot energy_manager_config;
@@ -134,8 +129,16 @@ public:
 
     EnergyManagerAllData all_data;
 
+    union {
+        uint32_t all;
+        uint8_t  pin[4];
+    } charging_blocked;
+
 private:
     void set_available_current(uint32_t current);
+
+    InputPin *input3;
+    InputPin *input4;
 
     bool contactor_check_tripped;
     bool uptime_past_hysteresis;

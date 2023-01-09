@@ -23,16 +23,12 @@ export interface config {
     hysteresis_time: number,
     hysteresis_wear_accepted: boolean,
     relay_config: number,
-    relay_config_if: number,
+    relay_config_when: number,
     relay_config_is: number,
-    relay_config_then: number,
     input3_config: number,
-    input3_config_if: number,
-    input3_config_then: number,
+    input3_config_when: number,
     input4_config: number,
-    input4_config_if: number,
-    input4_config_then: number
-
+    input4_config_when: number
 }
 
 export type debug_header = string;
