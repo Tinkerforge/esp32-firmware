@@ -178,7 +178,7 @@ void EnergyManager::setup()
 
     task_scheduler.scheduleWithFixedDelay([this](){
         this->update_io();
-    }, 10, 10);
+    }, 250, 250);
 
     task_scheduler.scheduleWithFixedDelay([this](){
         this->update_energy();
@@ -329,12 +329,13 @@ void EnergyManager::update_io()
         }
     }
 
-    // We "over-sample" the two inputs compared to the other data in the all_data struct
-    // to make sure that we can always react in a timely manner to input changes
-    int rc = tf_warp_energy_manager_get_input(&device, all_data.input);
-    if (rc != TF_E_OK) {
-        logger.printfln("get_input error %d", rc);
-    }
+    // Oversampling inputs is currently not used because all of the implemented input pin functions require update_energy() to run anyway.
+    //// We "over-sample" the two inputs compared to the other data in the all_data struct
+    //// to make sure that we can always react in a timely manner to input changes
+    //int rc = tf_warp_energy_manager_get_input(&device, all_data.input);
+    //if (rc != TF_E_OK) {
+    //    logger.printfln("get_input error %d", rc);
+    //}
 
     // Restore values that can be changed by input pins.
     max_current_limited_ma = max_current_unlimited_ma;
@@ -343,7 +344,7 @@ void EnergyManager::update_io()
     input3->update(all_data.input[0]);
     input4->update(all_data.input[1]);
 
-    static uint32_t time_max = 15000;
+    static uint32_t time_max = 2000;
     time = micros() - time;
     if (time > time_max) {
         time_max = time;
