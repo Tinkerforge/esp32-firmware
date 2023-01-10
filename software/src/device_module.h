@@ -133,6 +133,10 @@ public:
         }
     }
 
+    void reset() {
+        reset_function(&device);
+    }
+
     bool is_in_bootloader(int rc)
     {
         if (rc != TF_E_TIMEOUT && rc != TF_E_NOT_SUPPORTED) {
