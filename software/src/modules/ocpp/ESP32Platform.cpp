@@ -16,7 +16,6 @@
 
 void(*recv_cb)(char *, size_t, void *) = nullptr;
 void *recv_cb_userdata = nullptr;
-bool connected = false;
 
 enum ws_transport_opcodes {
     WS_TRANSPORT_OPCODES_CONT =  0x00,
@@ -36,11 +35,9 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
     switch (event_id) {
     case WEBSOCKET_EVENT_CONNECTED:
         logger.printfln("OCPP WEBSOCKET CONNECTED");
-        connected = true;
         break;
     case WEBSOCKET_EVENT_DISCONNECTED:
         logger.printfln("OCPP WEBSOCKET DISCONNECTED");
-        connected = false;
         break;
     case WEBSOCKET_EVENT_DATA:
         if (data->payload_len == 0)
@@ -118,14 +115,12 @@ void platform_destroy(void *ctx) {
 
 bool platform_ws_connected(void *ctx)
 {
-    return connected;
+    return esp_websocket_client_is_connected(client);
 }
 
 void platform_ws_send(void *ctx, const char *buf, size_t buf_len)
 {
-    if (esp_websocket_client_send_text(client, buf, buf_len, pdMS_TO_TICKS(1000)) != ESP_OK)
-        if (!esp_websocket_client_is_connected(client))
-            esp_websocket_client_start(client);
+    esp_websocket_client_send_text(client, buf, buf_len, pdMS_TO_TICKS(1000));
 }
 
 void platform_ws_register_receive_callback(void *ctx, void(*cb)(char *, size_t, void *), void *user_data)
