@@ -409,7 +409,7 @@ void EnergyManager::update_energy()
             power_available_w  = static_cast<int32_t>(charge_manager_allocated_power_w) + p_adjust_w;
         }
 
-        if (charging_blocked.all) {
+        if (charging_blocked.combined) {
             if (is_on) {
                 phase_state_change_blocked_until = on_state_change_blocked_until = millis() + switching_hysteresis_ms;
             }

@@ -130,7 +130,7 @@ public:
     EnergyManagerAllData all_data;
 
     union {
-        uint32_t all;
+        uint32_t combined;
         uint8_t  pin[4];
     } charging_blocked;
 
