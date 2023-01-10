@@ -75,9 +75,8 @@ void EVSEV2Meter::setupEVSE(bool update_module_initialized)
     }, 500, 500);
 
     task_scheduler.scheduleWithFixedDelay([this](){
-        uint16_t len;
         float result[METER_ALL_VALUES_COUNT] = {0};
-        if (tf_evse_v2_get_all_energy_meter_values(&evse_v2.device, result, &len) != TF_E_OK)
+        if (evse_v2.get_all_energy_meter_values(result) == 0)
             return;
 
         meter.updateMeterAllValues(result);
@@ -111,7 +110,7 @@ void EVSEV2Meter::register_urls()
             return;
         }
 
-        tf_evse_v2_reset_energy_meter_relative_energy(&evse_v2.device);
+        evse_v2.reset_energy_meter_relative_energy();
     });
 }
 

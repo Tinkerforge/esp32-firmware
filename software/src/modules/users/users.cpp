@@ -50,18 +50,18 @@
 void set_data_storage(uint8_t *buf)
 {
 #if MODULE_EVSE_AVAILABLE()
-    tf_evse_set_data_storage(&evse.device, DATA_STORE_PAGE_CHARGE_TRACKER, buf);
+    evse.set_data_storage(DATA_STORE_PAGE_CHARGE_TRACKER, buf);
 #elif MODULE_EVSE_V2_AVAILABLE()
-    tf_evse_v2_set_data_storage(&evse_v2.device, DATA_STORE_PAGE_CHARGE_TRACKER, buf);
+    evse_v2.set_data_storage(DATA_STORE_PAGE_CHARGE_TRACKER, buf);
 #endif
 }
 
 void get_data_storage(uint8_t *buf)
 {
 #if MODULE_EVSE_AVAILABLE()
-    tf_evse_get_data_storage(&evse.device, DATA_STORE_PAGE_CHARGE_TRACKER, buf);
+    evse.get_data_storage(DATA_STORE_PAGE_CHARGE_TRACKER, buf);
 #elif MODULE_EVSE_V2_AVAILABLE()
-    tf_evse_v2_get_data_storage(&evse_v2.device, DATA_STORE_PAGE_CHARGE_TRACKER, buf);
+    evse_v2.get_data_storage(DATA_STORE_PAGE_CHARGE_TRACKER, buf);
 #endif
 }
 
@@ -925,10 +925,10 @@ void set_led(int16_t mode)
     }
 
 #if MODULE_EVSE_AVAILABLE()
-    tf_evse_set_indicator_led(&evse.device, mode, mode != IND_NACK ? 2620 : 3930, nullptr);
+    evse.set_indicator_led(mode, mode != IND_NACK ? 2620 : 3930, nullptr);
 #endif
 #if MODULE_EVSE_V2_AVAILABLE()
-    tf_evse_v2_set_indicator_led(&evse_v2.device, mode, mode != IND_NACK ? 2620 : 3930, nullptr);
+    evse_v2.set_indicator_led(mode, mode != IND_NACK ? 2620 : 3930, nullptr);
 #endif
 
     last_mode = mode;

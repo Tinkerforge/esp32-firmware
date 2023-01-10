@@ -300,6 +300,22 @@ void EVSE::factory_reset()
     tf_evse_factory_reset(&device, 0x2342FACD);
 }
 
+void EVSE::set_data_storage(uint8_t page, const uint8_t *data)
+{
+    tf_evse_set_data_storage(&device, page, data);
+}
+
+void EVSE::get_data_storage(uint8_t page, uint8_t *data)
+{
+    tf_evse_get_data_storage(&device, page, data);
+}
+
+void EVSE::set_indicator_led(int16_t indication, uint16_t duration, uint8_t *ret_status)
+{
+    tf_evse_set_indicator_led(&device, indication, duration, status);
+}
+
+
 void EVSE::setup()
 {
     setup_evse();

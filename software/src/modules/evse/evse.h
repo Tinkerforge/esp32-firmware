@@ -89,6 +89,10 @@ public:
 
     void factory_reset();
 
+    void set_data_storage(uint8_t page, const uint8_t *data);
+    void get_data_storage(uint8_t page, uint8_t *data);
+    void set_indicator_led(int16_t indication, uint16_t duration, uint8_t *ret_status);
+
     bool debug = false;
 
     ConfigRoot evse_state;

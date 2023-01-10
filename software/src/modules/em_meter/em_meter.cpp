@@ -81,9 +81,8 @@ void EMMeter::setupEM(bool update_module_initialized)
     }, 500, 500);
 
     task_scheduler.scheduleWithFixedDelay([this](){
-        uint16_t len;
         float result[METER_ALL_VALUES_COUNT] = {0};
-        if (tf_warp_energy_manager_get_energy_meter_detailed_values(&energy_manager.device, result, &len) != TF_E_OK)
+        if (energy_manager.get_energy_meter_detailed_values(result) != 0)
             return;
 
         meter.updateMeterAllValues(result);
@@ -117,7 +116,7 @@ void EMMeter::register_urls()
             return;
         }
 
-        tf_warp_energy_manager_reset_energy_meter_relative_energy(&energy_manager.device);
+        energy_manager.reset_energy_meter_relative_energy();
     });
 }
 

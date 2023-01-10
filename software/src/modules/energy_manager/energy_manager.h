@@ -121,6 +121,9 @@ public:
 
     void apply_defaults();
 
+    uint16_t get_energy_meter_detailed_values(float *ret_values);
+    void reset_energy_meter_relative_energy();
+
     bool debug = false;
 
     ConfigRoot energy_manager_state;

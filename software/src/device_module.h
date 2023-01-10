@@ -156,12 +156,19 @@ public:
     bool device_found = false;
     bool initialized = false;
 
-
-    DeviceT device;
-
     String url_prefix;
     const char *device_name;
     const char *module_name;
     std::function<void(void)> setup_function;
     uint32_t last_check = 0;
+
+    // Think before making the device handle public again.
+    // Instead of the usual python-esque approach of
+    // "We don't care if stuff should be private/protected,
+    // if you break stuff while accessing members, keep the pieces.",
+    // the reason to make this handle private is to make sure
+    // that only the module that owns the device calls bindings functions directly.
+    // This simplifies reimplementing modules for other hardware.
+protected:
+    DeviceT device;
 };
