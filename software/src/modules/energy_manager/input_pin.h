@@ -32,8 +32,9 @@ private:
     uint32_t num_logic;
     uint32_t invert_pin;
     void (InputPin::*update_func)(bool level);
-    uint8_t *out_dst;
+    void *out_dst;
 
     void nop(bool level);
     void block_charging(bool level);
+    void switch_excess_charging(bool level);
 };

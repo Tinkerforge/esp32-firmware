@@ -134,6 +134,8 @@ public:
         uint8_t  pin[4];
     } charging_blocked;
 
+    bool excess_charging_enable;
+
 private:
     void set_available_current(uint32_t current);
 
@@ -154,7 +156,6 @@ private:
     uint32_t charge_manager_allocated_current_ma;
 
     // Config cache
-    //bool     excess_charging_enable;
     //int32_t  max_power_from_grid_w;
     uint32_t max_current_ma;
     uint32_t min_current_ma;

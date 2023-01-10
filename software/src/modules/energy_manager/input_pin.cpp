@@ -39,6 +39,11 @@ InputPin::InputPin(uint32_t num_name, uint32_t num_logic, const ConfigRoot &conf
             invert_pin = pin_conf_when == INPUT_CONFIG_WHEN_LOW;
             out_dst = &(energy_manager.charging_blocked.pin[num_logic]);
             break;
+        case INPUT_CONFIG_EXCESS_CHARGING:
+            update_func = & InputPin::switch_excess_charging;
+            invert_pin = pin_conf_when == INPUT_CONFIG_WHEN_LOW;
+            out_dst = &(energy_manager.excess_charging_enable);
+            break;
         default:
             logger.printfln("energy_manager/InputPin: Unknown INPUT_CONFIG type %u for input %u", pin_conf_function, num_name);
             /* FALLTHROUGH */
@@ -61,5 +66,10 @@ void InputPin::nop(bool level)
 
 void InputPin::block_charging(bool level)
 {
-    *out_dst = level ^ invert_pin;
+    *(uint8_t*)out_dst = level ^ invert_pin;
+};
+
+void InputPin::switch_excess_charging(bool level)
+{
+    *(bool*)out_dst = level ^ invert_pin;
 };

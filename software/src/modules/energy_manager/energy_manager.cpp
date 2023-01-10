@@ -82,6 +82,14 @@ void EnergyManager::pre_setup()
         if (switching_hysteresis_min < HYSTERESIS_MIN_TIME_MINUTES && !hysteresis_wear_ok)
             return "Switching hysteresis time cannot be shorter than " __XSTRING(HYSTERESIS_MIN_TIME_MINUTES) " minutes without accepting additional wear.";
 
+        uint32_t input3_config = cfg.get("input3_config")->asUint();
+        uint32_t input4_config = cfg.get("input4_config")->asUint();
+
+        if (input3_config == input4_config) {
+            if (input3_config == INPUT_CONFIG_EXCESS_CHARGING)
+                return "Cannot configure both input 3 and input 4 to switch excess charging.";
+        }
+
         return "";
     });
 
@@ -380,8 +388,8 @@ void EnergyManager::update_energy()
 
         const uint32_t charge_manager_allocated_power_w = 230 * have_phases * charge_manager_allocated_current_ma / 1000; // watt
 
-        // Evil: Allow runtime changes.
-        bool    excess_charging_enable  = energy_manager_config.get("excess_charging_enable")->asBool();
+        // Evil: Allow runtime changes, overrides input pins!
+                excess_charging_enable  = energy_manager_config.get("excess_charging_enable")->asBool();
         int32_t max_power_from_grid_w   = energy_manager_config.get("maximum_power_from_grid")->asInt(); // watt
 
         int32_t power_available_w; // watt
