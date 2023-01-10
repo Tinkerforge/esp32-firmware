@@ -79,9 +79,9 @@ function update_energy_manager_html_visibility() {
     // Update contactor section
     let phase_switching_config_is_dd = $('#energy_manager_config_phase_switching_mode')
     if ($('#energy_manager_config_contactor_installed').is(':checked')) {
-        update_options(phase_switching_config_is_dd, [{"value": 0, name: "automatic"}, {"value": 1, name: "always_one_phase"}, {"value": 2, name: "always_three_phases"}]);
+        update_options(phase_switching_config_is_dd, [{value: 0, name: "automatic"}, {value: 1, name: "always_one_phase"}, {value: 2, name: "always_three_phases"}]);
     } else {
-        update_options(phase_switching_config_is_dd, [{"value": 1, name: "fixed_one_phase"}, {"value": 2, name: "fixed_three_phases"}]);
+        update_options(phase_switching_config_is_dd, [{value: 1, name: "fixed_one_phase"}, {value: 2, name: "fixed_three_phases"}]);
     }
 
     // Update relay section
@@ -94,20 +94,20 @@ function update_energy_manager_html_visibility() {
     let relay_config_is_dd = $('#energy_manager_config_relay_config_is')
     let relay_config_when = $('#energy_manager_config_relay_config_when').val();
     if((relay_config_when == '0') || (relay_config_when == '1')) {
-        update_options(relay_config_is_dd, [{"value": 0, name: "high"}, {"value": 1, name: "low"}]);
+        update_options(relay_config_is_dd, [{value: 0, name: "high"}, {value: 1, name: "low"}]);
     } else if(relay_config_when == '2') {
-        update_options(relay_config_is_dd, [{"value": 2, name: "one_phase"}, {"value": 3, name: "three_phase"}]);
+        update_options(relay_config_is_dd, [{value: 2, name: "one_phase"}, {value: 3, name: "three_phase"}]);
     } else if(relay_config_when == '3') {
-        update_options(relay_config_is_dd, [{"value": 4, name: "greater0"}, {"value": 5, name: "smaller0"}]);
+        update_options(relay_config_is_dd, [{value: 4, name: "greater0"}, {value: 5, name: "smaller0"}]);
     }
 
     // Update input section
     let input3_config_dd = $('#energy_manager_config_input3_config');
     if ($('#energy_manager_config_contactor_installed').is(':checked')) {
-        update_options(input3_config_dd, [{"value": 1, name: "contactor_check"}]);
+        update_options(input3_config_dd, [{value: 1, name: "contactor_check"}]);
         input3_config_dd.prop("disabled", true);
     } else {
-        update_options(input3_config_dd, [{"value": 0, name: "input_unused"}, {"value": 2, name: "block_charging"}, {"value": 3, name: "switch_excess_charging"}, {"value": 4, name: "limit_max_current"}, {"value": 5, name: "override_grid_draw"}]);
+        update_options(input3_config_dd, [{value: 0, name: "input_unused"}, {value: 2, name: "block_charging"}, {value: 3, name: "switch_excess_charging"}, {value: 4, name: "limit_max_current"}, {value: 5, name: "override_grid_draw"}]);
         input3_config_dd.prop("disabled", false);
     }
 
