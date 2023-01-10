@@ -7,9 +7,8 @@
 #include "lib/url.h"
 
 #include "esp_websocket_client.h"
-
-
 #include "esp_crt_bundle.h"
+#include "mbedtls/base64.h"
 
 #include "modules.h"
 #include "api.h"
@@ -76,8 +75,26 @@ void* platform_init(const char *websocket_url, const char *basic_auth_user, cons
     websocket_cfg.ping_interval_sec = 10;
     websocket_cfg.pingpong_timeout_sec = 25;
     websocket_cfg.disable_pingpong_discon = false;
-    websocket_cfg.username = basic_auth_user;
-    websocket_cfg.password = basic_auth_pass;
+
+    // Username and password are "Not supported for now".
+    //websocket_cfg.username = basic_auth_user;
+    //websocket_cfg.password = basic_auth_pass;
+    // Instead create and pass the authorization header directly.
+
+    String base64input = String(basic_auth_user) + ':' + basic_auth_pass;
+
+    size_t written = 0;
+    mbedtls_base64_encode(nullptr, 0, &written, (const unsigned char *)base64input.c_str(), base64input.length());
+
+    std::unique_ptr<char[]> buf{new char[written + 1]()}; // +1 for '\0'
+    mbedtls_base64_encode((unsigned char *) buf.get(), written + 1, &written, (const unsigned char *)base64input.c_str(), base64input.length());
+    buf[written] = '\0';
+
+    String header = "Authorization: Basic ";
+    header += buf.get();
+    header += "\r\n";
+
+    websocket_cfg.headers = header.c_str();
 
     client = esp_websocket_client_init(&websocket_cfg);
     esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
