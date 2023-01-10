@@ -490,8 +490,35 @@ void platform_remove_file(const char *name) {
     LittleFS.remove(PATH_PREFIX + name);
 }
 
-void platform_reset() {
-    logger.printfln("Ignoring reset request for now.");
+void platform_reset(bool hard) {
+    if (hard) {
+        /*
+        At receipt of a hard reset the Charge Point SHALL restart (all) the hardware, it is not required to gracefully stop
+        ongoing transaction.
+        */
+#if MODULE_EVSE_AVAILABLE()
+        evse.reset();
+#endif
+#if MODULE_EVSE_V2_AVAILABLE()
+        evse_v2.reset();
+#endif
+#if MODULE_MODBUS_METER_AVAILABLE()
+        modbus_meter.reset();
+#endif
+#if MODULE_NFC_AVAILABLE()
+        nfc.reset();
+#endif
+#if MODULE_RTC_AVAILABLE()
+        rtc.reset();
+#endif
+    }
+
+    /*
+        At receipt of a soft reset, the Charge Point SHALL [...]
+        It should then restart the application software (if possible,
+        otherwise restart the processor/controller).
+    */
+    ESP.restart();
 }
 
 void platform_register_stop_callback(void *ctx, void (*cb)(int32_t, StopReason, void *), void *user_data) {
