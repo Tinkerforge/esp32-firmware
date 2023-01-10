@@ -99,18 +99,6 @@ void EnergyManager::apply_defaults()
     // TODO: Configure Energy Manager
 }
 
-uint16_t EnergyManager::get_energy_meter_detailed_values(float *ret_values)
-{
-    uint16_t len = 0;
-    tf_warp_energy_manager_get_energy_meter_detailed_values(&device, ret_values, &len);
-    return len;
-}
-
-void EnergyManager::reset_energy_meter_relative_energy()
-{
-    tf_warp_energy_manager_reset_energy_meter_relative_energy(&device);
-}
-
 void EnergyManager::setup_energy_manager()
 {
     if (!this->DeviceModule::setup_device()) {
@@ -597,6 +585,18 @@ void EnergyManager::update_energy()
         time_max = time;
         logger.printfln("energy_manager::update_energy() took %uus", time_max);
     }
+}
+
+uint16_t EnergyManager::get_energy_meter_detailed_values(float *ret_values)
+{
+    uint16_t len = 0;
+    tf_warp_energy_manager_get_energy_meter_detailed_values(&device, ret_values, &len);
+    return len;
+}
+
+void EnergyManager::reset_energy_meter_relative_energy()
+{
+    tf_warp_energy_manager_reset_energy_meter_relative_energy(&device);
 }
 
 String EnergyManager::get_energy_manager_debug_header()
