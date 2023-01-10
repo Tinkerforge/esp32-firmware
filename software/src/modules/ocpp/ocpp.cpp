@@ -157,7 +157,7 @@ void Ocpp::setup()
 
 void Ocpp::register_urls()
 {
-    api.addPersistentConfig("ocpp/config", &config, {}, 1000);
+    api.addPersistentConfig("ocpp/config", &config, {"pass"}, 1000);
 #ifdef OCPP_STATE_CALLBACKS
     api.addState("ocpp/state", &state, {}, 1000);
     api.addState("ocpp/configuration", &configuration, {}, 1000);
