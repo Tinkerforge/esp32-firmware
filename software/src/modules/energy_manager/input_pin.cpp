@@ -28,24 +28,30 @@ InputPin::InputPin(uint32_t num_name, uint32_t num_logic, const ConfigRoot &conf
     this->num_name = num_name;
     this->num_logic = num_logic;
 
-    String pin_func_str = String("input") + num_name + "_config";
-    String pin_when_str = String("input") + num_name + "_config_when";
-    uint32_t pin_conf_function  = conf.get(pin_func_str )->asUint();
-    uint32_t pin_conf_when      = conf.get(pin_when_str)->asUint();
+    String pin_func_str     = String("input") + num_name + "_config";
+    String pin_limit_str    = String("input") + num_name + "_config_limit";
+    String pin_when_str     = String("input") + num_name + "_config_when";
+    uint32_t pin_conf_func  = conf.get(pin_func_str )->asUint();
+    int32_t  pin_conf_limit = conf.get(pin_limit_str)->asInt();
+    uint32_t pin_conf_when  = conf.get(pin_when_str)->asUint();
 
-    switch(pin_conf_function) {
+    invert_pin = pin_conf_when == INPUT_CONFIG_WHEN_LOW;
+
+    switch(pin_conf_func) {
         case INPUT_CONFIG_BLOCK_CHARGING:
             update_func = &InputPin::block_charging;
-            invert_pin = pin_conf_when == INPUT_CONFIG_WHEN_LOW;
             out_dst = &(energy_manager.charging_blocked.pin[num_logic]);
             break;
         case INPUT_CONFIG_EXCESS_CHARGING:
-            update_func = & InputPin::switch_excess_charging;
-            invert_pin = pin_conf_when == INPUT_CONFIG_WHEN_LOW;
+            update_func = &InputPin::switch_excess_charging;
             out_dst = &(energy_manager.excess_charging_enable);
             break;
+        case INPUT_CONFIG_LIMIT_MAX_CURRENT:
+            update_func = &InputPin::limit_max_current;
+            limit = pin_conf_limit >= 0 ? pin_conf_limit : 0;
+            break;
         default:
-            logger.printfln("energy_manager/InputPin: Unknown INPUT_CONFIG type %u for input %u", pin_conf_function, num_name);
+            logger.printfln("energy_manager/InputPin: Unknown INPUT_CONFIG type %u for input %u", pin_conf_func, num_name);
             /* FALLTHROUGH */
         case INPUT_CONFIG_DISABLED:
         case INPUT_CONFIG_CONTACTOR_CHECK:
@@ -72,4 +78,10 @@ void InputPin::block_charging(bool level)
 void InputPin::switch_excess_charging(bool level)
 {
     *(bool*)out_dst = level ^ invert_pin;
+};
+
+void InputPin::limit_max_current(bool level)
+{
+    if (level ^ invert_pin)
+        energy_manager.limit_max_current((uint32_t)limit);
 };

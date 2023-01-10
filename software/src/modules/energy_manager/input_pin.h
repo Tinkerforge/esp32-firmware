@@ -28,13 +28,15 @@ public:
     void update(bool level);
 
 private:
-    uint32_t num_name;
-    uint32_t num_logic;
-    uint32_t invert_pin;
+    uint8_t num_name;
+    uint8_t num_logic;
+    bool invert_pin;
     void (InputPin::*update_func)(bool level);
+    int32_t limit;
     void *out_dst;
 
     void nop(bool level);
     void block_charging(bool level);
     void switch_excess_charging(bool level);
+    void limit_max_current(bool level);
 };

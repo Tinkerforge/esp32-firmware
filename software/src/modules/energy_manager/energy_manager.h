@@ -53,6 +53,7 @@
 #define INPUT_CONFIG_CONTACTOR_CHECK    1
 #define INPUT_CONFIG_BLOCK_CHARGING     2
 #define INPUT_CONFIG_EXCESS_CHARGING    3
+#define INPUT_CONFIG_LIMIT_MAX_CURRENT  4
 
 #define INPUT_CONFIG_WHEN_HIGH          0
 #define INPUT_CONFIG_WHEN_LOW           1
@@ -112,6 +113,8 @@ public:
     void update_io();
     void update_energy();
 
+    void limit_max_current(uint32_t limit_ma);
+
     void handle_relay_config_if_input(uint8_t input);
     void handle_relay_config_if_phase_switching();
     void handle_relay_config_if_meter();
@@ -157,10 +160,11 @@ private:
     uint32_t phase_state_change_blocked_until;
     uint32_t on_state_change_blocked_until;
     uint32_t charge_manager_allocated_current_ma;
+    uint32_t max_current_limited_ma;
 
     // Config cache
     //int32_t  max_power_from_grid_w;
-    uint32_t max_current_ma;
+    uint32_t max_current_unlimited_ma;
     uint32_t min_current_ma;
     bool     contactor_installed;
     uint8_t  phase_switching_mode;

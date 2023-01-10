@@ -43,11 +43,13 @@ function update_energy_manager_state() {
 }
 
 function update_energy_manager_config() {
-    let config = API.default_updater('energy_manager/config', ['maximum_power_from_grid', 'maximum_available_current', 'minimum_current']);
+    let config = API.default_updater('energy_manager/config', ['maximum_power_from_grid', 'maximum_available_current', 'minimum_current', 'input3_config_limit', 'input4_config_limit']);
 
     util.setNumericInput("energy_manager_config_maximum_power_from_grid", config.maximum_power_from_grid / 1000, 3);
     util.setNumericInput("energy_manager_config_maximum_available_current", config.maximum_available_current / 1000, 3);
     util.setNumericInput("energy_manager_config_minimum_current", config.minimum_current / 1000, 3);
+    util.setNumericInput("energy_manager_config_input3_config_limit", config.input3_config_limit / 1000, 3);
+    util.setNumericInput("energy_manager_config_input4_config_limit", config.input4_config_limit / 1000, 3);
 }
 
 // Only show the relevant html elements, drop-down boxes and options
@@ -105,17 +107,37 @@ function update_energy_manager_html_visibility() {
         update_options(input3_config_dd, [{"value": 1, name: "contactor_check"}]);
         input3_config_dd.prop("disabled", true);
     } else {
-        update_options(input3_config_dd, [{"value": 0, name: "input_unused"}, {"value": 2, name: "block_charging"}, {"value": 3, name: "switch_excess_charging"}]);
+        update_options(input3_config_dd, [{"value": 0, name: "input_unused"}, {"value": 2, name: "block_charging"}, {"value": 3, name: "switch_excess_charging"}, {"value": 4, name: "limit_max_current"}]);
         input3_config_dd.prop("disabled", false);
     }
 
-    if($('#energy_manager_config_input3_config').val() as number >= 2) {
+    let input3_config = input3_config_dd.val() as number;
+    if (input3_config >= 2) {
+        if (input3_config >= 4) {
+            if (input3_config == 4) {
+                $('#energy_manager_config_input3_rules_limit_unit').html('A');
+            }
+            $('#energy_manager_config_input3_rules_limit').collapse('show');
+        } else {
+            // For PreAct: Currently, the limit section is always shown on page load even when no limit option is selected.
+            $('#energy_manager_config_input3_rules_limit').collapse('hide');
+        }
         $('#energy_manager_config_input3_rules').collapse('show');
     } else {
         $('#energy_manager_config_input3_rules').collapse('hide');
     }
 
-    if($('#energy_manager_config_input4_config').val() as number >= 2) {
+    let input4_config = $('#energy_manager_config_input4_config').val() as number;
+    if (input4_config >= 2) {
+        if (input4_config >= 4) {
+            if (input4_config == 4) {
+                $('#energy_manager_config_input4_rules_limit_unit').html('A');
+            }
+            $('#energy_manager_config_input4_rules_limit').collapse('show');
+        } else {
+            // For PreAct: Currently, the limit section is always shown on page load even when no limit option is selected.
+            $('#energy_manager_config_input4_rules_limit').collapse('hide');
+        }
         $('#energy_manager_config_input4_rules').collapse('show');
     } else {
         $('#energy_manager_config_input4_rules').collapse('hide');
@@ -219,8 +241,10 @@ export function init() {
             overrides: () => ({
                 maximum_power_from_grid: Math.round(($('#energy_manager_config_maximum_power_from_grid').val() as number) * 1000),
                 maximum_available_current: Math.round(($('#energy_manager_config_maximum_available_current').val() as number) * 1000),
-                minimum_current: Math.round(($('#energy_manager_config_minimum_current').val() as number) * 1000)
-            }),
+                minimum_current: Math.round(($('#energy_manager_config_minimum_current').val() as number) * 1000),
+                input3_config_limit: Math.round(($('#energy_manager_config_input3_config_limit').val() as number) * 1000),
+                input4_config_limit: Math.round(($('#energy_manager_config_input4_config_limit').val() as number) * 1000)
+                        }),
             error_string: __("energy_manager.script.config_failed"),
             reboot_string: __("energy_manager.script.reboot_content_changed")
         });

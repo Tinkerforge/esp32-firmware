@@ -67,6 +67,8 @@
             "contactor_check": "Schützüberwachung",
             "block_charging": "Laden blockieren",
             "switch_excess_charging": "Überschussladen aktivieren",
+            "limit_max_current": "Ladestrom begrenzen",
+            "limit_to_current": "Begrenzen auf",
             "input_when": "Wenn",
             "input_low": "Eingang low (offen)",
             "input_high": "Eingang high (geschlossen)",

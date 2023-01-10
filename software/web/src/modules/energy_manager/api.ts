@@ -26,8 +26,10 @@ export interface config {
     relay_config_when: number,
     relay_config_is: number,
     input3_config: number,
+    input3_config_limit: number,
     input3_config_when: number,
     input4_config: number,
+    input4_config_limit: number,
     input4_config_when: number
 }
 

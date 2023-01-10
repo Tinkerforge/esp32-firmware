@@ -28,10 +28,6 @@
 #include "tools.h"
 #include "web_server.h"
 
-const char* ENERGY_MANAGER_INPUT_CONFIG_STR[]      = {"input3_config",      "input4_config"};
-const char* ENERGY_MANAGER_INPUT_CONFIG_IF_STR[]   = {"input3_config_if",   "input4_config_if"};
-const char* ENERGY_MANAGER_INPUT_CONFIG_THEN_STR[] = {"input3_config_then", "input4_config_then"};
-
 void EnergyManager::pre_setup()
 {
     // States
@@ -72,8 +68,10 @@ void EnergyManager::pre_setup()
         {"relay_config_when", Config::Uint8(0)},
         {"relay_config_is", Config::Uint8(0)},
         {"input3_config", Config::Uint8(0)},
+        {"input3_config_limit", Config::Int32(0)},
         {"input3_config_when", Config::Uint8(0)},
         {"input4_config", Config::Uint8(0)},
+        {"input4_config_limit", Config::Int32(0)},
         {"input4_config_when", Config::Uint8(0)},
     }), [](const Config &cfg) -> String {
         uint32_t switching_hysteresis_min = cfg.get("hysteresis_time")->asUint(); // minutes
@@ -130,6 +128,7 @@ void EnergyManager::setup()
     if (!device_found)
         return;
 
+    // Forgets all settings when new setting is introduced: "Failed to restore persistent config energy_manager_config: JSON object is missing key 'input3_config_limit'\nJSON object is missing key 'input4_config_limit'"
     api.restorePersistentConfig("energy_manager/config", &energy_manager_config);
     energy_manager_config_in_use = energy_manager_config;
 
@@ -148,14 +147,14 @@ void EnergyManager::setup()
     input4 = new InputPin(4, 1, energy_manager_config_in_use);
 
     // Cache config for energy update
-    //excess_charging_enable  = energy_manager_config_in_use.get("excess_charging_enable")->asBool();
-    //max_power_from_grid_w   = energy_manager_config_in_use.get("maximum_power_from_grid")->asInt();         // watt
-    max_current_ma          = energy_manager_config_in_use.get("maximum_available_current")->asUint();      // milliampere
-    min_current_ma          = energy_manager_config_in_use.get("minimum_current")->asUint();                // milliampere
-    contactor_installed     = energy_manager_config_in_use.get("contactor_installed")->asBool();
-    phase_switching_mode    = energy_manager_config_in_use.get("phase_switching_mode")->asUint();
-    switching_hysteresis_ms = energy_manager_config_in_use.get("hysteresis_time")->asUint() * 60 * 1000;    // milliseconds (from minutes)
-    hysteresis_wear_ok      = energy_manager_config_in_use.get("hysteresis_wear_accepted")->asBool();
+    excess_charging_enable      = energy_manager_config_in_use.get("excess_charging_enable")->asBool();
+    //max_power_from_grid_w      = energy_manager_config_in_use.get("maximum_power_from_grid")->asInt();         // watt
+    max_current_unlimited_ma    = energy_manager_config_in_use.get("maximum_available_current")->asUint();      // milliampere
+    min_current_ma              = energy_manager_config_in_use.get("minimum_current")->asUint();                // milliampere
+    contactor_installed         = energy_manager_config_in_use.get("contactor_installed")->asBool();
+    phase_switching_mode        = energy_manager_config_in_use.get("phase_switching_mode")->asUint();
+    switching_hysteresis_ms     = energy_manager_config_in_use.get("hysteresis_time")->asUint() * 60 * 1000;    // milliseconds (from minutes)
+    hysteresis_wear_ok          = energy_manager_config_in_use.get("hysteresis_wear_accepted")->asBool();
 
     // If the user accepts the additional wear, the minimum hysteresis time is 10s. Less than that will cause the control algorithm to oscillate.
     uint32_t hysteresis_min_ms = hysteresis_wear_ok ? 10 * 1000 : HYSTERESIS_MIN_TIME_MINUTES * 60 * 1000;  // milliseconds
@@ -173,7 +172,7 @@ void EnergyManager::setup()
     }
     overall_min_power_w = 230 * min_phases * min_current_ma / 1000;
 
-    const int32_t max_1phase_w = 230 * 1 * max_current_ma / 1000;
+    const int32_t max_1phase_w = 230 * 1 * max_current_unlimited_ma / 1000;
     const int32_t min_3phase_w = 230 * 3 * min_current_ma / 1000;
 
     if (min_3phase_w > max_1phase_w) { // have dead current range
@@ -349,6 +348,9 @@ void EnergyManager::update_io()
         logger.printfln("get_input error %d", rc);
     }
 
+    // Restore values that can be changed by input pins.
+    max_current_limited_ma = max_current_unlimited_ma;
+
     input3->update(all_data.input[0]);
     input4->update(all_data.input[1]);
 
@@ -358,6 +360,11 @@ void EnergyManager::update_io()
         time_max = time;
         logger.printfln("energy_manager::update_io() took %uus", time_max);
     }
+}
+
+void EnergyManager::limit_max_current(uint32_t limit_ma) {
+    if (limit_ma < max_current_limited_ma)
+        max_current_limited_ma = limit_ma;
 }
 
 void EnergyManager::set_available_current(uint32_t current) {
@@ -406,7 +413,7 @@ void EnergyManager::update_energy()
 
         int32_t power_available_w; // watt
         if (!excess_charging_enable) {
-            power_available_w = 230 * 3 * max_current_ma / 1000;
+            power_available_w = 230 * 3 * max_current_limited_ma / 1000;
         } else {
             // Excess charging enabled; use a simple P controller to adjust available power.
             int32_t p_error_w  = max_power_from_grid_w - power_at_meter_w;
@@ -538,8 +545,8 @@ void EnergyManager::update_energy()
             if (current_available_ma < min_current_ma) {
                 if (current_available_ma != 0)
                     current_available_ma = min_current_ma;
-            } else if (current_available_ma > max_current_ma) {
-                current_available_ma = max_current_ma;
+            } else if (current_available_ma > max_current_limited_ma) {
+                current_available_ma = max_current_limited_ma;
             }
 
             set_available_current(current_available_ma);
@@ -551,8 +558,8 @@ void EnergyManager::update_energy()
             static uint32_t last_print = 0;
             last_print = (last_print + 1) % print_every;
             if (last_print == 0)
-                logger.printfln("power_at_meter_w %i | max_power_from_grid_w %i | power_available_w %i | wants_3phase %i | is_3phase %i | is_on %i | cm avail ma %u | cm alloc ma %u",
-                    power_at_meter_w, max_power_from_grid_w, power_available_w, wants_3phase, is_3phase, is_on, charge_manager.charge_manager_available_current.get("current")->asUint(), charge_manager_allocated_current_ma);
+                logger.printfln("power_at_meter_w %i | max_power_from_grid_w %i | power_available_w %i | wants_3phase %i | is_3phase %i | is_on %i | max_current_limited_ma %u | cm avail ma %u | cm alloc ma %u",
+                    power_at_meter_w, max_power_from_grid_w, power_available_w, wants_3phase, is_3phase, is_on, max_current_limited_ma, charge_manager.charge_manager_available_current.get("current")->asUint(), charge_manager_allocated_current_ma);
         }
     } else if (switching_state == SwitchingState_Stopping) {
         set_available_current(0);

@@ -67,6 +67,8 @@
             "contactor_check": "Contactor monitoring",
             "block_charging": "Block charging",
             "switch_excess_charging": "Enable excess charging",
+            "limit_max_current": "Limit charge current",
+            "limit_to_current": "Limit to",
             "input_when": "When",
             "input_low": "Input low (open)",
             "input_high": "Input high (closed)",
