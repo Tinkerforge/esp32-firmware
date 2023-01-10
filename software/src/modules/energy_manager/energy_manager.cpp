@@ -136,7 +136,7 @@ void EnergyManager::setup()
 
     // Cache config for energy update
     excess_charging_enable      = energy_manager_config_in_use.get("excess_charging_enable")->asBool();
-    //max_power_from_grid_w      = energy_manager_config_in_use.get("maximum_power_from_grid")->asInt();         // watt
+    max_power_from_grid_conf_w  = energy_manager_config_in_use.get("maximum_power_from_grid")->asInt();         // watt
     max_current_unlimited_ma    = energy_manager_config_in_use.get("maximum_available_current")->asUint();      // milliampere
     min_current_ma              = energy_manager_config_in_use.get("minimum_current")->asUint();                // milliampere
     contactor_installed         = energy_manager_config_in_use.get("contactor_installed")->asBool();
@@ -338,6 +338,7 @@ void EnergyManager::update_io()
 
     // Restore values that can be changed by input pins.
     max_current_limited_ma = max_current_unlimited_ma;
+    max_power_from_grid_w = max_power_from_grid_conf_w;
 
     input3->update(all_data.input[0]);
     input4->update(all_data.input[1]);
@@ -350,12 +351,19 @@ void EnergyManager::update_io()
     }
 }
 
-void EnergyManager::limit_max_current(uint32_t limit_ma) {
+void EnergyManager::limit_max_current(uint32_t limit_ma)
+{
     if (limit_ma < max_current_limited_ma)
         max_current_limited_ma = limit_ma;
 }
 
-void EnergyManager::set_available_current(uint32_t current) {
+void EnergyManager::override_grid_draw(int32_t limit_w)
+{
+    max_power_from_grid_w = limit_w;
+}
+
+void EnergyManager::set_available_current(uint32_t current)
+{
     is_on_last = current > 0;
     charge_manager.set_available_current(current);
 }
@@ -396,8 +404,8 @@ void EnergyManager::update_energy()
         const uint32_t charge_manager_allocated_power_w = 230 * have_phases * charge_manager_allocated_current_ma / 1000; // watt
 
         // Evil: Allow runtime changes, overrides input pins!
-                excess_charging_enable  = energy_manager_config.get("excess_charging_enable")->asBool();
-        int32_t max_power_from_grid_w   = energy_manager_config.get("maximum_power_from_grid")->asInt(); // watt
+        excess_charging_enable  = energy_manager_config.get("excess_charging_enable")->asBool();
+        max_power_from_grid_w   = energy_manager_config.get("maximum_power_from_grid")->asInt(); // watt
 
         int32_t power_available_w; // watt
         if (!excess_charging_enable) {

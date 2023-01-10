@@ -39,4 +39,5 @@ private:
     void block_charging(bool level);
     void switch_excess_charging(bool level);
     void limit_max_current(bool level);
+    void override_grid_draw(bool level);
 };

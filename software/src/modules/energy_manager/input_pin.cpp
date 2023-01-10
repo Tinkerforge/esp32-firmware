@@ -50,6 +50,10 @@ InputPin::InputPin(uint32_t num_name, uint32_t num_logic, const ConfigRoot &conf
             update_func = &InputPin::limit_max_current;
             limit = pin_conf_limit >= 0 ? pin_conf_limit : 0;
             break;
+        case INPUT_CONFIG_OVERRIDE_GRID_DRAW:
+            update_func = &InputPin::override_grid_draw;
+            limit = pin_conf_limit;
+            break;
         default:
             logger.printfln("energy_manager/InputPin: Unknown INPUT_CONFIG type %u for input %u", pin_conf_func, num_name);
             /* FALLTHROUGH */
@@ -58,7 +62,7 @@ InputPin::InputPin(uint32_t num_name, uint32_t num_logic, const ConfigRoot &conf
             update_func = &InputPin::nop;
             break;
     }
-};
+}
 
 void InputPin::update(bool level)
 {
@@ -68,20 +72,26 @@ void InputPin::update(bool level)
 void InputPin::nop(bool level)
 {
     (void)level;
-};
+}
 
 void InputPin::block_charging(bool level)
 {
     *(uint8_t*)out_dst = level ^ invert_pin;
-};
+}
 
 void InputPin::switch_excess_charging(bool level)
 {
     *(bool*)out_dst = level ^ invert_pin;
-};
+}
 
 void InputPin::limit_max_current(bool level)
 {
     if (level ^ invert_pin)
         energy_manager.limit_max_current((uint32_t)limit);
-};
+}
+
+void InputPin::override_grid_draw(bool level)
+{
+    if (level ^ invert_pin)
+        energy_manager.override_grid_draw(limit);
+}

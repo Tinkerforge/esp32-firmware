@@ -107,7 +107,7 @@ function update_energy_manager_html_visibility() {
         update_options(input3_config_dd, [{"value": 1, name: "contactor_check"}]);
         input3_config_dd.prop("disabled", true);
     } else {
-        update_options(input3_config_dd, [{"value": 0, name: "input_unused"}, {"value": 2, name: "block_charging"}, {"value": 3, name: "switch_excess_charging"}, {"value": 4, name: "limit_max_current"}]);
+        update_options(input3_config_dd, [{"value": 0, name: "input_unused"}, {"value": 2, name: "block_charging"}, {"value": 3, name: "switch_excess_charging"}, {"value": 4, name: "limit_max_current"}, {"value": 5, name: "override_grid_draw"}]);
         input3_config_dd.prop("disabled", false);
     }
 
@@ -115,7 +115,11 @@ function update_energy_manager_html_visibility() {
     if (input3_config >= 2) {
         if (input3_config >= 4) {
             if (input3_config == 4) {
+                $('#energy_manager_config_input3_rules_limit_label').html(translate_unchecked(`energy_manager.content.limit_to_current`));
                 $('#energy_manager_config_input3_rules_limit_unit').html('A');
+            } else if (input3_config == 5) {
+                $('#energy_manager_config_input3_rules_limit_label').html(translate_unchecked(`energy_manager.content.limit_grid_draw`));
+                $('#energy_manager_config_input3_rules_limit_unit').html('kW');
             }
             $('#energy_manager_config_input3_rules_limit').collapse('show');
         } else {
@@ -131,7 +135,11 @@ function update_energy_manager_html_visibility() {
     if (input4_config >= 2) {
         if (input4_config >= 4) {
             if (input4_config == 4) {
+                $('#energy_manager_config_input4_rules_limit_label').html(translate_unchecked(`energy_manager.content.limit_to_current`));
                 $('#energy_manager_config_input4_rules_limit_unit').html('A');
+            } else if (input4_config == 5) {
+                $('#energy_manager_config_input4_rules_limit_label').html(translate_unchecked(`energy_manager.content.limit_grid_draw`));
+                $('#energy_manager_config_input4_rules_limit_unit').html('kW');
             }
             $('#energy_manager_config_input4_rules_limit').collapse('show');
         } else {

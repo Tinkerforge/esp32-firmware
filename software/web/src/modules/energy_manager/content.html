@@ -163,7 +163,8 @@
 
         <!-- When excess charging is chosen for input 3 or 4, disable excess charging option at the top of the page.
             Show warning if both inputs are set to excess charging because that is not supported.
-            When current both inputs are set to current limit, show info that the lowest active limit will be applied. -->
+            When both inputs are set to current limit, show info that the lowest active limit will be applied.
+            When both inputs are set to grid draw override, show info that input 4 value will be used when both inputs are active. -->
         <div class="form-group row">
             <label for="energy_manager_config_input3_config" class="col-lg-3 col-xl-2 col-form-label form-label" data-i18n="energy_manager.content.input3_config"></label>
 
@@ -176,7 +177,7 @@
             <div id="energy_manager_config_input3_rules_limit" class="form-group row">
                 <!-- For PreAct: The class stuff below is just copy&paste and might be wrong. -->
                 <div class="col-lg-3 col-xl-2"></div>
-                <label for="energy_manager_config_input3_config_limit" class="col-lg-1 col-xl-1 col-form-label form-label" data-i18n="energy_manager.content.limit_to_current"></label>
+                <label id="energy_manager_config_input3_rules_limit_label" for="energy_manager_config_input3_config_limit" class="col-lg-1 col-xl-1 col-form-label form-label">?</label>
 
                 <div class="col-lg-8 col-xl-5 input-group">
                     <input id="energy_manager_config_input3_config_limit" class="form-control" type="number" step="any">
@@ -208,6 +209,7 @@
                     <option value="2" data-i18n="energy_manager.content.block_charging"></option>
                     <option value="3" data-i18n="energy_manager.content.switch_excess_charging"></option>
                     <option value="4" data-i18n="energy_manager.content.limit_max_current"></option>
+                    <option value="5" data-i18n="energy_manager.content.override_grid_draw"></option>
                 </select>
             </div>
         </div>
@@ -215,7 +217,7 @@
             <div id="energy_manager_config_input4_rules_limit" class="form-group row">
                 <!-- For PreAct: The class stuff below is just copy&paste and might be wrong. -->
                 <div class="col-lg-3 col-xl-2"></div>
-                <label for="energy_manager_config_input4_config_limit" class="col-lg-1 col-xl-1 col-form-label form-label" data-i18n="energy_manager.content.limit_to_current"></label>
+                <label id="energy_manager_config_input4_rules_limit_label" for="energy_manager_config_input4_config_limit" class="col-lg-1 col-xl-1 col-form-label form-label">?</label>
 
                 <div class="col-lg-8 col-xl-5 input-group">
                     <input id="energy_manager_config_input4_config_limit" class="form-control" type="number" step="any">
