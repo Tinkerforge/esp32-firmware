@@ -781,6 +781,6 @@ def main():
 
     if web_only:
         print('Stopping build after web')
-        sys.exit(1)
+        sys.exit(0)
 
 main()
