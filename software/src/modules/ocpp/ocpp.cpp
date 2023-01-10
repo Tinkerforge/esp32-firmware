@@ -145,9 +145,9 @@ void Ocpp::setup()
         for(size_t i = 0; i < ARRAY_SIZE(pass_bytes); ++i) {
             pass_bytes[i] = hex_digit_to_byte(pass[i]) << 4 | hex_digit_to_byte(pass[i]);
         }
-        cp.start(config.get("url")->asEphemeralCStr(), (String(BUILD_HOST_PREFIX) + '-' + local_uid_str).c_str(), pass_bytes.get());
+        cp.start(config.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), pass_bytes.get());
     } else {
-        cp.start(config.get("url")->asEphemeralCStr(), (String(BUILD_HOST_PREFIX) + '-' + local_uid_str).c_str(), config_in_use.get("pass")->asEphemeralCStr());
+        cp.start(config.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), config_in_use.get("pass")->asEphemeralCStr());
     }
 
     task_scheduler.scheduleWithFixedDelay([this](){
