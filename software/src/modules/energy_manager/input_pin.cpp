@@ -33,7 +33,9 @@ InputPin::InputPin(uint32_t num_name, uint32_t num_logic, const ConfigRoot &conf
     int32_t  pin_conf_limit = conf.get(pin_limit_str)->asInt();
     uint32_t pin_conf_when  = conf.get(pin_when_str)->asUint();
 
-    update_func = nullptr;
+    // Don't risk crashing on an invalid function pointer, so make sure that update_func is always set to something sensible.
+    update_func = &InputPin::nop;
+
     invert_pin = pin_conf_when == INPUT_CONFIG_WHEN_LOW;
 
     switch(pin_conf_func) {
@@ -62,12 +64,10 @@ InputPin::InputPin(uint32_t num_name, uint32_t num_logic, const ConfigRoot &conf
             /* FALLTHROUGH */
         case INPUT_CONFIG_DISABLED:
         case INPUT_CONFIG_CONTACTOR_CHECK:
+            // update_func already set to nop.
             break;
     }
 
-    // Don't risk crashing on an invalid function pointer, so make sure that update_func is always set to something sensible.
-    if (update_func == nullptr)
-        update_func = &InputPin::nop;
 }
 
 void InputPin::update(bool level)
