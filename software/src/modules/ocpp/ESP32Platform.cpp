@@ -15,6 +15,12 @@
 #include "api.h"
 #include "build.h"
 
+static bool feature_evse = false;
+static bool feature_meter = false;
+static bool feature_meter_all_values = false;
+static bool feature_meter_phases = false;
+#define REQUIRE_FEATURE(x, default_val) do { if (!feature_##x && !api.hasFeature(#x)) { return default_val; } feature_##x = true;} while(0)
+
 void(*recv_cb)(char *, size_t, void *) = nullptr;
 void *recv_cb_userdata = nullptr;
 
@@ -174,6 +180,8 @@ void platform_cable_timed_out(int32_t connectorId)
 }
 
 EVSEState platform_get_evse_state(int32_t connectorId) {
+    REQUIRE_FEATURE(evse, EVSEState::Faulted);
+
     auto state = api.getState("evse/state")->get("charger_state")->asUint();
     switch(state) {
         case CHARGER_STATE_NOT_PLUGGED_IN:
@@ -198,6 +206,8 @@ EVSEState platform_get_evse_state(int32_t connectorId) {
 
 // This is the Energy.Active.Import.Register measurand in Wh
 int32_t platform_get_energy(int32_t connectorId) {
+    REQUIRE_FEATURE(meter, 0);
+
     Config *meter_values = api.getState("meter/values", false);
     if (meter_values == nullptr)
         return 0;
@@ -329,9 +339,9 @@ float platform_get_raw_meter_value(int32_t connectorId, SampledValueMeasurand me
     if (connectorId != 1)
         return 0.0f;
 
+    REQUIRE_FEATURE(meter_all_values, 0);
+
     Config *meter_all_values = api.getState("meter/all_values");
-    if (meter_all_values == nullptr)
-        return 0.0f;
 
     switch(measurand) {
         case SampledValueMeasurand::ENERGY_ACTIVE_EXPORT_REGISTER:
@@ -365,6 +375,8 @@ float platform_get_raw_meter_value(int32_t connectorId, SampledValueMeasurand me
             return fabs(meter_all_values->get(15 + (size_t) phase)->asFloat());
 
         case SampledValueMeasurand::CURRENT_OFFERED:
+            REQUIRE_FEATURE(meter_phases, 0);
+            REQUIRE_FEATURE(evse, 0);
             return api.getState("meter/phases")->get("phases_connected")->get((size_t) phase)->asBool() ?
                    ((float)api.getState("evse/state")->get("allowed_charging_current")->asUint()) / 1000.0f :
                    0.0f;
