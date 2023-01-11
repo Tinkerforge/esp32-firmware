@@ -98,7 +98,8 @@ function update_energy_manager_html_visibility() {
     } else if(relay_config_when == '2') {
         update_options(relay_config_is_dd, [{value: 2, name: "one_phase"}, {value: 3, name: "three_phase"}]);
     } else if(relay_config_when == '3') {
-        update_options(relay_config_is_dd, [{value: 4, name: "greater0"}, {value: 5, name: "smaller0"}]);
+        update_options(relay_config_is_dd, [{value: 4, name: "contactor_fail"}, {value: 5, name: "contactor_ok"}]);
+        //update_options(relay_config_is_dd, [{value: 4, name: "greater0"}, {value: 5, name: "smaller0"}]);
     }
 
     // Update input section

@@ -93,6 +93,18 @@ OutputRelay::OutputRelay(const ConfigRoot &conf)
                     }
                     update_func = &OutputRelay::phase_switching_state;
                     break;
+                case RELAY_CONFIG_IF_CONTACTOR_CHECK:
+                    if (relay_conf_is == RELAY_CONFIG_IS_CONTACTOR_OK) {
+                        // Checks against contactor_check_tripped, not contactor_check_state.
+                        ref_val = 0;
+                    } else if (relay_conf_is == RELAY_CONFIG_IS_CONTACTOR_FAIL) {
+                        ref_val = 1;
+                    } else {
+                        logger.printfln("energy_manager/OutputRelay: Unknown RELAY_CONFIG_IS type %u for contactor check mode", relay_conf_is);
+                        break;
+                    }
+                    update_func = &OutputRelay::contactor_check_tripped;
+                    break;
                 default:
                     logger.printfln("energy_manager/OutputRelay: Unknown RELAY_CONFIG_RULE type %u", relay_conf_when);
             }
@@ -128,5 +140,11 @@ void OutputRelay::input_controlled()
 void OutputRelay::phase_switching_state()
 {
     bool want_set = energy_manager.is_3phase == ref_val;
+    energy_manager.set_output(want_set);
+}
+
+void OutputRelay::contactor_check_tripped()
+{
+    bool want_set = energy_manager.contactor_check_tripped == ref_val;
     energy_manager.set_output(want_set);
 }

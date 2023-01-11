@@ -38,14 +38,15 @@
 #define RELAY_CONFIG_IF_INPUT3          0
 #define RELAY_CONFIG_IF_INPUT4          1
 #define RELAY_CONFIG_IF_PHASE_SWITCHING 2
-#define RELAY_CONFIG_IF_METER           3
+#define RELAY_CONFIG_IF_CONTACTOR_CHECK 3
+#define RELAY_CONFIG_IF_METER           -1
 
 #define RELAY_CONFIG_IS_HIGH            0
 #define RELAY_CONFIG_IS_LOW             1
 #define RELAY_CONFIG_IS_1PHASE          2
 #define RELAY_CONFIG_IS_3PHASE          3
-#define RELAY_CONFIG_IS_GOE_0KW         4
-#define RELAY_CONFIG_IS_SOE_0KW         5
+#define RELAY_CONFIG_IS_CONTACTOR_FAIL  4
+#define RELAY_CONFIG_IS_CONTACTOR_OK    5
 
 #define INPUT_CONFIG_DISABLED           0
 #define INPUT_CONFIG_CONTACTOR_CHECK    1
@@ -136,6 +137,7 @@ public:
     } charging_blocked;
 
     bool excess_charging_enable;
+    bool contactor_check_tripped;
     bool is_3phase;
 
 private:
@@ -149,7 +151,6 @@ private:
     InputPin *input3;
     InputPin *input4;
 
-    bool     contactor_check_tripped;
     bool     uptime_past_hysteresis;
     SwitchingState switching_state;
     uint32_t switching_start;

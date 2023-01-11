@@ -54,6 +54,7 @@ void EnergyManager::pre_setup()
         },
         // Derived states
         {"phases_switched", Config::Uint8(0)},
+        {"contactor_check_tripped", Config::Bool(false)},
     });
 
     // Config
@@ -267,6 +268,16 @@ void EnergyManager::update_all_data()
     have_phases = 1 + is_3phase * 2;
     energy_manager_state.get("phases_switched")->updateUint(have_phases);
 
+    if (contactor_installed) {
+        if ((all_data.contactor_check_state & 1) == 0) {
+            logger.printfln("Contactor check tripped. Check contactor.");
+            contactor_check_tripped = true;
+            energy_manager_state.get("contactor_check_tripped")->updateBool(true);
+        } else if (contactor_check_tripped) {
+            logger.printfln("Contactor check tripped in the past but reports ok now. Check contactor and reboot Energy Manager to clear.");
+        }
+    }
+
     static uint32_t time_max = 2000;
     time = micros() - time;
     if (time > time_max) {
@@ -357,21 +368,9 @@ void EnergyManager::update_energy()
         prev_state = switching_state;
     }
 
-    if (contactor_installed) {
-        bool check_ok = all_data.contactor_check_state & 1;
-        if (!check_ok)
-            contactor_check_tripped = true;
-
-        if (contactor_check_tripped) {
-            set_available_current(0);
-
-            if (!check_ok)
-                logger.printfln("Contactor check tripped. Check contactor.");
-            else
-                logger.printfln("Contactor check tripped in the past but reports ok now. Check contactor and reboot Energy Manager to clear.");
-
-            return;
-        }
+    if (contactor_check_tripped) {
+        set_available_current(0);
+        return;
     }
 
     if (switching_state == SwitchingState_Monitoring) {
