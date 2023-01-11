@@ -40,7 +40,7 @@
 #define RELAY_CONFIG_IF_PHASE_SWITCHING 2
 #define RELAY_CONFIG_IF_CONTACTOR_CHECK 3
 #define RELAY_CONFIG_IF_POWER_AVAILABLE 4
-#define RELAY_CONFIG_IF_METER           -1
+#define RELAY_CONFIG_IF_GRID_DRAW       5
 
 #define RELAY_CONFIG_IS_HIGH            0
 #define RELAY_CONFIG_IS_LOW             1
@@ -50,6 +50,10 @@
 #define RELAY_CONFIG_IS_CONTACTOR_OK    5
 #define RELAY_CONFIG_IS_POWER_SUFFIC    6
 #define RELAY_CONFIG_IS_POWER_INSUFFIC  7
+#define RELAY_CONFIG_IS_GT0             8
+#define RELAY_CONFIG_IS_GE0             9
+#define RELAY_CONFIG_IS_LE0             10
+#define RELAY_CONFIG_IS_LT0             11
 
 #define INPUT_CONFIG_DISABLED           0
 #define INPUT_CONFIG_CONTACTOR_CHECK    1
@@ -139,10 +143,11 @@ public:
         uint8_t  pin[4];
     } charging_blocked;
 
-    bool excess_charging_enable;
-    bool contactor_check_tripped;
-    bool is_3phase;
-    bool is_on_last;
+    bool     excess_charging_enable;
+    bool     contactor_check_tripped;
+    bool     is_3phase;
+    bool     wants_on_last;
+    int32_t  power_at_meter_w;
 
 private:
     void update_all_data_struct();
@@ -161,7 +166,7 @@ private:
     uint8_t  have_phases;
     bool     wants_3phase;
     bool     wants_3phase_last;
-    bool     wants_on_last;
+    bool     is_on_last;
     bool     just_switched_phases;
     uint32_t phase_state_change_blocked_until;
     uint32_t on_state_change_blocked_until;

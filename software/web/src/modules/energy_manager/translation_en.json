@@ -65,6 +65,11 @@
             "power_available": "Power available",
             "power_sufficient": "Sufficient to charge",
             "power_insufficient": "Insufficient to charge",
+            "grid_draw": "Grid power draw",
+            "grid_gt0": "P &gt; 0, drawing power from grid",
+            "grid_ge0": "P ≥ 0, drawing power from grid or balanced",
+            "grid_le0": "P ≤ 0, feeding power to grid or balanced",
+            "grid_lt0": "P &lt; 0, feeding power to grid",
             "inputs": "Inputs",
             "input3": "Input 3",
             "input4": "Input 4",
@@ -83,9 +88,7 @@
             "open": "Open",
             "phase_switching": "Phase switching",
             "one_phase_active": "One phase active (contactor open)",
-            "three_phases_active": "Three phases active (contactor closed)",
-            "greater0": "≥ 0 kW",
-            "smaller0": "≤ 0 kW"
+            "three_phases_active": "Three phases active (contactor closed)"
         },
         "script": {
             "loading_debug_report": "Loading debug protocol",

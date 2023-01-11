@@ -268,6 +268,8 @@ void EnergyManager::update_all_data()
     have_phases = 1 + is_3phase * 2;
     energy_manager_state.get("phases_switched")->updateUint(have_phases);
 
+    power_at_meter_w = all_data.energy_meter_type ? all_data.power * 1000 : meter.values.get("power")->asFloat(); // watt
+
     if (contactor_installed) {
         if ((all_data.contactor_check_state & 1) == 0) {
             logger.printfln("Contactor check tripped. Check contactor.");
@@ -374,7 +376,6 @@ void EnergyManager::update_energy()
     }
 
     if (switching_state == SwitchingState_Monitoring) {
-        const int32_t  power_at_meter_w = all_data.energy_meter_type ? all_data.power * 1000 : meter.values.get("power")->asFloat(); // watt
         const bool     is_on            = is_on_last;
 
         const uint32_t charge_manager_allocated_power_w = 230 * have_phases * charge_manager_allocated_current_ma / 1000; // watt

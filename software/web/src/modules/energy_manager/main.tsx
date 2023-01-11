@@ -101,7 +101,10 @@ function update_energy_manager_html_visibility() {
         update_options(relay_config_is_dd, [{value: 4, name: "contactor_fail"}, {value: 5, name: "contactor_ok"}]);
     } else if (relay_config_when == 4) { // power available
         update_options(relay_config_is_dd, [{value: 6, name: "power_sufficient"}, {value: 7, name: "power_insufficient"}]);
-        //update_options(relay_config_is_dd, [{value: 4, name: "greater0"}, {value: 5, name: "smaller0"}]);
+    } else if (relay_config_when == 5) { // grid draw
+        update_options(relay_config_is_dd, [{value: 8, name: "grid_gt0"}, {value: 9, name: "grid_ge0"}, {value: 10, name: "grid_le0"}, {value: 11, name: "grid_lt0"}]);
+    } else {
+        update_options(relay_config_is_dd, []);
     }
 
     // Update input section

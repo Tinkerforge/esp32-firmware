@@ -65,6 +65,11 @@
             "power_available": "Leistung verfügbar",
             "power_sufficient": "Ausreichend für eine Ladung",
             "power_insufficient": "Nicht ausreichend für eine Ladung",
+            "grid_draw": "Netzbezug",
+            "grid_gt0": "P &gt; 0, beziehe Strom aus dem Netz",
+            "grid_ge0": "P ≥ 0, beziehe Strom aus dem Netz oder ausbalanciert",
+            "grid_le0": "P ≤ 0, speise Strom ins Netz ein oder ausbalanciert",
+            "grid_lt0": "P &lt; 0, speise Strom ins Netz ein",
             "inputs": "Eingänge",
             "input3": "Eingang 3",
             "input4": "Eingang 4",
@@ -83,9 +88,7 @@
             "open": "Offen",
             "phase_switching": "Phasenumschaltung",
             "one_phase_active": "Eine Phase aktiv (Schütz nicht geschaltet)",
-            "three_phases_active": "Drei Phasen aktiv (Schütz geschaltet)",
-            "greater0": "≥ 0 kW",
-            "smaller0": "≤ 0 kW"
+            "three_phases_active": "Drei Phasen aktiv (Schütz geschaltet)"
         },
         "script": {
             "loading_debug_report": "Lade Debug-Report",

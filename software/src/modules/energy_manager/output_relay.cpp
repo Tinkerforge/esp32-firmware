@@ -24,35 +24,17 @@
 #include "output_relay.h"
 #include "modules.h"
 
+static bool cmp_gt(int32_t a, int32_t b) { return a >  b; }
+static bool cmp_ge(int32_t a, int32_t b) { return a >= b; }
+static bool cmp_le(int32_t a, int32_t b) { return a <= b; }
+static bool cmp_lt(int32_t a, int32_t b) { return a <  b; }
+
 static bool cmp_dummy(int32_t a, int32_t b)
 {
     logger.printfln("energy_manager/RelayOutput: cmp_dummy(%i, %i) called. This should not happen.", a, b);
     return false;
 }
 
-/*
-#define RELAY_CONFIG_IF_INPUT3          0
-#define RELAY_CONFIG_IF_INPUT4          1
-#define RELAY_CONFIG_IF_PHASE_SWITCHING 2
-#define RELAY_CONFIG_IF_METER           3
-
-#define RELAY_CONFIG_IS_HIGH            0
-#define RELAY_CONFIG_IS_LOW             1
-#define RELAY_CONFIG_IS_1PHASE          2
-#define RELAY_CONFIG_IS_3PHASE          3
-#define RELAY_CONFIG_IS_GOE_0KW         4
-#define RELAY_CONFIG_IS_SOE_0KW         5
-
-    uint8_t relay_config = energy_manager_config_in_use.get("relay_config")->asUint();
-    if (relay_config == RELAY_CONFIG_RULE_BASED) {
-        uint8_t relay_config_if = energy_manager_config_in_use.get("relay_config_if")->asUint();
-        switch(relay_config_if) {
-            case RELAY_CONFIG_IF_PHASE_SWITCHING: handle_relay_config_if_phase_switching(); break;
-            case RELAY_CONFIG_IF_METER:           handle_relay_config_if_meter();           break;
-            default: logger.printfln("Unknown RELAY_CONFIG_IF: %u", relay_config_if);       break;
-        }
-    }
-*/
 OutputRelay::OutputRelay(const ConfigRoot &conf)
 {
     const uint32_t relay_conf_func  = conf.get("relay_config"     )->asUint();
@@ -116,6 +98,18 @@ OutputRelay::OutputRelay(const ConfigRoot &conf)
                     }
                     update_func = &OutputRelay::power_sufficient;
                     break;
+                case RELAY_CONFIG_IF_GRID_DRAW:
+                    switch(relay_conf_is) {
+                        case RELAY_CONFIG_IS_GT0: cmp_func = &cmp_gt; break;
+                        case RELAY_CONFIG_IS_GE0: cmp_func = &cmp_ge; break;
+                        case RELAY_CONFIG_IS_LE0: cmp_func = &cmp_le; break;
+                        case RELAY_CONFIG_IS_LT0: cmp_func = &cmp_lt; break;
+                        default:
+                            logger.printfln("energy_manager/OutputRelay: Unknown RELAY_CONFIG_IS type %u for grid draw mode", relay_conf_is);
+                            // cmp_func already set to cmp_dummy.
+                    }
+                    update_func = &OutputRelay::grid_draw;
+                    break;
                 default:
                     logger.printfln("energy_manager/OutputRelay: Unknown RELAY_CONFIG_RULE type %u", relay_conf_when);
             }
@@ -163,5 +157,12 @@ void OutputRelay::contactor_check_tripped()
 void OutputRelay::power_sufficient()
 {
     bool want_set = energy_manager.wants_on_last == ref_val;
+    energy_manager.set_output(want_set);
+}
+
+void OutputRelay::grid_draw()
+{
+    int32_t p_w = energy_manager.power_at_meter_w;
+    bool want_set = cmp_func(p_w, 0);
     energy_manager.set_output(want_set);
 }
