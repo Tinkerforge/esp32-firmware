@@ -130,7 +130,8 @@ void EnergyManager::setup()
         charge_manager_allocated_current_ma = current_ma;
     });
 
-    // Set up input3 and input4
+    // Set up output relay and input pins
+    output = new OutputRelay(energy_manager_config_in_use);
     input3 = new InputPin(3, 0, energy_manager_config_in_use);
     input4 = new InputPin(4, 1, energy_manager_config_in_use);
 
@@ -232,6 +233,8 @@ void EnergyManager::loop()
 
 void EnergyManager::update_all_data()
 {
+    uint32_t time = micros();
+
     update_all_data_struct();
 
     energy_manager_state.get("contactor")->updateBool(all_data.contactor_value);
@@ -255,6 +258,13 @@ void EnergyManager::update_all_data()
         for (int i = 0; i < 3; i++) {
             energy_manager_state.get("energy_meter_phases_connected")->get(i)->updateBool(all_data.phases_connected[i]);
         }
+    }
+
+    static uint32_t time_max = 2000;
+    time = micros() - time;
+    if (time > time_max) {
+        time_max = time;
+        logger.printfln("energy_manager::update_all_data() took %uus", time_max);
     }
 }
 
@@ -284,50 +294,12 @@ void EnergyManager::update_all_data_struct()
     }
 }
 
-void EnergyManager::handle_relay_config_if_input(uint8_t input)
-{
-    if (input > 1) {
-        logger.printfln("Unknown handle_relay_config_if input: %u", input);
-        return;
-    }
-
-    // Check if condition is satisfied and set relay according to configuration
-    uint8_t relay_config_is = energy_manager_config_in_use.get("relay_config_is")->asUint();
-    uint8_t relay_config_then = energy_manager_config_in_use.get("relay_config_then")->asUint();
-    if (((relay_config_is == RELAY_CONFIG_IS_HIGH) && (all_data.input[input])) ||
-        ((relay_config_is == RELAY_CONFIG_IS_LOW) && (!all_data.input[input]))) {
-        tf_warp_energy_manager_set_output(&device, relay_config_then == RELAY_CONFIG_THEN_CLOSED);
-    } else {
-        tf_warp_energy_manager_set_output(&device, relay_config_then != RELAY_CONFIG_THEN_CLOSED);
-    }
-}
-
-void EnergyManager::handle_relay_config_if_phase_switching()
-{
-    // TODO
-}
-
-void EnergyManager::handle_relay_config_if_meter()
-{
-    // TODO
-}
 
 void EnergyManager::update_io()
 {
     uint32_t time = micros();
 
-    // Handle relay
-    uint8_t relay_config = energy_manager_config_in_use.get("relay_config")->asUint();
-    if (relay_config == RELAY_CONFIG_RULE_BASED) {
-        uint8_t relay_config_if = energy_manager_config_in_use.get("relay_config_if")->asUint();
-        switch(relay_config_if) {
-            case RELAY_CONFIG_IF_INPUT3:          handle_relay_config_if_input(0);          break;
-            case RELAY_CONFIG_IF_INPUT4:          handle_relay_config_if_input(1);          break;
-            case RELAY_CONFIG_IF_PHASE_SWITCHING: handle_relay_config_if_phase_switching(); break;
-            case RELAY_CONFIG_IF_METER:           handle_relay_config_if_meter();           break;
-            default: logger.printfln("Unknown RELAY_CONFIG_IF: %u", relay_config_if);       break;
-        }
-    }
+    output->update();
 
     // Oversampling inputs is currently not used because all of the implemented input pin functions require update_energy() to run anyway.
     //// We "over-sample" the two inputs compared to the other data in the all_data struct
@@ -588,7 +560,7 @@ void EnergyManager::update_energy()
         just_switched_phases = true;
     }
 
-    static uint32_t time_max = 30000;
+    static uint32_t time_max = 20000;
     time = micros() - time;
     if (time > time_max) {
         time_max = time;
@@ -606,6 +578,13 @@ uint16_t EnergyManager::get_energy_meter_detailed_values(float *ret_values)
 void EnergyManager::reset_energy_meter_relative_energy()
 {
     tf_warp_energy_manager_reset_energy_meter_relative_energy(&device);
+}
+
+void EnergyManager::set_output(bool output)
+{
+    int result = tf_warp_energy_manager_set_output(&device, output);
+    if (result != TF_E_OK)
+        logger.printfln("energy_manager: Failed to set output relay: error %i", result);
 }
 
 String EnergyManager::get_energy_manager_debug_header()

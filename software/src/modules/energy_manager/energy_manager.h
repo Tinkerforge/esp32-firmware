@@ -24,6 +24,7 @@
 #include "config.h"
 #include "device_module.h"
 #include "input_pin.h"
+#include "output_relay.h"
 #include "warp_energy_manager_bricklet_firmware_bin.embedded.h"
 
 #define PHASE_SWITCHING_AUTOMATIC       0
@@ -42,12 +43,9 @@
 #define RELAY_CONFIG_IS_HIGH            0
 #define RELAY_CONFIG_IS_LOW             1
 #define RELAY_CONFIG_IS_1PHASE          2
-#define RELAY_CONFIG_IS_2PHASE          3
+#define RELAY_CONFIG_IS_3PHASE          3
 #define RELAY_CONFIG_IS_GOE_0KW         4
 #define RELAY_CONFIG_IS_SOE_0KW         5
-
-#define RELAY_CONFIG_THEN_OPEN          0
-#define RELAY_CONFIG_THEN_CLOSED        1
 
 #define INPUT_CONFIG_DISABLED           0
 #define INPUT_CONFIG_CONTACTOR_CHECK    1
@@ -128,6 +126,8 @@ public:
 
     uint16_t get_energy_meter_detailed_values(float *ret_values);
     void reset_energy_meter_relative_energy();
+    void set_output(bool output);
+
 
     bool debug = false;
 
@@ -147,6 +147,7 @@ public:
 private:
     void set_available_current(uint32_t current);
 
+    OutputRelay *output;
     InputPin *input3;
     InputPin *input4;
 
