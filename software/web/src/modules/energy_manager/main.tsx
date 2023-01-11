@@ -92,13 +92,15 @@ function update_energy_manager_html_visibility() {
     }
 
     let relay_config_is_dd = $('#energy_manager_config_relay_config_is')
-    let relay_config_when = $('#energy_manager_config_relay_config_when').val();
-    if((relay_config_when == '0') || (relay_config_when == '1')) {
+    let relay_config_when = $('#energy_manager_config_relay_config_when').val() as number;
+    if ((relay_config_when == 0) || (relay_config_when == 1)) { // input 3|4
         update_options(relay_config_is_dd, [{value: 0, name: "high"}, {value: 1, name: "low"}]);
-    } else if(relay_config_when == '2') {
+    } else if (relay_config_when == 2) { // phase switching
         update_options(relay_config_is_dd, [{value: 2, name: "one_phase"}, {value: 3, name: "three_phase"}]);
-    } else if(relay_config_when == '3') {
+    } else if (relay_config_when == 3) { // contactor check
         update_options(relay_config_is_dd, [{value: 4, name: "contactor_fail"}, {value: 5, name: "contactor_ok"}]);
+    } else if (relay_config_when == 4) { // power available
+        update_options(relay_config_is_dd, [{value: 6, name: "power_sufficient"}, {value: 7, name: "power_insufficient"}]);
         //update_options(relay_config_is_dd, [{value: 4, name: "greater0"}, {value: 5, name: "smaller0"}]);
     }
 

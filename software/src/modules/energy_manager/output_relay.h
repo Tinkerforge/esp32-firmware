@@ -37,4 +37,5 @@ private:
     void input_controlled();
     void phase_switching_state();
     void contactor_check_tripped();
+    void power_sufficient();
 };

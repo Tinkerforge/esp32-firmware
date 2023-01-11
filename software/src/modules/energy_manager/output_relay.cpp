@@ -105,6 +105,17 @@ OutputRelay::OutputRelay(const ConfigRoot &conf)
                     }
                     update_func = &OutputRelay::contactor_check_tripped;
                     break;
+                case RELAY_CONFIG_IF_POWER_AVAILABLE:
+                    if (relay_conf_is == RELAY_CONFIG_IS_POWER_INSUFFIC) {
+                        ref_val = 0;
+                    } else if (relay_conf_is == RELAY_CONFIG_IS_POWER_SUFFIC) {
+                        ref_val = 1;
+                    } else {
+                        logger.printfln("energy_manager/OutputRelay: Unknown RELAY_CONFIG_IS type %u for power available mode", relay_conf_is);
+                        break;
+                    }
+                    update_func = &OutputRelay::contactor_check_tripped;
+                    break;
                 default:
                     logger.printfln("energy_manager/OutputRelay: Unknown RELAY_CONFIG_RULE type %u", relay_conf_when);
             }
@@ -146,5 +157,11 @@ void OutputRelay::phase_switching_state()
 void OutputRelay::contactor_check_tripped()
 {
     bool want_set = energy_manager.contactor_check_tripped == ref_val;
+    energy_manager.set_output(want_set);
+}
+
+void OutputRelay::power_sufficient()
+{
+    bool want_set = energy_manager.is_on_last == ref_val;
     energy_manager.set_output(want_set);
 }

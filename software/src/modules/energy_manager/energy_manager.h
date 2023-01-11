@@ -39,6 +39,7 @@
 #define RELAY_CONFIG_IF_INPUT4          1
 #define RELAY_CONFIG_IF_PHASE_SWITCHING 2
 #define RELAY_CONFIG_IF_CONTACTOR_CHECK 3
+#define RELAY_CONFIG_IF_POWER_AVAILABLE 4
 #define RELAY_CONFIG_IF_METER           -1
 
 #define RELAY_CONFIG_IS_HIGH            0
@@ -47,6 +48,8 @@
 #define RELAY_CONFIG_IS_3PHASE          3
 #define RELAY_CONFIG_IS_CONTACTOR_FAIL  4
 #define RELAY_CONFIG_IS_CONTACTOR_OK    5
+#define RELAY_CONFIG_IS_POWER_SUFFIC    6
+#define RELAY_CONFIG_IS_POWER_INSUFFIC  7
 
 #define INPUT_CONFIG_DISABLED           0
 #define INPUT_CONFIG_CONTACTOR_CHECK    1
@@ -139,6 +142,7 @@ public:
     bool excess_charging_enable;
     bool contactor_check_tripped;
     bool is_3phase;
+    bool is_on_last;
 
 private:
     void update_all_data_struct();
@@ -158,7 +162,6 @@ private:
     bool     wants_3phase;
     bool     wants_3phase_last;
     bool     wants_on_last;
-    bool     is_on_last;
     bool     just_switched_phases;
     uint32_t phase_state_change_blocked_until;
     uint32_t on_state_change_blocked_until;
