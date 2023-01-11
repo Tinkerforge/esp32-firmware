@@ -9,6 +9,7 @@
 #include "esp_websocket_client.h"
 #include "esp_crt_bundle.h"
 #include "mbedtls/base64.h"
+#include "esp_transport_ws.h"
 
 #include "modules.h"
 #include "api.h"
@@ -16,18 +17,6 @@
 
 void(*recv_cb)(char *, size_t, void *) = nullptr;
 void *recv_cb_userdata = nullptr;
-
-enum ws_transport_opcodes {
-    WS_TRANSPORT_OPCODES_CONT =  0x00,
-    WS_TRANSPORT_OPCODES_TEXT =  0x01,
-    WS_TRANSPORT_OPCODES_BINARY = 0x02,
-    WS_TRANSPORT_OPCODES_CLOSE = 0x08,
-    WS_TRANSPORT_OPCODES_PING = 0x09,
-    WS_TRANSPORT_OPCODES_PONG = 0x0a,
-    WS_TRANSPORT_OPCODES_FIN = 0x80,
-    WS_TRANSPORT_OPCODES_NONE = 0x100,   /*!< not a valid opcode to indicate no message previously received
-                                          * from the API esp_transport_ws_get_read_opcode() */
-} ws_transport_opcodes_t;
 
 static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
