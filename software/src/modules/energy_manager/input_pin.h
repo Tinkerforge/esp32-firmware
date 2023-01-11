@@ -28,8 +28,6 @@ public:
     void update(bool level);
 
 private:
-    uint8_t num_name;
-    uint8_t num_logic;
     bool invert_pin;
     void (InputPin::*update_func)(bool level);
     int32_t limit;

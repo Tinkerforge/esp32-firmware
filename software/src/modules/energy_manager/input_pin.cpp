@@ -22,12 +22,10 @@
 #include "event_log.h"
 #include "input_pin.h"
 #include "modules.h"
+#include "tools.h"
 
 InputPin::InputPin(uint32_t num_name, uint32_t num_logic, const ConfigRoot &conf)
 {
-    this->num_name = num_name;
-    this->num_logic = num_logic;
-
     String pin_func_str     = String("input") + num_name + "_config";
     String pin_limit_str    = String("input") + num_name + "_config_limit";
     String pin_when_str     = String("input") + num_name + "_config_when";
@@ -35,12 +33,17 @@ InputPin::InputPin(uint32_t num_name, uint32_t num_logic, const ConfigRoot &conf
     int32_t  pin_conf_limit = conf.get(pin_limit_str)->asInt();
     uint32_t pin_conf_when  = conf.get(pin_when_str)->asUint();
 
+    update_func = nullptr;
     invert_pin = pin_conf_when == INPUT_CONFIG_WHEN_LOW;
 
     switch(pin_conf_func) {
         case INPUT_CONFIG_BLOCK_CHARGING:
-            update_func = &InputPin::block_charging;
-            out_dst = &(energy_manager.charging_blocked.pin[num_logic]);
+            if (num_logic >= ARRAY_SIZE(energy_manager.charging_blocked.pin)) {
+                logger.printfln("energy_manager/InputPin: num_logic too large for input %u: %u >= %u", num_name, num_logic, ARRAY_SIZE(energy_manager.charging_blocked.pin));
+            } else {
+                update_func = &InputPin::block_charging;
+                out_dst = &(energy_manager.charging_blocked.pin[num_logic]);
+            }
             break;
         case INPUT_CONFIG_EXCESS_CHARGING:
             update_func = &InputPin::switch_excess_charging;
@@ -59,9 +62,12 @@ InputPin::InputPin(uint32_t num_name, uint32_t num_logic, const ConfigRoot &conf
             /* FALLTHROUGH */
         case INPUT_CONFIG_DISABLED:
         case INPUT_CONFIG_CONTACTOR_CHECK:
-            update_func = &InputPin::nop;
             break;
     }
+
+    // Don't risk crashing on an invalid function pointer, so make sure that update_func is always set to something sensible.
+    if (update_func == nullptr)
+        update_func = &InputPin::nop;
 }
 
 void InputPin::update(bool level)
