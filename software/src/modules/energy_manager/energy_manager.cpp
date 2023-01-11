@@ -51,7 +51,9 @@ void EnergyManager::pre_setup()
         },
         {"energy_meter_phases_connected", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false)},
             new Config{Config::Bool(false)},3, 3, Config::type_id<Config::ConfBool>())
-        }
+        },
+        // Derived states
+        {"phases_switched", Config::Uint8(0)},
     });
 
     // Config
@@ -260,6 +262,11 @@ void EnergyManager::update_all_data()
         }
     }
 
+    // Update states derived from all_data
+    is_3phase   = contactor_installed ? all_data.contactor_value : phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE;
+    have_phases = 1 + is_3phase * 2;
+    energy_manager_state.get("phases_switched")->updateUint(have_phases);
+
     static uint32_t time_max = 2000;
     time = micros() - time;
     if (time > time_max) {
@@ -293,7 +300,6 @@ void EnergyManager::update_all_data_struct()
         logger.printfln("get_all_data_1 error %d", rc);
     }
 }
-
 
 void EnergyManager::update_io()
 {
@@ -370,8 +376,6 @@ void EnergyManager::update_energy()
 
     if (switching_state == SwitchingState_Monitoring) {
         const int32_t  power_at_meter_w = all_data.energy_meter_type ? all_data.power * 1000 : meter.values.get("power")->asFloat(); // watt
-        const bool     is_3phase        = contactor_installed ? all_data.contactor_value : phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE;
-        const uint32_t have_phases      = 1 + is_3phase * 2;
         const bool     is_on            = is_on_last;
 
         const uint32_t charge_manager_allocated_power_w = 230 * have_phases * charge_manager_allocated_current_ma / 1000; // watt

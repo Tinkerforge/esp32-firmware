@@ -82,6 +82,17 @@ OutputRelay::OutputRelay(const ConfigRoot &conf)
                     else
                         input_val = &(energy_manager.all_data.input[1]);
                     break;
+                case RELAY_CONFIG_IF_PHASE_SWITCHING:
+                    if (relay_conf_is == RELAY_CONFIG_IS_1PHASE) {
+                        ref_val = 0;
+                    } else if (relay_conf_is == RELAY_CONFIG_IS_3PHASE) {
+                        ref_val = 1;
+                    } else {
+                        logger.printfln("energy_manager/OutputRelay: Unknown RELAY_CONFIG_IS type %u for phase switching mode", relay_conf_is);
+                        break;
+                    }
+                    update_func = &OutputRelay::phase_switching_state;
+                    break;
                 default:
                     logger.printfln("energy_manager/OutputRelay: Unknown RELAY_CONFIG_RULE type %u", relay_conf_when);
             }
@@ -111,5 +122,11 @@ void OutputRelay::nop()
 void OutputRelay::input_controlled()
 {
     bool want_set = *input_val == ref_val;
+    energy_manager.set_output(want_set);
+}
+
+void OutputRelay::phase_switching_state()
+{
+    bool want_set = energy_manager.is_3phase == ref_val;
     energy_manager.set_output(want_set);
 }

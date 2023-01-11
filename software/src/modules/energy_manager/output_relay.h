@@ -35,4 +35,5 @@ private:
 
     void nop();
     void input_controlled();
+    void phase_switching_state();
 };

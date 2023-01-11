@@ -107,17 +107,10 @@ public:
 
     // Called in energy_manager_meter setup
     void update_all_data();
-    void update_all_data_struct();
-
-    void update_io();
-    void update_energy();
 
     void limit_max_current(uint32_t limit_ma);
     void override_grid_draw(int32_t limit_w);
 
-    void handle_relay_config_if_input(uint8_t input);
-    void handle_relay_config_if_phase_switching();
-    void handle_relay_config_if_meter();
     void setup_energy_manager();
     String get_energy_manager_debug_header();
     String get_energy_manager_debug_line();
@@ -143,23 +136,29 @@ public:
     } charging_blocked;
 
     bool excess_charging_enable;
+    bool is_3phase;
 
 private:
+    void update_all_data_struct();
+    void update_io();
+    void update_energy();
+
     void set_available_current(uint32_t current);
 
     OutputRelay *output;
     InputPin *input3;
     InputPin *input4;
 
-    bool contactor_check_tripped;
-    bool uptime_past_hysteresis;
+    bool     contactor_check_tripped;
+    bool     uptime_past_hysteresis;
     SwitchingState switching_state;
     uint32_t switching_start;
-    bool wants_3phase;
-    bool wants_3phase_last;
-    bool wants_on_last;
-    bool is_on_last;
-    bool just_switched_phases;
+    uint8_t  have_phases;
+    bool     wants_3phase;
+    bool     wants_3phase_last;
+    bool     wants_on_last;
+    bool     is_on_last;
+    bool     just_switched_phases;
     uint32_t phase_state_change_blocked_until;
     uint32_t on_state_change_blocked_until;
     uint32_t charge_manager_allocated_current_ma;
