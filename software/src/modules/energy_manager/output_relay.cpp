@@ -114,7 +114,7 @@ OutputRelay::OutputRelay(const ConfigRoot &conf)
                         logger.printfln("energy_manager/OutputRelay: Unknown RELAY_CONFIG_IS type %u for power available mode", relay_conf_is);
                         break;
                     }
-                    update_func = &OutputRelay::contactor_check_tripped;
+                    update_func = &OutputRelay::power_sufficient;
                     break;
                 default:
                     logger.printfln("energy_manager/OutputRelay: Unknown RELAY_CONFIG_RULE type %u", relay_conf_when);
@@ -162,6 +162,6 @@ void OutputRelay::contactor_check_tripped()
 
 void OutputRelay::power_sufficient()
 {
-    bool want_set = energy_manager.is_on_last == ref_val;
+    bool want_set = energy_manager.wants_on_last == ref_val;
     energy_manager.set_output(want_set);
 }
