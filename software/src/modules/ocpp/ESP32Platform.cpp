@@ -1,6 +1,7 @@
 #include "ocpp/Platform.h"
 
 #include "ocpp/ChargePoint.h"
+#include "ocpp/Configuration.h"
 #include "time.h"
 
 #define URL_PARSER_IMPLEMENTATION_STATIC
@@ -64,9 +65,18 @@ void* platform_init(const char *websocket_url, const char *basic_auth_user, cons
     websocket_cfg.subprotocol = "ocpp1.6";
     websocket_cfg.crt_bundle_attach = esp_crt_bundle_attach;
     websocket_cfg.disable_auto_reconnect = false;
-    websocket_cfg.ping_interval_sec = 10;
-    websocket_cfg.pingpong_timeout_sec = 25;
-    websocket_cfg.disable_pingpong_discon = false;
+
+    uint32_t ping_interval = getIntConfigUnsigned(ConfigKey::WebSocketPingInterval);
+    if (ping_interval != 0) {
+        websocket_cfg.ping_interval_sec = ping_interval;
+        websocket_cfg.pingpong_timeout_sec = ping_interval * 3 + (ping_interval / 2);
+        websocket_cfg.disable_pingpong_discon = false;
+    } else {
+        // We can't completely disable sending pings.
+        websocket_cfg.ping_interval_sec = 0xFFFFFFFF;
+        websocket_cfg.pingpong_timeout_sec = 0;
+        websocket_cfg.disable_pingpong_discon = true;
+    }
 
     // Username and password are "Not supported for now".
     //websocket_cfg.username = basic_auth_user;
@@ -116,6 +126,12 @@ bool platform_ws_connected(void *ctx)
 void platform_ws_send(void *ctx, const char *buf, size_t buf_len)
 {
     esp_websocket_client_send_text(client, buf, buf_len, pdMS_TO_TICKS(1000));
+}
+
+void platform_ws_send_ping(void *ctx) {
+    // NOP. esp_websocket automatically sends pings, pongs and checks for timeouts.
+    // We can't send pings manually until we switch to ESP-IDF 5.0:
+    // https://github.com/espressif/esp-protocols/commit/3330b96b10fc05287c2d3f52057e4ba453576b9a
 }
 
 void platform_ws_register_receive_callback(void *ctx, void(*cb)(char *, size_t, void *), void *user_data)
