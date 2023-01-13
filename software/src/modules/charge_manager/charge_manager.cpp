@@ -59,6 +59,9 @@ static char distribution_log[DISTRIBUTION_LOG_LEN] = {0};
 #if MODULE_ENERGY_MANAGER_AVAILABLE()
 static void apply_energy_manager_config(Config &conf)
 {
+    if (!api.hasFeature("energy_manager"))
+        return;
+
     conf.get("enable_charge_manager")->updateBool(true);
     conf.get("enable_watchdog")->updateBool(false);
     conf.get("default_available_current")->updateUint(0);

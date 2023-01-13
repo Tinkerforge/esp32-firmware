@@ -105,7 +105,11 @@ void EnergyManager::apply_defaults()
 void EnergyManager::setup_energy_manager()
 {
     if (!this->DeviceModule::setup_device()) {
-        logger.printfln("setup_device error");
+        logger.printfln("energy_manager: setup_device error. Reboot in 5 Minutes.");
+
+        task_scheduler.scheduleOnce([this](){
+            trigger_reboot("Energy Manager");
+        }, 5 * 60 * 1000);
         return;
     }
 
@@ -175,6 +179,8 @@ void EnergyManager::setup()
         threshold_3to1_w = min_3phase_w;
         threshold_1to3_w = max_1phase_w;
     }
+
+    api.addFeature("energy_manager");
 
     task_scheduler.scheduleWithFixedDelay([this](){
         this->update_all_data();
