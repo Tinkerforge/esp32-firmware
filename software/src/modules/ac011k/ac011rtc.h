@@ -25,17 +25,13 @@
 class Rtc
 {
     private:
-        struct timeval {
-            uint year;		
-            
-        };
-
+        time_t rtcunixtime;
+        void tf_real_time_clock_v2_set_date_time(uint year, uint month, uint day, uint hour, uint minute, uint second);
     public:
 
         bool initialized = false;
         bool rtc_updated = false;
 
-        Rtc(): DeviceModule("rtc", "Real Time Clock 2.0", "Real Time Clock 2.0", std::bind(&Rtc::setup_rtc, this)) {};
         void pre_setup();
         void setup();
         void loop();
@@ -43,8 +39,7 @@ class Rtc
 
         void setup_rtc();
         void set_time(timeval time);
-        void update_system_time();
-        struct timeval get_time();
+        time_t get_time(bool reset_update);
 
         ConfigRoot time;
         ConfigRoot time_update;

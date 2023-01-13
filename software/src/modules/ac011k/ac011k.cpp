@@ -26,7 +26,7 @@
 #include "tools.h"
 #include "web_server.h"
 #include "modules.h"
-#include "rtc.h"
+#include "ac011rtc.h"
 
 #include "build.h"
 
@@ -413,7 +413,7 @@ void AC011K::fillTimeGdCommand(byte *datetime) {
         datetime[5] = PrivCommRxBuffer[PayloadStart + 9]; // second
         //if(ac011k_hardware.config.get("verbose_communication")->asBool())
             //logger.printfln("time from GD RTC %d/%d/%d %d:%d:%d", *year, *month, *day, *hour, *minute, *second);
-            logger.printfln("time from GD RTC %s", timeStr(&datetime));
+            logger.printfln("time from GD RTC %s", timeStr(datetime));
     } else {
         datetime[0] = 22; // year  
         datetime[1] = 1;  // month 
@@ -422,7 +422,7 @@ void AC011K::fillTimeGdCommand(byte *datetime) {
         datetime[4] = 4;  // minute
         datetime[5] = 5;  // second
         //logger.printfln("time fill went wrong, using FAKE %d/%d/%d %d:%d:%d", *year, *month, *day, *hour, *minute, *second);
-        logger.printfln("time fill went wrong, using FAKE %s", timeStr(&datetime));
+        logger.printfln("time fill went wrong, using FAKE %s", timeStr(datetime));
     }
 }
 
@@ -763,6 +763,7 @@ bool AC011K::handle_update_chunk(int command, WebServerRequest request, size_t c
 
 void AC011K::my_setup_evse()
 {
+    rtc.pre_setup();
     rtc.setup();
     rtc.register_urls();
 #ifdef EXPERIMENTAL
@@ -936,7 +937,10 @@ void AC011K::myloop()
     byte rxByte;
     if (rtc.rtc_updated)
     {
-        SetRTC(rtc.get_time(true));
+        timeval time;
+        time.tv_sec = rtc.get_time(true);
+        time.tv_usec = 0;
+        SetRTC(time);
     }
     if (!ntp_clock_synced && clock_synced(&tv_now)) {
         //SetRTC(); // TODO: move this to ntp sync

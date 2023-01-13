@@ -17,11 +17,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "rtc.h"
+#include "ac011rtc.h"
 #include "build.h"
 #include "esp_sntp.h"
 #include "modules.h"
 #include <ctime>
+#include "time.h"
 
 extern API api;
 extern TaskScheduler task_scheduler;
@@ -58,31 +59,7 @@ void Rtc::pre_setup()
     });
 }
 
-void Rtc::update_system_time()
-{
-    // We have to make sure, we don't try to update the system clock
-    // while NTP also sets the clock.
-    // To prevent this, we skip updating the system clock if NTP
-    // did update it while we were fetching the current time from the RTC.
 
-    uint32_t count;
-    {
-        std::lock_guard<std::mutex> lock{ntp.mtx};
-        count = ntp.sync_counter;
-    }
-
-    {
-        std::lock_guard<std::mutex> lock{ntp.mtx};
-        if (count != ntp.sync_counter)
-            // NTP has just updated the system time. We assume that this time is more accurate the the RTC's.
-            return;
-
-        // this sends a request for the RTC time to the GD chip,
-        // the answer is handled in ac011k.cpp and set's the ESP32 time if apropriate
-        GetRTC();
-
-    }
-}
 
 void Rtc::set_time(timeval time)
 {
@@ -106,41 +83,21 @@ void Rtc::set_time(timeval time)
     ntp.set_synced();
 }
 
-struct timeval Rtc::get_time(bool reset_update)
+time_t Rtc::get_time(bool reset_update)
 {
-    if (reset_update) {
-        rtc_updated = false;
-    }
-    int64_t ts;
-    int ret = tf_real_time_clock_v2_get_timestamp(&device, &ts);
-    if (ret)
-    {
-        logger.printfln("Reading RTC failed with code %i", ret);
-        struct timeval tmp;
-        tmp.tv_sec = 0;
-        tmp.tv_usec = 0;
-        return tmp;
-    }
-
-    struct timeval time;
-    time.tv_usec = ts % 1000 * 1000;
-    time.tv_sec = ts / 1000;
-
-    time.tv_sec += 946684800;
-
-    if (time.tv_sec < build_timestamp())
-    {
-        struct timeval tmp;
-        tmp.tv_sec = 0;
-        tmp.tv_usec = 0;
-        return tmp;
-    }
-    return time;
+    return rtcunixtime;
 }
-void Rtc::tf_real_time_clock_v2_set_date_time(Uint year, Uint month, Uint day, Uint hour, Uint minute, Uint second)
+void Rtc::tf_real_time_clock_v2_set_date_time(uint year, uint month, uint day, uint hour, uint minute, uint second)
 {
-    localtime.year = year;
-    
+    tm tv;
+    tv.tm_year = year;
+    tv.tm_mon = month;
+    tv.tm_mday = day;
+    tv.tm_hour = hour;
+    tv.tm_min = minute;
+    tv.tm_sec = second;
+    tv.tm_isdst = -1;
+    rtcunixtime = mktime(&tv);
 }
 
 void Rtc::register_urls()
@@ -149,58 +106,20 @@ void Rtc::register_urls()
 
     api.addState("rtc/time", &time, {}, 100);
     api.addCommand("rtc/time_update", &time_update, {}, [this]() {
-        auto ret = tf_real_time_clock_v2_set_date_time(time_update.get("year")->asUint(),
+        tf_real_time_clock_v2_set_date_time(time_update.get("year")->asUint(),
                                                        time_update.get("month")->asUint(),
                                                        time_update.get("day")->asUint(),
                                                        time_update.get("hour")->asUint(),
                                                        time_update.get("minute")->asUint(),
                                                        time_update.get("second")->asUint());
         ntp.set_synced();
-        time_updated = true;
-        update_system_time();
+        rtc_updated = true;
     }, true);
 
     api.addFeature("rtc");
-
-    task_scheduler.scheduleWithFixedDelay([this]() {
-        uint16_t year;
-        uint8_t month;
-        uint8_t day;
-        uint8_t hour;
-        uint8_t minute;
-        uint8_t second;
-        uint8_t centisecond;
-        uint8_t weekday;
-
-        auto ret = tf_real_time_clock_v2_get_date_time(&device,
-                                                       &year,
-                                                       &month,
-                                                       &day,
-                                                       &hour,
-                                                       &minute,
-                                                       &second,
-                                                       &centisecond,
-                                                       &weekday,
-                                                       NULL);
-        if (ret != TF_E_OK) {
-            logger.printfln("Update time failed (rc %d)", ret);
-            return;
-        }
-        time.get("year")->updateUint(year);
-        time.get("month")->updateUint(month);
-        time.get("day")->updateUint(day);
-        time.get("hour")->updateUint(hour);
-        time.get("minute")->updateUint(minute);
-        time.get("second")->updateUint(second);
-        time.get("weekday")->updateUint(weekday);
-    }, 0, 200);
-
-    task_scheduler.scheduleWithFixedDelay([this]() {
-        update_system_time();
-    }, 1000 * 60 * 10, 1000 * 60 * 10);
 }
 
-void Rtc::setup_rtc()
+void Rtc::setup()
 {
     api.restorePersistentConfig("rtc/config", &config);
     initialized = true;
