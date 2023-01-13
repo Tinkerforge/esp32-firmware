@@ -133,11 +133,13 @@ public:
     void PrivCommAck(byte cmd, byte *data);
     void sendCommand(byte *data, int datasize, byte sendSequenceNumber);
     void sendTime(byte cmd, byte action, byte len, byte sendSequenceNumber);
-    void sendTimeLong ();
-    void evse_slot_machine ();
+    void GetRTC();
+    void SetRTC();
+    void SetRTC(timeval time);
+    void evse_slot_machine();
     void update_evseStatus(uint8_t evseStatus);
     time_t now();
-    void filltime(byte *year, byte *month, byte *day, byte *hour, byte *minute, byte *second);
+    void fillTimeGdCommand(byte *datetime);
 
     #define PRIV_COMM_BUFFER_MAX_SIZE 1024
     byte PrivCommRxBuffer[PRIV_COMM_BUFFER_MAX_SIZE] = {'0'};
@@ -150,7 +152,7 @@ public:
     int bs_evse_set_max_charging_current(uint16_t max_current);
     int bs_evse_persist_config();
 
-    const char* timeStr(byte *data, uint8_t offset);
+    const char* timeStr(byte *data);
 
     void sendChargingLimit1(uint8_t currentLimit, byte sendSequenceNumber);
     void sendChargingLimit2(uint8_t currentLimit, byte sendSequenceNumber);

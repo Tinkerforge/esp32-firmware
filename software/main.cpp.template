@@ -175,6 +175,7 @@ void setup(void) {
         {"event_log", Config::Bool(true)},
 #if MODULE_AC011K_AVAILABLE()
         {"evse_v2", Config::Bool(true)},
+        {"rtc", Config::Bool(true)},
 #endif
 #if MODULE_ANFC_AVAILABLE()
         {"nfc", Config::Bool(true)},

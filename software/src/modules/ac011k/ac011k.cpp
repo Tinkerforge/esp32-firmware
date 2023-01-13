@@ -26,6 +26,7 @@
 #include "tools.h"
 #include "web_server.h"
 #include "modules.h"
+#include "rtc.h"
 
 #include "build.h"
 
@@ -54,6 +55,8 @@ char receiveCommandBuffer[UDP_RX_PACKET_MAX_SIZE];  // buffer to hold incoming U
 /* end experimental */
 #endif
 
+Rtc rtc;
+
 bool ready_for_next_chunk = false;
 size_t MAXLENGTH;
 byte flash_seq;
@@ -70,39 +73,21 @@ extern char local_uid_str[32];
 
 // Commands
 // First byte = command code, then payload bytes, no crc bytes
-byte Init1[] = {0xAC, 0x11, 0x0B, 0x01, 0x00, 0x00};
-//byte Init2[] = {0xAC, 0x11, 0x09, 0x01, 0x00, 0x01}; // bs & uwe
-byte Init2[] = {0xAC, 0x11, 0x09, 0x01, 0x00, 0x00}; // connie
-byte Init3[] = {0xAC, 0x11, 0x0A, 0x01, 0x00, 0x00};
-byte Init4[] = {0xAC, 0x11, 0x0C, 0x01, 0x00, 0x00};
-byte ClockAlignedDataInterval[] = {0xAA, 0x18, 0x3E, 0x04, 0x00, 10, 0, 0x00, 0x00}; // 10 + 0*256 sec
-byte Init6[] = {0xAC, 0x11, 0x0D, 0x04, 0x00, 0xB8, 0x0B, 0x00, 0x00};
-byte Init7[] = {0xAA, 0x18, 0x3F, 0x04, 0x00, 0x1E, 0x00, 0x00, 0x00};
-byte Init8[] = {0xAA, 0x18, 0x25, 0x0E, 0x00, 0x05, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x02};
-
-/* we had init9 and init10 in here, but connie found that it is not in the original FW and */ 
-/* now we think it was just a copy/paste mistake and a duplicate of init12 */
-/* byte Init9[] = {0xAA, 0x18, 0x12, 0x01, 0x00, 0x03, 0x7B, 0x89}; */
-/* byte Init10[] = {0xAA, 0x18, 0x12, 0x01, 0x00, 0x03, 0x3B, 0x9C}; // is Init10 the same as Init12? Probably 0x3B, 0x9C accidently copied from crc */
-
-// ctrl_cmd set ack done, type:0
-//[2019-01-01 03:36:46] cmd_AA [privCommCmdAACfgCtrl]!
-//[2019-01-01 03:36:46] cfg ctrl  addr:18 size:1 set:1 gun_id:0 len:1
-//[2019-01-01 03:36:46] cfg ctrl_ack start_addr:18 end_addr:19 now_addr:18 set:1 gun_id:0 len:1
-//[2019-01-01 03:36:46] ctrl_cmd:18 setType:1 [cmdAACtrlSetReset]!
-byte Init12[] = {0xAA, 0x18, 0x12, 0x01, 0x00, 0x03}; // this triggers 0x02 SN, Hardware, Version
-//W (1970-01-01 00:08:47) [PRIV_COMM, 1764]: Tx(cmd_AA len:15) :  FA 03 00 00 AA 03 05 00 18 12 01 00 03 FB F6
-//W (1970-01-01 00:08:48) [PRIV_COMM, 1919]: Rx(cmd_0A len:15) :  FA 03 00 00 0A 03 05 00 14 12 01 00 00 53 F1
-//I (1970-01-01 00:08:48) [PRIV_COMM, 51]: ctrl_cmd set ack done, type:0
-//W (1970-01-01 00:08:48) [PRIV_COMM, 1764]: Tx(cmd_AA len:15) :  FA 03 00 00 AA 04 05 00 18 12 01 00 03 BA 10
-//W (1970-01-01 00:08:48) [PRIV_COMM, 1919]: Rx(cmd_0A len:15) :  FA 03 00 00 0A 04 05 00 14 12 01 00 00 12 17
-//I (1970-01-01 00:08:48) [PRIV_COMM, 51]: ctrl_cmd set ack done, type:0
-//W (1970-01-01 00:08:48) [PRIV_COMM, 1764]: Tx(cmd_AA len:15) :  FA 03 00 00 AA 05 05 00 18 12 01 00 03 7B DC
-//W (1970-01-01 00:08:49) [PRIV_COMM, 1919]: Rx(cmd_0A len:15) :  FA 03 00 00 0A 05 05 00 14 12 01 00 00 D3 DB
-//I (1970-01-01 00:08:49) [PRIV_COMM, 51]: ctrl_cmd set ack done, type:0
+byte Init1[] = {0xAC, 0x11, 0x0B, 0x01, 0x00, 0x00}; // 10b cmdACCtrlSetRemoteStart, 0
+//byte Init2[] = {0xAC, 0x11, 0x09, 0x01, 0x00, 0x01}; // 109 cmdACCtrlSetS2OPENSTOP, 1 // bs & uwe
+byte Init2[] = {0xAC, 0x11, 0x09, 0x01, 0x00, 0x00}; // 109 cmdACCtrlSetS2OPENSTOP, 0 // connie
+byte Init3[] = {0xAC, 0x11, 0x0A, 0x01, 0x00, 0x00}; // 10a cmdACCtrlSetS2OPENLOCK, 0
+byte Init4[] = {0xAC, 0x11, 0x0C, 0x01, 0x00, 0x00}; // 10c cmdACCtrlSetOfflineStop, 0
+byte ClockAlignedDataInterval[] = {0xAA, 0x18, 0x3E, 0x04, 0x00, 10, 0, 0x00, 0x00}; // 10 + 0*256 sec // 13e cmdAACtrlSetRTCTime08, 0
+byte Init6[] = {0xAC, 0x11, 0x0D, 0x04, 0x00, 0xB8, 0x0B, 0x00, 0x00}; // 10d cmdACSetOfflineEnergy, 3000
+byte Init7[] = {0xAA, 0x18, 0x3F, 0x04, 0x00, 0x1E, 0x00, 0x00, 0x00}; // 13f cmdAACtrlSetGunTime, 30
+byte Init8[] = {0xAA, 0x18, 0x25, 0x0E, 0x00, 0x05, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x02}; // 125 cmdAACtrlSetSmartparam
+byte Init12[] = {0xAA, 0x18, 0x12, 0x01, 0x00, 0x03}; // 112 cmdAACtrlSetReset, 3 // this triggers 0x02 SN, Hardware, Version
 
 // cmdAACtrlcantestsetAck test cancom...111
-byte Init11[] = {0xAA, 0x18, 0x2A, 0x00, 0x00};
+byte Init11[] = {0xAA, 0x18, 0x2A, 0x00, 0x00}; // 
+
+byte GetRtc[] = {0xAA, 0x10, 0x02, 0x00, 0x00};
 
 byte TimeAck[] = {'c', 'a', 'y', 'm', 'd', 'h', 'm', 's', 0, 0, 0, 0};
 
@@ -303,15 +288,6 @@ void AC011K::Serial2write(byte *data, int size) {
     }
 }
 
-char timeString[25];  // global since local variable could not be used as return value
-const char* AC011K::timeStr(byte *data, uint8_t offset=0) {
-    sprintf(timeString, "%04d/%02d/%02d %02d:%02d:%02d",
-        (int)(data[offset])+2000, data[offset+1], data[offset+2],
-        data[offset+3], data[offset+4], data[offset+5]
-    );
-    return timeString;
-}
-
 void AC011K::sendCommand(byte *data, int datasize, byte sendSequenceNumber) {
     PrivCommTxBuffer[4] = data[0]; // command code
     PrivCommTxBuffer[5] = sendSequenceNumber;
@@ -341,7 +317,7 @@ void AC011K::sendCommand(byte *data, int datasize, byte sendSequenceNumber) {
         String cmdText = "";
         switch (PrivCommTxBuffer[4]) {
             case 0xA3: cmdText = "- Status data ack"; break;
-            case 0xA4: cmdText = "- Heartbeat ack " + String(timeStr(PrivCommTxBuffer+9)); break;
+            case 0xA4: cmdText = "- Heartbeat ack " + String(timeStr(&PrivCommTxBuffer[9])); break;
             case 0xA6: if (PrivCommTxBuffer[72] == 0x40) cmdText = "- Stop charging request"; else cmdText = "- Start charging request"; break;
             case 0xA7: if (PrivCommTxBuffer[40] == 0x10) cmdText = "- Stop charging command"; else cmdText = "- Start charging command"; break;
             case 0xA8: cmdText = "- Power data ack"; break;
@@ -395,40 +371,98 @@ void AC011K::PrivCommAck(byte cmd, byte *data) {
     Serial2write(data, 11);
 }
 
+char timeString[25];  // global since local variable could not be used as return value
+const char* AC011K::timeStr(byte *data) {
+    sprintf(timeString, "%04d/%02d/%02d %02d:%02d:%02d",
+        (int)(data[0])+2000, data[1], data[2],
+        data[3], data[4], data[5]
+    );
+    return timeString;
+}
+
 void AC011K::sendTime(byte cmd, byte action, byte len, byte sendSequenceNumber) {
     TimeAck[0] = cmd;
     TimeAck[1] = action;
-    filltime(&TimeAck[2], &TimeAck[3], &TimeAck[4], &TimeAck[5], &TimeAck[6], &TimeAck[7]);
+    fillTimeGdCommand(&TimeAck[2]);
     // TimeAck[8] to TimeAck[11] are always 0
     sendCommand(TimeAck, len, sendSequenceNumber);
 }
 
-void AC011K::sendTimeLong() {
+//void AC011K::filltime(byte *year, byte *month, byte *day, byte *hour, byte *minute, byte *second)
+void AC011K::fillTimeGdCommand(byte *datetime) {
+    struct timeval tv_now;
+    struct tm timeinfo;
+
+    if (clock_synced(&tv_now)) {
+        localtime_r(&tv_now.tv_sec, &timeinfo);
+
+        datetime[0] = (byte)(timeinfo.tm_year - 100);
+        datetime[1] = (byte)(timeinfo.tm_mon + 1);
+        datetime[2] = (byte)(timeinfo.tm_mday);
+        datetime[3] = (byte)(timeinfo.tm_hour);
+        datetime[4] = (byte)(timeinfo.tm_min);
+        datetime[5] = (byte)(timeinfo.tm_sec);
+
+        //logger.printfln("time fill success %s", timeStr(&datetime));
+    } else if((PrivCommRxBuffer[8] == 0x10) && (PrivCommRxBuffer[9] == 0x02)) {
+        datetime[0] = PrivCommRxBuffer[PayloadStart + 4]; // year  
+        datetime[1] = PrivCommRxBuffer[PayloadStart + 5]; // month 
+        datetime[2] = PrivCommRxBuffer[PayloadStart + 6]; // day   
+        datetime[3] = PrivCommRxBuffer[PayloadStart + 7]; // hour  
+        datetime[4] = PrivCommRxBuffer[PayloadStart + 8]; // minute
+        datetime[5] = PrivCommRxBuffer[PayloadStart + 9]; // second
+        //if(ac011k_hardware.config.get("verbose_communication")->asBool())
+            //logger.printfln("time from GD RTC %d/%d/%d %d:%d:%d", *year, *month, *day, *hour, *minute, *second);
+            logger.printfln("time from GD RTC %s", timeStr(&datetime));
+    } else {
+        datetime[0] = 22; // year  
+        datetime[1] = 1;  // month 
+        datetime[2] = 2;  // day   
+        datetime[3] = 3;  // hour  
+        datetime[4] = 4;  // minute
+        datetime[5] = 5;  // second
+        //logger.printfln("time fill went wrong, using FAKE %d/%d/%d %d:%d:%d", *year, *month, *day, *hour, *minute, *second);
+        logger.printfln("time fill went wrong, using FAKE %s", timeStr(&datetime));
+    }
+}
+
+void AC011K::GetRTC() {
+    sendCommand(GetRtc, sizeof(GetRtc), sendSequenceNumber++);
+}
+
+void AC011K::SetRTC() {
     PrivCommTxBuffer[5] = sendSequenceNumber++;
     PrivCommTxBuffer[PayloadStart + 0] = 0x18;
     PrivCommTxBuffer[PayloadStart + 1] = 0x02;
     PrivCommTxBuffer[PayloadStart + 2] = 0x06;
     PrivCommTxBuffer[PayloadStart + 3] = 0x00;
-    filltime(&PrivCommTxBuffer[PayloadStart + 4], &PrivCommTxBuffer[PayloadStart + 5], &PrivCommTxBuffer[PayloadStart + 6], &PrivCommTxBuffer[PayloadStart + 7], &PrivCommTxBuffer[PayloadStart + 8], &PrivCommTxBuffer[PayloadStart + 9]);
+    fillTimeGdCommand(&PrivCommTxBuffer[PayloadStart + 4]);
+    PrivCommSend(0xAA, 10, PrivCommTxBuffer);
+    logger.printfln("GD time set to: %s", timeStr(&PrivCommTxBuffer[PayloadStart + 4]));
+}
+
+void AC011K::SetRTC(timeval time) {
+    settimeofday(&time, nullptr);
+    fillTimeGdCommand(&PrivCommTxBuffer[PayloadStart + 4]);
     logger.printfln("set GD time to: %s", timeStr(&PrivCommTxBuffer[PayloadStart + 4]));
     PrivCommSend(0xAA, 10, PrivCommTxBuffer);
 }
 
 void AC011K::sendChargingLimit1(uint8_t currentLimit, byte sendSequenceNumber) {  // AF 00 date/time
-    filltime(&ChargingLimit1[2], &ChargingLimit1[3], &ChargingLimit1[4], &ChargingLimit1[5], &ChargingLimit1[6], &ChargingLimit1[7]);
+    fillTimeGdCommand(&ChargingLimit1[2]);
     ChargingLimit1[17] = currentLimit;
     sendCommand(ChargingLimit1, sizeof(ChargingLimit1), sendSequenceNumber);
 }
 
 void AC011K::sendChargingLimit2(uint8_t currentLimit, byte sendSequenceNumber) {  // AD 00
 //    ChargingLimit2[2] = 8;  // charging profile ID - 0x41 for 1.0.1435 ?
-    filltime(&ChargingLimit2[55], &ChargingLimit2[56], &ChargingLimit2[57], &ChargingLimit2[58], &ChargingLimit2[59], &ChargingLimit2[60]);
+    fillTimeGdCommand(&ChargingLimit2[55]);
     ChargingLimit2[65] = currentLimit;
     sendCommand(ChargingLimit2, sizeof(ChargingLimit2), sendSequenceNumber);
 }
 
 void AC011K::sendChargingLimit3(uint8_t currentLimit, byte sendSequenceNumber) {  //  AD 01 91
-    filltime(&ChargingLimit3[56], &ChargingLimit3[57], &ChargingLimit3[58], &ChargingLimit3[59], &ChargingLimit3[60], &ChargingLimit3[61]);
+    fillTimeGdCommand(&ChargingLimit3[56]);
     ChargingLimit3[56] = ChargingLimit3[56] +100;  // adds 100 to the year, because it starts at the year 1900
     ChargingLimit3[70] = currentLimit;
     sendCommand(ChargingLimit3, sizeof(ChargingLimit3), sendSequenceNumber);
@@ -727,39 +761,10 @@ bool AC011K::handle_update_chunk(int command, WebServerRequest request, size_t c
 #endif
 
 
-void AC011K::filltime(byte *year, byte *month, byte *day, byte *hour, byte *minute, byte *second)
-{
-    struct timeval tv_now;
-    struct tm timeinfo;
-
-    if (clock_synced(&tv_now)) {
-        localtime_r(&tv_now.tv_sec, &timeinfo);
-
-        *year   = (byte)(timeinfo.tm_year - 100);
-        *month  = (byte)(timeinfo.tm_mon + 1);
-        *day    = (byte)(timeinfo.tm_mday);
-        *hour   = (byte)(timeinfo.tm_hour);
-        *minute = (byte)(timeinfo.tm_min);
-        *second = (byte)(timeinfo.tm_sec);
-
-        //logger.printfln("time fill success %d/%d/%d %d:%d:%d", *year, *month, *day, *hour, *minute, *second);
-    } else {
-
-        *year   = 22;
-        *month  = 1;
-        *day    = 2;
-        *hour   = 3;
-        *minute = 4;
-        *second = 5;
-    /*     auto now = millis(); */
-    /*     auto secs = now / 1000; */
-        if(ac011k_hardware.config.get("verbose_communication")->asBool())
-            logger.printfln("time fill FAKE %d/%d/%d %d:%d:%d", *year, *month, *day, *hour, *minute, *second);
-    }
-}
-
 void AC011K::my_setup_evse()
 {
+    rtc.setup();
+    rtc.register_urls();
 #ifdef EXPERIMENTAL
     UdpListener.begin(commandPort); // experimental
 #endif
@@ -832,6 +837,7 @@ void AC011K::my_setup_evse()
     sendCommand(Init6,  sizeof(Init6), sendSequenceNumber++);
     sendCommand(Init7,  sizeof(Init7), sendSequenceNumber++);
     sendCommand(Init8,  sizeof(Init8), sendSequenceNumber++);
+    GetRTC();
     /* we had init9 and init10 in here, but connie found that it is not in the original FW and */ 
     /* now we think it was just a copy/paste mistake and a duplicate of init12 */
     /* sendCommand(Init9,  sizeof(Init9), sendSequenceNumber++); */
@@ -858,12 +864,7 @@ void AC011K::my_setup_evse()
     PrivCommTxBuffer[PayloadStart + 5] = 0x00;  /* heartbeat timeout 16bit   */
     PrivCommSend(0xAA, 6, PrivCommTxBuffer);
 
-
-//W (2021-04-11 18:36:27) [PRIV_COMM, 1764]: Tx(cmd_AA len:20) :  FA 03 00 00 AA 09 0A 00 18 02 06 00 15 04 0B 12 24 1B 5C 78
-//W (2021-04-11 18:36:27) [PRIV_COMM, 1919]: Rx(cmd_0A len:20) :  FA 03 00 00 0A 09 0A 00 14 02 06 00 15 04 0B 12 24 1B 3C E7
-//I (2021-04-11 18:36:27) [PRIV_COMM, 94]: ctrl_cmd set time done -> time: 2021-04-11 18:36:27
-
-    sendTimeLong();
+    // SetRTC();
 
 
 //W (2021-04-11 18:36:27) [PRIV_COMM, 1764]: Tx(cmd_AA len:15) :  FA 03 00 00 AA 40 05 00 18 09 01 00 00 F9 36
@@ -933,9 +934,12 @@ void AC011K::myloop()
     static byte PrivCommRxState = PRIVCOMM_MAGIC;
     static int PrivCommRxBufferPointer = 0;
     byte rxByte;
-
+    if (rtc.rtc_updated)
+    {
+        SetRTC(rtc.get_time(true));
+    }
     if (!ntp_clock_synced && clock_synced(&tv_now)) {
-        sendTimeLong();
+        //SetRTC(); // TODO: move this to ntp sync
         ntp_clock_synced = true;
     }
 
@@ -1315,8 +1319,8 @@ void AC011K::myloop()
                     PrivCommRxBuffer[77], PrivCommRxBuffer[77]<=3 ? stop_reason_text[PrivCommRxBuffer[77]] : stop_reason_text[0]);  // "stopreson": 1 = Remote, 3 = EVDisconnected
                 /* warum sind start zeit und stop zeit gleich? */
                 logger.printfln("start:%s stop:%s meter:%dWh value1:%d value2:%d value3:%d",
-                    timeStr(PrivCommRxBuffer+80),
-                    timeStr(PrivCommRxBuffer+86),
+                    timeStr(&PrivCommRxBuffer[80]),
+                    timeStr(&PrivCommRxBuffer[86]),
                     PrivCommRxBuffer[96]+256*PrivCommRxBuffer[97],
                     PrivCommRxBuffer[78]+256*PrivCommRxBuffer[79],
                     PrivCommRxBuffer[92]+256*PrivCommRxBuffer[93],
@@ -1335,23 +1339,42 @@ void AC011K::myloop()
                 break;
 
             case 0x0A:
-                switch( PrivCommRxBuffer[9] ) { // 8: always 14, 9: answertype?
-                    case 0x02: // answer to set time
-//W (2021-04-11 18:36:27) [PRIV_COMM, 1764]: Tx(cmd_AA len:20) :  FA 03 00 00 AA 09 0A 00 18 02 06 00 15 04 0B 12 24 1B 5C 78
-//W (2021-04-11 18:36:27) [PRIV_COMM, 1919]: Rx(cmd_0A len:20) :  FA 03 00 00 0A 09 0A 00 14 02 06 00 15 04 0B 12 24 1B 3C E7
-//I (2021-04-11 18:36:27) [PRIV_COMM, 94]: ctrl_cmd set time done -> time: 2021-04-11 18:36:27
-    // ctrl_cmd set start power mode done
-                        logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Set Time done", cmd, seq, len, crc);
+                switch( PrivCommRxBuffer[9] ) { // 9: answertype
+                    case 0x02: // time answer
+                        switch( PrivCommRxBuffer[8] ) {
+                            case 0x10: // get RTC answer
+                                // set ESP32 time ???
+                                if (!clock_synced(&tv_now)) {
+                                    struct tm timeinfo;
+                                    timeinfo.tm_year  = PrivCommRxBuffer[PayloadStart + 4] + 100;
+                                    timeinfo.tm_mon   = PrivCommRxBuffer[PayloadStart + 5] - 1;
+                                    timeinfo.tm_mday  = PrivCommRxBuffer[PayloadStart + 6];
+                                    timeinfo.tm_hour  = PrivCommRxBuffer[PayloadStart + 7];
+                                    timeinfo.tm_min   = PrivCommRxBuffer[PayloadStart + 8];
+                                    timeinfo.tm_sec   = PrivCommRxBuffer[PayloadStart + 9];
+                                    //timeinfo.tm_isdst = -1;
+                                    tv_now.tv_sec = mktime(&timeinfo);
+                                    tv_now.tv_usec = 0;
+
+                                    if (tv_now.tv_sec > build_timestamp()) {
+                                        settimeofday(&tv_now, nullptr);
+                                        logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Got RTC, set time to %s", cmd, seq, len, crc, timeStr(&PrivCommRxBuffer[PayloadStart + 4]));
+                                    } else {
+                                        logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Got RTC, but time is before build time. %s", cmd, seq, len, crc, timeStr(&PrivCommRxBuffer[PayloadStart + 4]));
+                                    }
+                                } else {
+                                    logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Got RTC, but time is already in sync %s", cmd, seq, len, crc, timeStr(&PrivCommRxBuffer[PayloadStart + 4]));
+                                }
+                                break;
+                            case 0x14: // set time answer
+                                logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Set Time done", cmd, seq, len, crc);
+                                break;
+                            default:
+                                logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X -  Time answer, but I don't know what %.2X means.", cmd, seq, len, crc, PrivCommRxBuffer[8]);
+                                break;
+                        }
                         break;
                     case 0x08: // answer to set hb timeout
-//W (1970-01-01 00:08:53) [PRIV_COMM, 1764]: Tx(cmd_AA len:16) :  FA 03 00 00 AA 07 06 00 18 08 02 00 1E 00 95 80
-//W (2021-04-11 18:36:27) [PRIV_COMM, 1919]: Rx(cmd_0A len:16) :  FA 03 00 00 0A 07 06 00 14 08 02 00 1E 00 93 CE
-//I (2021-04-11 18:36:27) [PRIV_COMM, 249]: ctrl_cmd set heart beat time out done -> 30      (=1E)
-//
-// [2021-08-07 07:55:18] Rx(cmd_A8 len:21) : FA 03 00 00 A8 25 0B 00 40 15 08 07 07 37 13 00 00 00 00 1B BE
-// [2021-08-07 07:55:18] cmd_A8 [privCommCmdA8RTDataAck]!
-// [2021-08-07 07:55:18] charger A8 settime:21-8-7 7:55:19
-//
                         logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Heartbeat Timeout: %ds", cmd, seq, len, crc, PrivCommRxBuffer[12]+256*PrivCommRxBuffer[13]);
                         break;
                     case 0x09: // answer to ctrl_cmd set start power mode
