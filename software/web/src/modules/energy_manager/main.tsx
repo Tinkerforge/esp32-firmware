@@ -176,6 +176,7 @@ function allow_debug(b: boolean) {
     }
 }
 
+// TODO: replace with evse version of this function when porting to preact
 async function get_debug_report_and_event_log(status: HTMLInputElement) {
     status.value = __("energy_manager.script.loading_debug_report");
 
@@ -202,6 +203,7 @@ async function get_debug_report_and_event_log(status: HTMLInputElement) {
     return true;
 }
 
+// TODO: replace with evse version of this function when porting to preact
 async function debug_start() {
     debug_log = "";
     let status = $('#debug_label')[0] as HTMLInputElement;
@@ -223,6 +225,7 @@ async function debug_start() {
     status.value = __("energy_manager.script.debug_running");
 }
 
+// TODO: replace with evse version of this function when porting to preact
 async function debug_stop() {
     let status = $('#debug_label')[0] as HTMLInputElement;
 

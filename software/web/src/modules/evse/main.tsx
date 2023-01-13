@@ -91,39 +91,39 @@ export class EVSE extends Component<{}, EVSEState> {
     }
 
     async get_debug_report_and_event_log() {
-        this.setState({debug_status: __("evse.script.loading_debug_report")});
-
         try {
+            this.setState({debug_status: __("evse.script.loading_debug_report")});
             this.debug_log += await util.download("/debug_report").then(blob => blob.text());
             this.debug_log += "\n\n";
-        } catch {
+        } catch (error) {
             this.setState({debug_running: false, debug_status: __("evse.script.loading_debug_report_failed")});
-            return false;
+            throw __("evse.script.loading_debug_report_failed") + ": " + error;
         }
-
-        this.setState({debug_status: __("evse.script.loading_event_log")});
 
         try {
+            this.setState({debug_status: __("evse.script.loading_event_log")});
             this.debug_log += await util.download("/event_log").then(blob => blob.text());
             this.debug_log += "\n";
-        } catch {
+        } catch (error) {
             this.setState({debug_running: false, debug_status: __("evse.script.loading_event_log_failed")});
-            return false;
+            throw __("evse.script.loading_event_log_failed") + ": " + error;
         }
-
-        return true;
     }
 
     async debug_start() {
         this.debug_log = "";
         this.setState({debug_running: true});
 
-        if (!await this.get_debug_report_and_event_log())
-            return;
-
-        this.setState({debug_status: __("evse.script.starting_debug")});
-
         try {
+            await this.get_debug_report_and_event_log();
+
+            this.setState({debug_status: __("evse.script.starting_debug")});
+        } catch(error) {
+            this.setState({debug_running: false, debug_status: error});
+            return;
+        }
+
+        try{
             await util.download("/evse/start_debug");
         } catch {
             this.setState({debug_running: false, debug_status: __("evse.script.starting_debug_failed")});
@@ -139,19 +139,23 @@ export class EVSE extends Component<{}, EVSEState> {
         try {
             await util.download("/evse/stop_debug");
         } catch {
-            this.setState({debug_status: __("evse.script.debug_stop_failed")});
-            return;
+            this.setState({debug_running: true, debug_status: __("evse.script.debug_stop_failed")});
         }
 
-        this.debug_log += "\n\n";
+        try {
+            this.debug_log += "\n\n";
+            this.setState({debug_status: __("evse.script.debug_stopped")});
 
-        this.setState({debug_status: __("evse.script.debug_stopped")});
+            await this.get_debug_report_and_event_log();
+            this.setState({debug_status: __("evse.script.debug_done")});
+        } catch (error) {
+            this.debug_log += "\n\nError while stopping charge protocol: ";
+            this.debug_log += error;
 
-        if (!await this.get_debug_report_and_event_log())
-            return;
+            this.setState({debug_status: error});
+        }
 
-        this.setState({debug_status: __("evse.script.debug_done")});
-
+        //Download log in any case: Even an incomplete log can be useful for debugging.
         util.downloadToFile(this.debug_log, "evse-debug-log", "txt", "text/plain");
     }
 
