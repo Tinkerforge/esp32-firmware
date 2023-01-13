@@ -17,7 +17,7 @@ export interface config {
     excess_charging_enable: boolean,
     contactor_installed: boolean,
     phase_switching_mode: number,
-    maximum_power_from_grid: number,
+    target_power_from_grid: number,
     maximum_available_current: number,
     minimum_current: number,
     guaranteed_power: number,
