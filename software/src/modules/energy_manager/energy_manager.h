@@ -75,10 +75,8 @@ typedef struct {
     uint8_t rgb_value_b;
 
     float power;
-    float energy_relative;
-    float energy_absolute;
-    bool phases_active[3];
-    bool phases_connected[3];
+    float energy_import;
+    float energy_export;
 
     uint8_t energy_meter_type;
     uint32_t error_count[6];
@@ -126,7 +124,6 @@ public:
     void apply_defaults();
 
     uint16_t get_energy_meter_detailed_values(float *ret_values);
-    void reset_energy_meter_relative_energy();
     void set_output(bool output);
 
 

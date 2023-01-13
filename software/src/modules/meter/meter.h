@@ -34,8 +34,11 @@
 #define METER_TYPE_SDM630 2
 #define METER_TYPE_SDM72DMV2 3
 
+// Supported by energy_manager module
+#define METER_TYPE_SDM72CTM 4
+
 // Supported by mqtt_meter module
-#define METER_TYPE_MQTT 4
+#define METER_TYPE_MQTT 200
 
 // Supported by modbus_meter module
 #define METER_TYPE_AUTO_DETECT 255

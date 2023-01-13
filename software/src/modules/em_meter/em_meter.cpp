@@ -43,10 +43,8 @@ void EMMeter::pre_setup()
 void EMMeter::updateMeterValues()
 {
     meter.updateMeterValues(energy_manager.all_data.power,
-                            energy_manager.all_data.energy_relative,
-                            energy_manager.all_data.energy_absolute);
-
-    meter.updateMeterPhases(energy_manager.all_data.phases_connected, energy_manager.all_data.phases_active);
+                            0,
+                            0);
 
     errors.get("local_timeout")->updateUint(energy_manager.all_data.error_count[0]);
     errors.get("global_timeout")->updateUint(energy_manager.all_data.error_count[1]);
@@ -110,14 +108,6 @@ void EMMeter::setup()
 void EMMeter::register_urls()
 {
     api.addState("meter/error_counters", &errors, {}, 1000);
-
-    meter.registerResetCallback([this]() {
-        if (!initialized) {
-            return;
-        }
-
-        energy_manager.reset_energy_meter_relative_energy();
-    });
 }
 
 void EMMeter::loop()

@@ -259,14 +259,8 @@ void EnergyManager::update_all_data()
     if (all_data.energy_meter_type != METER_TYPE_NONE) {
         energy_manager_state.get("energy_meter_type")->updateUint(all_data.energy_meter_type);
         energy_manager_state.get("energy_meter_power")->updateFloat(all_data.power);
-        energy_manager_state.get("energy_meter_energy_rel")->updateFloat(all_data.energy_relative);
-        energy_manager_state.get("energy_meter_energy_abs")->updateFloat(all_data.energy_absolute);
-        for (int i = 0; i < 3; i++) {
-            energy_manager_state.get("energy_meter_phases_active")->get(i)->updateBool(all_data.phases_active[i]);
-        }
-        for (int i = 0; i < 3; i++) {
-            energy_manager_state.get("energy_meter_phases_connected")->get(i)->updateBool(all_data.phases_connected[i]);
-        }
+        energy_manager_state.get("energy_meter_energy_export")->updateFloat(all_data.energy_import);
+        energy_manager_state.get("energy_meter_energy_import")->updateFloat(all_data.energy_export);
     }
 
     // Update states derived from all_data
@@ -303,10 +297,8 @@ void EnergyManager::update_all_data_struct()
         &all_data.rgb_value_g,
         &all_data.rgb_value_b,
         &all_data.power,
-        &all_data.energy_relative,
-        &all_data.energy_absolute,
-        all_data.phases_active,
-        all_data.phases_connected,
+        &all_data.energy_import,
+        &all_data.energy_export,
         &all_data.energy_meter_type,
         all_data.error_count,
         all_data.input,
@@ -585,11 +577,6 @@ uint16_t EnergyManager::get_energy_meter_detailed_values(float *ret_values)
     return len;
 }
 
-void EnergyManager::reset_energy_meter_relative_energy()
-{
-    tf_warp_energy_manager_reset_energy_meter_relative_energy(&device);
-}
-
 void EnergyManager::set_output(bool output)
 {
     int result = tf_warp_energy_manager_set_output(&device, output);
@@ -599,25 +586,25 @@ void EnergyManager::set_output(bool output)
 
 String EnergyManager::get_energy_manager_debug_header()
 {
-    return "\"millis,"
-           "contactor_value,"
+    return "\"millis,,"
+           "contactor_value,,"
            "rgb_value_r,"
            "rgb_value_g,"
-           "rgb_value_b,"
+           "rgb_value_b,,"
            "power,"
-           "energy_relative,"
-           "energy_absolute,"
-           "phase_0_active,"
-           "phase_1_active,"
-           "phase_2_active,"
-           "phase_0_connected,"
-           "phase_1_connected,"
-           "phase_2_connected,"
-           "available"
-           "ENERGY METER ERRORS,"
-           "input,"
-           "output,"
-           "input_voltage,"
+           "energy_import,"
+           "energy_export,,"
+           "energy_meter_type,"
+           "error_count[0],"
+           "error_count[1],"
+           "error_count[2],"
+           "error_count[3],"
+           "error_count[4],"
+           "error_count[5],,"
+           "input3,"
+           "input4,,"
+           "output,,"
+           "input_voltage,,"
            "contactor_check_state,"
            "\"";
 }
@@ -632,7 +619,7 @@ String EnergyManager::get_energy_manager_debug_line()
              "\"%lu,,"
              "%u,,"
              "%u,%u,%u,,"
-             "%.3f,%.3f,%.3f,%c,%c,%c,%c,%c,%c,,"
+             "%.3f,%.3f,%.3f,,"
              "%u,%u,%u,%u,%u,%u,%u,,"
              "%c,%c,,"
              "%u,,"
@@ -646,14 +633,8 @@ String EnergyManager::get_energy_manager_debug_line()
              all_data.rgb_value_b,
 
              all_data.power,
-             all_data.energy_relative,
-             all_data.energy_absolute,
-             all_data.phases_active[0] ? '1' : '0',
-             all_data.phases_active[1] ? '1' : '0',
-             all_data.phases_active[2] ? '1' : '0',
-             all_data.phases_connected[0] ? '1' : '0',
-             all_data.phases_connected[1] ? '1' : '0',
-             all_data.phases_connected[2] ? '1' : '0',
+             all_data.energy_import,
+             all_data.energy_export,
 
              all_data.energy_meter_type,
              all_data.error_count[0],
