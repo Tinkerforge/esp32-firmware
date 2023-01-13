@@ -116,6 +116,7 @@ public:
 
     void limit_max_current(uint32_t limit_ma);
     void override_grid_draw(int32_t limit_w);
+    void override_guaranteed_power(uint32_t power_w);
 
     void setup_energy_manager();
     String get_energy_manager_debug_header();
@@ -168,11 +169,13 @@ private:
     uint32_t phase_state_change_blocked_until;
     uint32_t on_state_change_blocked_until;
     uint32_t charge_manager_allocated_current_ma;
+    uint32_t guaranteed_power_w;
     uint32_t max_current_limited_ma;
     int32_t  max_power_from_grid_w;
 
     // Config cache
     int32_t  max_power_from_grid_conf_w;
+    uint32_t guaranteed_power_conf_w;
     uint32_t max_current_unlimited_ma;
     uint32_t min_current_ma;
     bool     contactor_installed;

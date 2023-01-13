@@ -44,6 +44,8 @@
             "input4_config": "Eingang 4",
             "maximum_power_from_grid": "Maximaler Netzbezug",
             "maximum_power_from_grid_muted": "zusätzlich zum gemessenen Überschuss",
+            "guaranteed_power": "Garantierte Ladeleistung",
+            "guaranteed_power_muted": "Minimal garantierte Ladeleistung, auch wenn nicht genügend Überschuss zur Verfügung steht. Dafür kann der maximale Netzbezug überschritten werden.",
             "maximum_available_current": "Maximalstrom der Zuleitung",
             "maximum_available_current_muted": "Beschränkung der Zuleitung zum Schütz der Phasenumschaltung",
             "minimum_current": "Minimaler Ladestrom",

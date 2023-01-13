@@ -46,6 +46,7 @@ function update_energy_manager_config() {
     let config = API.default_updater('energy_manager/config', ['maximum_power_from_grid', 'maximum_available_current', 'minimum_current', 'input3_config_limit', 'input4_config_limit']);
 
     util.setNumericInput("energy_manager_config_maximum_power_from_grid", config.maximum_power_from_grid / 1000, 3);
+    util.setNumericInput("energy_manager_config_guaranteed_power", config.guaranteed_power / 1000, 3);
     util.setNumericInput("energy_manager_config_maximum_available_current", config.maximum_available_current / 1000, 3);
     util.setNumericInput("energy_manager_config_minimum_current", config.minimum_current / 1000, 3);
     util.setNumericInput("energy_manager_config_input3_config_limit", config.input3_config_limit / 1000, 3);
@@ -257,6 +258,7 @@ export function init() {
     API.register_config_form('energy_manager/config', {
             overrides: () => ({
                 maximum_power_from_grid: Math.round(($('#energy_manager_config_maximum_power_from_grid').val() as number) * 1000),
+                guaranteed_power: Math.round(($('#energy_manager_config_guaranteed_power').val() as number) * 1000),
                 maximum_available_current: Math.round(($('#energy_manager_config_maximum_available_current').val() as number) * 1000),
                 minimum_current: Math.round(($('#energy_manager_config_minimum_current').val() as number) * 1000),
                 input3_config_limit: Math.round(($('#energy_manager_config_input3_config_limit').val() as number) * 1000),

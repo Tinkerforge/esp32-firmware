@@ -62,7 +62,8 @@ void EnergyManager::pre_setup()
         {"excess_charging_enable", Config::Bool(false)},
         {"contactor_installed", Config::Bool(false)},
         {"phase_switching_mode", Config::Uint8(PHASE_SWITCHING_AUTOMATIC)},
-        {"maximum_power_from_grid", Config::Int32(0)},
+        {"maximum_power_from_grid", Config::Int32(0)}, // in watt
+        {"guaranteed_power", Config::Uint(0, 0, 22000)}, // in watt
         {"maximum_available_current", Config::Uint32(0)}, // Keep in sync with charge_manager.cpp
         {"minimum_current", Config::Uint(6000, 6000, 32000)}, // Keep in sync with charge_manager.cpp
         {"hysteresis_time", Config::Uint(HYSTERESIS_MIN_TIME_MINUTES, 0, 60)}, // in minutes
@@ -145,6 +146,7 @@ void EnergyManager::setup()
     // Cache config for energy update
     excess_charging_enable      = energy_manager_config_in_use.get("excess_charging_enable")->asBool();
     max_power_from_grid_conf_w  = energy_manager_config_in_use.get("maximum_power_from_grid")->asInt();         // watt
+    guaranteed_power_conf_w     = energy_manager_config_in_use.get("guaranteed_power")->asUint();               // watt
     max_current_unlimited_ma    = energy_manager_config_in_use.get("maximum_available_current")->asUint();      // milliampere
     min_current_ma              = energy_manager_config_in_use.get("minimum_current")->asUint();                // milliampere
     contactor_installed         = energy_manager_config_in_use.get("contactor_installed")->asBool();
@@ -332,8 +334,9 @@ void EnergyManager::update_io()
     //}
 
     // Restore values that can be changed by input pins.
-    max_current_limited_ma = max_current_unlimited_ma;
-    max_power_from_grid_w = max_power_from_grid_conf_w;
+    max_current_limited_ma  = max_current_unlimited_ma;
+    max_power_from_grid_w   = max_power_from_grid_conf_w;
+    guaranteed_power_w      = guaranteed_power_conf_w;
 
     input3->update(all_data.input[0]);
     input4->update(all_data.input[1]);
@@ -348,13 +351,18 @@ void EnergyManager::update_io()
 
 void EnergyManager::limit_max_current(uint32_t limit_ma)
 {
-    if (limit_ma < max_current_limited_ma)
+    if (max_current_limited_ma > limit_ma)
         max_current_limited_ma = limit_ma;
 }
 
 void EnergyManager::override_grid_draw(int32_t limit_w)
 {
     max_power_from_grid_w = limit_w;
+}
+
+void EnergyManager::override_guaranteed_power(uint32_t power_w)
+{
+    guaranteed_power_w = power_w;
 }
 
 void EnergyManager::set_available_current(uint32_t current)
@@ -379,9 +387,17 @@ void EnergyManager::update_energy()
     }
 
     if (switching_state == SwitchingState_Monitoring) {
-        const bool     is_on            = is_on_last;
-
+        const bool     is_on = is_on_last;
         const uint32_t charge_manager_allocated_power_w = 230 * have_phases * charge_manager_allocated_current_ma / 1000; // watt
+
+        if (charging_blocked.combined) {
+            if (is_on) {
+                phase_state_change_blocked_until = on_state_change_blocked_until = millis() + switching_hysteresis_ms;
+            }
+            set_available_current(0);
+            just_switched_phases = false;
+            return;
+        }
 
         // Evil: Allow runtime changes, overrides input pins!
         excess_charging_enable  = energy_manager_config.get("excess_charging_enable")->asBool();
@@ -412,14 +428,8 @@ void EnergyManager::update_energy()
             power_available_w  = static_cast<int32_t>(charge_manager_allocated_power_w) + p_adjust_w;
         }
 
-        if (charging_blocked.combined) {
-            if (is_on) {
-                phase_state_change_blocked_until = on_state_change_blocked_until = millis() + switching_hysteresis_ms;
-            }
-            set_available_current(0);
-            just_switched_phases = false;
-            return;
-        }
+        if (power_available_w < static_cast<int32_t>(guaranteed_power_w))
+            power_available_w = static_cast<int32_t>(guaranteed_power_w);
 
         // CP disconnect support unknown if some chargers haven't replied yet.
         if (!charge_manager.seen_all_chargers()) {
