@@ -43,9 +43,9 @@ void EnergyManager::pre_setup()
         {"input_voltage", Config::Uint16(0)},
         {"contactor_check_state", Config::Uint8(0)},
         {"energy_meter_type", Config::Uint8(0)},
-        {"energy_meter_power", Config::Float(0)},
-        {"energy_meter_energy_rel", Config::Float(0)},
-        {"energy_meter_energy_abs", Config::Float(0)},
+        {"energy_meter_power", Config::Float(0)}, // watt
+        {"energy_meter_energy_import", Config::Float(0)}, // kw/h
+        {"energy_meter_energy_export", Config::Float(0)}, // kw/h
         {"energy_meter_phases_active", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false)},
             new Config{Config::Bool(false)}, 3, 3, Config::type_id<Config::ConfBool>())
         },
@@ -190,6 +190,11 @@ void EnergyManager::setup()
         this->update_io();
     }, 250, 250);
 
+    if (max_current_unlimited_ma == 0) {
+        logger.printfln("energy_manager: No maximum current configured. Disabling energy distribution.");
+        return;
+    }
+
     task_scheduler.scheduleWithFixedDelay([this](){
         this->update_energy();
     }, 250, 250);
@@ -259,8 +264,8 @@ void EnergyManager::update_all_data()
     if (all_data.energy_meter_type != METER_TYPE_NONE) {
         energy_manager_state.get("energy_meter_type")->updateUint(all_data.energy_meter_type);
         energy_manager_state.get("energy_meter_power")->updateFloat(all_data.power);
-        energy_manager_state.get("energy_meter_energy_export")->updateFloat(all_data.energy_import);
-        energy_manager_state.get("energy_meter_energy_import")->updateFloat(all_data.energy_export);
+        energy_manager_state.get("energy_meter_energy_import")->updateFloat(all_data.energy_import);
+        energy_manager_state.get("energy_meter_energy_export")->updateFloat(all_data.energy_export);
     }
 
     // Update states derived from all_data
@@ -268,7 +273,7 @@ void EnergyManager::update_all_data()
     have_phases = 1 + is_3phase * 2;
     energy_manager_state.get("phases_switched")->updateUint(have_phases);
 
-    power_at_meter_w = all_data.energy_meter_type ? all_data.power * 1000 : meter.values.get("power")->asFloat(); // watt
+    power_at_meter_w = all_data.energy_meter_type ? all_data.power : meter.values.get("power")->asFloat(); // watt
 
     if (contactor_installed) {
         if ((all_data.contactor_check_state & 1) == 0) {
