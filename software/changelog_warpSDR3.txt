@@ -1,0 +1,45 @@
+<unknown>: 1.0.0 (<unknown>)
+- Initial release
+
+<unknown>: 1.2.90 (<unknown>)
+- Try to catch up to official WARP Charger release
+  with the same version number
+
+2022-11-12: 2.0.0 (<unknown>)
+- Transition to v2 firmware
+
+2022-11-12: 2.0.1 (<unknown>)
+- Step up
+
+2022-11-12: 2.0.2 (<unknown>)
+- Step up
+
+2022-11-12: 2.0.3 (<unknown>)
+- Step up
+
+2022-11-12: 2.0.4 (<unknown>)
+- Step up
+
+2022-11-12: 2.0.5 (<unknown>)
+- Step up
+
+2022-11-12: 2.0.6 (<unknown>)
+- Step up
+
+2022-11-12: 2.0.7 (<unknown>)
+- Step up
+
+2022-12-16: 2.0.8 (<unknown>)
+- 2.0.8 Alpha Version based on Warp2 2022-09-14: 2.0.8 (3eb8c6ac)
+  alpha version, not ready for production
+- Sonoff Dual R3 specific feature list
+  support for the two relays
+  support for the two switches
+- Warp feature list (features that work on the AC011K hardware as well)
+  access point (station and client)
+  web UI
+  OTA updates
+  load management (share the available power between multiple chargers)
+  MQTT support
+  HTTP-API
+  log and debug download

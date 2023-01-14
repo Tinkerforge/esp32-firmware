@@ -20,7 +20,6 @@
 #include "api.h"
 
 #include "LittleFS.h"
-#include "bindings/hal_common.h"
 #include "bindings/errors.h"
 
 #include "build.h"
@@ -28,7 +27,6 @@
 #include "event_log.h"
 #include "task_scheduler.h"
 
-extern TF_HAL hal;
 extern TaskScheduler task_scheduler;
 extern EventLog logger;
 
@@ -283,39 +281,6 @@ void API::registerDebugUrl(WebServer *server)
         result += heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
         result += ",\n \"largest_free_heap_block\":";
         result += heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-        result += ",\n \"devices\": [";
-
-        uint16_t i = 0;
-        char uid_str[7] = {0};
-        char port_name;
-        uint16_t device_id;
-
-        while (tf_hal_get_device_info(&hal, i, uid_str, &port_name, &device_id) == TF_E_OK) {
-            char buf[100] = {0};
-
-            snprintf(buf, sizeof(buf), "%c{\"UID\":\"%s\", \"DID\":%u, \"port\":\"%c\"}", i == 0 ? ' ' : ',', uid_str, device_id, port_name);
-            result += buf;
-            ++i;
-        }
-
-        result += "]";
-        result += ",\n \"error_counters\": [";
-
-        for (char c = 'A'; c <= 'F'; ++c) {
-            uint32_t spitfp_checksum, spitfp_frame, tfp_frame, tfp_unexpected;
-            char buf[100] = {0};
-
-            tf_hal_get_error_counters(&hal, c, &spitfp_checksum, &spitfp_frame, &tfp_frame, &tfp_unexpected);
-            snprintf(buf, sizeof(buf), "%c{\"port\": \"%c\", \"SpiTfpChecksum\": %u, \"SpiTfpFrame\": %u, \"TfpFrame\": %u, \"TfpUnexpected\": %u}", c == 'A' ? ' ': ',', c,
-                     spitfp_checksum,
-                     spitfp_frame,
-                     tfp_frame,
-                     tfp_unexpected);
-
-            result += buf;
-        }
-
-        result += "]";
 
         for (auto &reg : states) {
             result += ",\n \"";

@@ -1,0 +1,65 @@
+<unknown>: 1.0.0 (<unknown>)
+- Initial release
+
+<unknown>: 1.2.90 (<unknown>)
+- Try to catch up to official WARP Charger release
+  with the same version number
+
+2022-02-27: 1.2.91 (c4accc11)
+- Lots of ENplus fixes
+  first beta release
+
+2022-11-12: 2.0.0 (<unknown>)
+- Transition to v2 firmware
+
+2022-11-12: 2.0.1 (<unknown>)
+- Step up
+
+2022-11-12: 2.0.2 (<unknown>)
+- Step up
+
+2022-11-12: 2.0.3 (<unknown>)
+- Step up
+
+2022-11-12: 2.0.4 (<unknown>)
+- Step up
+
+2022-11-12: 2.0.5 (<unknown>)
+- Step up
+
+2022-11-12: 2.0.6 (<unknown>)
+- Step up
+
+2022-11-12: 2.0.7 (<unknown>)
+- Step up
+  alpha version, not ready for production
+
+2022-12-16: 2.0.8 (<unknown>)
+- 2.0.8 Beta Version based on Warp2 2022-09-14: 2.0.8 (3eb8c6ac)
+- AC011K specific feature list
+  publish meter values (used phases, amperes, volts, power and energy)
+  GD Firmware Version display (EVSE hardware version)
+  CP-PWM (Duty data duty)
+  cpVolt
+- Warp feature list (features that work on the AC011K hardware as well)
+  access point (station and client)
+  web UI
+  OTA updates
+  autostart
+  change of charging power during charging
+  charge tracker
+  load management (share the available power between multiple chargers)
+  MQTT support
+  HTTP-API
+  log and debug download
+  user management (untested)
+
+2022-12-17: 2.0.9 (<unknown>)
+- Step up
+
+2022-12-17: 2.0.10 (<unknown>)
+- Step up
+
+2022-12-17: 2.0.11 (<unknown>)
+- Step up
+

@@ -255,7 +255,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                                     <User/>
                                     <Button variant="outline-dark" size="sm"
                                             onClick={() => {
-                                                this.setState({users: state.users.filter(v => v.id != user.id)});
+                                                this.setState({users: state.users.filter((v, user_i) => user_i != (i + 1))});
                                                 this.hackToAllowSave();} }>
                                         <UserX/><span class="ml-2" style="font-size: 1rem; vertical-align: middle;">{__("users.script.delete")}</span>
                                     </Button>

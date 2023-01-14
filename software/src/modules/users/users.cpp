@@ -43,6 +43,7 @@
 #endif
 
 extern TaskScheduler task_scheduler;
+uint8_t DATA_STORE_PAGE_CHARGE_TRACKER_buf[63] = {0};
 
 // We have to do access the evse/evse_v2 configs manually
 // because a lot of the code runs in setup(), i.e. before APIs
@@ -53,6 +54,8 @@ void set_data_storage(uint8_t *buf)
     tf_evse_set_data_storage(&evse.device, DATA_STORE_PAGE_CHARGE_TRACKER, buf);
 #elif MODULE_EVSE_V2_AVAILABLE()
     tf_evse_v2_set_data_storage(&evse_v2.device, DATA_STORE_PAGE_CHARGE_TRACKER, buf);
+#elif MODULE_AC011K_AVAILABLE()
+    memcpy(&DATA_STORE_PAGE_CHARGE_TRACKER_buf, buf, sizeof(DATA_STORE_PAGE_CHARGE_TRACKER_buf));
 #endif
 }
 
@@ -62,6 +65,8 @@ void get_data_storage(uint8_t *buf)
     tf_evse_get_data_storage(&evse.device, DATA_STORE_PAGE_CHARGE_TRACKER, buf);
 #elif MODULE_EVSE_V2_AVAILABLE()
     tf_evse_v2_get_data_storage(&evse_v2.device, DATA_STORE_PAGE_CHARGE_TRACKER, buf);
+#elif MODULE_AC011K_AVAILABLE()
+    memcpy(buf, &DATA_STORE_PAGE_CHARGE_TRACKER_buf, sizeof(DATA_STORE_PAGE_CHARGE_TRACKER_buf));
 #endif
 }
 
@@ -77,6 +82,8 @@ uint8_t get_iec_state()
     return evse.evse_state.get("iec61851_state")->asUint();
 #elif MODULE_EVSE_V2_AVAILABLE()
     return evse_v2.evse_state.get("iec61851_state")->asUint();
+#elif MODULE_AC011K_AVAILABLE()
+    return ac011k.evse_state->get("iec61851_state")->asUint();
 #endif
     return 0;
 }
@@ -87,6 +94,8 @@ uint8_t get_charger_state()
     return evse.evse_state.get("charger_state")->asUint();
 #elif MODULE_EVSE_V2_AVAILABLE()
     return evse_v2.evse_state.get("charger_state")->asUint();
+#elif MODULE_AC011K_AVAILABLE()
+    return ac011k.evse_state->get("charger_state")->asUint();
 #endif
     return 0;
 }
@@ -97,6 +106,8 @@ Config *get_user_slot()
     return (Config *)evse.evse_slots.get(CHARGING_SLOT_USER);
 #elif MODULE_EVSE_V2_AVAILABLE()
     return (Config *)evse_v2.evse_slots.get(CHARGING_SLOT_USER);
+#elif MODULE_AC011K_AVAILABLE()
+    return (Config *)ac011k.evse_slots->get(CHARGING_SLOT_USER);
 #endif
     return nullptr;
 }
@@ -107,6 +118,8 @@ Config *get_low_level_state()
     return &evse.evse_low_level_state;
 #elif MODULE_EVSE_V2_AVAILABLE()
     return &evse_v2.evse_low_level_state;
+#elif MODULE_AC011K_AVAILABLE()
+    return ac011k.evse_low_level_state;
 #endif
     return nullptr;
 }
@@ -117,6 +130,8 @@ void set_user_current(uint16_t current)
     evse.set_user_current(current);
 #elif MODULE_EVSE_V2_AVAILABLE()
     evse_v2.set_user_current(current);
+#elif MODULE_AC011K_AVAILABLE()
+    ac011k.set_user_current(current);
 #endif
 }
 
@@ -604,13 +619,21 @@ void Users::register_urls()
         user_config.get("users")->remove(idx);
         API::writeConfig("users/config", &user_config);
 
+#if MODULE_AC011K_AVAILABLE()
+        Config *tags = (Config *)anfc.config.get("authorized_tags");
+#else
         Config *tags = (Config *)nfc.config.get("authorized_tags");
+#endif
 
         for(int i = 0; i < tags->count(); ++i) {
             if(tags->get(i)->get("user_id")->asUint() == remove.get("id")->asUint())
                 tags->get(i)->get("user_id")->updateUint(0);
         }
+#if MODULE_AC011K_AVAILABLE()
+        API::writeConfig("nfc/config", &anfc.config);
+#else
         API::writeConfig("nfc/config", &nfc.config);
+#endif
 
         if (!charge_tracker.is_user_tracked(remove.get("id")->asUint()))
         {
