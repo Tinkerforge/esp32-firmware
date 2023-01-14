@@ -18,6 +18,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "ac011evse_v2.h"
 
 /* anchor to fix the diff to ac011k.cpp */
 
@@ -30,9 +31,6 @@
  * to work properly.          
  *                                                                  
  *********************************************************************************************************/
-
-#include "ac011k.h"
-
 #include "bindings/errors.h"
 
 #include "api.h"
@@ -53,7 +51,7 @@ extern bool firmware_update_allowed;
 #define SLOT_ACTIVE(x) ((bool)(x & 0x01))
 #define SLOT_CLEAR_ON_DISCONNECT(x) ((bool)(x & 0x02))
 
-void AC011K::pre_setup()
+void EVSEV2::pre_setup()
 {
     // States
     evse_state = Config::Object({
@@ -65,6 +63,7 @@ void AC011K::pre_setup()
         {"allowed_charging_current", Config::Uint16(0)},
         {"error_state", Config::Uint8(0)},
         {"lock_state", Config::Uint8(0)},
+        {"dc_fault_current_state", Config::Uint8(0)},
         {"time_since_state_change", Config::Uint32(0)},
         {"last_state_change", Config::Uint32(0)},
     });
@@ -275,7 +274,7 @@ void AC011K::pre_setup()
     evse_ocpp_enabled_update = evse_ocpp_enabled;
 }
 
-bool AC011K::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear)
+bool EVSEV2::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear)
 {
     uint16_t old_current = evse_slots.get(slot)->get("max_current")->asUint();
     bool old_enabled     = evse_slots.get(slot)->get("active")->asBool();
@@ -299,7 +298,7 @@ bool AC011K::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bo
     return true;
 }
 
-void AC011K::apply_defaults()
+void EVSEV2::apply_defaults()
 {
     // Maybe this is the first start-up after updating the EVSE to firmware 2.1.0 (or higher)
     // (Or the first start-up at all)
@@ -331,15 +330,14 @@ void AC011K::apply_defaults()
     // Slot 8 (external) is controlled via API, no need to change anything here
 }
 
-void AC011K::factory_reset()
+void EVSEV2::factory_reset()
 {
     logger.printfln("EVSE factory reset is not implemented yet.");
 }
 
-void AC011K::setup()
+void EVSEV2::setup()
 {
-    setup_evse();
-
+    
     /* TODO: make reset work on AC011K */
     /* task_scheduler.scheduleOnce([this](){ */
     /*     uint32_t press_time = 0; */
@@ -349,19 +347,16 @@ void AC011K::setup()
     /* }, 40000); */
 
     // Get all data once before announcing the EVSE feature.
-    update_all_data();
     api.addFeature("evse");
     /* api.addFeature("cp_disconnect"); */
     /* api.addFeature("button_configuration"); */
     api.addFeature("meter_phases");
     api.addFeature("meter_all_values");
 
-    task_scheduler.scheduleWithFixedDelay([this](){
-        update_all_data();
-    }, 0, 250);
+    
 }
 
-String AC011K::get_evse_debug_header()
+String EVSEV2::get_evse_debug_header()
 {
     return "\"millis,"
            "STATE,"
@@ -448,7 +443,7 @@ String AC011K::get_evse_debug_header()
            "\"";
 }
 
-String AC011K::get_evse_debug_line() {
+String EVSEV2::get_evse_debug_line() {
     if(!initialized)
         return "EVSE is not initialized!";
 
@@ -537,7 +532,7 @@ String AC011K::get_evse_debug_line() {
     return String(line);
 }
 
-void AC011K::set_managed_current(uint16_t current)
+void EVSEV2::set_managed_current(uint16_t current)
 {
     //tf_evse_v2_set_charging_slot_max_current(CHARGING_SLOT_CHARGE_MANAGER, current));
     evse_slots.get(CHARGING_SLOT_CHARGE_MANAGER)->get("max_current")->updateUint(current);
@@ -545,36 +540,36 @@ void AC011K::set_managed_current(uint16_t current)
     this->shutdown_logged = false;
 }
 
-void AC011K::set_user_current(uint16_t current)
+void EVSEV2::set_user_current(uint16_t current)
 {
     //is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_USER, current));
     evse_slots.get(CHARGING_SLOT_USER)->get("max_current")->updateUint(current);
 }
 
-void AC011K::set_modbus_current(uint16_t current)
+void EVSEV2::set_modbus_current(uint16_t current)
 {
     //is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_MODBUS_TCP, current));
     evse_slots.get(CHARGING_SLOT_MODBUS_TCP)->get("max_current")->updateUint(current);
 }
 
-void AC011K::set_modbus_enabled(bool enabled)
+void EVSEV2::set_modbus_enabled(bool enabled)
 {
     //is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_MODBUS_TCP_ENABLE, enabled ? 32000 : 0));
     evse_slots.get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->updateUint(enabled ? 32000 : 0);
 }
 
-void AC011K::set_ocpp_current(uint16_t current)
+void EVSEV2::set_ocpp_current(uint16_t current)
 {
     //is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, CHARGING_SLOT_OCPP, current));
     evse_slots.get(CHARGING_SLOT_OCPP)->get("max_current")->updateUint(current);
 }
 
-uint16_t AC011K::get_ocpp_current()
+uint16_t EVSEV2::get_ocpp_current()
 {
     return evse_slots.get(CHARGING_SLOT_OCPP)->get("max_current")->asUint();
 }
 
-void AC011K::register_urls()
+void EVSEV2::register_urls()
 {
 
 #if MODULE_CM_NETWORKING_AVAILABLE()
@@ -827,14 +822,10 @@ void AC011K::register_urls()
             this->apply_slot_default(CHARGING_SLOT_OCPP, 32000, false, false);
         }
     }, false);
-
-    this->register_my_urls();
 }
 
-void AC011K::loop()
+void EVSEV2::loop()
 {
-    myloop();
-
 #if MODULE_WS_AVAILABLE()
     static uint32_t last_debug = 0;
     if (debug && deadline_elapsed(last_debug + 50)) {
@@ -844,16 +835,14 @@ void AC011K::loop()
 #endif
 }
 
-void AC011K::setup_evse()
+void EVSEV2::setup_evse()
 {
-    my_setup_evse();
-
     this->apply_defaults();
     // initialized is set to true after we got the SerialNumber from the GD chip
 }
 
 
-void AC011K::update_all_data()
+void EVSEV2::update_all_data()
 {
     if (!initialized)
         return;
@@ -1155,7 +1144,7 @@ void AC011K::update_all_data()
 
     evse_low_level_state.get("time_since_state_change")->updateUint(evse_state.get("time_since_state_change")->asUint());
     evse_low_level_state.get("uptime")->updateUint(millis());
-    evse_slot_machine();
+    //evse_slot_machine();
 
 #if MODULE_WATCHDOG_AVAILABLE()
     static size_t watchdog_handle = watchdog.add("evse_v2_all_data", "EVSE not reachable", 10 * 60 * 1000);
