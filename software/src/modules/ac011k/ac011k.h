@@ -69,6 +69,10 @@
 
 #define PayloadStart        8
 
+#define GD_0A_TIME_ANSWER   0x02
+#define GD_GET_RTC_ANSWER   0x10
+#define GD_SET_RTC_ANSWER   0x14
+
 void evse_v2_button_recovery_handler();
 #define TF_ESP_PREINIT evse_v2_button_recovery_handler();
 

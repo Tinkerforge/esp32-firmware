@@ -394,17 +394,14 @@ void AC011K::fillTimeGdCommand(byte *datetime) {
     struct tm timeinfo;
 
     if (clock_synced(&tv_now)) {
-        localtime_r(&tv_now.tv_sec, &timeinfo);
-
+        gmtime_r(&tv_now.tv_sec, &timeinfo);
         datetime[0] = (byte)(timeinfo.tm_year - 100);
         datetime[1] = (byte)(timeinfo.tm_mon + 1);
         datetime[2] = (byte)(timeinfo.tm_mday);
         datetime[3] = (byte)(timeinfo.tm_hour);
         datetime[4] = (byte)(timeinfo.tm_min);
         datetime[5] = (byte)(timeinfo.tm_sec);
-
-        //logger.printfln("time fill success %s", timeStr(&datetime));
-    } else if((PrivCommRxBuffer[8] == 0x10) && (PrivCommRxBuffer[9] == 0x02)) {
+    } else if((PrivCommRxBuffer[8] == GD_GET_RTC_ANSWER) && (PrivCommRxBuffer[9] == GD_0A_TIME_ANSWER)) { 
         datetime[0] = PrivCommRxBuffer[PayloadStart + 4]; // year  
         datetime[1] = PrivCommRxBuffer[PayloadStart + 5]; // month 
         datetime[2] = PrivCommRxBuffer[PayloadStart + 6]; // day   
@@ -412,7 +409,6 @@ void AC011K::fillTimeGdCommand(byte *datetime) {
         datetime[4] = PrivCommRxBuffer[PayloadStart + 8]; // minute
         datetime[5] = PrivCommRxBuffer[PayloadStart + 9]; // second
         //if(ac011k_hardware.config.get("verbose_communication")->asBool())
-            //logger.printfln("time from GD RTC %d/%d/%d %d:%d:%d", *year, *month, *day, *hour, *minute, *second);
             logger.printfln("time from GD RTC %s", timeStr(datetime));
     } else {
         datetime[0] = 22; // year  
@@ -864,8 +860,6 @@ void AC011K::my_setup_evse()
     PrivCommTxBuffer[PayloadStart + 4] =  240;  /* 240 sec heartbeat timeout */
     PrivCommTxBuffer[PayloadStart + 5] = 0x00;  /* heartbeat timeout 16bit   */
     PrivCommSend(0xAA, 6, PrivCommTxBuffer);
-
-    // SetRTC();
 
 
 //W (2021-04-11 18:36:27) [PRIV_COMM, 1764]: Tx(cmd_AA len:15) :  FA 03 00 00 AA 40 05 00 18 09 01 00 00 F9 36
@@ -1344,9 +1338,9 @@ void AC011K::myloop()
 
             case 0x0A:
                 switch( PrivCommRxBuffer[9] ) { // 9: answertype
-                    case 0x02: // time answer
+                    case GD_0A_TIME_ANSWER: // time answer
                         switch( PrivCommRxBuffer[8] ) {
-                            case 0x10: // get RTC answer
+                            case GD_GET_RTC_ANSWER:
                                 // set ESP32 time ???
                                 if (!clock_synced(&tv_now)) {
                                     struct tm timeinfo;
@@ -1356,7 +1350,7 @@ void AC011K::myloop()
                                     timeinfo.tm_hour  = PrivCommRxBuffer[PayloadStart + 7];
                                     timeinfo.tm_min   = PrivCommRxBuffer[PayloadStart + 8];
                                     timeinfo.tm_sec   = PrivCommRxBuffer[PayloadStart + 9];
-                                    //timeinfo.tm_isdst = -1;
+                                    timeinfo.tm_isdst = -1;
                                     tv_now.tv_sec = mktime(&timeinfo);
                                     tv_now.tv_usec = 0;
 
@@ -1370,7 +1364,9 @@ void AC011K::myloop()
                                     logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Got RTC, but time is already in sync %s", cmd, seq, len, crc, timeStr(&PrivCommRxBuffer[PayloadStart + 4]));
                                 }
                                 break;
-                            case 0x14: // set time answer
+                            case GD_SET_RTC_ANSWER:
+                            case 0x16:
+                            case 0x17:
                                 logger.printfln("Rx cmd_%.2X seq:%.2X len:%d crc:%.4X - Set Time done", cmd, seq, len, crc);
                                 break;
                             default:

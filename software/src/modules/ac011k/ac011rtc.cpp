@@ -85,17 +85,18 @@ void Rtc::set_time(timeval time)
 
 time_t Rtc::get_time(bool reset_update)
 {
+    rtc_updated = !reset_update;
     return rtcunixtime;
 }
 void Rtc::tf_real_time_clock_v2_set_date_time(uint year, uint month, uint day, uint hour, uint minute, uint second)
 {
     tm tv;
-    tv.tm_year = year;
-    tv.tm_mon = month;
-    tv.tm_mday = day;
-    tv.tm_hour = hour;
-    tv.tm_min = minute;
-    tv.tm_sec = second;
+    tv.tm_year  = year - 1900;
+    tv.tm_mon   = month - 1;
+    tv.tm_mday  = day;
+    tv.tm_hour  = hour;
+    tv.tm_min   = minute;
+    tv.tm_sec   = second;
     tv.tm_isdst = -1;
     rtcunixtime = mktime(&tv);
 }
@@ -107,11 +108,11 @@ void Rtc::register_urls()
     api.addState("rtc/time", &time, {}, 100);
     api.addCommand("rtc/time_update", &time_update, {}, [this]() {
         tf_real_time_clock_v2_set_date_time(time_update.get("year")->asUint(),
-                                                       time_update.get("month")->asUint(),
-                                                       time_update.get("day")->asUint(),
-                                                       time_update.get("hour")->asUint(),
-                                                       time_update.get("minute")->asUint(),
-                                                       time_update.get("second")->asUint());
+                                            time_update.get("month")->asUint(),
+                                            time_update.get("day")->asUint(),
+                                            time_update.get("hour")->asUint(),
+                                            time_update.get("minute")->asUint(),
+                                            time_update.get("second")->asUint());
         ntp.set_synced();
         rtc_updated = true;
     }, true);
