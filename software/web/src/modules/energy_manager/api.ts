@@ -7,10 +7,8 @@ export interface state {
     contactor_check_state: number,
     energy_meter_type: number,
     energy_meter_power: number,
-    energy_meter_energy_rel: number,
-    energy_meter_energy_abs: number,
-    energy_meter_phases_active: boolean[],
-    energy_meter_phases_connected: boolean[]
+    energy_meter_energy_import: number,
+    energy_meter_energy_export: number,
 }
 
 export interface config {

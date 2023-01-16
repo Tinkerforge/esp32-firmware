@@ -20,6 +20,7 @@
                     <option value="1" data-i18n="em_meter_config.content.type_sdm"></option>
                     <option value="2" data-i18n="em_meter_config.content.type_sunspec"></option>
                     <option value="3" data-i18n="em_meter_config.content.type_modbus_tcp"></option>
+                    <option value="100" data-i18n="em_meter_config.content.type_custom"></option>
                 </select>
             </div>
         </div>
@@ -40,7 +41,8 @@
                 <div id="btn_group_em_meter_config_meter_available" class="btn-group flex-wrap" role="group">
                     <button type="button" class="btn btn-outline-secondary" disabled data-i18n="em_meter_config.content.sdm_none"></button>
                     <button type="button" class="btn btn-outline-primary" disabled data-i18n="em_meter_config.content.sdm_630"></button>
-                    <button type="button" class="btn btn-outline-success" disabled data-i18n="em_meter_config.content.sdm_72dmv2"></button>
+                    <button type="button" class="btn btn-outline-primary" disabled data-i18n="em_meter_config.content.sdm_72dmv2"></button>
+                    <button type="button" class="btn btn-outline-primary" disabled data-i18n="em_meter_config.content.sdm_72ctm"></button>
                 </div>
                 <div id="em-meter-config-sdm-details">
                     <a class="nav-link" data-toggle="tab" role="tab" aria-controls="meter" aria-selected="true" href="#meter">
@@ -63,24 +65,24 @@
             <div class="form-group row no-gutters">
                 <div class="col-lg-3 col-xl-2">
                     <label for="meter_energy_rel_values" class="col-form-label">
-                        <span class="form-label pr-2" data-i18n="em_meter_config.content.sdm_energy"></span>
-                        <span class="text-muted" data-i18n="em_meter_config.content.sdm_energy_since_reset"></span>
+                        <span class="form-label pr-2" data-i18n="em_meter_config.content.sdm_energy_import"></span>
+                        <span class="text-muted" data-i18n="em_meter_config.content.sdm_energy_import_muted"></span>
                     </label>
                 </div>
-                <div id="em_meter_config_meter_energy_rel_values" class="col-lg-9 col-xl-6">
-                    <input id="em_meter_config_meter_energy_rel" class="form-control" type="text" placeholder="..." readonly>
+                <div id="em_meter_config_meter_energy_import_values" class="col-lg-9 col-xl-6">
+                    <input id="em_meter_config_meter_energy_import" class="form-control" type="text" placeholder="..." readonly>
                 </div>
             </div>
 
             <div class="form-group row no-gutters">
                 <div class="col-lg-3 col-xl-2">
                     <label for="em_meter_config_meter_energy_abs_values" class="col-form-label">
-                        <span class="form-label pr-2" data-i18n="em_meter_config.content.sdm_energy"></span>
-                        <span class="text-muted" data-i18n="em_meter_config.content.sdm_energy_lifetime"></span>
+                        <span class="form-label pr-2" data-i18n="em_meter_config.content.sdm_energy_export"></span>
+                        <span class="text-muted" data-i18n="em_meter_config.content.sdm_energy_export_muted"></span>
                     </label>
                 </div>
-                <div id="em_meter_config_meter_energy_abs_values" class="col-lg-9 col-xl-6">
-                    <input id="em_meter_config_meter_energy_abs" class="form-control" type="text" placeholder="..." readonly>
+                <div id="em_meter_config_meter_energy_export_values" class="col-lg-9 col-xl-6">
+                    <input id="em_meter_config_meter_energy_export" class="form-control" type="text" placeholder="..." readonly>
                 </div>
             </div>
         </div>
@@ -102,5 +104,11 @@
             </div>
             <div>TBD</div>
         </div>
-    </form>
+
+        <div class="collapse" id="em-meter-generic-details">
+            <a class="nav-link" data-toggle="tab" role="tab" aria-controls="meter" aria-selected="true" href="#meter">
+                <span data-i18n="em_meter_config.content.generic_details"></span>
+            </a>
+        </div>
+</form>
 </div>

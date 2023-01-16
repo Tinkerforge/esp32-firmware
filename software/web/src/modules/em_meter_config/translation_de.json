@@ -14,6 +14,7 @@
             "type_sdm": "SDM630/SDM72DMV2 am WARP Energy Manager",
             "type_sunspec": "SunSpec-kompatibler Stromzähler per Modbus-TCP",
             "type_modbus_tcp": "Generischer Stromzähler per Modbus-TCP",
+            "type_custom": "Benutzerdefinierter Zähler (MQTT/HTTP)",
             "conf_sdm": "SDM630/SDM72DMV2 am WARP Energy Manager",
             "conf_sunspec": "SunSpec-Konfiguration",
             "conf_modbus_tcp": "Modbus-TCP-Konfiguration",
@@ -21,12 +22,16 @@
             "sdm_none": "Kein Zähler",
             "sdm_630": "SDM630",
             "sdm_72dmv2": "SDM72DMV2",
+            "sdm_72ctm": "SDM72CTM",
             "sdm_details": "Zeige Stromzähler-Detailansicht",
             "sdm_available": "Angeschlossener Zähler",
             "sdm_power": "Leistungsaufnahme",
-            "sdm_energy": "Stromverbrauch",
-            "sdm_energy_since_reset": "seit dem letzten Zurücksetzen",
-            "sdm_energy_lifetime": "seit Herstellung des Stromzählers"
+            "sdm_energy_import": "Netzbezug",
+            "sdm_energy_import_muted": "Gesamt",
+            "sdm_energy_export": "Netzeinspeisung",
+            "sdm_energy_export_muted": "Gesamt",
+
+            "generic_details": "Zeige Detailansicht für generischen Stromzähler"
         },
         "script": {
             "config_failed": "Speichern der Stromzähler-Konfiguration fehlgeschlagen.",
