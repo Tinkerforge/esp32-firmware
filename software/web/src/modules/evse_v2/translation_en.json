@@ -68,6 +68,7 @@
             "meter_type_1": "SDM72",
             "meter_type_2": "SDM630",
             "meter_type_3": "SDM72V2",
+            "meter_type_254": "internal",
 
             "slot_4": "Auto-start or button"
         }
