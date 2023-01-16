@@ -108,7 +108,7 @@ void EnergyManager::setup_energy_manager()
     if (!this->DeviceModule::setup_device()) {
         logger.printfln("energy_manager: setup_device error. Reboot in 5 Minutes.");
 
-        task_scheduler.scheduleOnce([this](){
+        task_scheduler.scheduleOnce([](){
             trigger_reboot("Energy Manager");
         }, 5 * 60 * 1000);
         return;
@@ -145,7 +145,7 @@ void EnergyManager::setup()
 
     // Cache config for energy update
     excess_charging_enable          = energy_manager_config_in_use.get("excess_charging_enable")->asBool();
-    target_power_from_grid_conf_w   = energy_manager_config_in_use.get("target_power_from_grid")->asInt();         // watt
+    target_power_from_grid_conf_w   = energy_manager_config_in_use.get("target_power_from_grid")->asInt();          // watt
     guaranteed_power_conf_w         = energy_manager_config_in_use.get("guaranteed_power")->asUint();               // watt
     max_current_unlimited_ma        = energy_manager_config_in_use.get("maximum_available_current")->asUint();      // milliampere
     min_current_ma                  = energy_manager_config_in_use.get("minimum_current")->asUint();                // milliampere
@@ -411,18 +411,23 @@ void EnergyManager::update_energy()
             int32_t p_error_w  = target_power_from_grid_w - power_at_meter_w;
 
             int32_t p_adjust_w;
-            // Some EVs may only be able to adjust their charge power in steps of 1300W
-            // and the absolute minimum power threshold for switching on is 1380W.
-            // Use 1330W as a compromise.
-            if (p_error_w > 1330) {
-                // Use p=1 for large differences so that the threshold for switching on can be reached and the controller can converge faster.
+            if (!is_on) {
+                // When the power is not on, use p=1 so that the switch-on threshold can be reached properly.
                 p_adjust_w = p_error_w;
-            } else if (p_error_w < -1330) {
-                // Use p=0.875 for large reductions because some vehicles don't like too large reductions.
-                p_adjust_w = p_error_w * 7 / 8;
             } else {
-                // Use p=0.5 for small differences so that the controller can converge without oscillating too much.
-                p_adjust_w = p_error_w / 2;
+                // Some EVs may only be able to adjust their charge power in steps of 1500W,
+                // so smaller factors are required for smaller errors.
+                int32_t p_error_abs_w = abs(p_error_w);
+                if (p_error_abs_w < 1000) {
+                    // Use p=0.5 for small differences so that the controller can converge without oscillating too much.
+                    p_adjust_w = p_error_w / 2;
+                } else if (p_error_abs_w < 1500) {
+                    // Use p=0.75 for medium differences so that the controller can converge reasonably fast while still avoiding too many oscillations.
+                    p_adjust_w = p_error_w * 3 / 4;
+                } else {
+                    // Use p=0.875 for large differences so that the controller can converge faster.
+                    p_adjust_w = p_error_w * 7 / 8;
+                }
             }
 
             power_available_w  = static_cast<int32_t>(charge_manager_allocated_power_w) + p_adjust_w;

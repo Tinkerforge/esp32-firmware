@@ -44,7 +44,7 @@
             "input4_config": "Input 4",
             "target_power_from_grid": "Target grid power draw",
             "target_power_from_grid_muted": "target grid draw for excess charging",
-            "guaranteed_power": "guaranteed charging power",
+            "guaranteed_power": "Guaranteed charging power",
             "guaranteed_power_muted": "Minimum charging power guaranteed, even when not enough excess generated power is available. This can override the target grid power draw.",
             "maximum_available_current": "Maximum current of supply line",
             "maximum_available_current_muted": "limit of the contactor's supply line",
