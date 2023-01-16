@@ -46,12 +46,6 @@ void EnergyManager::pre_setup()
         {"energy_meter_power", Config::Float(0)}, // watt
         {"energy_meter_energy_import", Config::Float(0)}, // kw/h
         {"energy_meter_energy_export", Config::Float(0)}, // kw/h
-        {"energy_meter_phases_active", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false)},
-            new Config{Config::Bool(false)}, 3, 3, Config::type_id<Config::ConfBool>())
-        },
-        {"energy_meter_phases_connected", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false)},
-            new Config{Config::Bool(false)},3, 3, Config::type_id<Config::ConfBool>())
-        },
         // Derived states
         {"phases_switched", Config::Uint8(0)},
         {"contactor_check_tripped", Config::Bool(false)},
