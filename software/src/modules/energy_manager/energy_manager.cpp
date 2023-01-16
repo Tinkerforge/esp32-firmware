@@ -133,10 +133,12 @@ void EnergyManager::setup()
         return;
     }
 
+#if MODULE_CHARGE_MANAGER_AVAILABLE()
     charge_manager.set_allocated_current_callback([this](uint32_t current_ma){
         //logger.printfln("energy_manager: allocated current callback: %u", current_ma);
         charge_manager_allocated_current_ma = current_ma;
     });
+#endif
 
     // Set up output relay and input pins
     output = new OutputRelay(energy_manager_config_in_use);
@@ -196,6 +198,11 @@ void EnergyManager::setup()
         logger.printfln("energy_manager: No maximum current configured. Disabling energy distribution.");
         return;
     }
+
+#if !MODULE_CHARGE_MANAGER_AVAILABLE()
+    logger.printfln("energy_manager: Module 'Charge Manager' not available. Disabling energy distribution.");
+    return;
+#endif
 
     task_scheduler.scheduleWithFixedDelay([this](){
         this->update_energy();
@@ -368,11 +375,16 @@ void EnergyManager::override_guaranteed_power(uint32_t power_w)
 void EnergyManager::set_available_current(uint32_t current)
 {
     is_on_last = current > 0;
+#if MODULE_CHARGE_MANAGER_AVAILABLE()
     charge_manager.set_available_current(current);
+#endif
 }
 
 void EnergyManager::update_energy()
 {
+#if !MODULE_CHARGE_MANAGER_AVAILABLE()
+    logger.printfln("energy_manager: Module 'Charge Manager' not available. update_energy() does nothing.");
+#else
     uint32_t time = micros();
 
     static SwitchingState prev_state = switching_state;
@@ -588,6 +600,7 @@ void EnergyManager::update_energy()
         time_max = time;
         logger.printfln("energy_manager::update_energy() took %uus", time_max);
     }
+#endif
 }
 
 uint16_t EnergyManager::get_energy_meter_detailed_values(float *ret_values)
