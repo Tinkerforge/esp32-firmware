@@ -65,7 +65,7 @@ def main():
     ]
 
     if JS_ANALYZE:
-        args += ['--analyze=verbose']
+        args += ['--analyze']
 
     if build_args.js_source_map:
         args += ['--sourcemap']
