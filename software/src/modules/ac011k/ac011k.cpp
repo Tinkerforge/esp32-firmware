@@ -435,15 +435,13 @@ void AC011K::SetRTC() {
     PrivCommTxBuffer[PayloadStart + 2] = 0x06;
     PrivCommTxBuffer[PayloadStart + 3] = 0x00;
     fillTimeGdCommand(&PrivCommTxBuffer[PayloadStart + 4]);
-    PrivCommSend(0xAA, 10, PrivCommTxBuffer);
     logger.printfln("GD time set to: %s", timeStr(&PrivCommTxBuffer[PayloadStart + 4]));
+    PrivCommSend(0xAA, 10, &PrivCommTxBuffer[0]);
 }
 
 void AC011K::SetRTC(timeval time) {
     settimeofday(&time, nullptr);
-    fillTimeGdCommand(&PrivCommTxBuffer[PayloadStart + 4]);
-    logger.printfln("set GD time to: %s", timeStr(&PrivCommTxBuffer[PayloadStart + 4]));
-    PrivCommSend(0xAA, 10, PrivCommTxBuffer);
+    SetRTC();
 }
 
 void AC011K::sendChargingLimit1(uint8_t currentLimit, byte sendSequenceNumber) {  // AF 00 date/time
@@ -1373,7 +1371,7 @@ void AC011K::loop()
                         switch( PrivCommRxBuffer[8] ) {
                             case GD_GET_RTC_ANSWER:
                                 // set ESP32 time ???
-                                if (!clock_synced(&tv_now)) {
+                                if (!clock_synced(&tv_now) || !ntp.state.get("synced")->asBool()) {
                                     struct tm timeinfo;
                                     timeinfo.tm_year  = PrivCommRxBuffer[PayloadStart + 4] + 100;
                                     timeinfo.tm_mon   = PrivCommRxBuffer[PayloadStart + 5] - 1;
@@ -1653,4 +1651,8 @@ void AC011K::register_urls()
         return handle_update_chunk(3, request, index, data, len);
     });
 #endif
+
+    task_scheduler.scheduleWithFixedDelay([this]() {
+        GetRTC();
+    }, 1000 * 60 * 10, 1000 * 60 * 10);
 }

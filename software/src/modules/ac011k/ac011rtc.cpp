@@ -59,8 +59,6 @@ void Rtc::pre_setup()
     });
 }
 
-
-
 void Rtc::set_time(timeval time)
 {
     /* struct tm date_time; */
@@ -88,6 +86,7 @@ time_t Rtc::get_time(bool reset_update)
     rtc_updated = !reset_update;
     return rtcunixtime;
 }
+
 void Rtc::tf_real_time_clock_v2_set_date_time(uint year, uint month, uint day, uint hour, uint minute, uint second)
 {
     tm tv;
@@ -118,6 +117,20 @@ void Rtc::register_urls()
     }, true);
 
     api.addFeature("rtc");
+
+    task_scheduler.scheduleWithFixedDelay([this]() {
+        struct timeval t;
+        struct tm date_time;
+        gettimeofday(&t, nullptr);
+        gmtime_r(&t.tv_sec, &date_time);
+        time.get("year")->updateUint(date_time.tm_year + 1900);
+        time.get("month")->updateUint(date_time.tm_mon + 1);
+        time.get("day")->updateUint(date_time.tm_mday);
+        time.get("hour")->updateUint(date_time.tm_hour);
+        time.get("minute")->updateUint(date_time.tm_min);
+        time.get("second")->updateUint(date_time.tm_sec);
+        time.get("weekday")->updateUint(date_time.tm_wday);
+    }, 0, 200);
 }
 
 void Rtc::setup()
