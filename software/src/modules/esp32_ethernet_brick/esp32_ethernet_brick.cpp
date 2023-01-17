@@ -47,6 +47,7 @@ extern char passphrase[20];
 extern int8_t blue_led_pin;
 extern int8_t green_led_pin;
 extern int8_t button_pin;
+extern bool factory_reset_requested;
 
 #if TF_LOCAL_ENABLE != 0
 
@@ -82,6 +83,40 @@ void ESP32EthernetBrick::setup()
     green_led_pin = GREEN_LED;
     blue_led_pin = BLUE_LED;
     button_pin = BUTTON;
+
+#if 0
+    // Check if ethernet clock seems to be enabled.
+    // If it's on, a low pin level can be seen, usually already on the first or second poll.
+    bool seen_ethernet_clock = false;
+    for (uint32_t i = 0; i < 10; i++) {
+        if (!digitalRead(BUTTON)) {
+            seen_ethernet_clock = true;
+            break;
+        }
+    }
+
+    if (!seen_ethernet_clock) {
+        bool button_pressed = false;
+        for (uint32_t i = 0; i < 20; i++) {
+            digitalWrite(blue_led_pin, i % 4 == 0 ? false : true);
+            if (!digitalRead(BUTTON)) {
+                button_pressed = true;
+                break;
+            }
+            delay(100);
+        }
+        if (button_pressed) {
+            factory_reset_requested = true;
+            for (uint32_t i = 0; i < 50; i++) {
+                digitalWrite(blue_led_pin, i & 1);
+                delay(75);
+            }
+        }
+    }
+    digitalWrite(blue_led_pin, false);
+    // A factory reset will leave the green LED on, even across a restart. Switch it off here.
+    digitalWrite(green_led_pin, false);
+#endif
 
     task_scheduler.scheduleWithFixedDelay([](){
         led_blink(BLUE_LED, 2000, 1, 0);
