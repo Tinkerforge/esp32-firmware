@@ -132,9 +132,14 @@ void Meter::setupMeter(uint8_t meter_type)
         return;
 
     api.addFeature("meter");
-    if (meter_type == 2 || meter_type == 3) {
-        api.addFeature("meter_phases");
-        api.addFeature("meter_all_values");
+    switch(meter_type) {
+        case METER_TYPE_SDM630:
+        case METER_TYPE_SDM72DMV2:
+            api.addFeature("meter_phases");
+            /* FALLTHROUGH*/
+        case METER_TYPE_SDM72CTM:
+            api.addFeature("meter_all_values");
+            break;
     }
 
     power_hist.setup();
