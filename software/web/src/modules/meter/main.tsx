@@ -589,7 +589,7 @@ export function add_event_listeners(source: API.APIEventTarget) {
 
 export function update_sidebar_state(module_init: any) {
     // Don't use meter navbar link if the Energy Manager module is loaded.
-    // The energy manager has its own meter configration module and a link
+    // The energy manager has its own meter configuration module and a link
     // to the meter frontend directly in the configuration module instead of the navbar.
     meter_show_navbar = !module_init.energy_manager;
 }
