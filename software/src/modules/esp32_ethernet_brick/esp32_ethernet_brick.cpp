@@ -21,6 +21,7 @@
 
 #include <Arduino.h>
 
+#include "build.h"
 #include "tools.h"
 #include "hal_arduino_esp32_ethernet_brick/hal_arduino_esp32_ethernet_brick.h"
 #include "event_log.h"
@@ -55,6 +56,63 @@ static TF_Local local;
 
 #endif
 
+__attribute((unused))
+static void check_for_factory_reset() {
+    // A factory reset will leave the green LED on, even across a restart. Switch it off here.
+    digitalWrite(green_led_pin, false);
+
+    // Check if ethernet clock seems to be enabled.
+    // If it's on, a low pin level can be seen, usually already on the first or second poll.
+    bool seen_ethernet_clock = false;
+    for (uint32_t i = 0; i < 256; i++) {
+        if (!digitalRead(BUTTON)) {
+            seen_ethernet_clock = true;
+            break;
+        }
+        // Perturb sampling every 32 cycles for an increasing amount of clock cycles
+        // to avoid perfectly syncing up to the ethernet clock by accident.
+        if (i % 32 == 31) {
+            for (uint32_t j = 0; j < (i/32); j++) {
+                __asm("nop.n");
+            }
+        }
+    }
+
+    bool blue_led_off = false;
+    if (!seen_ethernet_clock) {
+        // Flash LED for 4 seconds while waiting for button press.
+        bool button_pressed = false;
+        for (uint32_t i = 0; i < 40; i++) {
+            digitalWrite(blue_led_pin, i % 4 == 0 ? false : true);
+            delay(100); // 40 * 100ms = 4s
+            if (!digitalRead(BUTTON)) {
+                button_pressed = true;
+                break;
+            }
+        }
+        // Blink LED quickly while the button has to stay pressed for almost 10 seconds.
+        if (button_pressed) {
+            for (uint32_t i = 0; i < 128; i++) {
+                digitalWrite(blue_led_pin, i % 2);
+                delay(75); // 128 * 75ms = 9.6s
+                if (digitalRead(BUTTON)) {
+                    button_pressed = false;
+                    break;
+                }
+            }
+            // If the button is still pressed, perform factory reset.
+            if (button_pressed) {
+                // Perform factory reset, blue LED stays on to show success.
+                factory_reset_requested = true;
+            } else {
+                // Factory reset aborted, switch off blue LED.
+                blue_led_off = true;
+            }
+        }
+    }
+    digitalWrite(blue_led_pin, blue_led_off);
+}
+
 void ESP32EthernetBrick::pre_setup()
 {
 }
@@ -84,38 +142,8 @@ void ESP32EthernetBrick::setup()
     blue_led_pin = BLUE_LED;
     button_pin = BUTTON;
 
-#if 0
-    // Check if ethernet clock seems to be enabled.
-    // If it's on, a low pin level can be seen, usually already on the first or second poll.
-    bool seen_ethernet_clock = false;
-    for (uint32_t i = 0; i < 10; i++) {
-        if (!digitalRead(BUTTON)) {
-            seen_ethernet_clock = true;
-            break;
-        }
-    }
-
-    if (!seen_ethernet_clock) {
-        bool button_pressed = false;
-        for (uint32_t i = 0; i < 20; i++) {
-            digitalWrite(blue_led_pin, i % 4 == 0 ? false : true);
-            if (!digitalRead(BUTTON)) {
-                button_pressed = true;
-                break;
-            }
-            delay(100);
-        }
-        if (button_pressed) {
-            factory_reset_requested = true;
-            for (uint32_t i = 0; i < 50; i++) {
-                digitalWrite(blue_led_pin, i & 1);
-                delay(75);
-            }
-        }
-    }
-    digitalWrite(blue_led_pin, false);
-    // A factory reset will leave the green LED on, even across a restart. Switch it off here.
-    digitalWrite(green_led_pin, false);
+#if defined(BUILD_NAME_ENERGY_MANAGER) || defined(BUILD_NAME_WARP2)
+    check_for_factory_reset();
 #endif
 
     task_scheduler.scheduleWithFixedDelay([](){
