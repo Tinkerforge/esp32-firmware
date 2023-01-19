@@ -29,6 +29,11 @@
 
 #include "esp_log.h"
 
+#define MACRO_NAME_TO_STRING(x) #x
+
+// Indirection expands macro. See https://gcc.gnu.org/onlinedocs/gcc-3.4.3/cpp/Stringification.html
+#define MACRO_VALUE_TO_STRING(x) MACRO_NAME_TO_STRING(x)
+
 const char *tf_reset_reason();
 
 bool a_after_b(uint32_t a, uint32_t b);

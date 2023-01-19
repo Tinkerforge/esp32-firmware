@@ -76,7 +76,7 @@ void EnergyManager::pre_setup()
         uint32_t hysteresis_wear_ok       = cfg.get("hysteresis_wear_accepted")->asBool();
 
         if (switching_hysteresis_min < HYSTERESIS_MIN_TIME_MINUTES && !hysteresis_wear_ok)
-            return "Switching hysteresis time cannot be shorter than " __XSTRING(HYSTERESIS_MIN_TIME_MINUTES) " minutes without accepting additional wear.";
+            return "Switching hysteresis time cannot be shorter than " MACRO_VALUE_TO_STRING(HYSTERESIS_MIN_TIME_MINUTES) " minutes without accepting additional wear.";
 
         uint32_t input3_config = cfg.get("input3_config")->asUint();
         uint32_t input4_config = cfg.get("input4_config")->asUint();
