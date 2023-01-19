@@ -44,6 +44,9 @@ void WS::register_urls()
             to_send += String("{\"topic\":\"") + reg.path + String("\",\"payload\":") + reg.config->to_string_except(reg.keys_to_censor) + String("}\n");
         }
         client.send(to_send.c_str(), to_send.length());
+        for (auto callback : on_connect_callbacks) {
+            callback(client);
+        }
     });
 
     web_sockets.start("/ws");
@@ -56,6 +59,11 @@ void WS::register_urls()
 
 void WS::loop()
 {
+}
+
+void WS::addOnConnectCallback(std::function<void(WebSocketsClient)> callback)
+{
+    on_connect_callbacks.push_back(callback);
 }
 
 void WS::addCommand(size_t commandIdx, const CommandRegistration &reg)

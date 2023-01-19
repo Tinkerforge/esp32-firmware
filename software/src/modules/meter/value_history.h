@@ -49,6 +49,9 @@ public:
     void setup();
     void register_urls(String base_url);
     void add_sample(float sample);
+    size_t format_live(char *buf, size_t buf_size);
+    size_t format_history(char *buf, size_t buf_size);
+    float samples_per_second();
 
     int samples_last_interval = 0;
     int samples_per_interval = -1;
@@ -71,4 +74,5 @@ public:
                   malloc_32bit_addressed,
 #endif
                   heap_caps_free> history;
+    uint32_t history_last_update;
 };

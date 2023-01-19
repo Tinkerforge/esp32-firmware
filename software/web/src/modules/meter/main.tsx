@@ -23,18 +23,41 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { __, translate_unchecked } from "../../ts/translation";
 
-import Chartist from "../../ts/chartist"
-import ctAxisTitle from "../../ts/chartist-plugin-axistitle";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  ChartData,
+  ChartOptions,
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
 
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
-import { h, render, Fragment, Component, ComponentChild} from "preact";
+interface LineProps {
+  options: ChartOptions<"line">;
+  data: ChartData<"line">;
+}
+
+import { h, render, Fragment, Component, ComponentChild } from "preact";
 import { PageHeader } from "../../ts/components/page_header";
-
-
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { FormRow } from "../../ts/components/form_row";
 import { FormSeparator } from "../../ts/components/form_separator";
-import { Button} from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import { InputSelect } from "src/ts/components/input_select";
 import { CollapsedSection } from "src/ts/components/collapsed_section";
 import { OutputFloat } from "src/ts/components/output_float";
@@ -108,19 +131,19 @@ const entries: DetailedViewEntry[] = [
     entry("total_kvarh",                       true,  "kvarh", true,  3)
 ];
 
-interface GraphWrapperProps {
-    id: string
-    graphClass: string
+interface LiveExtra {
+    samples: number[];
+    tooltip_titles: string[];
+    grid_ticks: string[];
+    grid_colors: string[];
+    last_minute: number;
 }
 
-class GraphWrapper extends Component<GraphWrapperProps, {}> {
-    override shouldComponentUpdate() {
-        return false;
-    }
-
-    render(props?: GraphWrapperProps, state?: Readonly<{}>, context?: any): ComponentChild {
-        return <div id={props.id} class={"ct-chart " + props.graphClass}></div>
-    }
+interface HistoryExtra {
+    samples: number[];
+    tooltip_titles: string[];
+    grid_ticks: string[];
+    grid_colors: string[];
 }
 
 interface MeterState {
@@ -128,10 +151,163 @@ interface MeterState {
     values: Readonly<API.getType['meter/values']>;
     phases: Readonly<API.getType['meter/phases']>;
     all_values: Readonly<API.getType['meter/all_values']>;
-    graph_selected: "history"|"live";
+    live_extra: LiveExtra;
+    history_extra: HistoryExtra;
+    chart_selected: "history"|"live";
+}
+
+interface StatusMeterChartState {
+    history_extra: HistoryExtra;
+}
+
+function calculate_live_extra(samples_per_second: number, samples: number[], last_minute: number): LiveExtra {
+    let extra: LiveExtra = {samples: samples, tooltip_titles: [], grid_ticks: [], grid_colors: [], last_minute: last_minute};
+    let now = Date.now();
+    let start = now - 1000 * samples.length / samples_per_second;
+
+    for(let i = 0; i < samples.length; ++i) {
+        let d = new Date(start + i * (1000 * (1 / samples_per_second)));
+        extra.tooltip_titles[i] = d.toLocaleTimeString(navigator.language, {hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false});
+
+        if(d.getSeconds() == 0 && d.getMinutes() != extra.last_minute) {
+            extra.grid_ticks[i] = d.toLocaleTimeString(navigator.language, {hour: '2-digit', minute: '2-digit', hour12: false});
+            extra.grid_colors[i] = "rgba(0,0,0,0.1)";
+            extra.last_minute = d.getMinutes();
+        }
+        else {
+            extra.grid_ticks[i] = "";
+            extra.grid_colors[i] = "rgba(0,0,0,0)";
+        }
+    }
+
+    return extra;
+}
+
+function calculate_history_extra(offset: number, samples: Readonly<number[]>): HistoryExtra {
+    const HISTORY_MINUTE_INTERVAL = 4;
+    const VALUE_COUNT = 48 * (60 / HISTORY_MINUTE_INTERVAL);
+    const LABEL_COUNT = window.innerWidth < 500 ? 5 : 9;
+    const VALUES_PER_LABEL = VALUE_COUNT / (LABEL_COUNT - 1); // -1 for the last label that has no value
+
+    let extra: HistoryExtra = {samples: [], tooltip_titles: [], grid_ticks: [], grid_colors: []};
+    let now = Date.now();
+    let start = now - 1000 * 60 * 60 * 48 - offset;
+
+    for(let i = 0; i < samples.length + 1; ++i) { // +1 for the last label that has no value
+        extra.samples[i] = samples[i];
+
+        let d = new Date(start + i * (1000 * 60 * HISTORY_MINUTE_INTERVAL));
+        extra.tooltip_titles[i] = d.toLocaleTimeString(navigator.language, {hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false});
+
+        if (i % VALUES_PER_LABEL == 0) {
+            extra.grid_ticks[i] = d.toLocaleTimeString(navigator.language, {hour: '2-digit', minute: '2-digit', hour12: false});
+            extra.grid_colors[i] = "rgba(0,0,0,0.1)";
+        }
+        else {
+            extra.grid_ticks[i] = "";
+            extra.grid_colors[i] = "rgba(0,0,0,0)";
+        }
+    }
+
+    return extra;
+}
+
+function array_append<T>(a: Array<T>, b: Array<T>, tail: number): Array<T> {
+    a.push(...b);
+
+    return a.slice(-tail);
+}
+
+function build_chart_data(chart_extra: LiveExtra|HistoryExtra) {
+    let data: ChartData<"line"> = {
+        labels: chart_extra.grid_ticks,
+        datasets: [
+            {
+                data: chart_extra.samples,
+                backgroundColor: "#007bff",
+                borderColor: "#007bff",
+                normalized: true,
+            }
+        ]
+    };
+
+    return data;
+}
+
+function build_chart_options(chart_extra: LiveExtra|HistoryExtra) {
+    let options: ChartOptions<"line"> = {
+        normalized: true,
+        animation: false,
+        layout: {
+            autoPadding: false,
+            padding: {
+                right: 25,
+            }
+        },
+        elements: {
+            point: {
+                pointStyle: false,
+            }
+        },
+        plugins: {
+            legend: {
+                display: false,
+            },
+            tooltip: {
+                intersect: false,
+                callbacks: {
+                    title: function(context) {
+                        return chart_extra.tooltip_titles[context[0].dataIndex];
+                    },
+                    label: function(context) {
+                        return " " + context.formattedValue + " Watt";
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                title: {
+                    display: true,
+                    text: __("meter.script.time"),
+                    font: {
+                        size: 14,
+                    }
+                },
+                ticks: {
+                    autoSkip: false,
+                    maxRotation: 0,
+                    includeBounds: false,
+                    sampleSize: 0,
+                },
+                grid: {
+                    color: chart_extra.grid_colors,
+                }
+            },
+            y: {
+                title: {
+                    display: true,
+                    text: __("meter.script.power"),
+                    font: {
+                        size: 14,
+                    }
+                },
+                border: {
+                    display: false,
+                },
+                ticks: {
+                    autoSkipPadding: 10,
+                }
+            }
+        }
+    };
+
+    return options;
 }
 
 export class Meter extends Component<{}, MeterState> {
+    pending_live: {samples_per_second: number, samples: number[]};
+
     constructor() {
         super();
 
@@ -156,11 +332,73 @@ export class Meter extends Component<{}, MeterState> {
         util.eventTarget.addEventListener("meter/all_values", () => {
             this.setState({all_values: API.get("meter/all_values")});
         });
+
+        util.eventTarget.addEventListener("meter/live", () => {
+            let live = API.get("meter/live");
+            let live_extra = calculate_live_extra(live.samples_per_second, live.samples, -1);
+
+            this.setState({live_extra: live_extra});
+        });
+
+        this.pending_live = { samples_per_second: undefined, samples: []};
+
+        util.eventTarget.addEventListener("meter/live_samples", () => {
+            let live = API.get("meter/live_samples");
+
+            this.pending_live.samples_per_second = live.samples_per_second;
+            this.pending_live.samples.push(...live.samples);
+
+            if (this.pending_live.samples.length >= 5) {
+                let live_extra = calculate_live_extra(this.pending_live.samples_per_second, this.pending_live.samples, this.state.live_extra.last_minute);
+                this.pending_live.samples_per_second = undefined;
+                this.pending_live.samples = [];
+
+                this.setState({
+                    live_extra: {
+                        samples: array_append(this.state.live_extra.samples, live_extra.samples, 720),
+                        tooltip_titles: array_append(this.state.live_extra.tooltip_titles, live_extra.tooltip_titles, 720),
+                        grid_ticks: array_append(this.state.live_extra.grid_ticks, live_extra.grid_ticks, 720),
+                        grid_colors: array_append(this.state.live_extra.grid_colors, live_extra.grid_colors, 720),
+                        last_minute: live_extra.last_minute,
+                    }
+                });
+            }
+        });
+
+        util.eventTarget.addEventListener("meter/history", () => {
+            let history = API.get("meter/history");
+            let history_extra = calculate_history_extra(history.offset, history.samples);
+
+            this.setState({history_extra: history_extra});
+        });
+
+        util.eventTarget.addEventListener("meter/history_samples", () => {
+            let history = API.get("meter/history_samples");
+            let history_extra = calculate_history_extra(0, array_append(this.state.history_extra.samples, history.samples, 720));
+
+            this.setState({history_extra: history_extra});
+        });
+
+        this.state = {
+            chart_selected: "history",
+        } as any;
     }
 
     render(props: {}, state: Readonly<MeterState>) {
-        if (!state || !state.all_values)
+        if (!state || !state.all_values) {
             return (<></>);
+        }
+
+        let chart_extra = state[`${state.chart_selected}_extra`];
+
+        if (!chart_extra) {
+            return (<></>);
+        }
+
+        let data = build_chart_data(chart_extra);
+        let options = build_chart_options(chart_extra);
+
+        options.aspectRatio = 1.5;
 
         return (
             <>
@@ -171,9 +409,8 @@ export class Meter extends Component<{}, MeterState> {
                             class="d-flex justify-content-between align-items-center pt-3 mb-3 border-bottom">
                             <span class="h3">{__("meter.status.charge_history")}</span>
                             <div>
-                                <InputSelect value={this.state.graph_selected} onValue={(v) => {
-                                    this.setState({graph_selected: v as any});
-                                    meter_chart_change_time(v);
+                                <InputSelect value={this.state.chart_selected} onValue={(v) => {
+                                    this.setState({chart_selected: v as any});
                                 }}
                                     items={[
                                         ["history", __("meter.content.history")],
@@ -181,7 +418,7 @@ export class Meter extends Component<{}, MeterState> {
                                     ]}/>
                             </div>
                         </div>
-                            <GraphWrapper id="meter_chart" graphClass="ct-golden-section"/>
+                            <Line data={data} options={options} />
                         </div>
                         <div class="col-lg-6 col-xl-4">
                             <FormSeparator heading={__("meter.content.statistics")} colClasses="col"/>
@@ -265,6 +502,45 @@ export class Meter extends Component<{}, MeterState> {
 
 render(<Meter />, $('#meter')[0]);
 
+export class StatusMeterChart extends Component<{}, StatusMeterChartState> {
+    constructor() {
+        super();
+
+        util.eventTarget.addEventListener("meter/history", () => {
+            let history = API.get("meter/history");
+            let history_extra = calculate_history_extra(history.offset, history.samples);
+
+            this.setState({history_extra: history_extra});
+        });
+
+        util.eventTarget.addEventListener("meter/history_samples", () => {
+            let history = API.get("meter/history_samples");
+            let history_extra = calculate_history_extra(0, array_append(this.state.history_extra.samples, history.samples, 720));
+
+            this.setState({history_extra: history_extra});
+        });
+    }
+
+    render(props: {}, state: Readonly<MeterState>) {
+        if (!state || !state.history_extra) {
+            return (<></>);
+        }
+
+        let data = build_chart_data(state.history_extra);
+        let options = build_chart_options(state.history_extra);
+
+        options.aspectRatio = 2.5;
+
+        return (
+            <>
+                <Line data={data} options={options} />
+            </>
+        )
+    }
+}
+
+render(<StatusMeterChart />, $('#status_meter_chart')[0]);
+
 let meter_show_navbar = true;
 
 function update_meter_values() {
@@ -273,300 +549,15 @@ function update_meter_values() {
     $('#status_meter_power').val(util.toLocaleFixed(values.power, 0) + " W");
 }
 
-let graph_update_interval: number = null;
-let status_interval: number = null;
-
-async function update_live_meter() {
-    let result = null;
-    try{
-        result = JSON.parse(await util.download("/meter/live").then(blob => blob.text()));
-    } catch {
-        return;
-    }
-
-    let values = result["samples"];
-    let sps = result["samples_per_second"];
-    let labels = [];
-
-    let now = Date.now();
-    let start = now - 1000 * values.length / sps;
-    let last_minute = -1;
-    for(let i = 0; i < values.length + 1; ++i) {
-        let d = new Date(start + i * (1000 * (1/sps)));
-        if(d.getSeconds() == 0 && d.getMinutes() != last_minute) {
-            labels[i] = d.toLocaleTimeString(navigator.language, {hour: '2-digit', minute: '2-digit', hour12: false});
-            last_minute = d.getMinutes();
-        }
-        else {
-            labels[i] = null;
-        }
-    }
-
-    let data = {
-        labels: labels,
-        series: [
-            values
-        ]
-    };
-    meter_chart.update(data);
-}
-
-async function update_history_meter() {
-    let values = null;
-    try {
-        values = JSON.parse(await util.download("/meter/history").then(blob => blob.text()));
-    } catch {
-        return;
-    }
-
-    const HISTORY_MINUTE_INTERVAL = 4;
-    const VALUE_COUNT = 48 * (60 / HISTORY_MINUTE_INTERVAL);
-    const LABEL_COUNT = window.innerWidth < 500 ? 5 : 9;
-    const VALUES_PER_LABEL = VALUE_COUNT / (LABEL_COUNT - 1); // - 1 for the last label that has no values
-
-    if (values.length != VALUE_COUNT) {
-        console.log("Unexpected number of values to plot!");
-        return;
-    }
-
-    let labels = [];
-
-    let now = Date.now();
-    let start = now - 1000 * 60 * 60 * 48;
-    for(let i = 0; i < values.length + 1; ++i) {
-        if (i % VALUES_PER_LABEL == 0) {
-            let d = new Date(start + i * (1000 * 60 * HISTORY_MINUTE_INTERVAL));
-            labels[i] = d.toLocaleTimeString(navigator.language, {hour: '2-digit', minute: '2-digit', hour12: false});
-        }
-        else {
-            labels[i] = null;
-        }
-    }
-
-    let data = {
-        labels: labels,
-        series: [
-            values
-        ]
-    };
-    meter_chart.update(data);
-}
-
-function meter_chart_change_time(value: string) {
-    if (graph_update_interval != null) {
-        clearInterval(graph_update_interval);
-        graph_update_interval = null;
-    }
-
-    if (value == "live") {
-        update_live_meter();
-        graph_update_interval = window.setInterval(update_live_meter, 1000);
-        return;
-    } else if (value == "history") {
-        update_history_meter();
-        graph_update_interval = window.setInterval(update_history_meter, 10000);
-    } else {
-        console.log("Unknown plot type!");
-    }
-}
-
-let meter_chart: Chartist.IChartistLineChart;
-let status_meter_chart: Chartist.IChartistLineChart;
-
-function init_chart() {
-    let data = {};
-
-    // Create a new line chart object where as first parameter we pass in a selector
-    // that is resolving to our chart container element. The Second parameter
-    // is the actual data object.
-    meter_chart = new Chartist.Line('#meter_chart', data as any, {
-        fullWidth: true,
-        showPoint: false,
-        axisX: {
-            offset: 50,
-            labelOffset: {x: 0, y: 5}
-        },
-        axisY: {
-            scaleMinSpace: 40,
-            onlyInteger: true,
-            offset: 60,
-            labelOffset: {x: 0, y: 6}
-        },
-        plugins: [
-            ctAxisTitle({
-                axisX: {
-                axisTitle: __("meter.script.time"),
-                axisClass: "ct-axis-title",
-                offset: {
-                    x: 0,
-                    y: 40
-                },
-                textAnchor: "middle"
-                },
-                axisY: {
-                axisTitle: __("meter.script.power"),
-                axisClass: "ct-axis-title",
-                offset: {
-                    x: 0,
-                    y: 12
-                },
-                flipTitle: true
-                }
-            })
-        ]
-    });
-
-    meter_chart_change_time("history");
-}
-
-async function update_status_chart() {
-    let values = null;
-    try {
-        values = JSON.parse(await util.download("/meter/history").then(blob => blob.text()));
-    } catch {
-        return;
-    }
-
-    const HISTORY_MINUTE_INTERVAL = 4;
-    const VALUE_COUNT = 48 * (60 / HISTORY_MINUTE_INTERVAL);
-    const LABEL_COUNT = 5;
-    const VALUES_PER_LABEL = VALUE_COUNT / (LABEL_COUNT - 1); // - 1 for the last label that has no values
-
-    if (values.length != VALUE_COUNT) {
-        console.log("Unexpected number of values to plot!");
-        return;
-    }
-
-    let labels = [];
-
-    let now = Date.now();
-    let start = now - 1000 * 60 * 60 * 48;
-    for(let i = 0; i < values.length + 1; ++i) {
-        if (i % VALUES_PER_LABEL == 0) {
-            let d = new Date(start + i * (1000 * 60 * HISTORY_MINUTE_INTERVAL));
-            labels[i] = d.toLocaleTimeString(navigator.language, {hour: '2-digit', minute: '2-digit', hour12: false});
-        }
-        else {
-            labels[i] = null;
-        }
-    }
-
-    let data = {
-        labels: labels,
-        series: [
-            values
-        ]
-    };
-
-    init_status_chart(0, Math.max(6 * 230, Math.max(...values))),
-    status_meter_chart.update(data);
-}
-
-function init_status_chart(min_value=0, max_value=0) {
-    let data = {};
-
-    // Create a new line chart object where as first parameter we pass in a selector
-    // that is resolving to our chart container element. The Second parameter
-    // is the actual data object.
-    status_meter_chart = new Chartist.Line('#status_meter_chart', data as any, {
-        fullWidth: true,
-        showPoint: false,
-        low: min_value,
-        high: max_value,
-        axisX: {
-            offset: 50,
-            labelOffset: {x: 0, y: 5}
-        },
-        axisY: {
-            scaleMinSpace: 40,
-            onlyInteger: true,
-            offset: 60,
-            labelOffset: {x: 0, y: 6}
-        },
-        plugins: [
-            ctAxisTitle({
-                axisX: {
-                axisTitle: __("meter.script.time"),
-                axisClass: "ct-axis-title",
-                offset: {
-                    x: 0,
-                    y: 40
-                },
-                textAnchor: "middle"
-                },
-                axisY: {
-                axisTitle: __("meter.script.power"),
-                axisClass: "ct-axis-title",
-                offset: {
-                    x: -10,
-                    y: 15
-                },
-                flipTitle: true
-                }
-            })
-        ]
-    });
-
-
-}
-
 export function init() {
-    // The energy meter tab layout is generated when it is shown first.
-    // We have to create the chart then, to make sure it is scaled correctly.
-    // Immediately deregister afterwards, as we don't want to recreate the chart
-    // every time.
-    $('#sidebar-meter, #energy-manager-meter-configuration-sdm630-details').on('shown.bs.tab', function (e) {
-        init_chart();
-    });
-
-    $('#sidebar-meter, #energy-manager-meter-configuration-sdm630-details').on('hidden.bs.tab', function (e) {
-        if (graph_update_interval != null) {
-            clearInterval(graph_update_interval);
-            graph_update_interval = null;
-        }
-    });
-
-    $('#sidebar-status').on('shown.bs.tab', function (e) {
-        init_status_chart();
-        update_status_chart();
-    });
-
-    init_status_chart();
-    update_status_chart();
-    status_interval = window.setInterval(update_status_chart, 60*1000);
 }
 
 function update_module_visibility() {
     let have_meter = API.hasFeature('meter');
-    let have_phases = API.hasFeature('meter_phases');
-    let have_all_values = API.hasFeature('meter_all_values');
 
     // Don't use meter navbar link if the Energy Manager module is loaded.
     $('#sidebar-meter').prop('hidden', !meter_show_navbar || !have_meter);
     $('#status-meter').prop('hidden', !meter_show_navbar || !have_meter);
-/*
-    $('#meter_phases_active').prop('hidden', !have_phases);
-    $('#meter_phases_connected').prop('hidden', !have_phases);
-    $('#meter_detailed_values_container').prop('hidden', !have_all_values);
-
-    if (have_all_values)
-        build_evse_v2_detailed_values_view();
-*/
-    if(!have_meter) {
-        if (graph_update_interval != null) {
-            clearInterval(graph_update_interval);
-            graph_update_interval = null;
-        }
-
-        if (status_interval != null) {
-            clearInterval(status_interval);
-            status_interval = null;
-        }
-    } else {
-        if (status_interval == null) {
-            status_interval = window.setInterval(update_status_chart, 60*1000);
-        }
-    }
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
