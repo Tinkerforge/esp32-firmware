@@ -142,8 +142,6 @@ void Meter::setupMeter(uint8_t meter_type)
             break;
     }
 
-    power_hist.setup();
-
     for (int i = all_values.count(); i < METER_ALL_VALUES_COUNT; ++i) {
         all_values.add();
     }
@@ -155,6 +153,7 @@ void Meter::setup()
 {
     initialized = true;
     api.restorePersistentConfig("meter/last_reset", &last_reset);
+    power_hist.setup();
 }
 
 void Meter::register_urls()
