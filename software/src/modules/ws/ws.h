@@ -19,6 +19,9 @@
 
 #pragma once
 
+#include <functional>
+#include <vector>
+
 #include "api.h"
 #include "web_sockets.h"
 
@@ -30,6 +33,7 @@ public:
     void setup();
     void register_urls();
     void loop();
+    void addOnConnectCallback(std::function<void(WebSocketsClient)> callback);
 
     // IAPIBackend implementation
     void addCommand(size_t commandIdx, const CommandRegistration &reg) override;
@@ -42,4 +46,5 @@ public:
     bool initialized = false;
 
     WebSockets web_sockets;
+    std::vector<std::function<void(WebSocketsClient)>> on_connect_callbacks;
 };
