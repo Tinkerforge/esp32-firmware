@@ -61,4 +61,4 @@ parser.add_argument('host')
 args = parser.parse_args(sys.argv[1:])
 host = args.host
 
-app.run()
+app.run(host="0.0.0.0")
