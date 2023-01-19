@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2023-01-13.      *
+ * This file was automatically generated on 2023-01-19.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -108,6 +108,21 @@ typedef struct TF_WARPEnergyManager {
  * \ingroup TF_WARPEnergyManager
  */
 #define TF_WARP_ENERGY_MANAGER_FUNCTION_GET_ALL_DATA_1 13
+
+/**
+ * \ingroup TF_WARPEnergyManager
+ */
+#define TF_WARP_ENERGY_MANAGER_FUNCTION_GET_SD_INFORMATION 14
+
+/**
+ * \ingroup TF_WARPEnergyManager
+ */
+#define TF_WARP_ENERGY_MANAGER_FUNCTION_SET_SD_WALLBOX_DATA_POINT 15
+
+/**
+ * \ingroup TF_WARPEnergyManager
+ */
+#define TF_WARP_ENERGY_MANAGER_FUNCTION_GET_SD_WALLBOX_DATA_POINT 16
 
 /**
  * \ingroup TF_WARPEnergyManager
@@ -454,6 +469,27 @@ int tf_warp_energy_manager_get_state(TF_WARPEnergyManager *warp_energy_manager, 
  * TODO
  */
 int tf_warp_energy_manager_get_all_data_1(TF_WARPEnergyManager *warp_energy_manager, bool *ret_contactor_value, uint8_t *ret_r, uint8_t *ret_g, uint8_t *ret_b, float *ret_power, float *ret_energy_import, float *ret_energy_export, uint8_t *ret_energy_meter_type, uint32_t ret_error_count[6], bool ret_input[2], bool *ret_output, uint16_t *ret_voltage, uint8_t *ret_contactor_check_state);
+
+/**
+ * \ingroup TF_WARPEnergyManager
+ *
+ * TODO
+ */
+int tf_warp_energy_manager_get_sd_information(TF_WARPEnergyManager *warp_energy_manager, uint32_t *ret_sd_status, uint32_t *ret_lfs_status, uint16_t *ret_sector_size, uint32_t *ret_sector_count, uint32_t *ret_card_type, uint8_t *ret_product_rev, char ret_product_name[5], uint8_t *ret_manufacturer_id);
+
+/**
+ * \ingroup TF_WARPEnergyManager
+ *
+ * TODO
+ */
+int tf_warp_energy_manager_set_sd_wallbox_data_point(TF_WARPEnergyManager *warp_energy_manager, uint8_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t flags, uint16_t power);
+
+/**
+ * \ingroup TF_WARPEnergyManager
+ *
+ * TODO
+ */
+int tf_warp_energy_manager_get_sd_wallbox_data_point(TF_WARPEnergyManager *warp_energy_manager, uint8_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t *ret_flags, uint16_t *ret_power);
 
 /**
  * \ingroup TF_WARPEnergyManager
