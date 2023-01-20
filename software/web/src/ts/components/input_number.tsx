@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Context } from "preact";
+import { h, Context, Fragment } from "preact";
 import {useContext, useRef} from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { Button } from "react-bootstrap";
@@ -45,8 +45,9 @@ export function InputNumber(props: InputNumberProps) {
                        disabled={props.onValue === undefined}
                        onInput={props.onValue === undefined ? undefined : (e) => props.onValue(parseInt((e.target as HTMLInputElement).value, 10))}
                        {...props}/>
-            <div class="input-group-append">
+            {props.unit || props.onValue ? <div class="input-group-append">
                 {props.unit ? <div class="form-control input-group-text">{this.props.unit}</div> : undefined}
+                {props.onValue ? <>
                 <Button variant="primary"
                         className="form-control px-1"
                         style="margin-right: .125rem !important;"
@@ -63,8 +64,8 @@ export function InputNumber(props: InputNumberProps) {
                             input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
                         }}>
                     <Plus/>
-                </Button>
-            </div>
+                </Button> </> : null}
+            </div> : null }
         </div>
     );
 }
