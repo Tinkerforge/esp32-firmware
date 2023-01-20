@@ -89,7 +89,7 @@ void EnergyManager::pre_setup()
         return "";
     });
 
-    switching_state = SwitchingState_Monitoring;
+    switching_state = SwitchingState::Monitoring;
 }
 
 void EnergyManager::apply_defaults()
@@ -392,7 +392,7 @@ void EnergyManager::update_energy()
         return;
     }
 
-    if (switching_state == SwitchingState_Monitoring) {
+    if (switching_state == SwitchingState::Monitoring) {
         const bool     is_on = is_on_last;
         const uint32_t charge_manager_allocated_power_w = 230 * have_phases * charge_manager_allocated_current_ma / 1000; // watt
 
@@ -497,7 +497,7 @@ void EnergyManager::update_energy()
         // Switch phases or deal with what's available.
         if (switch_phases) {
             set_available_current(0);
-            switching_state = SwitchingState_Stopping;
+            switching_state = SwitchingState::Stopping;
             switching_start = time_now;
         } else {
             // Check against overall minimum power, to avoid wanting to switch off when available power is below 3-phase minimum but switch to 1-phase is possible.
@@ -558,31 +558,31 @@ void EnergyManager::update_energy()
                 logger.printfln("power_at_meter_w %i | target_power_from_grid_w %i | power_available_w %i | wants_3phase %i | is_3phase %i | is_on %i | max_current_limited_ma %u | cm avail ma %u | cm alloc ma %u",
                     power_at_meter_w, target_power_from_grid_w, power_available_w, wants_3phase, is_3phase, is_on, max_current_limited_ma, charge_manager.charge_manager_available_current.get("current")->asUint(), charge_manager_allocated_current_ma);
         }
-    } else if (switching_state == SwitchingState_Stopping) {
+    } else if (switching_state == SwitchingState::Stopping) {
         set_available_current(0);
 
         if (charge_manager.is_charging_stopped(switching_start)) {
-            switching_state = SwitchingState_DisconnectingCP;
+            switching_state = SwitchingState::DisconnectingCP;
             switching_start = millis();
         }
-    } else if (switching_state == SwitchingState_DisconnectingCP) {
+    } else if (switching_state == SwitchingState::DisconnectingCP) {
         charge_manager.set_all_control_pilot_disconnect(true);
 
         if (charge_manager.are_all_control_pilot_disconnected(switching_start)) {
-            switching_state = SwitchingState_TogglingContactor;
+            switching_state = SwitchingState::TogglingContactor;
             switching_start = millis();
         }
-    } else if (switching_state == SwitchingState_TogglingContactor) {
+    } else if (switching_state == SwitchingState::TogglingContactor) {
         tf_warp_energy_manager_set_contactor(&device, wants_3phase);
 
         if (all_data.contactor_value == wants_3phase) {
-            switching_state = SwitchingState_ConnectingCP;
+            switching_state = SwitchingState::ConnectingCP;
             switching_start = millis();
         }
-    } else if (switching_state == SwitchingState_ConnectingCP) {
+    } else if (switching_state == SwitchingState::ConnectingCP) {
         charge_manager.set_all_control_pilot_disconnect(false);
 
-        switching_state = SwitchingState_Monitoring;
+        switching_state = SwitchingState::Monitoring;
         switching_start = 0;
 
         just_switched_phases = true;

@@ -87,13 +87,13 @@ typedef struct {
     uint8_t contactor_check_state;
 } EnergyManagerAllData;
 
-enum SwitchingState
+enum class SwitchingState
 {
-    SwitchingState_Monitoring = 0,
-    SwitchingState_Stopping,
-    SwitchingState_DisconnectingCP,
-    SwitchingState_TogglingContactor,
-    SwitchingState_ConnectingCP
+    Monitoring = 0,
+    Stopping,
+    DisconnectingCP,
+    TogglingContactor,
+    ConnectingCP
 };
 
 class EnergyManager : public DeviceModule<TF_WARPEnergyManager,
