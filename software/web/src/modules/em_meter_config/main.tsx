@@ -38,26 +38,26 @@ function update_em_meter_config_state() {
     $('#em_meter_config_meter_power').val(util.toLocaleFixed(state.energy_meter_power, 0) + " W");
     $('#em_meter_config_meter_energy_import').val(util.toLocaleFixed(state.energy_meter_energy_import, 3) + " kWh");
     $('#em_meter_config_meter_energy_export').val(util.toLocaleFixed(state.energy_meter_energy_export, 3) + " kWh");
-    $('#em-meter-config-sdm-details').prop('hidden', state.energy_meter_type == 0);
+    $('#em_meter_config-sdm-details').prop('hidden', state.energy_meter_type == 0);
 }
 
 // Only show the relevant html elements, drop-down boxes and options
 function update_em_meter_config_html_collapse(meter_type: number) {
     let state: { [id: string]: "show" | "hide" } = {
-        '#em-meter-config-sdm': 'hide',
-        '#em-meter-config-sunspec': 'hide',
-        '#em-meter-config-modbus-tcp': 'hide',
+        '#em_meter_config-sdm': 'hide',
+        '#em_meter_config-sunspec': 'hide',
+        '#em_meter_config-modbus-tcp': 'hide',
         '#em-meter-generic-details': 'hide',
     }
 
     if (meter_type == 1) {
-        state['#em-meter-config-sdm'] = 'show';
+        state['#em_meter_config-sdm'] = 'show';
     }
     else if (meter_type == 2) {
-        state['#em-meter-config-sunspec'] = 'show';
+        state['#em_meter_config-sunspec'] = 'show';
     }
     else if (meter_type == 3) {
-        state['#em-meter-config-modbus-tcp'] = 'show';
+        state['#em_meter_config-modbus-tcp'] = 'show';
     }
 
     if (meter_type >= 2) {
@@ -84,5 +84,5 @@ export function add_event_listeners(source: API.APIEventTarget) {
 }
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-em-meter-config').prop('hidden', !module_init.energy_manager);
+    $('#sidebar-em_meter_config').prop('hidden', !module_init.energy_manager);
 }
