@@ -374,6 +374,7 @@ export class Meter extends Component<{}, MeterState> {
 
         util.eventTarget.addEventListener("meter/history_samples", () => {
             let history = API.get("meter/history_samples");
+            this.state.history_extra.samples.pop() // remove last null, added by calculate_history_extra to force a trailing tick mark
             let history_extra = calculate_history_extra(0, array_append(this.state.history_extra.samples, history.samples, 720));
 
             this.setState({history_extra: history_extra});
@@ -515,6 +516,7 @@ export class StatusMeterChart extends Component<{}, StatusMeterChartState> {
 
         util.eventTarget.addEventListener("meter/history_samples", () => {
             let history = API.get("meter/history_samples");
+            this.state.history_extra.samples.pop() // remove last null, added by calculate_history_extra to force a trailing tick mark
             let history_extra = calculate_history_extra(0, array_append(this.state.history_extra.samples, history.samples, 720));
 
             this.setState({history_extra: history_extra});
