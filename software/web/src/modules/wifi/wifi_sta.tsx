@@ -123,6 +123,10 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
         return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-wifi"><title>RSSI: {rssi}</title><path stroke="#cccccc" d="M1.42 9a16 16 0 0 1 21.16 0"></path><path stroke="#cccccc" d="M5 12.55a11 11 0 0 1 14.08 0"></path><path stroke="#cccccc" d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>;
     }
 
+    hackToAllowSave() {
+        document.getElementById("wifi_sta_config_form").dispatchEvent(new Event('input'));
+    }
+
     get_scan_results(state: Readonly<STAConfig & WifiSTAState>) {
         if (state.scan_running) {
             return <>
@@ -163,7 +167,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
             return <Dropdown.Item
                         as="button"
                         type="button"
-                        onClick={() =>
+                        onClick={() => {
                             this.setState({
                                 ssid: ap.ssid,
                                 bssid: this.string_to_bssid(ap.bssid),
@@ -171,7 +175,9 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                                 passphrase_placeholder: passphrase_required ? __("wifi.content.required") : __("wifi.content.unchanged"),
                                 enable_sta: true,
                                 bssid_lock: enable_bssid_lock
-                            })}
+                            });
+                            this.hackToAllowSave();
+                        }}
                         key={ap.bssid}>
                     {this.wifi_symbol(ap.rssi)}
                     {ap.encryption == 0 ? <Unlock/> : <Lock/>}
