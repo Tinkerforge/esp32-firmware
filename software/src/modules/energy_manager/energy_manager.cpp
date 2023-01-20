@@ -44,8 +44,8 @@ void EnergyManager::pre_setup()
         {"contactor_check_state", Config::Uint8(0)},
         {"energy_meter_type", Config::Uint8(0)},
         {"energy_meter_power", Config::Float(0)}, // watt
-        {"energy_meter_energy_import", Config::Float(0)}, // kw/h
-        {"energy_meter_energy_export", Config::Float(0)}, // kw/h
+        {"energy_meter_energy_import", Config::Float(0)}, // kWh
+        {"energy_meter_energy_export", Config::Float(0)}, // kWh
         // Derived states
         {"phases_switched", Config::Uint8(0)},
         {"contactor_check_tripped", Config::Bool(false)},
