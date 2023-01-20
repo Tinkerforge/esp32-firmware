@@ -197,7 +197,7 @@ function calculate_history_extra(offset: number, samples: Readonly<number[]>): H
         extra.samples[i] = samples[i];
 
         let d = new Date(start + i * (1000 * 60 * HISTORY_MINUTE_INTERVAL));
-        extra.tooltip_titles[i] = d.toLocaleTimeString(navigator.language, {hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false});
+        extra.tooltip_titles[i] = d.toLocaleTimeString(navigator.language, {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false});
 
         if (i % VALUES_PER_LABEL == 0) {
             extra.grid_ticks[i] = d.toLocaleTimeString(navigator.language, {hour: '2-digit', minute: '2-digit', hour12: false});
