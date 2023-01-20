@@ -1,6 +1,6 @@
 export interface state {
     contactor: boolean,
-    led_rgb: Uint8Array,
+    led_rgb: number[],
     gpio_input_state: boolean[],
     gpio_output_state: boolean,
     input_voltage: number,
