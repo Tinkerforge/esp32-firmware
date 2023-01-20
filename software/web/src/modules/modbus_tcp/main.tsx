@@ -144,7 +144,7 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
         return (
             <>
                 <ConfigForm id="modbus_tcp_config_form" title={__("modbus_tcp.content.modbus_tcp")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
-                <FormRow label={__("modbus_tcp.content.enable")}>
+                    <FormRow label={__("modbus_tcp.content.enable")}>
                         <InputSelect items={[
                             ["0", __("modbus_tcp.content.disabled")],
                             ["1", __("modbus_tcp.content.read_only")],
@@ -153,7 +153,7 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
                         value={this.state.enable && this.state.evse_enable ? "2" : this.state.enable ? "1" : "0"}
                         onValue={(v) => {
                             this.setState({enable: Number(v) != 0, evse_enable: v == "2"});
-                        }}></InputSelect>
+                        }}/>
                     </FormRow>
                     <FormRow label={__("modbus_tcp.content.port")} label_muted={__("modbus_tcp.content.port_muted")}>
                         <InputNumber value={state.port}
@@ -170,7 +170,7 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
                         value={this.state.table}
                         onValue={(v) => {
                             this.setState({table: Number(v)});
-                        }}></InputSelect>
+                        }}/>
                     </FormRow>
                 </ConfigForm>
                 {
