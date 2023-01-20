@@ -22,275 +22,452 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h, render } from "preact";
-import { __, translate_unchecked } from "../../ts/translation";
-import { ConfigPageHeader } from "../../ts/components/config_page_header";
+import { h, render, Fragment } from "preact";
+import { __ } from "../../ts/translation";
+import { ConfigComponent } from "src/ts/components/config_component";
+import { FormRow } from "src/ts/components/form_row";
+import { IndicatorGroup } from "src/ts/components/indicator_group";
+import { Switch } from "src/ts/components/switch";
+import { InputSelect } from "src/ts/components/input_select";
+import { InputFloat } from "src/ts/components/input_float";
+import { InputNumber } from "src/ts/components/input_number";
+import { ConfigForm } from "src/ts/components/config_form";
+import { FormSeparator } from "src/ts/components/form_separator";
+import { Button, Collapse } from "react-bootstrap";
+import { InputText } from "src/ts/components/input_text";
+import { CollapsedSection } from "src/ts/components/collapsed_section";
 
-render(<ConfigPageHeader prefix="energy_manager" title={__("energy_manager.content.energy_manager")} />, $('#energy_manager_header')[0]);
-
-function update_energy_manager_state() {
-    let state = API.get('energy_manager/state');
-
-    $('#state_contactor').val(translate_unchecked(state.contactor ?  'energy_manager.content.three_phases_active' : 'energy_manager.content.one_phase_active'));
-    $('#state_led_r').val(state.led_rgb[0]);
-    $('#state_led_g').val(state.led_rgb[1]);
-    $('#state_led_b').val(state.led_rgb[2]);
-    util.update_button_group(`btn_group_gpio0`, state.gpio_input_state[0] ? 0 : 1); //intentionally inverted: the high button is the first
-    util.update_button_group(`btn_group_gpio1`, state.gpio_input_state[1] ? 0 : 1); //intentionally inverted: the high button is the first
-    util.update_button_group(`btn_group_gpio2`, state.gpio_output_state   ? 0 : 1); //intentionally inverted: the high button is the first
-    $('#state_input_voltage').val(`${state.input_voltage} mV`);
-    $('#state_contactor_check').val(state.contactor_check_state);
+interface EnergyManagerState {
+    state: API.getType['energy_manager/state'];
+    debug_running: boolean;
+    debug_status: string;
 }
 
-function update_energy_manager_config() {
-    let config = API.default_updater('energy_manager/config', ['target_power_from_grid', 'maximum_available_current', 'minimum_current', 'input3_config_limit', 'input4_config_limit']);
-
-    util.setNumericInput("energy_manager_config_target_power_from_grid", config.target_power_from_grid / 1000, 3);
-    util.setNumericInput("energy_manager_config_guaranteed_power", config.guaranteed_power / 1000, 3);
-    util.setNumericInput("energy_manager_config_maximum_available_current", config.maximum_available_current / 1000, 3);
-    util.setNumericInput("energy_manager_config_minimum_current", config.minimum_current / 1000, 3);
-    util.setNumericInput("energy_manager_config_input3_config_limit", config.input3_config_limit / 1000, 3);
-    util.setNumericInput("energy_manager_config_input4_config_limit", config.input4_config_limit / 1000, 3);
-}
-
-// Only show the relevant html elements, drop-down boxes and options
-function update_energy_manager_html_visibility() {
-    // Only updates the option elements if there are actual changes.
-    // Otherwise we may overwrite the user-selected element
-    function update_options(element: any, options: Array<{value: number, name: string}>) {
-        let element_html = element.html();
-        let found = true;
-        for (let option of options) {
-            if(element_html.indexOf(translate_unchecked(`energy_manager.content.${option.name}`)) < 0) {
-                found = false;
-                break;
-            }
-        }
-
-        if(!found) {
-            element.empty();
-            let new_element_html = "";
-            for (let option of options) {
-                new_element_html += '<option value="' + option.value + '">' + translate_unchecked(`energy_manager.content.${option.name}`) + '</option>';
-            }
-            element.html(new_element_html);
-        }
-    }
-
-    // Update contactor section
-    let phase_switching_config_is_dd = $('#energy_manager_config_phase_switching_mode')
-    if ($('#energy_manager_config_contactor_installed').is(':checked')) {
-        update_options(phase_switching_config_is_dd, [{value: 0, name: "automatic"}, {value: 1, name: "always_one_phase"}, {value: 2, name: "always_three_phases"}]);
-    } else {
-        update_options(phase_switching_config_is_dd, [{value: 1, name: "fixed_one_phase"}, {value: 2, name: "fixed_three_phases"}]);
-    }
-
-    // Update relay section
-    if($('#energy_manager_config_relay_config').val()== '1') {
-        $('#energy_manager_config_relay_rules').collapse('show');
-    } else {
-        $('#energy_manager_config_relay_rules').collapse('hide');
-    }
-
-    let relay_config_is_dd = $('#energy_manager_config_relay_config_is')
-    let relay_config_when = $('#energy_manager_config_relay_config_when').val() as number;
-    if ((relay_config_when == 0) || (relay_config_when == 1)) { // input 3|4
-        update_options(relay_config_is_dd, [{value: 0, name: "high"}, {value: 1, name: "low"}]);
-    } else if (relay_config_when == 2) { // phase switching
-        update_options(relay_config_is_dd, [{value: 2, name: "one_phase"}, {value: 3, name: "three_phase"}]);
-    } else if (relay_config_when == 3) { // contactor check
-        update_options(relay_config_is_dd, [{value: 4, name: "contactor_fail"}, {value: 5, name: "contactor_ok"}]);
-    } else if (relay_config_when == 4) { // power available
-        update_options(relay_config_is_dd, [{value: 6, name: "power_sufficient"}, {value: 7, name: "power_insufficient"}]);
-    } else if (relay_config_when == 5) { // grid draw
-        update_options(relay_config_is_dd, [{value: 8, name: "grid_gt0"}, {value: 9, name: "grid_ge0"}, {value: 10, name: "grid_le0"}, {value: 11, name: "grid_lt0"}]);
-    } else {
-        update_options(relay_config_is_dd, []);
-    }
-
-    // Update input section
-    let input3_config_dd = $('#energy_manager_config_input3_config');
-    if ($('#energy_manager_config_contactor_installed').is(':checked')) {
-        update_options(input3_config_dd, [{value: 1, name: "contactor_check"}]);
-        input3_config_dd.prop("disabled", true);
-    } else {
-        update_options(input3_config_dd, [{value: 0, name: "input_unused"}, {value: 2, name: "block_charging"}, {value: 3, name: "switch_excess_charging"}, {value: 4, name: "limit_max_current"}, {value: 5, name: "override_grid_draw"}]);
-        input3_config_dd.prop("disabled", false);
-    }
-
-    let input3_config = input3_config_dd.val() as number;
-    if (input3_config >= 2) {
-        if (input3_config >= 4) {
-            if (input3_config == 4) {
-                $('#energy_manager_config_input3_rules_limit_label').html(translate_unchecked(`energy_manager.content.limit_to_current`));
-                $('#energy_manager_config_input3_rules_limit_unit').html('A');
-            } else if (input3_config == 5) {
-                $('#energy_manager_config_input3_rules_limit_label').html(translate_unchecked(`energy_manager.content.limit_grid_draw`));
-                $('#energy_manager_config_input3_rules_limit_unit').html('kW');
-            }
-            $('#energy_manager_config_input3_rules_limit').collapse('show');
-        } else {
-            // For PreAct: Currently, the limit section is always shown on page load even when no limit option is selected.
-            $('#energy_manager_config_input3_rules_limit').collapse('hide');
-        }
-        $('#energy_manager_config_input3_rules').collapse('show');
-    } else {
-        $('#energy_manager_config_input3_rules').collapse('hide');
-    }
-
-    let input4_config = $('#energy_manager_config_input4_config').val() as number;
-    if (input4_config >= 2) {
-        if (input4_config >= 4) {
-            if (input4_config == 4) {
-                $('#energy_manager_config_input4_rules_limit_label').html(translate_unchecked(`energy_manager.content.limit_to_current`));
-                $('#energy_manager_config_input4_rules_limit_unit').html('A');
-            } else if (input4_config == 5) {
-                $('#energy_manager_config_input4_rules_limit_label').html(translate_unchecked(`energy_manager.content.limit_grid_draw`));
-                $('#energy_manager_config_input4_rules_limit_unit').html('kW');
-            }
-            $('#energy_manager_config_input4_rules_limit').collapse('show');
-        } else {
-            // For PreAct: Currently, the limit section is always shown on page load even when no limit option is selected.
-            $('#energy_manager_config_input4_rules_limit').collapse('hide');
-        }
-        $('#energy_manager_config_input4_rules').collapse('show');
-    } else {
-        $('#energy_manager_config_input4_rules').collapse('hide');
-    }
-}
-
-let debug_log = "";
-
-function allow_debug(b: boolean) {
-    $('#debug_start').prop("disabled", !b);
-    $('#debug_stop').prop("disabled", b);
-    if (!b) {
-        window.onbeforeunload = (e: Event) => {
-            e.preventDefault();
-            // returnValue is not a boolean, but the string to be shown
-            // in the "are you sure you want to close this tab" message
-            // box. However this string is only shown in some browsers.
-            e.returnValue = __("energy_manager.script.tab_close_warning") as any;
-        }
-    } else {
-        window.onbeforeunload = null;
-    }
-}
-
-// TODO: replace with evse version of this function when porting to preact
-async function get_debug_report_and_event_log(status: HTMLInputElement) {
-    status.value = __("energy_manager.script.loading_debug_report");
-
-    try {
-        debug_log += await util.download("/debug_report").then(blob => blob.text());
-        debug_log += "\n\n";
-    } catch {
-        status.value = __("energy_manager.script.loading_debug_report_failed");
-        allow_debug(true);
-        return false;
-    }
-
-    status.value = __("energy_manager.script.loading_event_log");
-
-    try {
-        debug_log += await util.download("/event_log").then(blob => blob.text());
-        debug_log += "\n";
-    } catch {
-        status.value = __("energy_manager.script.loading_event_log_failed");
-        allow_debug(true);
-        return false;
-    }
-
-    return true;
-}
-
-// TODO: replace with evse version of this function when porting to preact
-async function debug_start() {
+export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, EnergyManagerState> {
     debug_log = "";
-    let status = $('#debug_label')[0] as HTMLInputElement;
-    allow_debug(false);
 
-    if (!await get_debug_report_and_event_log(status))
-        return;
+    constructor() {
+        super('energy_manager/config',
+            __("energy_manager.script.save_failed"),
+            __("energy_manager.script.reboot_content_changed"));
 
-    status.value = __("energy_manager.script.starting_debug");
-
-    try {
-        await util.download("/energy_manager/start_debug");
-    } catch {
-        status.value = __("energy_manager.script.starting_debug_failed");
-        allow_debug(true);
-        return;
-    }
-
-    status.value = __("energy_manager.script.debug_running");
-}
-
-// TODO: replace with evse version of this function when porting to preact
-async function debug_stop() {
-    let status = $('#debug_label')[0] as HTMLInputElement;
-
-    allow_debug(true);
-
-    try {
-        await util.download("/energy_manager/stop_debug");
-    } catch {
-        status.value = __("energy_manager.script.debug_stop_failed");
-        return;
-    }
-
-    debug_log += "\n\n";
-
-    status.value = __("energy_manager.script.debug_stopped");
-
-    if (!await get_debug_report_and_event_log(status))
-        return;
-
-    status.value = __("energy_manager.script.debug_done");
-
-    util.downloadToFile(debug_log, "energy_manager-debug-log", "txt", "text/plain");
-}
-
-export function init() {
-    $("#debug_start").on("click", debug_start);
-    $("#debug_stop").on("click", debug_stop);
-
-    API.register_config_form('energy_manager/config', {
-            overrides: () => ({
-                target_power_from_grid: Math.round(($('#energy_manager_config_target_power_from_grid').val() as number) * 1000),
-                guaranteed_power: Math.round(($('#energy_manager_config_guaranteed_power').val() as number) * 1000),
-                maximum_available_current: Math.round(($('#energy_manager_config_maximum_available_current').val() as number) * 1000),
-                minimum_current: Math.round(($('#energy_manager_config_minimum_current').val() as number) * 1000),
-                input3_config_limit: Math.round(($('#energy_manager_config_input3_config_limit').val() as number) * 1000),
-                input4_config_limit: Math.round(($('#energy_manager_config_input4_config_limit').val() as number) * 1000)
-                        }),
-            error_string: __("energy_manager.script.config_failed"),
-            reboot_string: __("energy_manager.script.reboot_content_changed")
+        util.eventTarget.addEventListener('energy_manager/state', () => {
+            this.setState({state: API.get('energy_manager/state')});
         });
 
-    $("#energy_manager_config_contactor_installed, \
-       #energy_manager_config_relay_config, \
-       #energy_manager_config_relay_config_when, \
-       #energy_manager_config_input3_config, \
-       #energy_manager_config_input4_config"
-    ).on("change", update_energy_manager_html_visibility);
+        util.eventTarget.addEventListener("energy_manager/debug_header", (e) => {
+            this.debug_log += e.data + "\n";
+        }, false);
 
-    allow_debug(true);
+        util.eventTarget.addEventListener("energy_manager/debug", (e) => {
+            this.debug_log += e.data + "\n";
+        }, false);
+    }
+
+    async get_debug_report_and_event_log() {
+        try {
+            this.setState({debug_status: __("energy_manager.script.loading_debug_report")});
+            this.debug_log += await util.download("/debug_report").then(blob => blob.text());
+            this.debug_log += "\n\n";
+        } catch (error) {
+            this.setState({debug_running: false, debug_status: __("energy_manager.script.loading_debug_report_failed")});
+            throw __("energy_manager.script.loading_debug_report_failed") + ": " + error;
+        }
+
+        try {
+            this.setState({debug_status: __("energy_manager.script.loading_event_log")});
+            this.debug_log += await util.download("/event_log").then(blob => blob.text());
+            this.debug_log += "\n";
+        } catch (error) {
+            this.setState({debug_running: false, debug_status: __("energy_manager.script.loading_event_log_failed")});
+            throw __("energy_manager.script.loading_event_log_failed") + ": " + error;
+        }
+    }
+
+    async debug_start() {
+        this.debug_log = "";
+        this.setState({debug_running: true});
+
+        try {
+            await this.get_debug_report_and_event_log();
+
+            this.setState({debug_status: __("energy_manager.script.starting_debug")});
+        } catch(error) {
+            this.setState({debug_running: false, debug_status: error});
+            return;
+        }
+
+        try{
+            await util.download("/energy_manager/start_debug");
+        } catch {
+            this.setState({debug_running: false, debug_status: __("energy_manager.script.starting_debug_failed")});
+            return;
+        }
+
+        this.setState({debug_status: __("energy_manager.script.debug_running")});
+    }
+
+    async debug_stop() {
+        this.setState({debug_running: false});
+
+        try {
+            await util.download("/energy_manager/stop_debug");
+        } catch {
+            this.setState({debug_running: true, debug_status: __("energy_manager.script.debug_stop_failed")});
+        }
+
+        try {
+            this.debug_log += "\n\n";
+            this.setState({debug_status: __("energy_manager.script.debug_stopped")});
+
+            await this.get_debug_report_and_event_log();
+            this.setState({debug_status: __("energy_manager.script.debug_done")});
+        } catch (error) {
+            this.debug_log += "\n\nError while stopping charge protocol: ";
+            this.debug_log += error;
+
+            this.setState({debug_status: error});
+        }
+
+        //Download log in any case: Even an incomplete log can be useful for debugging.
+        util.downloadToFile(this.debug_log, "energy_manager-debug-log", "txt", "text/plain");
+    }
+
+    render(props: {}, s: Readonly<API.getType['energy_manager/config'] & EnergyManagerState>) {
+        if (!s || !s.state)
+            return (<></>);
+
+        if (s.debug_running) {
+            window.onbeforeunload = (e: Event) => {
+                e.preventDefault();
+                // returnValue is not a boolean, but the string to be shown
+                // in the "are you sure you want to close this tab" message
+                // box. However this string is only shown in some browsers.
+                e.returnValue = __("energy_manager.script.tab_close_warning") as any;
+            }
+        } else {
+            window.onbeforeunload = null;
+        }
+
+        const TODO_DEFINE_MAXIMUM = 100000;
+
+        return (
+            <>
+                <ConfigForm id="energy_manager_config_form" title={__("energy_manager.content.energy_manager")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+                    <FormRow label={__("energy_manager.content.enable_excess_charging")}>
+                        <Switch desc={__("energy_manager.content.enable_excess_charging_desc")}
+                                checked={s.excess_charging_enable}
+                                onClick={this.toggle('excess_charging_enable')}/>
+                    </FormRow>
+
+                    <FormRow label={__("energy_manager.content.contactor_installed")}>
+                        <Switch desc={__("energy_manager.content.contactor_installed_desc")}
+                                checked={s.contactor_installed}
+                                onClick={() => this.setState({contactor_installed: !this.state.contactor_installed, input3_config: this.state.contactor_installed ? this.state.input3_config : 1})}/>
+                    </FormRow>
+
+                    <FormRow label={__("energy_manager.content.phase_switching_mode")}>
+                        <InputSelect
+                            required
+                            items={s.contactor_installed ? [
+                                    ["0", __("energy_manager.content.automatic")],
+                                    ["1", __("energy_manager.content.always_one_phase")],
+                                    ["2", __("energy_manager.content.always_three_phases")],
+                                ] : [
+                                    ["1", __("energy_manager.content.fixed_one_phase")],
+                                    ["2", __("energy_manager.content.fixed_three_phases")],
+                                ]
+                            }
+                            value={s.phase_switching_mode}
+                            onValue={(v) => this.setState({phase_switching_mode: parseInt(v)})}/>
+                    </FormRow>
+
+                    <FormRow label={__("energy_manager.content.target_power_from_grid")} label_muted={__("energy_manager.content.target_power_from_grid_muted")}>
+                        <InputFloat
+                            unit="kW"
+                            value={s.target_power_from_grid}
+                            onValue={this.set('target_power_from_grid')}
+                            digits={3}
+                            min={0}
+                            max={TODO_DEFINE_MAXIMUM}
+                            />
+                    </FormRow>
+
+                    <FormRow label={__("energy_manager.content.guaranteed_power")} label_muted={__("energy_manager.content.guaranteed_power_muted")}>
+                        <InputFloat
+                            unit="kW"
+                            value={s.guaranteed_power}
+                            onValue={this.set('guaranteed_power')}
+                            digits={3}
+                            min={0}
+                            max={22000}
+                            />
+                    </FormRow>
+
+                    <FormRow label={__("energy_manager.content.maximum_available_current")} label_muted={__("energy_manager.content.maximum_available_current_muted")}>
+                        <InputFloat
+                            unit="A"
+                            value={s.maximum_available_current}
+                            onValue={this.set('maximum_available_current')}
+                            digits={3}
+                            min={0}
+                            max={TODO_DEFINE_MAXIMUM}
+                            />
+                    </FormRow>
+
+                    <FormRow label={__("energy_manager.content.minimum_current")} label_muted={__("energy_manager.content.minimum_current_muted")}>
+                        <InputFloat
+                            unit="A"
+                            value={s.minimum_current}
+                            onValue={this.set('minimum_current')}
+                            digits={3}
+                            min={6000}
+                            max={32000}
+                            />
+                    </FormRow>
+
+                    <FormRow label={__("energy_manager.content.hysteresis_time")} label_muted={__("energy_manager.content.hysteresis_time_muted")}>
+                        <InputNumber
+                            unit="min"
+                            value={s.hysteresis_time}
+                            onValue={this.set('hysteresis_time')}
+                            min={s.hysteresis_wear_accepted ? 0 : 10}
+                            max={60}
+                            />
+                    </FormRow>
+
+                    <FormRow label={__("energy_manager.content.hysteresis_wear_accepted")}>
+                        <Switch desc={__("energy_manager.content.hysteresis_wear_accepted_desc")}
+                                checked={s.hysteresis_wear_accepted}
+                                onClick={() => {this.toggle('hysteresis_wear_accepted')(); if (s.hysteresis_wear_accepted && s.hysteresis_time < 10) this.setState({hysteresis_time: 10});}}/>
+                    </FormRow>
+
+                    <FormSeparator heading={__("energy_manager.content.relay")}/>
+
+                    <FormRow label={__("energy_manager.content.relay_config")}>
+                        <InputSelect
+                            items={[
+                                    ["0", __("energy_manager.content.relay_unused")],
+                                    ["1", __("energy_manager.content.relay_rules")],
+                                    ["2", __("energy_manager.content.extern")],
+                                ]}
+                            value={s.relay_config}
+                            onValue={(v) => this.setState({relay_config: parseInt(v)})}/>
+                    </FormRow>
+
+                    <Collapse in={s.relay_config == 1}>
+                        <div>
+                            <FormRow label={__("energy_manager.content.relay_config_when")}>
+                                <InputSelect
+                                    required={s.relay_config == 1}
+                                    items={[
+                                            ["0", __("energy_manager.content.input3")],
+                                            ["1", __("energy_manager.content.input4")],
+                                            ["2", __("energy_manager.content.phase_switching")],
+                                            ["3", __("energy_manager.content.contactor_check")],
+                                            ["4", __("energy_manager.content.power_available")],
+                                            ["5", __("energy_manager.content.grid_draw")],
+                                        ]}
+                                    value={s.relay_config_when}
+                                    onValue={(v) => this.setState({relay_config_when: parseInt(v)})}/>
+                            </FormRow>
+
+                            <FormRow label={__("energy_manager.content.relay_config_is")}>
+                                <InputSelect
+                                    required={s.relay_config == 1}
+                                    items={({0: [
+                                                ["0", __("energy_manager.content.high")],
+                                                ["1", __("energy_manager.content.low")],
+                                            ],
+                                            1: [
+                                                ["0", __("energy_manager.content.high")],
+                                                ["1", __("energy_manager.content.low")],
+                                            ],
+                                            2: [
+                                                ["2", __("energy_manager.content.one_phase")],
+                                                ["3", __("energy_manager.content.three_phase")],
+                                            ],
+                                            3: [
+                                                ["4", __("energy_manager.content.contactor_fail")],
+                                                ["5", __("energy_manager.content.contactor_ok")]
+                                            ],
+                                            4: [
+                                                ["6", __("energy_manager.content.power_sufficient")],
+                                                ["7", __("energy_manager.content.power_insufficient")]
+                                            ],
+                                            5: [
+                                                ["8", __("energy_manager.content.grid_gt0")],
+                                                ["9", __("energy_manager.content.grid_ge0")],
+                                                ["10", __("energy_manager.content.grid_le0")],
+                                                ["11", __("energy_manager.content.grid_lt0")]
+                                            ],
+                                        }[s.relay_config_when] as [string, string][])
+                                    }
+                                    value={s.relay_config_is}
+                                    onValue={(v) => this.setState({relay_config_is: parseInt(v)})}/>
+                            </FormRow>
+
+                            <FormRow label={__("energy_manager.content.relay_config_then")}>
+                                <label class="form-control">{__("energy_manager.content.relay_config_close")}</label>
+                            </FormRow>
+                        </div>
+                    </Collapse>
+
+                    <FormSeparator heading={__("energy_manager.content.input3")}/>
+
+                    <FormRow label={__("energy_manager.content.input3_config")}>
+                        <InputSelect
+                            required
+                            items={s.contactor_installed ?
+                                [["1", __("energy_manager.content.contactor_check")]] :
+                                [
+                                    ["0", __("energy_manager.content.input_unused")],
+                                    ["2", __("energy_manager.content.block_charging")],
+                                    ["3", __("energy_manager.content.switch_excess_charging")],
+                                    ["4", __("energy_manager.content.limit_max_current")],
+                                    ["5", __("energy_manager.content.override_grid_draw")],
+                                ]
+                            }
+                            value={s.input3_config}
+                            onValue={(v) => this.setState({input3_config: parseInt(v)})}
+                            disabled={s.contactor_installed}/>
+                    </FormRow>
+
+                    <Collapse in={s.input3_config >= 2}>
+                        <div>
+                            <FormRow label={__("energy_manager.content.input_when")}>
+                                <InputSelect
+                                    required={s.input3_config >= 2}
+                                    items={[
+                                            ["0", __("energy_manager.content.input_high")],
+                                            ["1", __("energy_manager.content.input_low")],
+                                        ]}
+                                    value={s.input3_config_when}
+                                    onValue={(v) => this.setState({input3_config_when: parseInt(v)})}/>
+                            </FormRow>
+
+                            <Collapse in={s.input3_config >= 4}>
+                                <div>
+                                    <FormRow label={s.input3_config == 4 ? __("energy_manager.content.limit_to_current") : __("energy_manager.content.limit_grid_draw")}>
+                                    <InputNumber
+                                        required={s.input3_config >= 4}
+                                        unit={s.input3_config == 4 ? "A" : "kW"}
+                                        value={s.input3_config_limit}
+                                        onValue={this.set('input3_config_limit')}
+                                        min={0}
+                                        max={TODO_DEFINE_MAXIMUM}
+                                        />
+                                    </FormRow>
+                                </div>
+                            </Collapse>
+                        </div>
+                    </Collapse>
+
+                    <FormSeparator heading={__("energy_manager.content.input4")}/>
+
+                    <FormRow label={__("energy_manager.content.input4_config")}>
+                        <InputSelect
+                            required
+                            items={[
+                                    ["0", __("energy_manager.content.input_unused")],
+                                    ["2", __("energy_manager.content.block_charging")],
+                                    ["3", __("energy_manager.content.switch_excess_charging")],
+                                    ["4", __("energy_manager.content.limit_max_current")],
+                                    ["5", __("energy_manager.content.override_grid_draw")],
+                                ]
+                            }
+                            value={s.input4_config}
+                            onValue={(v) => this.setState({input4_config: parseInt(v)})}/>
+                    </FormRow>
+
+                    <Collapse in={s.input4_config >= 2}>
+                        <div>
+                            <FormRow label={__("energy_manager.content.input_when")}>
+                                <InputSelect
+                                    required={s.input4_config >= 2}
+                                    items={[
+                                            ["0", __("energy_manager.content.input_high")],
+                                            ["1", __("energy_manager.content.input_low")],
+                                        ]}
+                                    value={s.input4_config_when}
+                                    onValue={(v) => this.setState({input4_config_when: parseInt(v)})}/>
+                            </FormRow>
+
+                            <Collapse in={s.input4_config >= 4}>
+                                <div>
+                                    <FormRow label={s.input4_config == 4 ? __("energy_manager.content.limit_to_current") : __("energy_manager.content.limit_grid_draw")}>
+                                        <InputNumber
+                                            required={s.input4_config >= 4}
+                                            unit={s.input4_config == 4 ? "A" : "kW"}
+                                            value={s.input4_config_limit}
+                                            onValue={this.set('input4_config_limit')}
+                                            min={0}
+                                            max={TODO_DEFINE_MAXIMUM}
+                                            />
+                                    </FormRow>
+                                </div>
+                            </Collapse>
+                        </div>
+                    </Collapse>
+
+                    <FormSeparator heading={__("energy_manager.content.debug")}/>
+
+                    <FormRow label={__("energy_manager.content.debug_description")} label_muted={__("energy_manager.content.debug_description_muted")}>
+                        <div class="input-group pb-2">
+                            <Button variant="primary" className="form-control rounded-right mr-2" onClick={() => {this.debug_start()}} disabled={s.debug_running}>{__("energy_manager.content.debug_start")}</Button>
+                            <Button variant="primary" className="form-control rounded-left" onClick={() => {this.debug_stop()}} disabled={!s.debug_running}>{__("energy_manager.content.debug_stop")}</Button>
+                        </div>
+                        <InputText value={s.debug_status}/>
+                    </FormRow>
+
+                    <CollapsedSection label={__("energy_manager.content.low_level_state")}>
+                        <FormRow label={__("energy_manager.content.state_contactor")}>
+                            <InputText value={s.state.contactor ? __('energy_manager.content.three_phases_active') : __('energy_manager.content.one_phase_active')}/>
+                        </FormRow>
+
+                        <FormRow label={__("energy_manager.content.state_led")} label_muted={__("energy_manager.content.state_led_names")}>
+                            <div class="row mx-n1">
+                                {s.state.led_rgb.map((x, i) => (
+                                    <div key={i} class="mb-1 col-4 px-1">
+                                        <InputText value={x}/>
+                                    </div>
+                                ))}
+                            </div>
+                        </FormRow>
+
+                        <FormRow label={__("energy_manager.content.gpios")} label_muted={__("energy_manager.content.gpio_names_0")}>
+                            <div class="row mx-n1">
+                                {[...s.state.gpio_input_state, s.state.gpio_output_state].map((x, j) => (
+                                    <IndicatorGroup vertical key={j} class="mb-1 col px-1"
+                                        value={x ? 0 : 1} //intentionally inverted: the high button is the first
+                                        items={[
+                                            ["primary", __("energy_manager.content.gpio_high")],
+                                            ["secondary",   __("energy_manager.content.gpio_low")]
+                                        ]}/>
+                                ))}
+                            </div>
+                        </FormRow>
+
+                        <FormRow label={__("energy_manager.content.state_input_voltage")}>
+                            <InputFloat value={s.state.input_voltage} digits={3} unit={'V'} />
+                        </FormRow>
+
+                        <FormRow label={__("energy_manager.content.state_contactor_check")}>
+                            <InputNumber value={s.state.contactor_check_state} />
+                        </FormRow>
+                    </CollapsedSection>
+                </ConfigForm>
+            </>
+        )
+    }
 }
 
-export function add_event_listeners(source: API.APIEventTarget) {
-    source.addEventListener('energy_manager/state', update_energy_manager_state);
-    source.addEventListener('energy_manager/config', update_energy_manager_config);
+render(<EnergyManager/>, $('#energy_manager')[0])
 
-    source.addEventListener("energy_manager/debug_header", function (e) {
-        debug_log += e.data + "\n";
-    }, false);
+export function init() {}
 
-    source.addEventListener("energy_manager/debug", function (e) {
-        debug_log += e.data + "\n";
-    }, false);
-}
+export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-energy-manager').prop('hidden', !module_init.energy_manager);
+    $('#sidebar-energy_manager').prop('hidden', !module_init.energy_manager);
 }

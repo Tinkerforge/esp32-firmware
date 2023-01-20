@@ -22,8 +22,8 @@ import $ from "../../ts/jq";
 import * as API from "../../ts/api";
 
 export function init() {
-    $('#energy-manager-group').on('hide.bs.collapse', () => $('#energy-manager-chevron').removeClass("rotated-chevron"));
-    $('#energy-manager-group').on('show.bs.collapse', () => $('#energy-manager-chevron').addClass("rotated-chevron"));
+    $('#energy_manager-group').on('hide.bs.collapse', () => $('#energy_manager-chevron').removeClass("rotated-chevron"));
+    $('#energy_manager-group').on('show.bs.collapse', () => $('#energy_manager-chevron').addClass("rotated-chevron"));
 }
 
 export function add_event_listeners(source: API.APIEventTarget) {
@@ -31,5 +31,5 @@ export function add_event_listeners(source: API.APIEventTarget) {
 }
 
 export function update_sidebar_state(module_init: any) {
-    $('#sidebar-energy-manager-group').prop('hidden', false);
+    $('#sidebar-energy_manager-group').prop('hidden', false);
 }
