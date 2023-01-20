@@ -34,7 +34,7 @@
             "generic_details": "Zeige Detailansicht für generischen Stromzähler"
         },
         "script": {
-            "config_failed": "Speichern der Stromzähler-Konfiguration fehlgeschlagen.",
+            "save_failed": "Speichern der Stromzähler-Konfiguration fehlgeschlagen.",
             "reboot_content_changed": "Stromzähler-Konfiguration"
         }
     }

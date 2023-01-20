@@ -22,66 +22,118 @@ import $ from "../../ts/jq";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h, render } from "preact";
+import { h, render, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { ConfigPageHeader } from "../../ts/components/config_page_header";
+import Switch from "react-bootstrap/esm/Switch";
+import { ConfigComponent } from "src/ts/components/config_component";
+import { ConfigForm } from "src/ts/components/config_form";
+import { FormRow } from "src/ts/components/form_row";
+import { InputSelect } from "src/ts/components/input_select";
+import { Collapse } from "react-bootstrap";
+import { FormSeparator } from "src/ts/components/form_separator";
+import { IndicatorGroup } from "src/ts/components/indicator_group";
+import { InputFloat } from "src/ts/components/input_float";
 
-render(<ConfigPageHeader prefix="energy_manager_meter" title={__("em_meter_config.content.em_meter_config")} />, $('#em_meter_config_header')[0]);
-
-function update_em_meter_config() {
-    API.default_updater('energy_manager/meter_config');
+interface EMMeterConfigState {
+    em_state: API.getType['energy_manager/state']
 }
 
-function update_em_meter_config_state() {
-    let state = API.get('energy_manager/state');
-    util.update_button_group("btn_group_em_meter_config_meter_available", Math.max(state.energy_meter_type - 1, 0));
-    $('#em_meter_config_meter_power').val(util.toLocaleFixed(state.energy_meter_power, 0) + " W");
-    $('#em_meter_config_meter_energy_import').val(util.toLocaleFixed(state.energy_meter_energy_import, 3) + " kWh");
-    $('#em_meter_config_meter_energy_export').val(util.toLocaleFixed(state.energy_meter_energy_export, 3) + " kWh");
-    $('#em_meter_config-sdm-details').prop('hidden', state.energy_meter_type == 0);
-}
+export class EMMeterConfig extends ConfigComponent<'energy_manager/meter_config', {}, EMMeterConfigState> {
+    constructor() {
+        super('energy_manager/meter_config',
+              __("em_meter_config.script.save_failed"),
+              __("em_meter_config.script.reboot_content_changed"));
 
-// Only show the relevant html elements, drop-down boxes and options
-function update_em_meter_config_html_collapse(meter_type: number) {
-    let state: { [id: string]: "show" | "hide" } = {
-        '#em_meter_config-sdm': 'hide',
-        '#em_meter_config-sunspec': 'hide',
-        '#em_meter_config-modbus-tcp': 'hide',
-        '#em-meter-generic-details': 'hide',
-    }
-
-    if (meter_type == 1) {
-        state['#em_meter_config-sdm'] = 'show';
-    }
-    else if (meter_type == 2) {
-        state['#em_meter_config-sunspec'] = 'show';
-    }
-    else if (meter_type == 3) {
-        state['#em_meter_config-modbus-tcp'] = 'show';
-    }
-
-    if (meter_type >= 2) {
-        state['#em-meter-generic-details'] = 'show';
-    }
-
-    for (let key in state) {
-        $(key).collapse(state[key])
-    }
-}
-
-export function init() {
-    API.register_config_form('energy_manager/meter_config', {
-            error_string: __("em_meter_config.script.config_failed"),
-            reboot_string: __("em_meter_config.script.reboot_content_changed")
+        util.eventTarget.addEventListener('energy_manager/state', () => {
+            this.setState({em_state: API.get('energy_manager/state')});
         });
+    }
 
-    $("#energy_manager_meter_config_meter_type").on("change", function(this: HTMLInputElement) {update_em_meter_config_html_collapse(parseInt(this.value));});
+    render(props: {}, state: Readonly<API.getType['energy_manager/meter_config'] & EMMeterConfigState>) {
+        if (!state || !state.em_state)
+            return (<></>);
+
+        let em = state.em_state;
+        console.log(em);
+
+        return (
+            <>
+                <ConfigForm id="em_meter_config_config_form" title={__("em_meter_config.content.em_meter_config")} isModified={this.isModified()} onSave={() => this.save()} onReset={this.reset} onDirtyChange={(d) => this.ignore_updates = d}>
+                    <FormRow label={__("em_meter_config.content.meter_type")} label_muted={__("em_meter_config.content.meter_type_muted")}>
+                        <InputSelect
+                            items={[
+                                    ["0", __("em_meter_config.content.type_none")],
+                                    ["1", __("em_meter_config.content.type_sdm")],
+                                    ["2", __("em_meter_config.content.type_sunspec")],
+                                    ["3", __("em_meter_config.content.type_modbus_tcp")],
+                                    ["100", __("em_meter_config.content.type_custom")],
+                                ]}
+                            value={state.meter_type}
+                            onValue={(v) => this.setState({meter_type: parseInt(v)})}/>
+                    </FormRow>
+
+                    <Collapse in={state.meter_type == 1}>
+                        <div>
+                            <FormSeparator heading={__("em_meter_config.content.conf_sdm")}/>
+
+                            <FormRow label={__("em_meter_config.content.sdm_available")}>
+                                <IndicatorGroup
+                                    value={Math.max(0, em.energy_meter_type - 1)} // Skip type 1: SDM72DM
+                                    items={[
+                                        ["secondary", __("em_meter_config.content.sdm_none")],
+                                        ["primary", __("em_meter_config.content.sdm_630")],
+                                        ["primary", __("em_meter_config.content.sdm_72dmv2")],
+                                        ["primary", __("em_meter_config.content.sdm_72ctm")],
+                                    ]}/>
+                            </FormRow>
+
+                            <FormRow label={__("em_meter_config.content.sdm_power")}>
+                                <InputFloat value={em.energy_meter_power} digits={3} unit={'kW'} />
+                            </FormRow>
+
+                            <FormRow label={__("em_meter_config.content.sdm_energy_import")} label_muted={__("em_meter_config.content.sdm_energy_import_muted")}>
+                                <InputFloat value={em.energy_meter_energy_import} digits={0} unit={'kWh'} />
+                            </FormRow>
+
+                            <FormRow label={__("em_meter_config.content.sdm_energy_export")} label_muted={__("em_meter_config.content.sdm_energy_export_muted")}>
+                                <InputFloat value={em.energy_meter_energy_export} digits={0} unit={'kWh'} />
+                            </FormRow>
+                        </div>
+                    </Collapse>
+
+                    <Collapse in={state.meter_type == 2}>
+                        <div>
+                            <FormSeparator heading={__("em_meter_config.content.conf_sunspec")}/>
+                            <div>TBD</div>
+                        </div>
+                    </Collapse>
+
+                    <Collapse in={state.meter_type == 3}>
+                        <div>
+                            <FormSeparator heading={__("em_meter_config.content.conf_modbus_tcp")}/>
+                            <div>TBD</div>
+                        </div>
+                    </Collapse>
+
+                    <Collapse in={state.meter_type >= 2}>
+                        <div>
+                            <a class="nav-link" data-toggle="tab" role="tab" aria-controls="meter" aria-selected="true" href="#meter">
+                                {__("em_meter_config.content.generic_details")}
+                            </a>
+                        </div>
+                    </Collapse>
+                </ConfigForm>
+            </>
+        )
+    }
 }
 
-export function add_event_listeners(source: API.APIEventTarget) {
-    source.addEventListener('energy_manager/state', update_em_meter_config_state);
-    source.addEventListener('energy_manager/meter_config', update_em_meter_config);
-}
+render(<EMMeterConfig/>, $('#em_meter_config')[0])
+
+export function init() {}
+
+export function add_event_listeners(source: API.APIEventTarget) {}
 
 export function update_sidebar_state(module_init: any) {
     $('#sidebar-em_meter_config').prop('hidden', !module_init.energy_manager);

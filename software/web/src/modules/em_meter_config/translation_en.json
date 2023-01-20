@@ -34,7 +34,7 @@
             "generic_details": "Show generic energy meter details"
         },
         "script": {
-            "config_failed": "Failed to save energy meter configuration.",
+            "save_failed": "Failed to save energy meter configuration.",
             "reboot_content_changed": "energy meter configuration"
         }
     }
