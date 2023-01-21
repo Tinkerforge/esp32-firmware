@@ -678,6 +678,7 @@ void AC011K::update_evseStatus(uint8_t evseStatus) {
 
         // TODO: move this to evse_slot_machine
         if(evse.evse_state.get("iec61851_state")->asUint() == IEC_STATE_A) { // plugged out
+            bs_evse_stop_charging();
             if (evse.evse_hardware_configuration.get("GDFirmwareVersion")->asUint() == 212)
                 //sendChargingLimit2(16, sendSequenceNumber++);  // hack to ensure full current range is available in next charging session 
                 sendChargingLimit3(16, sendSequenceNumber++);  // hack to ensure full current range is available in next charging session
