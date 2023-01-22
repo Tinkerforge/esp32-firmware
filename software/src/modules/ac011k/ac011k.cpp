@@ -579,25 +579,40 @@ void AC011K::evse_slot_machine() {
         allowed_charging_current = min(allowed_charging_current, (uint16_t)evse.evse_slots.get(i)->get("max_current")->asUint());
     }
 
+    // plugged in
+    if((last_iec61851_state == IEC_STATE_A) && (evse.evse_state.get("iec61851_state")->asUint() == IEC_STATE_B) && (allowed_charging_current > 0)) {
+        logger.printfln("EVSE Just plugged in and allowed charging current > 0 (%dmA)", allowed_charging_current/1000);
+        bs_evse_start_charging();
+    }
+    
+    // plugged out
+    if((last_iec61851_state != IEC_STATE_A) && (evse.evse_state.get("iec61851_state")->asUint() == IEC_STATE_A)) {
+        bs_evse_stop_charging();
+        if (evse.evse_hardware_configuration.get("GDFirmwareVersion")->asUint() == 212)
+            //sendChargingLimit2(16, sendSequenceNumber++);  // hack to ensure full current range is available in next charging session 
+            sendChargingLimit3(16, sendSequenceNumber++);  // hack to ensure full current range is available in next charging session
+    }
+
     if(last_allowed_charging_current != allowed_charging_current) {
         
         evse.evse_state.get("allowed_charging_current")->updateUint(allowed_charging_current);
         logger.printfln("EVSE Allowed charging current changed from %dmA to %dmA", last_allowed_charging_current, allowed_charging_current);
 
-        if(allowed_charging_current == 0) {
-            logger.printfln("EVSE Allowed charging current changed to 0");
-            //bs_evse_stop_charging();
-            bs_evse_set_max_charging_current(allowed_charging_current);
-        } else if((last_allowed_charging_current == 0) && (evse.evse_state.get("iec61851_state")->asUint() == IEC_STATE_B)) {
+        if((last_allowed_charging_current == 0) && // now > 0
+                (evse.evse_state.get("iec61851_state")->asUint() == IEC_STATE_B) && // plugged
+                (evse.evse_state.get("charger_state")->asUint() == CHARGER_STATE_WAITING_FOR_RELEASE)) {
             logger.printfln("EVSE Start charging, set allowed charging current to %dmA, IEC_STATE %d", allowed_charging_current, evse.evse_state.get("iec61851_state")->asUint());
             bs_evse_start_charging();
-        } else if((evse.evse_state.get("iec61851_state")->asUint() == IEC_STATE_B) || ((evse.evse_state.get("iec61851_state")->asUint() == IEC_STATE_C))) {
+        }
+        else if((last_iec61851_state != IEC_STATE_A) && // was not unplugged before
+                ((evse.evse_state.get("iec61851_state")->asUint() == IEC_STATE_B) || // is now plugged
+                (evse.evse_state.get("iec61851_state")->asUint() == IEC_STATE_C))) { // or already charging
             logger.printfln("EVSE Allowed charging current change during charging from %dmA to %dmA", last_allowed_charging_current, allowed_charging_current);
             bs_evse_set_max_charging_current(allowed_charging_current);
         }
-    } else if((evse.evse_state.get("iec61851_state")->asUint() == IEC_STATE_B) && (last_iec61851_state == IEC_STATE_A) && (allowed_charging_current > 0)) {
-        logger.printfln("EVSE Just plugged in and allowed charging current > 0 (%dmA)", allowed_charging_current/1000);
-        bs_evse_start_charging();
+        else {
+            //logger.printfln("EVSE unhandeled state change, allowed charging current: %d, IEC_STATE %d", allowed_charging_current, evse.evse_state.get("iec61851_state")->asUint());
+        }
     }
 
     last_allowed_charging_current = allowed_charging_current;
@@ -675,29 +690,6 @@ void AC011K::update_evseStatus(uint8_t evseStatus) {
         evse.evse_state.get("last_state_change")->updateUint(millis());
         evse.evse_state.get("time_since_state_change")->updateUint(millis() - evse.evse_state.get("last_state_change")->asUint());
         evse.evse_low_level_state.get("time_since_state_change")->updateUint(evse.evse_state.get("time_since_state_change")->asUint());
-
-        // TODO: move this to evse_slot_machine
-        if(evse.evse_state.get("iec61851_state")->asUint() == IEC_STATE_A) { // plugged out
-            bs_evse_stop_charging();
-            if (evse.evse_hardware_configuration.get("GDFirmwareVersion")->asUint() == 212)
-                //sendChargingLimit2(16, sendSequenceNumber++);  // hack to ensure full current range is available in next charging session 
-                sendChargingLimit3(16, sendSequenceNumber++);  // hack to ensure full current range is available in next charging session
-        }
-
-        /* if(evse_state.get("iec61851_state")->asUint() == IEC_STATE_B && last_iec61851_state == IEC_STATE_A) { // just plugged in */
-        /*     transactionNumber++; */
-        /*     // patch transaction number into command templates */
-        /*     sprintf((char*)StartChargingA7 +1, "%06d", transactionNumber); */
-        /*     sprintf((char*)StopChargingA7  +1, "%06d", transactionNumber); */
-        /*     sprintf((char*)StopChargingA6 +33, "%06d", transactionNumber); */
-        /*     logger.printfln("New transaction number %05d", transactionNumber); */
-        /* } */
-
-        /* if(evse_auto_start_charging.get("auto_start_charging")->asBool() */
-        /*    && evse_state.get("iec61851_state")->asUint() == IEC_STATE_B) { // just plugged in or already plugged in at startup */
-        /*      logger.printfln("Start charging automatically"); */
-        /*      bs_evse_start_charging(); */
-        /* } */
     }
 }
 
