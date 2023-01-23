@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdarg.h>
+#include <inttypes.h>
 
 struct TFJsonSerializer {
     char * const buf;
@@ -19,6 +20,8 @@ struct TFJsonSerializer {
     TFJsonSerializer(char *buf, size_t buf_size);
 
     // Object
+    void add(const char *key, uint64_t u);
+    void add(const char *key, int64_t i);
     void add(const char *key, uint32_t u);
     void add(const char *key, int32_t i);
     void add(const char *key, float f);
@@ -29,7 +32,9 @@ struct TFJsonSerializer {
     void addObject(const char *key);
 
     // Array
-    void add(uint32_t u, bool enquote = false);
+    void add(uint64_t u, bool enquote = false);
+    void add(uint32_t u);
+    void add(int64_t i);
     void add(int32_t i);
     void add(float f);
     void add(bool b);
@@ -63,6 +68,16 @@ private:
 #define WRITE_LITERAL(x) this->writeUnescaped((x), strlen((x)))
 
 TFJsonSerializer::TFJsonSerializer(char *buf, size_t buf_size) : buf(buf), buf_size(buf_size), head(buf), buf_required(0) {}
+
+void TFJsonSerializer::add(const char *key, uint64_t u) {
+    this->addKey(key);
+    this->add(u);
+}
+
+void TFJsonSerializer::add(const char *key, int64_t i) {
+    this->addKey(key);
+    this->add(i);
+}
 
 void TFJsonSerializer::add(const char *key, uint32_t u) {
     this->addKey(key);
@@ -104,7 +119,15 @@ void TFJsonSerializer::addObject(const char *key) {
     this->write('{');
 }
 
-void TFJsonSerializer::add(uint32_t u, bool enquote) {
+void TFJsonSerializer::add(uint32_t u) {
+    if (!in_empty_container)
+        this->write(',');
+
+    in_empty_container = false;
+    this->writeFmt("%u", u);
+}
+
+void TFJsonSerializer::add(uint64_t u, bool enquote) {
     if (!in_empty_container)
         this->write(',');
 
@@ -112,10 +135,19 @@ void TFJsonSerializer::add(uint32_t u, bool enquote) {
     if (enquote)
         this->write('"');
 
-    this->writeFmt("%u", u);
+    this->writeFmt("%" PRIu64, u);
 
     if (enquote)
         this->write('"');
+}
+
+void TFJsonSerializer::add(int64_t i) {
+    if (!in_empty_container)
+        this->write(',');
+
+    in_empty_container = false;
+
+    this->writeFmt("%" PRIi64, i);
 }
 
 void TFJsonSerializer::add(int32_t i) {
