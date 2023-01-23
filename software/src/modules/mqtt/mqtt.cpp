@@ -96,12 +96,6 @@ void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)
         return;
 
     subscribe_with_prefix(reg.path, [reg, commandIdx](char *payload, size_t payload_len){
-        const String &reason = api.getCommandBlockedReason(commandIdx);
-        if (reason != "") {
-            logger.printfln("MQTT: Command %s is blocked: %s", reg.path.c_str(), reason.c_str());
-            return;
-        }
-
         String error = reg.config->update_from_cstr(payload, payload_len);
         if(error == "") {
             task_scheduler.scheduleOnce([reg](){reg.callback();}, 0);

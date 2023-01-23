@@ -42,7 +42,6 @@ struct CommandRegistration {
     std::function<void(void)> callback;
     std::vector<String> keys_to_censor_in_debug_report;
     bool is_action;
-    String blockedReason;
 };
 
 struct RawCommandRegistration {
@@ -80,7 +79,6 @@ public:
     void addState(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms);
     bool addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms);
     //void addTemporaryConfig(const String &path, Config *config, std::initializer_list<String> keys_to_censor, uint32_t interval_ms, std::function<void(void)> callback);
-
     void addRawCommand(const String &path, std::function<String(char *, size_t)> callback, bool is_action);
 
     bool hasFeature(const char *name);
@@ -88,10 +86,6 @@ public:
     static void writeConfig(const String &path, ConfigRoot *config);
     static void removeConfig(const String &path);
     static void removeAllConfig();
-
-    void blockCommand(const String &path, const String &reason);
-    void unblockCommand(const String &path);
-    const String &getCommandBlockedReason(size_t commandIdx) const;
 
     static bool restorePersistentConfig(const String &path, ConfigRoot *config);
 
