@@ -408,21 +408,23 @@ export class Meter extends Component<{}, MeterState> {
                 <PageHeader title={__("meter.content.energy_meter")} colClasses="col-xl-10"/>
                     <div class="row">
                         <div class="col-lg-6">
-                        <div
-                            class="d-flex justify-content-between align-items-center pt-3 mb-3 border-bottom">
-                            <span class="h3">{__("meter.status.charge_history")}</span>
-                            <div>
-                                <InputSelect value={this.state.chart_selected} onValue={(v) => {
-                                    this.setState({chart_selected: v as any});
-                                }}
-                                    items={[
-                                        ["history", __("meter.content.history")],
-                                        ["live", __("meter.content.live")],
-                                    ]}/>
+                            <div class="row mb-3 pt-3 pr-0 pr-lg-3">
+                                <div class="d-flex justify-content-between align-items-center border-bottom col">
+                                    <span class="h3">{__("meter.status.charge_history")}</span>
+                                    <div>
+                                        <InputSelect value={this.state.chart_selected} onValue={(v) => {
+                                            this.setState({chart_selected: v as any});
+                                        }}
+                                            items={[
+                                                ["history", __("meter.content.history")],
+                                                ["live", __("meter.content.live")],
+                                            ]}/>
+                                    </div>
+                                </div>
                             </div>
-                        <div id="meter_chart" class="meter-chart">
-                            <Line data={data} options={options} />
-                        </div>
+                            <div id="meter_chart" class="meter-chart">
+                                <Line data={data} options={options} />
+                            </div>
                         </div>
                         <div class="col-lg-6 col-xl-4">
                             <FormSeparator heading={__("meter.content.statistics")} colClasses="col"/>
