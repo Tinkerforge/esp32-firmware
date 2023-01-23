@@ -83,10 +83,6 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
 {
     CommandRegistration reg = api.commands[cmdidx];
 
-    const String &reason = api.getCommandBlockedReason(cmdidx);
-    if (reason != "")
-        return req.send(400, "text/plain", reason.c_str());
-
     // TODO: Use streamed parsing
     int bytes_written = req.receive(recv_buf, 4096);
     if (bytes_written == -1) {

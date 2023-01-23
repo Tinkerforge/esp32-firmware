@@ -87,7 +87,7 @@ void API::addCommand(const String &path, ConfigRoot *config, std::initializer_li
     if (already_registered(path, "command"))
         return;
 
-    commands.push_back({path, config, callback, keys_to_censor_in_debug_report, is_action, ""});
+    commands.push_back({path, config, callback, keys_to_censor_in_debug_report, is_action});
     auto commandIdx = commands.size() - 1;
 
     for (auto *backend : this->backends) {
@@ -222,27 +222,6 @@ void API::removeConfig(const String &path) {
 
 void API::removeAllConfig() {
     remove_directory("/config");
-}
-
-void API::blockCommand(const String &path, const String &reason)
-{
-    for (auto &reg : commands) {
-        if (reg.path != path) {
-            continue;
-        }
-
-        reg.blockedReason = reason;
-    }
-}
-
-void API::unblockCommand(const String &path)
-{
-    blockCommand(path, "");
-}
-
-const String &API::getCommandBlockedReason(size_t commandIdx) const
-{
-    return this->commands[commandIdx].blockedReason;
 }
 
 /*
