@@ -502,3 +502,8 @@ body {
     position: relative;
     aspect-ratio: 1.5;
 }
+
+.em-energy-analysis-chart {
+    position: relative;
+    aspect-ratio: 1.5;
+}
