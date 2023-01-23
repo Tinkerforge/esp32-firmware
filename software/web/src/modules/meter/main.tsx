@@ -234,10 +234,14 @@ function build_chart_data(chart_extra: LiveExtra|HistoryExtra) {
     return data;
 }
 
-function build_chart_options(chart_extra: LiveExtra|HistoryExtra) {
+function build_chart_options(chart_extra: LiveExtra|HistoryExtra, chart_container_id: string) {
     let options: ChartOptions<"line"> = {
         normalized: true,
         animation: false,
+        onResize: function(chart, size) {
+            let element = document.getElementById(chart_container_id);
+            chart.options.aspectRatio = parseFloat(getComputedStyle(element).aspectRatio);
+        },
         layout: {
             autoPadding: false,
             padding: {
@@ -397,9 +401,7 @@ export class Meter extends Component<{}, MeterState> {
         }
 
         let data = build_chart_data(chart_extra);
-        let options = build_chart_options(chart_extra);
-
-        options.aspectRatio = 1.5;
+        let options = build_chart_options(chart_extra, "meter_chart");
 
         return (
             <>
@@ -418,8 +420,9 @@ export class Meter extends Component<{}, MeterState> {
                                         ["live", __("meter.content.live")],
                                     ]}/>
                             </div>
-                        </div>
+                        <div id="meter_chart" class="meter-chart">
                             <Line data={data} options={options} />
+                        </div>
                         </div>
                         <div class="col-lg-6 col-xl-4">
                             <FormSeparator heading={__("meter.content.statistics")} colClasses="col"/>
@@ -529,9 +532,7 @@ export class StatusMeterChart extends Component<{}, StatusMeterChartState> {
         }
 
         let data = build_chart_data(state.history_extra);
-        let options = build_chart_options(state.history_extra);
-
-        options.aspectRatio = 2.5;
+        let options = build_chart_options(state.history_extra, "status_meter_chart");
 
         return (
             <>
