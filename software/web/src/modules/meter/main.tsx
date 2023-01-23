@@ -185,13 +185,11 @@ function calculate_live_extra(samples_per_second: number, samples: number[], las
 
 function calculate_history_extra(offset: number, samples: Readonly<number[]>): HistoryExtra {
     const HISTORY_MINUTE_INTERVAL = 4;
-    const VALUE_COUNT = 48 * (60 / HISTORY_MINUTE_INTERVAL);
-    const LABEL_COUNT = window.innerWidth < 500 ? 5 : 9;
-    const VALUES_PER_LABEL = VALUE_COUNT / (LABEL_COUNT - 1); // -1 for the last label that has no value
 
     let extra: HistoryExtra = {samples: [], tooltip_titles: [], grid_ticks: [], grid_colors: []};
     let now = Date.now();
     let start = now - 1000 * 60 * 60 * 48 - offset;
+    let last_hour = -1;
 
     for(let i = 0; i < samples.length + 1; ++i) { // +1 for the last label that has no value
         extra.samples[i] = samples[i];
@@ -199,9 +197,17 @@ function calculate_history_extra(offset: number, samples: Readonly<number[]>): H
         let d = new Date(start + i * (1000 * 60 * HISTORY_MINUTE_INTERVAL));
         extra.tooltip_titles[i] = d.toLocaleTimeString(navigator.language, {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false});
 
-        if (i % VALUES_PER_LABEL == 0) {
+        if (d.getHours() % 6 == 0 && d.getHours() != last_hour && d.getMinutes() < HISTORY_MINUTE_INTERVAL) {
             extra.grid_ticks[i] = d.toLocaleTimeString(navigator.language, {hour: '2-digit', minute: '2-digit', hour12: false});
-            extra.grid_colors[i] = "rgba(0,0,0,0.1)";
+
+            if (d.getHours() == 0) {
+                extra.grid_colors[i] = "rgba(1,1,1,0.75)";
+            }
+            else {
+                extra.grid_colors[i] = "rgba(0,0,0,0.1)";
+            }
+
+            last_hour = d.getHours();
         }
         else {
             extra.grid_ticks[i] = "";
