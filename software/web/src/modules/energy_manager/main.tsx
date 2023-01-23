@@ -422,7 +422,7 @@ export class EnergyManager extends ConfigComponent<'energy_manager/config', {}, 
 
                     <CollapsedSection label={__("energy_manager.content.low_level_state")}>
                         <FormRow label={__("energy_manager.content.state_contactor")}>
-                            <InputText value={s.state.contactor ? __('energy_manager.content.three_phases_active') : __('energy_manager.content.one_phase_active')}/>
+                            <InputText value={s.state.contactor ? __("energy_manager.content.three_phases_active") : __("energy_manager.content.one_phase_active")}/>
                         </FormRow>
 
                         <FormRow label={__("energy_manager.content.state_led")} label_muted={__("energy_manager.content.state_led_names")}>

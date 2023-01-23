@@ -383,7 +383,7 @@ void EnergyManager::update_energy()
 
     static SwitchingState prev_state = switching_state;
     if (switching_state != prev_state) {
-        logger.printfln("energy_manager: now in state %u", switching_state);
+        logger.printfln("energy_manager: now in state %d", (int)switching_state);
         prev_state = switching_state;
     }
 
