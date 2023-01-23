@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2023-01-19.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *

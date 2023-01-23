@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -396,6 +396,10 @@ int tf_barometer_v2_set_air_pressure_callback_configuration(TF_BarometerV2 *baro
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(barometer_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(barometer_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -562,6 +566,10 @@ int tf_barometer_v2_set_altitude_callback_configuration(TF_BarometerV2 *baromete
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(barometer_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(barometer_v2->tfp, _result, _deadline);
@@ -732,6 +740,10 @@ int tf_barometer_v2_set_temperature_callback_configuration(TF_BarometerV2 *barom
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(barometer_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(barometer_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -842,6 +854,10 @@ int tf_barometer_v2_set_moving_average_configuration(TF_BarometerV2 *barometer_v
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(barometer_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(barometer_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -946,6 +962,10 @@ int tf_barometer_v2_set_reference_air_pressure(TF_BarometerV2 *barometer_v2, int
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(barometer_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(barometer_v2->tfp, _result, _deadline);
@@ -1054,6 +1074,10 @@ int tf_barometer_v2_set_calibration(TF_BarometerV2 *barometer_v2, int32_t measur
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(barometer_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(barometer_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1159,6 +1183,10 @@ int tf_barometer_v2_set_sensor_configuration(TF_BarometerV2 *barometer_v2, uint8
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(barometer_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(barometer_v2->tfp, _result, _deadline);
@@ -1439,6 +1467,10 @@ int tf_barometer_v2_set_write_firmware_pointer(TF_BarometerV2 *barometer_v2, uin
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(barometer_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(barometer_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1546,6 +1578,10 @@ int tf_barometer_v2_set_status_led_config(TF_BarometerV2 *barometer_v2, uint8_t 
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(barometer_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(barometer_v2->tfp, _result, _deadline);
@@ -1704,6 +1740,10 @@ int tf_barometer_v2_reset(TF_BarometerV2 *barometer_v2) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(barometer_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(barometer_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1752,6 +1792,10 @@ int tf_barometer_v2_write_uid(TF_BarometerV2 *barometer_v2, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(barometer_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(barometer_v2->tfp, _result, _deadline);

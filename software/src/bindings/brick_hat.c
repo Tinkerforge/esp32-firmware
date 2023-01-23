@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -277,6 +277,10 @@ int tf_hat_set_sleep_mode(TF_HAT *hat, uint32_t power_off_delay, uint32_t power_
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(hat->tfp);
+    }
+
     _result = tf_tfp_finish_send(hat->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -384,6 +388,10 @@ int tf_hat_set_bricklet_power(TF_HAT *hat, bool bricklet_power) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(hat->tfp);
     }
 
     _result = tf_tfp_finish_send(hat->tfp, _result, _deadline);
@@ -548,6 +556,10 @@ int tf_hat_set_voltages_callback_configuration(TF_HAT *hat, uint32_t period, boo
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(hat->tfp);
+    }
+
     _result = tf_tfp_finish_send(hat->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -652,6 +664,10 @@ int tf_hat_set_rtc_driver(TF_HAT *hat, uint8_t rtc_driver) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(hat->tfp);
     }
 
     _result = tf_tfp_finish_send(hat->tfp, _result, _deadline);
@@ -931,6 +947,10 @@ int tf_hat_set_write_firmware_pointer(TF_HAT *hat, uint32_t pointer) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(hat->tfp);
+    }
+
     _result = tf_tfp_finish_send(hat->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1038,6 +1058,10 @@ int tf_hat_set_status_led_config(TF_HAT *hat, uint8_t config) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(hat->tfp);
     }
 
     _result = tf_tfp_finish_send(hat->tfp, _result, _deadline);
@@ -1196,6 +1220,10 @@ int tf_hat_reset(TF_HAT *hat) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(hat->tfp);
+    }
+
     _result = tf_tfp_finish_send(hat->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1244,6 +1272,10 @@ int tf_hat_write_uid(TF_HAT *hat, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(hat->tfp);
     }
 
     _result = tf_tfp_finish_send(hat->tfp, _result, _deadline);

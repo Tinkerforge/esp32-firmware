@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -291,6 +291,10 @@ int tf_segment_display_4x7_v2_set_segments(TF_SegmentDisplay4x7V2 *segment_displ
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(segment_display_4x7_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(segment_display_4x7_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -401,6 +405,10 @@ int tf_segment_display_4x7_v2_set_brightness(TF_SegmentDisplay4x7V2 *segment_dis
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(segment_display_4x7_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(segment_display_4x7_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -506,6 +514,10 @@ int tf_segment_display_4x7_v2_set_numeric_value(TF_SegmentDisplay4x7V2 *segment_
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(segment_display_4x7_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(segment_display_4x7_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -555,6 +567,10 @@ int tf_segment_display_4x7_v2_set_selected_segment(TF_SegmentDisplay4x7V2 *segme
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(segment_display_4x7_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(segment_display_4x7_v2->tfp, _result, _deadline);
@@ -667,6 +683,10 @@ int tf_segment_display_4x7_v2_start_counter(TF_SegmentDisplay4x7V2 *segment_disp
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(segment_display_4x7_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(segment_display_4x7_v2->tfp, _result, _deadline);
@@ -946,6 +966,10 @@ int tf_segment_display_4x7_v2_set_write_firmware_pointer(TF_SegmentDisplay4x7V2 
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(segment_display_4x7_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(segment_display_4x7_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1053,6 +1077,10 @@ int tf_segment_display_4x7_v2_set_status_led_config(TF_SegmentDisplay4x7V2 *segm
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(segment_display_4x7_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(segment_display_4x7_v2->tfp, _result, _deadline);
@@ -1211,6 +1239,10 @@ int tf_segment_display_4x7_v2_reset(TF_SegmentDisplay4x7V2 *segment_display_4x7_
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(segment_display_4x7_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(segment_display_4x7_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1259,6 +1291,10 @@ int tf_segment_display_4x7_v2_write_uid(TF_SegmentDisplay4x7V2 *segment_display_
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(segment_display_4x7_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(segment_display_4x7_v2->tfp, _result, _deadline);

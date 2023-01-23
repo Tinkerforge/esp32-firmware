@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -347,6 +347,10 @@ int tf_compass_set_heading_callback_configuration(TF_Compass *compass, uint32_t 
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(compass->tfp);
+    }
+
     _result = tf_tfp_finish_send(compass->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -514,6 +518,10 @@ int tf_compass_set_magnetic_flux_density_callback_configuration(TF_Compass *comp
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(compass->tfp);
+    }
+
     _result = tf_tfp_finish_send(compass->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -619,6 +627,10 @@ int tf_compass_set_configuration(TF_Compass *compass, uint8_t data_rate, bool ba
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(compass->tfp);
     }
 
     _result = tf_tfp_finish_send(compass->tfp, _result, _deadline);
@@ -727,6 +739,10 @@ int tf_compass_set_calibration(TF_Compass *compass, const int16_t offset[3], con
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(compass->tfp);
     }
 
     _result = tf_tfp_finish_send(compass->tfp, _result, _deadline);
@@ -1008,6 +1024,10 @@ int tf_compass_set_write_firmware_pointer(TF_Compass *compass, uint32_t pointer)
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(compass->tfp);
+    }
+
     _result = tf_tfp_finish_send(compass->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1115,6 +1135,10 @@ int tf_compass_set_status_led_config(TF_Compass *compass, uint8_t config) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(compass->tfp);
     }
 
     _result = tf_tfp_finish_send(compass->tfp, _result, _deadline);
@@ -1273,6 +1297,10 @@ int tf_compass_reset(TF_Compass *compass) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(compass->tfp);
+    }
+
     _result = tf_tfp_finish_send(compass->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1321,6 +1349,10 @@ int tf_compass_write_uid(TF_Compass *compass, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(compass->tfp);
     }
 
     _result = tf_tfp_finish_send(compass->tfp, _result, _deadline);

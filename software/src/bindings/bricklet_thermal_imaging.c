@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -475,6 +475,10 @@ int tf_thermal_imaging_set_resolution(TF_ThermalImaging *thermal_imaging, uint8_
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(thermal_imaging->tfp);
+    }
+
     _result = tf_tfp_finish_send(thermal_imaging->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -578,6 +582,10 @@ int tf_thermal_imaging_set_spotmeter_config(TF_ThermalImaging *thermal_imaging, 
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(thermal_imaging->tfp);
     }
 
     _result = tf_tfp_finish_send(thermal_imaging->tfp, _result, _deadline);
@@ -690,6 +698,10 @@ int tf_thermal_imaging_set_high_contrast_config(TF_ThermalImaging *thermal_imagi
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(thermal_imaging->tfp);
+    }
+
     _result = tf_tfp_finish_send(thermal_imaging->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -797,6 +809,10 @@ int tf_thermal_imaging_set_image_transfer_config(TF_ThermalImaging *thermal_imag
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(thermal_imaging->tfp);
     }
 
     _result = tf_tfp_finish_send(thermal_imaging->tfp, _result, _deadline);
@@ -909,6 +925,10 @@ int tf_thermal_imaging_set_flux_linear_parameters(TF_ThermalImaging *thermal_ima
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(thermal_imaging->tfp);
     }
 
     _result = tf_tfp_finish_send(thermal_imaging->tfp, _result, _deadline);
@@ -1195,6 +1215,10 @@ int tf_thermal_imaging_set_write_firmware_pointer(TF_ThermalImaging *thermal_ima
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(thermal_imaging->tfp);
+    }
+
     _result = tf_tfp_finish_send(thermal_imaging->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1302,6 +1326,10 @@ int tf_thermal_imaging_set_status_led_config(TF_ThermalImaging *thermal_imaging,
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(thermal_imaging->tfp);
     }
 
     _result = tf_tfp_finish_send(thermal_imaging->tfp, _result, _deadline);
@@ -1460,6 +1488,10 @@ int tf_thermal_imaging_reset(TF_ThermalImaging *thermal_imaging) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(thermal_imaging->tfp);
+    }
+
     _result = tf_tfp_finish_send(thermal_imaging->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1508,6 +1540,10 @@ int tf_thermal_imaging_write_uid(TF_ThermalImaging *thermal_imaging, uint32_t ui
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(thermal_imaging->tfp);
     }
 
     _result = tf_tfp_finish_send(thermal_imaging->tfp, _result, _deadline);

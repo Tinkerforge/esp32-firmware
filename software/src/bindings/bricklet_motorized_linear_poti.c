@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -345,6 +345,10 @@ int tf_motorized_linear_poti_set_position_callback_configuration(TF_MotorizedLin
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(motorized_linear_poti->tfp);
+    }
+
     _result = tf_tfp_finish_send(motorized_linear_poti->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -456,6 +460,10 @@ int tf_motorized_linear_poti_set_motor_position(TF_MotorizedLinearPoti *motorize
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(motorized_linear_poti->tfp);
+    }
+
     _result = tf_tfp_finish_send(motorized_linear_poti->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -560,6 +568,10 @@ int tf_motorized_linear_poti_calibrate(TF_MotorizedLinearPoti *motorized_linear_
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(motorized_linear_poti->tfp);
+    }
+
     _result = tf_tfp_finish_send(motorized_linear_poti->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -608,6 +620,10 @@ int tf_motorized_linear_poti_set_position_reached_callback_configuration(TF_Moto
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(motorized_linear_poti->tfp);
     }
 
     _result = tf_tfp_finish_send(motorized_linear_poti->tfp, _result, _deadline);
@@ -887,6 +903,10 @@ int tf_motorized_linear_poti_set_write_firmware_pointer(TF_MotorizedLinearPoti *
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(motorized_linear_poti->tfp);
+    }
+
     _result = tf_tfp_finish_send(motorized_linear_poti->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -994,6 +1014,10 @@ int tf_motorized_linear_poti_set_status_led_config(TF_MotorizedLinearPoti *motor
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(motorized_linear_poti->tfp);
     }
 
     _result = tf_tfp_finish_send(motorized_linear_poti->tfp, _result, _deadline);
@@ -1152,6 +1176,10 @@ int tf_motorized_linear_poti_reset(TF_MotorizedLinearPoti *motorized_linear_poti
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(motorized_linear_poti->tfp);
+    }
+
     _result = tf_tfp_finish_send(motorized_linear_poti->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1200,6 +1228,10 @@ int tf_motorized_linear_poti_write_uid(TF_MotorizedLinearPoti *motorized_linear_
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(motorized_linear_poti->tfp);
     }
 
     _result = tf_tfp_finish_send(motorized_linear_poti->tfp, _result, _deadline);

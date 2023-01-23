@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -274,6 +274,10 @@ int tf_industrial_quad_relay_v2_set_value(TF_IndustrialQuadRelayV2 *industrial_q
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_quad_relay_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_quad_relay_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -379,6 +383,10 @@ int tf_industrial_quad_relay_v2_set_monoflop(TF_IndustrialQuadRelayV2 *industria
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_quad_relay_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_quad_relay_v2->tfp, _result, _deadline);
@@ -493,6 +501,10 @@ int tf_industrial_quad_relay_v2_set_selected_value(TF_IndustrialQuadRelayV2 *ind
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_quad_relay_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_quad_relay_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -542,6 +554,10 @@ int tf_industrial_quad_relay_v2_set_channel_led_config(TF_IndustrialQuadRelayV2 
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_quad_relay_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_quad_relay_v2->tfp, _result, _deadline);
@@ -825,6 +841,10 @@ int tf_industrial_quad_relay_v2_set_write_firmware_pointer(TF_IndustrialQuadRela
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_quad_relay_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_quad_relay_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -932,6 +952,10 @@ int tf_industrial_quad_relay_v2_set_status_led_config(TF_IndustrialQuadRelayV2 *
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_quad_relay_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_quad_relay_v2->tfp, _result, _deadline);
@@ -1090,6 +1114,10 @@ int tf_industrial_quad_relay_v2_reset(TF_IndustrialQuadRelayV2 *industrial_quad_
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_quad_relay_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_quad_relay_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1138,6 +1166,10 @@ int tf_industrial_quad_relay_v2_write_uid(TF_IndustrialQuadRelayV2 *industrial_q
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_quad_relay_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_quad_relay_v2->tfp, _result, _deadline);

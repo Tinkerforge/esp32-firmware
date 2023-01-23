@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -272,6 +272,10 @@ int tf_industrial_analog_out_v2_set_enabled(TF_IndustrialAnalogOutV2 *industrial
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_analog_out_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_analog_out_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -377,6 +381,10 @@ int tf_industrial_analog_out_v2_set_voltage(TF_IndustrialAnalogOutV2 *industrial
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_analog_out_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_analog_out_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -480,6 +488,10 @@ int tf_industrial_analog_out_v2_set_current(TF_IndustrialAnalogOutV2 *industrial
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_analog_out_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_analog_out_v2->tfp, _result, _deadline);
@@ -588,6 +600,10 @@ int tf_industrial_analog_out_v2_set_configuration(TF_IndustrialAnalogOutV2 *indu
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_analog_out_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_analog_out_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -692,6 +708,10 @@ int tf_industrial_analog_out_v2_set_out_led_config(TF_IndustrialAnalogOutV2 *ind
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_analog_out_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_analog_out_v2->tfp, _result, _deadline);
@@ -799,6 +819,10 @@ int tf_industrial_analog_out_v2_set_out_led_status_config(TF_IndustrialAnalogOut
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_analog_out_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_analog_out_v2->tfp, _result, _deadline);
@@ -1080,6 +1104,10 @@ int tf_industrial_analog_out_v2_set_write_firmware_pointer(TF_IndustrialAnalogOu
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_analog_out_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_analog_out_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1187,6 +1215,10 @@ int tf_industrial_analog_out_v2_set_status_led_config(TF_IndustrialAnalogOutV2 *
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_analog_out_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_analog_out_v2->tfp, _result, _deadline);
@@ -1345,6 +1377,10 @@ int tf_industrial_analog_out_v2_reset(TF_IndustrialAnalogOutV2 *industrial_analo
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_analog_out_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_analog_out_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1393,6 +1429,10 @@ int tf_industrial_analog_out_v2_write_uid(TF_IndustrialAnalogOutV2 *industrial_a
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_analog_out_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_analog_out_v2->tfp, _result, _deadline);

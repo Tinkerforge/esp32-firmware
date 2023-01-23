@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -333,6 +333,10 @@ int tf_temperature_ir_v2_set_ambient_temperature_callback_configuration(TF_Tempe
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(temperature_ir_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(temperature_ir_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -501,6 +505,10 @@ int tf_temperature_ir_v2_set_object_temperature_callback_configuration(TF_Temper
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(temperature_ir_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(temperature_ir_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -608,6 +616,10 @@ int tf_temperature_ir_v2_set_emissivity(TF_TemperatureIRV2 *temperature_ir_v2, u
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(temperature_ir_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(temperature_ir_v2->tfp, _result, _deadline);
@@ -887,6 +899,10 @@ int tf_temperature_ir_v2_set_write_firmware_pointer(TF_TemperatureIRV2 *temperat
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(temperature_ir_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(temperature_ir_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -994,6 +1010,10 @@ int tf_temperature_ir_v2_set_status_led_config(TF_TemperatureIRV2 *temperature_i
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(temperature_ir_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(temperature_ir_v2->tfp, _result, _deadline);
@@ -1152,6 +1172,10 @@ int tf_temperature_ir_v2_reset(TF_TemperatureIRV2 *temperature_ir_v2) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(temperature_ir_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(temperature_ir_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1200,6 +1224,10 @@ int tf_temperature_ir_v2_write_uid(TF_TemperatureIRV2 *temperature_ir_v2, uint32
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(temperature_ir_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(temperature_ir_v2->tfp, _result, _deadline);

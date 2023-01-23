@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -441,6 +441,10 @@ int tf_air_quality_set_temperature_offset(TF_AirQuality *air_quality, int32_t of
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(air_quality->tfp);
+    }
+
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -545,6 +549,10 @@ int tf_air_quality_set_all_values_callback_configuration(TF_AirQuality *air_qual
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(air_quality->tfp);
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -710,6 +718,10 @@ int tf_air_quality_set_iaq_index_callback_configuration(TF_AirQuality *air_quali
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(air_quality->tfp);
+    }
+
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -873,6 +885,10 @@ int tf_air_quality_set_temperature_callback_configuration(TF_AirQuality *air_qua
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(air_quality->tfp);
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -1043,6 +1059,10 @@ int tf_air_quality_set_humidity_callback_configuration(TF_AirQuality *air_qualit
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(air_quality->tfp);
+    }
+
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1211,6 +1231,10 @@ int tf_air_quality_set_air_pressure_callback_configuration(TF_AirQuality *air_qu
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(air_quality->tfp);
+    }
+
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1316,6 +1340,10 @@ int tf_air_quality_remove_calibration(TF_AirQuality *air_quality) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(air_quality->tfp);
+    }
+
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1364,6 +1392,10 @@ int tf_air_quality_set_background_calibration_duration(TF_AirQuality *air_qualit
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(air_quality->tfp);
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -1643,6 +1675,10 @@ int tf_air_quality_set_write_firmware_pointer(TF_AirQuality *air_quality, uint32
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(air_quality->tfp);
+    }
+
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1750,6 +1786,10 @@ int tf_air_quality_set_status_led_config(TF_AirQuality *air_quality, uint8_t con
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(air_quality->tfp);
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -1908,6 +1948,10 @@ int tf_air_quality_reset(TF_AirQuality *air_quality) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(air_quality->tfp);
+    }
+
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1956,6 +2000,10 @@ int tf_air_quality_write_uid(TF_AirQuality *air_quality, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(air_quality->tfp);
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);

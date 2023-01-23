@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -473,6 +473,10 @@ int tf_arinc429_set_heartbeat_callback_configuration(TF_ARINC429 *arinc429, uint
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(arinc429->tfp);
+    }
+
     _result = tf_tfp_finish_send(arinc429->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -586,6 +590,10 @@ int tf_arinc429_set_channel_configuration(TF_ARINC429 *arinc429, uint8_t channel
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(arinc429->tfp);
+    }
+
     _result = tf_tfp_finish_send(arinc429->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -697,6 +705,10 @@ int tf_arinc429_set_channel_mode(TF_ARINC429 *arinc429, uint8_t channel, uint8_t
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(arinc429->tfp);
+    }
+
     _result = tf_tfp_finish_send(arinc429->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -804,6 +816,10 @@ int tf_arinc429_clear_all_rx_filters(TF_ARINC429 *arinc429, uint8_t channel) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(arinc429->tfp);
     }
 
     _result = tf_tfp_finish_send(arinc429->tfp, _result, _deadline);
@@ -915,6 +931,10 @@ int tf_arinc429_set_rx_standard_filters(TF_ARINC429 *arinc429, uint8_t channel) 
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(arinc429->tfp);
     }
 
     _result = tf_tfp_finish_send(arinc429->tfp, _result, _deadline);
@@ -1155,6 +1175,10 @@ int tf_arinc429_set_rx_callback_configuration(TF_ARINC429 *arinc429, uint8_t cha
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(arinc429->tfp);
+    }
+
     _result = tf_tfp_finish_send(arinc429->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1267,6 +1291,10 @@ int tf_arinc429_write_frame_direct(TF_ARINC429 *arinc429, uint8_t channel, uint3
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(arinc429->tfp);
+    }
+
     _result = tf_tfp_finish_send(arinc429->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1317,6 +1345,10 @@ int tf_arinc429_write_frame_scheduled(TF_ARINC429 *arinc429, uint8_t channel, ui
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(arinc429->tfp);
     }
 
     _result = tf_tfp_finish_send(arinc429->tfp, _result, _deadline);
@@ -1371,6 +1403,10 @@ int tf_arinc429_clear_schedule_entries(TF_ARINC429 *arinc429, uint8_t channel, u
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(arinc429->tfp);
+    }
+
     _result = tf_tfp_finish_send(arinc429->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1423,6 +1459,10 @@ int tf_arinc429_set_schedule_entry(TF_ARINC429 *arinc429, uint8_t channel, uint1
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(arinc429->tfp);
     }
 
     _result = tf_tfp_finish_send(arinc429->tfp, _result, _deadline);
@@ -1534,6 +1574,10 @@ int tf_arinc429_restart(TF_ARINC429 *arinc429) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(arinc429->tfp);
+    }
+
     _result = tf_tfp_finish_send(arinc429->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1584,6 +1628,10 @@ int tf_arinc429_set_frame_mode(TF_ARINC429 *arinc429, uint8_t channel, uint16_t 
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(arinc429->tfp);
     }
 
     _result = tf_tfp_finish_send(arinc429->tfp, _result, _deadline);
@@ -1808,6 +1856,10 @@ int tf_arinc429_set_write_firmware_pointer(TF_ARINC429 *arinc429, uint32_t point
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(arinc429->tfp);
+    }
+
     _result = tf_tfp_finish_send(arinc429->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1915,6 +1967,10 @@ int tf_arinc429_set_status_led_config(TF_ARINC429 *arinc429, uint8_t config) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(arinc429->tfp);
     }
 
     _result = tf_tfp_finish_send(arinc429->tfp, _result, _deadline);
@@ -2073,6 +2129,10 @@ int tf_arinc429_reset(TF_ARINC429 *arinc429) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(arinc429->tfp);
+    }
+
     _result = tf_tfp_finish_send(arinc429->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2121,6 +2181,10 @@ int tf_arinc429_write_uid(TF_ARINC429 *arinc429, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(arinc429->tfp);
     }
 
     _result = tf_tfp_finish_send(arinc429->tfp, _result, _deadline);

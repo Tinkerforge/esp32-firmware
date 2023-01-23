@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -295,6 +295,10 @@ int tf_hat_zero_set_usb_voltage_callback_configuration(TF_HATZero *hat_zero, uin
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(hat_zero->tfp);
+    }
+
     _result = tf_tfp_finish_send(hat_zero->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -576,6 +580,10 @@ int tf_hat_zero_set_write_firmware_pointer(TF_HATZero *hat_zero, uint32_t pointe
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(hat_zero->tfp);
+    }
+
     _result = tf_tfp_finish_send(hat_zero->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -683,6 +691,10 @@ int tf_hat_zero_set_status_led_config(TF_HATZero *hat_zero, uint8_t config) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(hat_zero->tfp);
     }
 
     _result = tf_tfp_finish_send(hat_zero->tfp, _result, _deadline);
@@ -841,6 +853,10 @@ int tf_hat_zero_reset(TF_HATZero *hat_zero) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(hat_zero->tfp);
+    }
+
     _result = tf_tfp_finish_send(hat_zero->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -889,6 +905,10 @@ int tf_hat_zero_write_uid(TF_HATZero *hat_zero, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(hat_zero->tfp);
     }
 
     _result = tf_tfp_finish_send(hat_zero->tfp, _result, _deadline);

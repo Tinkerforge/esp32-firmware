@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -322,6 +322,10 @@ int tf_isolator_set_spitfp_baudrate_config(TF_Isolator *isolator, bool enable_dy
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(isolator->tfp);
+    }
+
     _result = tf_tfp_finish_send(isolator->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -426,6 +430,10 @@ int tf_isolator_set_spitfp_baudrate(TF_Isolator *isolator, uint32_t baudrate) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(isolator->tfp);
     }
 
     _result = tf_tfp_finish_send(isolator->tfp, _result, _deadline);
@@ -590,6 +598,10 @@ int tf_isolator_set_statistics_callback_configuration(TF_Isolator *isolator, uin
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(isolator->tfp);
     }
 
     _result = tf_tfp_finish_send(isolator->tfp, _result, _deadline);
@@ -870,6 +882,10 @@ int tf_isolator_set_write_firmware_pointer(TF_Isolator *isolator, uint32_t point
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(isolator->tfp);
+    }
+
     _result = tf_tfp_finish_send(isolator->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -977,6 +993,10 @@ int tf_isolator_set_status_led_config(TF_Isolator *isolator, uint8_t config) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(isolator->tfp);
     }
 
     _result = tf_tfp_finish_send(isolator->tfp, _result, _deadline);
@@ -1135,6 +1155,10 @@ int tf_isolator_reset(TF_Isolator *isolator) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(isolator->tfp);
+    }
+
     _result = tf_tfp_finish_send(isolator->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1183,6 +1207,10 @@ int tf_isolator_write_uid(TF_Isolator *isolator, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(isolator->tfp);
     }
 
     _result = tf_tfp_finish_send(isolator->tfp, _result, _deadline);

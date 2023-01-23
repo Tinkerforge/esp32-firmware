@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -1070,6 +1070,10 @@ int tf_imu_v3_set_sensor_configuration(TF_IMUV3 *imu_v3, uint8_t magnetometer_ra
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(imu_v3->tfp);
+    }
+
     _result = tf_tfp_finish_send(imu_v3->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1179,6 +1183,10 @@ int tf_imu_v3_set_sensor_fusion_mode(TF_IMUV3 *imu_v3, uint8_t mode) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(imu_v3->tfp);
+    }
+
     _result = tf_tfp_finish_send(imu_v3->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1283,6 +1291,10 @@ int tf_imu_v3_set_acceleration_callback_configuration(TF_IMUV3 *imu_v3, uint32_t
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(imu_v3->tfp);
     }
 
     _result = tf_tfp_finish_send(imu_v3->tfp, _result, _deadline);
@@ -1392,6 +1404,10 @@ int tf_imu_v3_set_magnetic_field_callback_configuration(TF_IMUV3 *imu_v3, uint32
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(imu_v3->tfp);
+    }
+
     _result = tf_tfp_finish_send(imu_v3->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1497,6 +1513,10 @@ int tf_imu_v3_set_angular_velocity_callback_configuration(TF_IMUV3 *imu_v3, uint
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(imu_v3->tfp);
     }
 
     _result = tf_tfp_finish_send(imu_v3->tfp, _result, _deadline);
@@ -1606,6 +1626,10 @@ int tf_imu_v3_set_temperature_callback_configuration(TF_IMUV3 *imu_v3, uint32_t 
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(imu_v3->tfp);
+    }
+
     _result = tf_tfp_finish_send(imu_v3->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1711,6 +1735,10 @@ int tf_imu_v3_set_orientation_callback_configuration(TF_IMUV3 *imu_v3, uint32_t 
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(imu_v3->tfp);
     }
 
     _result = tf_tfp_finish_send(imu_v3->tfp, _result, _deadline);
@@ -1820,6 +1848,10 @@ int tf_imu_v3_set_linear_acceleration_callback_configuration(TF_IMUV3 *imu_v3, u
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(imu_v3->tfp);
+    }
+
     _result = tf_tfp_finish_send(imu_v3->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1925,6 +1957,10 @@ int tf_imu_v3_set_gravity_vector_callback_configuration(TF_IMUV3 *imu_v3, uint32
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(imu_v3->tfp);
     }
 
     _result = tf_tfp_finish_send(imu_v3->tfp, _result, _deadline);
@@ -2034,6 +2070,10 @@ int tf_imu_v3_set_quaternion_callback_configuration(TF_IMUV3 *imu_v3, uint32_t p
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(imu_v3->tfp);
+    }
+
     _result = tf_tfp_finish_send(imu_v3->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2139,6 +2179,10 @@ int tf_imu_v3_set_all_data_callback_configuration(TF_IMUV3 *imu_v3, uint32_t per
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(imu_v3->tfp);
     }
 
     _result = tf_tfp_finish_send(imu_v3->tfp, _result, _deadline);
@@ -2419,6 +2463,10 @@ int tf_imu_v3_set_write_firmware_pointer(TF_IMUV3 *imu_v3, uint32_t pointer) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(imu_v3->tfp);
+    }
+
     _result = tf_tfp_finish_send(imu_v3->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2526,6 +2574,10 @@ int tf_imu_v3_set_status_led_config(TF_IMUV3 *imu_v3, uint8_t config) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(imu_v3->tfp);
     }
 
     _result = tf_tfp_finish_send(imu_v3->tfp, _result, _deadline);
@@ -2684,6 +2736,10 @@ int tf_imu_v3_reset(TF_IMUV3 *imu_v3) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(imu_v3->tfp);
+    }
+
     _result = tf_tfp_finish_send(imu_v3->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2732,6 +2788,10 @@ int tf_imu_v3_write_uid(TF_IMUV3 *imu_v3, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(imu_v3->tfp);
     }
 
     _result = tf_tfp_finish_send(imu_v3->tfp, _result, _deadline);

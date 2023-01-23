@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -266,6 +266,10 @@ int tf_multi_io_set_outputs(TF_MultiIO *multi_io, const bool value[2]) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(multi_io->tfp);
     }
 
     _result = tf_tfp_finish_send(multi_io->tfp, _result, _deadline);
@@ -545,6 +549,10 @@ int tf_multi_io_set_write_firmware_pointer(TF_MultiIO *multi_io, uint32_t pointe
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(multi_io->tfp);
+    }
+
     _result = tf_tfp_finish_send(multi_io->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -652,6 +660,10 @@ int tf_multi_io_set_status_led_config(TF_MultiIO *multi_io, uint8_t config) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(multi_io->tfp);
     }
 
     _result = tf_tfp_finish_send(multi_io->tfp, _result, _deadline);
@@ -810,6 +822,10 @@ int tf_multi_io_reset(TF_MultiIO *multi_io) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(multi_io->tfp);
+    }
+
     _result = tf_tfp_finish_send(multi_io->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -858,6 +874,10 @@ int tf_multi_io_write_uid(TF_MultiIO *multi_io, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(multi_io->tfp);
     }
 
     _result = tf_tfp_finish_send(multi_io->tfp, _result, _deadline);

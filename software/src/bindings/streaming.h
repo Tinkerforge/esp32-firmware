@@ -23,9 +23,13 @@ extern "C" {
 
 //restrict is only available in C. If the files are explicitly compiled with a C++ compiler, we just drop the restrict modifier, possibly resulting in a performance decrease.
 #ifdef __cplusplus
-#define TF_RESTRICT
+    #if defined(__clang__) || defined(__GNUC__)
+        #define TF_RESTRICT __restrict__
+    #else
+        #define TF_RESTRICT
+    #endif
 #else
-#define TF_RESTRICT restrict
+    #define TF_RESTRICT restrict
 #endif
 
 #define TF_COPY_ITEMS_DECL(type_) void tf_copy_items_##type_(void *TF_RESTRICT dest, size_t dest_offset, const void *TF_RESTRICT src, size_t src_offset, size_t item_count);

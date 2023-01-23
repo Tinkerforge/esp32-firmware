@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -626,6 +626,10 @@ int tf_lcd_128x64_write_pixels_low_level(TF_LCD128x64 *lcd_128x64, uint8_t x_sta
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
+    }
+
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -736,6 +740,10 @@ int tf_lcd_128x64_clear_display(TF_LCD128x64 *lcd_128x64) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
+    }
+
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -787,6 +795,10 @@ int tf_lcd_128x64_set_display_configuration(TF_LCD128x64 *lcd_128x64, uint8_t co
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
@@ -900,6 +912,10 @@ int tf_lcd_128x64_write_line(TF_LCD128x64 *lcd_128x64, uint8_t line, uint8_t pos
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
+    }
+
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -948,6 +964,10 @@ int tf_lcd_128x64_draw_buffered_frame(TF_LCD128x64 *lcd_128x64, bool force_compl
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
@@ -1057,6 +1077,10 @@ int tf_lcd_128x64_set_touch_position_callback_configuration(TF_LCD128x64 *lcd_12
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
@@ -1228,6 +1252,10 @@ int tf_lcd_128x64_set_touch_gesture_callback_configuration(TF_LCD128x64 *lcd_128
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
+    }
+
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1338,6 +1366,10 @@ int tf_lcd_128x64_draw_line(TF_LCD128x64 *lcd_128x64, uint8_t position_x_start, 
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
+    }
+
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1391,6 +1423,10 @@ int tf_lcd_128x64_draw_box(TF_LCD128x64 *lcd_128x64, uint8_t position_x_start, u
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
@@ -1448,6 +1484,10 @@ int tf_lcd_128x64_draw_text(TF_LCD128x64 *lcd_128x64, uint8_t position_x, uint8_
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
+    }
+
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1502,6 +1542,10 @@ int tf_lcd_128x64_set_gui_button(TF_LCD128x64 *lcd_128x64, uint8_t index, uint8_
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
@@ -1618,6 +1662,10 @@ int tf_lcd_128x64_remove_gui_button(TF_LCD128x64 *lcd_128x64, uint8_t index) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
+    }
+
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1667,6 +1715,10 @@ int tf_lcd_128x64_set_gui_button_pressed_callback_configuration(TF_LCD128x64 *lc
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
@@ -1839,6 +1891,10 @@ int tf_lcd_128x64_set_gui_slider(TF_LCD128x64 *lcd_128x64, uint8_t index, uint8_
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
+    }
+
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1953,6 +2009,10 @@ int tf_lcd_128x64_remove_gui_slider(TF_LCD128x64 *lcd_128x64, uint8_t index) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
+    }
+
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2002,6 +2062,10 @@ int tf_lcd_128x64_set_gui_slider_value_callback_configuration(TF_LCD128x64 *lcd_
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
@@ -2170,6 +2234,10 @@ int tf_lcd_128x64_set_gui_tab_configuration(TF_LCD128x64 *lcd_128x64, uint8_t ch
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
+    }
+
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2276,6 +2344,10 @@ int tf_lcd_128x64_set_gui_tab_text(TF_LCD128x64 *lcd_128x64, uint8_t index, cons
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
@@ -2390,6 +2462,10 @@ int tf_lcd_128x64_set_gui_tab_icon(TF_LCD128x64 *lcd_128x64, uint8_t index, cons
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
+    }
+
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2500,6 +2576,10 @@ int tf_lcd_128x64_remove_gui_tab(TF_LCD128x64 *lcd_128x64, uint8_t index) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
+    }
+
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2548,6 +2628,10 @@ int tf_lcd_128x64_set_gui_tab_selected(TF_LCD128x64 *lcd_128x64, uint8_t index) 
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
@@ -2599,6 +2683,10 @@ int tf_lcd_128x64_set_gui_tab_selected_callback_configuration(TF_LCD128x64 *lcd_
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
@@ -2771,6 +2859,10 @@ int tf_lcd_128x64_set_gui_graph_configuration(TF_LCD128x64 *lcd_128x64, uint8_t 
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
+    }
+
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2890,6 +2982,10 @@ int tf_lcd_128x64_set_gui_graph_data_low_level(TF_LCD128x64 *lcd_128x64, uint8_t
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
+    }
+
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -3002,6 +3098,10 @@ int tf_lcd_128x64_remove_gui_graph(TF_LCD128x64 *lcd_128x64, uint8_t index) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
+    }
+
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -3046,6 +3146,10 @@ int tf_lcd_128x64_remove_all_gui(TF_LCD128x64 *lcd_128x64) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
@@ -3096,6 +3200,10 @@ int tf_lcd_128x64_set_touch_led_config(TF_LCD128x64 *lcd_128x64, uint8_t config)
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
@@ -3375,6 +3483,10 @@ int tf_lcd_128x64_set_write_firmware_pointer(TF_LCD128x64 *lcd_128x64, uint32_t 
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
+    }
+
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -3482,6 +3594,10 @@ int tf_lcd_128x64_set_status_led_config(TF_LCD128x64 *lcd_128x64, uint8_t config
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
@@ -3640,6 +3756,10 @@ int tf_lcd_128x64_reset(TF_LCD128x64 *lcd_128x64) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
+    }
+
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -3688,6 +3808,10 @@ int tf_lcd_128x64_write_uid(TF_LCD128x64 *lcd_128x64, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(lcd_128x64->tfp);
     }
 
     _result = tf_tfp_finish_send(lcd_128x64->tfp, _result, _deadline);

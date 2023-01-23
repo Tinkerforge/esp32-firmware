@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -350,6 +350,10 @@ int tf_industrial_dual_0_20ma_v2_set_current_callback_configuration(TF_Industria
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_0_20ma_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_dual_0_20ma_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -463,6 +467,10 @@ int tf_industrial_dual_0_20ma_v2_set_sample_rate(TF_IndustrialDual020mAV2 *indus
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_0_20ma_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_dual_0_20ma_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -566,6 +574,10 @@ int tf_industrial_dual_0_20ma_v2_set_gain(TF_IndustrialDual020mAV2 *industrial_d
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_0_20ma_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_dual_0_20ma_v2->tfp, _result, _deadline);
@@ -672,6 +684,10 @@ int tf_industrial_dual_0_20ma_v2_set_channel_led_config(TF_IndustrialDual020mAV2
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_0_20ma_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_dual_0_20ma_v2->tfp, _result, _deadline);
@@ -784,6 +800,10 @@ int tf_industrial_dual_0_20ma_v2_set_channel_led_status_config(TF_IndustrialDual
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_0_20ma_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_dual_0_20ma_v2->tfp, _result, _deadline);
@@ -1069,6 +1089,10 @@ int tf_industrial_dual_0_20ma_v2_set_write_firmware_pointer(TF_IndustrialDual020
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_0_20ma_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_dual_0_20ma_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1176,6 +1200,10 @@ int tf_industrial_dual_0_20ma_v2_set_status_led_config(TF_IndustrialDual020mAV2 
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_0_20ma_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_dual_0_20ma_v2->tfp, _result, _deadline);
@@ -1334,6 +1362,10 @@ int tf_industrial_dual_0_20ma_v2_reset(TF_IndustrialDual020mAV2 *industrial_dual
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_0_20ma_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_dual_0_20ma_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1382,6 +1414,10 @@ int tf_industrial_dual_0_20ma_v2_write_uid(TF_IndustrialDual020mAV2 *industrial_
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_0_20ma_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_dual_0_20ma_v2->tfp, _result, _deadline);

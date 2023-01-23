@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-12-16.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -544,6 +544,10 @@ int tf_evse_v2_set_charging_slot(TF_EVSEV2 *evse_v2, uint8_t slot, uint16_t max_
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(evse_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -593,6 +597,10 @@ int tf_evse_v2_set_charging_slot_max_current(TF_EVSEV2 *evse_v2, uint8_t slot, u
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(evse_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
@@ -646,6 +654,10 @@ int tf_evse_v2_set_charging_slot_active(TF_EVSEV2 *evse_v2, uint8_t slot, bool a
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(evse_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -695,6 +707,10 @@ int tf_evse_v2_set_charging_slot_clear_on_disconnect(TF_EVSEV2 *evse_v2, uint8_t
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(evse_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
@@ -866,6 +882,10 @@ int tf_evse_v2_set_charging_slot_default(TF_EVSEV2 *evse_v2, uint8_t slot, uint1
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(evse_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
@@ -1147,6 +1167,10 @@ int tf_evse_v2_reset_energy_meter_relative_energy(TF_EVSEV2 *evse_v2) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(evse_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1195,6 +1219,10 @@ int tf_evse_v2_reset_dc_fault_current_state(TF_EVSEV2 *evse_v2, uint32_t passwor
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(evse_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
@@ -1247,6 +1275,10 @@ int tf_evse_v2_set_gpio_configuration(TF_EVSEV2 *evse_v2, uint8_t shutdown_input
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(evse_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
@@ -1417,6 +1449,10 @@ int tf_evse_v2_set_data_storage(TF_EVSEV2 *evse_v2, uint8_t page, const uint8_t 
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(evse_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1583,6 +1619,10 @@ int tf_evse_v2_set_button_configuration(TF_EVSEV2 *evse_v2, uint8_t button_confi
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(evse_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1743,6 +1783,10 @@ int tf_evse_v2_set_ev_wakeup(TF_EVSEV2 *evse_v2, bool ev_wakeup_enabled) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(evse_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
@@ -2000,7 +2044,7 @@ int tf_evse_v2_get_all_data_1(TF_EVSEV2 *evse_v2, uint8_t *ret_iec61851_state, u
     return tf_tfp_get_error(_error_code);
 }
 
-int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_configuration, uint8_t *ret_input_configuration, uint8_t *ret_output_configuration, int16_t *ret_indication, uint16_t *ret_duration, uint8_t *ret_button_configuration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed, bool *ret_ev_wakeup_enabled, bool *ret_control_pilot_disconnected, bool *ret_boost_mode_enabled) {
+int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_configuration, uint8_t *ret_input_configuration, uint8_t *ret_output_configuration, int16_t *ret_indication, uint16_t *ret_duration, uint8_t *ret_button_configuration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed, bool *ret_ev_wakeup_enabled, bool *ret_control_pilot_disconnect, bool *ret_boost_mode_enabled) {
     if (evse_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -2047,7 +2091,7 @@ int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_co
             if (ret_button_release_time != NULL) { *ret_button_release_time = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
             if (ret_button_pressed != NULL) { *ret_button_pressed = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
             if (ret_ev_wakeup_enabled != NULL) { *ret_ev_wakeup_enabled = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
-            if (ret_control_pilot_disconnected != NULL) { *ret_control_pilot_disconnected = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_control_pilot_disconnect != NULL) { *ret_control_pilot_disconnect = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
             if (ret_boost_mode_enabled != NULL) { *ret_boost_mode_enabled = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(evse_v2->tfp);
@@ -2101,6 +2145,10 @@ int tf_evse_v2_factory_reset(TF_EVSEV2 *evse_v2, uint32_t password) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(evse_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
@@ -2210,6 +2258,10 @@ int tf_evse_v2_set_boost_mode(TF_EVSEV2 *evse_v2, bool boost_mode_enabled) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(evse_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
@@ -2489,6 +2541,10 @@ int tf_evse_v2_set_write_firmware_pointer(TF_EVSEV2 *evse_v2, uint32_t pointer) 
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(evse_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2596,6 +2652,10 @@ int tf_evse_v2_set_status_led_config(TF_EVSEV2 *evse_v2, uint8_t config) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(evse_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
@@ -2754,6 +2814,10 @@ int tf_evse_v2_reset(TF_EVSEV2 *evse_v2) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(evse_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2802,6 +2866,10 @@ int tf_evse_v2_write_uid(TF_EVSEV2 *evse_v2, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(evse_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(evse_v2->tfp, _result, _deadline);

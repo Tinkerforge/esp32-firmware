@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -346,6 +346,10 @@ int tf_industrial_digital_in_4_v2_set_value_callback_configuration(TF_Industrial
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_digital_in_4_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_digital_in_4_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -455,6 +459,10 @@ int tf_industrial_digital_in_4_v2_set_all_value_callback_configuration(TF_Indust
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_digital_in_4_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_digital_in_4_v2->tfp, _result, _deadline);
@@ -625,6 +633,10 @@ int tf_industrial_digital_in_4_v2_set_edge_count_configuration(TF_IndustrialDigi
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_digital_in_4_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_digital_in_4_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -734,6 +746,10 @@ int tf_industrial_digital_in_4_v2_set_channel_led_config(TF_IndustrialDigitalIn4
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_digital_in_4_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_digital_in_4_v2->tfp, _result, _deadline);
@@ -1017,6 +1033,10 @@ int tf_industrial_digital_in_4_v2_set_write_firmware_pointer(TF_IndustrialDigita
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_digital_in_4_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_digital_in_4_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1124,6 +1144,10 @@ int tf_industrial_digital_in_4_v2_set_status_led_config(TF_IndustrialDigitalIn4V
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_digital_in_4_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_digital_in_4_v2->tfp, _result, _deadline);
@@ -1282,6 +1306,10 @@ int tf_industrial_digital_in_4_v2_reset(TF_IndustrialDigitalIn4V2 *industrial_di
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_digital_in_4_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_digital_in_4_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1330,6 +1358,10 @@ int tf_industrial_digital_in_4_v2_write_uid(TF_IndustrialDigitalIn4V2 *industria
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_digital_in_4_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_digital_in_4_v2->tfp, _result, _deadline);

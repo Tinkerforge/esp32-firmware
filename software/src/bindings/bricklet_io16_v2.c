@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -342,6 +342,10 @@ int tf_io16_v2_set_value(TF_IO16V2 *io16_v2, const bool value[16]) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(io16_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(io16_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -448,6 +452,10 @@ int tf_io16_v2_set_selected_value(TF_IO16V2 *io16_v2, uint8_t channel, bool valu
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(io16_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(io16_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -498,6 +506,10 @@ int tf_io16_v2_set_configuration(TF_IO16V2 *io16_v2, uint8_t channel, char direc
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(io16_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(io16_v2->tfp, _result, _deadline);
@@ -612,6 +624,10 @@ int tf_io16_v2_set_input_value_callback_configuration(TF_IO16V2 *io16_v2, uint8_
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(io16_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(io16_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -723,6 +739,10 @@ int tf_io16_v2_set_all_input_value_callback_configuration(TF_IO16V2 *io16_v2, ui
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(io16_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(io16_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -829,6 +849,10 @@ int tf_io16_v2_set_monoflop(TF_IO16V2 *io16_v2, uint8_t channel, bool value, uin
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(io16_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(io16_v2->tfp, _result, _deadline);
@@ -1002,6 +1026,10 @@ int tf_io16_v2_set_edge_count_configuration(TF_IO16V2 *io16_v2, uint8_t channel,
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(io16_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(io16_v2->tfp, _result, _deadline);
@@ -1286,6 +1314,10 @@ int tf_io16_v2_set_write_firmware_pointer(TF_IO16V2 *io16_v2, uint32_t pointer) 
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(io16_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(io16_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1393,6 +1425,10 @@ int tf_io16_v2_set_status_led_config(TF_IO16V2 *io16_v2, uint8_t config) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(io16_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(io16_v2->tfp, _result, _deadline);
@@ -1551,6 +1587,10 @@ int tf_io16_v2_reset(TF_IO16V2 *io16_v2) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(io16_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(io16_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1599,6 +1639,10 @@ int tf_io16_v2_write_uid(TF_IO16V2 *io16_v2, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(io16_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(io16_v2->tfp, _result, _deadline);

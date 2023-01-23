@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -500,6 +500,10 @@ int tf_one_wire_set_communication_led_config(TF_OneWire *one_wire, uint8_t confi
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(one_wire->tfp);
+    }
+
     _result = tf_tfp_finish_send(one_wire->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -777,6 +781,10 @@ int tf_one_wire_set_write_firmware_pointer(TF_OneWire *one_wire, uint32_t pointe
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(one_wire->tfp);
+    }
+
     _result = tf_tfp_finish_send(one_wire->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -884,6 +892,10 @@ int tf_one_wire_set_status_led_config(TF_OneWire *one_wire, uint8_t config) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(one_wire->tfp);
     }
 
     _result = tf_tfp_finish_send(one_wire->tfp, _result, _deadline);
@@ -1042,6 +1054,10 @@ int tf_one_wire_reset(TF_OneWire *one_wire) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(one_wire->tfp);
+    }
+
     _result = tf_tfp_finish_send(one_wire->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1090,6 +1106,10 @@ int tf_one_wire_write_uid(TF_OneWire *one_wire, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(one_wire->tfp);
     }
 
     _result = tf_tfp_finish_send(one_wire->tfp, _result, _deadline);

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -404,6 +404,10 @@ int tf_remote_switch_v2_set_repeats(TF_RemoteSwitchV2 *remote_switch_v2, uint8_t
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(remote_switch_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(remote_switch_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -511,6 +515,10 @@ int tf_remote_switch_v2_switch_socket_a(TF_RemoteSwitchV2 *remote_switch_v2, uin
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(remote_switch_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(remote_switch_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -561,6 +569,10 @@ int tf_remote_switch_v2_switch_socket_b(TF_RemoteSwitchV2 *remote_switch_v2, uin
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(remote_switch_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(remote_switch_v2->tfp, _result, _deadline);
@@ -615,6 +627,10 @@ int tf_remote_switch_v2_dim_socket_b(TF_RemoteSwitchV2 *remote_switch_v2, uint32
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(remote_switch_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(remote_switch_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -667,6 +683,10 @@ int tf_remote_switch_v2_switch_socket_c(TF_RemoteSwitchV2 *remote_switch_v2, cha
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(remote_switch_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(remote_switch_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -717,6 +737,10 @@ int tf_remote_switch_v2_set_remote_configuration(TF_RemoteSwitchV2 *remote_switc
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(remote_switch_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(remote_switch_v2->tfp, _result, _deadline);
@@ -1173,6 +1197,10 @@ int tf_remote_switch_v2_set_write_firmware_pointer(TF_RemoteSwitchV2 *remote_swi
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(remote_switch_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(remote_switch_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1280,6 +1308,10 @@ int tf_remote_switch_v2_set_status_led_config(TF_RemoteSwitchV2 *remote_switch_v
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(remote_switch_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(remote_switch_v2->tfp, _result, _deadline);
@@ -1438,6 +1470,10 @@ int tf_remote_switch_v2_reset(TF_RemoteSwitchV2 *remote_switch_v2) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(remote_switch_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(remote_switch_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1486,6 +1522,10 @@ int tf_remote_switch_v2_write_uid(TF_RemoteSwitchV2 *remote_switch_v2, uint32_t 
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(remote_switch_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(remote_switch_v2->tfp, _result, _deadline);

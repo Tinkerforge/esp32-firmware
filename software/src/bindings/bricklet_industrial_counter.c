@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -454,6 +454,10 @@ int tf_industrial_counter_set_counter(TF_IndustrialCounter *industrial_counter, 
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_counter->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_counter->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -503,6 +507,10 @@ int tf_industrial_counter_set_all_counter(TF_IndustrialCounter *industrial_count
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_counter->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_counter->tfp, _result, _deadline);
@@ -677,6 +685,10 @@ int tf_industrial_counter_set_counter_active(TF_IndustrialCounter *industrial_co
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_counter->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_counter->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -726,6 +738,10 @@ int tf_industrial_counter_set_all_counter_active(TF_IndustrialCounter *industria
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_counter->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_counter->tfp, _result, _deadline);
@@ -896,6 +912,10 @@ int tf_industrial_counter_set_counter_configuration(TF_IndustrialCounter *indust
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_counter->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_counter->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1009,6 +1029,10 @@ int tf_industrial_counter_set_all_counter_callback_configuration(TF_IndustrialCo
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_counter->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_counter->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1116,6 +1140,10 @@ int tf_industrial_counter_set_all_signal_data_callback_configuration(TF_Industri
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_counter->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_counter->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1221,6 +1249,10 @@ int tf_industrial_counter_set_channel_led_config(TF_IndustrialCounter *industria
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_counter->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_counter->tfp, _result, _deadline);
@@ -1504,6 +1536,10 @@ int tf_industrial_counter_set_write_firmware_pointer(TF_IndustrialCounter *indus
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_counter->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_counter->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1611,6 +1647,10 @@ int tf_industrial_counter_set_status_led_config(TF_IndustrialCounter *industrial
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_counter->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_counter->tfp, _result, _deadline);
@@ -1769,6 +1809,10 @@ int tf_industrial_counter_reset(TF_IndustrialCounter *industrial_counter) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_counter->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_counter->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1817,6 +1861,10 @@ int tf_industrial_counter_write_uid(TF_IndustrialCounter *industrial_counter, ui
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_counter->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_counter->tfp, _result, _deadline);

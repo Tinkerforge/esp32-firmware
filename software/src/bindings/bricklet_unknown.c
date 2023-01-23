@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -423,6 +423,10 @@ int tf_unknown_set_write_firmware_pointer(TF_Unknown *unknown, uint32_t pointer)
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(unknown->tfp);
+    }
+
     _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -530,6 +534,10 @@ int tf_unknown_set_status_led_config(TF_Unknown *unknown, uint8_t config) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(unknown->tfp);
     }
 
     _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
@@ -688,6 +696,10 @@ int tf_unknown_reset(TF_Unknown *unknown) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(unknown->tfp);
+    }
+
     _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -736,6 +748,10 @@ int tf_unknown_write_uid(TF_Unknown *unknown, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(unknown->tfp);
     }
 
     _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
@@ -839,6 +855,10 @@ int tf_unknown_comcu_enumerate(TF_Unknown *unknown) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(unknown->tfp);
+    }
+
     _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -883,6 +903,10 @@ int tf_unknown_enumerate(TF_Unknown *unknown) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(unknown->tfp);
     }
 
     _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);

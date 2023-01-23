@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -248,6 +248,10 @@ int tf_solid_state_relay_v2_set_state(TF_SolidStateRelayV2 *solid_state_relay_v2
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(solid_state_relay_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(solid_state_relay_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -352,6 +356,10 @@ int tf_solid_state_relay_v2_set_monoflop(TF_SolidStateRelayV2 *solid_state_relay
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(solid_state_relay_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(solid_state_relay_v2->tfp, _result, _deadline);
@@ -633,6 +641,10 @@ int tf_solid_state_relay_v2_set_write_firmware_pointer(TF_SolidStateRelayV2 *sol
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(solid_state_relay_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(solid_state_relay_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -740,6 +752,10 @@ int tf_solid_state_relay_v2_set_status_led_config(TF_SolidStateRelayV2 *solid_st
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(solid_state_relay_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(solid_state_relay_v2->tfp, _result, _deadline);
@@ -898,6 +914,10 @@ int tf_solid_state_relay_v2_reset(TF_SolidStateRelayV2 *solid_state_relay_v2) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(solid_state_relay_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(solid_state_relay_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -946,6 +966,10 @@ int tf_solid_state_relay_v2_write_uid(TF_SolidStateRelayV2 *solid_state_relay_v2
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(solid_state_relay_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(solid_state_relay_v2->tfp, _result, _deadline);

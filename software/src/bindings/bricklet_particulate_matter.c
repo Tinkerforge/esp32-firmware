@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -398,6 +398,10 @@ int tf_particulate_matter_set_enable(TF_ParticulateMatter *particulate_matter, b
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(particulate_matter->tfp);
+    }
+
     _result = tf_tfp_finish_send(particulate_matter->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -562,6 +566,10 @@ int tf_particulate_matter_set_pm_concentration_callback_configuration(TF_Particu
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(particulate_matter->tfp);
+    }
+
     _result = tf_tfp_finish_send(particulate_matter->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -667,6 +675,10 @@ int tf_particulate_matter_set_pm_count_callback_configuration(TF_ParticulateMatt
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(particulate_matter->tfp);
     }
 
     _result = tf_tfp_finish_send(particulate_matter->tfp, _result, _deadline);
@@ -947,6 +959,10 @@ int tf_particulate_matter_set_write_firmware_pointer(TF_ParticulateMatter *parti
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(particulate_matter->tfp);
+    }
+
     _result = tf_tfp_finish_send(particulate_matter->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1054,6 +1070,10 @@ int tf_particulate_matter_set_status_led_config(TF_ParticulateMatter *particulat
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(particulate_matter->tfp);
     }
 
     _result = tf_tfp_finish_send(particulate_matter->tfp, _result, _deadline);
@@ -1212,6 +1232,10 @@ int tf_particulate_matter_reset(TF_ParticulateMatter *particulate_matter) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(particulate_matter->tfp);
+    }
+
     _result = tf_tfp_finish_send(particulate_matter->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1260,6 +1284,10 @@ int tf_particulate_matter_write_uid(TF_ParticulateMatter *particulate_matter, ui
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(particulate_matter->tfp);
     }
 
     _result = tf_tfp_finish_send(particulate_matter->tfp, _result, _deadline);

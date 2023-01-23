@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -343,6 +343,10 @@ int tf_dmx_set_dmx_mode(TF_DMX *dmx, uint8_t dmx_mode) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(dmx->tfp);
+    }
+
     _result = tf_tfp_finish_send(dmx->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -448,6 +452,10 @@ int tf_dmx_write_frame_low_level(TF_DMX *dmx, uint16_t frame_length, uint16_t fr
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(dmx->tfp);
     }
 
     _result = tf_tfp_finish_send(dmx->tfp, _result, _deadline);
@@ -557,6 +565,10 @@ int tf_dmx_set_frame_duration(TF_DMX *dmx, uint16_t frame_duration) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(dmx->tfp);
     }
 
     _result = tf_tfp_finish_send(dmx->tfp, _result, _deadline);
@@ -720,6 +732,10 @@ int tf_dmx_set_communication_led_config(TF_DMX *dmx, uint8_t config) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(dmx->tfp);
+    }
+
     _result = tf_tfp_finish_send(dmx->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -823,6 +839,10 @@ int tf_dmx_set_error_led_config(TF_DMX *dmx, uint8_t config) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(dmx->tfp);
     }
 
     _result = tf_tfp_finish_send(dmx->tfp, _result, _deadline);
@@ -931,6 +951,10 @@ int tf_dmx_set_frame_callback_config(TF_DMX *dmx, bool frame_started_callback_en
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(dmx->tfp);
     }
 
     _result = tf_tfp_finish_send(dmx->tfp, _result, _deadline);
@@ -1213,6 +1237,10 @@ int tf_dmx_set_write_firmware_pointer(TF_DMX *dmx, uint32_t pointer) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(dmx->tfp);
+    }
+
     _result = tf_tfp_finish_send(dmx->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1320,6 +1348,10 @@ int tf_dmx_set_status_led_config(TF_DMX *dmx, uint8_t config) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(dmx->tfp);
     }
 
     _result = tf_tfp_finish_send(dmx->tfp, _result, _deadline);
@@ -1478,6 +1510,10 @@ int tf_dmx_reset(TF_DMX *dmx) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(dmx->tfp);
+    }
+
     _result = tf_tfp_finish_send(dmx->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1526,6 +1562,10 @@ int tf_dmx_write_uid(TF_DMX *dmx, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(dmx->tfp);
     }
 
     _result = tf_tfp_finish_send(dmx->tfp, _result, _deadline);

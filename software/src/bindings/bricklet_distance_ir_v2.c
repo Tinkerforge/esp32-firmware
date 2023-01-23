@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -358,6 +358,10 @@ int tf_distance_ir_v2_set_distance_callback_configuration(TF_DistanceIRV2 *dista
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -526,6 +530,10 @@ int tf_distance_ir_v2_set_analog_value_callback_configuration(TF_DistanceIRV2 *d
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -635,6 +643,10 @@ int tf_distance_ir_v2_set_moving_average_configuration(TF_DistanceIRV2 *distance
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -740,6 +752,10 @@ int tf_distance_ir_v2_set_distance_led_config(TF_DistanceIRV2 *distance_ir_v2, u
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -843,6 +859,10 @@ int tf_distance_ir_v2_set_sensor_type(TF_DistanceIRV2 *distance_ir_v2, uint8_t s
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(distance_ir_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
@@ -1122,6 +1142,10 @@ int tf_distance_ir_v2_set_write_firmware_pointer(TF_DistanceIRV2 *distance_ir_v2
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1229,6 +1253,10 @@ int tf_distance_ir_v2_set_status_led_config(TF_DistanceIRV2 *distance_ir_v2, uin
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(distance_ir_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
@@ -1387,6 +1415,10 @@ int tf_distance_ir_v2_reset(TF_DistanceIRV2 *distance_ir_v2) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1435,6 +1467,10 @@ int tf_distance_ir_v2_write_uid(TF_DistanceIRV2 *distance_ir_v2, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(distance_ir_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -285,6 +285,10 @@ int tf_rgb_led_matrix_set_red(TF_RGBLEDMatrix *rgb_led_matrix, const uint8_t red
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rgb_led_matrix->tfp);
+    }
+
     _result = tf_tfp_finish_send(rgb_led_matrix->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -389,6 +393,10 @@ int tf_rgb_led_matrix_set_green(TF_RGBLEDMatrix *rgb_led_matrix, const uint8_t g
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rgb_led_matrix->tfp);
     }
 
     _result = tf_tfp_finish_send(rgb_led_matrix->tfp, _result, _deadline);
@@ -497,6 +505,10 @@ int tf_rgb_led_matrix_set_blue(TF_RGBLEDMatrix *rgb_led_matrix, const uint8_t bl
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rgb_led_matrix->tfp);
+    }
+
     _result = tf_tfp_finish_send(rgb_led_matrix->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -603,6 +615,10 @@ int tf_rgb_led_matrix_set_frame_duration(TF_RGBLEDMatrix *rgb_led_matrix, uint16
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rgb_led_matrix->tfp);
+    }
+
     _result = tf_tfp_finish_send(rgb_led_matrix->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -702,6 +718,10 @@ int tf_rgb_led_matrix_draw_frame(TF_RGBLEDMatrix *rgb_led_matrix) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rgb_led_matrix->tfp);
     }
 
     _result = tf_tfp_finish_send(rgb_led_matrix->tfp, _result, _deadline);
@@ -981,6 +1001,10 @@ int tf_rgb_led_matrix_set_write_firmware_pointer(TF_RGBLEDMatrix *rgb_led_matrix
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rgb_led_matrix->tfp);
+    }
+
     _result = tf_tfp_finish_send(rgb_led_matrix->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1088,6 +1112,10 @@ int tf_rgb_led_matrix_set_status_led_config(TF_RGBLEDMatrix *rgb_led_matrix, uin
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rgb_led_matrix->tfp);
     }
 
     _result = tf_tfp_finish_send(rgb_led_matrix->tfp, _result, _deadline);
@@ -1246,6 +1274,10 @@ int tf_rgb_led_matrix_reset(TF_RGBLEDMatrix *rgb_led_matrix) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rgb_led_matrix->tfp);
+    }
+
     _result = tf_tfp_finish_send(rgb_led_matrix->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1294,6 +1326,10 @@ int tf_rgb_led_matrix_write_uid(TF_RGBLEDMatrix *rgb_led_matrix, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rgb_led_matrix->tfp);
     }
 
     _result = tf_tfp_finish_send(rgb_led_matrix->tfp, _result, _deadline);

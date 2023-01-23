@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -376,6 +376,10 @@ int tf_industrial_dual_analog_in_v2_set_voltage_callback_configuration(TF_Indust
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -489,6 +493,10 @@ int tf_industrial_dual_analog_in_v2_set_sample_rate(TF_IndustrialDualAnalogInV2 
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -594,6 +602,10 @@ int tf_industrial_dual_analog_in_v2_set_calibration(TF_IndustrialDualAnalogInV2 
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -760,6 +772,10 @@ int tf_industrial_dual_analog_in_v2_set_channel_led_config(TF_IndustrialDualAnal
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -870,6 +886,10 @@ int tf_industrial_dual_analog_in_v2_set_channel_led_status_config(TF_IndustrialD
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -1038,6 +1058,10 @@ int tf_industrial_dual_analog_in_v2_set_all_voltages_callback_configuration(TF_I
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -1318,6 +1342,10 @@ int tf_industrial_dual_analog_in_v2_set_write_firmware_pointer(TF_IndustrialDual
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1425,6 +1453,10 @@ int tf_industrial_dual_analog_in_v2_set_status_led_config(TF_IndustrialDualAnalo
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -1583,6 +1615,10 @@ int tf_industrial_dual_analog_in_v2_reset(TF_IndustrialDualAnalogInV2 *industria
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1631,6 +1667,10 @@ int tf_industrial_dual_analog_in_v2_write_uid(TF_IndustrialDualAnalogInV2 *indus
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);

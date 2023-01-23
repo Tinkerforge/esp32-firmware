@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -322,6 +322,10 @@ int tf_thermocouple_v2_set_temperature_callback_configuration(TF_ThermocoupleV2 
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(thermocouple_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(thermocouple_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -431,6 +435,10 @@ int tf_thermocouple_v2_set_configuration(TF_ThermocoupleV2 *thermocouple_v2, uin
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(thermocouple_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(thermocouple_v2->tfp, _result, _deadline);
@@ -768,6 +776,10 @@ int tf_thermocouple_v2_set_write_firmware_pointer(TF_ThermocoupleV2 *thermocoupl
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(thermocouple_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(thermocouple_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -875,6 +887,10 @@ int tf_thermocouple_v2_set_status_led_config(TF_ThermocoupleV2 *thermocouple_v2,
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(thermocouple_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(thermocouple_v2->tfp, _result, _deadline);
@@ -1033,6 +1049,10 @@ int tf_thermocouple_v2_reset(TF_ThermocoupleV2 *thermocouple_v2) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(thermocouple_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(thermocouple_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1081,6 +1101,10 @@ int tf_thermocouple_v2_write_uid(TF_ThermocoupleV2 *thermocouple_v2, uint32_t ui
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(thermocouple_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(thermocouple_v2->tfp, _result, _deadline);

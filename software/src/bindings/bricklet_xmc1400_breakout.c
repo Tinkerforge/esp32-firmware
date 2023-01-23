@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -290,6 +290,10 @@ int tf_xmc1400_breakout_set_gpio_config(TF_XMC1400Breakout *xmc1400_breakout, ui
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(xmc1400_breakout->tfp);
+    }
+
     _result = tf_tfp_finish_send(xmc1400_breakout->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -399,6 +403,10 @@ int tf_xmc1400_breakout_set_adc_channel_config(TF_XMC1400Breakout *xmc1400_break
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(xmc1400_breakout->tfp);
     }
 
     _result = tf_tfp_finish_send(xmc1400_breakout->tfp, _result, _deadline);
@@ -626,6 +634,10 @@ int tf_xmc1400_breakout_set_adc_values_callback_configuration(TF_XMC1400Breakout
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(xmc1400_breakout->tfp);
+    }
+
     _result = tf_tfp_finish_send(xmc1400_breakout->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -789,6 +801,10 @@ int tf_xmc1400_breakout_set_count_callback_configuration(TF_XMC1400Breakout *xmc
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(xmc1400_breakout->tfp);
     }
 
     _result = tf_tfp_finish_send(xmc1400_breakout->tfp, _result, _deadline);
@@ -1072,6 +1088,10 @@ int tf_xmc1400_breakout_set_write_firmware_pointer(TF_XMC1400Breakout *xmc1400_b
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(xmc1400_breakout->tfp);
+    }
+
     _result = tf_tfp_finish_send(xmc1400_breakout->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1179,6 +1199,10 @@ int tf_xmc1400_breakout_set_status_led_config(TF_XMC1400Breakout *xmc1400_breako
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(xmc1400_breakout->tfp);
     }
 
     _result = tf_tfp_finish_send(xmc1400_breakout->tfp, _result, _deadline);
@@ -1337,6 +1361,10 @@ int tf_xmc1400_breakout_reset(TF_XMC1400Breakout *xmc1400_breakout) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(xmc1400_breakout->tfp);
+    }
+
     _result = tf_tfp_finish_send(xmc1400_breakout->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1385,6 +1413,10 @@ int tf_xmc1400_breakout_write_uid(TF_XMC1400Breakout *xmc1400_breakout, uint32_t
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(xmc1400_breakout->tfp);
     }
 
     _result = tf_tfp_finish_send(xmc1400_breakout->tfp, _result, _deadline);

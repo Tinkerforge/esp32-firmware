@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -375,6 +375,10 @@ int tf_color_v2_set_color_callback_configuration(TF_ColorV2 *color_v2, uint32_t 
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(color_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(color_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -538,6 +542,10 @@ int tf_color_v2_set_illuminance_callback_configuration(TF_ColorV2 *color_v2, uin
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(color_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(color_v2->tfp, _result, _deadline);
@@ -708,6 +716,10 @@ int tf_color_v2_set_color_temperature_callback_configuration(TF_ColorV2 *color_v
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(color_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(color_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -817,6 +829,10 @@ int tf_color_v2_set_light(TF_ColorV2 *color_v2, bool enable) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(color_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(color_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -921,6 +937,10 @@ int tf_color_v2_set_configuration(TF_ColorV2 *color_v2, uint8_t gain, uint8_t in
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(color_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(color_v2->tfp, _result, _deadline);
@@ -1201,6 +1221,10 @@ int tf_color_v2_set_write_firmware_pointer(TF_ColorV2 *color_v2, uint32_t pointe
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(color_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(color_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1308,6 +1332,10 @@ int tf_color_v2_set_status_led_config(TF_ColorV2 *color_v2, uint8_t config) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(color_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(color_v2->tfp, _result, _deadline);
@@ -1466,6 +1494,10 @@ int tf_color_v2_reset(TF_ColorV2 *color_v2) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(color_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(color_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1514,6 +1546,10 @@ int tf_color_v2_write_uid(TF_ColorV2 *color_v2, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(color_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(color_v2->tfp, _result, _deadline);

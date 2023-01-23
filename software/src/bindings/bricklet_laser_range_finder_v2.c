@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -382,6 +382,10 @@ int tf_laser_range_finder_v2_set_distance_callback_configuration(TF_LaserRangeFi
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(laser_range_finder_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(laser_range_finder_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -550,6 +554,10 @@ int tf_laser_range_finder_v2_set_velocity_callback_configuration(TF_LaserRangeFi
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(laser_range_finder_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(laser_range_finder_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -659,6 +667,10 @@ int tf_laser_range_finder_v2_set_enable(TF_LaserRangeFinderV2 *laser_range_finde
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(laser_range_finder_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(laser_range_finder_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -765,6 +777,10 @@ int tf_laser_range_finder_v2_set_configuration(TF_LaserRangeFinderV2 *laser_rang
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(laser_range_finder_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(laser_range_finder_v2->tfp, _result, _deadline);
@@ -876,6 +892,10 @@ int tf_laser_range_finder_v2_set_moving_average(TF_LaserRangeFinderV2 *laser_ran
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(laser_range_finder_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(laser_range_finder_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -982,6 +1002,10 @@ int tf_laser_range_finder_v2_set_offset_calibration(TF_LaserRangeFinderV2 *laser
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(laser_range_finder_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(laser_range_finder_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1085,6 +1109,10 @@ int tf_laser_range_finder_v2_set_distance_led_config(TF_LaserRangeFinderV2 *lase
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(laser_range_finder_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(laser_range_finder_v2->tfp, _result, _deadline);
@@ -1364,6 +1392,10 @@ int tf_laser_range_finder_v2_set_write_firmware_pointer(TF_LaserRangeFinderV2 *l
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(laser_range_finder_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(laser_range_finder_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1471,6 +1503,10 @@ int tf_laser_range_finder_v2_set_status_led_config(TF_LaserRangeFinderV2 *laser_
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(laser_range_finder_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(laser_range_finder_v2->tfp, _result, _deadline);
@@ -1629,6 +1665,10 @@ int tf_laser_range_finder_v2_reset(TF_LaserRangeFinderV2 *laser_range_finder_v2)
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(laser_range_finder_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(laser_range_finder_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1677,6 +1717,10 @@ int tf_laser_range_finder_v2_write_uid(TF_LaserRangeFinderV2 *laser_range_finder
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(laser_range_finder_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(laser_range_finder_v2->tfp, _result, _deadline);

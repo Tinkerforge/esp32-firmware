@@ -216,7 +216,7 @@ uint8_t tf_spitfp_build_packet(TF_SPITFP *spitfp, bool retransmission) {
 #define TRANSCEIVE_TIMEOUT 8
 
 static int tf_spitfp_transceive_packet(TF_SPITFP *spitfp, uint8_t bytes_to_send, uint8_t *send_buf_offset) {
-    while (*send_buf_offset < bytes_to_send) {
+    while (bytes_to_send > 0) {
         uint8_t bytes_missing;
 
         if (process_packets(spitfp, &bytes_missing)) {
@@ -232,6 +232,7 @@ static int tf_spitfp_transceive_packet(TF_SPITFP *spitfp, uint8_t bytes_to_send,
         }
 
         *send_buf_offset += bytes_to_transceive;
+        bytes_to_send -= bytes_to_transceive;
     }
 
     return TRANSCEIVE_PACKET_SENT | (process_packets(spitfp, NULL) ? TRANSCEIVE_PACKET_RECEIVED : 0);

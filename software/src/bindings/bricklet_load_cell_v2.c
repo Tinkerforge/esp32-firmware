@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -356,6 +356,10 @@ int tf_load_cell_v2_set_weight_callback_configuration(TF_LoadCellV2 *load_cell_v
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(load_cell_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(load_cell_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -465,6 +469,10 @@ int tf_load_cell_v2_set_moving_average(TF_LoadCellV2 *load_cell_v2, uint16_t ave
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(load_cell_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(load_cell_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -568,6 +576,10 @@ int tf_load_cell_v2_set_info_led_config(TF_LoadCellV2 *load_cell_v2, uint8_t con
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(load_cell_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(load_cell_v2->tfp, _result, _deadline);
@@ -675,6 +687,10 @@ int tf_load_cell_v2_calibrate(TF_LoadCellV2 *load_cell_v2, uint32_t weight) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(load_cell_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(load_cell_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -719,6 +735,10 @@ int tf_load_cell_v2_tare(TF_LoadCellV2 *load_cell_v2) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(load_cell_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(load_cell_v2->tfp, _result, _deadline);
@@ -770,6 +790,10 @@ int tf_load_cell_v2_set_configuration(TF_LoadCellV2 *load_cell_v2, uint8_t rate,
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(load_cell_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(load_cell_v2->tfp, _result, _deadline);
@@ -1050,6 +1074,10 @@ int tf_load_cell_v2_set_write_firmware_pointer(TF_LoadCellV2 *load_cell_v2, uint
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(load_cell_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(load_cell_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1157,6 +1185,10 @@ int tf_load_cell_v2_set_status_led_config(TF_LoadCellV2 *load_cell_v2, uint8_t c
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(load_cell_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(load_cell_v2->tfp, _result, _deadline);
@@ -1315,6 +1347,10 @@ int tf_load_cell_v2_reset(TF_LoadCellV2 *load_cell_v2) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(load_cell_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(load_cell_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1363,6 +1399,10 @@ int tf_load_cell_v2_write_uid(TF_LoadCellV2 *load_cell_v2, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(load_cell_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(load_cell_v2->tfp, _result, _deadline);

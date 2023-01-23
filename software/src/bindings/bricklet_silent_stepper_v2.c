@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -564,6 +564,10 @@ int tf_silent_stepper_v2_set_max_velocity(TF_SilentStepperV2 *silent_stepper_v2,
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -725,6 +729,10 @@ int tf_silent_stepper_v2_set_speed_ramping(TF_SilentStepperV2 *silent_stepper_v2
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -827,6 +835,10 @@ int tf_silent_stepper_v2_full_brake(TF_SilentStepperV2 *silent_stepper_v2) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -875,6 +887,10 @@ int tf_silent_stepper_v2_set_current_position(TF_SilentStepperV2 *silent_stepper
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
@@ -982,6 +998,10 @@ int tf_silent_stepper_v2_set_target_position(TF_SilentStepperV2 *silent_stepper_
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1085,6 +1105,10 @@ int tf_silent_stepper_v2_set_steps(TF_SilentStepperV2 *silent_stepper_v2, int32_
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
@@ -1248,6 +1272,10 @@ int tf_silent_stepper_v2_set_step_configuration(TF_SilentStepperV2 *silent_stepp
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1350,6 +1378,10 @@ int tf_silent_stepper_v2_drive_forward(TF_SilentStepperV2 *silent_stepper_v2) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1396,6 +1428,10 @@ int tf_silent_stepper_v2_drive_backward(TF_SilentStepperV2 *silent_stepper_v2) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1440,6 +1476,10 @@ int tf_silent_stepper_v2_stop(TF_SilentStepperV2 *silent_stepper_v2) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
@@ -1547,6 +1587,10 @@ int tf_silent_stepper_v2_set_motor_current(TF_SilentStepperV2 *silent_stepper_v2
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1650,6 +1694,10 @@ int tf_silent_stepper_v2_set_enabled(TF_SilentStepperV2 *silent_stepper_v2, bool
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
@@ -1762,6 +1810,10 @@ int tf_silent_stepper_v2_set_basic_configuration(TF_SilentStepperV2 *silent_step
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
@@ -1884,6 +1936,10 @@ int tf_silent_stepper_v2_set_spreadcycle_configuration(TF_SilentStepperV2 *silen
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2002,6 +2058,10 @@ int tf_silent_stepper_v2_set_stealth_configuration(TF_SilentStepperV2 *silent_st
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2118,6 +2178,10 @@ int tf_silent_stepper_v2_set_coolstep_configuration(TF_SilentStepperV2 *silent_s
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2230,6 +2294,10 @@ int tf_silent_stepper_v2_set_misc_configuration(TF_SilentStepperV2 *silent_stepp
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2334,6 +2402,10 @@ int tf_silent_stepper_v2_set_error_led_config(TF_SilentStepperV2 *silent_stepper
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
@@ -2503,6 +2575,10 @@ int tf_silent_stepper_v2_set_minimum_voltage(TF_SilentStepperV2 *silent_stepper_
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2606,6 +2682,10 @@ int tf_silent_stepper_v2_set_time_base(TF_SilentStepperV2 *silent_stepper_v2, ui
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
@@ -2772,6 +2852,10 @@ int tf_silent_stepper_v2_set_all_callback_configuration(TF_SilentStepperV2 *sile
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2877,6 +2961,10 @@ int tf_silent_stepper_v2_set_gpio_configuration(TF_SilentStepperV2 *silent_stepp
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
@@ -2988,6 +3076,10 @@ int tf_silent_stepper_v2_set_gpio_action(TF_SilentStepperV2 *silent_stepper_v2, 
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
@@ -3326,6 +3418,10 @@ int tf_silent_stepper_v2_set_write_firmware_pointer(TF_SilentStepperV2 *silent_s
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -3433,6 +3529,10 @@ int tf_silent_stepper_v2_set_status_led_config(TF_SilentStepperV2 *silent_steppe
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
@@ -3591,6 +3691,10 @@ int tf_silent_stepper_v2_reset(TF_SilentStepperV2 *silent_stepper_v2) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -3639,6 +3743,10 @@ int tf_silent_stepper_v2_write_uid(TF_SilentStepperV2 *silent_stepper_v2, uint32
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);

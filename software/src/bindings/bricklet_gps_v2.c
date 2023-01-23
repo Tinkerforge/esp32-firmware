@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -680,6 +680,10 @@ int tf_gps_v2_restart(TF_GPSV2 *gps_v2, uint8_t restart_type) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(gps_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(gps_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -857,6 +861,10 @@ int tf_gps_v2_set_fix_led_config(TF_GPSV2 *gps_v2, uint8_t config) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(gps_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(gps_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -960,6 +968,10 @@ int tf_gps_v2_set_coordinates_callback_period(TF_GPSV2 *gps_v2, uint32_t period)
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(gps_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(gps_v2->tfp, _result, _deadline);
@@ -1067,6 +1079,10 @@ int tf_gps_v2_set_status_callback_period(TF_GPSV2 *gps_v2, uint32_t period) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(gps_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(gps_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1170,6 +1186,10 @@ int tf_gps_v2_set_altitude_callback_period(TF_GPSV2 *gps_v2, uint32_t period) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(gps_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(gps_v2->tfp, _result, _deadline);
@@ -1277,6 +1297,10 @@ int tf_gps_v2_set_motion_callback_period(TF_GPSV2 *gps_v2, uint32_t period) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(gps_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(gps_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1382,6 +1406,10 @@ int tf_gps_v2_set_date_time_callback_period(TF_GPSV2 *gps_v2, uint32_t period) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(gps_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(gps_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1485,6 +1513,10 @@ int tf_gps_v2_set_sbas_config(TF_GPSV2 *gps_v2, uint8_t sbas_config) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(gps_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(gps_v2->tfp, _result, _deadline);
@@ -1764,6 +1796,10 @@ int tf_gps_v2_set_write_firmware_pointer(TF_GPSV2 *gps_v2, uint32_t pointer) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(gps_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(gps_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1871,6 +1907,10 @@ int tf_gps_v2_set_status_led_config(TF_GPSV2 *gps_v2, uint8_t config) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(gps_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(gps_v2->tfp, _result, _deadline);
@@ -2029,6 +2069,10 @@ int tf_gps_v2_reset(TF_GPSV2 *gps_v2) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(gps_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(gps_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2077,6 +2121,10 @@ int tf_gps_v2_write_uid(TF_GPSV2 *gps_v2, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(gps_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(gps_v2->tfp, _result, _deadline);

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -407,6 +407,10 @@ int tf_servo_v2_set_enable(TF_ServoV2 *servo_v2, uint16_t servo_channel, bool en
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(servo_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(servo_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -515,6 +519,10 @@ int tf_servo_v2_set_position(TF_ServoV2 *servo_v2, uint16_t servo_channel, int16
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(servo_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(servo_v2->tfp, _result, _deadline);
@@ -747,6 +755,10 @@ int tf_servo_v2_set_motion_configuration(TF_ServoV2 *servo_v2, uint16_t servo_ch
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(servo_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(servo_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -858,6 +870,10 @@ int tf_servo_v2_set_pulse_width(TF_ServoV2 *servo_v2, uint16_t servo_channel, ui
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(servo_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(servo_v2->tfp, _result, _deadline);
@@ -972,6 +988,10 @@ int tf_servo_v2_set_degree(TF_ServoV2 *servo_v2, uint16_t servo_channel, int16_t
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(servo_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(servo_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1081,6 +1101,10 @@ int tf_servo_v2_set_period(TF_ServoV2 *servo_v2, uint16_t servo_channel, uint32_
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(servo_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(servo_v2->tfp, _result, _deadline);
@@ -1252,6 +1276,10 @@ int tf_servo_v2_set_servo_current_configuration(TF_ServoV2 *servo_v2, uint16_t s
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(servo_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(servo_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1359,6 +1387,10 @@ int tf_servo_v2_set_input_voltage_configuration(TF_ServoV2 *servo_v2, uint8_t av
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(servo_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(servo_v2->tfp, _result, _deadline);
@@ -1577,6 +1609,10 @@ int tf_servo_v2_set_current_calibration(TF_ServoV2 *servo_v2, const int16_t offs
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(servo_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(servo_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1682,6 +1718,10 @@ int tf_servo_v2_set_position_reached_callback_configuration(TF_ServoV2 *servo_v2
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(servo_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(servo_v2->tfp, _result, _deadline);
@@ -1965,6 +2005,10 @@ int tf_servo_v2_set_write_firmware_pointer(TF_ServoV2 *servo_v2, uint32_t pointe
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(servo_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(servo_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2072,6 +2116,10 @@ int tf_servo_v2_set_status_led_config(TF_ServoV2 *servo_v2, uint8_t config) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(servo_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(servo_v2->tfp, _result, _deadline);
@@ -2230,6 +2278,10 @@ int tf_servo_v2_reset(TF_ServoV2 *servo_v2) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(servo_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(servo_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2278,6 +2330,10 @@ int tf_servo_v2_write_uid(TF_ServoV2 *servo_v2, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(servo_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(servo_v2->tfp, _result, _deadline);

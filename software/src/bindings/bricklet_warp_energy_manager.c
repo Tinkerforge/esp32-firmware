@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2023-01-19.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -247,6 +247,10 @@ int tf_warp_energy_manager_set_contactor(TF_WARPEnergyManager *warp_energy_manag
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(warp_energy_manager->tfp);
+    }
+
     _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -352,6 +356,10 @@ int tf_warp_energy_manager_set_rgb_value(TF_WARPEnergyManager *warp_energy_manag
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(warp_energy_manager->tfp);
     }
 
     _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
@@ -685,6 +693,10 @@ int tf_warp_energy_manager_set_output(TF_WARPEnergyManager *warp_energy_manager,
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(warp_energy_manager->tfp);
     }
 
     _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
@@ -1040,6 +1052,10 @@ int tf_warp_energy_manager_set_sd_wallbox_data_point(TF_WARPEnergyManager *warp_
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(warp_energy_manager->tfp);
+    }
+
     _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1327,6 +1343,10 @@ int tf_warp_energy_manager_set_write_firmware_pointer(TF_WARPEnergyManager *warp
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(warp_energy_manager->tfp);
+    }
+
     _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1434,6 +1454,10 @@ int tf_warp_energy_manager_set_status_led_config(TF_WARPEnergyManager *warp_ener
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(warp_energy_manager->tfp);
     }
 
     _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
@@ -1592,6 +1616,10 @@ int tf_warp_energy_manager_reset(TF_WARPEnergyManager *warp_energy_manager) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(warp_energy_manager->tfp);
+    }
+
     _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1640,6 +1668,10 @@ int tf_warp_energy_manager_write_uid(TF_WARPEnergyManager *warp_energy_manager, 
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(warp_energy_manager->tfp);
     }
 
     _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -435,6 +435,10 @@ int tf_rs232_v2_enable_read_callback(TF_RS232V2 *rs232_v2) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs232_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(rs232_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -479,6 +483,10 @@ int tf_rs232_v2_disable_read_callback(TF_RS232V2 *rs232_v2) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs232_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(rs232_v2->tfp, _result, _deadline);
@@ -590,6 +598,10 @@ int tf_rs232_v2_set_configuration(TF_RS232V2 *rs232_v2, uint32_t baudrate, uint8
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs232_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(rs232_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -698,6 +710,10 @@ int tf_rs232_v2_set_buffer_config(TF_RS232V2 *rs232_v2, uint16_t send_buffer_siz
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs232_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(rs232_v2->tfp, _result, _deadline);
@@ -916,6 +932,10 @@ int tf_rs232_v2_set_frame_readable_callback_configuration(TF_RS232V2 *rs232_v2, 
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs232_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(rs232_v2->tfp, _result, _deadline);
@@ -1195,6 +1215,10 @@ int tf_rs232_v2_set_write_firmware_pointer(TF_RS232V2 *rs232_v2, uint32_t pointe
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs232_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(rs232_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1302,6 +1326,10 @@ int tf_rs232_v2_set_status_led_config(TF_RS232V2 *rs232_v2, uint8_t config) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs232_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(rs232_v2->tfp, _result, _deadline);
@@ -1460,6 +1488,10 @@ int tf_rs232_v2_reset(TF_RS232V2 *rs232_v2) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs232_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(rs232_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1508,6 +1540,10 @@ int tf_rs232_v2_write_uid(TF_RS232V2 *rs232_v2, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs232_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(rs232_v2->tfp, _result, _deadline);

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -372,6 +372,10 @@ int tf_voltage_current_v2_set_current_callback_configuration(TF_VoltageCurrentV2
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(voltage_current_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(voltage_current_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -538,6 +542,10 @@ int tf_voltage_current_v2_set_voltage_callback_configuration(TF_VoltageCurrentV2
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(voltage_current_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(voltage_current_v2->tfp, _result, _deadline);
@@ -708,6 +716,10 @@ int tf_voltage_current_v2_set_power_callback_configuration(TF_VoltageCurrentV2 *
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(voltage_current_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(voltage_current_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -819,6 +831,10 @@ int tf_voltage_current_v2_set_configuration(TF_VoltageCurrentV2 *voltage_current
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(voltage_current_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(voltage_current_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -927,6 +943,10 @@ int tf_voltage_current_v2_set_calibration(TF_VoltageCurrentV2 *voltage_current_v
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(voltage_current_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(voltage_current_v2->tfp, _result, _deadline);
@@ -1209,6 +1229,10 @@ int tf_voltage_current_v2_set_write_firmware_pointer(TF_VoltageCurrentV2 *voltag
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(voltage_current_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(voltage_current_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1316,6 +1340,10 @@ int tf_voltage_current_v2_set_status_led_config(TF_VoltageCurrentV2 *voltage_cur
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(voltage_current_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(voltage_current_v2->tfp, _result, _deadline);
@@ -1474,6 +1502,10 @@ int tf_voltage_current_v2_reset(TF_VoltageCurrentV2 *voltage_current_v2) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(voltage_current_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(voltage_current_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1522,6 +1554,10 @@ int tf_voltage_current_v2_write_uid(TF_VoltageCurrentV2 *voltage_current_v2, uin
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(voltage_current_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(voltage_current_v2->tfp, _result, _deadline);

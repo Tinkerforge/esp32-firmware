@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -880,6 +880,10 @@ int tf_rs485_enable_read_callback(TF_RS485 *rs485) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs485->tfp);
+    }
+
     _result = tf_tfp_finish_send(rs485->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -924,6 +928,10 @@ int tf_rs485_disable_read_callback(TF_RS485 *rs485) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs485->tfp);
     }
 
     _result = tf_tfp_finish_send(rs485->tfp, _result, _deadline);
@@ -1033,6 +1041,10 @@ int tf_rs485_set_rs485_configuration(TF_RS485 *rs485, uint32_t baudrate, uint8_t
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs485->tfp);
     }
 
     _result = tf_tfp_finish_send(rs485->tfp, _result, _deadline);
@@ -1145,6 +1157,10 @@ int tf_rs485_set_modbus_configuration(TF_RS485 *rs485, uint8_t slave_address, ui
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs485->tfp);
+    }
+
     _result = tf_tfp_finish_send(rs485->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1249,6 +1265,10 @@ int tf_rs485_set_mode(TF_RS485 *rs485, uint8_t mode) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs485->tfp);
     }
 
     _result = tf_tfp_finish_send(rs485->tfp, _result, _deadline);
@@ -1356,6 +1376,10 @@ int tf_rs485_set_communication_led_config(TF_RS485 *rs485, uint8_t config) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs485->tfp);
+    }
+
     _result = tf_tfp_finish_send(rs485->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1459,6 +1483,10 @@ int tf_rs485_set_error_led_config(TF_RS485 *rs485, uint8_t config) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs485->tfp);
     }
 
     _result = tf_tfp_finish_send(rs485->tfp, _result, _deadline);
@@ -1565,6 +1593,10 @@ int tf_rs485_set_buffer_config(TF_RS485 *rs485, uint16_t send_buffer_size, uint1
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs485->tfp);
     }
 
     _result = tf_tfp_finish_send(rs485->tfp, _result, _deadline);
@@ -1725,6 +1757,10 @@ int tf_rs485_enable_error_count_callback(TF_RS485 *rs485) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs485->tfp);
+    }
+
     _result = tf_tfp_finish_send(rs485->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1769,6 +1805,10 @@ int tf_rs485_disable_error_count_callback(TF_RS485 *rs485) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs485->tfp);
     }
 
     _result = tf_tfp_finish_send(rs485->tfp, _result, _deadline);
@@ -1994,6 +2034,10 @@ int tf_rs485_modbus_slave_report_exception(TF_RS485 *rs485, uint8_t request_id, 
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs485->tfp);
+    }
+
     _result = tf_tfp_finish_send(rs485->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2046,6 +2090,10 @@ int tf_rs485_modbus_slave_answer_read_coils_request_low_level(TF_RS485 *rs485, u
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs485->tfp);
     }
 
     _result = tf_tfp_finish_send(rs485->tfp, _result, _deadline);
@@ -2163,6 +2211,10 @@ int tf_rs485_modbus_slave_answer_read_holding_registers_request_low_level(TF_RS4
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs485->tfp);
+    }
+
     _result = tf_tfp_finish_send(rs485->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2272,6 +2324,10 @@ int tf_rs485_modbus_slave_answer_write_single_coil_request(TF_RS485 *rs485, uint
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs485->tfp);
     }
 
     _result = tf_tfp_finish_send(rs485->tfp, _result, _deadline);
@@ -2385,6 +2441,10 @@ int tf_rs485_modbus_slave_answer_write_single_register_request(TF_RS485 *rs485, 
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs485->tfp);
+    }
+
     _result = tf_tfp_finish_send(rs485->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2494,6 +2554,10 @@ int tf_rs485_modbus_slave_answer_write_multiple_coils_request(TF_RS485 *rs485, u
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs485->tfp);
     }
 
     _result = tf_tfp_finish_send(rs485->tfp, _result, _deadline);
@@ -2608,6 +2672,10 @@ int tf_rs485_modbus_slave_answer_write_multiple_registers_request(TF_RS485 *rs48
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs485->tfp);
     }
 
     _result = tf_tfp_finish_send(rs485->tfp, _result, _deadline);
@@ -2728,6 +2796,10 @@ int tf_rs485_modbus_slave_answer_read_discrete_inputs_request_low_level(TF_RS485
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs485->tfp);
+    }
+
     _result = tf_tfp_finish_send(rs485->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2843,6 +2915,10 @@ int tf_rs485_modbus_slave_answer_read_input_registers_request_low_level(TF_RS485
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs485->tfp);
+    }
+
     _result = tf_tfp_finish_send(rs485->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2952,6 +3028,10 @@ int tf_rs485_set_frame_readable_callback_configuration(TF_RS485 *rs485, uint16_t
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs485->tfp);
     }
 
     _result = tf_tfp_finish_send(rs485->tfp, _result, _deadline);
@@ -3231,6 +3311,10 @@ int tf_rs485_set_write_firmware_pointer(TF_RS485 *rs485, uint32_t pointer) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs485->tfp);
+    }
+
     _result = tf_tfp_finish_send(rs485->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -3338,6 +3422,10 @@ int tf_rs485_set_status_led_config(TF_RS485 *rs485, uint8_t config) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs485->tfp);
     }
 
     _result = tf_tfp_finish_send(rs485->tfp, _result, _deadline);
@@ -3496,6 +3584,10 @@ int tf_rs485_reset(TF_RS485 *rs485) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs485->tfp);
+    }
+
     _result = tf_tfp_finish_send(rs485->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -3544,6 +3636,10 @@ int tf_rs485_write_uid(TF_RS485 *rs485, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(rs485->tfp);
     }
 
     _result = tf_tfp_finish_send(rs485->tfp, _result, _deadline);

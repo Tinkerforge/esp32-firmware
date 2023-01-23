@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -335,6 +335,10 @@ int tf_sound_pressure_level_set_decibel_callback_configuration(TF_SoundPressureL
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(sound_pressure_level->tfp);
+    }
+
     _result = tf_tfp_finish_send(sound_pressure_level->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -502,6 +506,10 @@ int tf_sound_pressure_level_set_spectrum_callback_configuration(TF_SoundPressure
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(sound_pressure_level->tfp);
+    }
+
     _result = tf_tfp_finish_send(sound_pressure_level->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -606,6 +614,10 @@ int tf_sound_pressure_level_set_configuration(TF_SoundPressureLevel *sound_press
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(sound_pressure_level->tfp);
     }
 
     _result = tf_tfp_finish_send(sound_pressure_level->tfp, _result, _deadline);
@@ -886,6 +898,10 @@ int tf_sound_pressure_level_set_write_firmware_pointer(TF_SoundPressureLevel *so
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(sound_pressure_level->tfp);
+    }
+
     _result = tf_tfp_finish_send(sound_pressure_level->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -993,6 +1009,10 @@ int tf_sound_pressure_level_set_status_led_config(TF_SoundPressureLevel *sound_p
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(sound_pressure_level->tfp);
     }
 
     _result = tf_tfp_finish_send(sound_pressure_level->tfp, _result, _deadline);
@@ -1151,6 +1171,10 @@ int tf_sound_pressure_level_reset(TF_SoundPressureLevel *sound_pressure_level) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(sound_pressure_level->tfp);
+    }
+
     _result = tf_tfp_finish_send(sound_pressure_level->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1199,6 +1223,10 @@ int tf_sound_pressure_level_write_uid(TF_SoundPressureLevel *sound_pressure_leve
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(sound_pressure_level->tfp);
     }
 
     _result = tf_tfp_finish_send(sound_pressure_level->tfp, _result, _deadline);

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -474,6 +474,10 @@ int tf_can_v2_set_frame_read_callback_configuration(TF_CANV2 *can_v2, bool enabl
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(can_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -579,6 +583,10 @@ int tf_can_v2_set_transceiver_configuration(TF_CANV2 *can_v2, uint32_t baud_rate
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(can_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
@@ -693,6 +701,10 @@ int tf_can_v2_set_queue_configuration_low_level(TF_CANV2 *can_v2, uint8_t write_
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(can_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -805,6 +817,10 @@ int tf_can_v2_set_read_filter_configuration(TF_CANV2 *can_v2, uint8_t buffer_ind
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(can_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
@@ -986,6 +1002,10 @@ int tf_can_v2_set_communication_led_config(TF_CANV2 *can_v2, uint8_t config) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(can_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1089,6 +1109,10 @@ int tf_can_v2_set_error_led_config(TF_CANV2 *can_v2, uint8_t config) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(can_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
@@ -1196,6 +1220,10 @@ int tf_can_v2_set_frame_readable_callback_configuration(TF_CANV2 *can_v2, bool e
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(can_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1299,6 +1327,10 @@ int tf_can_v2_set_error_occurred_callback_configuration(TF_CANV2 *can_v2, bool e
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(can_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
@@ -1578,6 +1610,10 @@ int tf_can_v2_set_write_firmware_pointer(TF_CANV2 *can_v2, uint32_t pointer) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(can_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1685,6 +1721,10 @@ int tf_can_v2_set_status_led_config(TF_CANV2 *can_v2, uint8_t config) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(can_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
@@ -1843,6 +1883,10 @@ int tf_can_v2_reset(TF_CANV2 *can_v2) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(can_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1891,6 +1935,10 @@ int tf_can_v2_write_uid(TF_CANV2 *can_v2, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(can_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(can_v2->tfp, _result, _deadline);

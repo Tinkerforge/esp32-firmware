@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -274,6 +274,10 @@ int tf_industrial_dual_ac_relay_set_value(TF_IndustrialDualACRelay *industrial_d
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_ac_relay->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_dual_ac_relay->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -379,6 +383,10 @@ int tf_industrial_dual_ac_relay_set_channel_led_config(TF_IndustrialDualACRelay 
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_ac_relay->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_dual_ac_relay->tfp, _result, _deadline);
@@ -492,6 +500,10 @@ int tf_industrial_dual_ac_relay_set_monoflop(TF_IndustrialDualACRelay *industria
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_ac_relay->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_dual_ac_relay->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -602,6 +614,10 @@ int tf_industrial_dual_ac_relay_set_selected_value(TF_IndustrialDualACRelay *ind
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_ac_relay->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_dual_ac_relay->tfp, _result, _deadline);
@@ -826,6 +842,10 @@ int tf_industrial_dual_ac_relay_set_write_firmware_pointer(TF_IndustrialDualACRe
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_ac_relay->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_dual_ac_relay->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -933,6 +953,10 @@ int tf_industrial_dual_ac_relay_set_status_led_config(TF_IndustrialDualACRelay *
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_ac_relay->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_dual_ac_relay->tfp, _result, _deadline);
@@ -1091,6 +1115,10 @@ int tf_industrial_dual_ac_relay_reset(TF_IndustrialDualACRelay *industrial_dual_
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_ac_relay->tfp);
+    }
+
     _result = tf_tfp_finish_send(industrial_dual_ac_relay->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1139,6 +1167,10 @@ int tf_industrial_dual_ac_relay_write_uid(TF_IndustrialDualACRelay *industrial_d
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(industrial_dual_ac_relay->tfp);
     }
 
     _result = tf_tfp_finish_send(industrial_dual_ac_relay->tfp, _result, _deadline);

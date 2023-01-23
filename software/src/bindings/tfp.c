@@ -173,7 +173,10 @@ static bool tf_tfp_filter_received_packet(TF_TFP *tfp, bool remove_interesting, 
             }
 
             tf_packet_buffer_remove(buf, header.length);
-            ++tfp->error_count_unexpected;
+
+            if (header.seq_num != 0) {
+                ++tfp->error_count_unexpected;
+            }
         }
 
         tf_tfp_packet_processed(tfp);

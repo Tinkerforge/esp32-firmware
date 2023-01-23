@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -460,6 +460,10 @@ int tf_performance_dc_set_enabled(TF_PerformanceDC *performance_dc, bool enabled
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(performance_dc->tfp);
+    }
+
     _result = tf_tfp_finish_send(performance_dc->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -563,6 +567,10 @@ int tf_performance_dc_set_velocity(TF_PerformanceDC *performance_dc, int16_t vel
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(performance_dc->tfp);
     }
 
     _result = tf_tfp_finish_send(performance_dc->tfp, _result, _deadline);
@@ -726,6 +734,10 @@ int tf_performance_dc_set_motion(TF_PerformanceDC *performance_dc, uint16_t acce
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(performance_dc->tfp);
+    }
+
     _result = tf_tfp_finish_send(performance_dc->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -828,6 +840,10 @@ int tf_performance_dc_full_brake(TF_PerformanceDC *performance_dc) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(performance_dc->tfp);
+    }
+
     _result = tf_tfp_finish_send(performance_dc->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -876,6 +892,10 @@ int tf_performance_dc_set_drive_mode(TF_PerformanceDC *performance_dc, uint8_t m
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(performance_dc->tfp);
     }
 
     _result = tf_tfp_finish_send(performance_dc->tfp, _result, _deadline);
@@ -981,6 +1001,10 @@ int tf_performance_dc_set_pwm_frequency(TF_PerformanceDC *performance_dc, uint16
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(performance_dc->tfp);
     }
 
     _result = tf_tfp_finish_send(performance_dc->tfp, _result, _deadline);
@@ -1145,6 +1169,10 @@ int tf_performance_dc_set_thermal_shutdown(TF_PerformanceDC *performance_dc, uin
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(performance_dc->tfp);
+    }
+
     _result = tf_tfp_finish_send(performance_dc->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1250,6 +1278,10 @@ int tf_performance_dc_set_gpio_configuration(TF_PerformanceDC *performance_dc, u
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(performance_dc->tfp);
     }
 
     _result = tf_tfp_finish_send(performance_dc->tfp, _result, _deadline);
@@ -1361,6 +1393,10 @@ int tf_performance_dc_set_gpio_action(TF_PerformanceDC *performance_dc, uint8_t 
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(performance_dc->tfp);
     }
 
     _result = tf_tfp_finish_send(performance_dc->tfp, _result, _deadline);
@@ -1527,6 +1563,10 @@ int tf_performance_dc_set_error_led_config(TF_PerformanceDC *performance_dc, uin
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(performance_dc->tfp);
+    }
+
     _result = tf_tfp_finish_send(performance_dc->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1630,6 +1670,10 @@ int tf_performance_dc_set_cw_led_config(TF_PerformanceDC *performance_dc, uint8_
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(performance_dc->tfp);
     }
 
     _result = tf_tfp_finish_send(performance_dc->tfp, _result, _deadline);
@@ -1737,6 +1781,10 @@ int tf_performance_dc_set_ccw_led_config(TF_PerformanceDC *performance_dc, uint8
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(performance_dc->tfp);
+    }
+
     _result = tf_tfp_finish_send(performance_dc->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1841,6 +1889,10 @@ int tf_performance_dc_set_gpio_led_config(TF_PerformanceDC *performance_dc, uint
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(performance_dc->tfp);
     }
 
     _result = tf_tfp_finish_send(performance_dc->tfp, _result, _deadline);
@@ -1952,6 +2004,10 @@ int tf_performance_dc_set_emergency_shutdown_callback_configuration(TF_Performan
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(performance_dc->tfp);
+    }
+
     _result = tf_tfp_finish_send(performance_dc->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2055,6 +2111,10 @@ int tf_performance_dc_set_velocity_reached_callback_configuration(TF_Performance
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(performance_dc->tfp);
     }
 
     _result = tf_tfp_finish_send(performance_dc->tfp, _result, _deadline);
@@ -2161,6 +2221,10 @@ int tf_performance_dc_set_current_velocity_callback_configuration(TF_Performance
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(performance_dc->tfp);
     }
 
     _result = tf_tfp_finish_send(performance_dc->tfp, _result, _deadline);
@@ -2441,6 +2505,10 @@ int tf_performance_dc_set_write_firmware_pointer(TF_PerformanceDC *performance_d
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(performance_dc->tfp);
+    }
+
     _result = tf_tfp_finish_send(performance_dc->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2548,6 +2616,10 @@ int tf_performance_dc_set_status_led_config(TF_PerformanceDC *performance_dc, ui
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(performance_dc->tfp);
     }
 
     _result = tf_tfp_finish_send(performance_dc->tfp, _result, _deadline);
@@ -2706,6 +2778,10 @@ int tf_performance_dc_reset(TF_PerformanceDC *performance_dc) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(performance_dc->tfp);
+    }
+
     _result = tf_tfp_finish_send(performance_dc->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -2754,6 +2830,10 @@ int tf_performance_dc_write_uid(TF_PerformanceDC *performance_dc, uint32_t uid) 
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(performance_dc->tfp);
     }
 
     _result = tf_tfp_finish_send(performance_dc->tfp, _result, _deadline);

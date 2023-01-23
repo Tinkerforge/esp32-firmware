@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -300,6 +300,10 @@ int tf_led_strip_v2_set_led_values_low_level(TF_LEDStripV2 *led_strip_v2, uint16
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(led_strip_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(led_strip_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -411,6 +415,10 @@ int tf_led_strip_v2_set_frame_duration(TF_LEDStripV2 *led_strip_v2, uint16_t dur
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(led_strip_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(led_strip_v2->tfp, _result, _deadline);
@@ -573,6 +581,10 @@ int tf_led_strip_v2_set_clock_frequency(TF_LEDStripV2 *led_strip_v2, uint32_t fr
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(led_strip_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(led_strip_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -676,6 +688,10 @@ int tf_led_strip_v2_set_chip_type(TF_LEDStripV2 *led_strip_v2, uint16_t chip) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(led_strip_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(led_strip_v2->tfp, _result, _deadline);
@@ -783,6 +799,10 @@ int tf_led_strip_v2_set_channel_mapping(TF_LEDStripV2 *led_strip_v2, uint8_t map
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(led_strip_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(led_strip_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -886,6 +906,10 @@ int tf_led_strip_v2_set_frame_started_callback_configuration(TF_LEDStripV2 *led_
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(led_strip_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(led_strip_v2->tfp, _result, _deadline);
@@ -1165,6 +1189,10 @@ int tf_led_strip_v2_set_write_firmware_pointer(TF_LEDStripV2 *led_strip_v2, uint
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(led_strip_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(led_strip_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1272,6 +1300,10 @@ int tf_led_strip_v2_set_status_led_config(TF_LEDStripV2 *led_strip_v2, uint8_t c
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(led_strip_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(led_strip_v2->tfp, _result, _deadline);
@@ -1430,6 +1462,10 @@ int tf_led_strip_v2_reset(TF_LEDStripV2 *led_strip_v2) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(led_strip_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(led_strip_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1478,6 +1514,10 @@ int tf_led_strip_v2_write_uid(TF_LEDStripV2 *led_strip_v2, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(led_strip_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(led_strip_v2->tfp, _result, _deadline);

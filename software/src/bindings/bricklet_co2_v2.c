@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -398,6 +398,10 @@ int tf_co2_v2_set_air_pressure(TF_CO2V2 *co2_v2, uint16_t air_pressure) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(co2_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(co2_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -501,6 +505,10 @@ int tf_co2_v2_set_temperature_offset(TF_CO2V2 *co2_v2, uint16_t offset) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(co2_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(co2_v2->tfp, _result, _deadline);
@@ -607,6 +615,10 @@ int tf_co2_v2_set_all_values_callback_configuration(TF_CO2V2 *co2_v2, uint32_t p
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(co2_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(co2_v2->tfp, _result, _deadline);
@@ -772,6 +784,10 @@ int tf_co2_v2_set_co2_concentration_callback_configuration(TF_CO2V2 *co2_v2, uin
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(co2_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(co2_v2->tfp, _result, _deadline);
@@ -942,6 +958,10 @@ int tf_co2_v2_set_temperature_callback_configuration(TF_CO2V2 *co2_v2, uint32_t 
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(co2_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(co2_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1108,6 +1128,10 @@ int tf_co2_v2_set_humidity_callback_configuration(TF_CO2V2 *co2_v2, uint32_t per
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(co2_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(co2_v2->tfp, _result, _deadline);
@@ -1391,6 +1415,10 @@ int tf_co2_v2_set_write_firmware_pointer(TF_CO2V2 *co2_v2, uint32_t pointer) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(co2_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(co2_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1498,6 +1526,10 @@ int tf_co2_v2_set_status_led_config(TF_CO2V2 *co2_v2, uint8_t config) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(co2_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(co2_v2->tfp, _result, _deadline);
@@ -1656,6 +1688,10 @@ int tf_co2_v2_reset(TF_CO2V2 *co2_v2) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(co2_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(co2_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1704,6 +1740,10 @@ int tf_co2_v2_write_uid(TF_CO2V2 *co2_v2, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(co2_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(co2_v2->tfp, _result, _deadline);

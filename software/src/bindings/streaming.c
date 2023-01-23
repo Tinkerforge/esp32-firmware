@@ -148,7 +148,7 @@ int tf_stream_in(void *device, TF_LowLevelStreamIn ll_function, void *wrapper_da
         return ret;
     }
 
-    // Setting stream to null is only allowed if stream_length is also null
+    // Setting stream to null is only allowed if stream_length is 0 (handled above). Return error otherwise.
     if (stream == NULL) {
         return TF_E_NULL;
     }

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -319,6 +319,10 @@ int tf_analog_in_v3_set_voltage_callback_configuration(TF_AnalogInV3 *analog_in_
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(analog_in_v3->tfp);
+    }
+
     _result = tf_tfp_finish_send(analog_in_v3->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -428,6 +432,10 @@ int tf_analog_in_v3_set_oversampling(TF_AnalogInV3 *analog_in_v3, uint8_t oversa
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(analog_in_v3->tfp);
+    }
+
     _result = tf_tfp_finish_send(analog_in_v3->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -533,6 +541,10 @@ int tf_analog_in_v3_set_calibration(TF_AnalogInV3 *analog_in_v3, int16_t offset,
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(analog_in_v3->tfp);
     }
 
     _result = tf_tfp_finish_send(analog_in_v3->tfp, _result, _deadline);
@@ -814,6 +826,10 @@ int tf_analog_in_v3_set_write_firmware_pointer(TF_AnalogInV3 *analog_in_v3, uint
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(analog_in_v3->tfp);
+    }
+
     _result = tf_tfp_finish_send(analog_in_v3->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -921,6 +937,10 @@ int tf_analog_in_v3_set_status_led_config(TF_AnalogInV3 *analog_in_v3, uint8_t c
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(analog_in_v3->tfp);
     }
 
     _result = tf_tfp_finish_send(analog_in_v3->tfp, _result, _deadline);
@@ -1079,6 +1099,10 @@ int tf_analog_in_v3_reset(TF_AnalogInV3 *analog_in_v3) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(analog_in_v3->tfp);
+    }
+
     _result = tf_tfp_finish_send(analog_in_v3->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1127,6 +1151,10 @@ int tf_analog_in_v3_write_uid(TF_AnalogInV3 *analog_in_v3, uint32_t uid) {
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(analog_in_v3->tfp);
     }
 
     _result = tf_tfp_finish_send(analog_in_v3->tfp, _result, _deadline);

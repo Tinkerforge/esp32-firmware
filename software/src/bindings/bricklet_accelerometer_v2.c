@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2022-07-12.      *
+ * This file was automatically generated on 2023-01-23.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -373,6 +373,10 @@ int tf_accelerometer_v2_set_configuration(TF_AccelerometerV2 *accelerometer_v2, 
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(accelerometer_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(accelerometer_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -480,6 +484,10 @@ int tf_accelerometer_v2_set_acceleration_callback_configuration(TF_Accelerometer
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(accelerometer_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(accelerometer_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -584,6 +592,10 @@ int tf_accelerometer_v2_set_info_led_config(TF_AccelerometerV2 *accelerometer_v2
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(accelerometer_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(accelerometer_v2->tfp, _result, _deadline);
@@ -694,6 +706,10 @@ int tf_accelerometer_v2_set_continuous_acceleration_configuration(TF_Acceleromet
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(accelerometer_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(accelerometer_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -801,6 +817,10 @@ int tf_accelerometer_v2_set_filter_configuration(TF_AccelerometerV2 *acceleromet
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(accelerometer_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(accelerometer_v2->tfp, _result, _deadline);
@@ -1081,6 +1101,10 @@ int tf_accelerometer_v2_set_write_firmware_pointer(TF_AccelerometerV2 *accelerom
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(accelerometer_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(accelerometer_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1188,6 +1212,10 @@ int tf_accelerometer_v2_set_status_led_config(TF_AccelerometerV2 *accelerometer_
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(accelerometer_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(accelerometer_v2->tfp, _result, _deadline);
@@ -1346,6 +1374,10 @@ int tf_accelerometer_v2_reset(TF_AccelerometerV2 *accelerometer_v2) {
         return TF_E_TIMEOUT;
     }
 
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(accelerometer_v2->tfp);
+    }
+
     _result = tf_tfp_finish_send(accelerometer_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 0) {
@@ -1394,6 +1426,10 @@ int tf_accelerometer_v2_write_uid(TF_AccelerometerV2 *accelerometer_v2, uint32_t
 
     if (_result & TF_TICK_TIMEOUT) {
         return TF_E_TIMEOUT;
+    }
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(accelerometer_v2->tfp);
     }
 
     _result = tf_tfp_finish_send(accelerometer_v2->tfp, _result, _deadline);
