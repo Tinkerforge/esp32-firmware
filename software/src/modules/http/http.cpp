@@ -84,7 +84,7 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
     CommandRegistration reg = api.commands[cmdidx];
 
     // TODO: Use streamed parsing
-    int bytes_written = req.receive(recv_buf, 4096);
+    int bytes_written = req.receive(recv_buf, RECV_BUF_SIZE);
     if (bytes_written == -1) {
         // buffer was not large enough
         return req.send(413);
