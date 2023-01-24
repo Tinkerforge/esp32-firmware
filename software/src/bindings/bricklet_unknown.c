@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2023-01-23.      *
+ * This file was automatically generated on 2023-01-24.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -242,9 +242,6 @@ int tf_unknown_get_spitfp_error_count(TF_Unknown *unknown, uint32_t *ret_error_c
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(unknown->tfp);
@@ -257,6 +254,13 @@ int tf_unknown_get_spitfp_error_count(TF_Unknown *unknown, uint32_t *ret_error_c
             if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(unknown->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
@@ -304,9 +308,6 @@ int tf_unknown_set_bootloader_mode(TF_Unknown *unknown, uint8_t mode, uint8_t *r
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(unknown->tfp);
@@ -316,6 +317,13 @@ int tf_unknown_set_bootloader_mode(TF_Unknown *unknown, uint8_t mode, uint8_t *r
             if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(unknown->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
@@ -359,9 +367,6 @@ int tf_unknown_get_bootloader_mode(TF_Unknown *unknown, uint8_t *ret_mode) {
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(unknown->tfp);
@@ -371,6 +376,13 @@ int tf_unknown_get_bootloader_mode(TF_Unknown *unknown, uint8_t *ret_mode) {
             if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(unknown->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
@@ -419,12 +431,16 @@ int tf_unknown_set_write_firmware_pointer(TF_Unknown *unknown, uint32_t pointer)
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(unknown->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
@@ -472,9 +488,6 @@ int tf_unknown_write_firmware(TF_Unknown *unknown, const uint8_t data[64], uint8
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(unknown->tfp);
@@ -484,6 +497,13 @@ int tf_unknown_write_firmware(TF_Unknown *unknown, const uint8_t data[64], uint8
             if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(unknown->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
@@ -532,12 +552,16 @@ int tf_unknown_set_status_led_config(TF_Unknown *unknown, uint8_t config) {
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(unknown->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
@@ -581,9 +605,6 @@ int tf_unknown_get_status_led_config(TF_Unknown *unknown, uint8_t *ret_config) {
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(unknown->tfp);
@@ -593,6 +614,13 @@ int tf_unknown_get_status_led_config(TF_Unknown *unknown, uint8_t *ret_config) {
             if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(unknown->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
@@ -636,9 +664,6 @@ int tf_unknown_get_chip_temperature(TF_Unknown *unknown, int16_t *ret_temperatur
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(unknown->tfp);
@@ -648,6 +673,13 @@ int tf_unknown_get_chip_temperature(TF_Unknown *unknown, int16_t *ret_temperatur
             if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
         }
         tf_tfp_packet_processed(unknown->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
@@ -692,12 +724,16 @@ int tf_unknown_reset(TF_Unknown *unknown) {
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(unknown->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
@@ -746,12 +782,16 @@ int tf_unknown_write_uid(TF_Unknown *unknown, uint32_t uid) {
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(unknown->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
@@ -795,9 +835,6 @@ int tf_unknown_read_uid(TF_Unknown *unknown, uint32_t *ret_uid) {
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(unknown->tfp);
@@ -807,6 +844,13 @@ int tf_unknown_read_uid(TF_Unknown *unknown, uint32_t *ret_uid) {
             if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(unknown->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
@@ -851,12 +895,16 @@ int tf_unknown_comcu_enumerate(TF_Unknown *unknown) {
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(unknown->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
@@ -901,12 +949,16 @@ int tf_unknown_enumerate(TF_Unknown *unknown) {
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(unknown->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
@@ -951,9 +1003,6 @@ int tf_unknown_get_identity(TF_Unknown *unknown, char ret_uid[8], char ret_conne
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(unknown->tfp);
@@ -968,6 +1017,13 @@ int tf_unknown_get_identity(TF_Unknown *unknown, char ret_uid[8], char ret_conne
             if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
         }
         tf_tfp_packet_processed(unknown->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(unknown->tfp, _result, _deadline);

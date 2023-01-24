@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2023-01-23.      *
+ * This file was automatically generated on 2023-01-24.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -337,12 +337,16 @@ int tf_e_paper_296x128_draw(TF_EPaper296x128 *e_paper_296x128) {
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -386,9 +390,6 @@ int tf_e_paper_296x128_get_draw_status(TF_EPaper296x128 *e_paper_296x128, uint8_
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
@@ -398,6 +399,13 @@ int tf_e_paper_296x128_get_draw_status(TF_EPaper296x128 *e_paper_296x128, uint8_
             if (ret_draw_status != NULL) { *ret_draw_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -453,12 +461,16 @@ int tf_e_paper_296x128_write_black_white_low_level(TF_EPaper296x128 *e_paper_296
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -509,9 +521,6 @@ int tf_e_paper_296x128_read_black_white_low_level(TF_EPaper296x128 *e_paper_296x
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
@@ -523,6 +532,13 @@ int tf_e_paper_296x128_read_black_white_low_level(TF_EPaper296x128 *e_paper_296x
             if (ret_pixels_chunk_data != NULL) { tf_packet_buffer_read_bool_array(_recv_buf, ret_pixels_chunk_data, 464);} else { tf_packet_buffer_remove(_recv_buf, 58); }
         }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -578,12 +594,16 @@ int tf_e_paper_296x128_write_color_low_level(TF_EPaper296x128 *e_paper_296x128, 
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -634,9 +654,6 @@ int tf_e_paper_296x128_read_color_low_level(TF_EPaper296x128 *e_paper_296x128, u
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
@@ -648,6 +665,13 @@ int tf_e_paper_296x128_read_color_low_level(TF_EPaper296x128 *e_paper_296x128, u
             if (ret_pixels_chunk_data != NULL) { tf_packet_buffer_read_bool_array(_recv_buf, ret_pixels_chunk_data, 464);} else { tf_packet_buffer_remove(_recv_buf, 58); }
         }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -696,12 +720,16 @@ int tf_e_paper_296x128_fill_display(TF_EPaper296x128 *e_paper_296x128, uint8_t c
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -756,12 +784,16 @@ int tf_e_paper_296x128_draw_text(TF_EPaper296x128 *e_paper_296x128, uint16_t pos
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -814,12 +846,16 @@ int tf_e_paper_296x128_draw_line(TF_EPaper296x128 *e_paper_296x128, uint16_t pos
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -873,12 +909,16 @@ int tf_e_paper_296x128_draw_box(TF_EPaper296x128 *e_paper_296x128, uint16_t posi
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -927,12 +967,16 @@ int tf_e_paper_296x128_set_update_mode(TF_EPaper296x128 *e_paper_296x128, uint8_
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -976,9 +1020,6 @@ int tf_e_paper_296x128_get_update_mode(TF_EPaper296x128 *e_paper_296x128, uint8_
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
@@ -988,6 +1029,13 @@ int tf_e_paper_296x128_get_update_mode(TF_EPaper296x128 *e_paper_296x128, uint8_
             if (ret_update_mode != NULL) { *ret_update_mode = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -1036,12 +1084,16 @@ int tf_e_paper_296x128_set_display_type(TF_EPaper296x128 *e_paper_296x128, uint8
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -1085,9 +1137,6 @@ int tf_e_paper_296x128_get_display_type(TF_EPaper296x128 *e_paper_296x128, uint8
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
@@ -1097,6 +1146,13 @@ int tf_e_paper_296x128_get_display_type(TF_EPaper296x128 *e_paper_296x128, uint8
             if (ret_display_type != NULL) { *ret_display_type = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -1145,12 +1201,16 @@ int tf_e_paper_296x128_set_display_driver(TF_EPaper296x128 *e_paper_296x128, uin
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -1194,9 +1254,6 @@ int tf_e_paper_296x128_get_display_driver(TF_EPaper296x128 *e_paper_296x128, uin
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
@@ -1206,6 +1263,13 @@ int tf_e_paper_296x128_get_display_driver(TF_EPaper296x128 *e_paper_296x128, uin
             if (ret_display_driver != NULL) { *ret_display_driver = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -1249,9 +1313,6 @@ int tf_e_paper_296x128_get_spitfp_error_count(TF_EPaper296x128 *e_paper_296x128,
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
@@ -1264,6 +1325,13 @@ int tf_e_paper_296x128_get_spitfp_error_count(TF_EPaper296x128 *e_paper_296x128,
             if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -1311,9 +1379,6 @@ int tf_e_paper_296x128_set_bootloader_mode(TF_EPaper296x128 *e_paper_296x128, ui
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
@@ -1323,6 +1388,13 @@ int tf_e_paper_296x128_set_bootloader_mode(TF_EPaper296x128 *e_paper_296x128, ui
             if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -1366,9 +1438,6 @@ int tf_e_paper_296x128_get_bootloader_mode(TF_EPaper296x128 *e_paper_296x128, ui
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
@@ -1378,6 +1447,13 @@ int tf_e_paper_296x128_get_bootloader_mode(TF_EPaper296x128 *e_paper_296x128, ui
             if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -1426,12 +1502,16 @@ int tf_e_paper_296x128_set_write_firmware_pointer(TF_EPaper296x128 *e_paper_296x
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -1479,9 +1559,6 @@ int tf_e_paper_296x128_write_firmware(TF_EPaper296x128 *e_paper_296x128, const u
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
@@ -1491,6 +1568,13 @@ int tf_e_paper_296x128_write_firmware(TF_EPaper296x128 *e_paper_296x128, const u
             if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -1539,12 +1623,16 @@ int tf_e_paper_296x128_set_status_led_config(TF_EPaper296x128 *e_paper_296x128, 
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -1588,9 +1676,6 @@ int tf_e_paper_296x128_get_status_led_config(TF_EPaper296x128 *e_paper_296x128, 
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
@@ -1600,6 +1685,13 @@ int tf_e_paper_296x128_get_status_led_config(TF_EPaper296x128 *e_paper_296x128, 
             if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -1643,9 +1735,6 @@ int tf_e_paper_296x128_get_chip_temperature(TF_EPaper296x128 *e_paper_296x128, i
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
@@ -1655,6 +1744,13 @@ int tf_e_paper_296x128_get_chip_temperature(TF_EPaper296x128 *e_paper_296x128, i
             if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
         }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -1699,12 +1795,16 @@ int tf_e_paper_296x128_reset(TF_EPaper296x128 *e_paper_296x128) {
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -1753,12 +1853,16 @@ int tf_e_paper_296x128_write_uid(TF_EPaper296x128 *e_paper_296x128, uint32_t uid
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -1802,9 +1906,6 @@ int tf_e_paper_296x128_read_uid(TF_EPaper296x128 *e_paper_296x128, uint32_t *ret
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
@@ -1814,6 +1915,13 @@ int tf_e_paper_296x128_read_uid(TF_EPaper296x128 *e_paper_296x128, uint32_t *ret
             if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
@@ -1858,9 +1966,6 @@ int tf_e_paper_296x128_get_identity(TF_EPaper296x128 *e_paper_296x128, char ret_
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(e_paper_296x128->tfp);
@@ -1875,6 +1980,13 @@ int tf_e_paper_296x128_get_identity(TF_EPaper296x128 *e_paper_296x128, char ret_
             if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
         }
         tf_tfp_packet_processed(e_paper_296x128->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(e_paper_296x128->tfp, _result, _deadline);

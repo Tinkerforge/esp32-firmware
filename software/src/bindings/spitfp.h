@@ -79,6 +79,7 @@ void tf_spitfp_packet_processed(TF_SPITFP *spitfp) TF_ATTRIBUTE_NONNULL_ALL;
 #define TF_TICK_AGAIN 4
 #define TF_TICK_TIMEOUT 8
 #define TF_TICK_SLEEP 16
+#define TF_TICK_IN_TRANSCEIVE 32
 
 int tf_spitfp_tick(TF_SPITFP *spitfp, uint32_t deadline_us) TF_ATTRIBUTE_NONNULL_ALL TF_ATTRIBUTE_WARN_UNUSED_RESULT;
 

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2023-01-23.      *
+ * This file was automatically generated on 2023-01-24.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -373,9 +373,6 @@ int tf_air_quality_get_all_values(TF_AirQuality *air_quality, int32_t *ret_iaq_i
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(air_quality->tfp);
@@ -389,6 +386,13 @@ int tf_air_quality_get_all_values(TF_AirQuality *air_quality, int32_t *ret_iaq_i
             if (ret_air_pressure != NULL) { *ret_air_pressure = tf_packet_buffer_read_int32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -437,12 +441,16 @@ int tf_air_quality_set_temperature_offset(TF_AirQuality *air_quality, int32_t of
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -486,9 +494,6 @@ int tf_air_quality_get_temperature_offset(TF_AirQuality *air_quality, int32_t *r
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(air_quality->tfp);
@@ -498,6 +503,13 @@ int tf_air_quality_get_temperature_offset(TF_AirQuality *air_quality, int32_t *r
             if (ret_offset != NULL) { *ret_offset = tf_packet_buffer_read_int32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -547,12 +559,16 @@ int tf_air_quality_set_all_values_callback_configuration(TF_AirQuality *air_qual
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -596,9 +612,6 @@ int tf_air_quality_get_all_values_callback_configuration(TF_AirQuality *air_qual
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(air_quality->tfp);
@@ -609,6 +622,13 @@ int tf_air_quality_get_all_values_callback_configuration(TF_AirQuality *air_qual
             if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -652,9 +672,6 @@ int tf_air_quality_get_iaq_index(TF_AirQuality *air_quality, int32_t *ret_iaq_in
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(air_quality->tfp);
@@ -665,6 +682,13 @@ int tf_air_quality_get_iaq_index(TF_AirQuality *air_quality, int32_t *ret_iaq_in
             if (ret_iaq_index_accuracy != NULL) { *ret_iaq_index_accuracy = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -714,12 +738,16 @@ int tf_air_quality_set_iaq_index_callback_configuration(TF_AirQuality *air_quali
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -763,9 +791,6 @@ int tf_air_quality_get_iaq_index_callback_configuration(TF_AirQuality *air_quali
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(air_quality->tfp);
@@ -776,6 +801,13 @@ int tf_air_quality_get_iaq_index_callback_configuration(TF_AirQuality *air_quali
             if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -819,9 +851,6 @@ int tf_air_quality_get_temperature(TF_AirQuality *air_quality, int32_t *ret_temp
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(air_quality->tfp);
@@ -831,6 +860,13 @@ int tf_air_quality_get_temperature(TF_AirQuality *air_quality, int32_t *ret_temp
             if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -883,12 +919,16 @@ int tf_air_quality_set_temperature_callback_configuration(TF_AirQuality *air_qua
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -932,9 +972,6 @@ int tf_air_quality_get_temperature_callback_configuration(TF_AirQuality *air_qua
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(air_quality->tfp);
@@ -948,6 +985,13 @@ int tf_air_quality_get_temperature_callback_configuration(TF_AirQuality *air_qua
             if (ret_max != NULL) { *ret_max = tf_packet_buffer_read_int32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -991,9 +1035,6 @@ int tf_air_quality_get_humidity(TF_AirQuality *air_quality, int32_t *ret_humidit
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(air_quality->tfp);
@@ -1003,6 +1044,13 @@ int tf_air_quality_get_humidity(TF_AirQuality *air_quality, int32_t *ret_humidit
             if (ret_humidity != NULL) { *ret_humidity = tf_packet_buffer_read_int32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -1055,12 +1103,16 @@ int tf_air_quality_set_humidity_callback_configuration(TF_AirQuality *air_qualit
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -1104,9 +1156,6 @@ int tf_air_quality_get_humidity_callback_configuration(TF_AirQuality *air_qualit
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(air_quality->tfp);
@@ -1120,6 +1169,13 @@ int tf_air_quality_get_humidity_callback_configuration(TF_AirQuality *air_qualit
             if (ret_max != NULL) { *ret_max = tf_packet_buffer_read_int32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -1163,9 +1219,6 @@ int tf_air_quality_get_air_pressure(TF_AirQuality *air_quality, int32_t *ret_air
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(air_quality->tfp);
@@ -1175,6 +1228,13 @@ int tf_air_quality_get_air_pressure(TF_AirQuality *air_quality, int32_t *ret_air
             if (ret_air_pressure != NULL) { *ret_air_pressure = tf_packet_buffer_read_int32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -1227,12 +1287,16 @@ int tf_air_quality_set_air_pressure_callback_configuration(TF_AirQuality *air_qu
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -1276,9 +1340,6 @@ int tf_air_quality_get_air_pressure_callback_configuration(TF_AirQuality *air_qu
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(air_quality->tfp);
@@ -1292,6 +1353,13 @@ int tf_air_quality_get_air_pressure_callback_configuration(TF_AirQuality *air_qu
             if (ret_max != NULL) { *ret_max = tf_packet_buffer_read_int32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -1336,12 +1404,16 @@ int tf_air_quality_remove_calibration(TF_AirQuality *air_quality) {
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -1390,12 +1462,16 @@ int tf_air_quality_set_background_calibration_duration(TF_AirQuality *air_qualit
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -1439,9 +1515,6 @@ int tf_air_quality_get_background_calibration_duration(TF_AirQuality *air_qualit
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(air_quality->tfp);
@@ -1451,6 +1524,13 @@ int tf_air_quality_get_background_calibration_duration(TF_AirQuality *air_qualit
             if (ret_duration != NULL) { *ret_duration = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -1494,9 +1574,6 @@ int tf_air_quality_get_spitfp_error_count(TF_AirQuality *air_quality, uint32_t *
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(air_quality->tfp);
@@ -1509,6 +1586,13 @@ int tf_air_quality_get_spitfp_error_count(TF_AirQuality *air_quality, uint32_t *
             if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -1556,9 +1640,6 @@ int tf_air_quality_set_bootloader_mode(TF_AirQuality *air_quality, uint8_t mode,
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(air_quality->tfp);
@@ -1568,6 +1649,13 @@ int tf_air_quality_set_bootloader_mode(TF_AirQuality *air_quality, uint8_t mode,
             if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -1611,9 +1699,6 @@ int tf_air_quality_get_bootloader_mode(TF_AirQuality *air_quality, uint8_t *ret_
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(air_quality->tfp);
@@ -1623,6 +1708,13 @@ int tf_air_quality_get_bootloader_mode(TF_AirQuality *air_quality, uint8_t *ret_
             if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -1671,12 +1763,16 @@ int tf_air_quality_set_write_firmware_pointer(TF_AirQuality *air_quality, uint32
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -1724,9 +1820,6 @@ int tf_air_quality_write_firmware(TF_AirQuality *air_quality, const uint8_t data
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(air_quality->tfp);
@@ -1736,6 +1829,13 @@ int tf_air_quality_write_firmware(TF_AirQuality *air_quality, const uint8_t data
             if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -1784,12 +1884,16 @@ int tf_air_quality_set_status_led_config(TF_AirQuality *air_quality, uint8_t con
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -1833,9 +1937,6 @@ int tf_air_quality_get_status_led_config(TF_AirQuality *air_quality, uint8_t *re
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(air_quality->tfp);
@@ -1845,6 +1946,13 @@ int tf_air_quality_get_status_led_config(TF_AirQuality *air_quality, uint8_t *re
             if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -1888,9 +1996,6 @@ int tf_air_quality_get_chip_temperature(TF_AirQuality *air_quality, int16_t *ret
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(air_quality->tfp);
@@ -1900,6 +2005,13 @@ int tf_air_quality_get_chip_temperature(TF_AirQuality *air_quality, int16_t *ret
             if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
         }
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -1944,12 +2056,16 @@ int tf_air_quality_reset(TF_AirQuality *air_quality) {
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -1998,12 +2114,16 @@ int tf_air_quality_write_uid(TF_AirQuality *air_quality, uint32_t uid) {
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -2047,9 +2167,6 @@ int tf_air_quality_read_uid(TF_AirQuality *air_quality, uint32_t *ret_uid) {
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(air_quality->tfp);
@@ -2059,6 +2176,13 @@ int tf_air_quality_read_uid(TF_AirQuality *air_quality, uint32_t *ret_uid) {
             if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
@@ -2103,9 +2227,6 @@ int tf_air_quality_get_identity(TF_AirQuality *air_quality, char ret_uid[8], cha
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(air_quality->tfp);
@@ -2120,6 +2241,13 @@ int tf_air_quality_get_identity(TF_AirQuality *air_quality, char ret_uid[8], cha
             if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
         }
         tf_tfp_packet_processed(air_quality->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(air_quality->tfp, _result, _deadline);

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2023-01-23.      *
+ * This file was automatically generated on 2023-01-24.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -270,9 +270,6 @@ int tf_energy_monitor_get_energy_data(TF_EnergyMonitor *energy_monitor, int32_t 
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(energy_monitor->tfp);
@@ -289,6 +286,13 @@ int tf_energy_monitor_get_energy_data(TF_EnergyMonitor *energy_monitor, int32_t 
             if (ret_frequency != NULL) { *ret_frequency = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
         }
         tf_tfp_packet_processed(energy_monitor->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
@@ -333,12 +337,16 @@ int tf_energy_monitor_reset_energy(TF_EnergyMonitor *energy_monitor) {
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(energy_monitor->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
@@ -383,9 +391,6 @@ int tf_energy_monitor_get_waveform_low_level(TF_EnergyMonitor *energy_monitor, u
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(energy_monitor->tfp);
@@ -396,6 +401,13 @@ int tf_energy_monitor_get_waveform_low_level(TF_EnergyMonitor *energy_monitor, u
             if (ret_waveform_chunk_data != NULL) { for (_i = 0; _i < 30; ++_i) ret_waveform_chunk_data[_i] = tf_packet_buffer_read_int16_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 60); }
         }
         tf_tfp_packet_processed(energy_monitor->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
@@ -439,9 +451,6 @@ int tf_energy_monitor_get_transformer_status(TF_EnergyMonitor *energy_monitor, b
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(energy_monitor->tfp);
@@ -452,6 +461,13 @@ int tf_energy_monitor_get_transformer_status(TF_EnergyMonitor *energy_monitor, b
             if (ret_current_transformer_connected != NULL) { *ret_current_transformer_connected = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(energy_monitor->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
@@ -502,12 +518,16 @@ int tf_energy_monitor_set_transformer_calibration(TF_EnergyMonitor *energy_monit
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(energy_monitor->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
@@ -551,9 +571,6 @@ int tf_energy_monitor_get_transformer_calibration(TF_EnergyMonitor *energy_monit
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(energy_monitor->tfp);
@@ -565,6 +582,13 @@ int tf_energy_monitor_get_transformer_calibration(TF_EnergyMonitor *energy_monit
             if (ret_phase_shift != NULL) { *ret_phase_shift = tf_packet_buffer_read_int16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
         }
         tf_tfp_packet_processed(energy_monitor->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
@@ -609,12 +633,16 @@ int tf_energy_monitor_calibrate_offset(TF_EnergyMonitor *energy_monitor) {
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(energy_monitor->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
@@ -664,12 +692,16 @@ int tf_energy_monitor_set_energy_data_callback_configuration(TF_EnergyMonitor *e
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(energy_monitor->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
@@ -713,9 +745,6 @@ int tf_energy_monitor_get_energy_data_callback_configuration(TF_EnergyMonitor *e
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(energy_monitor->tfp);
@@ -726,6 +755,13 @@ int tf_energy_monitor_get_energy_data_callback_configuration(TF_EnergyMonitor *e
             if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(energy_monitor->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
@@ -769,9 +805,6 @@ int tf_energy_monitor_get_spitfp_error_count(TF_EnergyMonitor *energy_monitor, u
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(energy_monitor->tfp);
@@ -784,6 +817,13 @@ int tf_energy_monitor_get_spitfp_error_count(TF_EnergyMonitor *energy_monitor, u
             if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(energy_monitor->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
@@ -831,9 +871,6 @@ int tf_energy_monitor_set_bootloader_mode(TF_EnergyMonitor *energy_monitor, uint
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(energy_monitor->tfp);
@@ -843,6 +880,13 @@ int tf_energy_monitor_set_bootloader_mode(TF_EnergyMonitor *energy_monitor, uint
             if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(energy_monitor->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
@@ -886,9 +930,6 @@ int tf_energy_monitor_get_bootloader_mode(TF_EnergyMonitor *energy_monitor, uint
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(energy_monitor->tfp);
@@ -898,6 +939,13 @@ int tf_energy_monitor_get_bootloader_mode(TF_EnergyMonitor *energy_monitor, uint
             if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(energy_monitor->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
@@ -946,12 +994,16 @@ int tf_energy_monitor_set_write_firmware_pointer(TF_EnergyMonitor *energy_monito
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(energy_monitor->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
@@ -999,9 +1051,6 @@ int tf_energy_monitor_write_firmware(TF_EnergyMonitor *energy_monitor, const uin
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(energy_monitor->tfp);
@@ -1011,6 +1060,13 @@ int tf_energy_monitor_write_firmware(TF_EnergyMonitor *energy_monitor, const uin
             if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(energy_monitor->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
@@ -1059,12 +1115,16 @@ int tf_energy_monitor_set_status_led_config(TF_EnergyMonitor *energy_monitor, ui
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(energy_monitor->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
@@ -1108,9 +1168,6 @@ int tf_energy_monitor_get_status_led_config(TF_EnergyMonitor *energy_monitor, ui
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(energy_monitor->tfp);
@@ -1120,6 +1177,13 @@ int tf_energy_monitor_get_status_led_config(TF_EnergyMonitor *energy_monitor, ui
             if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(energy_monitor->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
@@ -1163,9 +1227,6 @@ int tf_energy_monitor_get_chip_temperature(TF_EnergyMonitor *energy_monitor, int
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(energy_monitor->tfp);
@@ -1175,6 +1236,13 @@ int tf_energy_monitor_get_chip_temperature(TF_EnergyMonitor *energy_monitor, int
             if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
         }
         tf_tfp_packet_processed(energy_monitor->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
@@ -1219,12 +1287,16 @@ int tf_energy_monitor_reset(TF_EnergyMonitor *energy_monitor) {
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(energy_monitor->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
@@ -1273,12 +1345,16 @@ int tf_energy_monitor_write_uid(TF_EnergyMonitor *energy_monitor, uint32_t uid) 
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(energy_monitor->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
@@ -1322,9 +1398,6 @@ int tf_energy_monitor_read_uid(TF_EnergyMonitor *energy_monitor, uint32_t *ret_u
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(energy_monitor->tfp);
@@ -1334,6 +1407,13 @@ int tf_energy_monitor_read_uid(TF_EnergyMonitor *energy_monitor, uint32_t *ret_u
             if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(energy_monitor->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
@@ -1378,9 +1458,6 @@ int tf_energy_monitor_get_identity(TF_EnergyMonitor *energy_monitor, char ret_ui
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(energy_monitor->tfp);
@@ -1395,6 +1472,13 @@ int tf_energy_monitor_get_identity(TF_EnergyMonitor *energy_monitor, char ret_ui
             if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
         }
         tf_tfp_packet_processed(energy_monitor->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(energy_monitor->tfp, _result, _deadline);

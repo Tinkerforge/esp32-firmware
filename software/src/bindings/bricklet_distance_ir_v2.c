@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2023-01-23.      *
+ * This file was automatically generated on 2023-01-24.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -290,9 +290,6 @@ int tf_distance_ir_v2_get_distance(TF_DistanceIRV2 *distance_ir_v2, uint16_t *re
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(distance_ir_v2->tfp);
@@ -302,6 +299,13 @@ int tf_distance_ir_v2_get_distance(TF_DistanceIRV2 *distance_ir_v2, uint16_t *re
             if (ret_distance != NULL) { *ret_distance = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
         }
         tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
@@ -354,12 +358,16 @@ int tf_distance_ir_v2_set_distance_callback_configuration(TF_DistanceIRV2 *dista
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
@@ -403,9 +411,6 @@ int tf_distance_ir_v2_get_distance_callback_configuration(TF_DistanceIRV2 *dista
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(distance_ir_v2->tfp);
@@ -419,6 +424,13 @@ int tf_distance_ir_v2_get_distance_callback_configuration(TF_DistanceIRV2 *dista
             if (ret_max != NULL) { *ret_max = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
         }
         tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
@@ -462,9 +474,6 @@ int tf_distance_ir_v2_get_analog_value(TF_DistanceIRV2 *distance_ir_v2, uint32_t
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(distance_ir_v2->tfp);
@@ -474,6 +483,13 @@ int tf_distance_ir_v2_get_analog_value(TF_DistanceIRV2 *distance_ir_v2, uint32_t
             if (ret_analog_value != NULL) { *ret_analog_value = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
@@ -526,12 +542,16 @@ int tf_distance_ir_v2_set_analog_value_callback_configuration(TF_DistanceIRV2 *d
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
@@ -575,9 +595,6 @@ int tf_distance_ir_v2_get_analog_value_callback_configuration(TF_DistanceIRV2 *d
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(distance_ir_v2->tfp);
@@ -591,6 +608,13 @@ int tf_distance_ir_v2_get_analog_value_callback_configuration(TF_DistanceIRV2 *d
             if (ret_max != NULL) { *ret_max = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
@@ -639,12 +663,16 @@ int tf_distance_ir_v2_set_moving_average_configuration(TF_DistanceIRV2 *distance
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
@@ -688,9 +716,6 @@ int tf_distance_ir_v2_get_moving_average_configuration(TF_DistanceIRV2 *distance
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(distance_ir_v2->tfp);
@@ -700,6 +725,13 @@ int tf_distance_ir_v2_get_moving_average_configuration(TF_DistanceIRV2 *distance
             if (ret_moving_average_length != NULL) { *ret_moving_average_length = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
         }
         tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
@@ -748,12 +780,16 @@ int tf_distance_ir_v2_set_distance_led_config(TF_DistanceIRV2 *distance_ir_v2, u
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
@@ -797,9 +833,6 @@ int tf_distance_ir_v2_get_distance_led_config(TF_DistanceIRV2 *distance_ir_v2, u
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(distance_ir_v2->tfp);
@@ -809,6 +842,13 @@ int tf_distance_ir_v2_get_distance_led_config(TF_DistanceIRV2 *distance_ir_v2, u
             if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
@@ -857,12 +897,16 @@ int tf_distance_ir_v2_set_sensor_type(TF_DistanceIRV2 *distance_ir_v2, uint8_t s
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
@@ -906,9 +950,6 @@ int tf_distance_ir_v2_get_sensor_type(TF_DistanceIRV2 *distance_ir_v2, uint8_t *
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(distance_ir_v2->tfp);
@@ -918,6 +959,13 @@ int tf_distance_ir_v2_get_sensor_type(TF_DistanceIRV2 *distance_ir_v2, uint8_t *
             if (ret_sensor != NULL) { *ret_sensor = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
@@ -961,9 +1009,6 @@ int tf_distance_ir_v2_get_spitfp_error_count(TF_DistanceIRV2 *distance_ir_v2, ui
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(distance_ir_v2->tfp);
@@ -976,6 +1021,13 @@ int tf_distance_ir_v2_get_spitfp_error_count(TF_DistanceIRV2 *distance_ir_v2, ui
             if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
@@ -1023,9 +1075,6 @@ int tf_distance_ir_v2_set_bootloader_mode(TF_DistanceIRV2 *distance_ir_v2, uint8
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(distance_ir_v2->tfp);
@@ -1035,6 +1084,13 @@ int tf_distance_ir_v2_set_bootloader_mode(TF_DistanceIRV2 *distance_ir_v2, uint8
             if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
@@ -1078,9 +1134,6 @@ int tf_distance_ir_v2_get_bootloader_mode(TF_DistanceIRV2 *distance_ir_v2, uint8
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(distance_ir_v2->tfp);
@@ -1090,6 +1143,13 @@ int tf_distance_ir_v2_get_bootloader_mode(TF_DistanceIRV2 *distance_ir_v2, uint8
             if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
@@ -1138,12 +1198,16 @@ int tf_distance_ir_v2_set_write_firmware_pointer(TF_DistanceIRV2 *distance_ir_v2
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
@@ -1191,9 +1255,6 @@ int tf_distance_ir_v2_write_firmware(TF_DistanceIRV2 *distance_ir_v2, const uint
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(distance_ir_v2->tfp);
@@ -1203,6 +1264,13 @@ int tf_distance_ir_v2_write_firmware(TF_DistanceIRV2 *distance_ir_v2, const uint
             if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
@@ -1251,12 +1319,16 @@ int tf_distance_ir_v2_set_status_led_config(TF_DistanceIRV2 *distance_ir_v2, uin
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
@@ -1300,9 +1372,6 @@ int tf_distance_ir_v2_get_status_led_config(TF_DistanceIRV2 *distance_ir_v2, uin
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(distance_ir_v2->tfp);
@@ -1312,6 +1381,13 @@ int tf_distance_ir_v2_get_status_led_config(TF_DistanceIRV2 *distance_ir_v2, uin
             if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
@@ -1355,9 +1431,6 @@ int tf_distance_ir_v2_get_chip_temperature(TF_DistanceIRV2 *distance_ir_v2, int1
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(distance_ir_v2->tfp);
@@ -1367,6 +1440,13 @@ int tf_distance_ir_v2_get_chip_temperature(TF_DistanceIRV2 *distance_ir_v2, int1
             if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
         }
         tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
@@ -1411,12 +1491,16 @@ int tf_distance_ir_v2_reset(TF_DistanceIRV2 *distance_ir_v2) {
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
@@ -1465,12 +1549,16 @@ int tf_distance_ir_v2_write_uid(TF_DistanceIRV2 *distance_ir_v2, uint32_t uid) {
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
@@ -1514,9 +1602,6 @@ int tf_distance_ir_v2_read_uid(TF_DistanceIRV2 *distance_ir_v2, uint32_t *ret_ui
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(distance_ir_v2->tfp);
@@ -1526,6 +1611,13 @@ int tf_distance_ir_v2_read_uid(TF_DistanceIRV2 *distance_ir_v2, uint32_t *ret_ui
             if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
@@ -1570,9 +1662,6 @@ int tf_distance_ir_v2_get_identity(TF_DistanceIRV2 *distance_ir_v2, char ret_uid
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(distance_ir_v2->tfp);
@@ -1587,6 +1676,13 @@ int tf_distance_ir_v2_get_identity(TF_DistanceIRV2 *distance_ir_v2, char ret_uid
             if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
         }
         tf_tfp_packet_processed(distance_ir_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(distance_ir_v2->tfp, _result, _deadline);

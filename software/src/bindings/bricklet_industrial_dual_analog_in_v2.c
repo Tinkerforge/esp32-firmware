@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2023-01-23.      *
+ * This file was automatically generated on 2023-01-24.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -307,9 +307,6 @@ int tf_industrial_dual_analog_in_v2_get_voltage(TF_IndustrialDualAnalogInV2 *ind
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(industrial_dual_analog_in_v2->tfp);
@@ -319,6 +316,13 @@ int tf_industrial_dual_analog_in_v2_get_voltage(TF_IndustrialDualAnalogInV2 *ind
             if (ret_voltage != NULL) { *ret_voltage = tf_packet_buffer_read_int32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -372,12 +376,16 @@ int tf_industrial_dual_analog_in_v2_set_voltage_callback_configuration(TF_Indust
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -425,9 +433,6 @@ int tf_industrial_dual_analog_in_v2_get_voltage_callback_configuration(TF_Indust
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(industrial_dual_analog_in_v2->tfp);
@@ -441,6 +446,13 @@ int tf_industrial_dual_analog_in_v2_get_voltage_callback_configuration(TF_Indust
             if (ret_max != NULL) { *ret_max = tf_packet_buffer_read_int32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -489,12 +501,16 @@ int tf_industrial_dual_analog_in_v2_set_sample_rate(TF_IndustrialDualAnalogInV2 
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -538,9 +554,6 @@ int tf_industrial_dual_analog_in_v2_get_sample_rate(TF_IndustrialDualAnalogInV2 
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(industrial_dual_analog_in_v2->tfp);
@@ -550,6 +563,13 @@ int tf_industrial_dual_analog_in_v2_get_sample_rate(TF_IndustrialDualAnalogInV2 
             if (ret_rate != NULL) { *ret_rate = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -600,12 +620,16 @@ int tf_industrial_dual_analog_in_v2_set_calibration(TF_IndustrialDualAnalogInV2 
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -650,9 +674,6 @@ int tf_industrial_dual_analog_in_v2_get_calibration(TF_IndustrialDualAnalogInV2 
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(industrial_dual_analog_in_v2->tfp);
@@ -663,6 +684,13 @@ int tf_industrial_dual_analog_in_v2_get_calibration(TF_IndustrialDualAnalogInV2 
             if (ret_gain != NULL) { for (_i = 0; _i < 2; ++_i) ret_gain[_i] = tf_packet_buffer_read_int32_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 8); }
         }
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -707,9 +735,6 @@ int tf_industrial_dual_analog_in_v2_get_adc_values(TF_IndustrialDualAnalogInV2 *
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(industrial_dual_analog_in_v2->tfp);
@@ -719,6 +744,13 @@ int tf_industrial_dual_analog_in_v2_get_adc_values(TF_IndustrialDualAnalogInV2 *
             if (ret_value != NULL) { for (_i = 0; _i < 2; ++_i) ret_value[_i] = tf_packet_buffer_read_int32_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 8); }
         }
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -768,12 +800,16 @@ int tf_industrial_dual_analog_in_v2_set_channel_led_config(TF_IndustrialDualAnal
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -821,9 +857,6 @@ int tf_industrial_dual_analog_in_v2_get_channel_led_config(TF_IndustrialDualAnal
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(industrial_dual_analog_in_v2->tfp);
@@ -833,6 +866,13 @@ int tf_industrial_dual_analog_in_v2_get_channel_led_config(TF_IndustrialDualAnal
             if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -884,12 +924,16 @@ int tf_industrial_dual_analog_in_v2_set_channel_led_status_config(TF_IndustrialD
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -937,9 +981,6 @@ int tf_industrial_dual_analog_in_v2_get_channel_led_status_config(TF_IndustrialD
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(industrial_dual_analog_in_v2->tfp);
@@ -951,6 +992,13 @@ int tf_industrial_dual_analog_in_v2_get_channel_led_status_config(TF_IndustrialD
             if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -995,9 +1043,6 @@ int tf_industrial_dual_analog_in_v2_get_all_voltages(TF_IndustrialDualAnalogInV2
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(industrial_dual_analog_in_v2->tfp);
@@ -1007,6 +1052,13 @@ int tf_industrial_dual_analog_in_v2_get_all_voltages(TF_IndustrialDualAnalogInV2
             if (ret_voltages != NULL) { for (_i = 0; _i < 2; ++_i) ret_voltages[_i] = tf_packet_buffer_read_int32_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 8); }
         }
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -1056,12 +1108,16 @@ int tf_industrial_dual_analog_in_v2_set_all_voltages_callback_configuration(TF_I
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -1105,9 +1161,6 @@ int tf_industrial_dual_analog_in_v2_get_all_voltages_callback_configuration(TF_I
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(industrial_dual_analog_in_v2->tfp);
@@ -1118,6 +1171,13 @@ int tf_industrial_dual_analog_in_v2_get_all_voltages_callback_configuration(TF_I
             if (ret_value_has_to_change != NULL) { *ret_value_has_to_change = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -1161,9 +1221,6 @@ int tf_industrial_dual_analog_in_v2_get_spitfp_error_count(TF_IndustrialDualAnal
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(industrial_dual_analog_in_v2->tfp);
@@ -1176,6 +1233,13 @@ int tf_industrial_dual_analog_in_v2_get_spitfp_error_count(TF_IndustrialDualAnal
             if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -1223,9 +1287,6 @@ int tf_industrial_dual_analog_in_v2_set_bootloader_mode(TF_IndustrialDualAnalogI
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(industrial_dual_analog_in_v2->tfp);
@@ -1235,6 +1296,13 @@ int tf_industrial_dual_analog_in_v2_set_bootloader_mode(TF_IndustrialDualAnalogI
             if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -1278,9 +1346,6 @@ int tf_industrial_dual_analog_in_v2_get_bootloader_mode(TF_IndustrialDualAnalogI
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(industrial_dual_analog_in_v2->tfp);
@@ -1290,6 +1355,13 @@ int tf_industrial_dual_analog_in_v2_get_bootloader_mode(TF_IndustrialDualAnalogI
             if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -1338,12 +1410,16 @@ int tf_industrial_dual_analog_in_v2_set_write_firmware_pointer(TF_IndustrialDual
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -1391,9 +1467,6 @@ int tf_industrial_dual_analog_in_v2_write_firmware(TF_IndustrialDualAnalogInV2 *
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(industrial_dual_analog_in_v2->tfp);
@@ -1403,6 +1476,13 @@ int tf_industrial_dual_analog_in_v2_write_firmware(TF_IndustrialDualAnalogInV2 *
             if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -1451,12 +1531,16 @@ int tf_industrial_dual_analog_in_v2_set_status_led_config(TF_IndustrialDualAnalo
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -1500,9 +1584,6 @@ int tf_industrial_dual_analog_in_v2_get_status_led_config(TF_IndustrialDualAnalo
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(industrial_dual_analog_in_v2->tfp);
@@ -1512,6 +1593,13 @@ int tf_industrial_dual_analog_in_v2_get_status_led_config(TF_IndustrialDualAnalo
             if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -1555,9 +1643,6 @@ int tf_industrial_dual_analog_in_v2_get_chip_temperature(TF_IndustrialDualAnalog
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(industrial_dual_analog_in_v2->tfp);
@@ -1567,6 +1652,13 @@ int tf_industrial_dual_analog_in_v2_get_chip_temperature(TF_IndustrialDualAnalog
             if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
         }
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -1611,12 +1703,16 @@ int tf_industrial_dual_analog_in_v2_reset(TF_IndustrialDualAnalogInV2 *industria
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -1665,12 +1761,16 @@ int tf_industrial_dual_analog_in_v2_write_uid(TF_IndustrialDualAnalogInV2 *indus
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -1714,9 +1814,6 @@ int tf_industrial_dual_analog_in_v2_read_uid(TF_IndustrialDualAnalogInV2 *indust
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(industrial_dual_analog_in_v2->tfp);
@@ -1726,6 +1823,13 @@ int tf_industrial_dual_analog_in_v2_read_uid(TF_IndustrialDualAnalogInV2 *indust
             if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
@@ -1770,9 +1874,6 @@ int tf_industrial_dual_analog_in_v2_get_identity(TF_IndustrialDualAnalogInV2 *in
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(industrial_dual_analog_in_v2->tfp);
@@ -1787,6 +1888,13 @@ int tf_industrial_dual_analog_in_v2_get_identity(TF_IndustrialDualAnalogInV2 *in
             if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
         }
         tf_tfp_packet_processed(industrial_dual_analog_in_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(industrial_dual_analog_in_v2->tfp, _result, _deadline);

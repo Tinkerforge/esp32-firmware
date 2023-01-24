@@ -215,24 +215,24 @@ uint8_t tf_spitfp_build_packet(TF_SPITFP *spitfp, bool retransmission) {
 #define TRANSCEIVE_PACKET_ACKED 4
 #define TRANSCEIVE_TIMEOUT 8
 
-static int tf_spitfp_transceive_packet(TF_SPITFP *spitfp, uint8_t bytes_to_send, uint8_t *send_buf_offset) {
-    while (bytes_to_send > 0) {
+static int tf_spitfp_transceive_packet(TF_SPITFP *spitfp, uint8_t send_buf_length, uint8_t *send_buf_offset) {
+    while (*send_buf_offset < send_buf_length) {
         uint8_t bytes_missing;
 
         if (process_packets(spitfp, &bytes_missing)) {
             return TRANSCEIVE_PACKET_RECEIVED;
         }
 
-        uint8_t to_recv = bytes_to_recv(spitfp, bytes_missing, bytes_to_send);
-        uint8_t bytes_to_transceive = MIN(bytes_to_send, to_recv);
-        int rc = tf_spitfp_transceive(spitfp, *send_buf_offset, bytes_to_transceive);
+        uint8_t to_send = send_buf_length - *send_buf_offset;
+        uint8_t to_recv = bytes_to_recv(spitfp, bytes_missing, to_send);
+        uint8_t to_transceive = MIN(to_send, to_recv);
+        int rc = tf_spitfp_transceive(spitfp, *send_buf_offset, to_transceive);
 
         if (rc != TF_E_OK) {
             return rc;
         }
 
-        *send_buf_offset += bytes_to_transceive;
-        bytes_to_send -= bytes_to_transceive;
+        *send_buf_offset += to_transceive;
     }
 
     return TRANSCEIVE_PACKET_SENT | (process_packets(spitfp, NULL) ? TRANSCEIVE_PACKET_RECEIVED : 0);
@@ -379,7 +379,7 @@ int tf_spitfp_tick(TF_SPITFP *spitfp, uint32_t deadline_us) {
 
         case STATE_TRANSCEIVE: {
             uint8_t seq_num = m->info.transceive.seq_num_to_send;
-            int result = tf_spitfp_transceive_packet(spitfp,  m->info.transceive.bytes_to_send, & m->info.transceive.send_buf_offset);
+            int result = tf_spitfp_transceive_packet(spitfp,  m->info.transceive.bytes_to_send, &m->info.transceive.send_buf_offset);
 
             if (result < 0) {
                 return result;
@@ -399,7 +399,7 @@ int tf_spitfp_tick(TF_SPITFP *spitfp, uint32_t deadline_us) {
 
             if (result & TRANSCEIVE_PACKET_RECEIVED) {
                 m->info.transceive.packet_received = true;
-                return TF_TICK_AGAIN | tf_spitfp_filter_duplicates(spitfp);
+                return TF_TICK_AGAIN | TF_TICK_IN_TRANSCEIVE | tf_spitfp_filter_duplicates(spitfp);
             }
 
             if (result & TRANSCEIVE_PACKET_SENT) {

@@ -286,7 +286,7 @@ static int tf_tfp_send_getter(TF_TFP *tfp, uint32_t deadline_us, uint8_t *error_
         }
     }
 
-    return (packet_received ? TF_TICK_PACKET_RECEIVED : TF_TICK_TIMEOUT) | (result & TF_TICK_AGAIN);
+    return (packet_received ? TF_TICK_PACKET_RECEIVED : TF_TICK_TIMEOUT) | (result & TF_TICK_AGAIN) | (result & TF_TICK_IN_TRANSCEIVE);
 }
 
 static int tf_tfp_send_setter(TF_TFP *tfp, uint32_t deadline_us) {
@@ -320,7 +320,7 @@ static int tf_tfp_send_setter(TF_TFP *tfp, uint32_t deadline_us) {
         }
     }
 
-    return (packet_sent ? TF_TICK_PACKET_SENT : TF_TICK_TIMEOUT) | (result & TF_TICK_AGAIN);
+    return (packet_sent ? TF_TICK_PACKET_SENT : TF_TICK_TIMEOUT) | (result & TF_TICK_AGAIN) | (result & TF_TICK_IN_TRANSCEIVE);
 }
 
 int tf_tfp_send_packet(TF_TFP *tfp, bool response_expected, uint32_t deadline_us, uint8_t *error_code, uint8_t *length) {
@@ -330,7 +330,7 @@ int tf_tfp_send_packet(TF_TFP *tfp, bool response_expected, uint32_t deadline_us
 int tf_tfp_finish_send(TF_TFP *tfp, int previous_result, uint32_t deadline_us) {
     int result = previous_result;
 
-    while (!tf_hal_deadline_elapsed(tfp->spitfp->hal, deadline_us) && (result & TF_TICK_AGAIN)) {
+    while ((!tf_hal_deadline_elapsed(tfp->spitfp->hal, deadline_us) || result & TF_TICK_IN_TRANSCEIVE) && (result & TF_TICK_AGAIN)) {
         result = tf_spitfp_tick(tfp->spitfp, deadline_us);
 
         if (result < 0) {
@@ -345,6 +345,10 @@ int tf_tfp_finish_send(TF_TFP *tfp, int previous_result, uint32_t deadline_us) {
     // SPITFP would only resend the packet after returning once without
     // the TF_TICK_AGAIN flag set.
     tfp->spitfp->send_buf[0] = 0;
+
+    // Also make sure we are not waiting for a packet anymore (in case of timeout).
+    tfp->waiting_for_fid = 0;
+    tfp->waiting_for_seq_num = 0;
 
     return (result & TF_TICK_AGAIN) ? TF_E_TIMEOUT : 0;
 }
@@ -387,7 +391,7 @@ int tf_tfp_callback_tick(TF_TFP *tfp, uint32_t deadline_us) {
         if (result & TF_TICK_PACKET_RECEIVED) {
             // handle possible callback packet
             uint8_t error_code, length;
-            tf_tfp_filter_received_packet(tfp, false, &error_code, &length);
+            tf_tfp_filter_received_packet(tfp, true, &error_code, &length);
         }
 
         if (result & TF_TICK_PACKET_SENT) {

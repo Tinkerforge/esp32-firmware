@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2023-01-23.      *
+ * This file was automatically generated on 2023-01-24.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -253,9 +253,6 @@ int tf_motion_detector_v2_get_motion_detected(TF_MotionDetectorV2 *motion_detect
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(motion_detector_v2->tfp);
@@ -265,6 +262,13 @@ int tf_motion_detector_v2_get_motion_detected(TF_MotionDetectorV2 *motion_detect
             if (ret_motion != NULL) { *ret_motion = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(motion_detector_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
@@ -313,12 +317,16 @@ int tf_motion_detector_v2_set_sensitivity(TF_MotionDetectorV2 *motion_detector_v
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(motion_detector_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
@@ -362,9 +370,6 @@ int tf_motion_detector_v2_get_sensitivity(TF_MotionDetectorV2 *motion_detector_v
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(motion_detector_v2->tfp);
@@ -374,6 +379,13 @@ int tf_motion_detector_v2_get_sensitivity(TF_MotionDetectorV2 *motion_detector_v
             if (ret_sensitivity != NULL) { *ret_sensitivity = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(motion_detector_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
@@ -424,12 +436,16 @@ int tf_motion_detector_v2_set_indicator(TF_MotionDetectorV2 *motion_detector_v2,
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(motion_detector_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
@@ -473,9 +489,6 @@ int tf_motion_detector_v2_get_indicator(TF_MotionDetectorV2 *motion_detector_v2,
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(motion_detector_v2->tfp);
@@ -487,6 +500,13 @@ int tf_motion_detector_v2_get_indicator(TF_MotionDetectorV2 *motion_detector_v2,
             if (ret_bottom != NULL) { *ret_bottom = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(motion_detector_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
@@ -530,9 +550,6 @@ int tf_motion_detector_v2_get_spitfp_error_count(TF_MotionDetectorV2 *motion_det
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(motion_detector_v2->tfp);
@@ -545,6 +562,13 @@ int tf_motion_detector_v2_get_spitfp_error_count(TF_MotionDetectorV2 *motion_det
             if (ret_error_count_overflow != NULL) { *ret_error_count_overflow = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(motion_detector_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
@@ -592,9 +616,6 @@ int tf_motion_detector_v2_set_bootloader_mode(TF_MotionDetectorV2 *motion_detect
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(motion_detector_v2->tfp);
@@ -604,6 +625,13 @@ int tf_motion_detector_v2_set_bootloader_mode(TF_MotionDetectorV2 *motion_detect
             if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(motion_detector_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
@@ -647,9 +675,6 @@ int tf_motion_detector_v2_get_bootloader_mode(TF_MotionDetectorV2 *motion_detect
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(motion_detector_v2->tfp);
@@ -659,6 +684,13 @@ int tf_motion_detector_v2_get_bootloader_mode(TF_MotionDetectorV2 *motion_detect
             if (ret_mode != NULL) { *ret_mode = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(motion_detector_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
@@ -707,12 +739,16 @@ int tf_motion_detector_v2_set_write_firmware_pointer(TF_MotionDetectorV2 *motion
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(motion_detector_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
@@ -760,9 +796,6 @@ int tf_motion_detector_v2_write_firmware(TF_MotionDetectorV2 *motion_detector_v2
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(motion_detector_v2->tfp);
@@ -772,6 +805,13 @@ int tf_motion_detector_v2_write_firmware(TF_MotionDetectorV2 *motion_detector_v2
             if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(motion_detector_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
@@ -820,12 +860,16 @@ int tf_motion_detector_v2_set_status_led_config(TF_MotionDetectorV2 *motion_dete
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(motion_detector_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
@@ -869,9 +913,6 @@ int tf_motion_detector_v2_get_status_led_config(TF_MotionDetectorV2 *motion_dete
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(motion_detector_v2->tfp);
@@ -881,6 +922,13 @@ int tf_motion_detector_v2_get_status_led_config(TF_MotionDetectorV2 *motion_dete
             if (ret_config != NULL) { *ret_config = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(motion_detector_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
@@ -924,9 +972,6 @@ int tf_motion_detector_v2_get_chip_temperature(TF_MotionDetectorV2 *motion_detec
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(motion_detector_v2->tfp);
@@ -936,6 +981,13 @@ int tf_motion_detector_v2_get_chip_temperature(TF_MotionDetectorV2 *motion_detec
             if (ret_temperature != NULL) { *ret_temperature = tf_packet_buffer_read_int16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
         }
         tf_tfp_packet_processed(motion_detector_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
@@ -980,12 +1032,16 @@ int tf_motion_detector_v2_reset(TF_MotionDetectorV2 *motion_detector_v2) {
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(motion_detector_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
@@ -1034,12 +1090,16 @@ int tf_motion_detector_v2_write_uid(TF_MotionDetectorV2 *motion_detector_v2, uin
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         tf_tfp_packet_processed(motion_detector_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
@@ -1083,9 +1143,6 @@ int tf_motion_detector_v2_read_uid(TF_MotionDetectorV2 *motion_detector_v2, uint
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(motion_detector_v2->tfp);
@@ -1095,6 +1152,13 @@ int tf_motion_detector_v2_read_uid(TF_MotionDetectorV2 *motion_detector_v2, uint
             if (ret_uid != NULL) { *ret_uid = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
         tf_tfp_packet_processed(motion_detector_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
@@ -1139,9 +1203,6 @@ int tf_motion_detector_v2_get_identity(TF_MotionDetectorV2 *motion_detector_v2, 
         return _result;
     }
 
-    if (_result & TF_TICK_TIMEOUT) {
-        return TF_E_TIMEOUT;
-    }
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(motion_detector_v2->tfp);
@@ -1156,6 +1217,13 @@ int tf_motion_detector_v2_get_identity(TF_MotionDetectorV2 *motion_detector_v2, 
             if (ret_device_identifier != NULL) { *ret_device_identifier = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
         }
         tf_tfp_packet_processed(motion_detector_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
     }
 
     _result = tf_tfp_finish_send(motion_detector_v2->tfp, _result, _deadline);
