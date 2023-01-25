@@ -81,11 +81,15 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
                        step={1/pow10}
                        onInput={'onValue' in props ? (e) => setInputInFlight((e.target as HTMLInputElement).value) : undefined}
                        onfocusout={'onValue' in props ? () => {
-                            if (inputInFlight !== null) {
-                                let target = parseFloat(inputInFlight) * pow10;
-                                target = util.clamp(props.min, target, props.max);
-                                setTarget(target);
-                            }
+                            if (inputInFlight === null)
+                                return;
+
+                            let target = parseFloat(inputInFlight);
+                            if (isNaN(target))
+                                return;
+
+                            target = util.clamp(props.min, target * pow10, props.max);
+                            setTarget(target);
                             setInputInFlight(null);
                         } : undefined}
                        value={value}
