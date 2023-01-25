@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2023-01-24.      *
+ * This file was automatically generated on 2023-01-25.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -554,7 +554,7 @@ int tf_silent_stepper_v2_set_max_velocity(TF_SilentStepperV2 *silent_stepper_v2,
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -607,7 +607,7 @@ int tf_silent_stepper_v2_get_max_velocity(TF_SilentStepperV2 *silent_stepper_v2,
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -666,7 +666,7 @@ int tf_silent_stepper_v2_get_current_velocity(TF_SilentStepperV2 *silent_stepper
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -731,7 +731,7 @@ int tf_silent_stepper_v2_set_speed_ramping(TF_SilentStepperV2 *silent_stepper_v2
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -784,7 +784,7 @@ int tf_silent_stepper_v2_get_speed_ramping(TF_SilentStepperV2 *silent_stepper_v2
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -845,7 +845,7 @@ int tf_silent_stepper_v2_full_brake(TF_SilentStepperV2 *silent_stepper_v2) {
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -903,7 +903,7 @@ int tf_silent_stepper_v2_set_current_position(TF_SilentStepperV2 *silent_stepper
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -956,7 +956,7 @@ int tf_silent_stepper_v2_get_current_position(TF_SilentStepperV2 *silent_stepper
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1020,7 +1020,7 @@ int tf_silent_stepper_v2_set_target_position(TF_SilentStepperV2 *silent_stepper_
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1073,7 +1073,7 @@ int tf_silent_stepper_v2_get_target_position(TF_SilentStepperV2 *silent_stepper_
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1137,7 +1137,7 @@ int tf_silent_stepper_v2_set_steps(TF_SilentStepperV2 *silent_stepper_v2, int32_
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1190,7 +1190,7 @@ int tf_silent_stepper_v2_get_steps(TF_SilentStepperV2 *silent_stepper_v2, int32_
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1249,7 +1249,7 @@ int tf_silent_stepper_v2_get_remaining_steps(TF_SilentStepperV2 *silent_stepper_
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1314,7 +1314,7 @@ int tf_silent_stepper_v2_set_step_configuration(TF_SilentStepperV2 *silent_stepp
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1367,7 +1367,7 @@ int tf_silent_stepper_v2_get_step_configuration(TF_SilentStepperV2 *silent_stepp
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1428,7 +1428,7 @@ int tf_silent_stepper_v2_drive_forward(TF_SilentStepperV2 *silent_stepper_v2) {
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1482,7 +1482,7 @@ int tf_silent_stepper_v2_drive_backward(TF_SilentStepperV2 *silent_stepper_v2) {
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1536,7 +1536,7 @@ int tf_silent_stepper_v2_stop(TF_SilentStepperV2 *silent_stepper_v2) {
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1589,7 +1589,7 @@ int tf_silent_stepper_v2_get_input_voltage(TF_SilentStepperV2 *silent_stepper_v2
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1653,7 +1653,7 @@ int tf_silent_stepper_v2_set_motor_current(TF_SilentStepperV2 *silent_stepper_v2
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1706,7 +1706,7 @@ int tf_silent_stepper_v2_get_motor_current(TF_SilentStepperV2 *silent_stepper_v2
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1770,7 +1770,7 @@ int tf_silent_stepper_v2_set_enabled(TF_SilentStepperV2 *silent_stepper_v2, bool
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1823,7 +1823,7 @@ int tf_silent_stepper_v2_get_enabled(TF_SilentStepperV2 *silent_stepper_v2, bool
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1894,7 +1894,7 @@ int tf_silent_stepper_v2_set_basic_configuration(TF_SilentStepperV2 *silent_step
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1947,7 +1947,7 @@ int tf_silent_stepper_v2_get_basic_configuration(TF_SilentStepperV2 *silent_step
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -2026,7 +2026,7 @@ int tf_silent_stepper_v2_set_spreadcycle_configuration(TF_SilentStepperV2 *silen
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -2079,7 +2079,7 @@ int tf_silent_stepper_v2_get_spreadcycle_configuration(TF_SilentStepperV2 *silen
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -2156,7 +2156,7 @@ int tf_silent_stepper_v2_set_stealth_configuration(TF_SilentStepperV2 *silent_st
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -2209,7 +2209,7 @@ int tf_silent_stepper_v2_get_stealth_configuration(TF_SilentStepperV2 *silent_st
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -2284,7 +2284,7 @@ int tf_silent_stepper_v2_set_coolstep_configuration(TF_SilentStepperV2 *silent_s
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -2337,7 +2337,7 @@ int tf_silent_stepper_v2_get_coolstep_configuration(TF_SilentStepperV2 *silent_s
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -2408,7 +2408,7 @@ int tf_silent_stepper_v2_set_misc_configuration(TF_SilentStepperV2 *silent_stepp
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -2461,7 +2461,7 @@ int tf_silent_stepper_v2_get_misc_configuration(TF_SilentStepperV2 *silent_stepp
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -2526,7 +2526,7 @@ int tf_silent_stepper_v2_set_error_led_config(TF_SilentStepperV2 *silent_stepper
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -2579,7 +2579,7 @@ int tf_silent_stepper_v2_get_error_led_config(TF_SilentStepperV2 *silent_stepper
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -2638,7 +2638,7 @@ int tf_silent_stepper_v2_get_driver_status(TF_SilentStepperV2 *silent_stepper_v2
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -2709,7 +2709,7 @@ int tf_silent_stepper_v2_set_minimum_voltage(TF_SilentStepperV2 *silent_stepper_
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -2762,7 +2762,7 @@ int tf_silent_stepper_v2_get_minimum_voltage(TF_SilentStepperV2 *silent_stepper_
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -2826,7 +2826,7 @@ int tf_silent_stepper_v2_set_time_base(TF_SilentStepperV2 *silent_stepper_v2, ui
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -2879,7 +2879,7 @@ int tf_silent_stepper_v2_get_time_base(TF_SilentStepperV2 *silent_stepper_v2, ui
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -2938,7 +2938,7 @@ int tf_silent_stepper_v2_get_all_data(TF_SilentStepperV2 *silent_stepper_v2, uin
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -3006,7 +3006,7 @@ int tf_silent_stepper_v2_set_all_callback_configuration(TF_SilentStepperV2 *sile
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -3059,7 +3059,7 @@ int tf_silent_stepper_v2_get_all_data_callback_configuraton(TF_SilentStepperV2 *
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -3125,7 +3125,7 @@ int tf_silent_stepper_v2_set_gpio_configuration(TF_SilentStepperV2 *silent_stepp
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -3182,7 +3182,7 @@ int tf_silent_stepper_v2_get_gpio_configuration(TF_SilentStepperV2 *silent_stepp
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -3248,7 +3248,7 @@ int tf_silent_stepper_v2_set_gpio_action(TF_SilentStepperV2 *silent_stepper_v2, 
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -3305,7 +3305,7 @@ int tf_silent_stepper_v2_get_gpio_action(TF_SilentStepperV2 *silent_stepper_v2, 
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -3364,7 +3364,7 @@ int tf_silent_stepper_v2_get_gpio_state(TF_SilentStepperV2 *silent_stepper_v2, b
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -3423,7 +3423,7 @@ int tf_silent_stepper_v2_get_spitfp_error_count(TF_SilentStepperV2 *silent_stepp
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -3489,7 +3489,7 @@ int tf_silent_stepper_v2_set_bootloader_mode(TF_SilentStepperV2 *silent_stepper_
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -3548,7 +3548,7 @@ int tf_silent_stepper_v2_get_bootloader_mode(TF_SilentStepperV2 *silent_stepper_
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -3612,7 +3612,7 @@ int tf_silent_stepper_v2_set_write_firmware_pointer(TF_SilentStepperV2 *silent_s
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -3669,7 +3669,7 @@ int tf_silent_stepper_v2_write_firmware(TF_SilentStepperV2 *silent_stepper_v2, c
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -3733,7 +3733,7 @@ int tf_silent_stepper_v2_set_status_led_config(TF_SilentStepperV2 *silent_steppe
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -3786,7 +3786,7 @@ int tf_silent_stepper_v2_get_status_led_config(TF_SilentStepperV2 *silent_steppe
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -3845,7 +3845,7 @@ int tf_silent_stepper_v2_get_chip_temperature(TF_SilentStepperV2 *silent_stepper
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -3905,7 +3905,7 @@ int tf_silent_stepper_v2_reset(TF_SilentStepperV2 *silent_stepper_v2) {
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -3963,7 +3963,7 @@ int tf_silent_stepper_v2_write_uid(TF_SilentStepperV2 *silent_stepper_v2, uint32
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -4016,7 +4016,7 @@ int tf_silent_stepper_v2_read_uid(TF_SilentStepperV2 *silent_stepper_v2, uint32_
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -4076,7 +4076,7 @@ int tf_silent_stepper_v2_get_identity(TF_SilentStepperV2 *silent_stepper_v2, cha
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;

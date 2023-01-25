@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2023-01-24.      *
+ * This file was automatically generated on 2023-01-25.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -277,7 +277,7 @@ int tf_industrial_digital_out_4_v2_set_value(TF_IndustrialDigitalOut4V2 *industr
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -330,7 +330,7 @@ int tf_industrial_digital_out_4_v2_get_value(TF_IndustrialDigitalOut4V2 *industr
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -395,7 +395,7 @@ int tf_industrial_digital_out_4_v2_set_selected_value(TF_IndustrialDigitalOut4V2
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -455,7 +455,7 @@ int tf_industrial_digital_out_4_v2_set_monoflop(TF_IndustrialDigitalOut4V2 *indu
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -512,7 +512,7 @@ int tf_industrial_digital_out_4_v2_get_monoflop(TF_IndustrialDigitalOut4V2 *indu
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -579,7 +579,7 @@ int tf_industrial_digital_out_4_v2_set_channel_led_config(TF_IndustrialDigitalOu
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -636,7 +636,7 @@ int tf_industrial_digital_out_4_v2_get_channel_led_config(TF_IndustrialDigitalOu
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -702,7 +702,7 @@ int tf_industrial_digital_out_4_v2_set_pwm_configuration(TF_IndustrialDigitalOut
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -759,7 +759,7 @@ int tf_industrial_digital_out_4_v2_get_pwm_configuration(TF_IndustrialDigitalOut
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -819,7 +819,7 @@ int tf_industrial_digital_out_4_v2_get_spitfp_error_count(TF_IndustrialDigitalOu
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -885,7 +885,7 @@ int tf_industrial_digital_out_4_v2_set_bootloader_mode(TF_IndustrialDigitalOut4V
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -944,7 +944,7 @@ int tf_industrial_digital_out_4_v2_get_bootloader_mode(TF_IndustrialDigitalOut4V
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1008,7 +1008,7 @@ int tf_industrial_digital_out_4_v2_set_write_firmware_pointer(TF_IndustrialDigit
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1065,7 +1065,7 @@ int tf_industrial_digital_out_4_v2_write_firmware(TF_IndustrialDigitalOut4V2 *in
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1129,7 +1129,7 @@ int tf_industrial_digital_out_4_v2_set_status_led_config(TF_IndustrialDigitalOut
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1182,7 +1182,7 @@ int tf_industrial_digital_out_4_v2_get_status_led_config(TF_IndustrialDigitalOut
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1241,7 +1241,7 @@ int tf_industrial_digital_out_4_v2_get_chip_temperature(TF_IndustrialDigitalOut4
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1301,7 +1301,7 @@ int tf_industrial_digital_out_4_v2_reset(TF_IndustrialDigitalOut4V2 *industrial_
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1359,7 +1359,7 @@ int tf_industrial_digital_out_4_v2_write_uid(TF_IndustrialDigitalOut4V2 *industr
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1412,7 +1412,7 @@ int tf_industrial_digital_out_4_v2_read_uid(TF_IndustrialDigitalOut4V2 *industri
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1472,7 +1472,7 @@ int tf_industrial_digital_out_4_v2_get_identity(TF_IndustrialDigitalOut4V2 *indu
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_digital_out_4_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;

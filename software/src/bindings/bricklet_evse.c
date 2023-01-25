@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2023-01-24.      *
+ * This file was automatically generated on 2023-01-25.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -293,7 +293,7 @@ int tf_evse_get_state(TF_EVSE *evse, uint8_t *ret_iec61851_state, uint8_t *ret_c
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -358,7 +358,7 @@ int tf_evse_get_hardware_configuration(TF_EVSE *evse, uint8_t *ret_jumper_config
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -420,7 +420,7 @@ int tf_evse_get_low_level_state(TF_EVSE *evse, uint8_t *ret_led_state, uint16_t 
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -495,7 +495,7 @@ int tf_evse_set_charging_slot(TF_EVSE *evse, uint8_t slot, uint16_t max_current,
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -554,7 +554,7 @@ int tf_evse_set_charging_slot_max_current(TF_EVSE *evse, uint8_t slot, uint16_t 
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -613,7 +613,7 @@ int tf_evse_set_charging_slot_active(TF_EVSE *evse, uint8_t slot, bool active) {
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -672,7 +672,7 @@ int tf_evse_set_charging_slot_clear_on_disconnect(TF_EVSE *evse, uint8_t slot, b
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -729,7 +729,7 @@ int tf_evse_get_charging_slot(TF_EVSE *evse, uint8_t slot, uint16_t *ret_max_cur
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -791,7 +791,7 @@ int tf_evse_get_all_charging_slots(TF_EVSE *evse, uint16_t ret_max_current[20], 
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -859,7 +859,7 @@ int tf_evse_set_charging_slot_default(TF_EVSE *evse, uint8_t slot, uint16_t max_
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -916,7 +916,7 @@ int tf_evse_get_charging_slot_default(TF_EVSE *evse, uint8_t slot, uint16_t *ret
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -983,7 +983,7 @@ int tf_evse_calibrate(TF_EVSE *evse, uint8_t state, uint32_t password, int32_t v
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1043,7 +1043,7 @@ int tf_evse_get_user_calibration(TF_EVSE *evse, bool *ret_user_calibration_activ
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1119,7 +1119,7 @@ int tf_evse_set_user_calibration(TF_EVSE *evse, uint32_t password, bool user_cal
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1177,7 +1177,7 @@ int tf_evse_get_data_storage(TF_EVSE *evse, uint8_t page, uint8_t ret_data[63]) 
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1242,7 +1242,7 @@ int tf_evse_set_data_storage(TF_EVSE *evse, uint8_t page, const uint8_t data[63]
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1295,7 +1295,7 @@ int tf_evse_get_indicator_led(TF_EVSE *evse, int16_t *ret_indication, uint16_t *
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1360,7 +1360,7 @@ int tf_evse_set_indicator_led(TF_EVSE *evse, int16_t indication, uint16_t durati
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1419,7 +1419,7 @@ int tf_evse_get_button_state(TF_EVSE *evse, uint32_t *ret_button_press_time, uin
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1481,7 +1481,7 @@ int tf_evse_get_all_data_1(TF_EVSE *evse, uint8_t *ret_iec61851_state, uint8_t *
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1569,7 +1569,7 @@ int tf_evse_factory_reset(TF_EVSE *evse, uint32_t password) {
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1627,7 +1627,7 @@ int tf_evse_set_boost_mode(TF_EVSE *evse, bool boost_mode_enabled) {
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1680,7 +1680,7 @@ int tf_evse_get_boost_mode(TF_EVSE *evse, bool *ret_boost_mode_enabled) {
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1739,7 +1739,7 @@ int tf_evse_get_spitfp_error_count(TF_EVSE *evse, uint32_t *ret_error_count_ack_
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1805,7 +1805,7 @@ int tf_evse_set_bootloader_mode(TF_EVSE *evse, uint8_t mode, uint8_t *ret_status
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1864,7 +1864,7 @@ int tf_evse_get_bootloader_mode(TF_EVSE *evse, uint8_t *ret_mode) {
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1928,7 +1928,7 @@ int tf_evse_set_write_firmware_pointer(TF_EVSE *evse, uint32_t pointer) {
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1985,7 +1985,7 @@ int tf_evse_write_firmware(TF_EVSE *evse, const uint8_t data[64], uint8_t *ret_s
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -2049,7 +2049,7 @@ int tf_evse_set_status_led_config(TF_EVSE *evse, uint8_t config) {
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -2102,7 +2102,7 @@ int tf_evse_get_status_led_config(TF_EVSE *evse, uint8_t *ret_config) {
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -2161,7 +2161,7 @@ int tf_evse_get_chip_temperature(TF_EVSE *evse, int16_t *ret_temperature) {
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -2221,7 +2221,7 @@ int tf_evse_reset(TF_EVSE *evse) {
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -2279,7 +2279,7 @@ int tf_evse_write_uid(TF_EVSE *evse, uint32_t uid) {
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -2332,7 +2332,7 @@ int tf_evse_read_uid(TF_EVSE *evse, uint32_t *ret_uid) {
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -2392,7 +2392,7 @@ int tf_evse_get_identity(TF_EVSE *evse, char ret_uid[8], char ret_connected_uid[
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(evse->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;

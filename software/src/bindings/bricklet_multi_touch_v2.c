@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2023-01-24.      *
+ * This file was automatically generated on 2023-01-25.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -270,7 +270,7 @@ int tf_multi_touch_v2_get_touch_state(TF_MultiTouchV2 *multi_touch_v2, bool ret_
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -335,7 +335,7 @@ int tf_multi_touch_v2_set_touch_state_callback_configuration(TF_MultiTouchV2 *mu
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -388,7 +388,7 @@ int tf_multi_touch_v2_get_touch_state_callback_configuration(TF_MultiTouchV2 *mu
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -449,7 +449,7 @@ int tf_multi_touch_v2_recalibrate(TF_MultiTouchV2 *multi_touch_v2) {
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -508,7 +508,7 @@ int tf_multi_touch_v2_set_electrode_config(TF_MultiTouchV2 *multi_touch_v2, cons
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -561,7 +561,7 @@ int tf_multi_touch_v2_get_electrode_config(TF_MultiTouchV2 *multi_touch_v2, bool
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -625,7 +625,7 @@ int tf_multi_touch_v2_set_electrode_sensitivity(TF_MultiTouchV2 *multi_touch_v2,
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -678,7 +678,7 @@ int tf_multi_touch_v2_get_electrode_sensitivity(TF_MultiTouchV2 *multi_touch_v2,
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -742,7 +742,7 @@ int tf_multi_touch_v2_set_touch_led_config(TF_MultiTouchV2 *multi_touch_v2, uint
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -795,7 +795,7 @@ int tf_multi_touch_v2_get_touch_led_config(TF_MultiTouchV2 *multi_touch_v2, uint
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -854,7 +854,7 @@ int tf_multi_touch_v2_get_spitfp_error_count(TF_MultiTouchV2 *multi_touch_v2, ui
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -920,7 +920,7 @@ int tf_multi_touch_v2_set_bootloader_mode(TF_MultiTouchV2 *multi_touch_v2, uint8
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -979,7 +979,7 @@ int tf_multi_touch_v2_get_bootloader_mode(TF_MultiTouchV2 *multi_touch_v2, uint8
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1043,7 +1043,7 @@ int tf_multi_touch_v2_set_write_firmware_pointer(TF_MultiTouchV2 *multi_touch_v2
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1100,7 +1100,7 @@ int tf_multi_touch_v2_write_firmware(TF_MultiTouchV2 *multi_touch_v2, const uint
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1164,7 +1164,7 @@ int tf_multi_touch_v2_set_status_led_config(TF_MultiTouchV2 *multi_touch_v2, uin
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1217,7 +1217,7 @@ int tf_multi_touch_v2_get_status_led_config(TF_MultiTouchV2 *multi_touch_v2, uin
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1276,7 +1276,7 @@ int tf_multi_touch_v2_get_chip_temperature(TF_MultiTouchV2 *multi_touch_v2, int1
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1336,7 +1336,7 @@ int tf_multi_touch_v2_reset(TF_MultiTouchV2 *multi_touch_v2) {
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1394,7 +1394,7 @@ int tf_multi_touch_v2_write_uid(TF_MultiTouchV2 *multi_touch_v2, uint32_t uid) {
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1447,7 +1447,7 @@ int tf_multi_touch_v2_read_uid(TF_MultiTouchV2 *multi_touch_v2, uint32_t *ret_ui
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1507,7 +1507,7 @@ int tf_multi_touch_v2_get_identity(TF_MultiTouchV2 *multi_touch_v2, char ret_uid
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(multi_touch_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;

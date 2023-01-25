@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2023-01-24.      *
+ * This file was automatically generated on 2023-01-25.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -271,7 +271,7 @@ int tf_motorized_linear_poti_get_position(TF_MotorizedLinearPoti *motorized_line
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -339,7 +339,7 @@ int tf_motorized_linear_poti_set_position_callback_configuration(TF_MotorizedLin
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -392,7 +392,7 @@ int tf_motorized_linear_poti_get_position_callback_configuration(TF_MotorizedLin
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -462,7 +462,7 @@ int tf_motorized_linear_poti_set_motor_position(TF_MotorizedLinearPoti *motorize
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -515,7 +515,7 @@ int tf_motorized_linear_poti_get_motor_position(TF_MotorizedLinearPoti *motorize
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -578,7 +578,7 @@ int tf_motorized_linear_poti_calibrate(TF_MotorizedLinearPoti *motorized_linear_
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -636,7 +636,7 @@ int tf_motorized_linear_poti_set_position_reached_callback_configuration(TF_Moto
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -689,7 +689,7 @@ int tf_motorized_linear_poti_get_position_reached_callback_configuration(TF_Moto
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -748,7 +748,7 @@ int tf_motorized_linear_poti_get_spitfp_error_count(TF_MotorizedLinearPoti *moto
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -814,7 +814,7 @@ int tf_motorized_linear_poti_set_bootloader_mode(TF_MotorizedLinearPoti *motoriz
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -873,7 +873,7 @@ int tf_motorized_linear_poti_get_bootloader_mode(TF_MotorizedLinearPoti *motoriz
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -937,7 +937,7 @@ int tf_motorized_linear_poti_set_write_firmware_pointer(TF_MotorizedLinearPoti *
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -994,7 +994,7 @@ int tf_motorized_linear_poti_write_firmware(TF_MotorizedLinearPoti *motorized_li
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1058,7 +1058,7 @@ int tf_motorized_linear_poti_set_status_led_config(TF_MotorizedLinearPoti *motor
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1111,7 +1111,7 @@ int tf_motorized_linear_poti_get_status_led_config(TF_MotorizedLinearPoti *motor
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1170,7 +1170,7 @@ int tf_motorized_linear_poti_get_chip_temperature(TF_MotorizedLinearPoti *motori
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1230,7 +1230,7 @@ int tf_motorized_linear_poti_reset(TF_MotorizedLinearPoti *motorized_linear_poti
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1288,7 +1288,7 @@ int tf_motorized_linear_poti_write_uid(TF_MotorizedLinearPoti *motorized_linear_
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1341,7 +1341,7 @@ int tf_motorized_linear_poti_read_uid(TF_MotorizedLinearPoti *motorized_linear_p
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1401,7 +1401,7 @@ int tf_motorized_linear_poti_get_identity(TF_MotorizedLinearPoti *motorized_line
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(motorized_linear_poti->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;

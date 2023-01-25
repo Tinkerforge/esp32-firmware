@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2023-01-24.      *
+ * This file was automatically generated on 2023-01-25.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.3         *
  *                                                           *
@@ -301,7 +301,7 @@ int tf_industrial_dual_analog_in_v2_get_voltage(TF_IndustrialDualAnalogInV2 *ind
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -370,7 +370,7 @@ int tf_industrial_dual_analog_in_v2_set_voltage_callback_configuration(TF_Indust
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -427,7 +427,7 @@ int tf_industrial_dual_analog_in_v2_get_voltage_callback_configuration(TF_Indust
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -495,7 +495,7 @@ int tf_industrial_dual_analog_in_v2_set_sample_rate(TF_IndustrialDualAnalogInV2 
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -548,7 +548,7 @@ int tf_industrial_dual_analog_in_v2_get_sample_rate(TF_IndustrialDualAnalogInV2 
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -614,7 +614,7 @@ int tf_industrial_dual_analog_in_v2_set_calibration(TF_IndustrialDualAnalogInV2 
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -668,7 +668,7 @@ int tf_industrial_dual_analog_in_v2_get_calibration(TF_IndustrialDualAnalogInV2 
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -729,7 +729,7 @@ int tf_industrial_dual_analog_in_v2_get_adc_values(TF_IndustrialDualAnalogInV2 *
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -794,7 +794,7 @@ int tf_industrial_dual_analog_in_v2_set_channel_led_config(TF_IndustrialDualAnal
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -851,7 +851,7 @@ int tf_industrial_dual_analog_in_v2_get_channel_led_config(TF_IndustrialDualAnal
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -918,7 +918,7 @@ int tf_industrial_dual_analog_in_v2_set_channel_led_status_config(TF_IndustrialD
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -975,7 +975,7 @@ int tf_industrial_dual_analog_in_v2_get_channel_led_status_config(TF_IndustrialD
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1037,7 +1037,7 @@ int tf_industrial_dual_analog_in_v2_get_all_voltages(TF_IndustrialDualAnalogInV2
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1102,7 +1102,7 @@ int tf_industrial_dual_analog_in_v2_set_all_voltages_callback_configuration(TF_I
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1155,7 +1155,7 @@ int tf_industrial_dual_analog_in_v2_get_all_voltages_callback_configuration(TF_I
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1215,7 +1215,7 @@ int tf_industrial_dual_analog_in_v2_get_spitfp_error_count(TF_IndustrialDualAnal
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1281,7 +1281,7 @@ int tf_industrial_dual_analog_in_v2_set_bootloader_mode(TF_IndustrialDualAnalogI
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1340,7 +1340,7 @@ int tf_industrial_dual_analog_in_v2_get_bootloader_mode(TF_IndustrialDualAnalogI
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1404,7 +1404,7 @@ int tf_industrial_dual_analog_in_v2_set_write_firmware_pointer(TF_IndustrialDual
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1461,7 +1461,7 @@ int tf_industrial_dual_analog_in_v2_write_firmware(TF_IndustrialDualAnalogInV2 *
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1525,7 +1525,7 @@ int tf_industrial_dual_analog_in_v2_set_status_led_config(TF_IndustrialDualAnalo
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1578,7 +1578,7 @@ int tf_industrial_dual_analog_in_v2_get_status_led_config(TF_IndustrialDualAnalo
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1637,7 +1637,7 @@ int tf_industrial_dual_analog_in_v2_get_chip_temperature(TF_IndustrialDualAnalog
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1697,7 +1697,7 @@ int tf_industrial_dual_analog_in_v2_reset(TF_IndustrialDualAnalogInV2 *industria
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1755,7 +1755,7 @@ int tf_industrial_dual_analog_in_v2_write_uid(TF_IndustrialDualAnalogInV2 *indus
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1808,7 +1808,7 @@ int tf_industrial_dual_analog_in_v2_read_uid(TF_IndustrialDualAnalogInV2 *indust
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;
@@ -1868,7 +1868,7 @@ int tf_industrial_dual_analog_in_v2_get_identity(TF_IndustrialDualAnalogInV2 *in
 
     uint8_t _error_code = 0;
     uint8_t _length = 0;
-    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length);
+    int _result = tf_tfp_send_packet(industrial_dual_analog_in_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
 
     if (_result < 0) {
         return _result;

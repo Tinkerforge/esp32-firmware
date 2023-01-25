@@ -440,19 +440,25 @@ int tf_hal_tick(TF_HAL *hal, uint32_t timeout_us) {
                 // This means that tf_hal_tick can block
                 uint32_t inner_deadline_us = tf_hal_current_time_us(hal) + 5000;
 
-                result = tf_tfp_send_packet(&hal_common->tfps[i], false, inner_deadline_us, &ignored_error_code, &ignored_length);
+                // If this is a retransmission, we have to (manually) make sure, the packet has the same SPITFP seq num as the last time.
+                // This is necessary here, but not in the (generated) bindings because here we only allow blocking at most one SPITFP timeout.
+                int8_t seq_num = hal_common->tfps[i].spitfp_timeout_counter > 0 ? hal_common->tfps[i].spitfp_last_seq_num : TF_NEW_PACKET;
+                result = tf_tfp_send_packet(&hal_common->tfps[i], false, inner_deadline_us, &ignored_error_code, &ignored_length, seq_num);
                 result = tf_tfp_finish_send(&hal_common->tfps[i], result, inner_deadline_us);
                 bool timeout = (result & TF_E_TIMEOUT) == TF_E_TIMEOUT;
                 if (timeout) {
                     ++hal_common->tfps[i].spitfp_timeout_counter;
+                    hal_common->tfps[i].spitfp_last_seq_num = (int8_t)hal_common->tfps[i].spitfp->last_sequence_number_sent;
                     if (hal_common->tfps[i].spitfp_timeout_counter == 10)
                         // We've tried 10 times to send a packet to this port without response.
                         // Drop the packet to allow progress in the future.
                         timeout = false;
                 }
 
-                if (!timeout)
+                if (!timeout) {
                     hal_common->tfps[i].spitfp_timeout_counter = 0;
+                    hal_common->tfps[i].spitfp_last_seq_num = TF_NEW_PACKET;
+                }
 
                 hal_common->tfps[i].send_enumerate_request = timeout;
             }
@@ -514,20 +520,26 @@ int tf_hal_tick(TF_HAL *hal, uint32_t timeout_us) {
                 // This means that tf_hal_tick can block
                 uint32_t inner_deadline_us = tf_hal_current_time_us(hal) + 5000;
 
-                result = tf_tfp_send_packet(&hal_common->tfps[i], false, inner_deadline_us, &ignored_error_code, &ignored_length);
+                // If this is a retransmission, we have to (manually) make sure, the packet has the same SPITFP seq num as the last time.
+                // This is necessary here, but not in the (generated) bindings because here we only allow blocking at most one SPITFP timeout.
+                int8_t seq_num = hal_common->tfps[i].spitfp_timeout_counter > 0 ? hal_common->tfps[i].spitfp_last_seq_num : TF_NEW_PACKET;
+                result = tf_tfp_send_packet(&hal_common->tfps[i], false, inner_deadline_us, &ignored_error_code, &ignored_length, seq_num);
                 result = tf_tfp_finish_send(&hal_common->tfps[i], result, inner_deadline_us);
 
                 bool timeout = (result & TF_E_TIMEOUT) == TF_E_TIMEOUT;
                 if (timeout) {
                     ++hal_common->tfps[i].spitfp_timeout_counter;
+                    hal_common->tfps[i].spitfp_last_seq_num = (int8_t)hal_common->tfps[i].spitfp->last_sequence_number_sent;
                     if (hal_common->tfps[i].spitfp_timeout_counter == 10)
                         // We've tried 10 times to send a packet to this port without response.
                         // Drop the packet to allow progress in the future.
                         timeout = false;
                 }
 
-                if (!timeout)
+                if (!timeout) {
                     hal_common->tfps[i].spitfp_timeout_counter = 0;
+                    hal_common->tfps[i].spitfp_last_seq_num = TF_NEW_PACKET;
+                }
 
                 dispatched = !timeout;
 

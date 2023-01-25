@@ -254,8 +254,8 @@ void tf_tfp_inject_packet(TF_TFP *tfp, TF_TFPHeader *header, uint8_t *packet) {
     tfp->waiting_for_seq_num = 0;
 }
 
-static int tf_tfp_send_getter(TF_TFP *tfp, uint32_t deadline_us, uint8_t *error_code, uint8_t *length) {
-    tf_spitfp_build_packet(tfp->spitfp, false);
+static int tf_tfp_send_getter(TF_TFP *tfp, uint32_t deadline_us, uint8_t *error_code, uint8_t *length, int8_t seq_num) {
+    tf_spitfp_build_packet(tfp->spitfp, seq_num);
 
     int result = TF_TICK_AGAIN;
     bool packet_received = false;
@@ -264,7 +264,7 @@ static int tf_tfp_send_getter(TF_TFP *tfp, uint32_t deadline_us, uint8_t *error_
     while (!tf_hal_deadline_elapsed(tfp->spitfp->hal, deadline_us) && !packet_received) {
         if (result & TF_TICK_TIMEOUT && tf_hal_deadline_elapsed(tfp->spitfp->hal, last_send + 5000)) {
             last_send = tf_hal_current_time_us(tfp->spitfp->hal);
-            tf_spitfp_build_packet(tfp->spitfp, true);
+            tf_spitfp_build_packet(tfp->spitfp, TF_RETRANSMISSION);
         }
 
         result = tf_spitfp_tick(tfp->spitfp, deadline_us);
@@ -289,15 +289,15 @@ static int tf_tfp_send_getter(TF_TFP *tfp, uint32_t deadline_us, uint8_t *error_
     return (packet_received ? TF_TICK_PACKET_RECEIVED : TF_TICK_TIMEOUT) | (result & TF_TICK_AGAIN) | (result & TF_TICK_IN_TRANSCEIVE);
 }
 
-static int tf_tfp_send_setter(TF_TFP *tfp, uint32_t deadline_us) {
-    tf_spitfp_build_packet(tfp->spitfp, false);
+static int tf_tfp_send_setter(TF_TFP *tfp, uint32_t deadline_us, int8_t seq_num) {
+    tf_spitfp_build_packet(tfp->spitfp, seq_num);
 
     int result = TF_TICK_AGAIN;
     bool packet_sent = false;
 
     while (!tf_hal_deadline_elapsed(tfp->spitfp->hal, deadline_us) && !packet_sent) {
         if (result & TF_TICK_TIMEOUT) {
-            tf_spitfp_build_packet(tfp->spitfp, true);
+            tf_spitfp_build_packet(tfp->spitfp, TF_RETRANSMISSION);
         }
 
         result = tf_spitfp_tick(tfp->spitfp, deadline_us);
@@ -323,8 +323,8 @@ static int tf_tfp_send_setter(TF_TFP *tfp, uint32_t deadline_us) {
     return (packet_sent ? TF_TICK_PACKET_SENT : TF_TICK_TIMEOUT) | (result & TF_TICK_AGAIN) | (result & TF_TICK_IN_TRANSCEIVE);
 }
 
-int tf_tfp_send_packet(TF_TFP *tfp, bool response_expected, uint32_t deadline_us, uint8_t *error_code, uint8_t *length) {
-    return response_expected ? tf_tfp_send_getter(tfp, deadline_us, error_code, length) : tf_tfp_send_setter(tfp, deadline_us);
+int tf_tfp_send_packet(TF_TFP *tfp, bool response_expected, uint32_t deadline_us, uint8_t *error_code, uint8_t *length, int8_t seq_num) {
+    return response_expected ? tf_tfp_send_getter(tfp, deadline_us, error_code, length, seq_num) : tf_tfp_send_setter(tfp, deadline_us, seq_num);
 }
 
 int tf_tfp_finish_send(TF_TFP *tfp, int previous_result, uint32_t deadline_us) {
@@ -374,7 +374,7 @@ int tf_tfp_callback_tick(TF_TFP *tfp, uint32_t deadline_us) {
     int result = TF_TICK_AGAIN;
 
     if (tfp->spitfp->send_buf[0] != 0) {
-        tf_spitfp_build_packet(tfp->spitfp, true);
+        tf_spitfp_build_packet(tfp->spitfp, TF_RETRANSMISSION);
     }
 
     do {

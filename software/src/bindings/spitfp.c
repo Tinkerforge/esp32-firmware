@@ -180,22 +180,26 @@ static int tf_spitfp_receive(TF_SPITFP *spitfp, uint8_t length) {
     return tf_spitfp_transceive_buffer(spitfp, hal_common->empty_buf, 0, length);
 }
 
-uint8_t tf_spitfp_build_packet(TF_SPITFP *spitfp, bool retransmission) {
+uint8_t tf_spitfp_build_packet(TF_SPITFP *spitfp, int8_t seq_num_param) {
     uint8_t packet_length = spitfp->send_buf[TF_SPITFP_HEADER_LENGTH + TF_TFP_HEADER_LENGTH_OFFSET] + TF_SPITFP_PROTOCOL_OVERHEAD;
     spitfp->send_buf[0] = packet_length;
     uint8_t seq_num;
 
-    if (retransmission) {
-        seq_num = spitfp->send_buf[1] & 0x0F;
-    } else {
-        if (spitfp->last_sequence_number_sent == 0x0F) {
-            seq_num = 0x02;
-        } else {
-            seq_num = spitfp->last_sequence_number_sent + 1;
-        }
-
-        spitfp->last_sequence_number_sent = seq_num;
+    switch(seq_num_param) {
+        case TF_RETRANSMISSION:
+            seq_num = spitfp->send_buf[1] & 0x0F;
+            break;
+        case TF_NEW_PACKET:
+            if (spitfp->last_sequence_number_sent == 0x0F) {
+                seq_num = 0x02;
+            } else {
+                seq_num = spitfp->last_sequence_number_sent + 1;
+            }
+            break;
+        default:
+            seq_num = (uint8_t)seq_num_param;
     }
+    spitfp->last_sequence_number_sent = seq_num;
 
     spitfp->send_buf[1] = seq_num | (uint8_t)(spitfp->last_sequence_number_seen << 4);
 

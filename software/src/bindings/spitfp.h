@@ -71,7 +71,9 @@ void tf_spitfp_create(TF_SPITFP *spitfp, struct TF_HAL *hal, uint8_t port_id);
 
 uint8_t *tf_spitfp_get_send_payload_buffer(TF_SPITFP *spitfp) TF_ATTRIBUTE_NONNULL_ALL;
 TF_PacketBuffer *tf_spitfp_get_receive_buffer(TF_SPITFP *spitfp) TF_ATTRIBUTE_NONNULL_ALL;
-uint8_t tf_spitfp_build_packet(TF_SPITFP *spitfp, bool retransmission) TF_ATTRIBUTE_NONNULL_ALL;
+#define TF_RETRANSMISSION -2
+#define TF_NEW_PACKET -1
+uint8_t tf_spitfp_build_packet(TF_SPITFP *spitfp, int8_t seq_num) TF_ATTRIBUTE_NONNULL_ALL;
 void tf_spitfp_packet_processed(TF_SPITFP *spitfp) TF_ATTRIBUTE_NONNULL_ALL;
 
 #define TF_TICK_PACKET_RECEIVED 1
