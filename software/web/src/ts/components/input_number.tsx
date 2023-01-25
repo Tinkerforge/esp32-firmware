@@ -44,6 +44,7 @@ export function InputNumber(props: InputNumberProps) {
                        type="number"
                        disabled={props.onValue === undefined}
                        onInput={props.onValue === undefined ? undefined : (e) => props.onValue(parseInt((e.target as HTMLInputElement).value, 10))}
+                       inputMode="numeric"
                        {...props}/>
             {props.unit || props.onValue ? <div class="input-group-append">
                 {props.unit ? <div class="form-control input-group-text">{this.props.unit}</div> : undefined}

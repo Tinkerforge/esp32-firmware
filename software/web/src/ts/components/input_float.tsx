@@ -93,7 +93,8 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
                             setInputInFlight(null);
                         } : undefined}
                        value={value}
-                       disabled={!('onValue' in props)}/>
+                       disabled={!('onValue' in props)}
+                       inputMode="decimal"/>
             <div class="input-group-append">
                 <div class="form-control input-group-text">
                     {this.props.unit}
