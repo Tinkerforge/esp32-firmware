@@ -5,7 +5,7 @@ This is the README.md for the warp-more-hardware project that
 adds support for more hardware than just the awsome stuff that 
 [TinkerForge](https://www.tinkerforge.com/en/shop/) has to offer.
 
-*The [README.rst](README.rst) is really worth a read as well!*
+*The original [README.rst](README.rst) is really worth a read as well!*
 
 > **Please make sure not to bother the TinkerForge people when you**  
 > **encounter issues with this fork of the software running on non**  
