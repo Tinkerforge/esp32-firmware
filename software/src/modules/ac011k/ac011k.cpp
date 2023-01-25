@@ -604,9 +604,12 @@ void AC011K::evse_slot_machine() {
             logger.printfln("EVSE Start charging, set allowed charging current to %dmA, IEC_STATE %d", allowed_charging_current, evse.evse_state.get("iec61851_state")->asUint());
             bs_evse_start_charging();
         }
-        else if((last_iec61851_state != IEC_STATE_A) && // was not unplugged before
-                ((evse.evse_state.get("iec61851_state")->asUint() == IEC_STATE_B) || // is now plugged
-                (evse.evse_state.get("iec61851_state")->asUint() == IEC_STATE_C))) { // or already charging
+        else if(allowed_charging_current == 0) { // current shall be 0, no more charging allowed
+            bs_evse_stop_charging();
+        }
+        else if((last_iec61851_state != IEC_STATE_A) &&                                // was not unplugged before
+                ((evse.evse_state.get("iec61851_state")->asUint() == IEC_STATE_B) ||   // is now plugged
+                (evse.evse_state.get("iec61851_state")->asUint() == IEC_STATE_C))) {   // or already charging
             logger.printfln("EVSE Allowed charging current change during charging from %dmA to %dmA", last_allowed_charging_current, allowed_charging_current);
             bs_evse_set_max_charging_current(allowed_charging_current);
         }
