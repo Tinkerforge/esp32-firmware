@@ -85,7 +85,7 @@ export class Proxy extends ConfigComponent<'proxy/config', {}, ProxyState> {
                     <FormRow label={__("proxy.content.listen_port")} label_muted={__("proxy.content.listen_port_muted")}>
                         <InputNumber required
                                      min={1}
-                                     max={65536}
+                                     max={65535}
                                      value={state.listen_port}
                                      onValue={this.set("listen_port")}/>
                     </FormRow>

@@ -87,7 +87,7 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {}, MqttState> {
                     <FormRow label={__("mqtt.content.port")} label_muted={__("mqtt.content.port_muted")}>
                         <InputNumber required
                                      min={1}
-                                     max={65536}
+                                     max={65535}
                                      value={state.broker_port}
                                      onValue={this.set("broker_port")}/>
                     </FormRow>

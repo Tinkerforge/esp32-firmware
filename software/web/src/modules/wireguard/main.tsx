@@ -86,7 +86,7 @@ export class WireGuard extends ConfigComponent<'wireguard/config'> {
                     <FormRow label={__("wireguard.content.port")}>
                         <InputNumber required
                                      min={1}
-                                     max={65536}
+                                     max={65535}
                                      value={state.remote_port}
                                      onValue={this.set("remote_port")}/>
                     </FormRow>

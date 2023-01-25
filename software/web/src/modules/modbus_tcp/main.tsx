@@ -159,7 +159,7 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
                         <InputNumber value={state.port}
                                 onValue={this.set("port")}
                                 min={1}
-                                max={65536}/>
+                                max={65535}/>
                     </FormRow>
                     <FormRow label={__("modbus_tcp.content.table")}>
                         <InputSelect items={[
