@@ -141,7 +141,7 @@ void ValueHistory::register_urls(String base_url)
 
 void ValueHistory::add_sample(float sample)
 {
-    int16_t val = (int16_t)min((float)INT16_MAX, sample);
+    int16_t val = std::min(INT16_MAX, (int)roundf(sample));
     live.push(val);
     ++samples_this_interval;
 
