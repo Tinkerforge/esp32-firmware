@@ -37,6 +37,12 @@ void Ocpp::pre_setup()
         {"identity", Config::Str("", 0, 64)},
         {"pass", Config::Str("", 0, 64)}
     });
+
+    change_configuration = Config::Object({
+        {"key", Config::Str("", 0, 64)},
+        {"value", Config::Str("", 0, 500)}
+    });
+
 #ifdef OCPP_STATE_CALLBACKS
     state = Config::Object({
         {"charge_point_state", Config::Uint8(0)},
@@ -164,6 +170,11 @@ void Ocpp::register_urls()
 #endif
     api.addCommand("ocpp/reset", Config::Null(), {}, [](){
         remove_directory("/ocpp");
+    }, true);
+
+    api.addCommand("ocpp/change_configuration", &change_configuration, {}, [this](){
+        auto status = cp.changeConfig(change_configuration.get("key")->asEphemeralCStr(), change_configuration.get("value")->asEphemeralCStr());
+        logger.printfln("Change config %s status %s", change_configuration.get("key")->asEphemeralCStr(), ChangeConfigurationResponseStatusStrings[(size_t) status]);
     }, true);
 }
 
