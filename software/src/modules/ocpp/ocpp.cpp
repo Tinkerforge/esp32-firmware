@@ -136,6 +136,10 @@ void Ocpp::setup()
 
     String pass = config_in_use.get("pass")->asString();
 
+    if (pass.length() == 0) {
+        cp.start(config_in_use.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), nullptr);
+    }
+
     bool pass_is_hex = pass.length() == 40;
     if (pass_is_hex) {
         for(size_t i = 0; i < 40; ++i) {
