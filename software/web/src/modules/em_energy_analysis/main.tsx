@@ -151,6 +151,7 @@ function build_chart_options(chart_extra: ChartExtra, chart_container_id: string
                 },
                 ticks: {
                     autoSkipPadding: 10,
+                    stepSize: 1,
                 }
             }
         }

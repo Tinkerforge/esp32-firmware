@@ -310,6 +310,7 @@ function build_chart_options(chart_extra: LiveExtra|HistoryExtra, chart_containe
                 },
                 ticks: {
                     autoSkipPadding: 10,
+                    stepSize: 1,
                 }
             }
         }
