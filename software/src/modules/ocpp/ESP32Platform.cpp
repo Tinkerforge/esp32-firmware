@@ -698,6 +698,8 @@ float platform_get_raw_meter_value_sdm72v2(int32_t connectorId, SampledValueMeas
 
         case SampledValueMeasurand::ENERGY_ACTIVE_EXPORT_INTERVAL:
         case SampledValueMeasurand::ENERGY_ACTIVE_IMPORT_INTERVAL:
+        case SampledValueMeasurand::ENERGY_REACTIVE_EXPORT_INTERVAL:
+        case SampledValueMeasurand::ENERGY_REACTIVE_IMPORT_INTERVAL:
 
         case SampledValueMeasurand::TEMPERATURE:
         case SampledValueMeasurand::SO_C:
