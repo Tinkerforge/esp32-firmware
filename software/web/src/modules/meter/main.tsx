@@ -257,6 +257,9 @@ function build_chart_options(chart_extra: LiveExtra|HistoryExtra, chart_containe
         elements: {
             point: {
                 pointStyle: false,
+            },
+            line: {
+                borderWidth: 2,
             }
         },
         plugins: {
