@@ -70,3 +70,8 @@ export interface configuration {
     ConnectorSwitch3to1PhaseSupported: string
     MaxChargingProfilesInstalled: string
 }
+
+export interface change_configuration {
+    key: string,
+    value: string
+}

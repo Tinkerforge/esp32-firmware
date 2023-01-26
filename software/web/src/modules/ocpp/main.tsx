@@ -201,7 +201,12 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
                     <CollapsedSection label={__("ocpp.content.configuration")}>
                         {(Object.keys(state.configuration) as Array<keyof typeof state.configuration>).map((k, i) => (
                             <FormRow label={k}>
-                                <InputText value={state.configuration[k]} />
+                                <InputText value={state.configuration[k]}
+                                           onValue={(v) => this.setState({configuration: {...this.state.configuration, [k]: v}})}
+                                           onfocusout={() => API.call("ocpp/change_configuration", {
+                                                key: k,
+                                                value: state.configuration[k]
+                                           }, "lalala")} />
                             </FormRow>)
                         )}
                     </CollapsedSection>
