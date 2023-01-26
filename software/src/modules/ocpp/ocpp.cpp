@@ -134,35 +134,37 @@ void Ocpp::setup()
     if (!config.get("enable")->asBool() || config.get("url")->asString().length() == 0)
         return;
 
-    String pass = config_in_use.get("pass")->asString();
+    task_scheduler.scheduleOnce([this](){
+        String pass = config_in_use.get("pass")->asString();
 
-    if (pass.length() == 0) {
-        cp.start(config_in_use.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), nullptr);
-    }
+        if (pass.length() == 0) {
+            cp.start(config_in_use.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), nullptr);
+        }
 
-    bool pass_is_hex = pass.length() == 40;
-    if (pass_is_hex) {
-        for(size_t i = 0; i < 40; ++i) {
-            if (!isxdigit(pass[i])) {
-                pass_is_hex = false;
-                break;
+        bool pass_is_hex = pass.length() == 40;
+        if (pass_is_hex) {
+            for(size_t i = 0; i < 40; ++i) {
+                if (!isxdigit(pass[i])) {
+                    pass_is_hex = false;
+                    break;
+                }
             }
         }
-    }
 
-    if (pass_is_hex) {
-        auto pass_bytes = std::unique_ptr<char[]>(new char[20]());
-        for(size_t i = 0; i < ARRAY_SIZE(pass_bytes); ++i) {
-            pass_bytes[i] = hex_digit_to_byte(pass[i]) << 4 | hex_digit_to_byte(pass[i]);
+        if (pass_is_hex) {
+            auto pass_bytes = std::unique_ptr<char[]>(new char[20]());
+            for(size_t i = 0; i < ARRAY_SIZE(pass_bytes); ++i) {
+                pass_bytes[i] = hex_digit_to_byte(pass[i]) << 4 | hex_digit_to_byte(pass[i]);
+            }
+            cp.start(config.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), pass_bytes.get());
+        } else {
+            cp.start(config.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), config_in_use.get("pass")->asEphemeralCStr());
         }
-        cp.start(config.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), pass_bytes.get());
-    } else {
-        cp.start(config.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), config_in_use.get("pass")->asEphemeralCStr());
-    }
 
-    task_scheduler.scheduleWithFixedDelay([this](){
-        cp.tick();
-    }, 100, 100);
+        task_scheduler.scheduleWithFixedDelay([this](){
+            cp.tick();
+        }, 100, 100);
+    }, 5000);
 }
 
 void Ocpp::register_urls()
