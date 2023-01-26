@@ -39,23 +39,23 @@ void ValueHistory::setup()
     task_scheduler.scheduleWithFixedDelay([this](){
         int16_t history_val;
 
-        if (samples_last_interval == 0) {
+        if (samples_this_interval == 0) {
             history_val = -1;
             history.push(history_val); //TODO push 0 or -1 here? -1 will be translated into null when sending as json. However we document that there is only at most one block of null values at the start of the array indicating a reboot
-            samples_per_interval = 0;
             samples_last_interval = 0;
+            samples_this_interval = 0;
         } else {
             float live_sum = 0;
             int16_t live_val;
-            for(int i = 0; i < samples_last_interval; ++i) {
+            for(int i = 0; i < samples_this_interval; ++i) {
                 live.peek_offset(&live_val, live.used() - 1 - i);
                 live_sum += live_val;
             }
 
-            history_val = live_sum / samples_last_interval;
+            history_val = live_sum / samples_this_interval;
             history.push(history_val);
-            samples_per_interval = samples_last_interval;
-            samples_last_interval = 0;
+            samples_last_interval = samples_this_interval;
+            samples_this_interval = 0;
         }
 
         history_last_update = millis();
@@ -143,7 +143,7 @@ void ValueHistory::add_sample(float sample)
 {
     int16_t val = (int16_t)min((float)INT16_MAX, sample);
     live.push(val);
-    ++samples_last_interval;
+    ++samples_this_interval;
 
 #if MODULE_WS_AVAILABLE()
     char *buf;
@@ -208,10 +208,10 @@ float ValueHistory::samples_per_second()
 {
     float samples_per_second = 0;
 
-    if (this->samples_per_interval > 0) {
-        samples_per_second = ((float)this->samples_per_interval) / (60 * HISTORY_MINUTE_INTERVAL);
+    if (this->samples_last_interval > 0) {
+        samples_per_second = (float)this->samples_last_interval / (60 * HISTORY_MINUTE_INTERVAL);
     } else {
-        samples_per_second = (float)this->samples_last_interval / millis() * 1000;
+        samples_per_second = (float)this->samples_this_interval / millis() * 1000;
     }
 
     return samples_per_second;

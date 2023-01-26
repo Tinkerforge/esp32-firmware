@@ -53,8 +53,8 @@ public:
     size_t format_history(char *buf, size_t buf_size);
     float samples_per_second();
 
-    int samples_last_interval = 0;
-    int samples_per_interval = -1;
+    int samples_this_interval = 0;
+    int samples_last_interval = -1;
     TF_Ringbuffer<int16_t,
                   3 * 60 * HISTORY_MINUTE_INTERVAL,
                   uint32_t,
