@@ -176,7 +176,7 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {}, OcppState> {
                             <InputText value={translate_unchecked(`ocpp.content.message_in_flight_type_${state.state.message_in_flight_type}`)} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.message_in_flight_id")}>
-                            <InputText value={state.state.message_in_flight_id} />
+                            <InputText value={state.state.message_in_flight_id_high == 0 ? state.state.message_in_flight_id_low : "0x" + state.state.message_in_flight_id_high.toString(16) + state.state.message_in_flight_id_low.toString(16)} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.message_in_flight_len")}>
                             <InputText value={state.state.message_in_flight_len} />

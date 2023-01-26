@@ -897,7 +897,8 @@ void platform_update_connection_state(CallAction message_in_flight_type,
                                       uint8_t status_notification_queue_depth,
                                       uint8_t transaction_message_queue_depth) {
     ocpp.state.get("message_in_flight_type")->updateUint((uint8_t)message_in_flight_type);
-    ocpp.state.get("message_in_flight_id")->updateUint((uint32_t)message_in_flight_id);
+    ocpp.state.get("message_in_flight_id_high")->updateUint(message_in_flight_id >> 32);
+    ocpp.state.get("message_in_flight_id_low")->updateUint(message_in_flight_id & (0xFFFFFFFF));
     ocpp.state.get("message_in_flight_len")->updateUint(message_in_flight_len);
     ocpp.state.get("message_timeout")->updateUint(message_timeout_deadline - millis());
     ocpp.state.get("txn_msg_retry_timeout")->updateUint(txn_msg_retry_deadline - millis());

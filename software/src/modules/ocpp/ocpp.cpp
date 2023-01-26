@@ -64,7 +64,8 @@ void Ocpp::pre_setup()
         {"unavailable_requested", Config::Bool(false)},
 
         {"message_in_flight_type", Config::Uint8(0)},
-        {"message_in_flight_id", Config::Int32(0)},
+        {"message_in_flight_id_high", Config::Uint32(0)},
+        {"message_in_flight_id_low", Config::Uint32(0)},
         {"message_in_flight_len", Config::Uint32(0)},
         {"message_timeout", Config::Uint32(0)},
         {"txn_msg_retry_timeout", Config::Uint32(0)},
