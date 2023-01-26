@@ -53,7 +53,7 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
     const [inputInFlight, setInputInFlight] = useState<string | null>(null);
 
     const setTarget = 'onValue' in props ? (target: number) => {
-        target = util.clamp(props.min, target, props.max);
+        target = util.clamp(props.min, Math.round(target), props.max);
         input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
         props.onValue(target)
     } : (target: number) => {};
@@ -88,8 +88,7 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
                             if (isNaN(target))
                                 return;
 
-                            target = util.clamp(props.min, target * pow10, props.max);
-                            setTarget(target);
+                            setTarget(target * pow10);
                             setInputInFlight(null);
                         } : undefined}
                        value={value}
