@@ -83,6 +83,10 @@ void* platform_init(const char *websocket_url, const char *basic_auth_user, cons
     //websocket_cfg.password = basic_auth_pass;
     // Instead create and pass the authorization header directly.
 
+    // We have to hold header outside of the if. Otherwise header.c_str() is a dangling pointer if we
+    // leave the inner scope.
+    String header = "Authorization: Basic ";
+
     if (basic_auth_user != nullptr && basic_auth_pass != nullptr) {
         size_t user_len = strlen(basic_auth_user);
         size_t buf_len = user_len + basic_auth_pass_length + 1; // +1 for ':'
@@ -98,7 +102,6 @@ void* platform_init(const char *websocket_url, const char *basic_auth_user, cons
         mbedtls_base64_encode((unsigned char *) base64_buf.get(), written + 1, &written, (const unsigned char *)buf.get(), buf_len);
         base64_buf[written] = '\0';
 
-        String header = "Authorization: Basic ";
         header += base64_buf.get();
         header += "\r\n";
 
