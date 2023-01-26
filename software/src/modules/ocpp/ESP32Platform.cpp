@@ -83,20 +83,22 @@ void* platform_init(const char *websocket_url, const char *basic_auth_user, cons
     //websocket_cfg.password = basic_auth_pass;
     // Instead create and pass the authorization header directly.
 
-    String base64input = String(basic_auth_user) + ':' + basic_auth_pass;
+    if (basic_auth_user != nullptr && basic_auth_pass != nullptr) {
+        String base64input = String(basic_auth_user) + ':' + basic_auth_pass;
 
-    size_t written = 0;
-    mbedtls_base64_encode(nullptr, 0, &written, (const unsigned char *)base64input.c_str(), base64input.length());
+        size_t written = 0;
+        mbedtls_base64_encode(nullptr, 0, &written, (const unsigned char *)base64input.c_str(), base64input.length());
 
-    std::unique_ptr<char[]> buf{new char[written + 1]()}; // +1 for '\0'
-    mbedtls_base64_encode((unsigned char *) buf.get(), written + 1, &written, (const unsigned char *)base64input.c_str(), base64input.length());
-    buf[written] = '\0';
+        std::unique_ptr<char[]> buf{new char[written + 1]()}; // +1 for '\0'
+        mbedtls_base64_encode((unsigned char *) buf.get(), written + 1, &written, (const unsigned char *)base64input.c_str(), base64input.length());
+        buf[written] = '\0';
 
-    String header = "Authorization: Basic ";
-    header += buf.get();
-    header += "\r\n";
+        String header = "Authorization: Basic ";
+        header += buf.get();
+        header += "\r\n";
 
-    websocket_cfg.headers = header.c_str();
+        websocket_cfg.headers = header.c_str();
+    }
 
     client = esp_websocket_client_init(&websocket_cfg);
     esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
