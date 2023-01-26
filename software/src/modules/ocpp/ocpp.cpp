@@ -159,16 +159,16 @@ void Ocpp::setup()
             }
         }
 
-        if (pass_is_hex) {
-            auto pass_bytes = std::unique_ptr<char[]>(new char[20]());
-            for(size_t i = 0; i < ARRAY_SIZE(pass_bytes); ++i) {
-                pass_bytes[i] = hex_digit_to_byte(pass[i]) << 4 | hex_digit_to_byte(pass[i]);
-            }
-            cp.start(config.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), pass_bytes.get());
-        } else {
-            cp.start(config.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), config_in_use.get("pass")->asEphemeralCStr());
+        if (!pass_is_hex) {
+            cp.start(config.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), (const uint8_t *)pass.c_str(), pass.length());
+            return;
         }
 
+        auto pass_bytes = std::unique_ptr<uint8_t[]>(new uint8_t[20]());
+        for(size_t i = 0; i < 20; ++i) {
+            pass_bytes[i] = hex_digit_to_byte(pass[2*i]) << 4 | hex_digit_to_byte(pass[2*i + 1]);
+        }
+        cp.start(config.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), pass_bytes.get(), 20);
     }, 5000);
 }
 
