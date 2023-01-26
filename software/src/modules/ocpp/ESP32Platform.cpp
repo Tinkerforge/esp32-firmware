@@ -58,7 +58,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 }
 
 esp_websocket_client_handle_t client;
-void* platform_init(const char *websocket_url, const char *basic_auth_user, const char *basic_auth_pass)
+void* platform_init(const char *websocket_url, const char *basic_auth_user, const uint8_t *basic_auth_pass, size_t basic_auth_pass_length)
 {
     esp_websocket_client_config_t websocket_cfg = {};
     websocket_cfg.uri = websocket_url;
@@ -84,17 +84,22 @@ void* platform_init(const char *websocket_url, const char *basic_auth_user, cons
     // Instead create and pass the authorization header directly.
 
     if (basic_auth_user != nullptr && basic_auth_pass != nullptr) {
-        String base64input = String(basic_auth_user) + ':' + basic_auth_pass;
+        size_t user_len = strlen(basic_auth_user);
+        size_t buf_len = user_len + basic_auth_pass_length + 1; // +1 for ':'
+        std::unique_ptr<char[]> buf = heap_alloc_array<char>(buf_len);
+        memcpy(buf.get(), basic_auth_user, user_len);
+        buf[user_len] = ':';
+        memcpy(buf.get() + user_len + 1, basic_auth_pass, basic_auth_pass_length);
 
         size_t written = 0;
-        mbedtls_base64_encode(nullptr, 0, &written, (const unsigned char *)base64input.c_str(), base64input.length());
+        mbedtls_base64_encode(nullptr, 0, &written, (const unsigned char *)buf.get(), buf_len);
 
-        std::unique_ptr<char[]> buf{new char[written + 1]()}; // +1 for '\0'
-        mbedtls_base64_encode((unsigned char *) buf.get(), written + 1, &written, (const unsigned char *)base64input.c_str(), base64input.length());
-        buf[written] = '\0';
+        std::unique_ptr<char[]> base64_buf{new char[written + 1]()}; // +1 for '\0'
+        mbedtls_base64_encode((unsigned char *) base64_buf.get(), written + 1, &written, (const unsigned char *)buf.get(), buf_len);
+        base64_buf[written] = '\0';
 
         String header = "Authorization: Basic ";
-        header += buf.get();
+        header += base64_buf.get();
         header += "\r\n";
 
         websocket_cfg.headers = header.c_str();

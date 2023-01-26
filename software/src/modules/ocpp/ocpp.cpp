@@ -35,6 +35,7 @@ void Ocpp::pre_setup()
         {"enable", Config::Bool(false)},
         {"url", Config::Str("", 0, 128)},
         {"identity", Config::Str("", 0, 64)},
+        {"enable_auth",Config::Bool(false)},
         {"pass", Config::Str("", 0, 64)}
     });
 
@@ -136,12 +137,18 @@ void Ocpp::setup()
         return;
 
     task_scheduler.scheduleOnce([this](){
-        String pass = config_in_use.get("pass")->asString();
+        // Make sure every code path calls cp.start!
 
-        if (pass.length() == 0) {
-            cp.start(config_in_use.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), nullptr);
+        task_scheduler.scheduleWithFixedDelay([this](){
+            cp.tick();
+        }, 100, 100);
+
+        if (!config_in_use.get("enable_auth")->asBool()) {
+            cp.start(config_in_use.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), nullptr, 0);
+            return;
         }
 
+        String pass = config_in_use.get("pass")->asString();
         bool pass_is_hex = pass.length() == 40;
         if (pass_is_hex) {
             for(size_t i = 0; i < 40; ++i) {
@@ -162,9 +169,6 @@ void Ocpp::setup()
             cp.start(config.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), config_in_use.get("pass")->asEphemeralCStr());
         }
 
-        task_scheduler.scheduleWithFixedDelay([this](){
-            cp.tick();
-        }, 100, 100);
     }, 5000);
 }
 
