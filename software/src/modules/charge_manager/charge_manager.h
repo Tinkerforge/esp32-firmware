@@ -39,6 +39,7 @@ public:
     void start_manager_task();
     void check_watchdog();
     void set_available_current(uint32_t current);
+    bool have_chargers();
     bool seen_all_chargers();
     bool is_charging_stopped(uint32_t last_update_cutoff);
     void set_all_control_pilot_disconnect(bool disconnect);

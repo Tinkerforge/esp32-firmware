@@ -211,7 +211,12 @@ void EnergyManager::setup()
         return;
     }
 
-#if !MODULE_CHARGE_MANAGER_AVAILABLE()
+#if MODULE_CHARGE_MANAGER_AVAILABLE()
+    if (!charge_manager.have_chargers()) {
+        logger.printfln("energy_manager: No chargers configured. Disabling energy distribution.");
+        return;
+    }
+#else
     logger.printfln("energy_manager: Module 'Charge Manager' not available. Disabling energy distribution.");
     return;
 #endif

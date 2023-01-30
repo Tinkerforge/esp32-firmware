@@ -331,6 +331,10 @@ void ChargeManager::set_available_current(uint32_t current)
     charge_manager_available_current.get("current")->updateUint(current);
 }
 
+bool ChargeManager::have_chargers() {
+    return charge_manager_state.get("chargers")->count() > 0;
+}
+
 // Check is not 100% reliable after an uptime of 49 days because last_update might legitimately 0.
 // Work around that by caching the value once all chargers were seen once.
 bool ChargeManager::seen_all_chargers() {
