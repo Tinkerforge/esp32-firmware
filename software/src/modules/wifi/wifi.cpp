@@ -386,10 +386,18 @@ void Wifi::setup()
     WiFi.persistent(false);
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+            static bool first = true;
             uint8_t reason_code = info.wifi_sta_disconnected.reason;
             const char *reason = reason2str(reason_code);
             if (!this->was_connected) {
+            {
                 logger.printfln("Wifi failed to connect to %s: %s (%u)", wifi_sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
+                if (first)
+                {
+                    first = false;
+                    this->apply_sta_config_and_connect();
+                }
+            }
             } else {
                 uint32_t now = millis();
                 uint32_t connected_for = now - last_connected_ms;
@@ -494,24 +502,12 @@ void Wifi::setup()
 
     if (enable_sta) {
         task_scheduler.scheduleWithFixedDelay([this](){
-            static int backoff = 1;
-            static int backoff_counter = 0;
-
-            if (backoff_counter > 0) {
-                --backoff_counter;
-                return;
-            }
-
-            if (!apply_sta_config_and_connect()) {
-                // We are already connected. Reset exponential backoff
-                backoff = 1;
-                backoff_counter = 0;
-            } else {
-                if (backoff <= 32)
-                    backoff *= 2;
-                backoff_counter = backoff;
-            }
-        }, 5000, 5000);
+            static int tries = 0;
+            if (tries < 10 || (tries - 10) % 6 == 0)
+                if (!apply_sta_config_and_connect())
+                    tries = 0;
+            tries++;
+        }, 0, 5000);
     }
 
     task_scheduler.scheduleWithFixedDelay([this](){
