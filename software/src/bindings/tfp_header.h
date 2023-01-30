@@ -38,9 +38,9 @@ typedef struct TF_TFPHeader {
     uint8_t flags;
 } TF_TFPHeader;
 
-void tf_tfp_header_read(TF_TFPHeader *header, TF_PacketBuffer *buf) TF_ATTRIBUTE_NONNULL_ALL;
-void tf_tfp_header_peek(TF_TFPHeader *header, TF_PacketBuffer *buf) TF_ATTRIBUTE_NONNULL_ALL;
-void tf_tfp_header_peek_plain(TF_TFPHeader *header, uint8_t *buf) TF_ATTRIBUTE_NONNULL_ALL;
+bool tf_tfp_header_read(TF_TFPHeader *header, TF_PacketBuffer *buf) TF_ATTRIBUTE_NONNULL_ALL;
+bool tf_tfp_header_peek(TF_TFPHeader *header, TF_PacketBuffer *buf) TF_ATTRIBUTE_NONNULL_ALL;
+bool tf_tfp_header_peek_plain(TF_TFPHeader *header, uint8_t *buf) TF_ATTRIBUTE_NONNULL_ALL;
 void tf_tfp_header_write(TF_TFPHeader *header, uint8_t buf[8]) TF_ATTRIBUTE_NONNULL_ALL;
 void tf_tfp_header_print(TF_TFPHeader *header) TF_ATTRIBUTE_NONNULL_ALL;
 

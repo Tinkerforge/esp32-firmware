@@ -98,7 +98,7 @@ static bool tf_tfp_filter_received_packet(TF_TFP *tfp, bool remove_interesting, 
     TF_PacketBuffer *buf = &tfp->spitfp->recv_buf;
     uint8_t used = tf_packet_buffer_get_used(buf);
 
-    if (used < 8) {
+    if (used < TF_TFP_MIN_MESSAGE_LENGTH) {
         tf_hal_log_debug("Too short!\n");
         tf_packet_buffer_remove(buf, used);
         ++tfp->error_count_frame;
@@ -106,7 +106,11 @@ static bool tf_tfp_filter_received_packet(TF_TFP *tfp, bool remove_interesting, 
     }
 
     TF_TFPHeader header;
-    tf_tfp_header_read(&header, buf);
+    if (!tf_tfp_header_read(&header, buf)) {
+        tf_hal_printf("Invalid header! Length is %d.\n", header.length);
+        ++tfp->error_count_frame;
+        return false;
+    }
 
     // Compare with <= as behind the tfp packet there has to be the SPITFP checksum
     if (used <= header.length) {

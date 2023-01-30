@@ -14,6 +14,16 @@
 #include "endian_convert.h"
 #include "base58.h"
 
+static inline bool header_is_valid(TF_TFPHeader *header) {
+    if (header->length < TF_TFP_MIN_MESSAGE_LENGTH)
+        return false;
+
+    if (header->length > TF_TFP_MAX_MESSAGE_LENGTH)
+        return false;
+
+    return true;
+}
+
 static void parse_header(TF_TFPHeader *header) {
     header->response_expected = header->seq_num & 0x08;
     header->options = header->seq_num & 0x07;
@@ -22,7 +32,7 @@ static void parse_header(TF_TFPHeader *header) {
     header->flags &= 0x3F;
 }
 
-void tf_tfp_header_read(TF_TFPHeader *header, TF_PacketBuffer *buf) {
+bool tf_tfp_header_read(TF_TFPHeader *header, TF_PacketBuffer *buf) {
     header->uid_num = tf_packet_buffer_read_uint32_t(buf);
     header->length = tf_packet_buffer_read_uint8_t(buf);
     header->fid = tf_packet_buffer_read_uint8_t(buf);
@@ -30,9 +40,11 @@ void tf_tfp_header_read(TF_TFPHeader *header, TF_PacketBuffer *buf) {
     header->flags = tf_packet_buffer_read_uint8_t(buf);
 
     parse_header(header);
+
+    return header_is_valid(header);
 }
 
-void tf_tfp_header_peek(TF_TFPHeader *header, TF_PacketBuffer *buf) {
+bool tf_tfp_header_peek(TF_TFPHeader *header, TF_PacketBuffer *buf) {
     header->uid_num = tf_packet_buffer_peek_uint32_t(buf, 0);
     header->length = tf_packet_buffer_peek_uint8_t(buf, 4);
     header->fid = tf_packet_buffer_peek_uint8_t(buf, 5);
@@ -40,9 +52,11 @@ void tf_tfp_header_peek(TF_TFPHeader *header, TF_PacketBuffer *buf) {
     header->flags = tf_packet_buffer_peek_uint8_t(buf, 7);
 
     parse_header(header);
+
+    return header_is_valid(header);
 }
 
-void tf_tfp_header_peek_plain(TF_TFPHeader *header, uint8_t *buf) {
+bool tf_tfp_header_peek_plain(TF_TFPHeader *header, uint8_t *buf) {
     uint32_t uid_num = 0;
 
     for (int i = 0; i < 4; ++i) {
@@ -56,6 +70,8 @@ void tf_tfp_header_peek_plain(TF_TFPHeader *header, uint8_t *buf) {
     header->flags = buf[7];
 
     parse_header(header);
+
+    return header_is_valid(header);
 }
 
 void tf_tfp_header_write(TF_TFPHeader *header, uint8_t buf[8]) {
