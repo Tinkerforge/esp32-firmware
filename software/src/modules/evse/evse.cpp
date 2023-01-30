@@ -514,6 +514,19 @@ uint16_t EVSE::get_ocpp_current()
     return evse_slots.get(CHARGING_SLOT_OCPP)->get("max_current")->asUint();
 }
 
+void EVSE::check_debug()
+{
+    task_scheduler.scheduleOnce([this](){
+        if (millis() - last_debug_check > 60000 && debug == true)
+        {
+            logger.printfln("Debug log creation canceled because no continue call was received for more than 60 seconds.");
+            debug = false;
+        }
+        else if (debug == true)
+            check_debug();
+    }, 70000);
+}
+
 void EVSE::register_urls()
 {
     if (!device_found)
@@ -586,14 +599,24 @@ void EVSE::register_urls()
 #if MODULE_WS_AVAILABLE()
     server.on("/evse/start_debug", HTTP_GET, [this](WebServerRequest request) {
         task_scheduler.scheduleOnce([this](){
+            logger.printfln("Start debug");
+            last_debug_check = millis();
+            check_debug();
             ws.pushRawStateUpdate(this->get_evse_debug_header(), "evse/debug_header");
             debug = true;
         }, 0);
         return request.send(200);
     });
 
+    server.on("/evse/continue_debug", HTTP_GET, [this](WebServerRequest request) {
+        logger.printfln("Debug wd reset");
+        last_debug_check = millis();
+        return request.send(200);
+    });
+
     server.on("/evse/stop_debug", HTTP_GET, [this](WebServerRequest request){
         task_scheduler.scheduleOnce([this](){
+            logger.printfln("Stop debug");
             debug = false;
         }, 0);
         return request.send(200);

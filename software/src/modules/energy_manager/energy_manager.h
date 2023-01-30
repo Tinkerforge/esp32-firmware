@@ -127,6 +127,7 @@ public:
     uint16_t get_energy_meter_detailed_values(float *ret_values);
     void set_output(bool output);
 
+    void check_debug();
 
     bool debug = false;
 
@@ -146,6 +147,8 @@ public:
     bool     is_3phase;
     bool     wants_on_last;
     int32_t  power_at_meter_w;
+
+    uint64_t last_debug_check;
 
 private:
     void update_all_data_struct();

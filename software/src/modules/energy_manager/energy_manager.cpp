@@ -112,6 +112,19 @@ void EnergyManager::setup_energy_manager()
     initialized = true;
 }
 
+void EnergyManager::check_debug()
+{
+    task_scheduler.scheduleOnce([this](){
+        if (millis() - last_debug_check > 60000 && debug == true)
+        {
+            logger.printfln("Debug log creation canceled because no continue call was received for more than 60 seconds.");
+            debug = false;
+        }
+        else if (debug == true)
+            check_debug();
+    }, 70000);
+}
+
 void EnergyManager::setup()
 {
     setup_energy_manager();
@@ -215,9 +228,16 @@ void EnergyManager::register_urls()
 #if MODULE_WS_AVAILABLE()
     server.on("/energy_manager/start_debug", HTTP_GET, [this](WebServerRequest request) {
         task_scheduler.scheduleOnce([this](){
+            last_debug_check = millis();
+            check_debug();
             ws.pushRawStateUpdate(this->get_energy_manager_debug_header(), "energy_manager/debug_header");
             debug = true;
         }, 0);
+        return request.send(200);
+    });
+
+    server.on("/evse/continue_debug", HTTP_GET, [this](WebServerRequest request) {
+        last_debug_check = millis();
         return request.send(200);
     });
 
