@@ -459,7 +459,7 @@ export function getAllUsernames() {
                 return [null, null];
             }
 
-            const decoder = new TextDecoder();
+            const decoder = new TextDecoder("utf-8");
             for(let i = 0; i < 256; ++i) {
                 let view = new DataView(buffer, i * 64, 32);
                 let username = decoder.decode(view).replace(/\0/g, "");
