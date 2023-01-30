@@ -30,6 +30,9 @@ Build instructions
 Install instructions
 ------------------
 
+- We have a special target to build and upload our firmware over the air
+  - You can use it like `pio run -e warpAC011K -a 192.168.0.123 -t ota`
+  - But that only works if a previeous version of our software is already listening on that address. The process is described below in more detail.
 - The built firmwares can be found in the `build/` folder (not in git)  
   `FIRMWARE=$(ls -1rt build/*merged* | tail -1)`
 - If you are building for the AC011K, you can flash the firmware either
