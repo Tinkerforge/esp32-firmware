@@ -196,6 +196,8 @@ void EnergyManager::setup()
     // Initialize contactor check state so that the check doesn't trip immediately if the first response from the bricklet is invalid.
     all_data.contactor_check_state = 1;
 
+    bricklet_reachable = true;
+
     task_scheduler.scheduleWithFixedDelay([this](){
         this->update_all_data();
     }, 0, 250);
@@ -338,8 +340,22 @@ void EnergyManager::update_all_data_struct()
         &all_data.contactor_check_state
     );
 
-    if (rc != TF_E_OK) {
-        logger.printfln("get_all_data_1 error %d", rc);
+    if (rc == TF_E_OK) {
+        consecutive_bricklet_errors = 0;
+        if (!bricklet_reachable) {
+            bricklet_reachable = true;
+            logger.printfln("energy_manager: Bricklet is reachable again.");
+        }
+    } else {
+        if (rc == TF_E_TIMEOUT) {
+            logger.printfln("energy_manager: get_all_data_1() timed out.");
+        } else {
+            logger.printfln("energy_manager: get_all_data_1() returned error %d.", rc);
+        }
+        if (bricklet_reachable && ++consecutive_bricklet_errors >= 8) {
+            bricklet_reachable = false;
+            logger.printfln("energy_manager: Bricklet is unreachable.");
+        }
     }
 }
 
@@ -410,7 +426,7 @@ void EnergyManager::update_energy()
         prev_state = switching_state;
     }
 
-    if (contactor_check_tripped) {
+    if (contactor_check_tripped || !bricklet_reachable) {
         set_available_current(0);
         return;
     }

@@ -162,6 +162,8 @@ private:
     InputPin *input4;
 
     bool     uptime_past_hysteresis;
+    uint32_t consecutive_bricklet_errors;
+    bool     bricklet_reachable;
     SwitchingState switching_state;
     uint32_t switching_start;
     uint8_t  have_phases;
