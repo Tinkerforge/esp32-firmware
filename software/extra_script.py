@@ -9,7 +9,10 @@ env.AddCustomTarget(
 )
 
 env.AddCustomTarget(
-    "ota",
-    "$BUILD_DIR/${PROGNAME}.elf",
-    "ota_script --firmware-path $SOURCE"
+    name="ota",
+    dependencies="$BUILD_DIR/${PROGNAME}.elf",
+    actions=["$PROJECT_DIR/ota-flasher.sh $PROJECT_DIR $PIOENV $PROGRAM_ARGS"],
+    title="OTA upload",
+    description="over the air upload / reflash (set OTA-IP-ADDRESS via pio option [-a 10.0.0.1])"
 )
+

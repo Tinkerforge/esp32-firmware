@@ -26,6 +26,7 @@ then
         curl -vv --show-error --fail --data-binary "@${FIRMWARE}" "http://${HOST}/flash_firmware"
     else
         echo "There is no ${WARPTYPE} WARP at ${HOST}, skip OTA flashing \"${FIRMWARE}\""
+        exit 1
     fi
 else
     echo "No firmware to flash found in dir \"${PROJECT_DIR}\""
