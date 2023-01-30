@@ -82,7 +82,7 @@ static void check_for_factory_reset() {
     if (!seen_ethernet_clock) {
         // Flash LED for 8 seconds while waiting for button press.
         bool button_pressed = false;
-        for (uint32_t i = 0; i < 40; i++) {
+        for (uint32_t i = 0; i < 80; i++) {
             digitalWrite(blue_led_pin, i % 4 == 0 ? false : true);
             delay(100); // 80 * 100ms = 8s
             if (!digitalRead(BUTTON)) {
