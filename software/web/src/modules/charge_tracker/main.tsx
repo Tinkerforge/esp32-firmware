@@ -323,8 +323,7 @@ function to_csv_line(vals: string[]) {
 }
 
 //TODO:
-//  - Bindestriche weg machen
-//  - Übersetzungen kürzen
+//  - Shorten translation
 
 const PDFSPACELEFT = 50;
 const PDFSPACERIGHT = 25
