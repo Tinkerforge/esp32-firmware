@@ -33,6 +33,7 @@ interface WARP1MeterErrorCounters {
 export type all_values = number[];
 
 export interface live {
+    offset: number,
     samples_per_second: number,
     samples: number[],
 }
