@@ -314,6 +314,63 @@ function iso8601ButLocal(date: Date) {
     return dateLocal.toISOString().slice(0, -1);
 }
 
+const INDEX_BY_CODE_POINT = new Map([
+	[338, 12],
+	[339, 28],
+	[352, 10],
+	[353, 26],
+	[376, 31],
+	[381, 14],
+	[382, 30],
+	[402, 3],
+	[710, 8],
+	[732, 24],
+	[8211, 22],
+	[8212, 23],
+	[8216, 17],
+	[8217, 18],
+	[8218, 2],
+	[8220, 19],
+	[8221, 20],
+	[8222, 4],
+	[8224, 6],
+	[8225, 7],
+	[8226, 21],
+	[8230, 5],
+	[8240, 9],
+	[8249, 11],
+	[8250, 27],
+	[8364, 0],
+	[8482, 25]
+]);
+
+// Based on https://www.npmjs.com/package/windows-1252
+export const win1252Encode = (input: string) => {
+	const length = input.length;
+	const result = new Uint8Array(length);
+	for (let index = 0; index < length; index++) {
+		const codePoint = input.charCodeAt(index);
+		// “If `code point` is an ASCII code point, return a byte whose
+		// value is `code point`.”
+		if ((0x00 <= codePoint && codePoint <= 0x7F) || (0xA0 <= codePoint && codePoint <= 0xFF)) {
+			result[index] = codePoint;
+			continue;
+		}
+		// “Let `pointer` be the index pointer for `code point` in index
+		// single-byte.”
+		if (INDEX_BY_CODE_POINT.has(codePoint)) {
+			const pointer = INDEX_BY_CODE_POINT.get(codePoint);
+			// “Return a byte whose value is `pointer + 0x80`.”
+			result[index] = pointer + 0x80;
+		} else {
+			// “If `pointer` is `null`, replace with ¶
+			result[index] = 0xB6;
+		}
+	}
+	return result;
+};
+
+
 export function downloadToFile(content: BlobPart, filename_prefix: string, extension: string, contentType: string) {
     const a = document.createElement('a');
     const file = new Blob([content], {type: contentType});

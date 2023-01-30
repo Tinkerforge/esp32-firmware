@@ -319,7 +319,7 @@ function update_last_charges() {
 function to_csv_line(vals: string[]) {
     let line = vals.map(entry => '"' + entry.replace(/\"/, '""') + '"');
 
-    return line.join(",") + "\r\n";
+    return line.join(";") + "\r\n";
 }
 
 //TODO:
@@ -795,7 +795,7 @@ async function downloadChargeLog(user_filter: number, start_date: Date, end_date
                 }
             }
 
-            util.downloadToFile(result, "charge-log", "csv", "text/csv; charset=utf-8; header=present");
+            util.downloadToFile(util.win1252Encode(result), "charge-log", "csv", "text/csv; charset=windows-1252; header=present");
         })
         .catch(err => util.add_alert("download-charge-log", "alert-danger", __("charge_tracker.script.download_charge_log_failed"), err));
 }
