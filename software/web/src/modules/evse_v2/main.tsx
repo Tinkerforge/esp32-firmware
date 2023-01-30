@@ -125,6 +125,17 @@ export class EVSEV2 extends Component<{}, EVSEState> {
         }
     }
 
+    debugTimeout: number;
+
+    async resetDebugWd() {
+        try {
+            await util.download("/evse/continue_debug");
+        }
+        catch{
+            this.setState({debug_running: false, debug_status: __("evse.script.starting_debug_failed")});
+        }
+    }
+
     async debug_start() {
         this.debug_log = "";
         this.setState({debug_running: true});
@@ -145,11 +156,14 @@ export class EVSEV2 extends Component<{}, EVSEState> {
             return;
         }
 
+        this.debugTimeout = setInterval(this.resetDebugWd, 15000);
+
         this.setState({debug_status: __("evse.script.debug_running")});
     }
 
     async debug_stop() {
         this.setState({debug_running: false});
+        clearInterval(this.debugTimeout);
 
         try {
             await util.download("/evse/stop_debug");
