@@ -523,9 +523,11 @@ bool CMNetworking::send_client_update(uint8_t iec61851_state,
 
     if (has_meter) {
         auto meter_values = api.getState("meter/values");
+        state_pkt.v1.power_total = meter_values->get("power")->asFloat();
         state_pkt.v1.energy_rel = meter_values->get("energy_rel")->asFloat();
         state_pkt.v1.energy_abs = meter_values->get("energy_abs")->asFloat();
     } else {
+        state_pkt.v1.power_total = 0;
         state_pkt.v1.energy_rel = 0;
         state_pkt.v1.energy_abs = 0;
     }

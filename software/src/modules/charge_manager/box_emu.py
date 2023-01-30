@@ -51,6 +51,7 @@ struct cm_state_v1 {
     float line_voltages[3];
     float line_currents[3];
     float line_power_factors[3];
+    float power_total;
     float energy_rel;
     float energy_abs;
 } __attribute__((packed));
@@ -63,7 +64,7 @@ struct cm_state_packet {
 
 header_format = "<HHHBx"
 command_format = header_format + "HBx"
-state_format = header_format + "IIIHHBBBBfffffffffff"
+state_format = header_format + "IIIHHBBBBffffffffffff"
 
 command_len = struct.calcsize(command_format)
 state_len = struct.calcsize(state_format)
@@ -243,6 +244,7 @@ def send():
                     0,  # LPF0
                     0,  # LPF1
                     0,  # LPF2
+                    0,  # power_total
                     0,  # energy_rel
                     0)  # energy_abs
     if not resp_block_seq_num.isChecked():

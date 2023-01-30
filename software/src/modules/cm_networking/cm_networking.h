@@ -173,12 +173,13 @@ struct cm_state_v1 {
     float line_voltages[3];
     float line_currents[3];
     float line_power_factors[3];
+    float power_total;
     float energy_rel;
     float energy_abs;
 } __attribute__((packed));
 
 #define CM_STATE_V1_LENGTH (sizeof(cm_state_v1))
-static_assert(CM_STATE_V1_LENGTH == 64);
+static_assert(CM_STATE_V1_LENGTH == 68);
 
 struct cm_state_packet {
     cm_packet_header header;
@@ -186,7 +187,7 @@ struct cm_state_packet {
 } __attribute__((packed));
 
 #define CM_STATE_PACKET_LENGTH (sizeof(cm_state_packet))
-static_assert(CM_STATE_PACKET_LENGTH == 72);
+static_assert(CM_STATE_PACKET_LENGTH == 76);
 
 class CMNetworking
 {
