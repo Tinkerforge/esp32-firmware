@@ -273,6 +273,7 @@ function build_chart_options(chart_extra: LiveExtra|HistoryExtra, chart_containe
             chart.options.aspectRatio = parseFloat(getComputedStyle(element).aspectRatio);
             on_resize_function(element.offsetWidth);
         },
+        resizeDelay: 100, // workaround for onResize function being called before container aspect ratio was changed by CSS
         layout: {
             autoPadding: false,
             padding: {
