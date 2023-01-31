@@ -18,4 +18,70 @@ if 'software' not in sys.modules:
 
 from software import util
 
+import re
+
 util.embed_bricklet_firmware_bin()
+
+variables = [
+            "charge_manager_allocated_current_ma",
+            "max_current_limited_ma",
+            "guaranteed_power_w",
+            "target_power_from_grid_w",
+            "power_at_meter_w",
+            "power_available_w",
+            "",
+            "is_3phase",
+            "wants_3phase",
+            "wants_3phase_last",
+            "is_on_last",
+            "wants_on_last",
+            "",
+            "charging_blocked.combined",
+            "excess_charging_enable",
+            "contactor_check_tripped",
+            "just_switched_phases",
+            "uptime_past_hysteresis",
+            "consecutive_bricklet_errors",
+            "switching_state",
+            "",
+            "phase_state_change_blocked_until",
+            "on_state_change_blocked_until",
+            "",
+            "all_data.contactor_value",
+            "",
+            "all_data.rgb_value_r",
+            "all_data.rgb_value_g",
+            "all_data.rgb_value_b",
+            "",
+            "all_data.power",
+            "all_data.energy_import",
+            "all_data.energy_export",
+            "",
+            "all_data.energy_meter_type",
+            "all_data.error_count[0]",
+            "all_data.error_count[1]",
+            "all_data.error_count[2]",
+            "all_data.error_count[3]",
+            "all_data.error_count[4]",
+            "all_data.error_count[5]",
+            "",
+            "all_data.input[0]",
+            "all_data.input[1]",
+            "",
+            "all_data.output",
+            "",
+            "all_data.voltage",
+            "",
+            "all_data.contactor_check_state",
+    ]
+
+formats = 'fmt(' + '),\n        fmt('.join(variables) + '),'
+header  = '"' + ',"\n           "'.join([re.sub('[^.]+\.', '', v) for v in variables]) + '"'
+data    = ',\n             '.join(filter(None, variables))
+
+util.specialize_template("energy_manager_debug.cpp.template", "energy_manager_debug.cpp", {
+    "{{{varcount}}}": str(len(variables)),
+    "{{{formats}}}": formats,
+    "{{{header}}}": header,
+    "{{{data}}}": data,
+    })

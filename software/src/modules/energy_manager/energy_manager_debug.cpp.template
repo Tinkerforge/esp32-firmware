@@ -1,0 +1,67 @@
+#include "energy_manager.h"
+#include "tools.h"
+
+#define MAX_FMT_LENGTH 512
+#define MAX_DEBUG_LINE_LENGTH 512
+
+extern inline const char* fmt(SwitchingState) {return "%u";  }
+extern inline const char* fmt(int32_t       ) {return "%i";  }
+extern inline const char* fmt(uint32_t      ) {return "%u";  }
+extern inline const char* fmt(float         ) {return "%03f";}
+extern inline const char* fmt(void          ) {return "";    }
+
+static char *fmtstr;
+
+__attribute((noinline))
+String EnergyManager::prepare_fmtstr() {
+    const char * const fmts[2+{{{varcount}}}] = {
+        "%u",
+        "",
+        {{{formats}}}
+    };
+
+    fmtstr = (char*)malloc(MAX_FMT_LENGTH);
+    if (!fmtstr)
+        return "Out of memory";
+
+    int offset = snprintf(fmtstr, MAX_FMT_LENGTH, "\"");
+    for (unsigned long i = 0; i < (2+{{{varcount}}}); i++) {
+        offset += snprintf(fmtstr + offset, MAX_FMT_LENGTH - offset, "%s,", fmts[i]);
+    }
+    offset += snprintf(fmtstr + offset - 1, MAX_FMT_LENGTH - 1 - offset, "\""); // offset-1 to overwrite last comma
+    fmtstr[MAX_FMT_LENGTH - 1] = 0;
+    fmtstr = (char*)realloc(fmtstr, offset + 1);
+
+    //logger.printfln("energy_manager: using fmtstr='%s'", fmtstr);
+
+    return String();
+}
+
+String EnergyManager::get_energy_manager_debug_header()
+{
+    return "\"millis,"
+           ","
+           {{{header}}}
+           "\"";
+}
+
+String EnergyManager::get_energy_manager_debug_line()
+{
+    if (!fmtstr) {
+        String err = prepare_fmtstr();
+        if (err.length() > 0)
+            return err;
+    }
+
+    update_all_data_struct();
+
+    char line[MAX_DEBUG_LINE_LENGTH] = {0};
+    snprintf(line,
+             sizeof(line) / sizeof(line[0]),
+             fmtstr,
+             millis(),
+             {{{data}}}
+    );
+
+    return String(line);
+}

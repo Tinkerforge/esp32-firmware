@@ -127,8 +127,6 @@ public:
     uint16_t get_energy_meter_detailed_values(float *ret_values);
     void set_output(bool output);
 
-    void check_debug();
-
     bool debug = false;
 
     ConfigRoot energy_manager_state;
@@ -148,8 +146,6 @@ public:
     bool     wants_on_last;
     int32_t  power_at_meter_w;
 
-    uint64_t last_debug_check;
-
 private:
     void check_bricklet_reachable(int rc);
     void update_all_data_struct();
@@ -158,10 +154,14 @@ private:
 
     void set_available_current(uint32_t current);
 
+    void check_debug();
+    String prepare_fmtstr();
+
     OutputRelay *output;
     InputPin *input3;
     InputPin *input4;
 
+    unsigned long last_debug_check;
     bool     uptime_past_hysteresis;
     uint32_t consecutive_bricklet_errors;
     bool     bricklet_reachable;
@@ -178,6 +178,7 @@ private:
     uint32_t guaranteed_power_w;
     uint32_t max_current_limited_ma;
     int32_t  target_power_from_grid_w;
+    int32_t  power_available_w;
 
     // Config cache
     int32_t  target_power_from_grid_conf_w;

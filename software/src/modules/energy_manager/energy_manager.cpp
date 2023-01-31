@@ -466,7 +466,6 @@ void EnergyManager::update_energy()
         excess_charging_enable      = energy_manager_config.get("excess_charging_enable")->asBool();
         target_power_from_grid_w    = energy_manager_config.get("target_power_from_grid")->asInt(); // watt
 
-        int32_t power_available_w; // watt
         if (!excess_charging_enable) {
             power_available_w = 230 * 3 * max_current_limited_ma / 1000;
         } else {
@@ -692,74 +691,4 @@ void EnergyManager::set_output(bool output)
     int result = tf_warp_energy_manager_set_output(&device, output);
     if (result != TF_E_OK)
         logger.printfln("energy_manager: Failed to set output relay: error %i", result);
-}
-
-String EnergyManager::get_energy_manager_debug_header()
-{
-    return "\"millis,,"
-           "contactor_value,,"
-           "rgb_value_r,"
-           "rgb_value_g,"
-           "rgb_value_b,,"
-           "power,"
-           "energy_import,"
-           "energy_export,,"
-           "energy_meter_type,"
-           "error_count[0],"
-           "error_count[1],"
-           "error_count[2],"
-           "error_count[3],"
-           "error_count[4],"
-           "error_count[5],,"
-           "input3,"
-           "input4,,"
-           "output,,"
-           "input_voltage,,"
-           "contactor_check_state,"
-           "\"";
-}
-
-String EnergyManager::get_energy_manager_debug_line()
-{
-    update_all_data_struct();
-
-    char line[512] = {0};
-    snprintf(line,
-             sizeof(line) / sizeof(line[0]),
-             "\"%lu,,"
-             "%u,,"
-             "%u,%u,%u,,"
-             "%.3f,%.3f,%.3f,,"
-             "%u,%u,%u,%u,%u,%u,%u,,"
-             "%c,%c,,"
-             "%u,,"
-             "%u,,"
-             "%u\"",
-             millis(),
-             all_data.contactor_value,
-
-             all_data.rgb_value_r,
-             all_data.rgb_value_g,
-             all_data.rgb_value_b,
-
-             all_data.power,
-             all_data.energy_import,
-             all_data.energy_export,
-
-             all_data.energy_meter_type,
-             all_data.error_count[0],
-             all_data.error_count[1],
-             all_data.error_count[2],
-             all_data.error_count[3],
-             all_data.error_count[4],
-             all_data.error_count[5],
-
-             all_data.input[0] ? '1' : '0',
-             all_data.input[1] ? '1' : '0',
-
-             all_data.output,
-             all_data.voltage,
-             all_data.contactor_check_state);
-
-    return String(line);
 }
