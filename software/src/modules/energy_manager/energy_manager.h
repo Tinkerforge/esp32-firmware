@@ -151,6 +151,7 @@ public:
     uint64_t last_debug_check;
 
 private:
+    void check_bricklet_reachable(int rc);
     void update_all_data_struct();
     void update_io();
     void update_energy();

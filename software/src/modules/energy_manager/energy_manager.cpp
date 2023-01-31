@@ -212,10 +212,11 @@ void EnergyManager::setup()
     }
 
 #if MODULE_CHARGE_MANAGER_AVAILABLE()
-    if (!charge_manager.have_chargers()) {
-        logger.printfln("energy_manager: No chargers configured. Disabling energy distribution.");
-        return;
-    }
+    // Can't check for chargers in setup() because CM's setup() hasn't run yet to load the charger configuration.
+    task_scheduler.scheduleOnce([](){
+        if (!charge_manager.have_chargers())
+            logger.printfln("energy_manager: No chargers configured. Won't try to distribute energy.");
+    }, 0);
 #else
     logger.printfln("energy_manager: Module 'Charge Manager' not available. Disabling energy distribution.");
     return;
@@ -318,7 +319,7 @@ void EnergyManager::update_all_data()
         }
     }
 
-    static uint32_t time_max = 2000;
+    static uint32_t time_max = 5000;
     time = micros() - time;
     if (time > time_max) {
         time_max = time;
@@ -345,16 +346,24 @@ void EnergyManager::update_all_data_struct()
         &all_data.contactor_check_state
     );
 
+    check_bricklet_reachable(rc);
+
+    // TODO Remove: Support reversed current clamps.
+    if (rc == TF_E_OK && em_meter_config.config.get("kulparga_mode")->asBool()) {
+        all_data.power *= -1;
+        float swap = all_data.energy_export;
+        all_data.energy_export = all_data.energy_import;
+        all_data.energy_import = swap;
+    }
+}
+
+void EnergyManager::check_bricklet_reachable(int rc) {
     if (rc == TF_E_OK) {
         consecutive_bricklet_errors = 0;
         if (!bricklet_reachable) {
             bricklet_reachable = true;
             logger.printfln("energy_manager: Bricklet is reachable again.");
         }
-
-        // TODO Remove: Support reversed current clamps.
-        if (em_meter_config.config.get("kulparga_mode")->asBool())
-            all_data.power *= -1;
     } else {
         if (rc == TF_E_TIMEOUT) {
             logger.printfln("energy_manager: get_all_data_1() timed out.");
@@ -492,7 +501,9 @@ void EnergyManager::update_energy()
 
         // CP disconnect support unknown if some chargers haven't replied yet.
         if (!charge_manager.seen_all_chargers()) {
-            logger.printfln("energy_manager: Not seen all chargers yet.");
+            // Don't constantly complain if we don't have any chargers configured.
+            if (charge_manager.have_chargers())
+                logger.printfln("energy_manager: Not seen all chargers yet.");
             return;
         }
 
@@ -647,36 +658,33 @@ void EnergyManager::update_energy()
 
 uint16_t EnergyManager::get_energy_meter_detailed_values(float *ret_values)
 {
+    uint32_t time = micros();
+
     uint16_t len = 0;
+    uint16_t ret;
     int rc = tf_warp_energy_manager_get_energy_meter_detailed_values(&device, ret_values, &len);
 
-    if (rc == TF_E_OK) {
-        consecutive_bricklet_errors = 0;
-        if (!bricklet_reachable) {
-            bricklet_reachable = true;
-            logger.printfln("energy_manager: Bricklet is reachable again.");
-        }
+    check_bricklet_reachable(rc);
 
+    if (rc == TF_E_OK) {
         // TODO Remove: Support reversed current clamps.
         if (em_meter_config.config.get("kulparga_mode")->asBool()) {
             for (int i = 0; i < len; i++)
                 ret_values[i] *= -1;
         }
-
-        return len;
+        ret = len;
     } else {
-        if (rc == TF_E_TIMEOUT) {
-            logger.printfln("energy_manager: get_energy_meter_detailed_values() timed out.");
-        } else {
-            logger.printfln("energy_manager: get_energy_meter_detailed_values() returned error %d.", rc);
-        }
-        if (bricklet_reachable && ++consecutive_bricklet_errors >= 8) {
-            bricklet_reachable = false;
-            logger.printfln("energy_manager: Bricklet is unreachable.");
-        }
-
-        return 0;
+        ret = 0;
     }
+
+    static uint32_t time_max = 8000;
+    time = micros() - time;
+    if (time > time_max) {
+        time_max = time;
+        logger.printfln("energy_manager::get_energy_meter_detailed_values() took %uus", time_max);
+    }
+
+    return ret;
 }
 
 void EnergyManager::set_output(bool output)

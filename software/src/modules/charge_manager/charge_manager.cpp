@@ -343,6 +343,10 @@ bool ChargeManager::seen_all_chargers() {
 
     std::vector<Config> &chargers = charge_manager_state.get("chargers")->asArray();
 
+    // Don't claim to have seen "all" chargers when none are configured.
+    if (chargers.size() == 0)
+        return false;
+
     for (auto &charger : chargers) {
         if (charger.get("last_update")->asUint() == 0) {
             return false;
