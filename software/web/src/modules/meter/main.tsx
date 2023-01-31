@@ -257,7 +257,8 @@ function build_chart_data(chart_extra: LiveExtra|HistoryExtra) {
     return data;
 }
 
-function build_chart_options(chart_extra: LiveExtra|HistoryExtra, chart_container_id: string, suggested_min: number, suggested_max: number) {
+function build_chart_options(chart_extra: LiveExtra|HistoryExtra, chart_container_id: string,
+                             suggested_min: number, suggested_max: number, step_size: number) {
     let options: ChartOptions<"line"> = {
         normalized: true,
         animation: false,
@@ -326,8 +327,8 @@ function build_chart_options(chart_extra: LiveExtra|HistoryExtra, chart_containe
                     display: false,
                 },
                 ticks: {
-                    autoSkipPadding: 10,
-                    stepSize: 1,
+                    autoSkipPadding: 20,
+                    stepSize: step_size,
                 },
                 suggestedMin: suggested_min,
                 suggestedMax: suggested_max,
@@ -434,7 +435,7 @@ export class Meter extends Component<{}, MeterState> {
         }
 
         let data = build_chart_data(chart_extra);
-        let options = build_chart_options(chart_extra, "meter_chart", undefined, undefined);
+        let options = build_chart_options(chart_extra, "meter_chart", undefined, undefined, undefined);
 
         return (
             <>
@@ -566,7 +567,7 @@ export class StatusMeterChart extends Component<{}, StatusMeterChartState> {
         }
 
         let data = build_chart_data(state.history_extra);
-        let options = build_chart_options(state.history_extra, "status_meter_chart", 0, 1500);
+        let options = build_chart_options(state.history_extra, "status_meter_chart", 0, 1500, 100);
 
         return (
             <>
