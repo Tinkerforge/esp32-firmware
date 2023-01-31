@@ -107,6 +107,7 @@ void ChargeManager::pre_setup()
     charge_manager_state = Config::Object({
         {"state", Config::Uint8(0)}, // 0 - not configured, 1 - active, 2 - shutdown
         {"uptime", Config::Uint32(0)},
+        {"allocated_current", Config::Uint32(0)},
         {"chargers", Config::Array(
             {},
             new Config{Config::Object({
@@ -743,6 +744,8 @@ void ChargeManager::distribute_current()
             len = strlen(local_log);
         }
     }
+
+    charge_manager_state.get("allocated_current")->updateUint(available_current_init - available_current);
 
     if (allocated_current_callback) {
         // Inform callback about how much current we distributed to chargers.
