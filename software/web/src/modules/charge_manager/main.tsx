@@ -123,6 +123,23 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
     }
 
     override async sendSave(t: "charge_manager/config", cfg: config) {
+        const modal = util.async_modal_ref.current;
+        let illegal_chargers = "";
+        for (let i = 0; i < cfg.chargers.length; i++)
+        {
+            if (this.isMultiOrBroadcastIp(cfg.chargers[i].host))
+                illegal_chargers += cfg.chargers[i].name + ": " + cfg.chargers[i].host + "<br>";
+        }
+
+        if (illegal_chargers != "" && !await modal.show({
+            title: __("charge_manager.content.multi_broadcast_modal_title"),
+            body: __("charge_manager.content.multi_broadcast_modal_body") + "<br><br>" + illegal_chargers + "<br>" + __("charge_manager.content.multi_broadcast_modal_body_end"),
+            no_text: __("charge_manager.content.multi_broadcast_modal_cancel"),
+            yes_text: __("charge_manager.content.multi_broadcast_modal_save"),
+            no_variant: "secondary",
+            yes_variant: "danger"
+        }))
+            return;
         await API.save_maybe('evse/management_enabled', {"enabled": this.state.managementEnabled}, translate_unchecked("evse.script.save_failed"));
         await super.sendSave(t, cfg);
     }
@@ -177,6 +194,49 @@ export class ChargeManager extends ConfigComponent<'charge_manager/config', {}, 
             } catch {
             }
         }, 3000);
+    }
+
+    intToIP(int: number) {
+        var part1 = int & 255;
+        var part2 = ((int >> 8) & 255);
+        var part3 = ((int >> 16) & 255);
+        var part4 = ((int >> 24) & 255);
+
+        return part4 + "." + part3 + "." + part2 + "." + part1;
+    }
+
+    isMultiOrBroadcastIp(v: string): boolean
+    {
+        const ip = util.parseIP(v);
+        if (!isNaN(ip))
+        {
+            const wifi_subnet = util.parseIP(API.get("wifi/sta_config").subnet);
+            const eth_subnet = util.parseIP(API.get("ethernet/config").subnet);
+            const wifi_ip = util.parseIP(API.get("wifi/sta_config").ip);
+            const eth_ip = util.parseIP(API.get("ethernet/config").ip);
+            const wifi_network = !isNaN(wifi_ip) && !isNaN(wifi_subnet) ? wifi_subnet & wifi_ip : undefined;
+            const eth_network = !isNaN(eth_ip) && !isNaN(eth_subnet) ? eth_ip & eth_subnet : undefined;
+            const wifi_broadcast = wifi_network != undefined ? (~wifi_subnet) | wifi_network : undefined;
+            const eth_broadcast = eth_network != undefined ? (~eth_subnet) | eth_network : undefined;
+
+            if (API.get("wifi/sta_config").subnet != "255.255.255.254" && wifi_broadcast != undefined && (v == this.intToIP(wifi_broadcast) || v == this.intToIP(wifi_network)))
+                return true;
+            if (API.get("ethernet/config").subnet != "255.255.255.254" && eth_broadcast != undefined && (v == this.intToIP(eth_broadcast) || v == this.intToIP(eth_network)))
+                return true;
+
+            const start_multicast = util.parseIP("224.0.0.0");
+            const end_multicast = util.parseIP("239.255.255.255");
+            if (ip >= start_multicast && ip <= end_multicast)
+                return true;
+
+            const ap_ip = util.parseIP(API.get("wifi/ap_config").ip);
+            const ap_subnet = util.parseIP(API.get("wifi/ap_config").subnet);
+            const ap_network = !isNaN(ap_ip) && !isNaN(ap_subnet) ? ap_ip & ap_subnet : undefined;
+            const ap_broadcast = ap_network != undefined ? (~ap_subnet) | ap_network : undefined;
+            if (API.get("wifi/ap_config").subnet != "255.255.255.254" && ap_broadcast != undefined && (v == this.intToIP(ap_network) || v == this.intToIP(ap_broadcast)))
+                return true;
+        }
+        return false;
     }
 
     render(props: {}, state: ChargeManagerConfig & ChargeManagerState) {

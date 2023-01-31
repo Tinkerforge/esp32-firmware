@@ -40,6 +40,12 @@
             "add_charger_modal_save": "Save",
             "add_charger_modal_found": "Discovered chargers",
 
+            "multi_broadcast_modal_title": "Reserved/dangerous ip-addresses found",
+            "multi_broadcast_modal_body": "These reseved or potentially dangerous ip-addresses were detected: ",
+            "multi_broadcast_modal_body_end": "Are you sure that you want to save the settings?",
+            "multi_broadcast_modal_save": "Yes",
+            "multi_broadcast_modal_cancel": "Cancel",
+
             "scan_error_1": "Firmware version incompatible",
             "scan_error_2": "Charge management disabled",
 

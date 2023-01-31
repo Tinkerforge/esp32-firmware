@@ -40,6 +40,12 @@
             "add_charger_modal_save": "Hinzufügen",
             "add_charger_modal_found": "Gefundene Wallboxen",
 
+            "multi_broadcast_modal_title": "Reservierte/Gefährliche IP-Adresse(n) gefunden",
+            "multi_broadcast_modal_body": "Folgende reservierte oder potenziell gefährliche IP-Adressen wurden gefunden: ",
+            "multi_broadcast_modal_body_end": "Sind sie sicher, dass sie die Einstellungen übernehmen wollen?",
+            "multi_broadcast_modal_save": "Übernehmen",
+            "multi_broadcast_modal_cancel": "Abbrechen",
+
             "scan_error_1": "Firmwareversion inkompatibel",
             "scan_error_2": "Lastmanagement deaktiviert",
 
