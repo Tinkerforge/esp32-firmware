@@ -31,8 +31,8 @@ def forward_html(path):
 def forward_ws(sock):
     try:
         ws = websocket.create_connection(f'ws://{host}/ws')
-    except:
-        print('create_connection failed')
+    except Exception as e:
+        print('create_connection failed:', e)
         sock.close()
         return
 
@@ -41,8 +41,8 @@ def forward_ws(sock):
     while True:
         try:
             data = sock.receive(timeout=0.01)
-        except WS.ConnectionClosed:
-            print('sock.receive failed')
+        except WS.ConnectionClosed as e:
+            print('sock.receive failed:', e)
             ws.close()
             return
 
