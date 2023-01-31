@@ -189,6 +189,8 @@ def recieve():
         charging_time_start = 0
         resp_iec61851_state.setCurrentIndex(1)
         resp_charger_state.setCurrentIndex(1)
+    if allocated_current < resp_allowed_charging_current.value():
+        resp_allowed_charging_current.setValue(allocated_current)
 
 def send():
     global next_seq_num
